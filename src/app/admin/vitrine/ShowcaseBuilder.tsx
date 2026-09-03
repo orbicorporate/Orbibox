@@ -1,0 +1,292 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { BOX_COLORS, SIZE_CLASS, SIZE_LABEL, colorOf, groupByCategory, sizeOf, type BoxSize } from "@/lib/showcase";
+
+type Item = {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number | null;
+  image_url: string | null;
+  brand_label: string | null;
+  position: number;
+  status: string;
+  layout_size: string;
+  box_color: string;
+  box_style: string;
+};
+
+/** Formatos desenhados como miniatura, para escolher pelo olho e não pela palavra. */
+const FORMA: Record<BoxSize, string> = {
+  destaque: "h-5 w-10",
+  largo: "h-3 w-10",
+  medio: "h-6 w-5",
+  alto: "h-9 w-5",
+};
+
+export function ShowcaseBuilder({ items: initial, slug, businessId }: { items: Item[]; slug: string; businessId: string }) {
+  const supabase = createClient();
+  const [items, setItems] = useState<Item[]>(initial);
+  const [selId, setSelId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [arranging, setArranging] = useState(false);
+
+  const published = items.filter((i) => i.status === "published");
+  const ordered = [...published].sort((a, b) => a.position - b.position);
+  const sections = groupByCategory(published);
+  const sel = items.find((i) => i.id === selId) ?? null;
+
+  function patch(id: string, fields: Partial<Item>) {
+    setItems((p) => p.map((i) => (i.id === id ? { ...i, ...fields } : i)));
+  }
+
+  async function save(id: string, fields: Partial<Item>) {
+    patch(id, fields);
+    setSaving(true);
+    await supabase.from("content_items").update(fields).eq("id", id);
+    setSaving(false);
+  }
+
+  async function move(item: Item, dir: -1 | 1) {
+    const idx = ordered.findIndex((i) => i.id === item.id);
+    const swap = ordered[idx + dir];
+    if (!swap) return;
+    patch(item.id, { position: swap.position });
+    patch(swap.id, { position: item.position });
+    setSaving(true);
+    await Promise.all([
+      supabase.from("content_items").update({ position: swap.position }).eq("id", item.id),
+      supabase.from("content_items").update({ position: item.position }).eq("id", swap.id),
+    ]);
+    setSaving(false);
+  }
+
+  async function autoArrange() {
+    setArranging(true);
+    const porValor = [...published].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+    const ritmo: BoxSize[] = ["destaque", "medio", "medio", "largo", "medio", "medio"];
+    const updates = porValor.map((it, i) => ({ id: it.id, layout_size: ritmo[i % ritmo.length], position: i }));
+    setItems((p) =>
+      p.map((i) => {
+        const u = updates.find((x) => x.id === i.id);
+        return u ? { ...i, layout_size: u.layout_size, position: u.position } : i;
+      })
+    );
+    await Promise.all(
+      updates.map((u) => supabase.from("content_items").update({ layout_size: u.layout_size, position: u.position }).eq("id", u.id))
+    );
+    setArranging(false);
+  }
+
+  const idx = sel ? ordered.findIndex((i) => i.id === sel.id) : -1;
+
+  return (
+    <div className="mt-5 flex flex-col">
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          onClick={autoArrange}
+          disabled={arranging || published.length === 0}
+          className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-50"
+        >
+          {arranging ? "Organizando…" : "✦ Organizar com Orbi"}
+        </button>
+        <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
+          Ver publicado ↗
+        </Link>
+        {saving && <span className="text-[12px] text-text-tertiary">salvando…</span>}
+      </div>
+
+      <p className="mt-3 text-[13px] text-text-secondary">
+        Toque num box para editar. Ele abre aqui mesmo, sem sair da vitrine.
+      </p>
+
+      {published.length === 0 && (
+        <div className="mt-5 rounded-[28px] border border-divider bg-surface-white p-6 text-[14px] text-text-secondary">
+          Nenhum item ativo ainda. Ative um item no Feed para ele aparecer aqui.
+        </div>
+      )}
+
+      <div className="mt-6 flex flex-col gap-8">
+        {sections.map((sec) => (
+          <div key={sec.name}>
+            <h2 className="mb-3 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
+            <div className="grid auto-rows-[minmax(0,auto)] grid-cols-2 gap-2.5">
+              {sec.items.map((item) => (
+                <BoxCard
+                  key={item.id}
+                  item={item}
+                  selected={selId === item.id}
+                  onSelect={() => setSelId(selId === item.id ? null : item.id)}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Editor: gaveta fixa no rodapé, sempre visível enquanto se mexe no box */}
+      {sel && (
+        <>
+          <div className="h-[420px]" aria-hidden />
+          <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-h-[70vh] max-w-[440px] overflow-y-auto rounded-t-[28px] border-t border-divider bg-surface-white p-5 shadow-[0_-10px_40px_rgba(17,19,24,0.15)]">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-divider" />
+
+            <div className="flex items-start justify-between gap-3">
+              <input
+                value={sel.title}
+                onChange={(e) => patch(sel.id, { title: e.target.value })}
+                onBlur={(e) => save(sel.id, { title: e.target.value })}
+                placeholder="Nome do item"
+                className="min-w-0 flex-1 border-b border-divider bg-transparent pb-1 font-[family-name:var(--font-manrope)] text-[19px] font-medium outline-none focus:border-on-background"
+              />
+              <button onClick={() => setSelId(null)} className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] text-text-secondary">
+                Fechar
+              </button>
+            </div>
+
+            {/* Posição — o que mais se mexe, então vem primeiro */}
+            <div className="mt-4 flex items-center gap-2">
+              <span className="text-[12px] uppercase tracking-wide text-text-tertiary">Posição</span>
+              <button
+                onClick={() => move(sel, -1)}
+                disabled={idx <= 0}
+                className="ml-auto h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30"
+                aria-label="Mover para trás"
+              >
+                ←
+              </button>
+              <span className="text-[13px] text-text-secondary">{idx + 1} de {ordered.length}</span>
+              <button
+                onClick={() => move(sel, 1)}
+                disabled={idx === ordered.length - 1}
+                className="h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30"
+                aria-label="Mover para frente"
+              >
+                →
+              </button>
+            </div>
+
+            {/* Formato: miniaturas em vez de nomes */}
+            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
+            <div className="mt-2 flex gap-2">
+              {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {
+                const ativo = sizeOf(sel.layout_size) === s;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => save(sel.id, { layout_size: s })}
+                    className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border p-2.5 ${ativo ? "border-on-background bg-surface-soft" : "border-divider"}`}
+                  >
+                    <span className={`rounded-[4px] ${FORMA[s]} ${ativo ? "bg-on-background" : "bg-divider"}`} />
+                    <span className="text-[11px] text-text-secondary">{SIZE_LABEL[s]}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Foto */}
+            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Foto</p>
+            <div className="mt-2">
+              <ImageUpload
+                value={sel.image_url}
+                businessId={businessId}
+                onChange={(url) => save(sel.id, { image_url: url, box_style: url ? "foto" : "cor" })}
+              />
+            </div>
+
+            {/* Cor — só faz sentido sem foto, então explicamos em vez de esconder */}
+            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">
+              Cor do box{sel.image_url ? " · aparece se remover a foto" : ""}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2.5">
+              {Object.entries(BOX_COLORS).map(([key, c]) => (
+                <button
+                  key={key}
+                  onClick={() => save(sel.id, { box_color: key, box_style: sel.image_url ? sel.box_style : "cor" })}
+                  aria-label={c.label}
+                  className={`h-10 w-10 rounded-full border ${sel.box_color === key ? "border-2 border-on-background" : "border-divider"}`}
+                  style={{ backgroundColor: c.bg }}
+                />
+              ))}
+            </div>
+
+            <details className="mt-4">
+              <summary className="cursor-pointer text-[13px] text-text-secondary">Mais detalhes</summary>
+              <p className="mt-3 text-[12px] uppercase tracking-wide text-text-tertiary">Descrição</p>
+              <textarea
+                value={sel.description ?? ""}
+                onChange={(e) => patch(sel.id, { description: e.target.value })}
+                onBlur={(e) => save(sel.id, { description: e.target.value || null })}
+                rows={2}
+                placeholder="Uma frase curta sobre o item"
+                className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              />
+              <p className="mt-3 text-[12px] uppercase tracking-wide text-text-tertiary">Preço</p>
+              <input
+                value={sel.price ?? ""}
+                onChange={(e) => patch(sel.id, { price: e.target.value ? Number(e.target.value) : null })}
+                onBlur={(e) => save(sel.id, { price: e.target.value ? Number(e.target.value) : null })}
+                inputMode="decimal"
+                placeholder="Sem preço"
+                className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              />
+              <p className="mt-3 text-[12px] uppercase tracking-wide text-text-tertiary">Categoria (vira seção)</p>
+              <input
+                value={sel.brand_label ?? ""}
+                onChange={(e) => patch(sel.id, { brand_label: e.target.value })}
+                onBlur={(e) => save(sel.id, { brand_label: e.target.value || null })}
+                placeholder="Ex: Serviços"
+                className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              />
+            </details>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function BoxCard({ item, selected, onSelect }: { item: Item; selected: boolean; onSelect: () => void }) {
+  const c = colorOf(item.box_color);
+  const size = sizeOf(item.layout_size);
+  const photo = item.box_style === "foto" && !!item.image_url;
+
+  return (
+    <button
+      onClick={onSelect}
+      className={`relative flex flex-col justify-end overflow-hidden rounded-[20px] p-3 text-left transition-transform active:scale-[0.98] ${SIZE_CLASS[size]} ${
+        selected ? "ring-2 ring-on-background" : "border border-divider"
+      }`}
+      style={photo ? undefined : { backgroundColor: c.bg }}
+    >
+      {photo && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={item.image_url!} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+        </>
+      )}
+      <div className="relative">
+        <p className={`font-medium leading-tight ${size === "destaque" ? "text-[17px]" : "text-[14px]"}`} style={{ color: photo ? "#fff" : c.fg }}>
+          {item.title}
+        </p>
+        {item.price != null && (
+          <p className="mt-0.5 text-[12px] opacity-80" style={{ color: photo ? "#fff" : c.fg }}>
+            R$ {Number(item.price).toFixed(2)}
+          </p>
+        )}
+      </div>
+      {/* Sinal de "editável" sempre presente, sem precisar entrar em modo */}
+      <span
+        className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-surface-white/90 text-[12px] shadow"
+        style={{ color: "#111318" }}
+      >
+        ✎
+      </span>
+    </button>
+  );
+}

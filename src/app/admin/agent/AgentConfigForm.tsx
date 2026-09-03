@@ -2,124 +2,107 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
-type Config = {
-  id: string;
-  agent_name: string;
-  tone_formal_informal: number;
-  tone_reserved_energetic: number;
-  tone_concise_detailed: number;
-  objectives: string[];
-};
+type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; };
 
 const SLIDERS = [
-  { key: "tone_formal_informal", from: "Formal", to: "Informal" },
-  { key: "tone_reserved_energetic", from: "Reservada", to: "Energética" },
-  { key: "tone_concise_detailed", from: "Concisa", to: "Detalhista" },
+  { key: "tone_formal_informal", from: "Formal", to: "Descontraído" },
+  { key: "tone_reserved_energetic", from: "Reativa", to: "Proativa" },
+  { key: "tone_concise_detailed", from: "Direto", to: "Inspiracional" },
 ] as const;
 
-const OBJECTIVES = [
-  { key: "vender", label: "Vender" },
-  { key: "agendar", label: "Agendar" },
-  { key: "informar", label: "Informar" },
-];
+const KNOWLEDGE = ["Catálogo de Produtos", "História da Marca", "Políticas de Envio", "Estilo e Curadoria"];
 
-export function AgentConfigForm({ config }: { config: Config }) {
+export function AgentConfigForm({ config, businessName }: { config: Config; businessName: string }) {
   const supabase = createClient();
   const [state, setState] = useState(config);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  function updateSlider(key: string, value: number) {
-    setState((s) => ({ ...s, [key]: value }));
-    setSaved(false);
-  }
-
-  function toggleObjective(key: string) {
-    setState((s) => ({
-      ...s,
-      objectives: s.objectives.includes(key)
-        ? s.objectives.filter((o) => o !== key)
-        : [...s.objectives, key],
-    }));
-    setSaved(false);
-  }
+  function set(key: (typeof SLIDERS)[number]["key"], v: number) { setState((s) => ({ ...s, [key]: v })); setSaved(false); }
 
   async function save() {
-    const { error } = await supabase
-      .from("agent_configs")
-      .update({
-        agent_name: state.agent_name,
-        tone_formal_informal: state.tone_formal_informal,
-        tone_reserved_energetic: state.tone_reserved_energetic,
-        tone_concise_detailed: state.tone_concise_detailed,
-        objectives: state.objectives,
-      })
-      .eq("id", state.id);
+    setSaving(true);
+    const { error } = await supabase.from("agent_configs").update({
+      agent_name: state.agent_name,
+      tone_formal_informal: state.tone_formal_informal,
+      tone_reserved_energetic: state.tone_reserved_energetic,
+      tone_concise_detailed: state.tone_concise_detailed,
+      objectives: state.objectives,
+    }).eq("id", state.id);
+    setSaving(false);
     if (!error) setSaved(true);
   }
 
+  const casual = state.tone_formal_informal > 50;
+  const preview = casual
+    ? `Olá! Notei que você gosta de tons neutros. Que tal conhecer nossa nova coleção? É perfeita para manter a elegância fresca nos dias quentes ✦`
+    : `Boa tarde. Com base no seu interesse, recomendo conhecer nossa nova coleção — ideal para a estação.`;
+
   return (
-    <Card className="flex flex-col gap-6">
-      <div>
-        <label className="text-[13px] text-text-tertiary">Nome da assistente</label>
-        <input
-          value={state.agent_name}
-          onChange={(e) => {
-            setState((s) => ({ ...s, agent_name: e.target.value }));
-            setSaved(false);
-          }}
-          className="mt-1 w-full rounded-2xl border border-divider px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
-        />
-      </div>
-
-      <div className="flex flex-col gap-5">
-        {SLIDERS.map((slider) => (
-          <div key={slider.key}>
-            <div className="flex justify-between text-[13px] text-text-secondary">
-              <span>{slider.from}</span>
-              <span>{slider.to}</span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={state[slider.key]}
-              onChange={(e) => updateSlider(slider.key, Number(e.target.value))}
-              className="mt-1 w-full accent-[#111318]"
-            />
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <p className="mb-2 text-[13px] text-text-tertiary">Objetivos</p>
-        <div className="flex flex-wrap gap-2">
-          {OBJECTIVES.map((obj) => {
-            const active = state.objectives.includes(obj.key);
-            return (
-              <button
-                key={obj.key}
-                type="button"
-                onClick={() => toggleObjective(obj.key)}
-                className={
-                  active
-                    ? "orbi-gradient rounded-full px-4 py-2 text-[13px] font-medium text-on-background"
-                    : "rounded-full bg-surface-soft px-4 py-2 text-[13px] text-text-secondary"
-                }
-              >
-                {obj.label}
-              </button>
-            );
-          })}
+    <div className="mt-6 flex flex-col gap-6 pb-6">
+      {/* Perfil da agente */}
+      <div className="flex items-center gap-4 rounded-[28px] border border-divider bg-surface-white p-5">
+        <OrbiOrb size={64} />
+        <div className="flex-1">
+          <input
+            value={state.agent_name}
+            onChange={(e) => { setState((s) => ({ ...s, agent_name: e.target.value })); setSaved(false); }}
+            className="w-full bg-transparent font-[family-name:var(--font-manrope)] text-[18px] font-medium outline-none"
+          />
+          <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">
+            <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" /> Ativa
+          </p>
+          <p className="mt-1 text-[12px] text-text-secondary">Agente Especialista de Conversão e Curadoria</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Button onClick={save}>Salvar</Button>
-        {saved && <span className="text-[13px] text-text-tertiary">✓ Salvo</span>}
+      {/* Ajuste de comportamento */}
+      <div>
+        <p className="text-[14px] font-medium">Ajuste de Comportamento</p>
+        <div className="mt-3 flex flex-col gap-5 rounded-[28px] border border-divider bg-surface-white p-5">
+          {SLIDERS.map((s) => (
+            <div key={s.key}>
+              <div className="flex justify-between text-[11px] uppercase tracking-wide text-text-tertiary">
+                <span>{s.from}</span><span>{s.to}</span>
+              </div>
+              <input type="range" min={0} max={100} value={state[s.key]} onChange={(e) => set(s.key, Number(e.target.value))} className="mt-2 w-full accent-[#111318]" />
+            </div>
+          ))}
+        </div>
       </div>
-    </Card>
+
+      {/* Preview de interação */}
+      <div>
+        <p className="text-[14px] font-medium">Preview de Interação</p>
+        <div className="mt-3 flex flex-col gap-3 rounded-[28px] border border-divider bg-surface-white p-5">
+          <div className="self-end rounded-2xl bg-surface-soft px-4 py-2 text-[13px]">Oi, procuro algo pro verão.</div>
+          <div className="max-w-[85%] rounded-2xl bg-on-background px-4 py-3 text-[13px] leading-relaxed text-white">{preview}</div>
+        </div>
+      </div>
+
+      {/* Base de conhecimento */}
+      <div>
+        <p className="text-[14px] font-medium">Base de Conhecimento Ativa</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {KNOWLEDGE.map((k) => (
+            <span key={k} className="rounded-full border border-divider bg-surface-white px-3 py-1.5 text-[12px]">{k}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Orbi Insight */}
+      <div className="rounded-[28px] border border-divider bg-surface-white p-5">
+        <p className="text-[14px] font-medium"><span className="orbi-gradient-text">✦</span> Orbi Insight</p>
+        <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
+          {state.agent_name} está pronta para performar com abordagens {casual ? "próximas e inspiradoras" : "precisas e consultivas"} para os visitantes de {businessName}.
+        </p>
+      </div>
+
+      <button onClick={save} disabled={saving} className="rounded-full bg-button-primary py-4 text-[13px] font-medium uppercase tracking-wide text-white disabled:opacity-50">
+        {saving ? "Salvando…" : saved ? "✓ Personalidade salva" : "Salvar personalidade"}
+      </button>
+    </div>
   );
 }

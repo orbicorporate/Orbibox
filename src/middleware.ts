@@ -5,8 +5,8 @@ export async function middleware(request: NextRequest) {
   return await updateSession(request);
 }
 
+// Só as rotas que dependem de sessão. A vitrine pública (/[slug]) não passa mais por aqui,
+// o que tira uma ida ao banco de toda visita.
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/admin/:path*", "/onboarding/:path*", "/login", "/signup"],
 };

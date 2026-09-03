@@ -15,23 +15,54 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkEmail, setCheckEmail] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
     });
     setLoading(false);
     if (error) {
       setError(error.message);
       return;
     }
+    if (!data.session) {
+      // Confirmação de e-mail está ativa no projeto — sem sessão ainda.
+      setCheckEmail(true);
+      return;
+    }
     router.push("/onboarding");
     router.refresh();
+  }
+
+  if (checkEmail) {
+    return (
+      <main className="flex min-h-screen items-center justify-center px-6">
+        <Card className="w-full max-w-sm text-center">
+          <h1 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium">
+            Confirme seu e-mail ✦
+          </h1>
+          <p className="mt-3 text-[15px] text-text-secondary">
+            Enviamos um link de confirmação para <strong>{email}</strong>. Clique nele para
+            ativar sua conta e depois volte aqui para entrar.
+          </p>
+          <Link
+            href="/login"
+            className="mt-6 inline-block text-[13px] text-on-background underline"
+          >
+            Já confirmei, ir para o login
+          </Link>
+        </Card>
+      </main>
+    );
   }
 
   return (

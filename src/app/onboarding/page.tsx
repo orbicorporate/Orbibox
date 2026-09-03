@@ -7,31 +7,28 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { OrbBadge } from "@/components/ui/OrbBadge";
 import { slugify } from "@/lib/utils";
+import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
-// Paleta e traços de personalidade "detectados" — heurística local enquanto
-// não plugamos um provedor real de análise de site/Instagram.
-const PALETTES = [
-  [{ hex: "#1c1b1c", role: "primary" }, { hex: "#B7F34A", role: "accent" }, { hex: "#F7F7F4", role: "background" }],
-  [{ hex: "#2b2620", role: "primary" }, { hex: "#6EE7D8", role: "accent" }, { hex: "#F7F7F4", role: "background" }],
-  [{ hex: "#111318", role: "primary" }, { hex: "#E8B4A0", role: "accent" }, { hex: "#FFFFFF", role: "background" }],
-];
+type Color = { hex: string; role: string };
+type BrandAnalysis = {
+  personality: Record<string, number>;
+  colors: Color[];
+  voiceSummary: string;
+  font: string;
+  siteAnalyzed?: boolean;
+};
 
-function analyzeBrand(name: string, instagram: string, website: string) {
-  const seed = (name + instagram + website).length;
-  return {
-    personality: {
-      energetica: Math.min(0.95, 0.3 + ((seed * 7) % 70) / 100),
-      proxima: Math.min(0.95, 0.3 + ((seed * 13) % 70) / 100),
-      visual: Math.min(0.95, 0.3 + ((seed * 19) % 70) / 100),
-      direta: Math.min(0.95, 0.3 + ((seed * 5) % 70) / 100),
-    },
-    colors: PALETTES[seed % PALETTES.length],
-    voiceSummary:
-      "Tom próximo e visual, com linguagem direta — ideal para conversão rápida e conteúdo em formato de story.",
-  };
+async function analyzeBrand(name: string, instagram: string, website: string): Promise<BrandAnalysis> {
+  const res = await fetch("/api/analyze-brand", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, instagram, website }),
+  });
+  if (!res.ok) throw new Error("Falha ao analisar marca.");
+  return res.json();
 }
 
-type Step = "dados" | "analisando" | "confirmar";
+type Step = "dados" | "analisando" | "confirmar" | "montando";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -40,93 +37,154 @@ export default function OnboardingPage() {
   const [name, setName] = useState("");
   const [instagram, setInstagram] = useState("");
   const [website, setWebsite] = useState("");
-  const [analysis, setAnalysis] = useState<ReturnType<typeof analyzeBrand> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Estado editável do mini manual de marca
+  const [traits, setTraits] = useState<Record<string, number>>({});
+  const [voice, setVoice] = useState("");
+  const [font, setFont] = useState("Manrope");
+  const [colors, setColors] = useState<Color[]>([]);
+  const [newColor, setNewColor] = useState("#111318");
+
 
   async function startAnalysis(e: React.FormEvent) {
     e.preventDefault();
     setStep("analisando");
-    setTimeout(() => {
-      setAnalysis(analyzeBrand(name, instagram, website));
+    try {
+      const result = await analyzeBrand(name, instagram, website);
+      setTraits(result.personality);
+      setVoice(result.voiceSummary);
+      setFont(result.font || "Manrope");
+      // remove cores duplicadas (mesmo hex)
+      const seen = new Set<string>();
+      setColors((result.colors || []).filter((c) => {
+        const k = c.hex.toLowerCase();
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      }));
       setStep("confirmar");
-    }, 1600);
+    } catch {
+      setError("Não foi possível analisar sua marca agora. Tente novamente.");
+      setStep("dados");
+    }
+  }
+
+  function addColor() {
+    const hex = newColor.match(/^#?[0-9a-fA-F]{6}$/) ? (newColor.startsWith("#") ? newColor : `#${newColor}`) : null;
+    if (!hex) return;
+    setColors((prev) =>
+      prev.some((c) => c.hex.toLowerCase() === hex.toLowerCase()) ? prev : [...prev, { hex, role: "detail" }]
+    );
+  }
+  function updateColor(idx: number, hex: string) {
+    setColors((prev) => prev.map((c, i) => (i === idx ? { ...c, hex } : c)));
+  }
+  function removeColor(idx: number) {
+    setColors((prev) => prev.filter((_, i) => i !== idx));
   }
 
   async function confirmAndCreate() {
     setSaving(true);
     setError(null);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setError("Sessão expirada. Faça login novamente.");
-      setSaving(false);
-      return;
-    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setError("Sessão expirada. Faça login novamente."); setSaving(false); return; }
 
-    const slug = slugify(name) || `orbibox-${Date.now()}`;
-    const { data: business, error: bizError } = await supabase
-      .from("businesses")
-      .insert({
-        owner_id: user.id,
-        name,
-        slug,
-        instagram_handle: instagram || null,
-        website_url: website || null,
-        brand_personality: analysis!.personality,
-        brand_colors: analysis!.colors,
-        brand_voice_summary: analysis!.voiceSummary,
-        onboarding_status: "ready",
-      })
-      .select()
-      .single();
+    const base = slugify(name) || "orbibox";
+    // garante slug único: busca os já usados com esse prefixo e escolhe o próximo livre
+    const { data: taken } = await supabase.from("businesses").select("slug").like("slug", `${base}%`);
+    const used = new Set((taken ?? []).map((t) => t.slug));
+    let slug = base;
+    for (let i = 2; used.has(slug) && i < 100; i++) slug = `${base}-${i}`;
+    if (used.has(slug)) slug = `${base}-${Date.now().toString(36)}`;
+
+    const payload = {
+      owner_id: user.id,
+      name,
+      instagram_handle: instagram || null,
+      website_url: website || null,
+      brand_personality: traits,
+      brand_colors: colors,
+      brand_voice_summary: voice,
+      brand_font: font,
+      onboarding_status: "ready",
+    };
+    // Rede de segurança: se dois cadastros colidirem ao mesmo tempo, tenta de novo com sufixo único.
+    let business: { id: string } | null = null;
+    let bizError: { message: string; code?: string } | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const res = await supabase.from("businesses").insert({ ...payload, slug }).select("id").single();
+      business = res.data;
+      bizError = res.error;
+      if (!bizError) break;
+      if (bizError.code !== "23505" && !bizError.message.includes("duplicate")) break;
+      slug = `${base}-${Date.now().toString(36).slice(-4)}`;
+    }
 
     if (bizError || !business) {
-      setError(bizError?.message ?? "Não foi possível criar seu Orbibox.");
+      const msg = bizError?.message ?? "";
+      setError(
+        msg.includes("duplicate") ? "Já existe um Orbibox com esse nome. Tente outro."
+        : msg.includes("row-level security") ? "Sua sessão expirou. Faça login novamente."
+        : "Não foi possível criar seu Orbibox. Tente novamente."
+      );
       setSaving(false);
       return;
     }
 
-    await supabase.from("agent_configs").insert({
-      business_id: business.id,
-      agent_name: "Zara",
-      objectives: ["vender", "informar"],
-    });
-
+    await supabase.from("agent_configs").insert({ business_id: business.id, agent_name: "Zara", objectives: ["vender", "informar"] });
     await supabase.from("smart_boxes").insert([
       { business_id: business.id, box_type: "hero", title: "Entrada Adaptativa", position: 0 },
       { business_id: business.id, box_type: "agent", title: "AgentBox Zara", position: 1 },
       { business_id: business.id, box_type: "product", title: "Vitrine de Produtos", position: 2 },
+      { business_id: business.id, box_type: "content", title: "História da Marca", position: 3 },
+      { business_id: business.id, box_type: "campaign", title: "Seleção de Presentes", position: 4 },
     ]);
+    await supabase.from("pulse_metrics").insert({ business_id: business.id, discovery_score: 62, interest_score: 58, conversion_score: 41, relationship_score: 70, overall_score: 58 });
+    // O link do site já foi informado no DNA da Marca — a Orbi importa o catálogo agora,
+    // sem pedir a mesma informação duas vezes.
+    let importados = 0;
+    if (website.trim()) {
+      setStep("montando");
+      try {
+        const res = await fetch("/api/import-site", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ businessId: business.id, url: website.trim() }),
+        });
+        if (res.ok) {
+          const d = await res.json();
+          importados = d.imported ?? 0;
+        }
+      } catch {
+        // Se a importação falhar, seguimos — o dono importa manualmente depois.
+      }
+    }
 
-    await supabase.from("pulse_metrics").insert({
-      business_id: business.id,
-      discovery_score: 62,
-      interest_score: 58,
-      conversion_score: 41,
-      relationship_score: 70,
-      overall_score: 58,
-    });
-
-    await supabase.from("opportunities").insert([
-      {
+    const oportunidades = [
+      { business_id: business.id, title: "Configure o tom de voz da Zara", description: "Defina como a assistente deve conversar com seus visitantes.", category: "relacionamento", impact_score: 65 },
+    ];
+    if (importados > 0) {
+      oportunidades.unshift({
         business_id: business.id,
-        title: "Publique seu primeiro produto",
-        description: "Seu Orbibox ainda não tem conteúdo publicado — a Orbi não tem o que recomendar aos visitantes.",
+        title: "Revise sua vitrine",
+        description: `A Orbi importou ${importados} ${importados === 1 ? "item" : "itens"} do seu site. Ajuste formato, cor e imagem de cada box.`,
         category: "descoberta",
-        impact_score: 90,
-      },
-      {
+        impact_score: 92,
+      });
+    } else {
+      oportunidades.unshift({
         business_id: business.id,
-        title: "Configure o tom de voz da Zara",
-        description: "Defina como a assistente deve conversar com seus visitantes para manter a identidade da marca.",
-        category: "relacionamento",
-        impact_score: 65,
-      },
-    ]);
+        title: "Importe seu catálogo",
+        description: "Cole o link do seu site em Feed — a Orbi transforma seus produtos em boxes automaticamente.",
+        category: "descoberta",
+        impact_score: 92,
+      });
+    }
+    await supabase.from("opportunities").insert(oportunidades);
 
-    router.push("/admin");
+    router.push(importados > 0 ? "/admin/vitrine" : "/admin");
     router.refresh();
   }
 
@@ -135,88 +193,111 @@ export default function OnboardingPage() {
       <Card className="w-full max-w-lg">
         {step === "dados" && (
           <>
-            <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">
-              DNA da Marca
-            </h1>
-            <p className="mt-1 text-[15px] text-text-secondary">
-              A Orbi vai analisar seu site e Instagram para extrair a essência da sua marca.
-            </p>
+            <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">DNA da Marca</h1>
+            <p className="mt-1 text-[15px] text-text-secondary">A Orbi vai ler seu site para montar o manual da sua marca e já trazer seus produtos.</p>
             <form onSubmit={startAnalysis} className="mt-8 flex flex-col gap-4">
-              <input
-                required
-                placeholder="Nome do negócio"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
-              />
-              <input
-                placeholder="@seuinstagram"
-                value={instagram}
-                onChange={(e) => setInstagram(e.target.value)}
-                className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
-              />
-              <input
-                placeholder="seusite.com.br (opcional)"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
-              />
-              <Button type="submit" variant="orbi">
-                ✦ Analisar com Orbi
-              </Button>
+              <input required placeholder="Nome do negócio" value={name} onChange={(e) => setName(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <input placeholder="@seuinstagram" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <input placeholder="seusite.com.br — de onde vêm seus produtos" value={website} onChange={(e) => setWebsite(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <Button type="submit" variant="orbi">✦ Analisar com Orbi</Button>
             </form>
           </>
         )}
 
         {step === "analisando" && (
           <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <div className="h-16 w-16 animate-pulse rounded-full orbi-gradient" />
-            <p className="text-[15px] text-text-secondary">
-              A Orbi está lendo sua marca — extraindo tom de voz, paleta e personalidade…
+            <OrbiOrb size={120} />
+            <p className="mt-2 text-[15px] text-text-secondary">A Orbi está lendo sua marca — extraindo personalidade, paleta, tom de voz e tipografia…</p>
+          </div>
+        )}
+
+        {step === "montando" && (
+          <div className="flex flex-col items-center gap-4 py-12 text-center">
+            <OrbiOrb size={120} />
+            <p className="mt-2 text-[15px] text-text-secondary">
+              A Orbi está lendo {website || "seu site"} e montando sua vitrine — isso leva alguns segundos…
             </p>
           </div>
         )}
 
-        {step === "confirmar" && analysis && (
+        {step === "confirmar" && (
           <>
-            <div className="flex items-center gap-2">
-              <OrbBadge state="done" label="Análise concluída" />
-            </div>
-            <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[24px] font-medium">
-              Personalidade da marca
-            </h1>
-            <div className="mt-4 flex flex-col gap-3">
-              {Object.entries(analysis.personality).map(([trait, value]) => (
+            <div className="flex items-center gap-2"><OrbBadge state="done" label="Mini manual da marca" /></div>
+            <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[24px] font-medium">{name || "Sua marca"}</h1>
+            <p className="mt-1 text-[13px] text-text-tertiary">A Orbi sugeriu isto — ajuste tudo como quiser antes de confirmar.</p>
+
+            {/* Personalidade */}
+            <p className="mt-6 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Personalidade</p>
+            <div className="mt-3 flex flex-col gap-4">
+              {Object.entries(traits).map(([trait, value]) => (
                 <div key={trait}>
-                  <div className="flex justify-between text-[13px] text-text-secondary capitalize">
-                    <span>{trait}</span>
-                    <span>{Math.round(value * 100)}%</span>
-                  </div>
-                  <div className="mt-1 h-1.5 w-full rounded-full bg-surface-soft">
-                    <div
-                      className="h-1.5 rounded-full orbi-gradient"
-                      style={{ width: `${value * 100}%` }}
+                  <div className="flex justify-between text-[13px] text-text-secondary capitalize"><span>{trait}</span><span>{Math.round(value * 100)}%</span></div>
+                  <input type="range" min={0} max={100} value={Math.round(value * 100)} onChange={(e) => setTraits((p) => ({ ...p, [trait]: Number(e.target.value) / 100 }))} className="mt-1 w-full accent-[#111318]" />
+                </div>
+              ))}
+            </div>
+
+            {/* Paleta editável — toque na cor pra trocar, × pra remover */}
+            <p className="mt-7 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Paleta de cores</p>
+            <p className="mt-1 text-[12px] text-text-tertiary">Toque numa cor para trocar. Use × para remover.</p>
+            <div className="mt-3 flex flex-wrap items-start gap-4">
+              {colors.map((c, i) => (
+                <div key={i} className="relative flex flex-col items-center gap-1">
+                  <label className="relative block h-12 w-12 cursor-pointer">
+                    <span className="block h-12 w-12 rounded-full border border-divider shadow-[inset_0_0_0_2px_rgba(255,255,255,0.7)]" style={{ backgroundColor: c.hex }} />
+                    <input
+                      type="color"
+                      value={c.hex}
+                      onChange={(e) => updateColor(i, e.target.value)}
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                      aria-label={`Editar cor ${c.hex}`}
                     />
-                  </div>
+                  </label>
+                  <span className="text-[10px] uppercase text-text-tertiary">{c.hex}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeColor(i)}
+                    className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-on-background text-[13px] leading-none text-white shadow"
+                    aria-label="Remover cor"
+                  >
+                    ×
+                  </button>
                 </div>
               ))}
-            </div>
-            <div className="mt-6 flex gap-2">
-              {analysis.colors.map((c) => (
-                <div key={c.hex} className="flex flex-col items-center gap-1">
-                  <div
-                    className="h-10 w-10 rounded-full border border-divider"
-                    style={{ backgroundColor: c.hex }}
-                  />
-                  <span className="text-[11px] text-text-tertiary">{c.role}</span>
+              {/* Adicionar nova cor: escolhe no picker e confirma */}
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <label className="relative block h-12 w-12 cursor-pointer">
+                    <span className="block h-12 w-12 rounded-full border-2 border-dashed border-divider" style={{ backgroundColor: newColor }} />
+                    <input
+                      type="color"
+                      value={newColor}
+                      onChange={(e) => setNewColor(e.target.value)}
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                      aria-label="Escolher nova cor"
+                    />
+                  </label>
+                  <button type="button" onClick={addColor} className="rounded-full bg-on-background px-3 py-2 text-[12px] font-medium text-white">
+                    + Adicionar
+                  </button>
                 </div>
-              ))}
+                <span className="text-[10px] text-text-tertiary">nova cor</span>
+              </div>
             </div>
-            <p className="mt-4 text-[14px] text-text-secondary">{analysis.voiceSummary}</p>
+
+            {/* Tipografia */}
+            <p className="mt-7 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Tipografia sugerida</p>
+            <div className="mt-2 flex items-center gap-3">
+              <input value={font} onChange={(e) => setFont(e.target.value)} className="flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background" />
+            </div>
+            <p className="mt-1 text-[12px] text-text-tertiary">Fonte do Google Fonts que combina com a marca. Você pode trocar.</p>
+
+            {/* Tom de voz */}
+            <p className="mt-7 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Tom de voz</p>
+            <textarea value={voice} onChange={(e) => setVoice(e.target.value)} rows={3} className="mt-2 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] text-text-secondary outline-none focus:border-on-background" />
+
             {error && <p className="mt-3 text-[13px] text-red-600">{error}</p>}
-            <Button className="mt-8 w-full" onClick={confirmAndCreate} disabled={saving}>
-              {saving ? "Criando seu Orbibox…" : "Confirmar e continuar"}
-            </Button>
+            <Button className="mt-7 w-full" onClick={confirmAndCreate} disabled={saving}>{saving ? "Criando seu Orbibox…" : "Confirmar e continuar"}</Button>
           </>
         )}
       </Card>

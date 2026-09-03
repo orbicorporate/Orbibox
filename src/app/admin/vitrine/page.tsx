@@ -1,0 +1,30 @@
+import { createClient } from "@/lib/supabase/server";
+import { ShowcaseBuilder } from "./ShowcaseBuilder";
+
+export default async function VitrinePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("id, slug, brand_colors")
+    .eq("owner_id", user!.id)
+    .limit(1)
+    .single();
+  const { data: items } = await supabase
+    .from("content_items")
+    .select("*")
+    .eq("business_id", business!.id)
+    .order("position", { ascending: true });
+
+  return (
+    <div className="flex flex-col">
+      <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
+        Vitrine
+      </h1>
+      <p className="mt-1 text-[14px] text-text-secondary">
+        Toque em qualquer box para mudar nome, foto, cor, formato e posição. As mudanças salvam sozinhas.
+      </p>
+      <ShowcaseBuilder items={items ?? []} slug={business!.slug} businessId={business!.id} />
+    </div>
+  );
+}

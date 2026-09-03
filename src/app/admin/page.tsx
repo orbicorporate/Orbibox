@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Card } from "@/components/ui/Card";
-import { OrbBadge } from "@/components/ui/OrbBadge";
+import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
-function scoreLabel(score: number) {
-  if (score >= 80) return "Excelente";
-  if (score >= 60) return "Muito bom";
-  if (score >= 40) return "Em progresso";
-  return "Precisa de atenção";
-}
+const METRICS = [
+  { key: "discovery", label: "Visitas", icon: "◎" },
+  { key: "interest", label: "Interesses", icon: "♡" },
+  { key: "conversion", label: "Conversões", icon: "▤" },
+  { key: "relationship", label: "Ações", icon: "☞" },
+] as const;
 
 export default async function HojePage() {
   const supabase = await createClient();
@@ -24,84 +23,87 @@ export default async function HojePage() {
     .limit(1)
     .single();
 
-  const { data: pulse } = await supabase
-    .from("pulse_metrics")
-    .select("*")
-    .eq("business_id", business!.id)
-    .order("metric_date", { ascending: false })
-    .limit(1)
-    .maybeSingle();
 
-  const { data: opportunities } = await supabase
-    .from("opportunities")
-    .select("*")
-    .eq("business_id", business!.id)
-    .eq("status", "open")
-    .order("impact_score", { ascending: false });
+  // Tudo que depende só do business roda em paralelo — antes eram 6 idas ao banco em fila.
+  const [oppRes, visitsRes, convsRes, interestedRes, actionsRes] = await Promise.all([
+    supabase.from("opportunities").select("*").eq("business_id", business!.id).eq("status", "open").order("impact_score", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
+    supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
+    supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id).not("intent", "is", null),
+    supabase.from("campaigns").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
+  ]);
+  const opportunity = oppRes.data;
+  const visits = visitsRes.count, convs = convsRes.count, interested = interestedRes.count, actions = actionsRes.count;
 
-  const score = pulse?.overall_score ?? 0;
+  const values: Record<string, number> = {
+    discovery: visits ?? 0,
+    interest: interested ?? 0,
+    conversion: convs ?? 0,
+    relationship: actions ?? 0,
+  };
+
+  // O botão do insight leva para onde a ação realmente acontece.
+  const CTA: Record<string, { label: string; href: string }> = {
+    descoberta: { label: "Abrir vitrine", href: "/admin/vitrine" },
+    relacionamento: { label: "Configurar Zara", href: "/admin/agent" },
+    conversao: { label: "Ativar campanha", href: "/admin/campaigns" },
+  };
+  const cta = CTA[opportunity?.category ?? ""] ?? { label: "Ativar campanha", href: "/admin/campaigns" };
+
+  const fullName = (user!.user_metadata?.full_name as string | undefined) ?? "";
+  const firstName = fullName.split(" ")[0] || "você";
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Hoje</p>
-        <h1 className="font-[family-name:var(--font-manrope)] text-[32px] font-medium tracking-[-0.01em]">
-          Bem-vindo de volta, {business?.name}
+    <div className="flex flex-col">
+      {/* Saudação dentro de um halo circular */}
+      <div className="relative mx-auto mt-6 flex h-64 w-64 flex-col items-center justify-center text-center">
+        <div className="absolute inset-0 rounded-full border border-orbi-gradient-start/40" />
+        <h1 className="font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
+          Olá, {firstName}
         </h1>
+        <p className="mt-1 px-6 text-[14px] text-text-secondary">Seu negócio está indo bem hoje.</p>
       </div>
+      <Link
+        href={`/${business!.slug}`}
+        target="_blank"
+        className="mx-auto -mt-2 rounded-full border border-divider bg-surface-white px-4 py-1.5 text-[12px] text-text-secondary"
+      >
+        Ver meu Orbibox ↗
+      </Link>
 
-      {/* Orbi Pulse */}
-      <Card className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="orbi-gradient-text text-[13px] font-medium">◉ Orbi Pulse</span>
+      {/* Métricas em lista */}
+      <div className="mt-8 flex flex-col">
+        {METRICS.map((m) => (
+          <div key={m.key} className="flex items-center justify-between border-b border-divider py-4">
+            <div className="flex items-center gap-3">
+              <span className="text-[16px] text-text-secondary">{m.icon}</span>
+              <span className="text-[15px] text-text-secondary">{m.label}</span>
+            </div>
+            <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">
+              {values[m.key].toLocaleString("pt-BR")}
+            </span>
           </div>
-          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[44px] font-medium leading-none">
-            {score}
-          </p>
-          <p className="mt-1 text-[15px] text-text-secondary">{scoreLabel(score)}</p>
-        </div>
-        <Link
-          href="/admin/pulse"
-          className="text-[13px] font-medium text-on-background underline underline-offset-4"
-        >
-          Ver detalhes →
-        </Link>
-      </Card>
-
-      {/* Oportunidades */}
-      <div>
-        <h2 className="mb-3 font-[family-name:var(--font-manrope)] text-[20px] font-medium">
-          Oportunidades encontradas pela Orbi
-        </h2>
-        <div className="flex flex-col gap-3">
-          {opportunities && opportunities.length > 0 ? (
-            opportunities.map((op) => (
-              <Card key={op.id} className="flex items-start justify-between gap-4 p-5">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <OrbBadge state="insight" />
-                    <span className="text-[13px] text-text-tertiary capitalize">
-                      {op.category}
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-[15px] font-medium">{op.title}</p>
-                  {op.description && (
-                    <p className="mt-1 text-[14px] text-text-secondary">{op.description}</p>
-                  )}
-                </div>
-                <span className="whitespace-nowrap text-[13px] text-text-tertiary">
-                  impacto {op.impact_score}
-                </span>
-              </Card>
-            ))
-          ) : (
-            <Card className="text-[15px] text-text-secondary">
-              Nenhuma oportunidade em aberto no momento — a Orbi está de olho. ✦
-            </Card>
-          )}
-        </div>
+        ))}
       </div>
+
+      {/* Insight Orbi */}
+      {opportunity && (
+        <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
+          <OrbiOrb size={56} />
+          <p className="mt-4 font-[family-name:var(--font-manrope)] text-[20px] font-medium">
+            Insight Orbi
+          </p>
+          <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
+            {opportunity.description ?? opportunity.title}
+          </p>
+          <Link
+            href={cta.href}
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white"
+          >
+            {cta.label} →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

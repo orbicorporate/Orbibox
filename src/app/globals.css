@@ -2,7 +2,6 @@
 
 /* ============================================================
    Orbibox Design Tokens — fonte única de verdade
-   Ver DESIGN-SYSTEM.md no repositório de design para o racional.
    ============================================================ */
 :root {
   /* Fundo & superfícies */
@@ -20,11 +19,10 @@
   --button-primary: #111318;
   --button-secondary: #EFEFEB;
 
-  /* Cor da Inteligência — Orbi (usar só em elementos de IA, 5-10% da composição) */
+  /* Cor da inteligência — Orbi */
   --orbi-gradient-start: #B7F34A;
   --orbi-gradient-end: #6EE7D8;
 
-  /* Radius padrão de cards/botões */
   --radius-card: 28px;
 }
 
@@ -45,27 +43,18 @@
   --color-orbi-gradient-end: var(--orbi-gradient-end);
 
   --radius-card: var(--radius-card);
-
   --font-display: var(--font-manrope);
   --font-body: var(--font-geist-sans);
-
-  /* Escala tipográfica (ver DESIGN-SYSTEM.md) */
-  --text-display-lg: 56px;
-  --text-display-md: 44px;
-  --text-headline-sm: 24px;
-  --text-body-lg: 18px;
-  --text-body-md: 16px;
-  --text-interface-sm: 15px;
-  --text-label-xs: 13px;
-  --text-microcopy: 12px;
 }
 
+html { -webkit-text-size-adjust: 100%; }
 body {
   background: var(--background-main);
   color: var(--on-background);
+  touch-action: manipulation;
 }
 
-/* Utilitário do degradê Orbi — usar só em elementos de inteligência */
+/* Degradê da inteligência — usar só em elementos de IA */
 .orbi-gradient {
   background-image: linear-gradient(135deg, var(--orbi-gradient-start), var(--orbi-gradient-end));
 }
@@ -74,4 +63,11 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Orbi — esfera em vídeo, recortada em círculo pelo próprio componente. */
+
+/* Evita o zoom automático do iOS ao focar inputs */
+@media (max-width: 767px) {
+  input, select, textarea { font-size: 16px !important; }
 }
