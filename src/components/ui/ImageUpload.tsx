@@ -2,9 +2,12 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ImageCropModal } from "./ImageCropModal";
 
 /**
  * Envia a foto para o armazenamento do Supabase e devolve a URL pública.
+ * Antes de subir, abre um passo de recorte (arrastar, dar zoom, escolher
+ * formato) — a foto que sobe já sai enquadrada do jeito certo.
  * Aceita também colar um link, para quem já tem a imagem hospedada.
  */
 export function ImageUpload({
@@ -20,23 +23,29 @@ export function ImageUpload({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
-  async function handleFile(file: File) {
+  function handlePick(file: File) {
     setError(null);
     if (!file.type.startsWith("image/")) {
       setError("Escolha um arquivo de imagem.");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Imagem muito grande — o limite é 5 MB.");
+    if (file.size > 20 * 1024 * 1024) {
+      setError("Imagem muito grande — o limite é 20 MB.");
       return;
     }
+    // Abre o passo de recorte em vez de subir direto.
+    setPendingFile(file);
+  }
+
+  async function uploadBlob(blob: Blob) {
+    setPendingFile(null);
     setUploading(true);
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const path = `${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
     const { error: upErr } = await supabase.storage
       .from("box-images")
-      .upload(path, file, { cacheControl: "31536000", upsert: false });
+      .upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: "image/jpeg" });
     setUploading(false);
     if (upErr) {
       setError("Não consegui enviar a foto. Tente de novo.");
@@ -87,7 +96,7 @@ export function ImageUpload({
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
-          if (f) handleFile(f);
+          if (f) handlePick(f);
           e.target.value = "";
         }}
       />
@@ -100,6 +109,10 @@ export function ImageUpload({
       />
 
       {error && <p className="text-[12px] text-red-600">{error}</p>}
+
+      {pendingFile && (
+        <ImageCropModal file={pendingFile} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
+      )}
     </div>
   );
 }

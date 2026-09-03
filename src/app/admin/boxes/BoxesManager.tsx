@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
+type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
 
 // O que cada box realmente faz na página do visitante.
 const META: Record<string, { name: string; opcao: string; explica: string; icon: string; fixo?: boolean }> = {
@@ -39,13 +40,24 @@ const META: Record<string, { name: string; opcao: string; explica: string; icon:
     explica: "Abre a conversa com sua assistente de IA.",
     icon: "◉",
   },
-  custom: { name: "Bloco livre", opcao: "Personalizado", explica: "Um caminho extra que você define.", icon: "◌" },
 };
 
-export function BoxesManager({ initialBoxes, slug }: { businessId: string; initialBoxes: Box[]; slug: string }) {
+const ACTION_LABEL: Record<NonNullable<CustomConfig["action"]>, string> = {
+  vitrine: "Abre a Vitrine",
+  zara: "Abre a Zara",
+  whatsapp: "Abre o WhatsApp",
+  link: "Abre um link",
+};
+
+const ICON_CHOICES = ["◆", "✦", "☎", "✉", "🔗", "◈", "◫", "★"];
+
+export function BoxesManager({ businessId, initialBoxes, slug }: { businessId: string; initialBoxes: Box[]; slug: string }) {
   const supabase = createClient();
   const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
   const [arranging, setArranging] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [draft, setDraft] = useState<CustomConfig>({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
 
   async function toggleActive(box: Box) {
     if (META[box.box_type]?.fixo) return;
@@ -74,6 +86,31 @@ export function BoxesManager({ initialBoxes, slug }: { businessId: string; initi
     setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, position: swap.position } : b.id === swap.id ? { ...b, position: box.position } : b)));
   }
 
+  async function saveCustom(box: Box, cfg: CustomConfig) {
+    setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, title: cfg.label ?? null, config: cfg } : b)));
+    await supabase.from("smart_boxes").update({ title: cfg.label || null, config: cfg }).eq("id", box.id);
+  }
+
+  async function removeCustom(box: Box) {
+    setEditingId(null);
+    setBoxes((p) => p.filter((b) => b.id !== box.id));
+    await supabase.from("smart_boxes").delete().eq("id", box.id);
+  }
+
+  async function createCustom() {
+    if (!draft.label?.trim()) return;
+    const { data, error } = await supabase
+      .from("smart_boxes")
+      .insert({ business_id: businessId, box_type: "custom", title: draft.label.trim(), position: boxes.length, is_active: true, config: draft })
+      .select()
+      .single();
+    if (!error && data) {
+      setBoxes((p) => [...p, data as Box]);
+      setCreating(false);
+      setDraft({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
+    }
+  }
+
   const ordered = [...boxes].sort((a, b) => a.position - b.position);
   const ativos = ordered.filter((b) => b.is_active && !META[b.box_type]?.fixo).length;
 
@@ -100,7 +137,9 @@ export function BoxesManager({ initialBoxes, slug }: { businessId: string; initi
 
       <div className="flex flex-col gap-3">
         {ordered.map((box, idx) => {
-          const m = META[box.box_type] ?? META.custom;
+          const isCustom = box.box_type === "custom";
+          const cfg = box.config as CustomConfig | null;
+          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Bloco livre", opcao: cfg?.label || box.title || "Personalizado", explica: "Um caminho extra que você define — WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
           const off = !box.is_active && !m.fixo;
           return (
             <div key={box.id} className={`rounded-[22px] border border-divider bg-surface-white p-4 ${off ? "opacity-55" : ""}`}>
@@ -116,9 +155,10 @@ export function BoxesManager({ initialBoxes, slug }: { businessId: string; initi
                   <div className="flex items-center gap-2">
                     <p className="text-[15px] font-medium">{m.name}</p>
                     {m.fixo && <span className="rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">sempre ativo</span>}
+                    {isCustom && <span className="rounded-full bg-orbi-gradient-start/25 px-2 py-0.5 text-[10px]">seu</span>}
                   </div>
                   <p className="mt-0.5 text-[12px] text-text-secondary">
-                    Aparece como <span className="font-medium text-on-background">“{m.opcao}”</span>
+                    {isCustom ? ACTION_LABEL[cfg?.action ?? "link"] : <>Aparece como <span className="font-medium text-on-background">“{m.opcao}”</span></>}
                   </p>
                 </div>
                 {!m.fixo && (
@@ -131,11 +171,125 @@ export function BoxesManager({ initialBoxes, slug }: { businessId: string; initi
                   </button>
                 )}
               </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>
+              {!isCustom && <p className="mt-3 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>}
+
+              {isCustom && (
+                <button onClick={() => setEditingId(editingId === box.id ? null : box.id)} className="mt-3 text-[12px] text-text-tertiary underline">
+                  {editingId === box.id ? "Fechar edição" : "Editar"}
+                </button>
+              )}
+
+              {isCustom && editingId === box.id && (
+                <CustomEditor
+                  initial={cfg ?? { label: box.title ?? "", icon: "◆", action: "link", url: "" }}
+                  onSave={(cfg) => saveCustom(box, cfg)}
+                  onDelete={() => removeCustom(box)}
+                />
+              )}
             </div>
           );
         })}
       </div>
+
+      {creating ? (
+        <div className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4">
+          <p className="text-[13px] font-medium">Novo bloco personalizado</p>
+          <CustomEditor initial={draft} onSave={(cfg) => setDraft(cfg)} liveOnly />
+          <div className="mt-3 flex gap-2">
+            <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
+            <button onClick={() => setCreating(false)} className="rounded-full bg-surface-soft px-4 py-2 text-[13px]">Cancelar</button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setCreating(true)}
+          className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-center text-[13px] font-medium text-text-secondary"
+        >
+          + Criar bloco personalizado (WhatsApp, portfólio, outro link)
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Mini formulário reaproveitado tanto pra criar quanto pra editar um bloco. */
+function CustomEditor({
+  initial,
+  onSave,
+  onDelete,
+  liveOnly,
+}: {
+  initial: CustomConfig;
+  onSave: (cfg: CustomConfig) => void;
+  onDelete?: () => void;
+  liveOnly?: boolean;
+}) {
+  const [cfg, setCfg] = useState<CustomConfig>(initial);
+
+  function update(next: Partial<CustomConfig>) {
+    const merged = { ...cfg, ...next };
+    setCfg(merged);
+    if (liveOnly) onSave(merged);
+  }
+
+  return (
+    <div className="mt-3 flex flex-col gap-2.5">
+      <input
+        value={cfg.label ?? ""}
+        onChange={(e) => update({ label: e.target.value })}
+        onBlur={() => !liveOnly && onSave(cfg)}
+        placeholder="Nome do botão (ex: Fale no WhatsApp)"
+        className="rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+      />
+      <input
+        value={cfg.subtitle ?? ""}
+        onChange={(e) => update({ subtitle: e.target.value })}
+        onBlur={() => !liveOnly && onSave(cfg)}
+        placeholder="Subtítulo curto (opcional)"
+        className="rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+      />
+
+      <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
+      <div className="flex flex-wrap gap-1.5">
+        {ICON_CHOICES.map((ic) => (
+          <button
+            key={ic}
+            onClick={() => update({ icon: ic })}
+            className={`flex h-9 w-9 items-center justify-center rounded-full border text-[14px] ${cfg.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}
+          >
+            {ic}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ao tocar</p>
+      <div className="flex flex-wrap gap-1.5">
+        {(Object.keys(ACTION_LABEL) as (keyof typeof ACTION_LABEL)[]).map((a) => (
+          <button
+            key={a}
+            onClick={() => update({ action: a })}
+            className={`rounded-full px-3 py-1.5 text-[12px] ${cfg.action === a ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+          >
+            {ACTION_LABEL[a]}
+          </button>
+        ))}
+      </div>
+
+      {(cfg.action === "link" || cfg.action === "whatsapp") && (
+        <input
+          value={cfg.url ?? ""}
+          onChange={(e) => update({ url: e.target.value })}
+          onBlur={() => !liveOnly && onSave(cfg)}
+          placeholder={cfg.action === "whatsapp" ? "https://wa.me/55... (vazio usa o WhatsApp de Configurações)" : "https://..."}
+          className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+        />
+      )}
+
+      {onDelete && (
+        <button onClick={onDelete} className="mt-1 self-start text-[12px] text-red-600">
+          Excluir este bloco
+        </button>
+      )}
     </div>
   );
 }

@@ -39,7 +39,8 @@ type ContentItem = {
 };
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida";
-type BoxRow = { box_type: string; is_active: boolean; position: number };
+type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -54,11 +55,13 @@ export function VisitorExperience({
   content,
   boxes,
   agentName,
+  isOwner,
 }: {
   business: Business;
   content: ContentItem[];
   boxes: BoxRow[];
   agentName: string;
+  isOwner: boolean;
 }) {
   const supabase = createClient();
   const [intent, setIntent] = useState<Intent | null>(null);
@@ -74,11 +77,33 @@ export function VisitorExperience({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes.
-  const options = boxes
-    .filter((b) => b.is_active && BOX_TO_OPTION[b.box_type])
+  // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
+  // mistura os fixos com os personalizados, na ordem que o dono escolheu.
+  type Option = { key: string; icon: string; t: string; d: string; ai?: boolean; onClick: () => void };
+  const options: Option[] = boxes
+    .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .sort((a, b) => a.position - b.position)
-    .map((b) => BOX_TO_OPTION[b.box_type]);
+    .map((b): Option | null => {
+      if (b.box_type === "custom") {
+        const cfg = (b.config ?? {}) as CustomConfig;
+        const label = cfg.label || b.title || "Link";
+        const onClick = () => {
+          if (cfg.action === "vitrine") chooseIntent("comprar");
+          else if (cfg.action === "zara") chooseIntent("duvida");
+          else if (cfg.action === "whatsapp") {
+            const link = cfg.url || (business.contact_whatsapp ? whatsappLink(business.contact_whatsapp) : null);
+            if (link) { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(link, "_blank"); }
+          } else if (cfg.url) {
+            trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: cfg.url });
+            window.open(cfg.url, "_blank");
+          }
+        };
+        return { key: b.id, icon: cfg.icon || "◆", t: label, d: cfg.subtitle || "", onClick };
+      }
+      const base = BOX_TO_OPTION[b.box_type];
+      return { key: b.id, icon: base.icon, t: base.t, d: base.d, ai: base.ai, onClick: () => chooseIntent(base.k) };
+    })
+    .filter((o): o is Option => o !== null);
 
   async function chooseIntent(value: Intent) {
     setIntent(value);
@@ -91,6 +116,16 @@ export function VisitorExperience({
     <main className="relative min-h-screen overflow-hidden bg-background-main">
       {/* Halo suave — atmosfera "líquida" */}
       <div className="pointer-events-none absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full orbi-gradient opacity-20 blur-3xl" />
+
+      {/* O dono, navegando o próprio link, ganha um atalho de volta pro painel. */}
+      {isOwner && (
+        <Link
+          href="/admin"
+          className="fixed right-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[12px] font-medium text-white shadow-lg backdrop-blur"
+        >
+          ← Meu painel
+        </Link>
+      )}
 
       <div className="relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center justify-center px-6 py-16">
         {intent === null && (
@@ -110,8 +145,8 @@ export function VisitorExperience({
             <div className="mt-10 flex w-full flex-col gap-3">
               {options.map((o) => (
                 <button
-                  key={o.k}
-                  onClick={() => chooseIntent(o.k)}
+                  key={o.key}
+                  onClick={o.onClick}
                   className={`flex items-center gap-4 rounded-[24px] bg-surface-white p-4 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[15px]">{o.icon}</span>
