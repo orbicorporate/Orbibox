@@ -57,7 +57,9 @@ export default async function HojePage() {
     <div className="flex flex-col">
       {/* Saudação dentro de um halo circular */}
       <div className="relative mx-auto mt-6 flex h-64 w-64 flex-col items-center justify-center text-center">
-        <div className="absolute inset-0 rounded-full border border-orbi-gradient-start/40" />
+        <div className="orbi-halo absolute inset-0" aria-hidden>
+          <span className="orbi-halo__dot" />
+        </div>
         <h1 className="font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
           Olá, {firstName}
         </h1>

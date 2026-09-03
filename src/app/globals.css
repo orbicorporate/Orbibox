@@ -162,6 +162,30 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .orbi-orb { animation: none; }
   .orbi-orb__blob, .orbi-orb__sheen { animation: none; }
+  .orbi-halo, .orbi-halo__dot { animation: none; }
+}
+
+/* Halo — micro bolinha orbitando o círculo de saudação, dançando enquanto gira. */
+.orbi-halo {
+  animation: orbiHaloSpin 6s linear infinite;
+}
+.orbi-halo__dot {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--orbi-gradient-start), var(--orbi-gradient-end));
+  animation: orbiHaloBounce 1.6s ease-in-out infinite;
+}
+@keyframes orbiHaloSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes orbiHaloBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.4); }
 }
 
 /* Evita o zoom automático do iOS ao focar inputs */
