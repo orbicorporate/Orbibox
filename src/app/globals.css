@@ -66,9 +66,9 @@ body {
 }
 
 /* ============================================================
-   Orbi — esfera líquida em CSS puro (sem vídeo, sem arquivo).
-   Contorno orgânico que se estica como uma gota; manchas de gradiente
-   orbitando por dentro; brilho cônico girando por cima.
+   Orbi — esfera em vídeo (arquivo em /public, nunca embutido no código).
+   O contorno orgânico que se estica como uma gota e o brilho de vidro
+   continuam em CSS, recortando e realçando o vídeo por cima.
    ============================================================ */
 .orbi-orb {
   isolation: isolate;
@@ -88,105 +88,15 @@ body {
   pointer-events: none;
 }
 
-.orbi-orb__blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(5px);
-  will-change: transform;
-}
-.orbi-orb__blob--1 {
-  top: 8%;
-  left: 3%;
-  width: 78%;
-  height: 78%;
-  background: radial-gradient(circle at center, var(--orbi-gradient-start), transparent 70%);
-  mix-blend-mode: multiply;
-  opacity: 0.62;
-  animation: orbiFloat1 9s ease-in-out infinite;
-}
-.orbi-orb__blob--2 {
-  top: 18%;
-  left: 32%;
-  width: 68%;
-  height: 68%;
-  background: radial-gradient(circle at center, var(--orbi-gradient-end), transparent 70%);
-  mix-blend-mode: multiply;
-  opacity: 0.58;
-  animation: orbiFloat2 11s ease-in-out infinite;
-}
-.orbi-orb__blob--3 {
-  top: 40%;
-  left: 12%;
-  width: 55%;
-  height: 55%;
-  background: radial-gradient(circle at center, #EEFFCC, transparent 70%);
-  mix-blend-mode: screen;
-  opacity: 0.4;
-  animation: orbiFloat3 13s ease-in-out infinite;
-}
-/* Um fio de roxo entre o verde e o teal — só 5%, pra dar profundidade sem virar outra cor. */
-.orbi-orb__blob--4 {
-  top: 24%;
-  left: 20%;
-  width: 50%;
-  height: 50%;
-  background: radial-gradient(circle at center, #C9BFF2, transparent 70%);
-  mix-blend-mode: multiply;
-  opacity: 0.05;
-  animation: orbiFloat4 10s ease-in-out infinite;
-}
-.orbi-orb__sheen {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: conic-gradient(from 0deg, transparent 0deg, rgba(255, 255, 255, 0.7) 35deg, transparent 85deg, transparent 360deg);
-  mix-blend-mode: screen;
-  opacity: 0.8;
-  animation: orbiSpin 7s linear infinite;
-}
-/* Segundo brilho, mais largo e parado — reforça a sensação de gel translúcido. */
-.orbi-orb__gloss {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(circle at 32% 20%, rgba(255, 255, 255, 0.85), transparent 45%);
-  mix-blend-mode: screen;
-  opacity: 0.55;
-  pointer-events: none;
-}
-
 @keyframes orbiMorph {
   0%, 100% { border-radius: 68% 32% 58% 42% / 40% 65% 35% 60%; }
   25% { border-radius: 35% 65% 70% 30% / 65% 35% 70% 30%; }
   50% { border-radius: 60% 40% 30% 70% / 30% 60% 40% 70%; }
   75% { border-radius: 30% 70% 40% 60% / 70% 30% 65% 35%; }
 }
-@keyframes orbiFloat1 {
-  0%, 100% { transform: translate(0%, 0%) scale(1); }
-  30% { transform: translate(14%, -10%) scale(1.12); }
-  65% { transform: translate(-8%, 12%) scale(0.92); }
-}
-@keyframes orbiFloat2 {
-  0%, 100% { transform: translate(0%, 0%) scale(1); }
-  35% { transform: translate(-12%, 8%) scale(0.9); }
-  70% { transform: translate(10%, -14%) scale(1.1); }
-}
-@keyframes orbiFloat3 {
-  0%, 100% { transform: translate(0%, 0%) scale(1); }
-  40% { transform: translate(8%, 10%) scale(1.15); }
-  80% { transform: translate(-10%, -6%) scale(0.85); }
-}
-@keyframes orbiFloat4 {
-  0%, 100% { transform: translate(0%, 0%) scale(1); }
-  50% { transform: translate(-6%, 8%) scale(1.2); }
-}
-@keyframes orbiSpin {
-  to { transform: rotate(360deg); }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .orbi-orb { animation: none; }
-  .orbi-orb__blob, .orbi-orb__sheen { animation: none; }
   .orbi-halo, .orbi-halo__dot { animation: none; }
 }
 

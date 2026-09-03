@@ -4,6 +4,11 @@
  * máscara circular, e um brilho gira por cima para o efeito de vidro.
  * Roda a 60fps de verdade (o vídeo antigo travava a 12fps) e pesa ~2KB.
  */
+/**
+ * A Orbi — esfera em vídeo (render 3D real, hospedado em /public — nunca
+ * embutido no código). O contorno orgânico e o brilho de vidro continuam em
+ * CSS, recortando e realçando o vídeo por cima.
+ */
 export function OrbiOrb({ size = 96, className = "" }: { size?: number; className?: string }) {
   return (
     <div
@@ -11,12 +16,14 @@ export function OrbiOrb({ size = 96, className = "" }: { size?: number; classNam
       style={{ width: size, height: size }}
       aria-hidden
     >
-      <span className="orbi-orb__blob orbi-orb__blob--1" />
-      <span className="orbi-orb__blob orbi-orb__blob--2" />
-      <span className="orbi-orb__blob orbi-orb__blob--3" />
-      <span className="orbi-orb__blob orbi-orb__blob--4" />
-      <span className="orbi-orb__gloss" />
-      <span className="orbi-orb__sheen" />
+      <video
+        src="/orbi-orb.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="h-full w-full object-cover"
+      />
     </div>
   );
 }
