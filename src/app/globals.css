@@ -67,14 +67,13 @@ body {
 
 /* ============================================================
    Orbi — esfera líquida em CSS puro (sem vídeo, sem arquivo).
-   Contorno orgânico (não é um círculo perfeito — respira como uma gota),
-   manchas de gradiente orbitando, brilho cônico girando, e grão fino
-   dançando por cima para dar vida em close.
+   Contorno orgânico que se estica como uma gota; manchas de gradiente
+   orbitando por dentro; brilho cônico girando por cima.
    ============================================================ */
 .orbi-orb {
   isolation: isolate;
   background: radial-gradient(circle at 30% 25%, #F4FBE9, #E7F5F0 55%, #DCF1EA 100%);
-  border-radius: 62% 38% 55% 45% / 45% 60% 40% 55%;
+  border-radius: 68% 32% 58% 42% / 40% 65% 35% 60%;
   animation: orbiMorph 11s ease-in-out infinite;
 }
 .orbi-orb::after {
@@ -83,9 +82,9 @@ body {
   inset: 0;
   border-radius: inherit;
   box-shadow:
-    inset 0 0 0 1px rgba(17, 19, 24, 0.06),
-    inset 0 -6px 10px rgba(17, 19, 24, 0.05),
-    inset 0 4px 8px rgba(255, 255, 255, 0.55);
+    inset 0 0 0 1px rgba(17, 19, 24, 0.025),
+    inset 0 -6px 10px rgba(17, 19, 24, 0.035),
+    inset 0 4px 8px rgba(255, 255, 255, 0.6);
   pointer-events: none;
 }
 
@@ -135,36 +134,11 @@ body {
   animation: orbiSpin 7s linear infinite;
 }
 
-/* Grão: centenas de micro-pontos que derivam em direções e velocidades
-   diferentes — dois padrões sobrepostos quebram a repetição de um só. */
-.orbi-orb__grain {
-  position: absolute;
-  inset: -20%;
-  pointer-events: none;
-  mix-blend-mode: overlay;
-}
-.orbi-orb__grain--1 {
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.9) 0.5px, transparent 1px),
-    radial-gradient(circle, rgba(17, 19, 24, 0.4) 0.5px, transparent 1px);
-  background-size: 5px 5px, 8px 8px;
-  background-position: 0 0, 3px 4px;
-  opacity: 0.5;
-  animation: orbiGrainDrift1 5s linear infinite;
-}
-.orbi-orb__grain--2 {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.7) 0.5px, transparent 1px);
-  background-size: 6px 6px;
-  background-position: 1px 2px;
-  opacity: 0.35;
-  animation: orbiGrainDrift2 8s linear infinite;
-}
-
 @keyframes orbiMorph {
-  0%, 100% { border-radius: 62% 38% 55% 45% / 45% 60% 40% 55%; }
-  25% { border-radius: 45% 55% 60% 40% / 55% 45% 60% 40%; }
-  50% { border-radius: 55% 45% 40% 60% / 40% 55% 45% 60%; }
-  75% { border-radius: 40% 60% 45% 55% / 60% 40% 55% 45%; }
+  0%, 100% { border-radius: 68% 32% 58% 42% / 40% 65% 35% 60%; }
+  25% { border-radius: 35% 65% 70% 30% / 65% 35% 70% 30%; }
+  50% { border-radius: 60% 40% 30% 70% / 30% 60% 40% 70%; }
+  75% { border-radius: 30% 70% 40% 60% / 70% 30% 65% 35%; }
 }
 @keyframes orbiFloat1 {
   0%, 100% { transform: translate(0%, 0%) scale(1); }
@@ -184,18 +158,10 @@ body {
 @keyframes orbiSpin {
   to { transform: rotate(360deg); }
 }
-@keyframes orbiGrainDrift1 {
-  0% { background-position: 0 0, 3px 4px; }
-  100% { background-position: 5px 6px, -4px 5px; }
-}
-@keyframes orbiGrainDrift2 {
-  0% { background-position: 1px 2px; }
-  100% { background-position: -6px 4px; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .orbi-orb { animation: none; }
-  .orbi-orb__blob, .orbi-orb__sheen, .orbi-orb__grain { animation: none; }
+  .orbi-orb__blob, .orbi-orb__sheen { animation: none; }
 }
 
 /* Evita o zoom automático do iOS ao focar inputs */
