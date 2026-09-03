@@ -18,19 +18,90 @@ export const SIZE_CLASS: Record<BoxSize, string> = {
   alto: "col-span-1 row-span-2 min-h-[240px]",
 };
 
-// Paleta de boxes: [fundo, texto]. Neutros + o verde/teal da Orbi.
-export const BOX_COLORS: Record<string, { bg: string; fg: string; label: string }> = {
-  neutro: { bg: "#F1EFE8", fg: "#2C2C2A", label: "Neutro" },
-  claro: { bg: "#FFFFFF", fg: "#111318", label: "Claro" },
-  escuro: { bg: "#111318", fg: "#F7F7F4", label: "Escuro" },
-  verde: { bg: "#EAF3DE", fg: "#173404", label: "Verde" },
-  teal: { bg: "#E1F5EE", fg: "#04342C", label: "Teal" },
-  coral: { bg: "#FAECE7", fg: "#4A1B0C", label: "Coral" },
-  azul: { bg: "#E6F1FB", fg: "#042C53", label: "Azul" },
-};
+type Swatch = { bg: string; fg: string; label: string };
 
-export function colorOf(key: string | null | undefined) {
-  return BOX_COLORS[key ?? "neutro"] ?? BOX_COLORS.neutro;
+// Paletas do editor de box, em grupos. "Padrão" é a original (neutros + Orbi).
+// As quatro novas são curadoria fixa; "Marca" (fora daqui, ver colorOf) é
+// montada em tempo real com as cores que a Orbi definiu no DNA da marca.
+export const PALETTE_GROUPS: { name: string; colors: Record<string, Swatch> }[] = [
+  {
+    name: "Padrão",
+    colors: {
+      neutro: { bg: "#F1EFE8", fg: "#2C2C2A", label: "Neutro" },
+      claro: { bg: "#FFFFFF", fg: "#111318", label: "Claro" },
+      escuro: { bg: "#111318", fg: "#F7F7F4", label: "Escuro" },
+      verde: { bg: "#EAF3DE", fg: "#173404", label: "Verde" },
+      teal: { bg: "#E1F5EE", fg: "#04342C", label: "Teal" },
+      coral: { bg: "#FAECE7", fg: "#4A1B0C", label: "Coral" },
+      azul: { bg: "#E6F1FB", fg: "#042C53", label: "Azul" },
+    },
+  },
+  {
+    name: "Premium",
+    colors: {
+      "premium-onix": { bg: "#18140F", fg: "#F0E6CE", label: "Ônix" },
+      "premium-champagne": { bg: "#F1E4C3", fg: "#4A3B12", label: "Champagne" },
+      "premium-bordo": { bg: "#3B0D14", fg: "#F5D9DE", label: "Bordô" },
+      "premium-platina": { bg: "#E7E4DC", fg: "#2B2A26", label: "Platina" },
+    },
+  },
+  {
+    name: "Luxury",
+    colors: {
+      "luxury-esmeralda": { bg: "#0E2B22", fg: "#CFF3E4", label: "Esmeralda" },
+      "luxury-marfim": { bg: "#FAF6EE", fg: "#3A3527", label: "Marfim" },
+      "luxury-dourado": { bg: "#F4E3B2", fg: "#6B4E05", label: "Dourado" },
+      "luxury-grafite": { bg: "#23211D", fg: "#EDEAE2", label: "Grafite" },
+    },
+  },
+  {
+    name: "Yung",
+    colors: {
+      "yung-rosa": { bg: "#FFD6EC", fg: "#7A0E52", label: "Rosa choque" },
+      "yung-lima": { bg: "#E8FF9E", fg: "#3B4B00", label: "Lima" },
+      "yung-lilas": { bg: "#E7DBFF", fg: "#4B2E8C", label: "Lilás" },
+      "yung-ciano": { bg: "#CFFBFF", fg: "#044B52", label: "Ciano" },
+    },
+  },
+  {
+    name: "Energy",
+    colors: {
+      "energy-laranja": { bg: "#FFE1C2", fg: "#7A3300", label: "Laranja" },
+      "energy-vermelho": { bg: "#FFD9D6", fg: "#7A140E", label: "Vermelho" },
+      "energy-amarelo": { bg: "#FFF3B0", fg: "#6B5200", label: "Amarelo" },
+      "energy-magenta": { bg: "#FFD3EE", fg: "#7A0A52", label: "Magenta" },
+    },
+  },
+];
+
+// Todas as cores das paletas fixas, achatadas — usado pra resolver por chave.
+export const BOX_COLORS: Record<string, Swatch> = Object.assign(
+  {},
+  ...PALETTE_GROUPS.map((g) => g.colors)
+);
+
+/** Preto ou branco, o que der mais contraste sobre o hex informado. */
+function contrastFg(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? "#111318" : "#FFFFFF";
+}
+
+/**
+ * Resolve a cor de um box. Aceita tanto uma chave de paleta fixa ("verde",
+ * "premium-onix"...) quanto um hex literal ("#1C1B1C") — é assim que a
+ * "Paleta da marca" funciona: ao escolher, salvamos o hex direto, já que
+ * essas cores são únicas de cada negócio e não existem como chave fixa.
+ */
+export function colorOf(key: string | null | undefined): Swatch {
+  if (!key) return BOX_COLORS.neutro;
+  if (BOX_COLORS[key]) return BOX_COLORS[key];
+  if (/^#[0-9a-fA-F]{6}$/.test(key)) {
+    return { bg: key, fg: contrastFg(key), label: "Cor da marca" };
+  }
+  return BOX_COLORS.neutro;
 }
 
 export function sizeOf(key: string | null | undefined): BoxSize {

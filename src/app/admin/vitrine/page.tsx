@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { ShowcaseBuilder } from "./ShowcaseBuilder";
 
+type BrandColor = { hex: string; role?: string };
+
 export default async function VitrinePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -16,6 +18,12 @@ export default async function VitrinePage() {
     .eq("business_id", business!.id)
     .order("position", { ascending: true });
 
+  // As cores que a Orbi definiu no DNA da marca — mesma paleta do onboarding.
+  const raw = business?.brand_colors;
+  const brandColors: BrandColor[] = Array.isArray(raw)
+    ? raw.filter((c): c is BrandColor => !!c && typeof c === "object" && typeof (c as BrandColor).hex === "string")
+    : [];
+
   return (
     <div className="flex flex-col">
       <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
@@ -24,7 +32,7 @@ export default async function VitrinePage() {
       <p className="mt-1 text-[14px] text-text-secondary">
         Toque em qualquer box para mudar nome, foto, cor, formato e posição. As mudanças salvam sozinhas.
       </p>
-      <ShowcaseBuilder items={items ?? []} slug={business!.slug} businessId={business!.id} />
+      <ShowcaseBuilder items={items ?? []} slug={business!.slug} businessId={business!.id} brandColors={brandColors} />
     </div>
   );
 }

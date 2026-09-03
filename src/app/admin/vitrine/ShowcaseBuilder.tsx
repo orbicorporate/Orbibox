@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
-import { BOX_COLORS, SIZE_CLASS, SIZE_LABEL, colorOf, groupByCategory, sizeOf, type BoxSize } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_CLASS, SIZE_LABEL, colorOf, groupByCategory, sizeOf, type BoxSize } from "@/lib/showcase";
+
+type BrandColor = { hex: string; role?: string };
 
 type Item = {
   id: string;
@@ -28,10 +30,23 @@ const FORMA: Record<BoxSize, string> = {
   alto: "h-9 w-5",
 };
 
-export function ShowcaseBuilder({ items: initial, slug, businessId }: { items: Item[]; slug: string; businessId: string }) {
+export function ShowcaseBuilder({
+  items: initial,
+  slug,
+  businessId,
+  brandColors = [],
+}: {
+  items: Item[];
+  slug: string;
+  businessId: string;
+  brandColors?: BrandColor[];
+}) {
   const supabase = createClient();
   const [items, setItems] = useState<Item[]>(initial);
   const [selId, setSelId] = useState<string | null>(null);
+  // Aba de paleta ativa no editor de cor. "Marca" só existe se a Orbi já
+  // extraiu cores no DNA da marca (onboarding) — senão começa no Padrão.
+  const [paletteTab, setPaletteTab] = useState<string>(brandColors.length > 0 ? "Marca" : "Padrão");
   const [saving, setSaving] = useState(false);
   const [arranging, setArranging] = useState(false);
 
@@ -202,16 +217,54 @@ export function ShowcaseBuilder({ items: initial, slug, businessId }: { items: I
             <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">
               Cor do box{sel.image_url ? " · aparece se remover a foto" : ""}
             </p>
-            <div className="mt-2 flex flex-wrap gap-2.5">
-              {Object.entries(BOX_COLORS).map(([key, c]) => (
+
+            {/* Abas de paleta — "Marca" primeiro quando existe, é a recomendada pela Orbi. */}
+            <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
+              {brandColors.length > 0 && (
                 <button
-                  key={key}
-                  onClick={() => save(sel.id, { box_color: key })}
-                  aria-label={c.label}
-                  className={`h-10 w-10 rounded-full border ${sel.box_color === key ? "border-2 border-on-background" : "border-divider"}`}
-                  style={{ backgroundColor: c.bg }}
-                />
+                  onClick={() => setPaletteTab("Marca")}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${
+                    paletteTab === "Marca" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"
+                  }`}
+                >
+                  ✦ Marca
+                </button>
+              )}
+              {PALETTE_GROUPS.map((g) => (
+                <button
+                  key={g.name}
+                  onClick={() => setPaletteTab(g.name)}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${
+                    paletteTab === g.name ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"
+                  }`}
+                >
+                  {g.name}
+                </button>
               ))}
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2.5">
+              {paletteTab === "Marca"
+                ? brandColors.map((bc, i) => (
+                    <button
+                      key={`${bc.hex}-${i}`}
+                      onClick={() => save(sel.id, { box_color: bc.hex })}
+                      aria-label={bc.role ?? bc.hex}
+                      title={bc.role ?? bc.hex}
+                      className={`h-10 w-10 rounded-full border ${sel.box_color.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`}
+                      style={{ backgroundColor: bc.hex }}
+                    />
+                  ))
+                : Object.entries(PALETTE_GROUPS.find((g) => g.name === paletteTab)?.colors ?? {}).map(([key, c]) => (
+                    <button
+                      key={key}
+                      onClick={() => save(sel.id, { box_color: key })}
+                      aria-label={c.label}
+                      title={c.label}
+                      className={`h-10 w-10 rounded-full border ${sel.box_color === key ? "border-2 border-on-background" : "border-divider"}`}
+                      style={{ backgroundColor: c.bg }}
+                    />
+                  ))}
             </div>
 
             <details className="mt-4">
