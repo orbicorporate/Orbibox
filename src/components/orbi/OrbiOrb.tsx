@@ -1,11 +1,8 @@
-"use client";
-
-import { ORBI_VIDEO } from "./orbiVideo";
-
 /**
- * A Orbi — esfera líquida em vídeo.
- * O fundo do vídeo foi clareado para branco puro; `mix-blend-mode: multiply`
- * faz esse branco desaparecer sobre o fundo claro do app, deixando só a esfera.
+ * A Orbi — esfera líquida em CSS puro. Sem vídeo, sem arquivo:
+ * três manchas de gradiente flutuam em órbitas assimétricas dentro de uma
+ * máscara circular, e um brilho gira por cima para o efeito de vidro.
+ * Roda a 60fps de verdade (o vídeo antigo travava a 12fps) e pesa ~2KB.
  */
 export function OrbiOrb({ size = 96, className = "" }: { size?: number; className?: string }) {
   return (
@@ -14,14 +11,10 @@ export function OrbiOrb({ size = 96, className = "" }: { size?: number; classNam
       style={{ width: size, height: size }}
       aria-hidden
     >
-      <video
-        src={ORBI_VIDEO}
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="orbi-orb__video h-full w-full object-cover"
-      />
+      <span className="orbi-orb__blob orbi-orb__blob--1" />
+      <span className="orbi-orb__blob orbi-orb__blob--2" />
+      <span className="orbi-orb__blob orbi-orb__blob--3" />
+      <span className="orbi-orb__sheen" />
     </div>
   );
 }
