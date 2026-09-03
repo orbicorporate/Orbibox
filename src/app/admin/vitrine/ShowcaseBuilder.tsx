@@ -206,7 +206,7 @@ export function ShowcaseBuilder({ items: initial, slug, businessId }: { items: I
               {Object.entries(BOX_COLORS).map(([key, c]) => (
                 <button
                   key={key}
-                  onClick={() => save(sel.id, { box_color: key, box_style: sel.image_url ? sel.box_style : "cor" })}
+                  onClick={() => save(sel.id, { box_color: key })}
                   aria-label={c.label}
                   className={`h-10 w-10 rounded-full border ${sel.box_color === key ? "border-2 border-on-background" : "border-divider"}`}
                   style={{ backgroundColor: c.bg }}
@@ -253,7 +253,16 @@ export function ShowcaseBuilder({ items: initial, slug, businessId }: { items: I
 function BoxCard({ item, selected, onSelect }: { item: Item; selected: boolean; onSelect: () => void }) {
   const c = colorOf(item.box_color);
   const size = sizeOf(item.layout_size);
-  const photo = item.box_style === "foto" && !!item.image_url;
+  const [imgFailed, setImgFailed] = useState(false);
+  const [lastUrl, setLastUrl] = useState(item.image_url);
+  if (item.image_url !== lastUrl) {
+    setLastUrl(item.image_url);
+    setImgFailed(false);
+  }
+  // "Tem foto" depende só de existir uma URL — nunca de uma segunda flag que pode
+  // ficar dessincronizada (era exatamente esse o bug: foto salva pelo Feed não
+  // aparecia aqui porque box_style não era atualizado lá).
+  const photo = !!item.image_url && !imgFailed;
 
   return (
     <button
@@ -266,7 +275,12 @@ function BoxCard({ item, selected, onSelect }: { item: Item; selected: boolean; 
       {photo && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.image_url!} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <img
+            src={item.image_url!}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={() => setImgFailed(true)}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         </>
       )}
@@ -287,6 +301,11 @@ function BoxCard({ item, selected, onSelect }: { item: Item; selected: boolean; 
       >
         ✎
       </span>
+      {imgFailed && (
+        <span className="absolute left-2.5 top-2.5 rounded-full bg-red-600/90 px-2.5 py-1 text-[10px] font-medium text-white">
+          link da foto não carregou
+        </span>
+      )}
     </button>
   );
 }

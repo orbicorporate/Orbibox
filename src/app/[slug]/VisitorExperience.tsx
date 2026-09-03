@@ -416,7 +416,9 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
             <div className="grid grid-cols-2 gap-2.5">
               {sec.items.map((item) => {
                 const c = colorOf(item.box_color);
-                const photo = item.box_style === "foto" && !!item.image_url;
+                // Mesma correção da Vitrine: "tem foto" é só ter uma URL, nunca
+                // uma segunda flag que podia ficar dessincronizada.
+                const photo = !!item.image_url;
                 // Com destino, o box vira link para o site do dono e o clique é contado.
                 const destino = item.target_url;
                 const kindClique: "categoria" | "produto" | "link" =
@@ -428,7 +430,18 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                     {photo && (
                       <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.image_url!} alt={item.title} className="absolute inset-0 h-full w-full object-cover" />
+                        <img
+                          src={item.image_url!}
+                          alt={item.title}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          onError={(e) => {
+                            const img = e.currentTarget;
+                            img.style.display = "none";
+                            const overlay = img.nextElementSibling as HTMLElement | null;
+                            if (overlay) overlay.style.display = "none";
+                            if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
+                          }}
+                        />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       </>
                     )}

@@ -104,6 +104,7 @@ export function ContentManager({ businessId, initialItems }: { businessId: strin
     await supabase.from("content_items").update({
       title: item.title, description: item.description, price: item.price,
       brand_label: item.brand_label, image_url: item.image_url, image_is_placeholder: false,
+      box_style: item.image_url ? "foto" : "cor",
     }).eq("id", item.id);
     patch(item.id, { image_is_placeholder: false });
     setEditingId(null);
