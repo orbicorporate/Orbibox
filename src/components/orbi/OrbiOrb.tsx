@@ -7,7 +7,7 @@
 export function OrbiOrb({ size = 96, className = "" }: { size?: number; className?: string }) {
   return (
     <div
-      className={`orbi-orb relative shrink-0 overflow-hidden rounded-full ${className}`}
+      className={`orbi-orb relative shrink-0 overflow-hidden ${className}`}
       style={{ width: size, height: size }}
       aria-hidden
     >
@@ -15,6 +15,8 @@ export function OrbiOrb({ size = 96, className = "" }: { size?: number; classNam
       <span className="orbi-orb__blob orbi-orb__blob--2" />
       <span className="orbi-orb__blob orbi-orb__blob--3" />
       <span className="orbi-orb__sheen" />
+      <span className="orbi-orb__grain orbi-orb__grain--1" />
+      <span className="orbi-orb__grain orbi-orb__grain--2" />
     </div>
   );
 }
