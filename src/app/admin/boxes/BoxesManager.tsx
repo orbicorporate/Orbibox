@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { GalleryUpload } from "@/components/ui/GalleryUpload";
 
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
 
-// O que cada box realmente faz na página do visitante.
+// O que cada box realmente faz na página do visitante — nome e explicação padrão,
+// tudo pode ser sobrescrito por config (label/subtitle/color).
 const META: Record<string, { name: string; opcao: string; explica: string; icon: string; fixo?: boolean }> = {
   hero: {
     name: "Entrada",
@@ -16,33 +18,13 @@ const META: Record<string, { name: string; opcao: string; explica: string; icon:
     icon: "◈",
     fixo: true,
   },
-  product: {
-    name: "Vitrine",
-    opcao: "Comprar",
-    explica: "Mostra seus produtos e serviços na vitrine que você montou.",
-    icon: "▤",
-  },
-  content: {
-    name: "História",
-    opcao: "Conhecer",
-    explica: "Conta sobre a marca, usando o tom de voz do seu DNA.",
-    icon: "◫",
-  },
-  campaign: {
-    name: "Presentes",
-    opcao: "Presentear",
-    explica: "Uma seleção pensada para quem vai comprar para outra pessoa.",
-    icon: "◇",
-  },
-  agent: {
-    name: "Zara",
-    opcao: "Tirar uma dúvida",
-    explica: "Abre a conversa com sua assistente de IA.",
-    icon: "◉",
-  },
+  product: { name: "Vitrine", opcao: "Comprar", explica: "Mostra seus produtos e serviços na vitrine que você montou.", icon: "▤" },
+  content: { name: "História", opcao: "Conhecer", explica: "Conta sobre a marca — texto e fotos, usando o tom de voz do seu DNA.", icon: "◫" },
+  campaign: { name: "Presentes", opcao: "Presentear", explica: "Uma seleção pensada para quem vai comprar para outra pessoa.", icon: "◇" },
+  agent: { name: "Zara", opcao: "Tirar uma dúvida", explica: "Abre a conversa com sua assistente de IA.", icon: "◉" },
 };
 
-const ACTION_LABEL: Record<NonNullable<CustomConfig["action"]>, string> = {
+const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   vitrine: "Abre a Vitrine",
   zara: "Abre a Zara",
   whatsapp: "Abre o WhatsApp",
@@ -50,14 +32,34 @@ const ACTION_LABEL: Record<NonNullable<CustomConfig["action"]>, string> = {
 };
 
 const ICON_CHOICES = ["◆", "✦", "☎", "✉", "🔗", "◈", "◫", "★"];
+const COLOR_CHOICES = [
+  { hex: "#111318", label: "Preto" },
+  { hex: "#173404", label: "Verde" },
+  { hex: "#04342C", label: "Teal" },
+  { hex: "#042C53", label: "Azul" },
+  { hex: "#4A1B0C", label: "Coral" },
+  { hex: "#4B2E8C", label: "Roxo" },
+  { hex: "#6B4E05", label: "Dourado" },
+];
 
-export function BoxesManager({ businessId, initialBoxes, slug }: { businessId: string; initialBoxes: Box[]; slug: string }) {
+export function BoxesManager({
+  businessId,
+  initialBoxes,
+  slug,
+  initialStoryPhotos,
+}: {
+  businessId: string;
+  initialBoxes: Box[];
+  slug: string;
+  initialStoryPhotos: string[];
+}) {
   const supabase = createClient();
   const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
+  const [storyPhotos, setStoryPhotos] = useState<string[]>(initialStoryPhotos);
   const [arranging, setArranging] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
-  const [draft, setDraft] = useState<CustomConfig>({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
+  const [draft, setDraft] = useState<BoxConfig>({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
 
   async function toggleActive(box: Box) {
     if (META[box.box_type]?.fixo) return;
@@ -86,15 +88,20 @@ export function BoxesManager({ businessId, initialBoxes, slug }: { businessId: s
     setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, position: swap.position } : b.id === swap.id ? { ...b, position: box.position } : b)));
   }
 
-  async function saveCustom(box: Box, cfg: CustomConfig) {
-    setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, title: cfg.label ?? null, config: cfg } : b)));
-    await supabase.from("smart_boxes").update({ title: cfg.label || null, config: cfg }).eq("id", box.id);
+  async function saveConfig(box: Box, cfg: BoxConfig) {
+    setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, title: cfg.label ?? b.title, config: cfg } : b)));
+    await supabase.from("smart_boxes").update({ title: cfg.label || box.title, config: cfg }).eq("id", box.id);
   }
 
   async function removeCustom(box: Box) {
     setEditingId(null);
     setBoxes((p) => p.filter((b) => b.id !== box.id));
     await supabase.from("smart_boxes").delete().eq("id", box.id);
+  }
+
+  async function saveStoryPhotos(urls: string[]) {
+    setStoryPhotos(urls);
+    await supabase.from("businesses").update({ story_photos: urls }).eq("id", businessId);
   }
 
   async function createCustom() {
@@ -138,9 +145,12 @@ export function BoxesManager({ businessId, initialBoxes, slug }: { businessId: s
       <div className="flex flex-col gap-3">
         {ordered.map((box, idx) => {
           const isCustom = box.box_type === "custom";
-          const cfg = box.config as CustomConfig | null;
+          const cfg = box.config as BoxConfig | null;
           const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Bloco livre", opcao: cfg?.label || box.title || "Personalizado", explica: "Um caminho extra que você define — WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
+          const label = cfg?.label || m.opcao;
+          const color = cfg?.color || "#111318";
           const off = !box.is_active && !m.fixo;
+          const editing = editingId === box.id;
           return (
             <div key={box.id} className={`rounded-[22px] border border-divider bg-surface-white p-4 ${off ? "opacity-55" : ""}`}>
               <div className="flex items-start gap-3">
@@ -148,8 +158,8 @@ export function BoxesManager({ businessId, initialBoxes, slug }: { businessId: s
                   <button onClick={() => move(box, -1)} disabled={idx === 0} className="disabled:opacity-30" aria-label="Subir">▲</button>
                   <button onClick={() => move(box, 1)} disabled={idx === ordered.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
                 </div>
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-on-background text-[16px] text-white">
-                  {m.icon}
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] text-white" style={{ backgroundColor: color }}>
+                  {cfg?.icon || m.icon}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -158,7 +168,7 @@ export function BoxesManager({ businessId, initialBoxes, slug }: { businessId: s
                     {isCustom && <span className="rounded-full bg-orbi-gradient-start/25 px-2 py-0.5 text-[10px]">seu</span>}
                   </div>
                   <p className="mt-0.5 text-[12px] text-text-secondary">
-                    {isCustom ? ACTION_LABEL[cfg?.action ?? "link"] : <>Aparece como <span className="font-medium text-on-background">“{m.opcao}”</span></>}
+                    {isCustom ? ACTION_LABEL[cfg?.action ?? "link"] : <>Aparece como <span className="font-medium text-on-background">“{label}”</span></>}
                   </p>
                 </div>
                 {!m.fixo && (
@@ -173,18 +183,27 @@ export function BoxesManager({ businessId, initialBoxes, slug }: { businessId: s
               </div>
               {!isCustom && <p className="mt-3 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>}
 
-              {isCustom && (
-                <button onClick={() => setEditingId(editingId === box.id ? null : box.id)} className="mt-3 text-[12px] text-text-tertiary underline">
-                  {editingId === box.id ? "Fechar edição" : "Editar"}
-                </button>
+              <button onClick={() => setEditingId(editing ? null : box.id)} className="mt-3 text-[12px] text-text-tertiary underline">
+                {editing ? "Fechar edição" : "Editar"}
+              </button>
+
+              {editing && (
+                <BoxEditor
+                  initial={cfg ?? { label: isCustom ? box.title ?? "" : m.opcao, icon: m.icon, color: "#111318", action: "link", url: "" }}
+                  isCustom={isCustom}
+                  onSave={(next) => saveConfig(box, next)}
+                  onDelete={isCustom ? () => removeCustom(box) : undefined}
+                />
               )}
 
-              {isCustom && editingId === box.id && (
-                <CustomEditor
-                  initial={cfg ?? { label: box.title ?? "", icon: "◆", action: "link", url: "" }}
-                  onSave={(cfg) => saveCustom(box, cfg)}
-                  onDelete={() => removeCustom(box)}
-                />
+              {box.box_type === "content" && editing && (
+                <div className="mt-4 border-t border-divider pt-4">
+                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos da história (carrossel)</p>
+                  <p className="mt-1 text-[12px] text-text-secondary">Aparecem em carrossel na tela “Conhecer”, junto com o texto do seu DNA.</p>
+                  <div className="mt-2">
+                    <GalleryUpload value={storyPhotos} businessId={businessId} onChange={saveStoryPhotos} />
+                  </div>
+                </div>
               )}
             </div>
           );
@@ -194,7 +213,7 @@ export function BoxesManager({ businessId, initialBoxes, slug }: { businessId: s
       {creating ? (
         <div className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4">
           <p className="text-[13px] font-medium">Novo bloco personalizado</p>
-          <CustomEditor initial={draft} onSave={(cfg) => setDraft(cfg)} liveOnly />
+          <BoxEditor initial={draft} isCustom onSave={(cfg) => setDraft(cfg)} liveOnly />
           <div className="mt-3 flex gap-2">
             <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
             <button onClick={() => setCreating(false)} className="rounded-full bg-surface-soft px-4 py-2 text-[13px]">Cancelar</button>
@@ -212,21 +231,23 @@ export function BoxesManager({ businessId, initialBoxes, slug }: { businessId: s
   );
 }
 
-/** Mini formulário reaproveitado tanto pra criar quanto pra editar um bloco. */
-function CustomEditor({
+/** Mini formulário reaproveitado por qualquer box — fixa ou personalizada. */
+function BoxEditor({
   initial,
+  isCustom,
   onSave,
   onDelete,
   liveOnly,
 }: {
-  initial: CustomConfig;
-  onSave: (cfg: CustomConfig) => void;
+  initial: BoxConfig;
+  isCustom: boolean;
+  onSave: (cfg: BoxConfig) => void;
   onDelete?: () => void;
   liveOnly?: boolean;
 }) {
-  const [cfg, setCfg] = useState<CustomConfig>(initial);
+  const [cfg, setCfg] = useState<BoxConfig>(initial);
 
-  function update(next: Partial<CustomConfig>) {
+  function update(next: Partial<BoxConfig>) {
     const merged = { ...cfg, ...next };
     setCfg(merged);
     if (liveOnly) onSave(merged);
@@ -238,16 +259,32 @@ function CustomEditor({
         value={cfg.label ?? ""}
         onChange={(e) => update({ label: e.target.value })}
         onBlur={() => !liveOnly && onSave(cfg)}
-        placeholder="Nome do botão (ex: Fale no WhatsApp)"
+        placeholder={isCustom ? "Nome do botão (ex: Fale no WhatsApp)" : "Como aparece pro visitante"}
         className="rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
       />
-      <input
-        value={cfg.subtitle ?? ""}
-        onChange={(e) => update({ subtitle: e.target.value })}
-        onBlur={() => !liveOnly && onSave(cfg)}
-        placeholder="Subtítulo curto (opcional)"
-        className="rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-      />
+      {isCustom && (
+        <input
+          value={cfg.subtitle ?? ""}
+          onChange={(e) => update({ subtitle: e.target.value })}
+          onBlur={() => !liveOnly && onSave(cfg)}
+          placeholder="Subtítulo curto (opcional)"
+          className="rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+        />
+      )}
+
+      <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Cor</p>
+      <div className="flex flex-wrap gap-1.5">
+        {COLOR_CHOICES.map((c) => (
+          <button
+            key={c.hex}
+            onClick={() => update({ color: c.hex })}
+            aria-label={c.label}
+            title={c.label}
+            className={`h-8 w-8 rounded-full border-2 ${(cfg.color || "#111318") === c.hex ? "border-on-background" : "border-transparent"}`}
+            style={{ backgroundColor: c.hex }}
+          />
+        ))}
+      </div>
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
       <div className="flex flex-wrap gap-1.5">
@@ -262,27 +299,31 @@ function CustomEditor({
         ))}
       </div>
 
-      <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ao tocar</p>
-      <div className="flex flex-wrap gap-1.5">
-        {(Object.keys(ACTION_LABEL) as (keyof typeof ACTION_LABEL)[]).map((a) => (
-          <button
-            key={a}
-            onClick={() => update({ action: a })}
-            className={`rounded-full px-3 py-1.5 text-[12px] ${cfg.action === a ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
-          >
-            {ACTION_LABEL[a]}
-          </button>
-        ))}
-      </div>
+      {isCustom && (
+        <>
+          <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ao tocar</p>
+          <div className="flex flex-wrap gap-1.5">
+            {(Object.keys(ACTION_LABEL) as (keyof typeof ACTION_LABEL)[]).map((a) => (
+              <button
+                key={a}
+                onClick={() => update({ action: a })}
+                className={`rounded-full px-3 py-1.5 text-[12px] ${cfg.action === a ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+              >
+                {ACTION_LABEL[a]}
+              </button>
+            ))}
+          </div>
 
-      {(cfg.action === "link" || cfg.action === "whatsapp") && (
-        <input
-          value={cfg.url ?? ""}
-          onChange={(e) => update({ url: e.target.value })}
-          onBlur={() => !liveOnly && onSave(cfg)}
-          placeholder={cfg.action === "whatsapp" ? "https://wa.me/55... (vazio usa o WhatsApp de Configurações)" : "https://..."}
-          className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
-        />
+          {(cfg.action === "link" || cfg.action === "whatsapp") && (
+            <input
+              value={cfg.url ?? ""}
+              onChange={(e) => update({ url: e.target.value })}
+              onBlur={() => !liveOnly && onSave(cfg)}
+              placeholder={cfg.action === "whatsapp" ? "https://wa.me/55... (vazio usa o WhatsApp de Configurações)" : "https://..."}
+              className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+            />
+          )}
+        </>
       )}
 
       {onDelete && (

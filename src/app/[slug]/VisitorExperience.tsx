@@ -20,6 +20,8 @@ type Business = {
   contact_site: string | null;
   site_type: string | null;
   about_business: string | null;
+  differentials: string | null;
+  story_photos: string[];
 };
 
 type ContentItem = {
@@ -40,7 +42,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -79,13 +81,13 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; icon: string; t: string; d: string; ai?: boolean; onClick: () => void };
+  type Option = { key: string; icon: string; t: string; d: string; color?: string; ai?: boolean; onClick: () => void };
   const options: Option[] = boxes
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .sort((a, b) => a.position - b.position)
     .map((b): Option | null => {
+      const cfg = (b.config ?? {}) as CustomConfig;
       if (b.box_type === "custom") {
-        const cfg = (b.config ?? {}) as CustomConfig;
         const label = cfg.label || b.title || "Link";
         const onClick = () => {
           if (cfg.action === "vitrine") chooseIntent("comprar");
@@ -98,10 +100,10 @@ export function VisitorExperience({
             window.open(cfg.url, "_blank");
           }
         };
-        return { key: b.id, icon: cfg.icon || "◆", t: label, d: cfg.subtitle || "", onClick };
+        return { key: b.id, icon: cfg.icon || "◆", t: label, d: cfg.subtitle || "", color: cfg.color, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
-      return { key: b.id, icon: base.icon, t: base.t, d: base.d, ai: base.ai, onClick: () => chooseIntent(base.k) };
+      return { key: b.id, icon: cfg.icon || base.icon, t: cfg.label || base.t, d: base.d, color: cfg.color, ai: base.ai, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
 
@@ -149,7 +151,12 @@ export function VisitorExperience({
                   onClick={o.onClick}
                   className={`flex items-center gap-4 rounded-[24px] bg-surface-white p-4 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[15px]">{o.icon}</span>
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[15px] ${o.color ? "text-white" : "bg-surface-soft"}`}
+                    style={o.color ? { backgroundColor: o.color } : undefined}
+                  >
+                    {o.icon}
+                  </span>
                   <span className="flex-1">
                     <span className="block text-[15px] font-medium">
                       {o.t}
@@ -185,21 +192,7 @@ export function VisitorExperience({
         )}
 
         {intent === "conhecer" && (
-          <div className="w-full text-center">
-            <button
-              onClick={() => setIntent(null)}
-              className="mb-6 text-[13px] text-text-tertiary hover:underline"
-            >
-              ← voltar
-            </button>
-            <h2 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium">
-              {business.name}
-            </h2>
-            <p className="mt-4 text-[15px] text-text-secondary">
-              {business.brand_voice_summary ??
-                "Uma marca com identidade própria, construída para conversar de perto com quem chega."}
-            </p>
-          </div>
+          <StoryView business={business} onBack={() => setIntent(null)} />
         )}
 
         {intent === "duvida" && sessionId && (
@@ -207,6 +200,75 @@ export function VisitorExperience({
         )}
       </div>
     </main>
+  );
+}
+
+function StoryView({ business, onBack }: { business: Business; onBack: () => void }) {
+  const [active, setActive] = useState(0);
+  const photos = business.story_photos ?? [];
+  const differentials = (business.differentials ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  return (
+    <div className="w-full text-left">
+      <button onClick={onBack} className="mb-4 text-[13px] text-text-tertiary hover:underline">
+        ← voltar
+      </button>
+
+      {photos.length > 0 && (
+        <>
+          <div
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto"
+            onScroll={(e) => {
+              const w = e.currentTarget.clientWidth || 1;
+              setActive(Math.round(e.currentTarget.scrollLeft / w));
+            }}
+          >
+            {photos.map((src, i) => (
+              <div key={i} className="aspect-square w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={business.name} className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+          {photos.length > 1 && (
+            <div className="mt-3 flex justify-center gap-1.5">
+              {photos.map((_, i) => (
+                <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === active ? "bg-on-background" : "bg-on-background/25"}`} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      <h2 className="mt-6 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight">{business.name}</h2>
+      <p className="mt-3 text-[15px] leading-relaxed text-text-secondary">
+        {business.brand_voice_summary ?? "Uma marca com identidade própria, construída para conversar de perto com quem chega."}
+      </p>
+
+      {business.about_business && (
+        <div className="mt-6">
+          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Sobre nós</p>
+          <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">{business.about_business}</p>
+        </div>
+      )}
+
+      {differentials.length > 0 && (
+        <div className="mt-6">
+          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
+          <ul className="mt-2 flex flex-col gap-2">
+            {differentials.map((d, i) => (
+              <li key={i} className="flex items-start gap-2 text-[14px] leading-relaxed text-text-secondary">
+                <span className="mt-1 text-[10px] text-orbi-gradient-start">●</span>
+                <span>{d}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 
