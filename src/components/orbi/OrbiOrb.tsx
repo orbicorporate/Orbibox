@@ -14,6 +14,8 @@ export function OrbiOrb({ size = 96, className = "" }: { size?: number; classNam
       <span className="orbi-orb__blob orbi-orb__blob--1" />
       <span className="orbi-orb__blob orbi-orb__blob--2" />
       <span className="orbi-orb__blob orbi-orb__blob--3" />
+      <span className="orbi-orb__blob orbi-orb__blob--4" />
+      <span className="orbi-orb__gloss" />
       <span className="orbi-orb__sheen" />
     </div>
   );
