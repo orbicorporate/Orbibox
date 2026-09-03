@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
@@ -419,8 +420,10 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                 // Mesma correção da Vitrine: "tem foto" é só ter uma URL, nunca
                 // uma segunda flag que podia ficar dessincronizada.
                 const photo = !!item.image_url;
-                // Com destino, o box vira link para o site do dono e o clique é contado.
-                const destino = item.target_url;
+                // Categoria de loja vai direto pro site do dono (decisão já tomada).
+                // Produto e serviço abrem a página interna — com carrossel, descrição e CTAs.
+                const destino = item.link_kind === "categoria" ? item.target_url : item.target_url && item.link_kind === "externo" ? item.target_url : `/${business.slug}/p/${item.id}`;
+                const isExterno = item.link_kind === "categoria" || item.link_kind === "externo";
                 const kindClique: "categoria" | "produto" | "link" =
                   item.link_kind === "categoria" ? "categoria" : item.link_kind === "produto" ? "produto" : "link";
                 const classe = `relative flex flex-col justify-end overflow-hidden rounded-[20px] border border-divider p-3 ${SIZE_CLASS[sizeOf(item.layout_size)]}`;
@@ -456,13 +459,20 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                       )}
                       {destino && (
                         <p className="mt-1 text-[11px] opacity-70" style={{ color: photo ? "#fff" : c.fg }}>
-                          {item.link_kind === "categoria" ? "ver categoria \u2197" : "ver no site \u2197"}
+                          {item.link_kind === "categoria" ? "ver categoria \u2197" : isExterno ? "ver no site \u2197" : "ver detalhes"}
                         </p>
                       )}
                     </div>
                   </>
                 );
-                return destino ? (
+                if (!destino) {
+                  return (
+                    <div key={item.id} className={classe} style={estilo}>
+                      {miolo}
+                    </div>
+                  );
+                }
+                return isExterno ? (
                   <a
                     key={item.id}
                     href={destino}
@@ -475,9 +485,15 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                     {miolo}
                   </a>
                 ) : (
-                  <div key={item.id} className={classe} style={estilo}>
+                  <Link
+                    key={item.id}
+                    href={destino}
+                    onClick={() => trackClick({ businessId: business.id, kind: "produto", contentItemId: item.id, sessionId, targetUrl: destino })}
+                    className={classe}
+                    style={estilo}
+                  >
                     {miolo}
-                  </div>
+                  </Link>
                 );
               })}
             </div>

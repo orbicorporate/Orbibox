@@ -14,6 +14,7 @@ type Item = {
   description: string | null;
   price: number | null;
   image_url: string | null;
+  gallery_urls: string[];
   brand_label: string | null;
   position: number;
   status: string;
@@ -143,12 +144,21 @@ export function ShowcaseBuilder({
         ))}
       </div>
 
-      {/* Editor: gaveta fixa no rodapé, sempre visível enquanto se mexe no box */}
+      {/* Editor: gaveta fixa no rodapé. Fundo escurecido fecha ao tocar fora — mais fácil de sair. */}
       {sel && (
         <>
           <div className="h-[420px]" aria-hidden />
-          <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-h-[70vh] max-w-[440px] overflow-y-auto rounded-t-[28px] border-t border-divider bg-surface-white p-5 shadow-[0_-10px_40px_rgba(17,19,24,0.15)]">
-            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-divider" />
+          <div
+            className="fixed inset-0 z-30 bg-black/30"
+            onClick={() => setSelId(null)}
+            aria-hidden
+          />
+          <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-h-[75vh] max-w-[440px] overflow-y-auto rounded-t-[28px] border-t border-divider bg-surface-white p-5 shadow-[0_-10px_40px_rgba(17,19,24,0.15)]">
+            <button
+              onClick={() => setSelId(null)}
+              className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider"
+              aria-label="Fechar edição"
+            />
 
             <div className="flex items-start justify-between gap-3">
               <input
@@ -162,6 +172,17 @@ export function ShowcaseBuilder({
                 Fechar
               </button>
             </div>
+
+            {/* Descrição — sempre visível agora, é o que mais gente pedia pra achar. */}
+            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Descrição</p>
+            <textarea
+              value={sel.description ?? ""}
+              onChange={(e) => patch(sel.id, { description: e.target.value })}
+              onBlur={(e) => save(sel.id, { description: e.target.value || null })}
+              rows={3}
+              placeholder="Conte o que é, pra quem serve, o que inclui"
+              className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+            />
 
             {/* Posição — o que mais se mexe, então vem primeiro */}
             <div className="mt-4 flex items-center gap-2">
@@ -203,14 +224,34 @@ export function ShowcaseBuilder({
               })}
             </div>
 
-            {/* Foto */}
-            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Foto</p>
+            {/* Foto de capa */}
+            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Foto de capa</p>
             <div className="mt-2">
               <ImageUpload
                 value={sel.image_url}
                 businessId={businessId}
                 onChange={(url) => save(sel.id, { image_url: url, box_style: url ? "foto" : "cor" })}
               />
+            </div>
+
+            {/* Galeria — as fotos extras aparecem no carrossel da página do item. */}
+            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">
+              Mais fotos (até 4) · viram um carrossel na página do item
+            </p>
+            <div className="mt-2 flex flex-col gap-2">
+              {[0, 1, 2, 3].map((i) => (
+                <ImageUpload
+                  key={i}
+                  value={sel.gallery_urls[i] ?? null}
+                  businessId={businessId}
+                  onChange={(url) => {
+                    const arr = [...sel.gallery_urls];
+                    if (url) arr[i] = url;
+                    else arr.splice(i, 1);
+                    save(sel.id, { gallery_urls: arr.filter((u): u is string => !!u) });
+                  }}
+                />
+              ))}
             </div>
 
             {/* Cor — só faz sentido sem foto, então explicamos em vez de esconder */}
@@ -269,15 +310,6 @@ export function ShowcaseBuilder({
 
             <details className="mt-4">
               <summary className="cursor-pointer text-[13px] text-text-secondary">Mais detalhes</summary>
-              <p className="mt-3 text-[12px] uppercase tracking-wide text-text-tertiary">Descrição</p>
-              <textarea
-                value={sel.description ?? ""}
-                onChange={(e) => patch(sel.id, { description: e.target.value })}
-                onBlur={(e) => save(sel.id, { description: e.target.value || null })}
-                rows={2}
-                placeholder="Uma frase curta sobre o item"
-                className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-              />
               <p className="mt-3 text-[12px] uppercase tracking-wide text-text-tertiary">Preço</p>
               <input
                 value={sel.price ?? ""}
@@ -296,6 +328,14 @@ export function ShowcaseBuilder({
                 className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
               />
             </details>
+
+            <Link
+              href={`/${slug}/p/${sel.id}`}
+              target="_blank"
+              className="mt-5 block rounded-full border border-divider py-3 text-center text-[13px] font-medium"
+            >
+              Ver página do item ↗
+            </Link>
           </div>
         </>
       )}

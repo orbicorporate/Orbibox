@@ -22,9 +22,8 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["campaigns"]["Insert"]>
         Relationships: []
       }
-      content_items: {
-        Row: { target_url: string | null; link_kind: string | null; ai_optimized: boolean; ai_score: number | null; box_color: string; box_style: string; brand_label: string | null; layout_size: string; business_id: string; created_at: string; description: string | null; id: string; image_is_placeholder: boolean; image_url: string | null; images: Json; position: number; price: number | null; source_url: string | null; status: string; title: string; type: string; updated_at: string }
-        Insert: { target_url?: string | null; link_kind?: string | null; ai_optimized?: boolean; ai_score?: number | null; box_color?: string; box_style?: string; brand_label?: string | null; layout_size?: string; business_id: string; created_at?: string; description?: string | null; id?: string; image_is_placeholder?: boolean; image_url?: string | null; images?: Json; position?: number; price?: number | null; source_url?: string | null; status?: string; title: string; type: string; updated_at?: string }
+      content_items: { Row: { target_url: string | null; link_kind: string | null; ai_optimized: boolean; ai_score: number | null; box_color: string; box_style: string; brand_label: string | null; layout_size: string; business_id: string; created_at: string; description: string | null; gallery_urls: string[]; id: string; image_is_placeholder: boolean; image_url: string | null; images: Json; position: number; price: number | null; source_url: string | null; status: string; title: string; type: string; updated_at: string }
+        Insert: { target_url?: string | null; link_kind?: string | null; ai_optimized?: boolean; ai_score?: number | null; box_color?: string; box_style?: string; brand_label?: string | null; layout_size?: string; business_id: string; created_at?: string; description?: string | null; gallery_urls?: string[]; id?: string; image_is_placeholder?: boolean; image_url?: string | null; images?: Json; position?: number; price?: number | null; source_url?: string | null; status?: string; title: string; type: string; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["content_items"]["Insert"]>
         Relationships: []
       }
