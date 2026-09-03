@@ -134,17 +134,12 @@ export default function OnboardingPage() {
     }
 
     await supabase.from("agent_configs").insert({ business_id: business.id, agent_name: "Zara", objectives: ["vender", "informar"] });
-    await supabase.from("smart_boxes").insert([
-      { business_id: business.id, box_type: "hero", title: "Entrada Adaptativa", position: 0 },
-      { business_id: business.id, box_type: "agent", title: "AgentBox Zara", position: 1 },
-      { business_id: business.id, box_type: "product", title: "Vitrine de Produtos", position: 2 },
-      { business_id: business.id, box_type: "content", title: "História da Marca", position: 3 },
-      { business_id: business.id, box_type: "campaign", title: "Seleção de Presentes", position: 4 },
-    ]);
     await supabase.from("pulse_metrics").insert({ business_id: business.id, discovery_score: 62, interest_score: 58, conversion_score: 41, relationship_score: 70, overall_score: 58 });
     // O link do site já foi informado no DNA da Marca — a Orbi importa o catálogo agora,
-    // sem pedir a mesma informação duas vezes.
+    // sem pedir a mesma informação duas vezes. O tipo de site que ela descobre aqui
+    // decide quais botões da tela inicial fazem sentido pra esse negócio.
     let importados = 0;
+    let siteType: "ecommerce" | "institucional" | "links" | null = null;
     if (website.trim()) {
       setStep("montando");
       try {
@@ -156,9 +151,43 @@ export default function OnboardingPage() {
         if (res.ok) {
           const d = await res.json();
           importados = d.imported ?? 0;
+          siteType = d.siteType ?? null;
         }
       } catch {
         // Se a importação falhar, seguimos — o dono importa manualmente depois.
+      }
+    }
+
+    // Loja vende, então Comprar e Presentear na frente. Serviço não tem o que
+    // "comprar" direto — Conhecer e tirar dúvida importam mais. Sem site, deixa
+    // tudo ligado e o dono decide depois em Boxes.
+    const ativos =
+      siteType === "ecommerce"
+        ? { product: true, campaign: true, content: false, agent: true }
+        : siteType === "institucional" || siteType === "links"
+        ? { product: false, campaign: false, content: true, agent: true }
+        : { product: true, campaign: true, content: true, agent: true };
+
+    await supabase.from("smart_boxes").insert([
+      { business_id: business.id, box_type: "hero", title: "Entrada Adaptativa", position: 0 },
+      { business_id: business.id, box_type: "agent", title: "AgentBox Zara", position: 1, is_active: ativos.agent },
+      { business_id: business.id, box_type: "product", title: "Vitrine de Produtos", position: 2, is_active: ativos.product },
+      { business_id: business.id, box_type: "content", title: "História da Marca", position: 3, is_active: ativos.content },
+      { business_id: business.id, box_type: "campaign", title: "Seleção de Presentes", position: 4, is_active: ativos.campaign },
+    ]);
+
+    // Se a Orbi achou um WhatsApp no site, já cria o botão pronto — o dono só confirma.
+    if (siteType) {
+      const { data: atualizado } = await supabase.from("businesses").select("contact_whatsapp").eq("id", business.id).maybeSingle();
+      if (atualizado?.contact_whatsapp) {
+        await supabase.from("smart_boxes").insert({
+          business_id: business.id,
+          box_type: "custom",
+          title: "Fale no WhatsApp",
+          position: 5,
+          is_active: true,
+          config: { label: "Fale no WhatsApp", icon: "☎", action: "whatsapp" },
+        });
       }
     }
 
