@@ -37,34 +37,42 @@ export function ProductView({ business, item }: { business: Business; item: Item
 
   return (
     <main className="mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
-      <div className="relative bg-surface-soft">
+      {/* Botão de voltar, fora da imagem — igual qualquer app, não sobrepõe a foto */}
+      <div className="flex items-center px-4 pt-4">
+        <Link
+          href={`/${business.slug}`}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[16px]"
+          aria-label="Voltar"
+        >
+          ←
+        </Link>
+      </div>
+
+      {/* Carrossel estilo post: quadrado, cantos arredondados, com respiro nas laterais */}
+      <div className="px-4 pt-3">
         {images.length > 0 ? (
           <div
-            className="flex snap-x snap-mandatory overflow-x-auto"
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto"
             onScroll={(e) => {
               const w = e.currentTarget.clientWidth || 1;
               setActive(Math.round(e.currentTarget.scrollLeft / w));
             }}
           >
             {images.map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={src} alt={item.title} className="h-[420px] w-full shrink-0 snap-center object-cover" />
+              <div key={i} className="aspect-square w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={item.title} className="h-full w-full object-cover" />
+              </div>
             ))}
           </div>
         ) : (
-          <div className="flex h-[420px] w-full items-center justify-center text-[13px] text-text-tertiary">sem foto</div>
+          <div className="flex aspect-square w-full items-center justify-center rounded-[22px] bg-surface-soft text-[13px] text-text-tertiary">
+            sem foto
+          </div>
         )}
 
-        <Link
-          href={`/${business.slug}`}
-          className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white/90 text-[16px] shadow"
-          aria-label="Voltar"
-        >
-          ←
-        </Link>
-
         {images.length > 1 && (
-          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+          <div className="mt-3 flex justify-center gap-1.5">
             {images.map((_, i) => (
               <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === active ? "bg-on-background" : "bg-on-background/25"}`} />
             ))}

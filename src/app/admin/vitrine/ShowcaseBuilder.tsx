@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { PALETTE_GROUPS, SIZE_CLASS, SIZE_LABEL, colorOf, groupByCategory, sizeOf, type BoxSize } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
@@ -238,20 +239,12 @@ export function ShowcaseBuilder({
             <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">
               Mais fotos (até 4) · viram um carrossel na página do item
             </p>
-            <div className="mt-2 flex flex-col gap-2">
-              {[0, 1, 2, 3].map((i) => (
-                <ImageUpload
-                  key={i}
-                  value={sel.gallery_urls[i] ?? null}
-                  businessId={businessId}
-                  onChange={(url) => {
-                    const arr = [...sel.gallery_urls];
-                    if (url) arr[i] = url;
-                    else arr.splice(i, 1);
-                    save(sel.id, { gallery_urls: arr.filter((u): u is string => !!u) });
-                  }}
-                />
-              ))}
+            <div className="mt-2">
+              <GalleryUpload
+                value={sel.gallery_urls}
+                businessId={businessId}
+                onChange={(urls) => save(sel.id, { gallery_urls: urls })}
+              />
             </div>
 
             {/* Cor — só faz sentido sem foto, então explicamos em vez de esconder */}
