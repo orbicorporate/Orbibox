@@ -7,7 +7,7 @@ export const RATIOS: Record<Ratio, { value: number; label: string }> = {
   quadrado: { value: 1, label: "Quadrado" },
   retrato: { value: 4 / 5, label: "Retrato" },
   paisagem: { value: 16 / 9, label: "Paisagem" },
-  banner: { value: 2, label: "Banner (bem largo)" },
+  banner: { value: 1920 / 830, label: "Banner (bem largo)" },
 };
 
 /** Medida em pixels recomendada pra cada formato — o que a pessoa cola no
@@ -16,7 +16,7 @@ export const RATIO_PIXELS: Record<Ratio, string> = {
   quadrado: "1080 x 1080 px",
   retrato: "1080 x 1350 px",
   paisagem: "1920 x 1080 px",
-  banner: "1920 x 960 px",
+  banner: "1920 x 830 px",
 };
 
 const FRAME_W = 300;

@@ -668,7 +668,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                       ) : (
                         // Sem foto: o nome vira o conteúdo do box, centralizado — sem
                         // rodapé branco repetindo a mesma informação embaixo.
-                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-8 text-center" style={{ backgroundColor: c.bg }}>
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-12 text-center" style={{ backgroundColor: c.bg }}>
                           <span className="font-[family-name:var(--font-open-sans)] text-[21px] font-bold leading-snug" style={{ color: c.fg }}>
                             {item.title}
                           </span>

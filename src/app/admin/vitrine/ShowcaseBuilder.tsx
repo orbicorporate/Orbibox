@@ -554,7 +554,7 @@ function ItemCard({
           // Link da foto quebrou — item já foi pausado sozinho (useEffect acima).
           // Clique é tratado pelo container pai, então isso é só uma div visual.
           <div
-            className="flex h-full w-full flex-col items-center justify-center gap-2 px-8 text-center"
+            className="flex h-full w-full flex-col items-center justify-center gap-2 px-12 text-center"
             style={{ backgroundColor: "#FBEAEA" }}
           >
             <span className="text-[20px]">⚠</span>
@@ -569,7 +569,7 @@ function ItemCard({
           // Sem foto: o próprio nome vira o conteúdo do box — centralizado, sem
           // rodapé branco separado. O card inteiro (tratado pelo container pai) continua clicável pra editar.
           <div
-            className="flex h-full w-full flex-col items-center justify-center gap-2 px-8 text-center"
+            className="flex h-full w-full flex-col items-center justify-center gap-2 px-12 text-center"
             style={{ backgroundColor: c.bg }}
           >
             <span className="font-[family-name:var(--font-open-sans)] text-[21px] font-bold leading-snug" style={{ color: c.fg }}>
