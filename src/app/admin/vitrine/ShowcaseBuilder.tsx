@@ -334,7 +334,7 @@ export function ShowcaseBuilder({
       <div className="mt-5 rounded-[24px] bg-surface-soft p-5">
         <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Capa da Vitrine (opcional)</p>
         <p className="mt-1 text-[13px] text-text-secondary">
-          Uma ou mais fotos grandes no topo da sua Vitrine, antes dos itens — com mais de uma, vira um carrossel. Pode usar fotos da empresa, da equipe, do espaço ou dos bastidores, por exemplo. Dá aquela primeira impressão de negócio de verdade.
+          Uma ou mais fotos grandes no topo da sua Vitrine, antes dos itens — com mais de uma, vira um carrossel. Pode usar fotos da empresa, da equipe, do espaço ou dos bastidores, por exemplo.
         </p>
         <div className="mt-3">
           <GalleryUpload
