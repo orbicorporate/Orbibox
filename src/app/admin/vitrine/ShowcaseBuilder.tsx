@@ -195,6 +195,13 @@ export function ShowcaseBuilder({
 
   async function togglePublish(item: Item) {
     const s = item.status === "published" ? "draft" : "published";
+    // Só deixa publicar se o dono escolheu uma foto ou uma cor de propósito —
+    // "neutro" é o padrão de quem nunca mexeu, não uma escolha de verdade.
+    if (s === "published" && !item.image_url && item.box_color === "neutro") {
+      window.alert("Escolha uma foto ou uma cor pra esse item antes de publicar — assim ele fica com cara de coisa pensada, não em branco.");
+      setEditingId(item.id);
+      return;
+    }
     await save(item.id, { status: s });
   }
 

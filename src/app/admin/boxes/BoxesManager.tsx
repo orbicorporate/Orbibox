@@ -142,6 +142,7 @@ export function BoxesManager({
   }
 
   const ordered = [...boxes].sort((a, b) => a.position - b.position);
+  const visibleBoxes = ordered.filter((b) => b.box_type !== "hero");
   const ativos = ordered.filter((b) => b.is_active && !META[b.box_type]?.fixo).length;
 
   return (
@@ -160,14 +161,16 @@ export function BoxesManager({
       </div>
 
       <p className="text-[13px] text-text-secondary">
+        A tela inicial (“O que trouxe você aqui hoje?”) sempre aparece primeiro — os caminhos abaixo são as opções que ela oferece.
+        <br />
         {ativos === 0
           ? "Nenhum caminho ativo — o visitante só verá a tela inicial."
           : `${ativos} ${ativos === 1 ? "caminho ativo" : "caminhos ativos"} na sua tela inicial.`}
       </p>
 
       <div className="flex flex-col gap-3">
-        {ordered.map((box, idx) => {
-          const isHero = box.box_type === "hero";
+        {visibleBoxes.map((box, idx) => {
+          const isHero = false;
           const isCustom = box.box_type === "custom";
           const cfg = box.config as BoxConfig | null;
           const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Bloco livre", explica: "Um caminho extra que você define — WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
@@ -185,7 +188,7 @@ export function BoxesManager({
                 {!isHero && (
                   <div className="flex flex-col pt-1 text-[11px] text-text-tertiary">
                     <button onClick={() => move(box, -1)} disabled={idx === 0} className="disabled:opacity-30" aria-label="Subir">▲</button>
-                    <button onClick={() => move(box, 1)} disabled={idx === ordered.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
+                    <button onClick={() => move(box, 1)} disabled={idx === visibleBoxes.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
                   </div>
                 )}
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px]" style={{ backgroundColor: isHero ? "#111318" : color, color: isHero ? "#fff" : fg }}>

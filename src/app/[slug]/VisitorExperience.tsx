@@ -675,7 +675,9 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                           )}
                         </div>
                       )}
-                      {destino && (
+                      {/* Sem foto já mostra a tag/o destino dentro do próprio box — a setinha
+                          no canto só faz sentido quando tem foto por cima e nada mais avisa. */}
+                      {destino && photo && (
                         <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/25 text-[12px] text-white backdrop-blur-sm">
                           {isExterno ? "↗" : "›"}
                         </span>
