@@ -32,8 +32,43 @@ export function ImageUpload({
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [urlDraft, setUrlDraft] = useState(value ?? "");
+  const [lastValue, setLastValue] = useState(value);
+  if (value !== lastValue) {
+    setLastValue(value);
+    setUrlDraft(value ?? "");
+  }
+
+  async function resolveUrl(raw: string) {
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      onChange(null);
+      return;
+    }
+    setError(null);
+    setResolving(true);
+    try {
+      const res = await fetch("/api/resolve-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: trimmed }),
+      });
+      const data = await res.json();
+      if (data.imageUrl) {
+        onChange(data.imageUrl);
+        setUrlDraft(data.imageUrl);
+      } else {
+        setError(data.error ?? "Não consegui usar esse link — cole o link direto de uma imagem.");
+      }
+    } catch {
+      setError("Não consegui buscar esse link. Tente de novo.");
+    } finally {
+      setResolving(false);
+    }
+  }
 
   function handlePick(file: File) {
     setError(null);
@@ -117,11 +152,14 @@ export function ImageUpload({
       />
 
       <input
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value || null)}
-        placeholder="ou cole o link de uma imagem"
+        value={urlDraft}
+        onChange={(e) => setUrlDraft(e.target.value)}
+        onBlur={() => { if (urlDraft.trim() !== (value ?? "").trim()) resolveUrl(urlDraft); }}
+        onKeyDown={(e) => { if (e.key === "Enter") { e.currentTarget.blur(); } }}
+        placeholder="ou cole o link de uma imagem (ou da página do produto)"
         className="rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
       />
+      {resolving && <p className="text-[12px] text-text-tertiary">Buscando a imagem…</p>}
 
       {error && <p className="text-[12px] text-red-600">{error}</p>}
 
