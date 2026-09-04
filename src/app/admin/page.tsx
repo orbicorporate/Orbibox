@@ -73,18 +73,21 @@ export default async function HojePage() {
         Ver meu Orbibox ↗
       </Link>
 
-      {/* Métricas em lista */}
+      {/* Métricas em lista — cada uma leva pro Pulse, onde dá pra ver o detalhe */}
       <div className="mt-8 flex flex-col">
         {METRICS.map((m) => (
-          <div key={m.key} className="flex items-center justify-between border-b border-divider py-4">
+          <Link key={m.key} href="/admin/pulse" className="flex items-center justify-between border-b border-divider py-4 active:opacity-60">
             <div className="flex items-center gap-3">
               <span className="text-[16px] text-text-secondary">{m.icon}</span>
               <span className="text-[15px] text-text-secondary">{m.label}</span>
             </div>
-            <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">
-              {values[m.key].toLocaleString("pt-BR")}
-            </span>
-          </div>
+            <div className="flex items-center gap-2">
+              <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">
+                {values[m.key].toLocaleString("pt-BR")}
+              </span>
+              <span className="text-[14px] text-text-tertiary">›</span>
+            </div>
+          </Link>
         ))}
       </div>
 

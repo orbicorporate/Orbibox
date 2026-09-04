@@ -1,36 +1,46 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-
-// Cada tipo de clique é uma conversão distinta — nada de número inventado.
-const TIPOS = [
-  { kind: "categoria", label: "Categorias abertas", nota: "foram para o seu site" },
-  { kind: "produto", label: "Produtos abertos", nota: "foram para a página do produto" },
-  { kind: "whatsapp", label: "WhatsApp", nota: "iniciaram conversa" },
-  { kind: "ligar", label: "Ligações", nota: "tocaram em ligar" },
-  { kind: "zara", label: "Conversas com a Zara", nota: "pediram ajuda da IA" },
-] as const;
+import { PulseDetails } from "./PulseDetails";
 
 export default async function PulsePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const { data: business } = await supabase
     .from("businesses")
-    .select("id")
+    .select("id, slug")
     .eq("owner_id", user!.id)
     .limit(1)
     .single();
 
-  const [visitasRes, cliquesRes] = await Promise.all([
+  const [visitasRes, cliquesRes, itemsRes] = await Promise.all([
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
-    supabase.from("click_events").select("kind, created_at").eq("business_id", business!.id).limit(2000),
+    supabase.from("click_events").select("kind, created_at, content_item_id").eq("business_id", business!.id).limit(2000),
+    supabase.from("content_items").select("id, title, image_url, brand_label").eq("business_id", business!.id),
   ]);
 
   const visitas = visitasRes.count ?? 0;
   const cliques = cliquesRes.data ?? [];
+  const itemMap: Record<string, { title: string; image_url: string | null; brand_label: string | null }> = {};
+  for (const it of itemsRes.data ?? []) itemMap[it.id] = { title: it.title, image_url: it.image_url, brand_label: it.brand_label };
 
   const porTipo: Record<string, number> = {};
-  for (const c of cliques) porTipo[c.kind] = (porTipo[c.kind] ?? 0) + 1;
+  // Quais itens específicos foram clicados dentro de cada tipo de ação —
+  // é isso que abre o detalhe ao expandir uma linha.
+  const porTipoItem: Record<string, Record<string, number>> = {};
+  const porItemGeral: Record<string, number> = {};
+  for (const c of cliques) {
+    porTipo[c.kind] = (porTipo[c.kind] ?? 0) + 1;
+    if (c.content_item_id) {
+      porTipoItem[c.kind] ??= {};
+      porTipoItem[c.kind][c.content_item_id] = (porTipoItem[c.kind][c.content_item_id] ?? 0) + 1;
+      porItemGeral[c.content_item_id] = (porItemGeral[c.content_item_id] ?? 0) + 1;
+    }
+  }
   const totalCliques = cliques.length;
+  const topItems = Object.entries(porItemGeral)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([id, count]) => ({ id, count }));
 
   // Quantos por cento das visitas resultaram em alguma ação.
   const taxa = visitas > 0 ? Math.min(100, Math.round((totalCliques / visitas) * 100)) : 0;
@@ -79,20 +89,7 @@ export default async function PulsePage() {
         <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{visitas.toLocaleString("pt-BR")}</span>
       </div>
 
-      <p className="mt-8 text-[13px] uppercase tracking-wide text-text-tertiary">Ações por tipo</p>
-      <div className="mt-3 flex flex-col">
-        {TIPOS.map((t) => (
-          <div key={t.kind} className="flex items-center justify-between border-b border-divider py-4">
-            <div className="min-w-0">
-              <p className="text-[15px] text-on-background">{t.label}</p>
-              <p className="text-[12px] text-text-tertiary">{t.nota}</p>
-            </div>
-            <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">
-              {(porTipo[t.kind] ?? 0).toLocaleString("pt-BR")}
-            </span>
-          </div>
-        ))}
-      </div>
+      <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} slug={business!.slug} />
 
       {totalCliques === 0 ? (
         <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
