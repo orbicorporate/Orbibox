@@ -24,7 +24,7 @@ type Business = {
   differentials: string | null;
   differentials_cards: unknown;
   story_photos: string[];
-  vitrine_cover_url: string | null;
+  vitrine_cover_urls: string[];
 };
 
 type ContentItem = {
@@ -595,15 +595,36 @@ function BarraContato({ business, sessionId, onOrbi }: { business: Business; ses
 function Showcase({ content, business, sessionId, onOrbi }: { content: ContentItem[]; business: Business; sessionId: string | null; onOrbi: () => void }) {
   const sections = groupByCategory(content);
   const [active, setActive] = useState<string | null>(null);
+  const [coverIdx, setCoverIdx] = useState(0);
+  const covers = business.vitrine_cover_urls ?? [];
 
   const visible = active ? sections.filter((s) => s.name === active) : sections;
 
   return (
     <>
-      {business.vitrine_cover_url && (
-        <div className="mt-5 overflow-hidden rounded-[24px]" style={{ aspectRatio: 1920 / 830 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={business.vitrine_cover_url} alt={business.name} className="h-full w-full object-cover" />
+      {covers.length > 0 && (
+        <div className="mt-5">
+          <div
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto rounded-[24px]"
+            onScroll={(e) => {
+              const w = e.currentTarget.clientWidth || 1;
+              setCoverIdx(Math.round(e.currentTarget.scrollLeft / w));
+            }}
+          >
+            {covers.map((src, i) => (
+              <div key={i} className="w-full shrink-0 snap-center overflow-hidden rounded-[24px]" style={{ aspectRatio: 1920 / 830 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={business.name} className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+          {covers.length > 1 && (
+            <div className="mt-2 flex justify-center gap-1.5">
+              {covers.map((_, i) => (
+                <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === coverIdx ? "bg-on-background" : "bg-on-background/25"}`} />
+              ))}
+            </div>
+          )}
         </div>
       )}
       {sections.length > 1 && (
