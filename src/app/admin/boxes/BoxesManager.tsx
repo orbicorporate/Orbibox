@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
+import { PALETTE_GROUPS } from "@/lib/showcase";
 
+type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
 
-// O nome padrão de cada box e o que ela faz de verdade — o nome pode ser
-// trocado pelo dono (é o mesmo texto que o visitante vê, sem indireção).
 const META: Record<string, { name: string; explica: string; icon: string; fixo?: boolean }> = {
   hero: {
     name: "Tela inicial",
@@ -31,30 +31,39 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
 };
 
 const ICON_CHOICES = ["◆", "✦", "☎", "✉", "🔗", "◈", "◫", "★"];
-const COLOR_CHOICES = [
-  { hex: "#111318", label: "Preto" },
-  { hex: "#173404", label: "Verde" },
-  { hex: "#04342C", label: "Teal" },
-  { hex: "#042C53", label: "Azul" },
-  { hex: "#4A1B0C", label: "Coral" },
-  { hex: "#4B2E8C", label: "Roxo" },
-  { hex: "#6B4E05", label: "Dourado" },
-];
+
+/** Preto ou branco, o que der mais contraste — pra ícone ficar legível em
+ * qualquer cor da paleta, mesmo as claras. */
+function contrastFg(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? "#111318" : "#FFFFFF";
+}
 
 export function BoxesManager({
   businessId,
   initialBoxes,
   slug,
   initialStoryPhotos,
+  initialAboutBusiness,
+  initialDifferentials,
+  brandColors,
 }: {
   businessId: string;
   initialBoxes: Box[];
   slug: string;
   initialStoryPhotos: string[];
+  initialAboutBusiness: string;
+  initialDifferentials: string;
+  brandColors: BrandColor[];
 }) {
   const supabase = createClient();
   const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
   const [storyPhotos, setStoryPhotos] = useState<string[]>(initialStoryPhotos);
+  const [aboutBusiness, setAboutBusiness] = useState(initialAboutBusiness);
+  const [differentials, setDifferentials] = useState(initialDifferentials);
   const [arranging, setArranging] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -101,6 +110,14 @@ export function BoxesManager({
   async function saveStoryPhotos(urls: string[]) {
     setStoryPhotos(urls);
     await supabase.from("businesses").update({ story_photos: urls }).eq("id", businessId);
+  }
+
+  async function saveAboutBusiness(value: string) {
+    await supabase.from("businesses").update({ about_business: value || null }).eq("id", businessId);
+  }
+
+  async function saveDifferentials(value: string) {
+    await supabase.from("businesses").update({ differentials: value || null }).eq("id", businessId);
   }
 
   async function createCustom() {
@@ -150,6 +167,7 @@ export function BoxesManager({
           const label = cfg?.label ?? (isCustom ? box.title ?? "" : m.name);
           const color = cfg?.color || "#111318";
           const icon = cfg?.icon || m.icon;
+          const fg = contrastFg(color);
           const off = !box.is_active && !m.fixo;
           const editing = editingId === box.id;
           return (
@@ -161,7 +179,7 @@ export function BoxesManager({
                     <button onClick={() => move(box, 1)} disabled={idx === ordered.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
                   </div>
                 )}
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] text-white" style={{ backgroundColor: isHero ? "#111318" : color }}>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px]" style={{ backgroundColor: isHero ? "#111318" : color, color: isHero ? "#fff" : fg }}>
                   {icon}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -192,10 +210,8 @@ export function BoxesManager({
 
               {!isHero && (
                 <>
-                  {/* Pré-visualização — exatamente como fica no site, pra fechar a distância
-                      entre editar aqui e ver lá. */}
                   <div className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-soft p-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px] text-white" style={{ backgroundColor: color }}>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px]" style={{ backgroundColor: color, color: fg }}>
                       {icon}
                     </span>
                     <div className="min-w-0">
@@ -214,17 +230,44 @@ export function BoxesManager({
                 <BoxEditor
                   initial={cfg ?? { subtitle: "", icon: m.icon, color: "#111318", action: "link", url: "" }}
                   isCustom={isCustom}
+                  brandColors={brandColors}
                   onSave={(next) => saveConfig(box, { ...next, label })}
                   onDelete={isCustom ? () => removeCustom(box) : undefined}
                 />
               )}
 
               {box.box_type === "content" && editing && (
-                <div className="mt-4 border-t border-divider pt-4">
-                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos da história (carrossel)</p>
-                  <p className="mt-1 text-[12px] text-text-secondary">Aparecem em carrossel na tela “Conhecer”, junto com o texto do seu DNA.</p>
-                  <div className="mt-2">
-                    <GalleryUpload value={storyPhotos} businessId={businessId} onChange={saveStoryPhotos} />
+                <div className="mt-4 flex flex-col gap-4 border-t border-divider pt-4">
+                  <div>
+                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Sobre nós</p>
+                    <p className="mt-1 text-[12px] text-text-secondary">O texto que aparece na tela “Conhecer”, abaixo das fotos.</p>
+                    <textarea
+                      value={aboutBusiness}
+                      onChange={(e) => setAboutBusiness(e.target.value)}
+                      onBlur={(e) => saveAboutBusiness(e.target.value)}
+                      rows={3}
+                      placeholder="Quem vocês são, o que fazem, há quanto tempo..."
+                      className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
+                    <p className="mt-1 text-[12px] text-text-secondary">Uma frase por linha — vira uma lista na tela “Conhecer”.</p>
+                    <textarea
+                      value={differentials}
+                      onChange={(e) => setDifferentials(e.target.value)}
+                      onBlur={(e) => saveDifferentials(e.target.value)}
+                      rows={3}
+                      placeholder={"Entrega no mesmo dia\nMateriais sustentáveis\nAtendimento 24h"}
+                      className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos da história (carrossel)</p>
+                    <p className="mt-1 text-[12px] text-text-secondary">Aparecem em carrossel, acima do texto.</p>
+                    <div className="mt-2">
+                      <GalleryUpload value={storyPhotos} businessId={businessId} onChange={saveStoryPhotos} />
+                    </div>
                   </div>
                 </div>
               )}
@@ -242,7 +285,7 @@ export function BoxesManager({
             placeholder="Nome do botão (ex: Fale no WhatsApp)"
             className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
-          <BoxEditor initial={draft} isCustom onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly />
+          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly />
           <div className="mt-3 flex gap-2">
             <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
             <button onClick={() => setCreating(false)} className="rounded-full bg-surface-soft px-4 py-2 text-[13px]">Cancelar</button>
@@ -260,27 +303,35 @@ export function BoxesManager({
   );
 }
 
-/** Cor, ícone e (só pra blocos personalizados) subtítulo + destino. O nome já
- * é editado direto no cabeçalho do box — não repete aqui. */
+/** Cor, ícone e (só pra blocos personalizados) subtítulo + destino. */
 function BoxEditor({
   initial,
   isCustom,
+  brandColors,
   onSave,
   onDelete,
   liveOnly,
 }: {
   initial: BoxConfig;
   isCustom: boolean;
+  brandColors: BrandColor[];
   onSave: (cfg: BoxConfig) => void;
   onDelete?: () => void;
   liveOnly?: boolean;
 }) {
   const [cfg, setCfg] = useState<BoxConfig>(initial);
+  const [colorModalOpen, setColorModalOpen] = useState(false);
+  const color = cfg.color || "#111318";
 
   function update(next: Partial<BoxConfig>) {
     const merged = { ...cfg, ...next };
     setCfg(merged);
     if (liveOnly) onSave(merged);
+  }
+
+  function pickColor(hex: string) {
+    update({ color: hex });
+    if (!liveOnly) onSave({ ...cfg, color: hex });
   }
 
   return (
@@ -296,18 +347,13 @@ function BoxEditor({
       )}
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Cor</p>
-      <div className="flex flex-wrap gap-1.5">
-        {COLOR_CHOICES.map((c) => (
-          <button
-            key={c.hex}
-            onClick={() => { update({ color: c.hex }); if (!liveOnly) onSave({ ...cfg, color: c.hex }); }}
-            aria-label={c.label}
-            title={c.label}
-            className={`h-8 w-8 rounded-full border-2 ${(cfg.color || "#111318") === c.hex ? "border-on-background" : "border-transparent"}`}
-            style={{ backgroundColor: c.hex }}
-          />
-        ))}
-      </div>
+      <button
+        onClick={() => setColorModalOpen(true)}
+        className="flex items-center gap-2.5 self-start rounded-full border border-divider py-1.5 pl-1.5 pr-4"
+      >
+        <span className="h-8 w-8 rounded-full" style={{ backgroundColor: color }} />
+        <span className="text-[13px] font-medium">Escolher cor</span>
+      </button>
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
       <div className="flex flex-wrap gap-1.5">
@@ -354,6 +400,82 @@ function BoxEditor({
           Excluir este bloco
         </button>
       )}
+
+      {colorModalOpen && (
+        <ColorPickerModal current={color} brandColors={brandColors} onSelect={pickColor} onClose={() => setColorModalOpen(false)} />
+      )}
+    </div>
+  );
+}
+
+/** Paleta completa — as mesmas 5 da Vitrine, mais a Marca quando existe.
+ * Abre de baixo pra cima, com abas, igual o seletor de cor de box na Vitrine. */
+function ColorPickerModal({
+  current,
+  brandColors,
+  onSelect,
+  onClose,
+}: {
+  current: string;
+  brandColors: BrandColor[];
+  onSelect: (hex: string) => void;
+  onClose: () => void;
+}) {
+  const [tab, setTab] = useState(brandColors.length > 0 ? "Marca" : PALETTE_GROUPS[0].name);
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50" onClick={onClose}>
+      <div
+        className="max-h-[75vh] overflow-y-auto rounded-t-[28px] bg-surface-white p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" aria-label="Fechar" />
+        <p className="text-center text-[14px] font-medium">Escolher cor</p>
+
+        <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1">
+          {brandColors.length > 0 && (
+            <button
+              onClick={() => setTab("Marca")}
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${tab === "Marca" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+            >
+              ✦ Marca
+            </button>
+          )}
+          {PALETTE_GROUPS.map((g) => (
+            <button
+              key={g.name}
+              onClick={() => setTab(g.name)}
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${tab === g.name ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+            >
+              {g.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-4 grid grid-cols-6 gap-3 pb-2">
+          {tab === "Marca"
+            ? brandColors.map((bc, i) => (
+                <button
+                  key={`${bc.hex}-${i}`}
+                  onClick={() => { onSelect(bc.hex); onClose(); }}
+                  aria-label={bc.role ?? bc.hex}
+                  title={bc.role ?? bc.hex}
+                  className={`aspect-square rounded-full border-2 ${current.toLowerCase() === bc.hex.toLowerCase() ? "border-on-background" : "border-transparent"}`}
+                  style={{ backgroundColor: bc.hex }}
+                />
+              ))
+            : Object.entries(PALETTE_GROUPS.find((g) => g.name === tab)?.colors ?? {}).map(([key, c]) => (
+                <button
+                  key={key}
+                  onClick={() => { onSelect(c.bg); onClose(); }}
+                  aria-label={c.label}
+                  title={c.label}
+                  className={`aspect-square rounded-full border-2 ${current.toLowerCase() === c.bg.toLowerCase() ? "border-on-background" : "border-transparent"}`}
+                  style={{ backgroundColor: c.bg }}
+                />
+              ))}
+        </div>
+      </div>
     </div>
   );
 }

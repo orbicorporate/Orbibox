@@ -4,8 +4,18 @@ import { BoxesManager } from "./BoxesManager";
 export default async function BoxesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: business } = await supabase.from("businesses").select("id, slug, story_photos").eq("owner_id", user!.id).limit(1).single();
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("id, slug, story_photos, about_business, differentials, brand_colors")
+    .eq("owner_id", user!.id)
+    .limit(1)
+    .single();
   const { data: boxes } = await supabase.from("smart_boxes").select("*").eq("business_id", business!.id).order("position", { ascending: true });
+
+  const raw = business!.brand_colors;
+  const brandColors = Array.isArray(raw)
+    ? raw.filter((c): c is { hex: string; role?: string } => !!c && typeof c === "object" && typeof (c as { hex?: unknown }).hex === "string")
+    : [];
 
   return (
     <div className="flex flex-col">
@@ -21,6 +31,9 @@ export default async function BoxesPage() {
         initialBoxes={boxes ?? []}
         slug={business!.slug}
         initialStoryPhotos={business!.story_photos ?? []}
+        initialAboutBusiness={business!.about_business ?? ""}
+        initialDifferentials={business!.differentials ?? ""}
+        brandColors={brandColors}
       />
     </div>
   );
