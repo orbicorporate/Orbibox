@@ -30,7 +30,7 @@ export default async function VitrinePage() {
         Vitrine
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">
-        Toque em qualquer box para mudar nome, foto, cor, formato e posição. As mudanças salvam sozinhas.
+        Toque num item pra editar — nome, foto, formato, cor e mais. Crie como rascunho e publique quando estiver pronto.
       </p>
       <ShowcaseBuilder
         items={items ?? []}

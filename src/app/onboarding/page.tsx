@@ -220,7 +220,7 @@ export default function OnboardingPage() {
       oportunidades.unshift({
         business_id: business.id,
         title: "Importe seu catálogo",
-        description: "Cole o link do seu site em Feed — a Orbi transforma seus produtos em boxes automaticamente.",
+        description: "Cole o link do seu site na Vitrine — a Orbi transforma seus produtos em boxes automaticamente.",
         category: "descoberta",
         impact_score: 92,
       });

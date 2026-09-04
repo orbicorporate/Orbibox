@@ -49,7 +49,7 @@ export function ConfigForm({ business }: { business: Business }) {
 
   // Sinaliza o que a Zara realmente sabe — sem chip decorativo.
   const conhecimento = [
-    { nome: "Catálogo", cheio: true, obs: "itens publicados no Feed" },
+    { nome: "Catálogo", cheio: true, obs: "itens publicados na Vitrine" },
     { nome: "Sobre o negócio", cheio: !!b.about_business, obs: "usado para responder quem você é" },
     { nome: "Diferenciais", cheio: !!b.differentials, obs: "o que te separa dos outros" },
     { nome: "Políticas", cheio: !!b.policies, obs: "prazos, entrega, trocas" },

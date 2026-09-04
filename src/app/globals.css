@@ -127,3 +127,15 @@ body {
 @media (max-width: 767px) {
   input, select, textarea { font-size: 16px !important; }
 }
+
+/* Orbi Insight — o selo fica sempre "pensando", um respiro sutil e contínuo. */
+.orbi-thinking {
+  animation: orbiThinking 2.6s ease-in-out infinite;
+}
+@keyframes orbiThinking {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.12) rotate(8deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-thinking { animation: none; }
+}

@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import type { Ratio } from "@/components/ui/ImageCropModal";
-import { PALETTE_GROUPS, SIZE_CLASS, SIZE_LABEL, colorOf, sizeOf, type BoxSize } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, type BoxSize } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -16,6 +17,7 @@ type Item = {
   description: string | null;
   price: number | null;
   image_url: string | null;
+  image_is_placeholder: boolean;
   gallery_urls: string[];
   photo_format: string | null;
   brand_label: string | null;
@@ -24,6 +26,7 @@ type Item = {
   layout_size: string;
   box_color: string;
   box_style: string;
+  ai_optimized: boolean;
 };
 
 /** Formatos desenhados como miniatura, para escolher pelo olho e não pela palavra. */
@@ -57,28 +60,35 @@ export function ShowcaseBuilder({
   brandColors?: BrandColor[];
   initialCategories?: string[];
 }) {
+  const router = useRouter();
   const supabase = createClient();
   const [items, setItems] = useState<Item[]>(initial);
-  const [selId, setSelId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>(initialCategories);
   // Aba de paleta ativa no editor de cor. "Marca" só existe se a Orbi já
   // extraiu cores no DNA da marca (onboarding) — senão começa no Padrão.
   const [paletteTab, setPaletteTab] = useState<string>(brandColors.length > 0 ? "Marca" : "Padrão");
-  const [saving, setSaving] = useState(false);
   const [arranging, setArranging] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [improving, setImproving] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [proposta, setProposta] = useState<{ siteType: string; motivo: string | null; imported: number; semFoto: number } | null>(null);
 
-  const published = items.filter((i) => i.status === "published");
-  const ordered = [...published].sort((a, b) => a.position - b.position);
+  const ordered = [...items].sort((a, b) => a.position - b.position);
+  const publishedCount = items.filter((i) => i.status === "published").length;
+
   // Categorias que já existem em algum item, mesmo que ainda não estejam na
   // lista persistida (compatibilidade com categorias criadas do jeito antigo).
-  const itemCategoryNames = Array.from(new Set(published.map((i) => i.brand_label?.trim()).filter((v): v is string => !!v)));
+  const itemCategoryNames = Array.from(new Set(ordered.map((i) => i.brand_label?.trim()).filter((v): v is string => !!v)));
   const allCategoryNames = Array.from(new Set([...categories, ...itemCategoryNames]));
   const uncategorized = ordered.filter((i) => !i.brand_label?.trim());
   const sections = [
     ...allCategoryNames.map((name) => ({ name, items: ordered.filter((i) => (i.brand_label?.trim() ?? "") === name) })),
     ...(uncategorized.length > 0 ? [{ name: "Destaques", items: uncategorized }] : []),
   ];
-  const sel = items.find((i) => i.id === selId) ?? null;
 
   function patch(id: string, fields: Partial<Item>) {
     setItems((p) => p.map((i) => (i.id === id ? { ...i, ...fields } : i)));
@@ -86,9 +96,7 @@ export function ShowcaseBuilder({
 
   async function save(id: string, fields: Partial<Item>) {
     patch(id, fields);
-    setSaving(true);
     await supabase.from("content_items").update(fields).eq("id", id);
-    setSaving(false);
   }
 
   async function saveCategories(next: string[]) {
@@ -102,17 +110,15 @@ export function ShowcaseBuilder({
     if (!swap) return;
     patch(item.id, { position: swap.position });
     patch(swap.id, { position: item.position });
-    setSaving(true);
     await Promise.all([
       supabase.from("content_items").update({ position: swap.position }).eq("id", item.id),
       supabase.from("content_items").update({ position: item.position }).eq("id", swap.id),
     ]);
-    setSaving(false);
   }
 
   async function autoArrange() {
     setArranging(true);
-    const porValor = [...published].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+    const porValor = [...ordered].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
     const ritmo: BoxSize[] = ["destaque", "medio", "medio", "largo", "medio", "medio"];
     const updates = porValor.map((it, i) => ({ id: it.id, layout_size: ritmo[i % ritmo.length], position: i }));
     setItems((p) =>
@@ -128,14 +134,16 @@ export function ShowcaseBuilder({
   }
 
   async function createItem(brandLabel: string | null = null) {
+    setCreating(true);
     const { data, error } = await supabase
       .from("content_items")
-      .insert({ business_id: businessId, type: "product", title: "Novo item", status: "published", position: published.length, brand_label: brandLabel })
+      .insert({ business_id: businessId, type: "product", title: "Novo item", status: "draft", position: items.length, brand_label: brandLabel })
       .select()
       .single();
+    setCreating(false);
     if (!error && data) {
       setItems((p) => [...p, data as Item]);
-      setSelId(data.id);
+      setEditingId(data.id);
     }
   }
 
@@ -156,9 +164,59 @@ export function ShowcaseBuilder({
     return Array.from(new Set([...categories, ...items.map((i) => i.brand_label?.trim()).filter((v): v is string => !!v)]));
   }
 
+  async function togglePublish(item: Item) {
+    const s = item.status === "published" ? "draft" : "published";
+    await save(item.id, { status: s });
+  }
+
+  async function improveWithOrbi(item: Item) {
+    setImproving(item.id);
+    try {
+      const res = await fetch("/api/improve-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentItemId: item.id }),
+      });
+      if (res.ok) {
+        const { description } = await res.json();
+        patch(item.id, { description, ai_optimized: true });
+        await supabase.from("content_items").update({ description, ai_optimized: true }).eq("id", item.id);
+      }
+    } finally {
+      setImproving(null);
+    }
+  }
+
+  async function importFromSite(e: React.FormEvent) {
+    e.preventDefault();
+    if (!importUrl.trim() || importing) return;
+    setImporting(true);
+    setImportMsg(null);
+    try {
+      const res = await fetch("/api/import-site", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId, url: importUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.imported === 0) {
+        setImportMsg({ kind: "err", text: data.error ?? "Não foi possível importar." });
+      } else {
+        setProposta({ siteType: data.siteType ?? "institucional", motivo: data.motivo ?? null, imported: data.imported ?? 0, semFoto: data.semFoto ?? 0 });
+        setImportUrl("");
+        setShowImport(false);
+        router.refresh();
+      }
+    } catch {
+      setImportMsg({ kind: "err", text: "Erro de conexão ao importar." });
+    } finally {
+      setImporting(false);
+    }
+  }
+
   async function deleteItem(item: Item) {
     if (!window.confirm(`Excluir "${item.title}"? Essa ação não pode ser desfeita.`)) return;
-    setSelId(null);
+    setEditingId(null);
     setItems((p) => p.filter((i) => i.id !== item.id));
     await supabase.from("content_items").delete().eq("id", item.id);
   }
@@ -167,7 +225,7 @@ export function ShowcaseBuilder({
     const novo = window.prompt("Novo nome da categoria:", oldName === "Destaques" ? "" : oldName);
     if (novo === null) return;
     const value = novo.trim() || null;
-    const ids = published.filter((i) => (i.brand_label?.trim() || "Destaques") === oldName).map((i) => i.id);
+    const ids = ordered.filter((i) => (i.brand_label?.trim() || "Destaques") === oldName).map((i) => i.id);
     setItems((p) => p.map((i) => (ids.includes(i.id) ? { ...i, brand_label: value } : i)));
     await Promise.all(ids.map((id) => supabase.from("content_items").update({ brand_label: value }).eq("id", id)));
     if (value) {
@@ -179,7 +237,7 @@ export function ShowcaseBuilder({
   }
 
   async function deleteCategory(name: string) {
-    const ids = published.filter((i) => (i.brand_label?.trim() || "Destaques") === name).map((i) => i.id);
+    const ids = ordered.filter((i) => (i.brand_label?.trim() || "Destaques") === name).map((i) => i.id);
     const msg = ids.length === 0
       ? `Excluir a categoria "${name}"? Ela está vazia.`
       : `Excluir a categoria "${name}" e ${ids.length === 1 ? "seu 1 item" : `seus ${ids.length} itens`}? Essa ação não pode ser desfeita.`;
@@ -189,37 +247,80 @@ export function ShowcaseBuilder({
     if (categories.includes(name)) await saveCategories(categories.filter((c) => c !== name));
   }
 
-  const idx = sel ? ordered.findIndex((i) => i.id === sel.id) : -1;
-
   return (
     <div className="mt-5 flex flex-col">
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={autoArrange}
-          disabled={arranging || published.length === 0}
+          disabled={arranging || items.length === 0}
           className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-50"
         >
           {arranging ? "Organizando…" : "✦ Organizar com Orbi"}
         </button>
-        <button onClick={() => createItem()} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">
+        <button onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50">
           + Novo item
         </button>
         <button onClick={createCategory} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary">
           + Categoria
         </button>
+        <button onClick={() => setShowImport((v) => !v)} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
+          ✦ Importar do site
+        </button>
         <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
           Ver publicado ↗
         </Link>
-        {saving && <span className="text-[12px] text-text-tertiary">salvando…</span>}
       </div>
 
+      {showImport && (
+        <form onSubmit={importFromSite} className="mt-3 flex flex-col gap-2 rounded-[22px] bg-surface-soft p-4">
+          <input
+            placeholder="https://seusite.com.br"
+            value={importUrl}
+            onChange={(e) => setImportUrl(e.target.value)}
+            className="rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+          />
+          <button type="submit" disabled={importing} className="rounded-full orbi-gradient px-5 py-2.5 text-[13px] font-medium text-on-background disabled:opacity-50">
+            {importing ? "Lendo seu site…" : "✦ Importar com Orbi"}
+          </button>
+        </form>
+      )}
+      {importMsg && <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>}
+
+      {proposta && (
+        <div className="mt-4 rounded-[24px] orbi-gradient p-[1.5px]">
+          <div className="rounded-[23px] bg-surface-white p-5">
+            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">A Orbi leu seu site</p>
+            <p className="mt-2 font-[family-name:var(--font-manrope)] text-[19px] font-medium">
+              {proposta.siteType === "ecommerce"
+                ? "Entendi que você tem uma loja virtual"
+                : proposta.siteType === "links"
+                ? "Entendi que seu site é uma página de apresentação"
+                : "Entendi que você é um negócio de serviços"}
+            </p>
+            {proposta.motivo && <p className="mt-1 text-[13px] text-text-secondary">{proposta.motivo}</p>}
+            <p className="mt-3 text-[14px] leading-relaxed text-text-secondary">
+              {proposta.siteType === "ecommerce"
+                ? `Montei ${proposta.imported} boxes de categoria que levam direto para as páginas do seu site.`
+                : proposta.siteType === "links"
+                ? `Montei ${proposta.imported} boxes de navegação apontando para o seu site e contatos.`
+                : `Montei ${proposta.imported} boxes com os serviços que encontrei, usando as fotos do próprio site.`}
+              {proposta.semFoto > 0 && ` ${proposta.semFoto} ${proposta.semFoto === 1 ? "box ficou" : "boxes ficaram"} sem foto, em cor neutra.`}
+            </p>
+            <button onClick={() => setProposta(null)} className="mt-4 rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-medium text-white">
+              Beleza, revisar os itens
+            </button>
+          </div>
+        </div>
+      )}
+
       <p className="mt-3 text-[13px] text-text-secondary">
-        Toque num box para editar. Ele abre aqui mesmo, sem sair da vitrine.
+        {publishedCount === 0 ? "Nenhum item ativo ainda." : `${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"} na sua vitrine.`}
+        {" "}Toque num item pra editar.
       </p>
 
-      {published.length === 0 && (
+      {items.length === 0 && (
         <div className="mt-5 rounded-[28px] border border-divider bg-surface-white p-6 text-[14px] text-text-secondary">
-          Nenhum item ativo ainda. Toque em “+ Novo item” para criar o primeiro.
+          Nenhum item ainda. Toque em “+ Novo item” ou importe do seu site.
         </div>
       )}
 
@@ -229,35 +330,40 @@ export function ShowcaseBuilder({
             <div className="mb-3 flex items-center justify-between gap-2">
               <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
               <div className="flex shrink-0 gap-1.5">
-                <button
-                  onClick={() => renameCategory(sec.name)}
-                  aria-label="Renomear categoria"
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-text-secondary"
-                >
-                  ✎
-                </button>
-                <button
-                  onClick={() => deleteCategory(sec.name)}
-                  aria-label="Excluir categoria"
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-red-600"
-                >
-                  ×
-                </button>
+                <button onClick={() => renameCategory(sec.name)} aria-label="Renomear categoria" className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-text-secondary">✎</button>
+                <button onClick={() => deleteCategory(sec.name)} aria-label="Excluir categoria" className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-red-600">×</button>
               </div>
             </div>
-            <div className="grid auto-rows-[minmax(0,auto)] grid-cols-2 gap-2.5">
+
+            <div className="flex flex-col gap-5">
               {sec.items.map((item) => (
-                <BoxCard
+                <ItemCard
                   key={item.id}
                   item={item}
-                  selected={selId === item.id}
-                  onSelect={() => setSelId(selId === item.id ? null : item.id)}
+                  editing={editingId === item.id}
+                  onToggleEdit={() => setEditingId(editingId === item.id ? null : item.id)}
+                  onTogglePublish={() => togglePublish(item)}
+                  patch={patch}
+                  save={save}
+                  move={move}
+                  idx={ordered.findIndex((i) => i.id === item.id)}
+                  total={ordered.length}
+                  businessId={businessId}
+                  brandColors={brandColors}
+                  paletteTab={paletteTab}
+                  setPaletteTab={setPaletteTab}
+                  categories={allCategoryNames}
+                  onNewCategory={(name) => { if (!allCategoryNamesRef().includes(name)) saveCategories([...categories, name]); }}
+                  onImprove={() => improveWithOrbi(item)}
+                  improving={improving === item.id}
+                  onDelete={() => deleteItem(item)}
+                  slug={slug}
                 />
               ))}
               {sec.items.length === 0 && (
                 <button
                   onClick={() => createItem(sec.name === "Destaques" ? null : sec.name)}
-                  className="col-span-2 flex min-h-[90px] items-center justify-center rounded-[20px] border border-dashed border-divider text-[13px] text-text-tertiary"
+                  className="flex min-h-[90px] items-center justify-center rounded-[20px] border border-dashed border-divider text-[13px] text-text-tertiary"
                 >
                   + Adicionar item nesta categoria
                 </button>
@@ -267,279 +373,260 @@ export function ShowcaseBuilder({
         ))}
       </div>
 
-      {/* Editor: gaveta fixa no rodapé. Fundo escurecido fecha ao tocar fora — mais fácil de sair. */}
-      {sel && (
-        <>
-          <div className="h-[420px]" aria-hidden />
-          <div
-            className="fixed inset-0 z-30 bg-black/30"
-            onClick={() => setSelId(null)}
-            aria-hidden
-          />
-          <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-h-[75vh] max-w-[440px] overflow-y-auto rounded-t-[28px] border-t border-divider bg-surface-white p-5 shadow-[0_-10px_40px_rgba(17,19,24,0.15)]">
-            <button
-              onClick={() => setSelId(null)}
-              className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider"
-              aria-label="Fechar edição"
-            />
-
-            <div className="flex items-start justify-between gap-3">
-              <input
-                value={sel.title}
-                onChange={(e) => patch(sel.id, { title: e.target.value })}
-                onBlur={(e) => save(sel.id, { title: e.target.value })}
-                placeholder="Nome do item"
-                className="min-w-0 flex-1 border-b border-divider bg-transparent pb-1 font-[family-name:var(--font-manrope)] text-[19px] font-medium outline-none focus:border-on-background"
-              />
-              <button onClick={() => setSelId(null)} className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] text-text-secondary">
-                Fechar
-              </button>
-            </div>
-
-            {/* Descrição — sempre visível agora, é o que mais gente pedia pra achar. */}
-            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Descrição</p>
-            <textarea
-              value={sel.description ?? ""}
-              onChange={(e) => patch(sel.id, { description: e.target.value })}
-              onBlur={(e) => save(sel.id, { description: e.target.value || null })}
-              rows={3}
-              placeholder="Conte o que é, pra quem serve, o que inclui"
-              className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-            />
-
-            {/* Posição — o que mais se mexe, então vem primeiro */}
-            <div className="mt-4 flex items-center gap-2">
-              <span className="text-[12px] uppercase tracking-wide text-text-tertiary">Posição</span>
-              <button
-                onClick={() => move(sel, -1)}
-                disabled={idx <= 0}
-                className="ml-auto h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30"
-                aria-label="Mover para trás"
-              >
-                ←
-              </button>
-              <span className="text-[13px] text-text-secondary">{idx + 1} de {ordered.length}</span>
-              <button
-                onClick={() => move(sel, 1)}
-                disabled={idx === ordered.length - 1}
-                className="h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30"
-                aria-label="Mover para frente"
-              >
-                →
-              </button>
-            </div>
-
-            {/* Formato: miniaturas em vez de nomes */}
-            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
-            <div className="mt-2 flex gap-2">
-              {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {
-                const ativo = sizeOf(sel.layout_size) === s;
-                return (
-                  <button
-                    key={s}
-                    onClick={() => save(sel.id, { layout_size: s })}
-                    className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border p-2.5 ${ativo ? "border-on-background bg-surface-soft" : "border-divider"}`}
-                  >
-                    <span className={`rounded-[4px] ${FORMA[s]} ${ativo ? "bg-on-background" : "bg-divider"}`} />
-                    <span className="text-[11px] text-text-secondary">{SIZE_LABEL[s]}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Foto de capa */}
-            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Foto de capa</p>
-            <div className="mt-2">
-              <ImageUpload
-                value={sel.image_url}
-                businessId={businessId}
-                lockedRatio={COVER_RATIO_BY_SIZE[sizeOf(sel.layout_size)]}
-                lockedReason="Segue o formato do box escolhido acima — pra mudar, troque o formato."
-                onChange={(url) => save(sel.id, { image_url: url, box_style: url ? "foto" : "cor" })}
-              />
-            </div>
-
-            {/* Galeria — as fotos extras aparecem no carrossel da página do item. */}
-            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">
-              Mais fotos (até 6) · viram um carrossel na página do item
-            </p>
-            <div className="mt-2">
-              <GalleryUpload
-                value={sel.gallery_urls}
-                businessId={businessId}
-                lockedRatio="retrato"
-                lockedReason="As fotos da galeria são sempre verticais (retrato), pra manter o carrossel uniforme."
-                onChange={(urls) => save(sel.id, { gallery_urls: urls })}
-              />
-            </div>
-
-            {/* Cor — só faz sentido sem foto, então explicamos em vez de esconder */}
-            <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">
-              Cor do box{sel.image_url ? " · aparece se remover a foto" : ""}
-            </p>
-
-            {/* Abas de paleta — "Marca" primeiro quando existe, é a recomendada pela Orbi. */}
-            <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
-              {brandColors.length > 0 && (
-                <button
-                  onClick={() => setPaletteTab("Marca")}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${
-                    paletteTab === "Marca" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"
-                  }`}
-                >
-                  ✦ Marca
-                </button>
-              )}
-              {PALETTE_GROUPS.map((g) => (
-                <button
-                  key={g.name}
-                  onClick={() => setPaletteTab(g.name)}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${
-                    paletteTab === g.name ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"
-                  }`}
-                >
-                  {g.name}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2.5">
-              {paletteTab === "Marca"
-                ? brandColors.map((bc, i) => (
-                    <button
-                      key={`${bc.hex}-${i}`}
-                      onClick={() => save(sel.id, { box_color: bc.hex })}
-                      aria-label={bc.role ?? bc.hex}
-                      title={bc.role ?? bc.hex}
-                      className={`h-10 w-10 rounded-full border ${sel.box_color.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`}
-                      style={{ backgroundColor: bc.hex }}
-                    />
-                  ))
-                : Object.entries(PALETTE_GROUPS.find((g) => g.name === paletteTab)?.colors ?? {}).map(([key, c]) => (
-                    <button
-                      key={key}
-                      onClick={() => save(sel.id, { box_color: key })}
-                      aria-label={c.label}
-                      title={c.label}
-                      className={`h-10 w-10 rounded-full border ${sel.box_color === key ? "border-2 border-on-background" : "border-divider"}`}
-                      style={{ backgroundColor: c.bg }}
-                    />
-                  ))}
-            </div>
-
-            <details className="mt-4">
-              <summary className="cursor-pointer text-[13px] text-text-secondary">Mais detalhes</summary>
-              <p className="mt-3 text-[12px] uppercase tracking-wide text-text-tertiary">Preço</p>
-              <input
-                value={sel.price ?? ""}
-                onChange={(e) => patch(sel.id, { price: e.target.value ? Number(e.target.value) : null })}
-                onBlur={(e) => save(sel.id, { price: e.target.value ? Number(e.target.value) : null })}
-                inputMode="decimal"
-                placeholder="Sem preço"
-                className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-              />
-              <p className="mt-3 text-[12px] uppercase tracking-wide text-text-tertiary">Categoria (vira seção)</p>
-              <select
-                value={sel.brand_label ?? ""}
-                onChange={(e) => {
-                  if (e.target.value === "__nova__") {
-                    const nome = window.prompt("Nome da nova categoria:");
-                    if (nome && nome.trim()) {
-                      const trimmed = nome.trim();
-                      save(sel.id, { brand_label: trimmed });
-                      if (!allCategoryNamesRef().includes(trimmed)) saveCategories([...categories, trimmed]);
-                    }
-                    return;
-                  }
-                  save(sel.id, { brand_label: e.target.value || null });
-                }}
-                className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-              >
-                <option value="">Sem categoria (Destaques)</option>
-                {allCategoryNames.map((name) => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
-                <option value="__nova__">+ Nova categoria…</option>
-              </select>
-            </details>
-
-            <Link
-              href={`/${slug}/p/${sel.id}`}
-              target="_blank"
-              className="mt-5 block rounded-full border border-divider py-3 text-center text-[13px] font-medium"
-            >
-              Ver página do item ↗
-            </Link>
-
-            <button
-              onClick={() => deleteItem(sel)}
-              className="mt-2 block w-full rounded-full py-3 text-center text-[13px] font-medium text-red-600"
-            >
-              Excluir item
-            </button>
-          </div>
-        </>
+      {/* Orbi Insight — a mesma identidade do Feed, ícone sempre "pensando". */}
+      {items.length > 0 && (
+        <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full orbi-gradient text-[18px] orbi-thinking">✦</div>
+          <p className="mt-4 font-[family-name:var(--font-manrope)] text-[19px] font-medium">Orbi Insight</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
+            {publishedCount === 0
+              ? "Nenhum item está ativo — os visitantes ainda não veem nada na sua vitrine. Publique pelo menos um."
+              : `Você tem ${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}. Itens com foto e descrição própria convertem mais do que os que ficaram com imagem sugerida.`}
+          </p>
+        </div>
       )}
     </div>
   );
 }
 
-function BoxCard({ item, selected, onSelect }: { item: Item; selected: boolean; onSelect: () => void }) {
-  const c = colorOf(item.box_color);
-  const size = sizeOf(item.layout_size);
+function ItemCard({
+  item,
+  editing,
+  onToggleEdit,
+  onTogglePublish,
+  patch,
+  save,
+  move,
+  idx,
+  total,
+  businessId,
+  brandColors,
+  paletteTab,
+  setPaletteTab,
+  categories,
+  onNewCategory,
+  onImprove,
+  improving,
+  onDelete,
+  slug,
+}: {
+  item: Item;
+  editing: boolean;
+  onToggleEdit: () => void;
+  onTogglePublish: () => void;
+  patch: (id: string, fields: Partial<Item>) => void;
+  save: (id: string, fields: Partial<Item>) => Promise<void>;
+  move: (item: Item, dir: -1 | 1) => void;
+  idx: number;
+  total: number;
+  businessId: string;
+  brandColors: BrandColor[];
+  paletteTab: string;
+  setPaletteTab: (v: string) => void;
+  categories: string[];
+  onNewCategory: (name: string) => void;
+  onImprove: () => void;
+  improving: boolean;
+  onDelete: () => void;
+  slug: string;
+}) {
   const [imgFailed, setImgFailed] = useState(false);
   const [lastUrl, setLastUrl] = useState(item.image_url);
   if (item.image_url !== lastUrl) {
     setLastUrl(item.image_url);
     setImgFailed(false);
   }
-  // "Tem foto" depende só de existir uma URL — nunca de uma segunda flag que pode
-  // ficar dessincronizada (era exatamente esse o bug: foto salva pelo Feed não
-  // aparecia aqui porque box_style não era atualizado lá).
-  const photo = !!item.image_url && !imgFailed;
+  const size = sizeOf(item.layout_size);
+  const c = colorOf(item.box_color);
+  const hasPhoto = !!item.image_url && !imgFailed;
+  const ratio = COVER_RATIO_BY_SIZE[size];
 
   return (
-    <button
-      onClick={onSelect}
-      className={`relative flex flex-col justify-end overflow-hidden rounded-[20px] p-3 text-left transition-transform active:scale-[0.98] ${SIZE_CLASS[size]} ${
-        selected ? "ring-2 ring-on-background" : "border border-divider"
-      }`}
-      style={photo ? undefined : { backgroundColor: c.bg }}
-    >
-      {photo && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={item.image_url!}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-            onError={() => setImgFailed(true)}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-        </>
-      )}
-      <div className="relative">
-        <p className={`font-medium leading-tight ${size === "destaque" ? "text-[17px]" : "text-[14px]"}`} style={{ color: photo ? "#fff" : c.fg }}>
-          {item.title}
-        </p>
-        {item.price != null && (
-          <p className="mt-0.5 text-[12px] opacity-80" style={{ color: photo ? "#fff" : c.fg }}>
-            R$ {Number(item.price).toFixed(2)}
-          </p>
+    <div className="overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+      <div className="relative" style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1 }}>
+        {hasPhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.image_url!} alt={item.title} className="h-full w-full object-cover" onError={() => setImgFailed(true)} />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: c.bg }}>
+            <span style={{ color: c.fg }} className="text-[13px] opacity-70">sem foto</span>
+          </div>
+        )}
+
+        <button
+          onClick={onTogglePublish}
+          className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-surface-white/95 px-3 py-1.5 text-[11px] font-medium shadow backdrop-blur"
+        >
+          <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
+          {item.status === "published" ? "Ativo" : "Rascunho"}
+        </button>
+
+        {item.image_is_placeholder && (
+          <span className="absolute left-3 top-3 rounded-full bg-on-background/80 px-3 py-1 text-[11px] font-medium text-white backdrop-blur">
+            ✦ imagem sugerida
+          </span>
+        )}
+
+        {/* Indicador de formato — a única pista visual do "mosaico" que sobrava na grade */}
+        <span className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-surface-white/90 px-2.5 py-1.5 shadow backdrop-blur">
+          <span className={`rounded-[3px] bg-on-background ${FORMA[size]}`} style={{ transform: "scale(0.6)" }} />
+          <span className="text-[10px] font-medium text-text-secondary">{SIZE_LABEL[size]}</span>
+        </span>
+      </div>
+
+      <div className="p-5">
+        {!editing ? (
+          <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
+            <div className="min-w-0">
+              <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium">{item.title}</p>
+              {item.brand_label && <p className="mt-0.5 text-[13px] text-text-tertiary">{item.brand_label}</p>}
+            </div>
+            {item.price != null && (
+              <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[19px] font-medium">R$ {Number(item.price).toFixed(0)}</p>
+            )}
+          </button>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-3">
+              <input
+                value={item.title}
+                onChange={(e) => patch(item.id, { title: e.target.value })}
+                onBlur={(e) => save(item.id, { title: e.target.value })}
+                placeholder="Nome do item"
+                className="min-w-0 flex-1 border-b border-divider bg-transparent pb-1 font-[family-name:var(--font-manrope)] text-[19px] font-medium outline-none focus:border-on-background"
+              />
+              <button onClick={onToggleEdit} className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] text-text-secondary">Fechar</button>
+            </div>
+
+            <div>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Descrição</p>
+              <textarea
+                value={item.description ?? ""}
+                onChange={(e) => patch(item.id, { description: e.target.value })}
+                onBlur={(e) => save(item.id, { description: e.target.value || null })}
+                rows={3}
+                placeholder="Conte o que é, pra quem serve, o que inclui"
+                className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              />
+              <button onClick={onImprove} disabled={improving} className="mt-2 rounded-full orbi-gradient px-4 py-2 text-[12px] font-medium text-on-background disabled:opacity-50">
+                {improving ? "Pensando…" : "✦ Melhorar texto"}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] uppercase tracking-wide text-text-tertiary">Posição</span>
+              <button onClick={() => move(item, -1)} disabled={idx <= 0} className="ml-auto h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30" aria-label="Mover para trás">←</button>
+              <span className="text-[13px] text-text-secondary">{idx + 1} de {total}</span>
+              <button onClick={() => move(item, 1)} disabled={idx === total - 1} className="h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30" aria-label="Mover para frente">→</button>
+            </div>
+
+            <div>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
+              <div className="mt-2 flex gap-2">
+                {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {
+                  const ativo = size === s;
+                  return (
+                    <button key={s} onClick={() => save(item.id, { layout_size: s })} className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border p-2.5 ${ativo ? "border-on-background bg-surface-soft" : "border-divider"}`}>
+                      <span className={`rounded-[4px] ${FORMA[s]} ${ativo ? "bg-on-background" : "bg-divider"}`} />
+                      <span className="text-[11px] text-text-secondary">{SIZE_LABEL[s]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Foto de capa</p>
+              <div className="mt-2">
+                <ImageUpload
+                  value={item.image_url}
+                  businessId={businessId}
+                  lockedRatio={COVER_RATIO_BY_SIZE[size]}
+                  lockedReason="Segue o formato do box escolhido acima — pra mudar, troque o formato."
+                  onChange={(url) => save(item.id, { image_url: url, image_is_placeholder: false, box_style: url ? "foto" : "cor" })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Mais fotos (até 6) · viram um carrossel na página do item</p>
+              <div className="mt-2">
+                <GalleryUpload
+                  value={item.gallery_urls}
+                  businessId={businessId}
+                  lockedRatio="retrato"
+                  lockedReason="As fotos da galeria são sempre verticais (retrato), pra manter o carrossel uniforme."
+                  onChange={(urls) => save(item.id, { gallery_urls: urls })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor do box{item.image_url ? " · aparece se remover a foto" : ""}</p>
+              <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
+                {brandColors.length > 0 && (
+                  <button onClick={() => setPaletteTab("Marca")} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${paletteTab === "Marca" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>✦ Marca</button>
+                )}
+                {PALETTE_GROUPS.map((g) => (
+                  <button key={g.name} onClick={() => setPaletteTab(g.name)} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${paletteTab === g.name ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>{g.name}</button>
+                ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2.5">
+                {paletteTab === "Marca"
+                  ? brandColors.map((bc, i) => (
+                      <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { box_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.box_color.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: bc.hex }} />
+                    ))
+                  : Object.entries(PALETTE_GROUPS.find((g) => g.name === paletteTab)?.colors ?? {}).map(([key, cc]) => (
+                      <button key={key} onClick={() => save(item.id, { box_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.box_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
+                    ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Preço</p>
+              <input
+                value={item.price ?? ""}
+                onChange={(e) => patch(item.id, { price: e.target.value ? Number(e.target.value) : null })}
+                onBlur={(e) => save(item.id, { price: e.target.value ? Number(e.target.value) : null })}
+                inputMode="decimal"
+                placeholder="Sem preço"
+                className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              />
+            </div>
+
+            <div>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Categoria (vira seção)</p>
+              <select
+                value={item.brand_label ?? ""}
+                onChange={(e) => {
+                  if (e.target.value === "__nova__") {
+                    const nome = window.prompt("Nome da nova categoria:");
+                    if (nome && nome.trim()) {
+                      const trimmed = nome.trim();
+                      save(item.id, { brand_label: trimmed });
+                      onNewCategory(trimmed);
+                    }
+                    return;
+                  }
+                  save(item.id, { brand_label: e.target.value || null });
+                }}
+                className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              >
+                <option value="">Sem categoria (Destaques)</option>
+                {categories.map((name) => <option key={name} value={name}>{name}</option>)}
+                <option value="__nova__">+ Nova categoria…</option>
+              </select>
+            </div>
+
+            <Link href={`/${slug}/p/${item.id}`} target="_blank" className="block rounded-full border border-divider py-3 text-center text-[13px] font-medium">
+              Ver página do item ↗
+            </Link>
+            <button onClick={onDelete} className="block w-full rounded-full py-3 text-center text-[13px] font-medium text-red-600">
+              Excluir item
+            </button>
+          </div>
         )}
       </div>
-      {/* Sinal de "editável" sempre presente, sem precisar entrar em modo */}
-      <span
-        className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-surface-white/90 text-[12px] shadow"
-        style={{ color: "#111318" }}
-      >
-        ✎
-      </span>
-      {imgFailed && (
-        <span className="absolute left-2.5 top-2.5 rounded-full bg-red-600/90 px-2.5 py-1 text-[10px] font-medium text-white">
-          link da foto não carregou
-        </span>
-      )}
-    </button>
+    </div>
   );
 }
