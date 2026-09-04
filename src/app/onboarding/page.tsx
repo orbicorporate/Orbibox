@@ -28,7 +28,7 @@ async function analyzeBrand(name: string, instagram: string, website: string): P
   return res.json();
 }
 
-type Step = "dados" | "analisando" | "confirmar" | "montando";
+type Step = "dados" | "analisando" | "confirmar" | "montando" | "resultado";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -46,6 +46,15 @@ export default function OnboardingPage() {
   const [font, setFont] = useState("Manrope");
   const [colors, setColors] = useState<Color[]>([]);
   const [newColor, setNewColor] = useState("#111318");
+
+  // O que a Orbi entendeu do site — mostrado na tela de resultado, com o
+  // porquê explicado, pra nunca ser uma caixa preta.
+  const [importSummary, setImportSummary] = useState<{
+    imported: number;
+    siteType: "ecommerce" | "institucional" | "links" | null;
+    motivo: string | null;
+    fetchError: string | null;
+  } | null>(null);
 
 
   async function startAnalysis(e: React.FormEvent) {
@@ -140,6 +149,8 @@ export default function OnboardingPage() {
     // decide quais botões da tela inicial fazem sentido pra esse negócio.
     let importados = 0;
     let siteType: "ecommerce" | "institucional" | "links" | null = null;
+    let motivo: string | null = null;
+    let fetchError: string | null = null;
     if (website.trim()) {
       setStep("montando");
       try {
@@ -148,13 +159,16 @@ export default function OnboardingPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ businessId: business.id, url: website.trim() }),
         });
+        const d = await res.json();
         if (res.ok) {
-          const d = await res.json();
           importados = d.imported ?? 0;
           siteType = d.siteType ?? null;
+          motivo = d.motivo ?? null;
+        } else {
+          fetchError = d.error ?? "Não consegui ler esse site automaticamente.";
         }
       } catch {
-        // Se a importação falhar, seguimos — o dono importa manualmente depois.
+        fetchError = "Não consegui ler esse site automaticamente.";
       }
     }
 
@@ -213,7 +227,12 @@ export default function OnboardingPage() {
     }
     await supabase.from("opportunities").insert(oportunidades);
 
-    router.push(importados > 0 ? "/admin/vitrine" : "/admin");
+    setImportSummary({ imported: importados, siteType, motivo, fetchError });
+    setStep("resultado");
+  }
+
+  function goToApp() {
+    router.push(importSummary && importSummary.imported > 0 ? "/admin/vitrine" : "/admin");
     router.refresh();
   }
 
@@ -246,6 +265,69 @@ export default function OnboardingPage() {
             <p className="mt-2 text-[15px] text-text-secondary">
               A Orbi está lendo {website || "seu site"} e montando sua vitrine — isso leva alguns segundos…
             </p>
+          </div>
+        )}
+
+        {step === "resultado" && importSummary && (
+          <div className="flex flex-col gap-5 py-2">
+            <div className="mx-auto"><OrbiOrb size={88} /></div>
+
+            {importSummary.fetchError ? (
+              <>
+                <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">
+                  Não consegui ler seu site sozinha
+                </h1>
+                <p className="text-center text-[14px] text-text-secondary">
+                  {importSummary.fetchError} Isso costuma acontecer quando o site bloqueia acesso automático — sem problema,
+                  você monta a vitrine na mão em poucos minutos, ou tenta importar de novo depois em Configurações.
+                </p>
+              </>
+            ) : importSummary.imported > 0 ? (
+              <>
+                <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">
+                  Entendi seu negócio
+                </h1>
+                <div className="rounded-2xl bg-surface-soft p-4">
+                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
+                    {importSummary.siteType === "ecommerce" ? "Loja virtual" : importSummary.siteType === "institucional" ? "Site institucional" : "Página de links"}
+                  </p>
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
+                    {importSummary.motivo ?? "Analisei a estrutura do seu site para chegar nessa conclusão."}
+                  </p>
+                </div>
+                <p className="text-[14px] leading-relaxed text-text-secondary">
+                  {importSummary.siteType === "ecommerce" ? (
+                    <>Organizei sua vitrine em <b>{importSummary.imported} categorias</b> — não em produto por produto, pra não ficar longo demais. Cada uma leva o visitante direto pra página certa no seu site.</>
+                  ) : (
+                    <>Criei <b>{importSummary.imported} {importSummary.imported === 1 ? "box" : "boxes"}</b> na sua vitrine, um pra cada serviço ou produto que encontrei.</>
+                  )}
+                </p>
+              </>
+            ) : !website.trim() ? (
+              <>
+                <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">Tudo pronto</h1>
+                <p className="text-center text-[14px] text-text-secondary">
+                  Você não passou um site, então a vitrine começa vazia — monta ela do seu jeito quando quiser.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">Tudo pronto</h1>
+                <p className="text-center text-[14px] text-text-secondary">
+                  Não encontrei itens claros pra importar — sem problema, você adiciona na Vitrine quando quiser.
+                </p>
+              </>
+            )}
+
+            <div className="rounded-2xl border border-divider p-4">
+              <p className="text-[13px] font-medium">✦ A Zara já está pronta pra atender</p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
+                Ela já sabe o que seu negócio faz, recomenda produtos ou serviços, conversa com quem visita seu link e
+                pode direcionar pra você quando o cliente precisar de atendimento humano de verdade.
+              </p>
+            </div>
+
+            <Button onClick={goToApp} variant="orbi">Ir para o meu Orbibox →</Button>
           </div>
         )}
 
