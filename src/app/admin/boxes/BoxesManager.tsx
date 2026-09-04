@@ -52,6 +52,7 @@ export function BoxesManager({
   initialStoryPhotos,
   initialAboutBusiness,
   initialDifferentialsCards,
+  initialHeroQuestion,
   brandColors,
 }: {
   businessId: string;
@@ -61,6 +62,7 @@ export function BoxesManager({
   initialStoryPhotos: string[];
   initialAboutBusiness: string;
   initialDifferentialsCards: DifferentialCard[];
+  initialHeroQuestion: string | null;
   brandColors: BrandColor[];
 }) {
   const supabase = createClient();
@@ -68,6 +70,7 @@ export function BoxesManager({
   const [storyPhotos, setStoryPhotos] = useState<string[]>(initialStoryPhotos);
   const [aboutBusiness, setAboutBusiness] = useState(initialAboutBusiness);
   const [cards, setCards] = useState<DifferentialCard[]>(initialDifferentialsCards);
+  const [heroQuestion, setHeroQuestion] = useState(initialHeroQuestion ?? "");
   const [aboutImportUrl, setAboutImportUrl] = useState("");
   const [importingAbout, setImportingAbout] = useState(false);
   const [aboutImportMsg, setAboutImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
@@ -121,6 +124,10 @@ export function BoxesManager({
 
   async function saveAboutBusiness(value: string) {
     await supabase.from("businesses").update({ about_business: value || null }).eq("id", businessId);
+  }
+
+  async function saveHeroQuestion(value: string) {
+    await supabase.from("businesses").update({ hero_question: value || null }).eq("id", businessId);
   }
 
   async function importAbout(url: string) {
@@ -192,13 +199,25 @@ export function BoxesManager({
         </Link>
       </div>
 
-      <p className="text-[13px] text-text-secondary">
+      <p className="text-[12px] text-text-secondary">
         A tela inicial (“O que trouxe você aqui hoje?”) sempre aparece primeiro — os caminhos abaixo são as opções que ela oferece.
         <br />
         {ativos === 0
           ? "Nenhum caminho ativo — o visitante só verá a tela inicial."
           : `${ativos} ${ativos === 1 ? "caminho ativo" : "caminhos ativos"} na sua tela inicial.`}
       </p>
+
+      <div className="rounded-[20px] bg-surface-soft p-4">
+        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase de saudação (tela inicial)</p>
+        <p className="mt-1 text-[12px] text-text-secondary">A pergunta que aparece antes do nome do seu negócio, quando o visitante chega.</p>
+        <input
+          value={heroQuestion}
+          onChange={(e) => setHeroQuestion(e.target.value)}
+          onBlur={(e) => saveHeroQuestion(e.target.value)}
+          placeholder="O que trouxe você aqui hoje?"
+          className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+        />
+      </div>
 
       <div className="flex flex-col gap-3">
         {visibleBoxes.map((box, idx) => {

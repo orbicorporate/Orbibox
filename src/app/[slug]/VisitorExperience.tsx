@@ -25,6 +25,7 @@ type Business = {
   differentials_cards: unknown;
   story_photos: string[];
   vitrine_cover_urls: string[];
+  hero_question: string | null;
 };
 
 type ContentItem = {
@@ -144,9 +145,15 @@ export function VisitorExperience({
               {business.name}
             </p>
             <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[36px] font-medium leading-tight tracking-[-0.01em]">
-              O que trouxe você
-              <br />
-              aqui hoje?
+              {business.hero_question?.trim() ? (
+                business.hero_question
+              ) : (
+                <>
+                  O que trouxe você
+                  <br />
+                  aqui hoje?
+                </>
+              )}
             </h1>
             <p className="mt-3 max-w-[280px] text-[14px] text-text-secondary">
               Selecione uma opção para personalizar sua experiência.
