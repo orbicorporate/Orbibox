@@ -68,6 +68,9 @@ export function BoxesManager({
   const [storyPhotos, setStoryPhotos] = useState<string[]>(initialStoryPhotos);
   const [aboutBusiness, setAboutBusiness] = useState(initialAboutBusiness);
   const [cards, setCards] = useState<DifferentialCard[]>(initialDifferentialsCards);
+  const [aboutImportUrl, setAboutImportUrl] = useState("");
+  const [importingAbout, setImportingAbout] = useState(false);
+  const [aboutImportMsg, setAboutImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
   const [arranging, setArranging] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -118,6 +121,35 @@ export function BoxesManager({
 
   async function saveAboutBusiness(value: string) {
     await supabase.from("businesses").update({ about_business: value || null }).eq("id", businessId);
+  }
+
+  async function importAbout(url: string) {
+    setImportingAbout(true);
+    setAboutImportMsg(null);
+    try {
+      const res = await fetch("/api/import-about", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessName, url: url.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAboutImportMsg({ kind: "erro", text: data.error || "Não consegui ler esse site." });
+        return;
+      }
+      if (data.about) {
+        setAboutBusiness(data.about);
+        await saveAboutBusiness(data.about);
+      }
+      if (Array.isArray(data.differentials) && data.differentials.length > 0) {
+        await saveDifferentialsCards(data.differentials);
+      }
+      setAboutImportMsg({ kind: "ok", text: "Pronto — texto e diferenciais atualizados. Dá uma conferida abaixo e ajusta se quiser." });
+    } catch {
+      setAboutImportMsg({ kind: "erro", text: "Não consegui ler esse site agora." });
+    } finally {
+      setImportingAbout(false);
+    }
   }
 
   async function saveDifferentialsCards(next: DifferentialCard[]) {
@@ -250,6 +282,31 @@ export function BoxesManager({
 
               {box.box_type === "content" && editing && (
                 <div className="mt-4 flex flex-col gap-4 border-t border-divider pt-4">
+                  <div>
+                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Importar do site</p>
+                    <p className="mt-1 text-[12px] text-text-secondary">
+                      Cola o link do seu site e a Orbi lê e monta sozinha o texto &quot;Sobre nós&quot; e os diferenciais abaixo.
+                    </p>
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        value={aboutImportUrl}
+                        onChange={(e) => setAboutImportUrl(e.target.value)}
+                        placeholder="https://seusite.com.br"
+                        className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+                      />
+                      <button
+                        onClick={() => importAbout(aboutImportUrl)}
+                        disabled={importingAbout || !aboutImportUrl.trim()}
+                        className="shrink-0 rounded-full orbi-gradient px-4 py-2.5 text-[13px] font-medium text-on-background disabled:opacity-50"
+                      >
+                        {importingAbout ? "Lendo…" : "✦ Importar"}
+                      </button>
+                    </div>
+                    {aboutImportMsg && (
+                      <p className={`mt-2 text-[12px] ${aboutImportMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{aboutImportMsg.text}</p>
+                    )}
+                  </div>
+
                   <div>
                     <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Sobre nós</p>
                     <p className="mt-1 text-[12px] text-text-secondary">O texto que aparece na tela “Conhecer”, abaixo das fotos.</p>
