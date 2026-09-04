@@ -139,3 +139,30 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .orbi-thinking { animation: none; }
 }
+
+/* Orbi Intelligence — fundo claro com uma luz que varre suavemente,
+   sem parar, dando a sensação de "processando/pensando". */
+.orbi-card-light {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #F4FBE9, #EAFBF3 55%, #E7F8F4 100%);
+}
+.orbi-card-light::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -30%;
+  width: 55%;
+  height: 220%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent 70%);
+  filter: blur(18px);
+  animation: orbiLightSweep 7s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes orbiLightSweep {
+  0%, 100% { transform: translateX(0%); opacity: 0.45; }
+  50% { transform: translateX(260%); opacity: 0.85; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-card-light::before { animation: none; }
+}

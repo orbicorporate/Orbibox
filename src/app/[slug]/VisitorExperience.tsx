@@ -186,7 +186,7 @@ export function VisitorExperience({
             {content.length === 0 ? (
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
             ) : (
-              <Showcase content={content} business={business} sessionId={sessionId} />
+              <Showcase content={content} business={business} sessionId={sessionId} onZara={() => chooseIntent("duvida")} />
             )}
           </div>
         )}
@@ -459,7 +459,7 @@ function ZaraChat({
   );
 }
 
-function OrbiRecommendation({ businessId }: { businessId: string }) {
+function OrbiRecommendation({ businessId, onZara }: { businessId: string; onZara: () => void }) {
   const [rec, setRec] = useState<{ message: string; cta: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -478,16 +478,20 @@ function OrbiRecommendation({ businessId }: { businessId: string }) {
   if (loading || !rec) return null;
 
   return (
-    <div className="rounded-[28px] orbi-gradient p-5">
-      <div className="flex items-center gap-2">
+    <div className="orbi-card-light rounded-[28px] p-5">
+      <div className="relative flex items-center gap-2">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-on-background/10 text-[12px]">✦</span>
         <span className="text-[12px] font-semibold uppercase tracking-wide text-on-background/70">
           Orbi Intelligence
         </span>
       </div>
-      <p className="mt-3 text-[16px] leading-relaxed text-on-background">{rec.message}</p>
-      <button className="mt-4 inline-flex items-center gap-2 rounded-full bg-button-primary px-5 py-3 text-[14px] font-medium text-white">
-        ✦ {rec.cta}
+      <p className="relative mt-3 text-[16px] leading-relaxed text-on-background">{rec.message}</p>
+      {/* Chama pra falar com a marca — abre o chat da Zara, que já sabe desse interesse. */}
+      <button
+        onClick={onZara}
+        className="relative mt-4 inline-flex items-center gap-2 rounded-full bg-button-primary px-5 py-3 text-[14px] font-medium text-white"
+      >
+        ✦ Falar com a Zara
       </button>
     </div>
   );
@@ -540,7 +544,7 @@ function BarraContato({ business, sessionId, onZara }: { business: Business; ses
   );
 }
 
-function Showcase({ content, business, sessionId }: { content: ContentItem[]; business: Business; sessionId: string | null }) {
+function Showcase({ content, business, sessionId, onZara }: { content: ContentItem[]; business: Business; sessionId: string | null; onZara: () => void }) {
   const sections = groupByCategory(content);
   const [active, setActive] = useState<string | null>(null);
 
@@ -661,11 +665,11 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                 );
               })}
             </div>
-            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} /></div>}
+            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} onZara={onZara} /></div>}
           </div>
         ))}
       </div>
-      <BarraContato business={business} sessionId={sessionId} />
+      <BarraContato business={business} sessionId={sessionId} onZara={onZara} />
     </>
   );
 }
