@@ -159,7 +159,12 @@ export function ImageUpload({
         placeholder="ou cole o link de uma imagem (ou da página do produto)"
         className="rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
       />
-      {resolving && <p className="text-[12px] text-text-tertiary">Buscando a imagem…</p>}
+      {resolving && (
+        <p className="flex items-center gap-2 text-[12px] text-text-tertiary">
+          <span className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-divider border-t-on-background" />
+          Buscando a imagem…
+        </p>
+      )}
 
       {error && <p className="text-[12px] text-red-600">{error}</p>}
 

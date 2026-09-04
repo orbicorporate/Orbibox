@@ -135,15 +135,20 @@ export function ShowcaseBuilder({
 
   async function createItem(brandLabel: string | null = null) {
     setCreating(true);
+    // Nasce no topo — position mais baixo que tudo que já existe, não no fim da lista.
+    const minPos = items.length > 0 ? Math.min(...items.map((i) => i.position)) : 0;
     const { data, error } = await supabase
       .from("content_items")
-      .insert({ business_id: businessId, type: "product", title: "Novo item", status: "draft", position: items.length, brand_label: brandLabel })
+      .insert({ business_id: businessId, type: "product", title: "Novo item", status: "draft", position: minPos - 1, brand_label: brandLabel })
       .select()
       .single();
     setCreating(false);
     if (!error && data) {
       setItems((p) => [...p, data as Item]);
       setEditingId(data.id);
+      setTimeout(() => {
+        document.getElementById(`item-${data.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
     }
   }
 
@@ -335,7 +340,7 @@ export function ShowcaseBuilder({
               </div>
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-wrap gap-5">
               {sec.items.map((item) => (
                 <ItemCard
                   key={item.id}
@@ -363,7 +368,7 @@ export function ShowcaseBuilder({
               {sec.items.length === 0 && (
                 <button
                   onClick={() => createItem(sec.name === "Destaques" ? null : sec.name)}
-                  className="flex min-h-[90px] items-center justify-center rounded-[20px] border border-dashed border-divider text-[13px] text-text-tertiary"
+                  className="flex min-h-[90px] w-full items-center justify-center rounded-[20px] border border-dashed border-divider text-[13px] text-text-tertiary"
                 >
                   + Adicionar item nesta categoria
                 </button>
@@ -440,9 +445,12 @@ function ItemCard({
   const c = colorOf(item.box_color);
   const hasPhoto = !!item.image_url && !imgFailed;
   const ratio = COVER_RATIO_BY_SIZE[size];
+  // "Médio" fica lado a lado (dois por linha) quando fechado — os outros
+  // formatos e o modo de edição sempre ocupam a linha inteira.
+  const widthClass = !editing && size === "medio" ? "w-[calc(50%-10px)]" : "w-full";
 
   return (
-    <div className="overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+    <div id={`item-${item.id}`} className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${widthClass}`}>
       <div className="relative" style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1 }}>
         {hasPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
