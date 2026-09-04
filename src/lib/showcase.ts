@@ -162,3 +162,13 @@ export function formatPrice(item: { price: number | null; price_type?: string | 
       return brl(item.price);
   }
 }
+
+/** Biblioteca de ícones minimalistas — mesmo estilo geométrico simples usado
+ * em todo o Orbibox, sem emoji colorido, pra combinar com qualquer paleta. */
+export const ICON_LIBRARY = [
+  "◆", "◇", "◈", "○", "●", "◎", "□", "■", "▢", "▣",
+  "△", "▲", "▽", "▼", "◫", "◧", "◨", "◩", "◪", "⬡",
+  "⬢", "⬣", "✦", "✧", "★", "☆", "✳", "✴", "✷", "✸",
+  "☎", "✉", "⚑", "⚐", "⌘", "⏱", "⚙", "⚡", "➜", "→",
+  "✓", "✔", "⊕", "⌖", "◐", "◑",
+];

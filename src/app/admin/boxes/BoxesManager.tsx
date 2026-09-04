@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
-import { PALETTE_GROUPS } from "@/lib/showcase";
+import { PALETTE_GROUPS, ICON_LIBRARY } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
@@ -31,8 +31,8 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   link: "Abre um link",
 };
 
-const ICON_CHOICES = ["◆", "✦", "☎", "✉", "🔗", "◈", "◫", "★"];
-const DIFF_ICONS = ["◎", "◈", "◇", "☎", "✦", "◫"];
+const ICON_CHOICES = ICON_LIBRARY;
+const DIFF_ICONS = ICON_LIBRARY;
 
 /** Preto ou branco, o que der mais contraste — pra ícone ficar legível em
  * qualquer cor da paleta, mesmo as claras. */
