@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
+import type { Ratio } from "@/components/ui/ImageCropModal";
 import { PALETTE_GROUPS } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
@@ -47,6 +48,7 @@ export function BoxesManager({
   initialBoxes,
   slug,
   initialStoryPhotos,
+  initialStoryPhotoFormat,
   initialAboutBusiness,
   initialDifferentials,
   brandColors,
@@ -55,6 +57,7 @@ export function BoxesManager({
   initialBoxes: Box[];
   slug: string;
   initialStoryPhotos: string[];
+  initialStoryPhotoFormat: string | null;
   initialAboutBusiness: string;
   initialDifferentials: string;
   brandColors: BrandColor[];
@@ -62,6 +65,7 @@ export function BoxesManager({
   const supabase = createClient();
   const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
   const [storyPhotos, setStoryPhotos] = useState<string[]>(initialStoryPhotos);
+  const [storyPhotoFormat, setStoryPhotoFormat] = useState<string | null>(initialStoryPhotoFormat);
   const [aboutBusiness, setAboutBusiness] = useState(initialAboutBusiness);
   const [differentials, setDifferentials] = useState(initialDifferentials);
   const [arranging, setArranging] = useState(false);
@@ -110,6 +114,11 @@ export function BoxesManager({
   async function saveStoryPhotos(urls: string[]) {
     setStoryPhotos(urls);
     await supabase.from("businesses").update({ story_photos: urls }).eq("id", businessId);
+  }
+
+  async function saveStoryPhotoFormat(ratio: Ratio) {
+    setStoryPhotoFormat(ratio);
+    await supabase.from("businesses").update({ story_photo_format: ratio }).eq("id", businessId);
   }
 
   async function saveAboutBusiness(value: string) {
@@ -266,7 +275,13 @@ export function BoxesManager({
                     <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos da história (carrossel)</p>
                     <p className="mt-1 text-[12px] text-text-secondary">Aparecem em carrossel, acima do texto.</p>
                     <div className="mt-2">
-                      <GalleryUpload value={storyPhotos} businessId={businessId} onChange={saveStoryPhotos} />
+                      <GalleryUpload
+                        value={storyPhotos}
+                        businessId={businessId}
+                        lockedRatio={storyPhotoFormat as Ratio | null}
+                        onFormatChosen={saveStoryPhotoFormat}
+                        onChange={saveStoryPhotos}
+                      />
                     </div>
                   </div>
                 </div>

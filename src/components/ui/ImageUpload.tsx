@@ -2,22 +2,30 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ImageCropModal } from "./ImageCropModal";
+import { ImageCropModal, type Ratio } from "./ImageCropModal";
 
 /**
  * Envia a foto para o armazenamento do Supabase e devolve a URL pública.
  * Antes de subir, abre um passo de recorte (arrastar, dar zoom, escolher
  * formato) — a foto que sobe já sai enquadrada do jeito certo.
  * Aceita também colar um link, para quem já tem a imagem hospedada.
+ *
+ * `lockedRatio`, quando vem preenchido, trava o formato do recorte no que a
+ * primeira foto do item já definiu — capa e galeria nunca ficam misturando
+ * proporção. `onFormatChosen` avisa o formato escolhido na primeira vez.
  */
 export function ImageUpload({
   value,
   onChange,
   businessId,
+  lockedRatio,
+  onFormatChosen,
 }: {
   value: string | null;
   onChange: (url: string | null) => void;
   businessId: string;
+  lockedRatio?: Ratio | null;
+  onFormatChosen?: (ratio: Ratio) => void;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,7 +47,7 @@ export function ImageUpload({
     setPendingFile(file);
   }
 
-  async function uploadBlob(blob: Blob) {
+  async function uploadBlob(blob: Blob, ratio: Ratio) {
     setPendingFile(null);
     setUploading(true);
     const path = `${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
@@ -53,6 +61,7 @@ export function ImageUpload({
     }
     const { data } = supabase.storage.from("box-images").getPublicUrl(path);
     onChange(data.publicUrl);
+    if (!lockedRatio) onFormatChosen?.(ratio);
   }
 
   return (
@@ -111,7 +120,7 @@ export function ImageUpload({
       {error && <p className="text-[12px] text-red-600">{error}</p>}
 
       {pendingFile && (
-        <ImageCropModal file={pendingFile} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
+        <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
       )}
     </div>
   );

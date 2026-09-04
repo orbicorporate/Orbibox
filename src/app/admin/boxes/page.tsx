@@ -6,7 +6,7 @@ export default async function BoxesPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, slug, story_photos, about_business, differentials, brand_colors")
+    .select("id, slug, story_photos, story_photo_format, about_business, differentials, brand_colors")
     .eq("owner_id", user!.id)
     .limit(1)
     .single();
@@ -31,6 +31,7 @@ export default async function BoxesPage() {
         initialBoxes={boxes ?? []}
         slug={business!.slug}
         initialStoryPhotos={business!.story_photos ?? []}
+        initialStoryPhotoFormat={business!.story_photo_format}
         initialAboutBusiness={business!.about_business ?? ""}
         initialDifferentials={business!.differentials ?? ""}
         brandColors={brandColors}

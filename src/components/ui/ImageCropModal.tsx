@@ -2,8 +2,8 @@
 
 import { useMemo, useRef, useState } from "react";
 
-type Ratio = "quadrado" | "retrato" | "paisagem";
-const RATIOS: Record<Ratio, { value: number; label: string }> = {
+export type Ratio = "quadrado" | "retrato" | "paisagem";
+export const RATIOS: Record<Ratio, { value: number; label: string }> = {
   quadrado: { value: 1, label: "Quadrado" },
   retrato: { value: 4 / 5, label: "Retrato" },
   paisagem: { value: 16 / 9, label: "Paisagem" },
@@ -14,18 +14,23 @@ const FRAME_W = 300;
 /**
  * O que você vê dentro da moldura é exatamente o que vira a foto — arrasta
  * pra posicionar, usa o controle pra aproximar. Sem matemática pro dono ver.
+ * Se `lockedRatio` vier preenchido, o formato já foi decidido pela primeira
+ * foto desse item — as outras opções ficam travadas, com o motivo explicado,
+ * pra capa e galeria nunca ficarem misturando proporção.
  */
 export function ImageCropModal({
   file,
+  lockedRatio,
   onConfirm,
   onCancel,
 }: {
   file: File;
-  onConfirm: (blob: Blob) => void;
+  lockedRatio?: Ratio | null;
+  onConfirm: (blob: Blob, ratio: Ratio) => void;
   onCancel: () => void;
 }) {
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
-  const [ratio, setRatio] = useState<Ratio>("quadrado");
+  const [ratio, setRatio] = useState<Ratio>(lockedRatio ?? "quadrado");
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ startX: number; startY: number; origin: { x: number; y: number } } | null>(null);
@@ -98,7 +103,7 @@ export function ImageCropModal({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
-    canvas.toBlob((blob) => { if (blob) onConfirm(blob); }, "image/jpeg", 0.9);
+    canvas.toBlob((blob) => { if (blob) onConfirm(blob, ratio); }, "image/jpeg", 0.9);
   }
 
   return (
@@ -107,16 +112,27 @@ export function ImageCropModal({
         <p className="text-center text-[14px] font-medium">Ajustar foto</p>
 
         <div className="mt-4 flex justify-center gap-2">
-          {(Object.keys(RATIOS) as Ratio[]).map((r) => (
-            <button
-              key={r}
-              onClick={() => setRatio(r)}
-              className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${ratio === r ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
-            >
-              {RATIOS[r].label}
-            </button>
-          ))}
+          {(Object.keys(RATIOS) as Ratio[]).map((r) => {
+            const locked = !!lockedRatio && r !== lockedRatio;
+            return (
+              <button
+                key={r}
+                onClick={() => !locked && setRatio(r)}
+                disabled={locked}
+                className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${
+                  ratio === r ? "bg-button-primary text-white" : locked ? "bg-surface-soft text-text-tertiary/50" : "bg-surface-soft text-text-secondary"
+                }`}
+              >
+                {RATIOS[r].label}
+              </button>
+            );
+          })}
         </div>
+        {lockedRatio && (
+          <p className="mt-2 text-center text-[11px] text-text-tertiary">
+            Formato travado em {RATIOS[lockedRatio].label.toLowerCase()} — a primeira foto deste item definiu isso, pra capa e galeria combinarem.
+          </p>
+        )}
 
         <div
           className="relative mx-auto mt-4 touch-none overflow-hidden rounded-2xl bg-surface-soft"

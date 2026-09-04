@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
+import type { Ratio } from "@/components/ui/ImageCropModal";
 import { PALETTE_GROUPS, SIZE_CLASS, SIZE_LABEL, colorOf, groupByCategory, sizeOf, type BoxSize } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
@@ -16,6 +17,7 @@ type Item = {
   price: number | null;
   image_url: string | null;
   gallery_urls: string[];
+  photo_format: string | null;
   brand_label: string | null;
   position: number;
   status: string;
@@ -287,18 +289,22 @@ export function ShowcaseBuilder({
               <ImageUpload
                 value={sel.image_url}
                 businessId={businessId}
+                lockedRatio={sel.photo_format as Ratio | null}
+                onFormatChosen={(r) => save(sel.id, { photo_format: r })}
                 onChange={(url) => save(sel.id, { image_url: url, box_style: url ? "foto" : "cor" })}
               />
             </div>
 
             {/* Galeria — as fotos extras aparecem no carrossel da página do item. */}
             <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">
-              Mais fotos (até 4) · viram um carrossel na página do item
+              Mais fotos (até 6) · viram um carrossel na página do item
             </p>
             <div className="mt-2">
               <GalleryUpload
                 value={sel.gallery_urls}
                 businessId={businessId}
+                lockedRatio={sel.photo_format as Ratio | null}
+                onFormatChosen={(r) => save(sel.id, { photo_format: r })}
                 onChange={(urls) => save(sel.id, { gallery_urls: urls })}
               />
             </div>

@@ -2,23 +2,31 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ImageCropModal } from "./ImageCropModal";
+import { ImageCropModal, type Ratio } from "./ImageCropModal";
 
 /**
  * Fileira compacta de miniaturas — cada uma abre o seletor de arquivo e,
  * depois, o recorte (onde dá pra escolher quadrado, retrato ou paisagem).
  * Dá pra reordenar com as setinhas, sem precisar de arrastar.
+ *
+ * `lockedRatio` trava o formato do recorte no que já foi definido pela
+ * primeira foto do item (capa ou galeria) — evita misturar proporção.
+ * `onFormatChosen` avisa qual formato foi escolhido na primeira vez.
  */
 export function GalleryUpload({
   value,
   onChange,
   businessId,
   max = 6,
+  lockedRatio,
+  onFormatChosen,
 }: {
   value: string[];
   onChange: (urls: string[]) => void;
   businessId: string;
   max?: number;
+  lockedRatio?: Ratio | null;
+  onFormatChosen?: (ratio: Ratio) => void;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,7 +47,7 @@ export function GalleryUpload({
     setPendingFile(file);
   }
 
-  async function uploadBlob(blob: Blob) {
+  async function uploadBlob(blob: Blob, ratio: Ratio) {
     const index = targetIndexRef.current;
     setPendingFile(null);
     setUploadingIndex(index);
@@ -53,6 +61,7 @@ export function GalleryUpload({
     const next = [...value];
     next[index] = data.publicUrl;
     onChange(next.filter(Boolean));
+    if (!lockedRatio) onFormatChosen?.(ratio);
   }
 
   function removeAt(index: number) {
@@ -127,7 +136,7 @@ export function GalleryUpload({
       {error && <p className="text-[12px] text-red-600">{error}</p>}
 
       {pendingFile && (
-        <ImageCropModal file={pendingFile} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
+        <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
       )}
     </div>
   );
