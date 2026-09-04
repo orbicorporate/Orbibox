@@ -8,7 +8,7 @@ export default async function VitrinePage() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, slug, name, brand_colors, vitrine_categories, vitrine_cover_urls")
+    .select("id, slug, name, brand_colors, vitrine_categories, vitrine_cover_urls, contact_whatsapp")
     .eq("owner_id", user!.id)
     .limit(1)
     .single();
@@ -39,6 +39,7 @@ export default async function VitrinePage() {
         brandColors={brandColors}
         initialCategories={business!.vitrine_categories ?? []}
         initialCoverUrl={business!.vitrine_cover_urls}
+        whatsapp={business!.contact_whatsapp}
       />
     </div>
   );

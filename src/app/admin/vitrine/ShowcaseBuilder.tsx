@@ -9,6 +9,7 @@ import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, type BoxSize, type PriceType } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { whatsappLink } from "@/lib/track";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -31,6 +32,7 @@ type Item = {
   box_style: string;
   ai_optimized: boolean;
   link_kind: string | null;
+  target_url: string | null;
 };
 
 /** Formatos desenhados como miniatura, para escolher pelo olho e não pela palavra. */
@@ -53,6 +55,7 @@ export function ShowcaseBuilder({
   brandColors = [],
   initialCategories = [],
   initialCoverUrl = null,
+  whatsapp = null,
 }: {
   items: Item[];
   slug: string;
@@ -60,6 +63,7 @@ export function ShowcaseBuilder({
   brandColors?: BrandColor[];
   initialCategories?: string[];
   initialCoverUrl?: string[] | null;
+  whatsapp?: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -418,6 +422,7 @@ export function ShowcaseBuilder({
                   improving={improving === item.id}
                   onDelete={() => deleteItem(item)}
                   slug={slug}
+                  whatsapp={whatsapp}
                 />
               ))}
               {sec.items.length === 0 && (
@@ -501,6 +506,7 @@ function ItemCard({
   improving,
   onDelete,
   slug,
+  whatsapp,
 }: {
   item: Item;
   editing: boolean;
@@ -521,6 +527,7 @@ function ItemCard({
   improving: boolean;
   onDelete: () => void;
   slug: string;
+  whatsapp?: string | null;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
@@ -827,6 +834,44 @@ function ItemCard({
                 {categories.map((name) => <option key={name} value={name}>{name}</option>)}
                 <option value="__nova__">+ Nova categoria…</option>
               </select>
+            </div>
+
+            <div>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Destino</p>
+              <p className="mt-1 text-[12px] text-text-tertiary">Pra onde vai quando tocam nesse item.</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => save(item.id, { link_kind: "produto", target_url: null })}
+                  className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${(item.link_kind ?? "produto") === "produto" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                >
+                  Página própria (descrição, fotos)
+                </button>
+                <button
+                  onClick={() => save(item.id, { link_kind: "externo", target_url: item.target_url ?? "" })}
+                  className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${item.link_kind === "externo" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                >
+                  Link externo (WhatsApp, site…)
+                </button>
+              </div>
+              {item.link_kind === "externo" && (
+                <div className="mt-2 flex flex-col gap-2">
+                  <input
+                    value={item.target_url ?? ""}
+                    onChange={(e) => patch(item.id, { target_url: e.target.value })}
+                    onBlur={(e) => save(item.id, { target_url: e.target.value || null })}
+                    placeholder="https://…"
+                    className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                  />
+                  {whatsapp && (
+                    <button
+                      onClick={() => save(item.id, { target_url: whatsappLink(whatsapp, `Olá! Vim pelo seu link, quero saber mais sobre "${item.title}".`) })}
+                      className="self-start rounded-full border border-[#25D366] px-3 py-1.5 text-[12px] font-medium text-on-background"
+                    >
+                      ☎ Usar o WhatsApp da empresa
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             <button
