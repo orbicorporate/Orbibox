@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
@@ -195,7 +195,8 @@ export function VisitorExperience({
 
         {(intent === "comprar" || intent === "presentear") && (
           <div className="w-full">
-            <button onClick={() => setIntent(null)} className="mb-5 text-[13px] text-text-tertiary hover:underline">← voltar</button>
+            <VitrineCoverBleed business={business} />
+            <button onClick={() => setIntent(null)} className="mb-5 mt-5 text-[13px] text-text-tertiary hover:underline">← voltar</button>
             <h2 className="font-[family-name:var(--font-manrope)] text-[30px] font-medium tracking-[-0.01em]">
               {intent === "presentear" ? "Para presentear" : "Feito para você"}
             </h2>
@@ -639,42 +640,63 @@ function BarraContato({ business, sessionId, onOrbi }: { business: Business; ses
   );
 }
 
+function VitrineCoverBleed({ business }: { business: Business }) {
+  const covers = business.vitrine_cover_urls ?? [];
+  const [idx, setIdx] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  // Passa sozinha a cada 2s — a pessoa também pode arrastar quando quiser.
+  useEffect(() => {
+    if (covers.length < 2) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % covers.length), 2000);
+    return () => clearInterval(t);
+  }, [covers.length]);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollTo({ left: idx * el.clientWidth, behavior: "smooth" });
+  }, [idx]);
+
+  if (covers.length === 0) return null;
+
+  return (
+    <div className="-mx-6 -mt-16">
+      <div
+        ref={trackRef}
+        className="flex snap-x snap-mandatory gap-0 overflow-x-auto"
+        onScroll={(e) => {
+          const w = e.currentTarget.clientWidth || 1;
+          setIdx(Math.round(e.currentTarget.scrollLeft / w));
+        }}
+      >
+        {covers.map((src, i) => (
+          <div key={i} className="relative w-full shrink-0 snap-center" style={{ aspectRatio: 1920 / 830 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={business.name} className="h-full w-full object-cover" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+          </div>
+        ))}
+      </div>
+      {covers.length > 1 && (
+        <div className="mt-3 flex justify-center gap-1.5">
+          {covers.map((_, i) => (
+            <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === idx ? "bg-on-background" : "bg-on-background/25"}`} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Showcase({ content, business, sessionId, onOrbi }: { content: ContentItem[]; business: Business; sessionId: string | null; onOrbi: () => void }) {
   const sections = groupByCategory(content);
   const [active, setActive] = useState<string | null>(null);
-  const [coverIdx, setCoverIdx] = useState(0);
-  const covers = business.vitrine_cover_urls ?? [];
 
   const visible = active ? sections.filter((s) => s.name === active) : sections;
 
   return (
     <>
-      {covers.length > 0 && (
-        <div className="mt-5">
-          <div
-            className="flex snap-x snap-mandatory gap-3 overflow-x-auto rounded-[24px]"
-            onScroll={(e) => {
-              const w = e.currentTarget.clientWidth || 1;
-              setCoverIdx(Math.round(e.currentTarget.scrollLeft / w));
-            }}
-          >
-            {covers.map((src, i) => (
-              <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[24px]" style={{ aspectRatio: 1920 / 830 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={business.name} className="h-full w-full object-cover" />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-              </div>
-            ))}
-          </div>
-          {covers.length > 1 && (
-            <div className="mt-2 flex justify-center gap-1.5">
-              {covers.map((_, i) => (
-                <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === coverIdx ? "bg-on-background" : "bg-on-background/25"}`} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
       {sections.length > 1 && (
         <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
           <button
