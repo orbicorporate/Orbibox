@@ -362,6 +362,7 @@ function OrbiChat({
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [typedPlaceholder, setTypedPlaceholder] = useState("");
 
   // Sugestões puxadas do que existe de verdade no negócio — nunca genéricas.
   // Prioriza itens variados (categorias diferentes) pra cobrir mais opções.
@@ -397,6 +398,37 @@ function OrbiChat({
       .single()
       .then(({ data }) => data && setConversationId(data.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Efeito de "alguém digitando" no placeholder do campo — só decorativo,
+  // some assim que a pessoa toca pra escrever de verdade.
+  useEffect(() => {
+    const FULL_TEXT = "Comece a digitar aqui, vamos conversar.";
+    let i = 0;
+    let deleting = false;
+    let timeout: ReturnType<typeof setTimeout>;
+    function tick() {
+      if (!deleting) {
+        i++;
+        setTypedPlaceholder(FULL_TEXT.slice(0, i));
+        if (i === FULL_TEXT.length) {
+          timeout = setTimeout(() => { deleting = true; tick(); }, 1800);
+          return;
+        }
+        timeout = setTimeout(tick, 45);
+      } else {
+        i--;
+        setTypedPlaceholder(FULL_TEXT.slice(0, i));
+        if (i === 0) {
+          deleting = false;
+          timeout = setTimeout(tick, 600);
+          return;
+        }
+        timeout = setTimeout(tick, 25);
+      }
+    }
+    timeout = setTimeout(tick, 400);
+    return () => clearTimeout(timeout);
   }, []);
 
   async function sendText(text: string) {
@@ -511,10 +543,12 @@ function OrbiChat({
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={`Digite ou fale com a ${agentName}…`}
+          placeholder={typedPlaceholder}
           className="flex-1 bg-transparent text-[14px] outline-none"
         />
-        <button type="submit" disabled={sending} className="flex h-10 w-10 items-center justify-center rounded-full bg-on-background text-white disabled:opacity-40">✦</button>
+        <button type="submit" disabled={sending} className="shrink-0 disabled:opacity-40">
+          <OrbiOrb size={40} />
+        </button>
       </form>
     </div>
   );
