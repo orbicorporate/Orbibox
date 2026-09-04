@@ -355,9 +355,18 @@ function ZaraChat({
       if (seen.has(cat) && cat) continue;
       if (cat) seen.add(cat);
       picks.push(item.title);
-      if (picks.length === 3) break;
+      if (picks.length === 7) break;
     }
-    if (picks.length === 0) return ["Quero saber mais sobre vocês", "Como funciona", "Quais os valores"];
+    // Se sobrar espaço e ainda tiver itens (mesmo repetindo categoria), completa até 7.
+    if (picks.length < 7) {
+      for (const item of published) {
+        if (picks.length === 7) break;
+        if (!picks.includes(item.title)) picks.push(item.title);
+      }
+    }
+    if (picks.length === 0) {
+      return ["Quero saber mais sobre vocês", "Como funciona", "Quais os valores", "Formas de pagamento", "Prazo de entrega", "Onde vocês atendem", "Quero falar com alguém"];
+    }
     return picks;
   })();
 
@@ -418,7 +427,10 @@ function ZaraChat({
             <h2 className="mt-6 text-center font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-tight tracking-[-0.02em]">
               Como posso<br />te ajudar?
             </h2>
-            <div className="mt-8 flex flex-col gap-3">
+            <p className="mt-8 text-center text-[11px] font-medium uppercase tracking-wide text-text-tertiary">
+              Sugestões de tema
+            </p>
+            <div className="mt-3 flex flex-col gap-3">
               {QUICK.map((q) => (
                 <button
                   key={q}
@@ -455,7 +467,10 @@ function ZaraChat({
         onSubmit={(e) => { e.preventDefault(); sendText(input); }}
         className="absolute inset-x-6 bottom-8 flex items-center gap-2 rounded-full bg-surface-white p-2 pl-4 shadow-[0_8px_30px_rgba(17,19,24,0.12)]"
       >
-        <span className="text-text-tertiary">🎤</span>
+        <span className="relative flex h-2.5 w-2.5 shrink-0">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orbi-gradient-start opacity-75" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-orbi-gradient-start" />
+        </span>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
