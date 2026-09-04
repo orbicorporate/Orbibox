@@ -21,11 +21,13 @@ const FRAME_W = 300;
 export function ImageCropModal({
   file,
   lockedRatio,
+  lockedReason,
   onConfirm,
   onCancel,
 }: {
   file: File;
   lockedRatio?: Ratio | null;
+  lockedReason?: string;
   onConfirm: (blob: Blob, ratio: Ratio) => void;
   onCancel: () => void;
 }) {
@@ -130,7 +132,7 @@ export function ImageCropModal({
         </div>
         {lockedRatio && (
           <p className="mt-2 text-center text-[11px] text-text-tertiary">
-            A primeira foto deste item já definiu {RATIOS[lockedRatio].label.toLowerCase()} — as próximas seguem o mesmo formato, pra capa e galeria combinarem.
+            {lockedReason ?? `A primeira foto deste item já definiu ${RATIOS[lockedRatio].label.toLowerCase()} — as próximas seguem o mesmo formato, pra capa e galeria combinarem.`}
           </p>
         )}
 

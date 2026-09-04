@@ -19,12 +19,14 @@ export function ImageUpload({
   onChange,
   businessId,
   lockedRatio,
+  lockedReason,
   onFormatChosen,
 }: {
   value: string | null;
   onChange: (url: string | null) => void;
   businessId: string;
   lockedRatio?: Ratio | null;
+  lockedReason?: string;
   onFormatChosen?: (ratio: Ratio) => void;
 }) {
   const supabase = createClient();
@@ -120,7 +122,7 @@ export function ImageUpload({
       {error && <p className="text-[12px] text-red-600">{error}</p>}
 
       {pendingFile && (
-        <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
+        <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} lockedReason={lockedReason} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
       )}
     </div>
   );

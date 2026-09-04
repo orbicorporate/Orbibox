@@ -34,6 +34,16 @@ const FORMA: Record<BoxSize, string> = {
   alto: "h-9 w-5",
 };
 
+// A foto de capa preenche o box na grade — então ela segue o formato do box,
+// não uma escolha própria. Largo e Destaque são baixinhos (paisagem), Alto é
+// bem vertical (retrato), Médio fica perto de quadrado.
+const COVER_RATIO_BY_SIZE: Record<BoxSize, Ratio> = {
+  destaque: "paisagem",
+  largo: "paisagem",
+  medio: "quadrado",
+  alto: "retrato",
+};
+
 export function ShowcaseBuilder({
   items: initial,
   slug,
@@ -343,8 +353,8 @@ export function ShowcaseBuilder({
               <ImageUpload
                 value={sel.image_url}
                 businessId={businessId}
-                lockedRatio={sel.photo_format as Ratio | null}
-                onFormatChosen={(r) => save(sel.id, { photo_format: r })}
+                lockedRatio={COVER_RATIO_BY_SIZE[sizeOf(sel.layout_size)]}
+                lockedReason="Segue o formato do box escolhido acima — pra mudar, troque o formato."
                 onChange={(url) => save(sel.id, { image_url: url, box_style: url ? "foto" : "cor" })}
               />
             </div>
