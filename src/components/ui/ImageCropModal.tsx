@@ -112,25 +112,25 @@ export function ImageCropModal({
         <p className="text-center text-[14px] font-medium">Ajustar foto</p>
 
         <div className="mt-4 flex justify-center gap-2">
-          {(Object.keys(RATIOS) as Ratio[]).map((r) => {
-            const locked = !!lockedRatio && r !== lockedRatio;
-            return (
+          {lockedRatio ? (
+            <span className="rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium text-on-background">
+              {RATIOS[lockedRatio].label}
+            </span>
+          ) : (
+            (Object.keys(RATIOS) as Ratio[]).map((r) => (
               <button
                 key={r}
-                onClick={() => !locked && setRatio(r)}
-                disabled={locked}
-                className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${
-                  ratio === r ? "bg-button-primary text-white" : locked ? "bg-surface-soft text-text-tertiary/50" : "bg-surface-soft text-text-secondary"
-                }`}
+                onClick={() => setRatio(r)}
+                className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${ratio === r ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
               >
                 {RATIOS[r].label}
               </button>
-            );
-          })}
+            ))
+          )}
         </div>
         {lockedRatio && (
           <p className="mt-2 text-center text-[11px] text-text-tertiary">
-            Formato travado em {RATIOS[lockedRatio].label.toLowerCase()} — a primeira foto deste item definiu isso, pra capa e galeria combinarem.
+            A primeira foto deste item já definiu {RATIOS[lockedRatio].label.toLowerCase()} — as próximas seguem o mesmo formato, pra capa e galeria combinarem.
           </p>
         )}
 
