@@ -18,10 +18,10 @@ const META: Record<string, { name: string; explica: string; icon: string; fixo?:
     icon: "◈",
     fixo: true,
   },
-  product: { name: "Comprar", explica: "Mostra seus produtos e serviços na vitrine que você montou.", icon: "▤" },
+  product: { name: "O que fazemos", explica: "Mostra seus produtos e serviços na vitrine que você montou.", icon: "▤" },
   content: { name: "Conhecer", explica: "Conta sobre a marca — texto e fotos, usando o tom de voz do seu DNA.", icon: "◫" },
   campaign: { name: "Presentear", explica: "Uma seleção pensada para quem vai comprar para outra pessoa.", icon: "◇" },
-  agent: { name: "Tirar uma dúvida", explica: "Abre a conversa com sua assistente de IA.", icon: "◉" },
+  agent: { name: "Vamos conversar", explica: "Abre a conversa com sua assistente de IA.", icon: "◉" },
 };
 
 const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {

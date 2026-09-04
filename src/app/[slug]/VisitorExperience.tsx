@@ -49,10 +49,10 @@ type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: 
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
-  product: { k: "comprar", icon: "▤", t: "Comprar", d: "Explore nosso catálogo completo." },
+  product: { k: "comprar", icon: "▤", t: "O que fazemos", d: "Explore nosso catálogo completo." },
   content: { k: "conhecer", icon: "◫", t: "Conhecer", d: "Descubra nosso espaço e história." },
   campaign: { k: "presentear", icon: "◈", t: "Presentear", d: "Opções especiais e curadoria." },
-  agent: { k: "duvida", icon: "◉", t: "Tirar uma dúvida", d: "", ai: true },
+  agent: { k: "duvida", icon: "◉", t: "Vamos conversar", d: "", ai: true },
 };
 
 export function VisitorExperience({
