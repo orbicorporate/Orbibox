@@ -19,6 +19,7 @@ export function GalleryUpload({
   businessId,
   max = 6,
   lockedRatio,
+  lockedReason,
   onFormatChosen,
 }: {
   value: string[];
@@ -26,6 +27,7 @@ export function GalleryUpload({
   businessId: string;
   max?: number;
   lockedRatio?: Ratio | null;
+  lockedReason?: string;
   onFormatChosen?: (ratio: Ratio) => void;
 }) {
   const supabase = createClient();
@@ -136,7 +138,7 @@ export function GalleryUpload({
       {error && <p className="text-[12px] text-red-600">{error}</p>}
 
       {pendingFile && (
-        <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
+        <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} lockedReason={lockedReason} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
       )}
     </div>
   );

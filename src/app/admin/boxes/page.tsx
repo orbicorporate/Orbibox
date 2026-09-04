@@ -31,7 +31,6 @@ export default async function BoxesPage() {
         initialBoxes={boxes ?? []}
         slug={business!.slug}
         initialStoryPhotos={business!.story_photos ?? []}
-        initialStoryPhotoFormat={business!.story_photo_format}
         initialAboutBusiness={business!.about_business ?? ""}
         initialDifferentials={business!.differentials ?? ""}
         brandColors={brandColors}
