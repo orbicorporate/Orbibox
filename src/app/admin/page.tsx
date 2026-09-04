@@ -3,10 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
 const METRICS = [
-  { key: "discovery", label: "Visitas", icon: "◎" },
-  { key: "interest", label: "Interesses", icon: "♡" },
-  { key: "conversion", label: "Conversões", icon: "▤" },
-  { key: "relationship", label: "Ações", icon: "☞" },
+  { key: "discovery", label: "Visitas", icon: "◎", href: "/admin/pulse" },
+  { key: "interest", label: "Interesses", icon: "♡", href: "/admin/pulse" },
+  { key: "conversion", label: "Conversões", icon: "▤", href: "/admin/conversas" },
+  { key: "relationship", label: "Ações", icon: "☞", href: "/admin/pulse" },
 ] as const;
 
 export default async function HojePage() {
@@ -76,7 +76,7 @@ export default async function HojePage() {
       {/* Métricas em lista — cada uma leva pro Pulse, onde dá pra ver o detalhe */}
       <div className="mt-8 flex flex-col">
         {METRICS.map((m) => (
-          <Link key={m.key} href="/admin/pulse" className="flex items-center justify-between border-b border-divider py-4 active:opacity-60">
+          <Link key={m.key} href={m.href} className="flex items-center justify-between border-b border-divider py-4 active:opacity-60">
             <div className="flex items-center gap-3">
               <span className="text-[16px] text-text-secondary">{m.icon}</span>
               <span className="text-[15px] text-text-secondary">{m.label}</span>

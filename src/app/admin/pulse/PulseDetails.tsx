@@ -35,24 +35,36 @@ export function PulseDetails({
         {TIPOS.map((t) => {
           const itens = Object.entries(porTipoItem[t.kind] ?? {}).sort((a, b) => b[1] - a[1]);
           const total = porTipo[t.kind] ?? 0;
+          const isConversas = t.kind === "zara";
           const expandable = itens.length > 0;
           const isOpen = open === t.kind;
+          const row = (
+            <>
+              <div className="min-w-0">
+                <p className="text-[15px] text-on-background">{t.label}</p>
+                <p className="text-[12px] text-text-tertiary">{t.nota}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{total.toLocaleString("pt-BR")}</span>
+                {(expandable || isConversas) && <span className={`text-[12px] text-text-tertiary transition-transform ${isOpen ? "rotate-90" : ""}`}>›</span>}
+              </div>
+            </>
+          );
           return (
             <div key={t.kind} className="border-b border-divider">
-              <button
-                onClick={() => expandable && setOpen(isOpen ? null : t.kind)}
-                className="flex w-full items-center justify-between py-4 text-left"
-                disabled={!expandable}
-              >
-                <div className="min-w-0">
-                  <p className="text-[15px] text-on-background">{t.label}</p>
-                  <p className="text-[12px] text-text-tertiary">{t.nota}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{total.toLocaleString("pt-BR")}</span>
-                  {expandable && <span className={`text-[12px] text-text-tertiary transition-transform ${isOpen ? "rotate-90" : ""}`}>›</span>}
-                </div>
-              </button>
+              {isConversas ? (
+                <Link href="/admin/conversas" className="flex w-full items-center justify-between py-4 text-left">
+                  {row}
+                </Link>
+              ) : (
+                <button
+                  onClick={() => expandable && setOpen(isOpen ? null : t.kind)}
+                  className="flex w-full items-center justify-between py-4 text-left"
+                  disabled={!expandable}
+                >
+                  {row}
+                </button>
+              )}
               {isOpen && (
                 <div className="flex flex-col gap-2 pb-4">
                   {itens.map(([itemId, count]) => {
