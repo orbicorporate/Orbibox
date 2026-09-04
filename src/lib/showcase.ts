@@ -18,6 +18,17 @@ export const SIZE_CLASS: Record<BoxSize, string> = {
   alto: "col-span-1 row-span-2 min-h-[240px]",
 };
 
+// A foto de capa preenche o box — então ela segue o formato do box, não uma
+// escolha própria. Largo e Destaque são baixinhos (paisagem), Alto é bem
+// vertical (retrato), Médio fica perto de quadrado. Compartilhado entre o
+// editor (admin) e a página pública, pra capa nunca ficar diferente dos dois lados.
+export const COVER_RATIO_BY_SIZE: Record<BoxSize, "quadrado" | "retrato" | "paisagem"> = {
+  destaque: "paisagem",
+  largo: "paisagem",
+  medio: "quadrado",
+  alto: "retrato",
+};
+
 type Swatch = { bg: string; fg: string; label: string };
 
 // Paletas do editor de box, em grupos. "Padrão" é a original (neutros + Orbi).

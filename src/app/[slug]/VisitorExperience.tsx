@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
-import { SIZE_CLASS, colorOf, groupByCategory, sizeOf } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, colorOf, groupByCategory, sizeOf } from "@/lib/showcase";
 import { trackClick, whatsappLink } from "@/lib/track";
 
 type Business = {
@@ -574,11 +574,14 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
             {sections.length > 1 && (
               <h3 className="mb-3 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h3>
             )}
-            <div className="grid grid-cols-2 gap-2.5">
+            {/* Mesmo cartão grande da edição — o que você vê ao editar é o que o
+                visitante vê aqui, sem surpresa. */}
+            <div className="flex flex-col gap-5">
               {sec.items.map((item) => {
                 const c = colorOf(item.box_color);
-                // Mesma correção da Vitrine: "tem foto" é só ter uma URL, nunca
-                // uma segunda flag que podia ficar dessincronizada.
+                const size = sizeOf(item.layout_size);
+                const ratio = COVER_RATIO_BY_SIZE[size];
+                // Mesma correção de sempre: "tem foto" é só ter uma URL.
                 const photo = !!item.image_url;
                 // Categoria de loja vai direto pro site do dono (decisão já tomada).
                 // Produto e serviço abrem a página interna — com carrossel, descrição e CTAs.
@@ -586,58 +589,51 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                 const isExterno = item.link_kind === "categoria" || item.link_kind === "externo";
                 const kindClique: "categoria" | "produto" | "link" =
                   item.link_kind === "categoria" ? "categoria" : item.link_kind === "produto" ? "produto" : "link";
-                const classe = `relative flex flex-col justify-end overflow-hidden rounded-[20px] border border-divider p-3 ${SIZE_CLASS[sizeOf(item.layout_size)]}`;
-                const estilo = photo ? undefined : { backgroundColor: c.bg };
+
                 const miolo = (
                   <>
-                    {photo && (
-                      <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <div className="relative" style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1 }}>
+                      {photo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={item.image_url!}
                           alt={item.title}
-                          className="absolute inset-0 h-full w-full object-cover"
+                          className="h-full w-full object-cover"
                           onError={(e) => {
                             const img = e.currentTarget;
                             img.style.display = "none";
-                            const overlay = img.nextElementSibling as HTMLElement | null;
-                            if (overlay) overlay.style.display = "none";
                             if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
                           }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-                      </>
-                    )}
-                    {/* Indicador discreto de "tem mais aqui" — só vira texto quando
-                        avisa algo que muda o comportamento (sai pro site do dono). */}
-                    {destino && (
-                      <span
-                        className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/25 text-[11px] backdrop-blur-sm"
-                        style={{ color: photo ? "#fff" : c.fg }}
-                      >
-                        {isExterno ? "↗" : "›"}
-                      </span>
-                    )}
-                    <div className="relative">
-                      <p className={`font-medium leading-tight ${sizeOf(item.layout_size) === "destaque" ? "text-[17px]" : "text-[14px]"}`} style={{ color: photo ? "#fff" : c.fg }}>
-                        {item.title}
-                      </p>
-                      {item.price != null && (
-                        <p className="mt-0.5 text-[12px] opacity-80" style={{ color: photo ? "#fff" : c.fg }}>
-                          R$ {Number(item.price).toFixed(2)}
-                        </p>
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: c.bg }} />
                       )}
-                      {isExterno && (
-                        <p className="mt-1 text-[11px] opacity-70" style={{ color: photo ? "#fff" : c.fg }}>
-                          {item.link_kind === "categoria" ? "ver categoria" : "ver no site"}
-                        </p>
+                      {destino && (
+                        <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/25 text-[12px] text-white backdrop-blur-sm">
+                          {isExterno ? "↗" : "›"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-5">
+                      <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium leading-tight">{item.title}</p>
+                      <div className="mt-1 flex items-center gap-2">
+                        {item.brand_label && <p className="text-[13px] text-text-tertiary">{item.brand_label}</p>}
+                        {isExterno && (
+                          <p className="text-[12px] text-text-tertiary">{item.link_kind === "categoria" ? "· ver categoria" : "· ver no site"}</p>
+                        )}
+                      </div>
+                      {item.price != null && (
+                        <p className="mt-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium">R$ {Number(item.price).toFixed(2)}</p>
                       )}
                     </div>
                   </>
                 );
+
+                const classe = "block overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)]";
+
                 if (!destino) {
                   return (
-                    <div key={item.id} className={classe} style={estilo}>
+                    <div key={item.id} className={classe}>
                       {miolo}
                     </div>
                   );
@@ -650,7 +646,6 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                     rel="noopener noreferrer"
                     onClick={() => trackClick({ businessId: business.id, kind: kindClique, contentItemId: item.id, sessionId, targetUrl: destino })}
                     className={classe}
-                    style={estilo}
                   >
                     {miolo}
                   </a>
@@ -660,7 +655,6 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                     href={destino}
                     onClick={() => trackClick({ businessId: business.id, kind: "produto", contentItemId: item.id, sessionId, targetUrl: destino })}
                     className={classe}
-                    style={estilo}
                   >
                     {miolo}
                   </Link>

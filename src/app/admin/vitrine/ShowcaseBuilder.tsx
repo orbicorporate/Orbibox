@@ -6,8 +6,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
-import type { Ratio } from "@/components/ui/ImageCropModal";
-import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, type BoxSize } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, COVER_RATIO_BY_SIZE, type BoxSize } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -40,12 +39,7 @@ const FORMA: Record<BoxSize, string> = {
 // A foto de capa preenche o box na grade — então ela segue o formato do box,
 // não uma escolha própria. Largo e Destaque são baixinhos (paisagem), Alto é
 // bem vertical (retrato), Médio fica perto de quadrado.
-const COVER_RATIO_BY_SIZE: Record<BoxSize, Ratio> = {
-  destaque: "paisagem",
-  largo: "paisagem",
-  medio: "quadrado",
-  alto: "retrato",
-};
+
 
 export function ShowcaseBuilder({
   items: initial,
