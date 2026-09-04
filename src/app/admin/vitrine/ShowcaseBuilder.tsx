@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, COVER_RATIO_BY_SIZE, type BoxSize } from "@/lib/showcase";
+import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -70,6 +71,23 @@ export function ShowcaseBuilder({
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [proposta, setProposta] = useState<{ siteType: string; motivo: string | null; imported: number; semFoto: number } | null>(null);
+  const [insight, setInsight] = useState<string | null>(null);
+  const [generatingInsight, setGeneratingInsight] = useState(false);
+
+  async function generateInsight() {
+    setGeneratingInsight(true);
+    try {
+      const res = await fetch("/api/vitrine-insight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId }),
+      });
+      const data = await res.json();
+      if (data.insight) setInsight(data.insight);
+    } finally {
+      setGeneratingInsight(false);
+    }
+  }
 
   const ordered = [...items].sort((a, b) => a.position - b.position);
   const publishedCount = items.filter((i) => i.status === "published").length;
@@ -372,16 +390,24 @@ export function ShowcaseBuilder({
         ))}
       </div>
 
-      {/* Orbi Insight — a mesma identidade do Feed, ícone sempre "pensando". */}
+      {/* Orbi Insight — a esfera de verdade, e um botão pra pedir um olhar novo. */}
       {items.length > 0 && (
         <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full orbi-gradient text-[18px] orbi-thinking">✦</div>
+          <OrbiOrb size={48} />
           <p className="mt-4 font-[family-name:var(--font-manrope)] text-[19px] font-medium">Orbi Insight</p>
           <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-            {publishedCount === 0
-              ? "Nenhum item está ativo — os visitantes ainda não veem nada na sua vitrine. Publique pelo menos um."
-              : `Você tem ${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}. Itens com foto e descrição própria convertem mais do que os que ficaram com imagem sugerida.`}
+            {insight ??
+              (publishedCount === 0
+                ? "Nenhum item está ativo — os visitantes ainda não veem nada na sua vitrine. Publique pelo menos um."
+                : `Você tem ${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}. Itens com foto e descrição própria convertem mais do que os que ficaram com imagem sugerida.`)}
           </p>
+          <button
+            onClick={generateInsight}
+            disabled={generatingInsight}
+            className="mt-4 rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-60"
+          >
+            {generatingInsight ? "Analisando sua vitrine…" : "✦ Gerar novo insight"}
+          </button>
         </div>
       )}
     </div>
