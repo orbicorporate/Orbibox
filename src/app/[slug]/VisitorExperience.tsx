@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
 import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
@@ -26,6 +27,7 @@ type Business = {
   story_photos: string[];
   vitrine_cover_urls: string[];
   hero_question: string | null;
+  logo_url: string | null;
 };
 
 type ContentItem = {
@@ -140,7 +142,11 @@ export function VisitorExperience({
       <div className="relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center justify-center px-6 py-16">
         {intent === null && (
           <div className="flex flex-col items-center text-center">
-            <OrbiOrb size={132} className="mb-8" />
+            {business.logo_url ? (
+              <OrbiAvatar logoUrl={business.logo_url} size={112} className="mb-8" />
+            ) : (
+              <OrbiOrb size={112} className="mb-8" />
+            )}
             <p className="text-[13px] uppercase tracking-wide text-text-tertiary">
               {business.name}
             </p>

@@ -190,3 +190,32 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .orbi-thinking-dot { animation: none; }
 }
+
+/* Avatar de logotipo — pontinho de luz girando ao redor e brilho reflexivo
+ * varrendo a imagem, pra não ficar um círculo parado. */
+.orbi-avatar-ring {
+  animation: orbiAvatarSpin 4.5s linear infinite;
+}
+@keyframes orbiAvatarSpin {
+  to { transform: rotate(360deg); }
+}
+.orbi-avatar-dot {
+  top: -3px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  background: #B7F34A;
+  box-shadow: 0 0 8px 2px rgba(183, 243, 74, 0.7);
+}
+.orbi-avatar-shine {
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+  animation: orbiAvatarShine 3.4s ease-in-out infinite;
+}
+@keyframes orbiAvatarShine {
+  0% { transform: translateX(-120%) rotate(12deg); }
+  55%, 100% { transform: translateX(120%) rotate(12deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-avatar-ring, .orbi-avatar-shine { animation: none; }
+}

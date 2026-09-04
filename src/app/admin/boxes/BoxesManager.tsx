@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
@@ -53,6 +54,7 @@ export function BoxesManager({
   initialAboutBusiness,
   initialDifferentialsCards,
   initialHeroQuestion,
+  initialLogoUrl,
   brandColors,
 }: {
   businessId: string;
@@ -63,6 +65,7 @@ export function BoxesManager({
   initialAboutBusiness: string;
   initialDifferentialsCards: DifferentialCard[];
   initialHeroQuestion: string | null;
+  initialLogoUrl: string | null;
   brandColors: BrandColor[];
 }) {
   const supabase = createClient();
@@ -71,6 +74,7 @@ export function BoxesManager({
   const [aboutBusiness, setAboutBusiness] = useState(initialAboutBusiness);
   const [cards, setCards] = useState<DifferentialCard[]>(initialDifferentialsCards);
   const [heroQuestion, setHeroQuestion] = useState(initialHeroQuestion ?? "");
+  const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
   const [aboutImportUrl, setAboutImportUrl] = useState("");
   const [importingAbout, setImportingAbout] = useState(false);
   const [aboutImportMsg, setAboutImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
@@ -217,6 +221,24 @@ export function BoxesManager({
           placeholder="O que trouxe você aqui hoje?"
           className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
         />
+      </div>
+
+      <div className="rounded-[20px] bg-surface-soft p-4">
+        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Avatar da tela inicial</p>
+        <p className="mt-1 text-[12px] text-text-secondary">
+          Por padrão é a esfera da Orbi. Se quiser, troque pelo seu logotipo — ele aparece redondo, com um brilho animado ao redor.
+        </p>
+        <div className="mt-2">
+          <ImageUpload
+            value={logoUrl}
+            businessId={businessId}
+            lockedRatio="quadrado"
+            onChange={async (url) => {
+              setLogoUrl(url);
+              await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);
+            }}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
