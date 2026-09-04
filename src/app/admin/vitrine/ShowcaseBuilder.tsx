@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import type { Ratio } from "@/components/ui/ImageCropModal";
-import { PALETTE_GROUPS, SIZE_CLASS, SIZE_LABEL, colorOf, groupByCategory, sizeOf, type BoxSize } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_CLASS, SIZE_LABEL, colorOf, sizeOf, type BoxSize } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -39,15 +39,18 @@ export function ShowcaseBuilder({
   slug,
   businessId,
   brandColors = [],
+  initialCategories = [],
 }: {
   items: Item[];
   slug: string;
   businessId: string;
   brandColors?: BrandColor[];
+  initialCategories?: string[];
 }) {
   const supabase = createClient();
   const [items, setItems] = useState<Item[]>(initial);
   const [selId, setSelId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<string[]>(initialCategories);
   // Aba de paleta ativa no editor de cor. "Marca" só existe se a Orbi já
   // extraiu cores no DNA da marca (onboarding) — senão começa no Padrão.
   const [paletteTab, setPaletteTab] = useState<string>(brandColors.length > 0 ? "Marca" : "Padrão");
@@ -56,7 +59,15 @@ export function ShowcaseBuilder({
 
   const published = items.filter((i) => i.status === "published");
   const ordered = [...published].sort((a, b) => a.position - b.position);
-  const sections = groupByCategory(published);
+  // Categorias que já existem em algum item, mesmo que ainda não estejam na
+  // lista persistida (compatibilidade com categorias criadas do jeito antigo).
+  const itemCategoryNames = Array.from(new Set(published.map((i) => i.brand_label?.trim()).filter((v): v is string => !!v)));
+  const allCategoryNames = Array.from(new Set([...categories, ...itemCategoryNames]));
+  const uncategorized = ordered.filter((i) => !i.brand_label?.trim());
+  const sections = [
+    ...allCategoryNames.map((name) => ({ name, items: ordered.filter((i) => (i.brand_label?.trim() ?? "") === name) })),
+    ...(uncategorized.length > 0 ? [{ name: "Destaques", items: uncategorized }] : []),
+  ];
   const sel = items.find((i) => i.id === selId) ?? null;
 
   function patch(id: string, fields: Partial<Item>) {
@@ -68,6 +79,11 @@ export function ShowcaseBuilder({
     setSaving(true);
     await supabase.from("content_items").update(fields).eq("id", id);
     setSaving(false);
+  }
+
+  async function saveCategories(next: string[]) {
+    setCategories(next);
+    await supabase.from("businesses").update({ vitrine_categories: next }).eq("id", businessId);
   }
 
   async function move(item: Item, dir: -1 | 1) {
@@ -101,16 +117,33 @@ export function ShowcaseBuilder({
     setArranging(false);
   }
 
-  async function createItem() {
+  async function createItem(brandLabel: string | null = null) {
     const { data, error } = await supabase
       .from("content_items")
-      .insert({ business_id: businessId, type: "product", title: "Novo item", status: "published", position: published.length })
+      .insert({ business_id: businessId, type: "product", title: "Novo item", status: "published", position: published.length, brand_label: brandLabel })
       .select()
       .single();
     if (!error && data) {
       setItems((p) => [...p, data as Item]);
       setSelId(data.id);
     }
+  }
+
+  async function createCategory() {
+    const nome = window.prompt("Nome da nova categoria:");
+    if (!nome || !nome.trim()) return;
+    const trimmed = nome.trim();
+    if (allCategoryNamesRef().includes(trimmed)) {
+      window.alert(`Já existe uma categoria "${trimmed}".`);
+      return;
+    }
+    await saveCategories([...categories, trimmed]);
+  }
+
+  // Nome de todas as categorias já conhecidas — usado pra evitar duplicata
+  // com erro de digitação, tanto ao criar quanto ao escolher no seletor.
+  function allCategoryNamesRef() {
+    return Array.from(new Set([...categories, ...items.map((i) => i.brand_label?.trim()).filter((v): v is string => !!v)]));
   }
 
   async function deleteItem(item: Item) {
@@ -127,13 +160,23 @@ export function ShowcaseBuilder({
     const ids = published.filter((i) => (i.brand_label?.trim() || "Destaques") === oldName).map((i) => i.id);
     setItems((p) => p.map((i) => (ids.includes(i.id) ? { ...i, brand_label: value } : i)));
     await Promise.all(ids.map((id) => supabase.from("content_items").update({ brand_label: value }).eq("id", id)));
+    if (value) {
+      const next = categories.includes(oldName) ? categories.map((c) => (c === oldName ? value : c)) : [...categories.filter((c) => c !== oldName), value];
+      await saveCategories(Array.from(new Set(next)));
+    } else if (categories.includes(oldName)) {
+      await saveCategories(categories.filter((c) => c !== oldName));
+    }
   }
 
   async function deleteCategory(name: string) {
     const ids = published.filter((i) => (i.brand_label?.trim() || "Destaques") === name).map((i) => i.id);
-    if (!window.confirm(`Excluir a categoria "${name}" e ${ids.length === 1 ? "seu 1 item" : `seus ${ids.length} itens`}? Essa ação não pode ser desfeita.`)) return;
+    const msg = ids.length === 0
+      ? `Excluir a categoria "${name}"? Ela está vazia.`
+      : `Excluir a categoria "${name}" e ${ids.length === 1 ? "seu 1 item" : `seus ${ids.length} itens`}? Essa ação não pode ser desfeita.`;
+    if (!window.confirm(msg)) return;
     setItems((p) => p.filter((i) => !ids.includes(i.id)));
-    await Promise.all(ids.map((id) => supabase.from("content_items").delete().eq("id", id)));
+    if (ids.length > 0) await Promise.all(ids.map((id) => supabase.from("content_items").delete().eq("id", id)));
+    if (categories.includes(name)) await saveCategories(categories.filter((c) => c !== name));
   }
 
   const idx = sel ? ordered.findIndex((i) => i.id === sel.id) : -1;
@@ -148,8 +191,11 @@ export function ShowcaseBuilder({
         >
           {arranging ? "Organizando…" : "✦ Organizar com Orbi"}
         </button>
-        <button onClick={createItem} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">
+        <button onClick={() => createItem()} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">
           + Novo item
+        </button>
+        <button onClick={createCategory} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary">
+          + Categoria
         </button>
         <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
           Ver publicado ↗
@@ -163,7 +209,7 @@ export function ShowcaseBuilder({
 
       {published.length === 0 && (
         <div className="mt-5 rounded-[28px] border border-divider bg-surface-white p-6 text-[14px] text-text-secondary">
-          Nenhum item ativo ainda. Toque em “+ Novo item” ou ative um item no Feed para ele aparecer aqui.
+          Nenhum item ativo ainda. Toque em “+ Novo item” para criar o primeiro.
         </div>
       )}
 
@@ -198,6 +244,14 @@ export function ShowcaseBuilder({
                   onSelect={() => setSelId(selId === item.id ? null : item.id)}
                 />
               ))}
+              {sec.items.length === 0 && (
+                <button
+                  onClick={() => createItem(sec.name === "Destaques" ? null : sec.name)}
+                  className="col-span-2 flex min-h-[90px] items-center justify-center rounded-[20px] border border-dashed border-divider text-[13px] text-text-tertiary"
+                >
+                  + Adicionar item nesta categoria
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -375,13 +429,28 @@ export function ShowcaseBuilder({
                 className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
               />
               <p className="mt-3 text-[12px] uppercase tracking-wide text-text-tertiary">Categoria (vira seção)</p>
-              <input
+              <select
                 value={sel.brand_label ?? ""}
-                onChange={(e) => patch(sel.id, { brand_label: e.target.value })}
-                onBlur={(e) => save(sel.id, { brand_label: e.target.value || null })}
-                placeholder="Ex: Serviços"
-                className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-              />
+                onChange={(e) => {
+                  if (e.target.value === "__nova__") {
+                    const nome = window.prompt("Nome da nova categoria:");
+                    if (nome && nome.trim()) {
+                      const trimmed = nome.trim();
+                      save(sel.id, { brand_label: trimmed });
+                      if (!allCategoryNamesRef().includes(trimmed)) saveCategories([...categories, trimmed]);
+                    }
+                    return;
+                  }
+                  save(sel.id, { brand_label: e.target.value || null });
+                }}
+                className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              >
+                <option value="">Sem categoria (Destaques)</option>
+                {allCategoryNames.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+                <option value="__nova__">+ Nova categoria…</option>
+              </select>
             </details>
 
             <Link

@@ -8,7 +8,7 @@ export default async function VitrinePage() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, slug, brand_colors")
+    .select("id, slug, brand_colors, vitrine_categories")
     .eq("owner_id", user!.id)
     .limit(1)
     .single();
@@ -32,7 +32,13 @@ export default async function VitrinePage() {
       <p className="mt-1 text-[14px] text-text-secondary">
         Toque em qualquer box para mudar nome, foto, cor, formato e posição. As mudanças salvam sozinhas.
       </p>
-      <ShowcaseBuilder items={items ?? []} slug={business!.slug} businessId={business!.id} brandColors={brandColors} />
+      <ShowcaseBuilder
+        items={items ?? []}
+        slug={business!.slug}
+        businessId={business!.id}
+        brandColors={brandColors}
+        initialCategories={business!.vitrine_categories ?? []}
+      />
     </div>
   );
 }
