@@ -461,19 +461,23 @@ function OrbiChat({
                 <div className="flex flex-col gap-3">{formatMessage(m.content)}</div>
               </div>
             ))}
-            {sending && <div className="max-w-[40%] rounded-2xl bg-surface-white px-4 py-3 text-[14px] text-text-tertiary">…</div>}
+            {sending && (
+              <div className="flex max-w-[40%] items-center gap-2 self-start rounded-2xl bg-surface-white px-4 py-3 shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
+                <span className="orbi-thinking-dot h-2.5 w-2.5 shrink-0 rounded-full bg-orbi-gradient-start" />
+                <span className="orbi-thinking-dot h-2.5 w-2.5 shrink-0 rounded-full bg-orbi-gradient-start" style={{ animationDelay: "0.2s" }} />
+                <span className="orbi-thinking-dot h-2.5 w-2.5 shrink-0 rounded-full bg-orbi-gradient-start" style={{ animationDelay: "0.4s" }} />
+              </div>
+            )}
             {whatsapp && !sending && (
               <a
                 href={whatsappLink(whatsapp, `Olá! Vim conversando com a ${agentName} no site.`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackClick({ businessId, kind: "whatsapp", sessionId })}
-                className="flex items-center gap-3 self-start rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[13px] text-on-background shadow-[0_2px_12px_rgba(17,19,24,0.06)]"
+                className="flex items-center justify-center gap-2 self-start rounded-full border-2 border-[#25D366] bg-surface-white px-5 py-3 text-[14px] font-medium text-on-background"
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#25D366]/15 text-[15px]">☎</span>
-                <span>
-                  Prefere mais rápido? <span className="font-medium">Fala com a gente agora no WhatsApp</span> — sem fila de espera.
-                </span>
+                <span className="text-[15px]">☎</span>
+                Prefiro falar direto por WhatsApp
               </a>
             )}
           </div>

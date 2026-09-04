@@ -178,3 +178,15 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .notif-badge { animation: none; }
 }
+
+/* Indicador de "pensando" da Orbi — pontinhos verdes pulsando em sequência. */
+.orbi-thinking-dot {
+  animation: orbiThinkingDot 1.2s ease-in-out infinite;
+}
+@keyframes orbiThinkingDot {
+  0%, 60%, 100% { transform: scale(1); opacity: 0.5; }
+  30% { transform: scale(1.3); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-thinking-dot { animation: none; }
+}
