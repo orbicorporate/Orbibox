@@ -99,6 +99,41 @@ export function ShowcaseBuilder({
     setArranging(false);
   }
 
+  async function createItem() {
+    const { data, error } = await supabase
+      .from("content_items")
+      .insert({ business_id: businessId, type: "product", title: "Novo item", status: "published", position: published.length })
+      .select()
+      .single();
+    if (!error && data) {
+      setItems((p) => [...p, data as Item]);
+      setSelId(data.id);
+    }
+  }
+
+  async function deleteItem(item: Item) {
+    if (!window.confirm(`Excluir "${item.title}"? Essa ação não pode ser desfeita.`)) return;
+    setSelId(null);
+    setItems((p) => p.filter((i) => i.id !== item.id));
+    await supabase.from("content_items").delete().eq("id", item.id);
+  }
+
+  async function renameCategory(oldName: string) {
+    const novo = window.prompt("Novo nome da categoria:", oldName === "Destaques" ? "" : oldName);
+    if (novo === null) return;
+    const value = novo.trim() || null;
+    const ids = published.filter((i) => (i.brand_label?.trim() || "Destaques") === oldName).map((i) => i.id);
+    setItems((p) => p.map((i) => (ids.includes(i.id) ? { ...i, brand_label: value } : i)));
+    await Promise.all(ids.map((id) => supabase.from("content_items").update({ brand_label: value }).eq("id", id)));
+  }
+
+  async function deleteCategory(name: string) {
+    const ids = published.filter((i) => (i.brand_label?.trim() || "Destaques") === name).map((i) => i.id);
+    if (!window.confirm(`Excluir a categoria "${name}" e ${ids.length === 1 ? "seu 1 item" : `seus ${ids.length} itens`}? Essa ação não pode ser desfeita.`)) return;
+    setItems((p) => p.filter((i) => !ids.includes(i.id)));
+    await Promise.all(ids.map((id) => supabase.from("content_items").delete().eq("id", id)));
+  }
+
   const idx = sel ? ordered.findIndex((i) => i.id === sel.id) : -1;
 
   return (
@@ -110,6 +145,9 @@ export function ShowcaseBuilder({
           className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-50"
         >
           {arranging ? "Organizando…" : "✦ Organizar com Orbi"}
+        </button>
+        <button onClick={createItem} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">
+          + Novo item
         </button>
         <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
           Ver publicado ↗
@@ -123,14 +161,32 @@ export function ShowcaseBuilder({
 
       {published.length === 0 && (
         <div className="mt-5 rounded-[28px] border border-divider bg-surface-white p-6 text-[14px] text-text-secondary">
-          Nenhum item ativo ainda. Ative um item no Feed para ele aparecer aqui.
+          Nenhum item ativo ainda. Toque em “+ Novo item” ou ative um item no Feed para ele aparecer aqui.
         </div>
       )}
 
       <div className="mt-6 flex flex-col gap-8">
         {sections.map((sec) => (
           <div key={sec.name}>
-            <h2 className="mb-3 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
+              <div className="flex shrink-0 gap-1.5">
+                <button
+                  onClick={() => renameCategory(sec.name)}
+                  aria-label="Renomear categoria"
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-text-secondary"
+                >
+                  ✎
+                </button>
+                <button
+                  onClick={() => deleteCategory(sec.name)}
+                  aria-label="Excluir categoria"
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
             <div className="grid auto-rows-[minmax(0,auto)] grid-cols-2 gap-2.5">
               {sec.items.map((item) => (
                 <BoxCard
@@ -329,6 +385,13 @@ export function ShowcaseBuilder({
             >
               Ver página do item ↗
             </Link>
+
+            <button
+              onClick={() => deleteItem(sel)}
+              className="mt-2 block w-full rounded-full py-3 text-center text-[13px] font-medium text-red-600"
+            >
+              Excluir item
+            </button>
           </div>
         </>
       )}
