@@ -527,7 +527,12 @@ function ItemCard({
 
   return (
     <div id={`item-${item.id}`} className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${widthClass}`}>
-      <div className="relative" style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1, minHeight: 150 }}>
+      <div
+        className="relative"
+        style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1, minHeight: 150 }}
+        onClick={!editing ? onToggleEdit : undefined}
+        role={!editing ? "button" : undefined}
+      >
         {hasPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -546,8 +551,8 @@ function ItemCard({
           <div className="h-full w-full" style={{ backgroundColor: broken ? "#FBEAEA" : c.bg }} />
         ) : broken ? (
           // Link da foto quebrou — item já foi pausado sozinho (useEffect acima).
-          <button
-            onClick={onToggleEdit}
+          // Clique é tratado pelo container pai, então isso é só uma div visual.
+          <div
             className="flex h-full w-full flex-col items-center justify-center gap-2 px-8 text-center"
             style={{ backgroundColor: "#FBEAEA" }}
           >
@@ -558,12 +563,11 @@ function ItemCard({
             <span className="text-[12px] leading-snug text-red-700/80">
               Pausado até você trocar a foto — o público não vê mais este item.
             </span>
-          </button>
+          </div>
         ) : (
           // Sem foto: o próprio nome vira o conteúdo do box — centralizado, sem
-          // rodapé branco separado. O box inteiro continua clicável pra editar.
-          <button
-            onClick={onToggleEdit}
+          // rodapé branco separado. O card inteiro (tratado pelo container pai) continua clicável pra editar.
+          <div
             className="flex h-full w-full flex-col items-center justify-center gap-2 px-8 text-center"
             style={{ backgroundColor: c.bg }}
           >
@@ -584,13 +588,13 @@ function ItemCard({
                 Quero saber mais
               </span>
             )}
-          </button>
+          </div>
         )}
 
         {/* Selos empilhados verticalmente no canto — nunca colidem, mesmo em box estreito (Médio). */}
         <div className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
           <button
-            onClick={onTogglePublish}
+            onClick={(e) => { e.stopPropagation(); onTogglePublish(); }}
             className="inline-flex items-center gap-1.5 rounded-full bg-surface-white/95 px-3 py-1.5 text-[11px] font-medium shadow backdrop-blur"
           >
             <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
