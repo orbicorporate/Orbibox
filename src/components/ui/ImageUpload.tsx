@@ -151,14 +151,23 @@ export function ImageUpload({
         }}
       />
 
-      <input
-        value={urlDraft}
-        onChange={(e) => setUrlDraft(e.target.value)}
-        onBlur={() => { if (urlDraft.trim() !== (value ?? "").trim()) resolveUrl(urlDraft); }}
-        onKeyDown={(e) => { if (e.key === "Enter") { e.currentTarget.blur(); } }}
-        placeholder="ou cole o link de uma imagem (ou da página do produto)"
-        className="rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
-      />
+      <div className="flex gap-2">
+        <input
+          value={urlDraft}
+          onChange={(e) => setUrlDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.currentTarget.blur(); resolveUrl(urlDraft); } }}
+          placeholder="ou cole o link de uma imagem (ou da página do produto)"
+          className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+        />
+        <button
+          type="button"
+          onClick={() => resolveUrl(urlDraft)}
+          disabled={resolving || !urlDraft.trim() || urlDraft.trim() === (value ?? "").trim()}
+          className="shrink-0 rounded-2xl bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
+        >
+          Carregar
+        </button>
+      </div>
       {resolving && (
         <p className="flex items-center gap-2 text-[12px] text-text-tertiary">
           <span className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-divider border-t-on-background" />

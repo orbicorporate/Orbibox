@@ -499,6 +499,7 @@ function ItemCard({
   slug: string;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const [lastUrl, setLastUrl] = useState(item.image_url);
   if (item.image_url !== lastUrl) {
     setLastUrl(item.image_url);
@@ -774,6 +775,17 @@ function ItemCard({
                 <option value="__nova__">+ Nova categoria…</option>
               </select>
             </div>
+
+            <button
+              onClick={async () => {
+                await save(item.id, { title: item.title, description: item.description, price: item.price, price_max: item.price_max, brand_label: item.brand_label });
+                setJustSaved(true);
+                setTimeout(() => { setJustSaved(false); onToggleEdit(); }, 700);
+              }}
+              className={`block w-full rounded-full py-3 text-center text-[14px] font-medium text-white transition-colors ${justSaved ? "bg-orbi-gradient-start" : "bg-button-primary"}`}
+            >
+              {justSaved ? "✓ Salvo" : "Salvar"}
+            </button>
 
             <Link href={`/${slug}/p/${item.id}`} target="_blank" className="block rounded-full border border-divider py-3 text-center text-[13px] font-medium">
               Ver página do item ↗
