@@ -29,8 +29,8 @@ export type Database = {
       }
       click_events: { Row: { business_id: string; content_item_id: string | null; created_at: string; id: string; kind: string; target_url: string | null; visitor_session_id: string | null }; Insert: { business_id: string; content_item_id?: string | null; created_at?: string; id?: string; kind: string; target_url?: string | null; visitor_session_id?: string | null }; Update: Partial<Database["public"]["Tables"]["click_events"]["Insert"]>; Relationships: [] }
       conversations: {
-        Row: { business_id: string; channel: string; ended_at: string | null; id: string; started_at: string; status: string; visitor_session_id: string | null }
-        Insert: { business_id: string; channel?: string; ended_at?: string | null; id?: string; started_at?: string; status?: string; visitor_session_id?: string | null }
+        Row: { business_id: string; channel: string; ended_at: string | null; id: string; seen_by_owner: boolean; started_at: string; status: string; visitor_session_id: string | null }
+        Insert: { business_id: string; channel?: string; ended_at?: string | null; id?: string; seen_by_owner?: boolean; started_at?: string; status?: string; visitor_session_id?: string | null }
         Update: Partial<Database["public"]["Tables"]["conversations"]["Insert"]>
         Relationships: []
       }

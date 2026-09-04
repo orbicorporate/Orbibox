@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type Msg = { role: string; content: string };
 type Conversa = { id: string; startedAt: string; messages: Msg[] };
@@ -16,6 +17,14 @@ function formatData(iso: string) {
 
 export function ConversasList({ conversations }: { conversations: Conversa[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
+
+  // Abrir essa tela já conta como "vi as conversas" — zera o sininho do Today.
+  useEffect(() => {
+    if (conversations.length === 0) return;
+    const supabase = createClient();
+    supabase.from("conversations").update({ seen_by_owner: true }).in("id", conversations.map((c) => c.id)).then();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (conversations.length === 0) {
     return (

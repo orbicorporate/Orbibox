@@ -25,15 +25,17 @@ export default async function HojePage() {
 
 
   // Tudo que depende só do business roda em paralelo — antes eram 6 idas ao banco em fila.
-  const [oppRes, visitsRes, convsRes, interestedRes, actionsRes] = await Promise.all([
+  const [oppRes, visitsRes, convsRes, interestedRes, actionsRes, unseenRes] = await Promise.all([
     supabase.from("opportunities").select("*").eq("business_id", business!.id).eq("status", "open").order("impact_score", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id).not("intent", "is", null),
     supabase.from("campaigns").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
+    supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", business!.id).eq("seen_by_owner", false),
   ]);
   const opportunity = oppRes.data;
   const visits = visitsRes.count, convs = convsRes.count, interested = interestedRes.count, actions = actionsRes.count;
+  const unseenConversas = unseenRes.count ?? 0;
 
   const values: Record<string, number> = {
     discovery: visits ?? 0,
@@ -54,7 +56,17 @@ export default async function HojePage() {
   const firstName = fullName.split(" ")[0] || "você";
 
   return (
-    <div className="flex flex-col">
+    <div className="relative flex flex-col">
+      {/* Sininho de notificação — pisca quando tem conversa que ainda não foi vista */}
+      <Link href="/admin/conversas" className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white shadow" aria-label="Conversas">
+        <span className="text-[17px]">🔔</span>
+        {unseenConversas > 0 && (
+          <span className="notif-badge absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+            {unseenConversas > 9 ? "9+" : unseenConversas}
+          </span>
+        )}
+      </Link>
+
       {/* Saudação dentro de um halo circular */}
       <div className="relative mx-auto mt-6 flex h-64 w-64 flex-col items-center justify-center text-center">
         <div className="orbi-halo absolute inset-0" aria-hidden>

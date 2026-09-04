@@ -166,3 +166,15 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .orbi-card-light::before { animation: none; }
 }
+
+/* Sino de notificação — pisca de leve enquanto tiver conversa não vista. */
+.notif-badge {
+  animation: notifPulse 1.4s ease-in-out infinite;
+}
+@keyframes notifPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.75; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .notif-badge { animation: none; }
+}

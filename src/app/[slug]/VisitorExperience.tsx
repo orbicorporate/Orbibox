@@ -199,7 +199,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} content={content} onBack={() => setIntent(null)} />
+          <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
         )}
       </div>
     </main>
@@ -330,12 +330,14 @@ function OrbiChat({
   sessionId,
   agentName,
   content,
+  whatsapp,
   onBack,
 }: {
   businessId: string;
   sessionId: string;
   agentName: string;
   content: ContentItem[];
+  whatsapp: string | null;
   onBack: () => void;
 }) {
   const supabase = createClient();
@@ -458,6 +460,20 @@ function OrbiChat({
               </div>
             ))}
             {sending && <div className="max-w-[40%] rounded-2xl bg-surface-white px-4 py-3 text-[14px] text-text-tertiary">…</div>}
+            {whatsapp && !sending && (
+              <a
+                href={whatsappLink(whatsapp, `Olá! Vim conversando com a ${agentName} no site.`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackClick({ businessId, kind: "whatsapp", sessionId })}
+                className="flex items-center gap-3 self-start rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[13px] text-on-background shadow-[0_2px_12px_rgba(17,19,24,0.06)]"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#25D366]/15 text-[15px]">☎</span>
+                <span>
+                  Prefere mais rápido? <span className="font-medium">Fala com a gente agora no WhatsApp</span> — sem fila de espera.
+                </span>
+              </a>
+            )}
           </div>
         )}
       </div>
