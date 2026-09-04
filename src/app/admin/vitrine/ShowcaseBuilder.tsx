@@ -592,6 +592,15 @@ function ItemCard({
           </div>
         )}
 
+        {/* X pequeno pra excluir direto, sem precisar abrir a edição. */}
+        <button
+          onClick={(e) => { e.stopPropagation(); if (window.confirm(`Excluir "${item.title}"?`)) onDelete(); }}
+          className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-surface-white/95 text-[13px] text-text-secondary shadow backdrop-blur"
+          aria-label="Excluir item"
+        >
+          ✕
+        </button>
+
         {/* Selos no canto — só o que precisa da foto pra fazer sentido fica aqui.
             O status (Ativo/Rascunho) agora mora no rodapé branco, junto do título,
             exceto quando não tem rodapé (sem foto ou foto quebrada). */}
