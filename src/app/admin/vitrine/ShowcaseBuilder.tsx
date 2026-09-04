@@ -529,7 +529,18 @@ function ItemCard({
       <div className="relative" style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1, minHeight: 150 }}>
         {hasPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image_url!} alt={item.title} className="h-full w-full object-cover" onError={() => setImgFailed(true)} />
+          <img
+            src={item.image_url!}
+            alt={item.title}
+            className="h-full w-full object-cover"
+            onError={() => setImgFailed(true)}
+            onLoad={(e) => {
+              // Alguns links "carregam" mas devolvem um arquivo vazio/corrompido —
+              // o navegador não dispara onError nesse caso, então checamos o tamanho real.
+              const img = e.currentTarget;
+              if (img.naturalWidth === 0 || img.naturalHeight === 0) setImgFailed(true);
+            }}
+          />
         ) : editing ? (
           <div className="h-full w-full" style={{ backgroundColor: broken ? "#FBEAEA" : c.bg }} />
         ) : broken ? (
@@ -591,11 +602,6 @@ function ItemCard({
           )}
         </div>
 
-        {/* Indicador de formato — a única pista visual do "mosaico" que sobrava na grade */}
-        <span className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-surface-white/90 px-2.5 py-1.5 shadow backdrop-blur">
-          <span className={`rounded-[3px] bg-on-background ${FORMA[size]}`} style={{ transform: "scale(0.6)" }} />
-          <span className="text-[10px] font-medium text-text-secondary">{SIZE_LABEL[size]}</span>
-        </span>
       </div>
 
       {(hasPhoto || editing) && (

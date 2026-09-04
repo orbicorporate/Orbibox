@@ -655,6 +655,14 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                             img.style.display = "none";
                             if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
                           }}
+                          onLoad={(e) => {
+                            // Mesmo problema do editor: link que "carrega" mas devolve arquivo vazio.
+                            const img = e.currentTarget;
+                            if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                              img.style.display = "none";
+                              if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
+                            }
+                          }}
                         />
                       ) : (
                         // Sem foto: o nome vira o conteúdo do box, centralizado — sem
