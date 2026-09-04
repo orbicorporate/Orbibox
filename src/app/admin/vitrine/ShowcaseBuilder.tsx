@@ -591,15 +591,19 @@ function ItemCard({
           </div>
         )}
 
-        {/* Selos empilhados verticalmente no canto — nunca colidem, mesmo em box estreito (Médio). */}
+        {/* Selos no canto — só o que precisa da foto pra fazer sentido fica aqui.
+            O status (Ativo/Rascunho) agora mora no rodapé branco, junto do título,
+            exceto quando não tem rodapé (sem foto ou foto quebrada). */}
         <div className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
-          <button
-            onClick={(e) => { e.stopPropagation(); onTogglePublish(); }}
-            className="inline-flex items-center gap-1.5 rounded-full bg-surface-white/95 px-3 py-1.5 text-[11px] font-medium shadow backdrop-blur"
-          >
-            <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
-            {item.status === "published" ? "Ativo" : "Rascunho"}
-          </button>
+          {!hasPhoto && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onTogglePublish(); }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-surface-white/95 px-3 py-1.5 text-[11px] font-medium shadow backdrop-blur"
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
+              {item.status === "published" ? "Ativo" : "Rascunho"}
+            </button>
+          )}
           {item.image_is_placeholder && !broken && (
             <span className="rounded-full bg-on-background/80 px-3 py-1 text-[11px] font-medium text-white backdrop-blur">
               ✦ imagem sugerida
@@ -614,7 +618,18 @@ function ItemCard({
           {!editing ? (
             <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
               <div className="min-w-0">
-                <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium">{item.title}</p>
+                <div className="flex items-center gap-2">
+                  <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium">{item.title}</p>
+                  {hasPhoto && (
+                    <span
+                      onClick={(e) => { e.stopPropagation(); onTogglePublish(); }}
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-surface-soft px-2.5 py-1 text-[11px] font-medium text-text-secondary"
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
+                      {item.status === "published" ? "Ativo" : "Rascunho"}
+                    </span>
+                  )}
+                </div>
                 {item.brand_label && <p className="mt-0.5 text-[13px] text-text-tertiary">{item.brand_label}</p>}
               </div>
               {priceLabel && (
