@@ -269,8 +269,8 @@ export function BoxesManager({
                       <GalleryUpload
                         value={storyPhotos}
                         businessId={businessId}
-                        lockedRatio="quadrado"
-                        lockedReason="As fotos são sempre quadradas, pra manter o carrossel uniforme."
+                        lockedRatio="retrato"
+                        lockedReason="As fotos são sempre verticais (retrato), pra manter o carrossel uniforme."
                         onChange={saveStoryPhotos}
                       />
                     </div>

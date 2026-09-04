@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ImageCropModal, type Ratio } from "./ImageCropModal";
+import { ImageCropModal, RATIOS, type Ratio } from "./ImageCropModal";
 
 /**
  * Fileira compacta de miniaturas — cada uma abre o seletor de arquivo e,
@@ -84,7 +84,11 @@ export function GalleryUpload({
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-3 gap-2">
         {slots.map((url, i) => (
-          <div key={i} className="relative aspect-square overflow-hidden rounded-xl border border-dashed border-divider bg-surface-soft">
+          <div
+            key={i}
+            className="relative overflow-hidden rounded-xl border border-dashed border-divider bg-surface-soft"
+            style={{ aspectRatio: lockedRatio ? RATIOS[lockedRatio].value : 1 }}
+          >
             <button type="button" onClick={() => openPicker(i)} className="absolute inset-0">
               {url ? (
                 // eslint-disable-next-line @next/next/no-img-element

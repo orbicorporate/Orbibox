@@ -367,8 +367,8 @@ export function ShowcaseBuilder({
               <GalleryUpload
                 value={sel.gallery_urls}
                 businessId={businessId}
-                lockedRatio="quadrado"
-                lockedReason="As fotos da galeria são sempre quadradas, pra manter o carrossel uniforme."
+                lockedRatio="retrato"
+                lockedReason="As fotos da galeria são sempre verticais (retrato), pra manter o carrossel uniforme."
                 onChange={(urls) => save(sel.id, { gallery_urls: urls })}
               />
             </div>
