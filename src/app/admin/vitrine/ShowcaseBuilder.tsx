@@ -27,6 +27,7 @@ type Item = {
   box_color: string;
   box_style: string;
   ai_optimized: boolean;
+  link_kind: string | null;
 };
 
 /** Formatos desenhados como miniatura, para escolher pelo olho e não pela palavra. */
@@ -508,10 +509,34 @@ function ItemCard({
         {hasPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.image_url!} alt={item.title} className="h-full w-full object-cover" onError={() => setImgFailed(true)} />
+        ) : editing ? (
+          <div className="h-full w-full" style={{ backgroundColor: c.bg }} />
         ) : (
-          <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: c.bg }}>
-            <span style={{ color: c.fg }} className="text-[13px] opacity-70">sem foto</span>
-          </div>
+          // Sem foto: o próprio nome vira o conteúdo do box — centralizado, sem
+          // rodapé branco separado. O box inteiro continua clicável pra editar.
+          <button
+            onClick={onToggleEdit}
+            className="flex h-full w-full flex-col items-center justify-center gap-2 px-8 text-center"
+            style={{ backgroundColor: c.bg }}
+          >
+            <span className="font-[family-name:var(--font-open-sans)] text-[21px] font-bold leading-snug" style={{ color: c.fg }}>
+              {item.title}
+            </span>
+            {item.price != null && (
+              <span className="font-[family-name:var(--font-open-sans)] text-[14px]" style={{ color: c.fg }}>
+                R$ {Number(item.price).toFixed(2)}
+              </span>
+            )}
+            {/* Só existe página própria pra abrir se o item não for um link de categoria/externo. */}
+            {item.link_kind !== "categoria" && item.link_kind !== "externo" && (
+              <span
+                className="mt-1 rounded-full px-3 py-1.5 text-[11px] font-medium"
+                style={{ backgroundColor: `${c.fg}1A`, color: c.fg }}
+              >
+                Quero saber mais
+              </span>
+            )}
+          </button>
         )}
 
         <button
@@ -535,18 +560,19 @@ function ItemCard({
         </span>
       </div>
 
-      <div className="p-5">
-        {!editing ? (
-          <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
-            <div className="min-w-0">
-              <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium">{item.title}</p>
-              {item.brand_label && <p className="mt-0.5 text-[13px] text-text-tertiary">{item.brand_label}</p>}
-            </div>
-            {item.price != null && (
-              <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[19px] font-medium">R$ {Number(item.price).toFixed(0)}</p>
-            )}
-          </button>
-        ) : (
+      {(hasPhoto || editing) && (
+        <div className="p-5">
+          {!editing ? (
+            <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
+              <div className="min-w-0">
+                <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium">{item.title}</p>
+                {item.brand_label && <p className="mt-0.5 text-[13px] text-text-tertiary">{item.brand_label}</p>}
+              </div>
+              {item.price != null && (
+                <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[19px] font-medium">R$ {Number(item.price).toFixed(0)}</p>
+              )}
+            </button>
+          ) : (
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <input
@@ -687,7 +713,8 @@ function ItemCard({
             </button>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -634,7 +634,27 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                           }}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: c.bg }} />
+                        // Sem foto: o nome vira o conteúdo do box, centralizado — sem
+                        // rodapé branco repetindo a mesma informação embaixo.
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-8 text-center" style={{ backgroundColor: c.bg }}>
+                          <span className="font-[family-name:var(--font-open-sans)] text-[21px] font-bold leading-snug" style={{ color: c.fg }}>
+                            {item.title}
+                          </span>
+                          {item.price != null && (
+                            <span className="font-[family-name:var(--font-open-sans)] text-[14px]" style={{ color: c.fg }}>
+                              R$ {Number(item.price).toFixed(2)}
+                            </span>
+                          )}
+                          {isExterno ? (
+                            <span className="mt-1 text-[12px] opacity-70" style={{ color: c.fg }}>
+                              {item.link_kind === "categoria" ? "ver categoria ↗" : "ver no site ↗"}
+                            </span>
+                          ) : (
+                            <span className="mt-1 rounded-full px-3 py-1.5 text-[11px] font-medium" style={{ backgroundColor: `${c.fg}1A`, color: c.fg }}>
+                              Quero saber mais
+                            </span>
+                          )}
+                        </div>
                       )}
                       {destino && (
                         <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/25 text-[12px] text-white backdrop-blur-sm">
@@ -642,18 +662,20 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                         </span>
                       )}
                     </div>
-                    <div className="p-5">
-                      <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium leading-tight">{item.title}</p>
-                      <div className="mt-1 flex items-center gap-2">
-                        {item.brand_label && <p className="text-[13px] text-text-tertiary">{item.brand_label}</p>}
-                        {isExterno && (
-                          <p className="text-[12px] text-text-tertiary">{item.link_kind === "categoria" ? "· ver categoria" : "· ver no site"}</p>
+                    {photo && (
+                      <div className="p-5">
+                        <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium leading-tight">{item.title}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          {item.brand_label && <p className="text-[13px] text-text-tertiary">{item.brand_label}</p>}
+                          {isExterno && (
+                            <p className="text-[12px] text-text-tertiary">{item.link_kind === "categoria" ? "· ver categoria" : "· ver no site"}</p>
+                          )}
+                        </div>
+                        {item.price != null && (
+                          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium">R$ {Number(item.price).toFixed(2)}</p>
                         )}
                       </div>
-                      {item.price != null && (
-                        <p className="mt-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium">R$ {Number(item.price).toFixed(2)}</p>
-                      )}
-                    </div>
+                    )}
                   </>
                 );
 

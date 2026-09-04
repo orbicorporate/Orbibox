@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Manrope } from "next/font/google";
+import { Geist, Manrope, Open_Sans } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,6 +12,13 @@ const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
+  fallback: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+});
+
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
   fallback: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
 });
 
@@ -34,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${manrope.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${manrope.variable} ${openSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background-main text-on-background font-body-md">
         {children}
