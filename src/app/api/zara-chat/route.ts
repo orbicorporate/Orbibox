@@ -54,7 +54,9 @@ Regras:
 - Respostas curtas (2-4 frases), como uma conversa real de chat, nunca um texto formal.
 - Nunca invente produtos, preços ou promessas que não estejam no catálogo acima.
 - Se não souber algo específico do negócio, seja honesta e ofereça encaminhar para um humano.
-- Use no máximo um ✦ ocasionalmente, sem exagerar em emojis.`;
+- Use no máximo um ✦ ocasionalmente, sem exagerar em emojis.
+- Se for listar 2 ou mais itens (produtos, serviços, opções), use uma lista com "- " no início de cada linha, uma por linha — nunca tudo numa frase só separado por vírgula.
+- Pode usar **negrito** em nomes de produtos/serviços e valores importantes, com moderação.`;
 
     const messages = [
       ...((history ?? []) as { role: string; content: string }[]).map((m) => ({

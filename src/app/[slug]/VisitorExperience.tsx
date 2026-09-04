@@ -196,7 +196,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <ZaraChat businessId={business.id} sessionId={sessionId} agentName={agentName} onBack={() => setIntent(null)} />
+          <ZaraChat businessId={business.id} sessionId={sessionId} agentName={agentName} content={content} onBack={() => setIntent(null)} />
         )}
       </div>
     </main>
@@ -272,15 +272,61 @@ function StoryView({ business, onBack }: { business: Business; onBack: () => voi
   );
 }
 
+/**
+ * Transforma o texto puro da IA em parágrafos, listas com marcador e
+ * **negrito** de verdade — em vez de um bloco só, apertado e sem cor.
+ */
+function formatMessage(text: string) {
+  const blocks = text.split(/\n{2,}/);
+  return blocks.map((block, bi) => {
+    const lines = block.split("\n").filter((l) => l.trim() !== "");
+    const isBulletBlock = lines.length > 0 && lines.every((l) => /^[-*•]\s+/.test(l.trim()));
+    if (isBulletBlock) {
+      return (
+        <ul key={bi} className="flex flex-col gap-2">
+          {lines.map((l, li) => (
+            <li key={li} className="flex items-start gap-2.5">
+              <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full orbi-gradient" />
+              <span>{formatInline(l.replace(/^[-*•]\s+/, ""))}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    return (
+      <p key={bi}>
+        {lines.map((l, li) => (
+          <span key={li}>
+            {formatInline(l)}
+            {li < lines.length - 1 && <br />}
+          </span>
+        ))}
+      </p>
+    );
+  });
+}
+
+function formatInline(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith("**") && part.endsWith("**") ? (
+      <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
 function ZaraChat({
   businessId,
   sessionId,
   agentName,
+  content,
   onBack,
 }: {
   businessId: string;
   sessionId: string;
   agentName: string;
+  content: ContentItem[];
   onBack: () => void;
 }) {
   const supabase = createClient();
@@ -289,7 +335,22 @@ function ZaraChat({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
 
-  const QUICK = ["Algo refrescante", "Quero me mimar", "Mais saudável"];
+  // Sugestões puxadas do que existe de verdade no negócio — nunca genéricas.
+  // Prioriza itens variados (categorias diferentes) pra cobrir mais opções.
+  const QUICK = (() => {
+    const published = [...content].sort((a, b) => a.position - b.position);
+    const seen = new Set<string>();
+    const picks: string[] = [];
+    for (const item of published) {
+      const cat = item.brand_label?.trim() || "";
+      if (seen.has(cat) && cat) continue;
+      if (cat) seen.add(cat);
+      picks.push(item.title);
+      if (picks.length === 3) break;
+    }
+    if (picks.length === 0) return ["Quero saber mais sobre vocês", "Como funciona", "Quais os valores"];
+    return picks;
+  })();
 
   useEffect(() => {
     supabase
@@ -346,31 +407,33 @@ function ZaraChat({
         {!started ? (
           <>
             <h2 className="mt-6 text-center font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-tight tracking-[-0.02em]">
-              O que bateu<br />vontade hoje?
+              Como posso<br />te ajudar?
             </h2>
             <div className="mt-8 flex flex-col gap-3">
               {QUICK.map((q) => (
                 <button
                   key={q}
-                  onClick={() => sendText(q)}
+                  onClick={() => sendText(`Me conta mais sobre "${q}"`)}
                   disabled={!conversationId}
-                  className="flex items-center justify-between rounded-[22px] bg-surface-white px-5 py-4 text-left text-[16px] shadow-[0_2px_12px_rgba(17,19,24,0.06)] disabled:opacity-50"
+                  className="flex items-center justify-between gap-3 rounded-[22px] bg-surface-white px-5 py-4 text-left text-[16px] shadow-[0_2px_12px_rgba(17,19,24,0.06)] disabled:opacity-50"
                 >
-                  {q} <span className="text-text-tertiary">→</span>
+                  <span>{q}</span> <span className="shrink-0 text-text-tertiary">→</span>
                 </button>
               ))}
             </div>
           </>
         ) : (
-          <div className="mt-6 flex flex-col gap-3">
+          <div className="mt-6 flex flex-col gap-4">
             {messages.map((m, i) => (
               <div
                 key={i}
-                className={`max-w-[85%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed ${
-                  m.role === "agent" ? "bg-surface-white shadow-[0_2px_12px_rgba(17,19,24,0.06)]" : "ml-auto bg-on-background text-white"
+                className={`max-w-[85%] rounded-2xl px-5 py-4 text-[15px] leading-7 ${
+                  m.role === "agent"
+                    ? "bg-gradient-to-br from-orbi-gradient-start/15 via-surface-white to-orbi-gradient-end/10 shadow-[0_2px_12px_rgba(17,19,24,0.06)]"
+                    : "ml-auto bg-on-background text-white"
                 }`}
               >
-                {m.content}
+                <div className="flex flex-col gap-3">{formatMessage(m.content)}</div>
               </div>
             ))}
             {sending && <div className="max-w-[40%] rounded-2xl bg-surface-white px-4 py-3 text-[14px] text-text-tertiary">…</div>}
