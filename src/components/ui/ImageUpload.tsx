@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ImageCropModal, RATIOS, type Ratio } from "./ImageCropModal";
+import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropModal";
 
 /**
  * Envia a foto para o armazenamento do Supabase e devolve a URL pública.
@@ -13,6 +13,8 @@ import { ImageCropModal, RATIOS, type Ratio } from "./ImageCropModal";
  * `lockedRatio`, quando vem preenchido, trava o formato do recorte no que a
  * primeira foto do item já definiu — capa e galeria nunca ficam misturando
  * proporção. `onFormatChosen` avisa o formato escolhido na primeira vez.
+ * `promptSubject`, quando vem preenchido, habilita o botão de gerar um
+ * prompt pronto pra criar a capa num gerador de imagem (GPT, etc.).
  */
 export function ImageUpload({
   value,
@@ -21,6 +23,7 @@ export function ImageUpload({
   lockedRatio,
   lockedReason,
   onFormatChosen,
+  promptSubject,
 }: {
   value: string | null;
   onChange: (url: string | null) => void;
@@ -28,6 +31,7 @@ export function ImageUpload({
   lockedRatio?: Ratio | null;
   lockedReason?: string;
   onFormatChosen?: (ratio: Ratio) => void;
+  promptSubject?: string;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,10 +41,16 @@ export function ImageUpload({
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [urlDraft, setUrlDraft] = useState(value ?? "");
   const [lastValue, setLastValue] = useState(value);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [copied, setCopied] = useState(false);
   if (value !== lastValue) {
     setLastValue(value);
     setUrlDraft(value ?? "");
   }
+
+  const ratio = lockedRatio ?? "quadrado";
+  const medida = RATIO_PIXELS[ratio];
+  const promptTexto = `Criar uma capa em ${medida}, sofisticada e minimalista, com o objetivo de "${promptSubject || "apresentar isso da melhor forma"}". Use como referência de estilo as imagens que vou anexar.`;
 
   async function resolveUrl(raw: string) {
     const trimmed = raw.trim();
@@ -103,6 +113,7 @@ export function ImageUpload({
 
   return (
     <div className="flex flex-col gap-2">
+      <p className="text-[12px] text-text-tertiary">Medida recomendada: <span className="font-medium text-text-secondary">{medida}</span></p>
       <div className="flex items-center gap-3">
         {/* Miniatura do que já está escolhido — na mesma proporção do formato do box,
             pra já mostrar como a foto vai ficar recortada. */}
@@ -176,6 +187,34 @@ export function ImageUpload({
       )}
 
       {error && <p className="text-[12px] text-red-600">{error}</p>}
+
+      <button
+        type="button"
+        onClick={() => setShowPrompt((s) => !s)}
+        className="self-start text-[12px] font-medium text-on-background underline"
+      >
+        {showPrompt ? "Esconder prompt" : "✦ Gerar prompt pra criar a capa com IA"}
+      </button>
+
+      {showPrompt && (
+        <div className="rounded-2xl border border-divider bg-surface-soft p-3">
+          <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{promptTexto}</p>
+          <p className="mt-2 text-[11px] text-text-tertiary">
+            Copie, cole no ChatGPT (ou outro gerador de imagem) já anexando fotos suas de referência, e cole o link ou baixe e envie a imagem gerada aqui.
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              await navigator.clipboard.writeText(promptTexto);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }}
+            className="mt-3 rounded-full bg-button-primary px-4 py-2 text-[12px] font-medium text-white"
+          >
+            {copied ? "✓ Copiado" : "Copiar prompt"}
+          </button>
+        </div>
+      )}
 
       {pendingFile && (
         <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} lockedReason={lockedReason} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />

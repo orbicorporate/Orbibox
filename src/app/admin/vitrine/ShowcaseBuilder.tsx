@@ -694,6 +694,7 @@ function ItemCard({
                   businessId={businessId}
                   lockedRatio={COVER_RATIO_BY_SIZE[size]}
                   lockedReason="Segue o formato do box escolhido acima — pra mudar, troque o formato."
+                  promptSubject={item.title}
                   onChange={(url) => save(item.id, { image_url: url, image_is_placeholder: false, box_style: url ? "foto" : "cor" })}
                 />
               </div>

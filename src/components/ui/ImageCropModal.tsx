@@ -9,6 +9,14 @@ export const RATIOS: Record<Ratio, { value: number; label: string }> = {
   paisagem: { value: 16 / 9, label: "Paisagem" },
 };
 
+/** Medida em pixels recomendada pra cada formato — o que a pessoa cola no
+ * gerador de imagem (GPT, Midjourney etc.) pra já sair no tamanho certo. */
+export const RATIO_PIXELS: Record<Ratio, string> = {
+  quadrado: "1080 x 1080 px",
+  retrato: "1080 x 1350 px",
+  paisagem: "1920 x 1080 px",
+};
+
 const FRAME_W = 300;
 
 /**
