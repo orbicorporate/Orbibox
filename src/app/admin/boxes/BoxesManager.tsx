@@ -9,6 +9,7 @@ import { PALETTE_GROUPS } from "@/lib/showcase";
 type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
+type DifferentialCard = { icon?: string; title: string; description?: string };
 
 const META: Record<string, { name: string; explica: string; icon: string; fixo?: boolean }> = {
   hero: {
@@ -31,6 +32,7 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
 };
 
 const ICON_CHOICES = ["◆", "✦", "☎", "✉", "🔗", "◈", "◫", "★"];
+const DIFF_ICONS = ["◎", "◈", "◇", "☎", "✦", "◫"];
 
 /** Preto ou branco, o que der mais contraste — pra ícone ficar legível em
  * qualquer cor da paleta, mesmo as claras. */
@@ -44,26 +46,28 @@ function contrastFg(hex: string): string {
 
 export function BoxesManager({
   businessId,
+  businessName,
   initialBoxes,
   slug,
   initialStoryPhotos,
   initialAboutBusiness,
-  initialDifferentials,
+  initialDifferentialsCards,
   brandColors,
 }: {
   businessId: string;
+  businessName: string;
   initialBoxes: Box[];
   slug: string;
   initialStoryPhotos: string[];
   initialAboutBusiness: string;
-  initialDifferentials: string;
+  initialDifferentialsCards: DifferentialCard[];
   brandColors: BrandColor[];
 }) {
   const supabase = createClient();
   const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
   const [storyPhotos, setStoryPhotos] = useState<string[]>(initialStoryPhotos);
   const [aboutBusiness, setAboutBusiness] = useState(initialAboutBusiness);
-  const [differentials, setDifferentials] = useState(initialDifferentials);
+  const [cards, setCards] = useState<DifferentialCard[]>(initialDifferentialsCards);
   const [arranging, setArranging] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -116,8 +120,11 @@ export function BoxesManager({
     await supabase.from("businesses").update({ about_business: value || null }).eq("id", businessId);
   }
 
-  async function saveDifferentials(value: string) {
-    await supabase.from("businesses").update({ differentials: value || null }).eq("id", businessId);
+  async function saveDifferentialsCards(next: DifferentialCard[]) {
+    setCards(next);
+    // Mantém o texto simples que alimenta a Zara sincronizado, sem trabalho extra pro dono.
+    const plainText = next.map((c) => (c.description ? `${c.title}: ${c.description}` : c.title)).join("\n");
+    await supabase.from("businesses").update({ differentials_cards: next, differentials: plainText || null }).eq("id", businessId);
   }
 
   async function createCustom() {
@@ -164,7 +171,9 @@ export function BoxesManager({
           const isCustom = box.box_type === "custom";
           const cfg = box.config as BoxConfig | null;
           const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Bloco livre", explica: "Um caminho extra que você define — WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
-          const label = cfg?.label ?? (isCustom ? box.title ?? "" : m.name);
+          // O box "Sobre" já sugere o nome da marca — o dono usa, ajusta ou desativa.
+          const suggestedName = box.box_type === "content" ? `Sobre a ${businessName}` : m.name;
+          const label = cfg?.label ?? (isCustom ? box.title ?? "" : suggestedName);
           const color = cfg?.color || "#111318";
           const icon = cfg?.icon || m.icon;
           const fg = contrastFg(color);
@@ -188,8 +197,8 @@ export function BoxesManager({
                   ) : (
                     <input
                       defaultValue={label}
-                      onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || m.name })}
-                      placeholder={m.name}
+                      onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || suggestedName })}
+                      placeholder={suggestedName}
                       className="w-full border-b border-transparent bg-transparent pb-0.5 text-[15px] font-medium outline-none focus:border-divider"
                     />
                   )}
@@ -215,7 +224,7 @@ export function BoxesManager({
                       {icon}
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-medium">{label || m.name}</p>
+                      <p className="truncate text-[13px] font-medium">{label || suggestedName}</p>
                       <p className="text-[11px] text-text-tertiary">assim aparece pro visitante</p>
                     </div>
                   </div>
@@ -252,15 +261,46 @@ export function BoxesManager({
                   </div>
                   <div>
                     <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
-                    <p className="mt-1 text-[12px] text-text-secondary">Uma frase por linha — vira uma lista na tela “Conhecer”.</p>
-                    <textarea
-                      value={differentials}
-                      onChange={(e) => setDifferentials(e.target.value)}
-                      onBlur={(e) => saveDifferentials(e.target.value)}
-                      rows={3}
-                      placeholder={"Entrega no mesmo dia\nMateriais sustentáveis\nAtendimento 24h"}
-                      className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-                    />
+                    <p className="mt-1 text-[12px] text-text-secondary">Viram um carrossel de cards na tela “Sobre” — ícone, título e uma frase curta.</p>
+                    <div className="mt-2 flex flex-col gap-2.5">
+                      {cards.map((c, i) => (
+                        <div key={i} className="rounded-2xl border border-divider p-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1">
+                              {DIFF_ICONS.map((ic) => (
+                                <button
+                                  key={ic}
+                                  onClick={() => saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, icon: ic } : x)))}
+                                  className={`flex h-7 w-7 items-center justify-center rounded-full border text-[12px] ${(c.icon || DIFF_ICONS[0]) === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}
+                                >
+                                  {ic}
+                                </button>
+                              ))}
+                            </div>
+                            <button onClick={() => saveDifferentialsCards(cards.filter((_, xi) => xi !== i))} className="ml-auto text-[12px] text-red-600">Excluir</button>
+                          </div>
+                          <input
+                            defaultValue={c.title}
+                            onBlur={(e) => saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, title: e.target.value } : x)))}
+                            placeholder="Título (ex: Experiência sênior)"
+                            className="mt-2 w-full rounded-xl border border-divider px-3 py-2 text-[13px] font-medium outline-none focus:border-on-background"
+                          />
+                          <textarea
+                            defaultValue={c.description ?? ""}
+                            onBlur={(e) => saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, description: e.target.value } : x)))}
+                            rows={2}
+                            placeholder="Uma frase explicando esse diferencial"
+                            className="mt-1.5 w-full resize-none rounded-xl border border-divider px-3 py-2 text-[13px] outline-none focus:border-on-background"
+                          />
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => saveDifferentialsCards([...cards, { icon: DIFF_ICONS[0], title: "", description: "" }])}
+                        className="rounded-2xl border border-dashed border-divider py-2.5 text-[13px] text-text-tertiary"
+                      >
+                        + Adicionar diferencial
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos da história (carrossel)</p>

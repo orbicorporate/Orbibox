@@ -6,7 +6,7 @@ export default async function BoxesPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, slug, story_photos, story_photo_format, about_business, differentials, brand_colors")
+    .select("id, name, slug, story_photos, story_photo_format, about_business, differentials, differentials_cards, brand_colors")
     .eq("owner_id", user!.id)
     .limit(1)
     .single();
@@ -15,6 +15,11 @@ export default async function BoxesPage() {
   const raw = business!.brand_colors;
   const brandColors = Array.isArray(raw)
     ? raw.filter((c): c is { hex: string; role?: string } => !!c && typeof c === "object" && typeof (c as { hex?: unknown }).hex === "string")
+    : [];
+
+  const rawCards = business!.differentials_cards;
+  const differentialsCards = Array.isArray(rawCards)
+    ? rawCards.filter((c): c is { icon?: string; title: string; description?: string } => !!c && typeof c === "object" && typeof (c as { title?: unknown }).title === "string")
     : [];
 
   return (
@@ -28,11 +33,12 @@ export default async function BoxesPage() {
       </p>
       <BoxesManager
         businessId={business!.id}
+        businessName={business!.name}
         initialBoxes={boxes ?? []}
         slug={business!.slug}
         initialStoryPhotos={business!.story_photos ?? []}
         initialAboutBusiness={business!.about_business ?? ""}
-        initialDifferentials={business!.differentials ?? ""}
+        initialDifferentialsCards={differentialsCards}
         brandColors={brandColors}
       />
     </div>

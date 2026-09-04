@@ -21,6 +21,7 @@ type Business = {
   site_type: string | null;
   about_business: string | null;
   differentials: string | null;
+  differentials_cards: unknown;
   story_photos: string[];
 };
 
@@ -103,7 +104,9 @@ export function VisitorExperience({
         return { key: b.id, icon: cfg.icon || "◆", t: label, d: cfg.subtitle || "", color: cfg.color, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
-      return { key: b.id, icon: cfg.icon || base.icon, t: cfg.label || base.t, d: base.d, color: cfg.color, ai: base.ai, onClick: () => chooseIntent(base.k) };
+      // "Sobre" sugere o nome da marca quando o dono não personalizou — igual ao editor.
+      const fallbackLabel = b.box_type === "content" ? `Sobre a ${business.name}` : base.t;
+      return { key: b.id, icon: cfg.icon || base.icon, t: cfg.label || fallbackLabel, d: base.d, color: cfg.color, ai: base.ai, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
 
@@ -206,10 +209,15 @@ export function VisitorExperience({
 function StoryView({ business, onBack }: { business: Business; onBack: () => void }) {
   const [active, setActive] = useState(0);
   const photos = business.story_photos ?? [];
-  const differentials = (business.differentials ?? "")
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
+  const rawCards = business.differentials_cards;
+  type DiffCard = { icon?: string; title: string; description?: string };
+  let cards: DiffCard[] = Array.isArray(rawCards)
+    ? rawCards.filter((c): c is DiffCard => !!c && typeof c === "object" && typeof (c as DiffCard).title === "string" && (c as DiffCard).title.trim() !== "")
+    : [];
+  // Compatibilidade com quem só tinha o texto simples de antes (sem cards).
+  if (cards.length === 0 && business.differentials) {
+    cards = business.differentials.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((title) => ({ title }));
+  }
 
   return (
     <div className="w-full text-left">
@@ -255,17 +263,18 @@ function StoryView({ business, onBack }: { business: Business; onBack: () => voi
         </div>
       )}
 
-      {differentials.length > 0 && (
+      {cards.length > 0 && (
         <div className="mt-6">
           <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
-          <ul className="mt-2 flex flex-col gap-2">
-            {differentials.map((d, i) => (
-              <li key={i} className="flex items-start gap-2 text-[14px] leading-relaxed text-text-secondary">
-                <span className="mt-1 text-[10px] text-orbi-gradient-start">●</span>
-                <span>{d}</span>
-              </li>
+          <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
+            {cards.map((c, i) => (
+              <div key={i} className="w-[220px] shrink-0 snap-start rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[18px]">{c.icon || "◎"}</span>
+                <p className="mt-3 font-[family-name:var(--font-manrope)] text-[16px] font-semibold leading-snug">{c.title}</p>
+                {c.description && <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">{c.description}</p>}
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
