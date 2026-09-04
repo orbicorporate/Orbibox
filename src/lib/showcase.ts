@@ -132,3 +132,33 @@ export function groupByCategory<T extends { brand_label: string | null; position
   }
   return [...map.entries()].map(([name, list]) => ({ name, items: list }));
 }
+
+export type PriceType = "exato" | "a_partir" | "faixa" | "media";
+
+export const PRICE_TYPE_LABEL: Record<PriceType, string> = {
+  exato: "Preço exato",
+  a_partir: "A partir de",
+  faixa: "Faixa de preço",
+  media: "Média de",
+};
+
+function brl(v: number) {
+  return `R$ ${v.toFixed(2).replace(".", ",")}`;
+}
+
+/** Formata o preço de um item conforme o tipo escolhido — mesma regra usada
+ * na Vitrine, na grade pública e na página do item, pra nunca ficar diferente. */
+export function formatPrice(item: { price: number | null; price_type?: string | null; price_max?: number | null }): string | null {
+  if (item.price == null) return null;
+  const tipo = (item.price_type as PriceType) || "exato";
+  switch (tipo) {
+    case "a_partir":
+      return `A partir de ${brl(item.price)}`;
+    case "media":
+      return `Média de ${brl(item.price)}`;
+    case "faixa":
+      return item.price_max != null ? `${brl(item.price)} – ${brl(item.price_max)}` : brl(item.price);
+    default:
+      return brl(item.price);
+  }
+}

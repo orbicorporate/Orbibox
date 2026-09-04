@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
-import { COVER_RATIO_BY_SIZE, sizeOf } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, formatPrice, sizeOf } from "@/lib/showcase";
 
 type Business = {
   id: string;
@@ -19,6 +19,8 @@ type Item = {
   title: string;
   description: string | null;
   price: number | null;
+  price_type: string | null;
+  price_max: number | null;
   image_url: string | null;
   gallery_urls: string[];
   brand_label: string | null;
@@ -89,8 +91,8 @@ export function ProductView({ business, item }: { business: Business; item: Item
       <div className="px-6 pt-6">
         {item.brand_label && <p className="text-[13px] uppercase tracking-wide text-text-tertiary">{item.brand_label}</p>}
         <h1 className="mt-1 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight">{item.title}</h1>
-        {item.price != null && (
-          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[20px] font-medium">R$ {Number(item.price).toFixed(2)}</p>
+        {formatPrice(item) && (
+          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{formatPrice(item)}</p>
         )}
         {item.description && <p className="mt-4 text-[15px] leading-relaxed text-text-secondary">{item.description}</p>}
 

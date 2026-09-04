@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
-import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, COVER_RATIO_BY_SIZE, type BoxSize } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, type BoxSize, type PriceType } from "@/lib/showcase";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
 type BrandColor = { hex: string; role?: string };
@@ -16,6 +16,8 @@ type Item = {
   title: string;
   description: string | null;
   price: number | null;
+  price_type: string;
+  price_max: number | null;
   image_url: string | null;
   image_is_placeholder: boolean;
   gallery_urls: string[];
@@ -498,19 +500,46 @@ function ItemCard({
   const size = sizeOf(item.layout_size);
   const c = colorOf(item.box_color);
   const hasPhoto = !!item.image_url && !imgFailed;
+  // Tinha foto, mas o link quebrou — diferente de "nunca teve foto".
+  const broken = !!item.image_url && imgFailed;
   const ratio = COVER_RATIO_BY_SIZE[size];
+  const priceLabel = formatPrice(item);
   // "Médio" fica lado a lado (dois por linha) quando fechado — os outros
   // formatos e o modo de edição sempre ocupam a linha inteira.
   const widthClass = !editing && size === "medio" ? "w-[calc(50%-10px)]" : "w-full";
 
+  // Foto quebrada não pode continuar visível pro público — pausa sozinho e
+  // avisa o dono, em vez de deixar um box com aparência de erro no ar.
+  useEffect(() => {
+    if (broken && item.status === "published") {
+      save(item.id, { status: "draft" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [broken]);
+
   return (
     <div id={`item-${item.id}`} className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${widthClass}`}>
-      <div className="relative" style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1 }}>
+      <div className="relative" style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1, minHeight: 150 }}>
         {hasPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.image_url!} alt={item.title} className="h-full w-full object-cover" onError={() => setImgFailed(true)} />
         ) : editing ? (
-          <div className="h-full w-full" style={{ backgroundColor: c.bg }} />
+          <div className="h-full w-full" style={{ backgroundColor: broken ? "#FBEAEA" : c.bg }} />
+        ) : broken ? (
+          // Link da foto quebrou — item já foi pausado sozinho (useEffect acima).
+          <button
+            onClick={onToggleEdit}
+            className="flex h-full w-full flex-col items-center justify-center gap-2 px-8 text-center"
+            style={{ backgroundColor: "#FBEAEA" }}
+          >
+            <span className="text-[20px]">⚠</span>
+            <span className="font-[family-name:var(--font-open-sans)] text-[15px] font-bold leading-snug text-red-700">
+              Foto não carregou
+            </span>
+            <span className="text-[12px] leading-snug text-red-700/80">
+              Pausado até você trocar a foto — o público não vê mais este item.
+            </span>
+          </button>
         ) : (
           // Sem foto: o próprio nome vira o conteúdo do box — centralizado, sem
           // rodapé branco separado. O box inteiro continua clicável pra editar.
@@ -522,9 +551,9 @@ function ItemCard({
             <span className="font-[family-name:var(--font-open-sans)] text-[21px] font-bold leading-snug" style={{ color: c.fg }}>
               {item.title}
             </span>
-            {item.price != null && (
+            {priceLabel && (
               <span className="font-[family-name:var(--font-open-sans)] text-[14px]" style={{ color: c.fg }}>
-                R$ {Number(item.price).toFixed(2)}
+                {priceLabel}
               </span>
             )}
             {/* Só existe página própria pra abrir se o item não for um link de categoria/externo. */}
@@ -539,19 +568,21 @@ function ItemCard({
           </button>
         )}
 
-        <button
-          onClick={onTogglePublish}
-          className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-surface-white/95 px-3 py-1.5 text-[11px] font-medium shadow backdrop-blur"
-        >
-          <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
-          {item.status === "published" ? "Ativo" : "Rascunho"}
-        </button>
-
-        {item.image_is_placeholder && (
-          <span className="absolute left-3 top-3 rounded-full bg-on-background/80 px-3 py-1 text-[11px] font-medium text-white backdrop-blur">
-            ✦ imagem sugerida
-          </span>
-        )}
+        {/* Selos empilhados verticalmente no canto — nunca colidem, mesmo em box estreito (Médio). */}
+        <div className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
+          <button
+            onClick={onTogglePublish}
+            className="inline-flex items-center gap-1.5 rounded-full bg-surface-white/95 px-3 py-1.5 text-[11px] font-medium shadow backdrop-blur"
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
+            {item.status === "published" ? "Ativo" : "Rascunho"}
+          </button>
+          {item.image_is_placeholder && !broken && (
+            <span className="rounded-full bg-on-background/80 px-3 py-1 text-[11px] font-medium text-white backdrop-blur">
+              ✦ imagem sugerida
+            </span>
+          )}
+        </div>
 
         {/* Indicador de formato — a única pista visual do "mosaico" que sobrava na grade */}
         <span className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-surface-white/90 px-2.5 py-1.5 shadow backdrop-blur">
@@ -568,8 +599,8 @@ function ItemCard({
                 <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium">{item.title}</p>
                 {item.brand_label && <p className="mt-0.5 text-[13px] text-text-tertiary">{item.brand_label}</p>}
               </div>
-              {item.price != null && (
-                <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[19px] font-medium">R$ {Number(item.price).toFixed(0)}</p>
+              {priceLabel && (
+                <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[15px] font-medium">{priceLabel}</p>
               )}
             </button>
           ) : (
@@ -671,14 +702,40 @@ function ItemCard({
 
             <div>
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Preço</p>
-              <input
-                value={item.price ?? ""}
-                onChange={(e) => patch(item.id, { price: e.target.value ? Number(e.target.value) : null })}
-                onBlur={(e) => save(item.id, { price: e.target.value ? Number(e.target.value) : null })}
-                inputMode="decimal"
-                placeholder="Sem preço"
-                className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-              />
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {(Object.keys(PRICE_TYPE_LABEL) as PriceType[]).map((t) => {
+                  const ativo = (item.price_type ?? "exato") === t;
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => save(item.id, { price_type: t })}
+                      className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${ativo ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                    >
+                      {PRICE_TYPE_LABEL[t]}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-2 flex gap-2">
+                <input
+                  value={item.price ?? ""}
+                  onChange={(e) => patch(item.id, { price: e.target.value ? Number(e.target.value) : null })}
+                  onBlur={(e) => save(item.id, { price: e.target.value ? Number(e.target.value) : null })}
+                  inputMode="decimal"
+                  placeholder={item.price_type === "faixa" ? "De" : "Sem preço"}
+                  className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                />
+                {item.price_type === "faixa" && (
+                  <input
+                    value={item.price_max ?? ""}
+                    onChange={(e) => patch(item.id, { price_max: e.target.value ? Number(e.target.value) : null })}
+                    onBlur={(e) => save(item.id, { price_max: e.target.value ? Number(e.target.value) : null })}
+                    inputMode="decimal"
+                    placeholder="Até"
+                    className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                  />
+                )}
+              </div>
             </div>
 
             <div>

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
-import { COVER_RATIO_BY_SIZE, colorOf, groupByCategory, sizeOf } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf } from "@/lib/showcase";
 import { trackClick, whatsappLink } from "@/lib/track";
 
 type Business = {
@@ -30,6 +30,8 @@ type ContentItem = {
   title: string;
   description: string | null;
   price: number | null;
+  price_type: string | null;
+  price_max: number | null;
   image_url: string | null;
   brand_label: string | null;
   type: string;
@@ -633,6 +635,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 const isExterno = item.link_kind === "categoria" || item.link_kind === "externo";
                 const kindClique: "categoria" | "produto" | "link" =
                   item.link_kind === "categoria" ? "categoria" : item.link_kind === "produto" ? "produto" : "link";
+                const priceLabel = formatPrice(item);
 
                 const miolo = (
                   <>
@@ -656,9 +659,9 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                           <span className="font-[family-name:var(--font-open-sans)] text-[21px] font-bold leading-snug" style={{ color: c.fg }}>
                             {item.title}
                           </span>
-                          {item.price != null && (
+                          {priceLabel && (
                             <span className="font-[family-name:var(--font-open-sans)] text-[14px]" style={{ color: c.fg }}>
-                              R$ {Number(item.price).toFixed(2)}
+                              {priceLabel}
                             </span>
                           )}
                           {isExterno ? (
@@ -687,8 +690,8 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                             <p className="text-[12px] text-text-tertiary">{item.link_kind === "categoria" ? "· ver categoria" : "· ver no site"}</p>
                           )}
                         </div>
-                        {item.price != null && (
-                          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium">R$ {Number(item.price).toFixed(2)}</p>
+                        {priceLabel && (
+                          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium">{priceLabel}</p>
                         )}
                       </div>
                     )}

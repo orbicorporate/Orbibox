@@ -29,7 +29,7 @@ export default async function VisitorPage({
   const [contentRes, boxesRes, agentRes] = await Promise.all([
     supabase
       .from("content_items")
-      .select("id, title, description, price, image_url, brand_label, type, position, layout_size, box_color, box_style, target_url, link_kind")
+      .select("id, title, description, price, price_type, price_max, image_url, brand_label, type, position, layout_size, box_color, box_style, target_url, link_kind")
       .eq("business_id", business.id)
       .eq("status", "published")
       .order("position", { ascending: true }),
