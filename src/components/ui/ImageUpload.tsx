@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ImageCropModal, type Ratio } from "./ImageCropModal";
+import { ImageCropModal, RATIOS, type Ratio } from "./ImageCropModal";
 
 /**
  * Envia a foto para o armazenamento do Supabase e devolve a URL pública.
@@ -69,8 +69,12 @@ export function ImageUpload({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
-        {/* Miniatura do que já está escolhido */}
-        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-divider bg-surface-soft">
+        {/* Miniatura do que já está escolhido — na mesma proporção do formato do box,
+            pra já mostrar como a foto vai ficar recortada. */}
+        <div
+          className="w-24 shrink-0 overflow-hidden rounded-2xl border border-divider bg-surface-soft"
+          style={{ aspectRatio: lockedRatio ? RATIOS[lockedRatio].value : 1 }}
+        >
           {value ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={value} alt="" className="h-full w-full object-cover" />
