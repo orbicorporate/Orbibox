@@ -8,20 +8,19 @@ import { GalleryUpload } from "@/components/ui/GalleryUpload";
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
 
-// O que cada box realmente faz na página do visitante — nome e explicação padrão,
-// tudo pode ser sobrescrito por config (label/subtitle/color).
-const META: Record<string, { name: string; opcao: string; explica: string; icon: string; fixo?: boolean }> = {
+// O nome padrão de cada box e o que ela faz de verdade — o nome pode ser
+// trocado pelo dono (é o mesmo texto que o visitante vê, sem indireção).
+const META: Record<string, { name: string; explica: string; icon: string; fixo?: boolean }> = {
   hero: {
-    name: "Entrada",
-    opcao: "Tela inicial",
-    explica: "A pergunta “O que trouxe você aqui hoje?”. É sempre a primeira coisa que aparece.",
+    name: "Tela inicial",
+    explica: "A pergunta “O que trouxe você aqui hoje?”. É a tela em si, não um botão — por isso não tem nome nem cor pra editar.",
     icon: "◈",
     fixo: true,
   },
-  product: { name: "Vitrine", opcao: "Comprar", explica: "Mostra seus produtos e serviços na vitrine que você montou.", icon: "▤" },
-  content: { name: "História", opcao: "Conhecer", explica: "Conta sobre a marca — texto e fotos, usando o tom de voz do seu DNA.", icon: "◫" },
-  campaign: { name: "Presentes", opcao: "Presentear", explica: "Uma seleção pensada para quem vai comprar para outra pessoa.", icon: "◇" },
-  agent: { name: "Zara", opcao: "Tirar uma dúvida", explica: "Abre a conversa com sua assistente de IA.", icon: "◉" },
+  product: { name: "Comprar", explica: "Mostra seus produtos e serviços na vitrine que você montou.", icon: "▤" },
+  content: { name: "Conhecer", explica: "Conta sobre a marca — texto e fotos, usando o tom de voz do seu DNA.", icon: "◫" },
+  campaign: { name: "Presentear", explica: "Uma seleção pensada para quem vai comprar para outra pessoa.", icon: "◇" },
+  agent: { name: "Tirar uma dúvida", explica: "Abre a conversa com sua assistente de IA.", icon: "◉" },
 };
 
 const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
@@ -144,32 +143,39 @@ export function BoxesManager({
 
       <div className="flex flex-col gap-3">
         {ordered.map((box, idx) => {
+          const isHero = box.box_type === "hero";
           const isCustom = box.box_type === "custom";
           const cfg = box.config as BoxConfig | null;
-          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Bloco livre", opcao: cfg?.label || box.title || "Personalizado", explica: "Um caminho extra que você define — WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
-          const label = cfg?.label || m.opcao;
+          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Bloco livre", explica: "Um caminho extra que você define — WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
+          const label = cfg?.label ?? (isCustom ? box.title ?? "" : m.name);
           const color = cfg?.color || "#111318";
+          const icon = cfg?.icon || m.icon;
           const off = !box.is_active && !m.fixo;
           const editing = editingId === box.id;
           return (
             <div key={box.id} className={`rounded-[22px] border border-divider bg-surface-white p-4 ${off ? "opacity-55" : ""}`}>
               <div className="flex items-start gap-3">
-                <div className="flex flex-col pt-1 text-[11px] text-text-tertiary">
-                  <button onClick={() => move(box, -1)} disabled={idx === 0} className="disabled:opacity-30" aria-label="Subir">▲</button>
-                  <button onClick={() => move(box, 1)} disabled={idx === ordered.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
-                </div>
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] text-white" style={{ backgroundColor: color }}>
-                  {cfg?.icon || m.icon}
+                {!isHero && (
+                  <div className="flex flex-col pt-1 text-[11px] text-text-tertiary">
+                    <button onClick={() => move(box, -1)} disabled={idx === 0} className="disabled:opacity-30" aria-label="Subir">▲</button>
+                    <button onClick={() => move(box, 1)} disabled={idx === ordered.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
+                  </div>
+                )}
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] text-white" style={{ backgroundColor: isHero ? "#111318" : color }}>
+                  {icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  {isHero ? (
                     <p className="text-[15px] font-medium">{m.name}</p>
-                    {m.fixo && <span className="rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">sempre ativo</span>}
-                    {isCustom && <span className="rounded-full bg-orbi-gradient-start/25 px-2 py-0.5 text-[10px]">seu</span>}
-                  </div>
-                  <p className="mt-0.5 text-[12px] text-text-secondary">
-                    {isCustom ? ACTION_LABEL[cfg?.action ?? "link"] : <>Aparece como <span className="font-medium text-on-background">“{label}”</span></>}
-                  </p>
+                  ) : (
+                    <input
+                      defaultValue={label}
+                      onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || m.name })}
+                      placeholder={m.name}
+                      className="w-full border-b border-transparent bg-transparent pb-0.5 text-[15px] font-medium outline-none focus:border-divider"
+                    />
+                  )}
+                  {m.fixo && <span className="mt-1 inline-block rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">sempre ativo</span>}
                 </div>
                 {!m.fixo && (
                   <button
@@ -181,17 +187,34 @@ export function BoxesManager({
                   </button>
                 )}
               </div>
-              {!isCustom && <p className="mt-3 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>}
 
-              <button onClick={() => setEditingId(editing ? null : box.id)} className="mt-3 text-[12px] text-text-tertiary underline">
-                {editing ? "Fechar edição" : "Editar"}
-              </button>
+              <p className="mt-3 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>
 
-              {editing && (
+              {!isHero && (
+                <>
+                  {/* Pré-visualização — exatamente como fica no site, pra fechar a distância
+                      entre editar aqui e ver lá. */}
+                  <div className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-soft p-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px] text-white" style={{ backgroundColor: color }}>
+                      {icon}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-medium">{label || m.name}</p>
+                      <p className="text-[11px] text-text-tertiary">assim aparece pro visitante</p>
+                    </div>
+                  </div>
+
+                  <button onClick={() => setEditingId(editing ? null : box.id)} className="mt-3 text-[12px] text-text-tertiary underline">
+                    {editing ? "Fechar" : "Cor, ícone e mais"}
+                  </button>
+                </>
+              )}
+
+              {editing && !isHero && (
                 <BoxEditor
-                  initial={cfg ?? { label: isCustom ? box.title ?? "" : m.opcao, icon: m.icon, color: "#111318", action: "link", url: "" }}
+                  initial={cfg ?? { subtitle: "", icon: m.icon, color: "#111318", action: "link", url: "" }}
                   isCustom={isCustom}
-                  onSave={(next) => saveConfig(box, next)}
+                  onSave={(next) => saveConfig(box, { ...next, label })}
                   onDelete={isCustom ? () => removeCustom(box) : undefined}
                 />
               )}
@@ -213,7 +236,13 @@ export function BoxesManager({
       {creating ? (
         <div className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4">
           <p className="text-[13px] font-medium">Novo bloco personalizado</p>
-          <BoxEditor initial={draft} isCustom onSave={(cfg) => setDraft(cfg)} liveOnly />
+          <input
+            value={draft.label ?? ""}
+            onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
+            placeholder="Nome do botão (ex: Fale no WhatsApp)"
+            className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+          />
+          <BoxEditor initial={draft} isCustom onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly />
           <div className="mt-3 flex gap-2">
             <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
             <button onClick={() => setCreating(false)} className="rounded-full bg-surface-soft px-4 py-2 text-[13px]">Cancelar</button>
@@ -231,7 +260,8 @@ export function BoxesManager({
   );
 }
 
-/** Mini formulário reaproveitado por qualquer box — fixa ou personalizada. */
+/** Cor, ícone e (só pra blocos personalizados) subtítulo + destino. O nome já
+ * é editado direto no cabeçalho do box — não repete aqui. */
 function BoxEditor({
   initial,
   isCustom,
@@ -255,13 +285,6 @@ function BoxEditor({
 
   return (
     <div className="mt-3 flex flex-col gap-2.5">
-      <input
-        value={cfg.label ?? ""}
-        onChange={(e) => update({ label: e.target.value })}
-        onBlur={() => !liveOnly && onSave(cfg)}
-        placeholder={isCustom ? "Nome do botão (ex: Fale no WhatsApp)" : "Como aparece pro visitante"}
-        className="rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-      />
       {isCustom && (
         <input
           value={cfg.subtitle ?? ""}
@@ -277,7 +300,7 @@ function BoxEditor({
         {COLOR_CHOICES.map((c) => (
           <button
             key={c.hex}
-            onClick={() => update({ color: c.hex })}
+            onClick={() => { update({ color: c.hex }); if (!liveOnly) onSave({ ...cfg, color: c.hex }); }}
             aria-label={c.label}
             title={c.label}
             className={`h-8 w-8 rounded-full border-2 ${(cfg.color || "#111318") === c.hex ? "border-on-background" : "border-transparent"}`}
@@ -291,7 +314,7 @@ function BoxEditor({
         {ICON_CHOICES.map((ic) => (
           <button
             key={ic}
-            onClick={() => update({ icon: ic })}
+            onClick={() => { update({ icon: ic }); if (!liveOnly) onSave({ ...cfg, icon: ic }); }}
             className={`flex h-9 w-9 items-center justify-center rounded-full border text-[14px] ${cfg.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}
           >
             {ic}
@@ -306,7 +329,7 @@ function BoxEditor({
             {(Object.keys(ACTION_LABEL) as (keyof typeof ACTION_LABEL)[]).map((a) => (
               <button
                 key={a}
-                onClick={() => update({ action: a })}
+                onClick={() => { update({ action: a }); if (!liveOnly) onSave({ ...cfg, action: a }); }}
                 className={`rounded-full px-3 py-1.5 text-[12px] ${cfg.action === a ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
               >
                 {ACTION_LABEL[a]}
