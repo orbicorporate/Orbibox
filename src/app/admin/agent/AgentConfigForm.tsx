@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
 type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; };
+type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
 
 const SLIDERS = [
   { key: "tone_formal_informal", from: "Formal", to: "Descontraído" },
@@ -12,9 +14,15 @@ const SLIDERS = [
   { key: "tone_concise_detailed", from: "Direto", to: "Inspiracional" },
 ] as const;
 
-const KNOWLEDGE = ["Catálogo de Produtos", "História da Marca", "Políticas de Envio", "Estilo e Curadoria"];
+// Cada item aponta pra onde a pessoa preenche (manualmente ou "Importar do site").
+const KNOWLEDGE: { key: keyof Knowledge; label: string; href: string }[] = [
+  { key: "catalogo", label: "Catálogo de Produtos", href: "/admin/vitrine" },
+  { key: "historia", label: "História da Marca", href: "/admin/config" },
+  { key: "politicas", label: "Políticas de Envio", href: "/admin/config" },
+  { key: "diferenciais", label: "Estilo e Curadoria", href: "/admin/config" },
+];
 
-export function AgentConfigForm({ config, businessName }: { config: Config; businessName: string }) {
+export function AgentConfigForm({ config, businessName, knowledge }: { config: Config; businessName: string; knowledge: Knowledge }) {
   const supabase = createClient();
   const [state, setState] = useState(config);
   const [saved, setSaved] = useState(false);
@@ -86,9 +94,22 @@ export function AgentConfigForm({ config, businessName }: { config: Config; busi
       <div>
         <p className="text-[14px] font-medium">Base de Conhecimento Ativa</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {KNOWLEDGE.map((k) => (
-            <span key={k} className="rounded-full border border-divider bg-surface-white px-3 py-1.5 text-[12px]">{k}</span>
-          ))}
+          {KNOWLEDGE.map((k) => {
+            const cheio = knowledge[k.key];
+            return cheio ? (
+              <span key={k.key} className="inline-flex items-center gap-1.5 rounded-full bg-orbi-gradient-start/25 px-3 py-1.5 text-[12px] font-medium text-on-background">
+                <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" /> {k.label}
+              </span>
+            ) : (
+              <Link
+                key={k.key}
+                href={k.href}
+                className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-divider px-3 py-1.5 text-[12px] text-text-tertiary"
+              >
+                {k.label} · preencher
+              </Link>
+            );
+          })}
         </div>
       </div>
 
