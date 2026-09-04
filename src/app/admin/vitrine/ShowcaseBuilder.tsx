@@ -50,18 +50,23 @@ export function ShowcaseBuilder({
   items: initial,
   slug,
   businessId,
+  businessName,
   brandColors = [],
   initialCategories = [],
+  initialCoverUrl = null,
 }: {
   items: Item[];
   slug: string;
   businessId: string;
+  businessName?: string;
   brandColors?: BrandColor[];
   initialCategories?: string[];
+  initialCoverUrl?: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
   const [items, setItems] = useState<Item[]>(initial);
+  const [coverUrl, setCoverUrl] = useState<string | null>(initialCoverUrl);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>(initialCategories);
   // Aba de paleta ativa no editor de cor. "Marca" só existe se a Orbi já
@@ -322,6 +327,26 @@ export function ShowcaseBuilder({
         </form>
       )}
       {importMsg && <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>}
+
+      {/* Capa da Vitrine — opcional. Sem foto, some sem deixar espaço vazio nem aviso. */}
+      <div className="mt-5 rounded-[24px] bg-surface-soft p-5">
+        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Capa da Vitrine (opcional)</p>
+        <p className="mt-1 text-[13px] text-text-secondary">
+          Uma foto grande no topo da sua Vitrine, antes dos itens — dá aquela primeira impressão de negócio de verdade.
+        </p>
+        <div className="mt-3">
+          <ImageUpload
+            value={coverUrl}
+            businessId={businessId}
+            lockedRatio="banner"
+            promptSubject={businessName ? `a vitrine da ${businessName}` : "a vitrine do negócio"}
+            onChange={async (url) => {
+              setCoverUrl(url);
+              await supabase.from("businesses").update({ vitrine_cover_url: url }).eq("id", businessId);
+            }}
+          />
+        </div>
+      </div>
 
       {proposta && (
         <div className="mt-4 rounded-[24px] orbi-gradient p-[1.5px]">

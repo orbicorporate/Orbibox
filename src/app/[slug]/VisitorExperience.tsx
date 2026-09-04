@@ -24,6 +24,7 @@ type Business = {
   differentials: string | null;
   differentials_cards: unknown;
   story_photos: string[];
+  vitrine_cover_url: string | null;
 };
 
 type ContentItem = {
@@ -599,6 +600,12 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
 
   return (
     <>
+      {business.vitrine_cover_url && (
+        <div className="mt-5 overflow-hidden rounded-[24px]" style={{ aspectRatio: 1920 / 830 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={business.vitrine_cover_url} alt={business.name} className="h-full w-full object-cover" />
+        </div>
+      )}
       {sections.length > 1 && (
         <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
           <button
