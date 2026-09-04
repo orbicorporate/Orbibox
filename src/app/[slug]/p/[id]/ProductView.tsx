@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
+import { COVER_RATIO_BY_SIZE, sizeOf } from "@/lib/showcase";
 
 type Business = {
   id: string;
@@ -23,11 +24,16 @@ type Item = {
   brand_label: string | null;
   target_url: string | null;
   link_kind: string | null;
+  layout_size: string;
 };
 
 export function ProductView({ business, item }: { business: Business; item: Item }) {
   const [active, setActive] = useState(0);
   const images = [item.image_url, ...item.gallery_urls].filter((u): u is string => !!u);
+  // Mesmo formato escolhido no box — retrato ou paisagem, nunca mais o
+  // quadrado fixo de antes. Consistente com a Vitrine e a grade pública.
+  const ratio = COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
+  const aspectRatio = ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1;
 
   // Abrir a página do item já conta como interesse — mesmo tipo de clique de sempre.
   useEffect(() => {
@@ -59,14 +65,14 @@ export function ProductView({ business, item }: { business: Business; item: Item
             }}
           >
             {images.map((src, i) => (
-              <div key={i} className="aspect-square w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
+              <div key={i} className="w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt={item.title} className="h-full w-full object-cover" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex aspect-square w-full items-center justify-center rounded-[22px] bg-surface-soft text-[13px] text-text-tertiary">
+          <div className="flex w-full items-center justify-center rounded-[22px] bg-surface-soft text-[13px] text-text-tertiary" style={{ aspectRatio }}>
             sem foto
           </div>
         )}
