@@ -28,6 +28,9 @@ export function ConfigForm({ business }: { business: Business }) {
   const supabase = createClient();
   const [b, setB] = useState(business);
   const [saved, setSaved] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
 
   function set<K extends keyof Business>(key: K, value: Business[K]) {
     setB((p) => ({ ...p, [key]: value }));
@@ -42,6 +45,37 @@ export function ConfigForm({ business }: { business: Business }) {
     const patch: Partial<Record<CampoEditavel, string | null>> = { [key]: value.trim() || null };
     await supabase.from("businesses").update(patch).eq("id", b.id);
     setSaved(true);
+  }
+
+  async function importFromSite() {
+    if (!importUrl.trim()) return;
+    setImporting(true);
+    setImportMsg(null);
+    try {
+      const res = await fetch("/api/import-about", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessName: b.name, url: importUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportMsg({ kind: "erro", text: data.error || "Não consegui ler esse site." });
+        return;
+      }
+      if (data.about) { set("about_business", data.about); await save("about_business", data.about); }
+      if (Array.isArray(data.differentials) && data.differentials.length > 0) {
+        const plain = data.differentials.map((d: { title: string; description?: string }) => (d.description ? `${d.title}: ${d.description}` : d.title)).join("\n");
+        set("differentials", plain);
+        await save("differentials", plain);
+        await supabase.from("businesses").update({ differentials_cards: data.differentials }).eq("id", b.id);
+      }
+      if (data.policies) { set("policies", data.policies); await save("policies", data.policies); }
+      setImportMsg({ kind: "ok", text: "Pronto — confira os campos abaixo e ajuste se quiser." });
+    } catch {
+      setImportMsg({ kind: "erro", text: "Não consegui ler esse site agora." });
+    } finally {
+      setImporting(false);
+    }
   }
 
   const campo = "mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background";
@@ -128,6 +162,29 @@ export function ConfigForm({ business }: { business: Business }) {
             {k.nome}
           </span>
         ))}
+      </div>
+
+      <div className="mt-5 rounded-[20px] bg-surface-soft p-4">
+        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Deixa a Orbi preencher a partir do seu site</p>
+        <p className="mt-1 text-[12px] text-text-secondary">Cola o link e ela lê a página e já preenche Sobre o negócio, Diferenciais e Políticas abaixo.</p>
+        <div className="mt-2 flex gap-2">
+          <input
+            value={importUrl}
+            onChange={(e) => setImportUrl(e.target.value)}
+            placeholder="https://seusite.com.br"
+            className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+          />
+          <button
+            onClick={importFromSite}
+            disabled={importing || !importUrl.trim()}
+            className="shrink-0 rounded-full orbi-gradient px-4 py-2.5 text-[13px] font-medium text-on-background disabled:opacity-50"
+          >
+            {importing ? "Lendo…" : "✦ Importar"}
+          </button>
+        </div>
+        {importMsg && (
+          <p className={`mt-2 text-[12px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>
+        )}
       </div>
 
       <p className={rotulo}>Sobre o negócio</p>

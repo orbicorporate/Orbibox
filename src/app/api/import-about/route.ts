@@ -40,19 +40,21 @@ export async function POST(req: NextRequest) {
     const system = `Você é a Orbi, a IA do Orbibox. Leia o texto extraído do site de "${businessName || "o negócio"}" e monte o conteúdo da página "Sobre" dele.
 
 Responda SOMENTE em JSON válido, sem markdown, sem texto antes ou depois, no formato exato:
-{"about":"...", "differentials":[{"title":"...","description":"..."},{"title":"...","description":"..."},{"title":"...","description":"..."}]}
+{"about":"...", "differentials":[{"title":"...","description":"..."},{"title":"...","description":"..."},{"title":"...","description":"..."}], "policies":"..."}
 
 Regras:
 - "about": 2 a 4 frases contando quem são, o que fazem e há quanto tempo/o que os diferencia — tom próximo, em português do Brasil, na terceira pessoa (fala sobre o negócio, não como se fosse ele falando).
 - "differentials": 3 a 4 diferenciais reais encontrados no site (não invente). Cada um com "title" curto (2-5 palavras) e "description" em uma frase curta (até 12 palavras).
+- "policies": se o site mencionar prazos de entrega, frete, trocas, devoluções, horários de atendimento ou formas de pagamento, resuma em até 3 frases curtas. Se não encontrar nada disso, devolva uma string vazia "".
 - Nunca invente informação que não esteja no texto — se não achar diferenciais claros, foque no que existe (atendimento, experiência, produtos, localização).`;
 
-    const raw = await askClaude({ system, messages: [{ role: "user", content: siteText }], maxTokens: 700 });
+    const raw = await askClaude({ system, messages: [{ role: "user", content: siteText }], maxTokens: 800 });
 
     const match = raw.match(/\{[\s\S]*\}/);
     const parsed = JSON.parse(match ? match[0] : raw);
 
     const about: string = typeof parsed.about === "string" ? parsed.about.trim() : "";
+    const policies: string = typeof parsed.policies === "string" ? parsed.policies.trim() : "";
     const differentials = Array.isArray(parsed.differentials)
       ? parsed.differentials
           .filter((d: unknown): d is { title: string; description?: string } => !!d && typeof d === "object" && typeof (d as { title?: unknown }).title === "string")
@@ -68,7 +70,7 @@ Regras:
       return NextResponse.json({ error: "Não consegui identificar conteúdo suficiente nesse site." }, { status: 422 });
     }
 
-    return NextResponse.json({ about, differentials });
+    return NextResponse.json({ about, differentials, policies });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Não consegui ler esse site agora. Tenta de novo." }, { status: 500 });
