@@ -189,7 +189,7 @@ export function VisitorExperience({
             {content.length === 0 ? (
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
             ) : (
-              <Showcase content={content} business={business} sessionId={sessionId} onZara={() => chooseIntent("duvida")} />
+              <Showcase content={content} business={business} sessionId={sessionId} onOrbi={() => chooseIntent("duvida")} />
             )}
           </div>
         )}
@@ -199,7 +199,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <ZaraChat businessId={business.id} sessionId={sessionId} agentName={agentName} content={content} onBack={() => setIntent(null)} />
+          <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} content={content} onBack={() => setIntent(null)} />
         )}
       </div>
     </main>
@@ -325,7 +325,7 @@ function formatInline(text: string) {
   );
 }
 
-function ZaraChat({
+function OrbiChat({
   businessId,
   sessionId,
   agentName,
@@ -388,7 +388,7 @@ function ZaraChat({
     setSending(true);
     await supabase.from("messages").insert({ conversation_id: conversationId, role: "visitor", content: text });
     try {
-      const res = await fetch("/api/zara-chat", {
+      const res = await fetch("/api/orbi-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ businessId, conversationId, message: text, history: historyForApi }),
@@ -483,7 +483,7 @@ function ZaraChat({
   );
 }
 
-function OrbiRecommendation({ businessId, onZara }: { businessId: string; onZara: () => void }) {
+function OrbiRecommendation({ businessId, onOrbi }: { businessId: string; onOrbi: () => void }) {
   const [rec, setRec] = useState<{ message: string; cta: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -510,26 +510,26 @@ function OrbiRecommendation({ businessId, onZara }: { businessId: string; onZara
         </span>
       </div>
       <p className="relative mt-3 text-[16px] leading-relaxed text-on-background">{rec.message}</p>
-      {/* Chama pra falar com a marca — abre o chat da Zara, que já sabe desse interesse. */}
+      {/* Chama pra falar com a marca — abre o chat da Orbi, que já sabe desse interesse. */}
       <button
-        onClick={onZara}
+        onClick={onOrbi}
         className="relative mt-4 inline-flex items-center gap-2 rounded-full bg-button-primary px-5 py-3 text-[14px] font-medium text-white"
       >
-        ✦ Falar com a Zara
+        ✦ Falar com a Orbi
       </button>
     </div>
   );
 }
 
 /** Botões de contato do negócio. Cada clique é contado por tipo no Pulse. */
-function BarraContato({ business, sessionId, onZara }: { business: Business; sessionId: string | null; onZara?: () => void }) {
+function BarraContato({ business, sessionId, onOrbi }: { business: Business; sessionId: string | null; onOrbi?: () => void }) {
   const tem = business.contact_whatsapp || business.contact_phone || business.contact_email;
-  if (!tem && !onZara) return null;
+  if (!tem && !onOrbi) return null;
   return (
     <div className="mt-6 flex flex-wrap gap-2">
-      {onZara && (
+      {onOrbi && (
         <button
-          onClick={() => { trackClick({ businessId: business.id, kind: "zara", sessionId }); onZara(); }}
+          onClick={() => { trackClick({ businessId: business.id, kind: "zara", sessionId }); onOrbi(); }}
           className="inline-flex items-center gap-2 rounded-full orbi-gradient px-5 py-3 text-[14px] font-medium text-on-background"
         >
           ✦ Falar com a Orbi
@@ -568,7 +568,7 @@ function BarraContato({ business, sessionId, onZara }: { business: Business; ses
   );
 }
 
-function Showcase({ content, business, sessionId, onZara }: { content: ContentItem[]; business: Business; sessionId: string | null; onZara: () => void }) {
+function Showcase({ content, business, sessionId, onOrbi }: { content: ContentItem[]; business: Business; sessionId: string | null; onOrbi: () => void }) {
   const sections = groupByCategory(content);
   const [active, setActive] = useState<string | null>(null);
 
@@ -689,11 +689,11 @@ function Showcase({ content, business, sessionId, onZara }: { content: ContentIt
                 );
               })}
             </div>
-            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} onZara={onZara} /></div>}
+            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} onOrbi={onOrbi} /></div>}
           </div>
         ))}
       </div>
-      <BarraContato business={business} sessionId={sessionId} onZara={onZara} />
+      <BarraContato business={business} sessionId={sessionId} onOrbi={onOrbi} />
     </>
   );
 }

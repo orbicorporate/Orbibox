@@ -142,7 +142,7 @@ export default function OnboardingPage() {
       return;
     }
 
-    await supabase.from("agent_configs").insert({ business_id: business.id, agent_name: "Zara", objectives: ["vender", "informar"] });
+    await supabase.from("agent_configs").insert({ business_id: business.id, agent_name: "Orbi", objectives: ["vender", "informar"] });
     await supabase.from("pulse_metrics").insert({ business_id: business.id, discovery_score: 62, interest_score: 58, conversion_score: 41, relationship_score: 70, overall_score: 58 });
     // O link do site já foi informado no DNA da Marca — a Orbi importa o catálogo agora,
     // sem pedir a mesma informação duas vezes. O tipo de site que ela descobre aqui
@@ -184,7 +184,7 @@ export default function OnboardingPage() {
 
     await supabase.from("smart_boxes").insert([
       { business_id: business.id, box_type: "hero", title: "Entrada Adaptativa", position: 0 },
-      { business_id: business.id, box_type: "agent", title: "AgentBox Zara", position: 1, is_active: ativos.agent },
+      { business_id: business.id, box_type: "agent", title: "AgentBox Orbi", position: 1, is_active: ativos.agent },
       { business_id: business.id, box_type: "product", title: "Vitrine de Produtos", position: 2, is_active: ativos.product },
       { business_id: business.id, box_type: "content", title: "História da Marca", position: 3, is_active: ativos.content },
       { business_id: business.id, box_type: "campaign", title: "Seleção de Presentes", position: 4, is_active: ativos.campaign },
@@ -206,7 +206,7 @@ export default function OnboardingPage() {
     }
 
     const oportunidades = [
-      { business_id: business.id, title: "Configure o tom de voz da Zara", description: "Defina como a assistente deve conversar com seus visitantes.", category: "relacionamento", impact_score: 65 },
+      { business_id: business.id, title: "Configure o tom de voz da Orbi", description: "Defina como a assistente deve conversar com seus visitantes.", category: "relacionamento", impact_score: 65 },
     ];
     if (importados > 0) {
       oportunidades.unshift({
@@ -320,7 +320,7 @@ export default function OnboardingPage() {
             )}
 
             <div className="rounded-2xl border border-divider p-4">
-              <p className="text-[13px] font-medium">✦ A Zara já está pronta pra atender</p>
+              <p className="text-[13px] font-medium">✦ A Orbi já está pronta pra atender</p>
               <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
                 Ela já sabe o que seu negócio faz, recomenda produtos ou serviços, conversa com quem visita seu link e
                 pode direcionar pra você quando o cliente precisar de atendimento humano de verdade.

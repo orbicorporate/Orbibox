@@ -26,7 +26,7 @@ const META: Record<string, { name: string; explica: string; icon: string; fixo?:
 
 const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   vitrine: "Abre a Vitrine",
-  zara: "Abre a Zara",
+  zara: "Abre a Orbi",
   whatsapp: "Abre o WhatsApp",
   link: "Abre um link",
 };
@@ -122,7 +122,7 @@ export function BoxesManager({
 
   async function saveDifferentialsCards(next: DifferentialCard[]) {
     setCards(next);
-    // Mantém o texto simples que alimenta a Zara sincronizado, sem trabalho extra pro dono.
+    // Mantém o texto simples que alimenta a Orbi sincronizado, sem trabalho extra pro dono.
     const plainText = next.map((c) => (c.description ? `${c.title}: ${c.description}` : c.title)).join("\n");
     await supabase.from("businesses").update({ differentials_cards: next, differentials: plainText || null }).eq("id", businessId);
   }

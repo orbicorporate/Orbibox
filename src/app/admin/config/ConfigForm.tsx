@@ -47,7 +47,7 @@ export function ConfigForm({ business }: { business: Business }) {
   const campo = "mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background";
   const rotulo = "mt-5 text-[12px] uppercase tracking-wide text-text-tertiary";
 
-  // Sinaliza o que a Zara realmente sabe — sem chip decorativo.
+  // Sinaliza o que a Orbi realmente sabe — sem chip decorativo.
   const conhecimento = [
     { nome: "Catálogo", cheio: true, obs: "itens publicados na Vitrine" },
     { nome: "Sobre o negócio", cheio: !!b.about_business, obs: "usado para responder quem você é" },
@@ -110,7 +110,7 @@ export function ConfigForm({ business }: { business: Business }) {
         className={campo}
       />
 
-      <p className="mt-8 font-[family-name:var(--font-manrope)] text-[20px] font-medium">O que a Zara sabe</p>
+      <p className="mt-8 font-[family-name:var(--font-manrope)] text-[20px] font-medium">O que a Orbi sabe</p>
       <p className="mt-1 text-[13px] text-text-secondary">
         Quanto mais preenchido, menos ela precisa dizer que não sabe.
       </p>
@@ -166,7 +166,7 @@ export function ConfigForm({ business }: { business: Business }) {
         href="/admin/agent"
         className="mt-8 rounded-full border border-divider bg-surface-white px-5 py-3 text-center text-[14px] font-medium"
       >
-        Personalidade da Zara →
+        Personalidade da Orbi →
       </Link>
     </div>
   );

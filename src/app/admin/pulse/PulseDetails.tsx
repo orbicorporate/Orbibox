@@ -10,7 +10,7 @@ const TIPOS = [
   { kind: "produto", label: "Produtos abertos", nota: "foram para a página do produto" },
   { kind: "whatsapp", label: "WhatsApp", nota: "iniciaram conversa" },
   { kind: "ligar", label: "Ligações", nota: "tocaram em ligar" },
-  { kind: "zara", label: "Conversas com a Zara", nota: "pediram ajuda da IA" },
+  { kind: "zara", label: "Conversas com a Orbi", nota: "pediram ajuda da IA" },
 ] as const;
 
 export function PulseDetails({

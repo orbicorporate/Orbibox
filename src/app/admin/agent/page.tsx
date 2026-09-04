@@ -10,7 +10,7 @@ export default async function AgentPage() {
   return (
     <div className="flex flex-col">
       <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Personalidade da Marca (AgentBox)</h1>
-      <p className="mt-1 text-[14px] text-text-secondary">Defina como Zara interage com seus visitantes.</p>
+      <p className="mt-1 text-[14px] text-text-secondary">Defina como a Orbi interage com seus visitantes.</p>
       {config && <AgentConfigForm config={config} businessName={business!.name} />}
     </div>
   );

@@ -45,7 +45,7 @@ export default async function HojePage() {
   // O botão do insight leva para onde a ação realmente acontece.
   const CTA: Record<string, { label: string; href: string }> = {
     descoberta: { label: "Abrir vitrine", href: "/admin/vitrine" },
-    relacionamento: { label: "Configurar Zara", href: "/admin/agent" },
+    relacionamento: { label: "Configurar Orbi", href: "/admin/agent" },
     conversao: { label: "Ativar campanha", href: "/admin/campaigns" },
   };
   const cta = CTA[opportunity?.category ?? ""] ?? { label: "Ativar campanha", href: "/admin/campaigns" };

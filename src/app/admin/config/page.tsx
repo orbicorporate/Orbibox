@@ -17,7 +17,7 @@ export default async function ConfigPage() {
         Configurações
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">
-        Contatos que aparecem para o visitante e o que a Zara sabe sobre o seu negócio.
+        Contatos que aparecem para o visitante e o que a Orbi sabe sobre o seu negócio.
       </p>
       <ConfigForm business={business!} />
     </div>

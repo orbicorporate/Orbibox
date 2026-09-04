@@ -49,7 +49,7 @@ export default async function VisitorPage({
       business={business}
       content={content ?? []}
       boxes={boxes ?? []}
-      agentName={agentConfig?.agent_name ?? "Zara"}
+      agentName={agentConfig?.agent_name ?? "Orbi"}
       isOwner={isOwner}
     />
   );

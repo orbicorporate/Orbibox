@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       .eq("status", "published")
       .limit(15);
 
-    const agentName = agentConfig?.agent_name ?? "Zara";
+    const agentName = agentConfig?.agent_name ?? "Orbi";
     const toneDesc = agentConfig
       ? [
           agentConfig.tone_formal_informal > 60 ? "informal" : agentConfig.tone_formal_informal < 40 ? "formal" : "neutro",
@@ -75,6 +75,6 @@ Regras:
     return NextResponse.json({ reply });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Falha ao gerar resposta da Zara." }, { status: 500 });
+    return NextResponse.json({ error: "Falha ao gerar resposta da Orbi." }, { status: 500 });
   }
 }

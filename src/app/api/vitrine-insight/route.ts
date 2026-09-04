@@ -41,7 +41,7 @@ Sem foto: ${semFoto}. Com imagem sugerida (não é foto própria): ${comSugerida
 Sem descrição: ${semDescricao}. Sem preço: ${semPreco}.
 Categorias: ${categorias.length > 0 ? categorias.join(", ") : "nenhuma — tudo em Destaques"} (${formatosVariados} distintas).
 WhatsApp configurado: ${business?.contact_whatsapp ? "sim" : "não"}.
-Objetivos da Zara: ${(agent?.objectives ?? []).join(", ") || "não definidos"}.`;
+Objetivos da Orbi: ${(agent?.objectives ?? []).join(", ") || "não definidos"}.`;
 
     const system = `Você é a Orbi, a inteligência do Orbibox. Olhe o resumo da vitrine do dono e gere 7 insights curtos, cada um olhando por um ângulo diferente:
 1. Preço — itens sem preço, oportunidade de destacar valor.
@@ -49,7 +49,7 @@ Objetivos da Zara: ${(agent?.objectives ?? []).join(", ") || "não definidos"}.`
 3. Fotos — itens sem foto própria ou com imagem sugerida.
 4. Descrição — itens sem descrição, clareza do que é oferecido.
 5. Formato/Vitrine — variedade de formato (Destaque/Largo/Médio/Alto), ritmo visual.
-6. Atendimento — WhatsApp, Zara configurada, facilidade de contato.
+6. Atendimento — WhatsApp, Orbi configurada, facilidade de contato.
 7. Marketing/Alcance — próximo passo comercial: campanha, diversificação, testar preço.
 
 REGRAS:
