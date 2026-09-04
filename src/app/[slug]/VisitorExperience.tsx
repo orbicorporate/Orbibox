@@ -612,9 +612,10 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
             }}
           >
             {covers.map((src, i) => (
-              <div key={i} className="w-full shrink-0 snap-center overflow-hidden rounded-[24px]" style={{ aspectRatio: 1920 / 830 }}>
+              <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[24px]" style={{ aspectRatio: 1920 / 830 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt={business.name} className="h-full w-full object-cover" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
               </div>
             ))}
           </div>
@@ -655,7 +656,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
             )}
             {/* Mesmo cartão grande da edição — o que você vê ao editar é o que o
                 visitante vê aqui, sem surpresa. */}
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-wrap gap-5">
               {sec.items.map((item) => {
                 const c = colorOf(item.box_color);
                 const size = sizeOf(item.layout_size);
@@ -674,25 +675,28 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                   <>
                     <div className="relative" style={{ aspectRatio: RATIOS[ratio].value }}>
                       {photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={item.image_url!}
-                          alt={item.title}
-                          className="h-full w-full object-cover"
-                          onError={(e) => {
-                            const img = e.currentTarget;
-                            img.style.display = "none";
-                            if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
-                          }}
-                          onLoad={(e) => {
-                            // Mesmo problema do editor: link que "carrega" mas devolve arquivo vazio.
-                            const img = e.currentTarget;
-                            if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={item.image_url!}
+                            alt={item.title}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              const img = e.currentTarget;
                               img.style.display = "none";
                               if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
-                            }
-                          }}
-                        />
+                            }}
+                            onLoad={(e) => {
+                              // Mesmo problema do editor: link que "carrega" mas devolve arquivo vazio.
+                              const img = e.currentTarget;
+                              if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                                img.style.display = "none";
+                                if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
+                              }
+                            }}
+                          />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                        </>
                       ) : (
                         // Sem foto: o nome vira o conteúdo do box, centralizado — sem
                         // rodapé branco repetindo a mesma informação embaixo.
@@ -741,7 +745,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                   </>
                 );
 
-                const classe = "block overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)]";
+                const classe = `block overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${size === "medio" ? "w-[calc(50%-10px)]" : "w-full"}`;
 
                 if (!destino) {
                   return (
