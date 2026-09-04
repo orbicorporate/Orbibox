@@ -5,17 +5,20 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageCropModal } from "./ImageCropModal";
 
 /**
- * Fileira compacta de até 4 miniaturas — cada uma abre o seletor de arquivo
- * e, depois, o recorte. Bem mais enxuto que empilhar 4 uploads inteiros.
+ * Fileira compacta de miniaturas — cada uma abre o seletor de arquivo e,
+ * depois, o recorte (onde dá pra escolher quadrado, retrato ou paisagem).
+ * Dá pra reordenar com as setinhas, sem precisar de arrastar.
  */
 export function GalleryUpload({
   value,
   onChange,
   businessId,
+  max = 6,
 }: {
   value: string[];
   onChange: (urls: string[]) => void;
   businessId: string;
+  max?: number;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,35 +59,56 @@ export function GalleryUpload({
     onChange(value.filter((_, i) => i !== index));
   }
 
-  const slots = Array.from({ length: 4 }, (_, i) => value[i] ?? null);
+  function moveTo(index: number, dir: -1 | 1) {
+    const target = index + dir;
+    if (target < 0 || target >= value.length) return;
+    const next = [...value];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
+  }
+
+  const slots = Array.from({ length: max }, (_, i) => value[i] ?? null);
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {slots.map((url, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => openPicker(i)}
-            className="relative aspect-square overflow-hidden rounded-xl border border-dashed border-divider bg-surface-soft"
-          >
-            {url ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+          <div key={i} className="relative aspect-square overflow-hidden rounded-xl border border-dashed border-divider bg-surface-soft">
+            <button type="button" onClick={() => openPicker(i)} className="absolute inset-0">
+              {url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={url} alt="" className="h-full w-full object-cover" />
+              ) : uploadingIndex === i ? (
+                <span className="flex h-full w-full items-center justify-center text-[10px] text-text-tertiary">…</span>
+              ) : (
+                <span className="flex h-full w-full items-center justify-center text-[18px] text-text-tertiary">+</span>
+              )}
+            </button>
+            {url && (
+              <>
                 <span
-                  onClick={(e) => { e.stopPropagation(); removeAt(i); }}
+                  onClick={() => removeAt(i)}
                   className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-[11px] text-white"
                 >
                   ×
                 </span>
+                <span className="absolute inset-x-1 bottom-1 flex justify-between">
+                  <span
+                    onClick={() => moveTo(i, -1)}
+                    className={`flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-[10px] text-white ${i === 0 ? "invisible" : ""}`}
+                  >
+                    ‹
+                  </span>
+                  <span
+                    onClick={() => moveTo(i, 1)}
+                    className={`flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-[10px] text-white ${i === value.length - 1 ? "invisible" : ""}`}
+                  >
+                    ›
+                  </span>
+                </span>
               </>
-            ) : uploadingIndex === i ? (
-              <span className="flex h-full w-full items-center justify-center text-[10px] text-text-tertiary">…</span>
-            ) : (
-              <span className="flex h-full w-full items-center justify-center text-[18px] text-text-tertiary">+</span>
             )}
-          </button>
+          </div>
         ))}
       </div>
 

@@ -220,16 +220,16 @@ function StoryView({ business, onBack }: { business: Business; onBack: () => voi
       {photos.length > 0 && (
         <>
           <div
-            className="flex snap-x snap-mandatory gap-3 overflow-x-auto"
+            className="flex snap-x snap-mandatory items-start gap-3 overflow-x-auto"
             onScroll={(e) => {
               const w = e.currentTarget.clientWidth || 1;
               setActive(Math.round(e.currentTarget.scrollLeft / w));
             }}
           >
             {photos.map((src, i) => (
-              <div key={i} className="aspect-square w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
+              <div key={i} className="w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={business.name} className="h-full w-full object-cover" />
+                <img src={src} alt={business.name} className="max-h-[460px] w-full object-cover" />
               </div>
             ))}
           </div>
