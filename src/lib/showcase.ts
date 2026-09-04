@@ -6,7 +6,7 @@ export type BoxStyle = "cor" | "foto";
 export const SIZE_LABEL: Record<BoxSize, string> = {
   destaque: "Destaque",
   largo: "Largo",
-  medio: "Médio",
+  medio: "Pequeno",
   alto: "Alto",
 };
 
@@ -22,9 +22,9 @@ export const SIZE_CLASS: Record<BoxSize, string> = {
 // escolha própria. Largo e Destaque são baixinhos (paisagem), Alto é bem
 // vertical (retrato), Médio fica perto de quadrado. Compartilhado entre o
 // editor (admin) e a página pública, pra capa nunca ficar diferente dos dois lados.
-export const COVER_RATIO_BY_SIZE: Record<BoxSize, "quadrado" | "retrato" | "paisagem"> = {
+export const COVER_RATIO_BY_SIZE: Record<BoxSize, "quadrado" | "retrato" | "paisagem" | "banner"> = {
   destaque: "paisagem",
-  largo: "paisagem",
+  largo: "banner",
   medio: "quadrado",
   alto: "retrato",
 };

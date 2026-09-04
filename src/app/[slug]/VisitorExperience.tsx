@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf } from "@/lib/showcase";
+import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 
 type Business = {
@@ -643,7 +644,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
 
                 const miolo = (
                   <>
-                    <div className="relative" style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1 }}>
+                    <div className="relative" style={{ aspectRatio: RATIOS[ratio].value }}>
                       {photo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img

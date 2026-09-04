@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, type BoxSize, type PriceType } from "@/lib/showcase";
+import { RATIOS } from "@/components/ui/ImageCropModal";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
 type BrandColor = { hex: string; role?: string };
@@ -529,7 +530,7 @@ function ItemCard({
     <div id={`item-${item.id}`} className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${widthClass}`}>
       <div
         className="relative"
-        style={{ aspectRatio: ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1, minHeight: 150 }}
+        style={{ aspectRatio: RATIOS[ratio].value, minHeight: 150 }}
         onClick={!editing ? onToggleEdit : undefined}
         role={!editing ? "button" : undefined}
       >

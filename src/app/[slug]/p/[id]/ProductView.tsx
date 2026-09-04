@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { COVER_RATIO_BY_SIZE, formatPrice, sizeOf } from "@/lib/showcase";
+import { RATIOS } from "@/components/ui/ImageCropModal";
 
 type Business = {
   id: string;
@@ -35,7 +36,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
   // Mesmo formato escolhido no box — retrato ou paisagem, nunca mais o
   // quadrado fixo de antes. Consistente com a Vitrine e a grade pública.
   const ratio = COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
-  const aspectRatio = ratio === "paisagem" ? 16 / 9 : ratio === "retrato" ? 4 / 5 : 1;
+  const aspectRatio = RATIOS[ratio].value;
 
   // Abrir a página do item já conta como interesse — mesmo tipo de clique de sempre.
   useEffect(() => {
