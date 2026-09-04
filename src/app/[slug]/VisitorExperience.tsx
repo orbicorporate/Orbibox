@@ -605,8 +605,18 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                             if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
                           }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
                       </>
+                    )}
+                    {/* Indicador discreto de "tem mais aqui" — só vira texto quando
+                        avisa algo que muda o comportamento (sai pro site do dono). */}
+                    {destino && (
+                      <span
+                        className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/25 text-[11px] backdrop-blur-sm"
+                        style={{ color: photo ? "#fff" : c.fg }}
+                      >
+                        {isExterno ? "↗" : "›"}
+                      </span>
                     )}
                     <div className="relative">
                       <p className={`font-medium leading-tight ${sizeOf(item.layout_size) === "destaque" ? "text-[17px]" : "text-[14px]"}`} style={{ color: photo ? "#fff" : c.fg }}>
@@ -617,9 +627,9 @@ function Showcase({ content, business, sessionId }: { content: ContentItem[]; bu
                           R$ {Number(item.price).toFixed(2)}
                         </p>
                       )}
-                      {destino && (
+                      {isExterno && (
                         <p className="mt-1 text-[11px] opacity-70" style={{ color: photo ? "#fff" : c.fg }}>
-                          {item.link_kind === "categoria" ? "ver categoria \u2197" : isExterno ? "ver no site \u2197" : "ver detalhes"}
+                          {item.link_kind === "categoria" ? "ver categoria" : "ver no site"}
                         </p>
                       )}
                     </div>
