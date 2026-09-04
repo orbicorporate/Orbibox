@@ -71,10 +71,11 @@ export function ShowcaseBuilder({
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [proposta, setProposta] = useState<{ siteType: string; motivo: string | null; imported: number; semFoto: number } | null>(null);
-  const [insight, setInsight] = useState<string | null>(null);
+  const [insights, setInsights] = useState<string[] | null>(null);
+  const [insightIdx, setInsightIdx] = useState(0);
   const [generatingInsight, setGeneratingInsight] = useState(false);
 
-  async function generateInsight() {
+  async function generateInsights() {
     setGeneratingInsight(true);
     try {
       const res = await fetch("/api/vitrine-insight", {
@@ -83,10 +84,18 @@ export function ShowcaseBuilder({
         body: JSON.stringify({ businessId }),
       });
       const data = await res.json();
-      if (data.insight) setInsight(data.insight);
+      if (Array.isArray(data.insights) && data.insights.length > 0) {
+        setInsights(data.insights);
+        setInsightIdx(0);
+      }
     } finally {
       setGeneratingInsight(false);
     }
+  }
+
+  function nextInsight() {
+    if (!insights) return;
+    setInsightIdx((i) => (i + 1) % insights.length);
   }
 
   const ordered = [...items].sort((a, b) => a.position - b.position);
@@ -390,24 +399,48 @@ export function ShowcaseBuilder({
         ))}
       </div>
 
-      {/* Orbi Insight — a esfera de verdade, e um botão pra pedir um olhar novo. */}
+      {/* Orbi Insight — a esfera de verdade, e um lote de 7 ângulos diferentes pra navegar sem repetir. */}
       {items.length > 0 && (
         <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
-          <OrbiOrb size={48} />
+          <div className="flex items-start justify-between gap-3">
+            <OrbiOrb size={48} />
+            {insights && insights.length > 1 && (
+              <span className="mt-1 shrink-0 rounded-full bg-surface-white px-3 py-1 text-[11px] font-medium text-text-tertiary">
+                {insightIdx + 1} de {insights.length}
+              </span>
+            )}
+          </div>
           <p className="mt-4 font-[family-name:var(--font-manrope)] text-[19px] font-medium">Orbi Insight</p>
           <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-            {insight ??
+            {insights?.[insightIdx] ??
               (publishedCount === 0
                 ? "Nenhum item está ativo — os visitantes ainda não veem nada na sua vitrine. Publique pelo menos um."
-                : `Você tem ${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}. Itens com foto e descrição própria convertem mais do que os que ficaram com imagem sugerida.`)}
+                : `Você tem ${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}. Toque abaixo pra Orbi analisar sua vitrine de verdade.`)}
           </p>
-          <button
-            onClick={generateInsight}
-            disabled={generatingInsight}
-            className="mt-4 rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-60"
-          >
-            {generatingInsight ? "Analisando sua vitrine…" : "✦ Gerar novo insight"}
-          </button>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {!insights ? (
+              <button
+                onClick={generateInsights}
+                disabled={generatingInsight}
+                className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-60"
+              >
+                {generatingInsight ? "Analisando sua vitrine…" : "✦ Gerar insights"}
+              </button>
+            ) : (
+              <>
+                <button onClick={nextInsight} className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background">
+                  Próximo insight →
+                </button>
+                <button
+                  onClick={generateInsights}
+                  disabled={generatingInsight}
+                  className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary disabled:opacity-60"
+                >
+                  {generatingInsight ? "Analisando…" : "Gerar lote novo"}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
