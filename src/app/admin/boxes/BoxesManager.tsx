@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
-import { PALETTE_GROUPS, ICON_LIBRARY } from "@/lib/showcase";
+import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
@@ -345,7 +345,7 @@ export function BoxesManager({
                       {cards.map((c, i) => (
                         <div key={i} className="rounded-2xl border border-divider p-3">
                           <div className="flex items-center gap-2">
-                            <div className="flex gap-1">
+                            <div className="flex flex-wrap gap-1">
                               {DIFF_ICONS.map((ic) => (
                                 <button
                                   key={ic}
@@ -446,6 +446,7 @@ function BoxEditor({
 }) {
   const [cfg, setCfg] = useState<BoxConfig>(initial);
   const [colorModalOpen, setColorModalOpen] = useState(false);
+  const [showAllIcons, setShowAllIcons] = useState(false);
   const color = cfg.color || "#111318";
 
   function update(next: Partial<BoxConfig>) {
@@ -482,7 +483,7 @@ function BoxEditor({
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
       <div className="flex flex-wrap gap-1.5">
-        {ICON_CHOICES.map((ic) => (
+        {(showAllIcons ? ICON_CHOICES : ICON_CHOICES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (
           <button
             key={ic}
             onClick={() => { update({ icon: ic }); if (!liveOnly) onSave({ ...cfg, icon: ic }); }}
@@ -491,6 +492,14 @@ function BoxEditor({
             {ic}
           </button>
         ))}
+        {!showAllIcons && ICON_CHOICES.length > ICON_LIBRARY_PREVIEW_COUNT && (
+          <button
+            onClick={() => setShowAllIcons(true)}
+            className="flex h-9 items-center justify-center rounded-full border border-dashed border-divider px-3 text-[12px] font-medium text-text-secondary"
+          >
+            Ver mais
+          </button>
+        )}
       </div>
 
       {isCustom && (

@@ -165,10 +165,32 @@ export function formatPrice(item: { price: number | null; price_type?: string | 
 
 /** Biblioteca de ícones minimalistas — mesmo estilo geométrico simples usado
  * em todo o Orbibox, sem emoji colorido, pra combinar com qualquer paleta. */
+/** Biblioteca de ícones minimalistas — mesmo estilo geométrico simples usado
+ * em todo o Orbibox, sem emoji colorido, pra combinar com qualquer paleta.
+ * "\uFE0E" força a versão em texto (preto e branco) de símbolos que alguns
+ * sistemas tentam renderizar como emoji colorido (telefone, aviso, etc.). */
 export const ICON_LIBRARY = [
+  // Formas
   "◆", "◇", "◈", "○", "●", "◎", "□", "■", "▢", "▣",
   "△", "▲", "▽", "▼", "◫", "◧", "◨", "◩", "◪", "⬡",
-  "⬢", "⬣", "✦", "✧", "★", "☆", "✳", "✴", "✷", "✸",
-  "☎", "✉", "⚑", "⚐", "⌘", "⏱", "⚙", "⚡", "➜", "→",
-  "✓", "✔", "⊕", "⌖", "◐", "◑",
+  "⬢", "⬣", "◐", "◑",
+  // Destaque / novidade
+  "✦", "✧", "★", "☆", "✳\uFE0E", "✴\uFE0E", "✷", "✸", "✱", "❋",
+  // Ação / navegação
+  "⌘", "⏱\uFE0E", "⚙\uFE0E", "⚡\uFE0E", "➜", "→", "✓", "✔", "⊕", "⌖",
+  // Contato / comunicação
+  "☎\uFE0E", "✉\uFE0E", "❝", "❞", "⚑", "⚐",
+  // Dinheiro
+  "$", "¤",
+  // Pessoas
+  "👤\uFE0E", "⚉",
+  // Endereço / localização
+  "✛", "⊚",
+  // Expressões
+  "☺\uFE0E", "☻\uFE0E",
+  // Atenção
+  "⚠\uFE0E", "‼",
 ];
+
+/** Primeiros ícones mostrados antes de tocar em "Ver mais" — os mais comuns. */
+export const ICON_LIBRARY_PREVIEW_COUNT = 24;
