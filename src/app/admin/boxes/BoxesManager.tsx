@@ -7,6 +7,7 @@ import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiChatIcon } from "@/components/orbi/OrbiChatIcon";
+import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
@@ -272,6 +273,8 @@ export function BoxesManager({
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[16px]" style={{ backgroundColor: isHero ? "#111318" : color, color: isHero ? "#fff" : fg }}>
                   {icon === "__chat__" ? (
                     <OrbiChatIcon size={44} />
+                  ) : icon === "__orb__" ? (
+                    <OrbiParticleSphere size={44} />
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
@@ -311,6 +314,8 @@ export function BoxesManager({
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-[14px]" style={{ backgroundColor: color, color: fg }}>
                       {icon === "__chat__" ? (
                         <OrbiChatIcon size={36} />
+                      ) : icon === "__orb__" ? (
+                        <OrbiParticleSphere size={36} />
                       ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
@@ -538,6 +543,14 @@ function BoxEditor({
       >
         <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiChatIcon size={32} /></span>
         <span className="text-[13px] font-medium">Balão de conversa animado</span>
+      </button>
+
+      <button
+        onClick={() => { update({ icon: "__orb__" }); if (!liveOnly) onSave({ ...cfg, icon: "__orb__" }); }}
+        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__orb__" ? "border-on-background" : "border-divider"}`}
+      >
+        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiParticleSphere size={32} /></span>
+        <span className="text-[13px] font-medium">Esfera de partículas animada</span>
       </button>
 
       {/* Logo específico deste box: usa o que já foi enviado aqui, senão cai
