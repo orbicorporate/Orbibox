@@ -69,14 +69,16 @@ export default async function HojePage() {
 
       {/* Saudação dentro de um halo circular — nome do negócio, não do usuário
           que abriu o painel, já que mais gente da equipe também vai entrar. */}
-      <div className="relative mx-auto mt-6 flex h-64 w-64 flex-col items-center justify-center text-center">
+      <div className="relative mx-auto mt-6 flex h-64 w-64 items-center justify-center">
         <div className="orbi-halo absolute inset-0" aria-hidden>
           <span className="orbi-halo__dot" />
         </div>
-        <h1 className="font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
-          Olá, {business!.name}
-        </h1>
-        <p className="mt-1 px-6 text-[14px] text-text-secondary">Seu negócio está indo bem hoje.</p>
+        <div className="absolute left-1/2 top-1/2 w-[90vw] max-w-[420px] -translate-x-1/2 -translate-y-1/2 text-center">
+          <h1 className="whitespace-nowrap font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">
+            Olá, {business!.name}
+          </h1>
+          <p className="mt-1 text-[14px] text-text-secondary">Seu negócio está indo bem hoje.</p>
+        </div>
       </div>
       <Link
         href={`/${business!.slug}`}
