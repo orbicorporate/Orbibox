@@ -14,7 +14,11 @@ import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropMod
  * primeira foto do item já definiu — capa e galeria nunca ficam misturando
  * proporção. `onFormatChosen` avisa o formato escolhido na primeira vez.
  * `promptSubject`, quando vem preenchido, habilita o botão de gerar um
- * prompt pronto pra criar a capa num gerador de imagem (GPT, etc.).
+ * prompt pronto pra criar a imagem num gerador (GPT, etc.).
+ * `promptKind` diz se o que se cria é uma "capa" (padrão) ou um "avatar"
+ * (logotipo), pra o texto do prompt e os rótulos combinarem com o contexto.
+ * `emptyPreview` troca o quadradinho vazio por um elemento próprio (ex.: a
+ * esfera da Orbi, quando ainda não há logotipo enviado).
  */
 export function ImageUpload({
   value,
@@ -24,6 +28,8 @@ export function ImageUpload({
   lockedReason,
   onFormatChosen,
   promptSubject,
+  promptKind = "capa",
+  emptyPreview,
 }: {
   value: string | null;
   onChange: (url: string | null) => void;
@@ -32,6 +38,8 @@ export function ImageUpload({
   lockedReason?: string;
   onFormatChosen?: (ratio: Ratio) => void;
   promptSubject?: string;
+  promptKind?: "capa" | "avatar";
+  emptyPreview?: React.ReactNode;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,7 +58,10 @@ export function ImageUpload({
 
   const ratio = lockedRatio ?? "quadrado";
   const medida = RATIO_PIXELS[ratio];
-  const promptTexto = `Criar uma capa em ${medida}, sofisticada e minimalista, com o objetivo de "${promptSubject || "apresentar isso da melhor forma"}". Use como referência de estilo as imagens que vou anexar.`;
+  const isAvatar = promptKind === "avatar";
+  const promptTexto = isAvatar
+    ? `Criar um avatar/logotipo redondo em ${medida}, sofisticado e minimalista, para representar "${promptSubject || "minha marca"}". Fundo limpo, boa leitura em tamanho pequeno. Use como referência de estilo as imagens que vou anexar.`
+    : `Criar uma capa em ${medida}, sofisticada e minimalista, com o objetivo de "${promptSubject || "apresentar isso da melhor forma"}". Use como referência de estilo as imagens que vou anexar.`;
 
   async function resolveUrl(raw: string) {
     const trimmed = raw.trim();
@@ -124,6 +135,8 @@ export function ImageUpload({
           {value ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={value} alt="" className="h-full w-full object-cover" />
+          ) : emptyPreview ? (
+            <div className="flex h-full w-full items-center justify-center">{emptyPreview}</div>
           ) : (
             <div className="flex h-full w-full items-center justify-center text-[18px] text-text-tertiary">▣</div>
           )}
@@ -193,7 +206,7 @@ export function ImageUpload({
         onClick={() => setShowPrompt((s) => !s)}
         className="self-start text-[12px] font-medium text-on-background underline"
       >
-        {showPrompt ? "Esconder prompt" : "✦ Gerar prompt pra criar a capa com IA"}
+        {showPrompt ? "Esconder prompt" : isAvatar ? "✦ Gerar prompt pra criar o avatar com IA" : "✦ Gerar prompt pra criar a capa com IA"}
       </button>
 
       {showPrompt && (

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
@@ -233,6 +234,9 @@ export function BoxesManager({
             value={logoUrl}
             businessId={businessId}
             lockedRatio="quadrado"
+            promptKind="avatar"
+            promptSubject={businessName}
+            emptyPreview={<OrbiOrb size={72} />}
             onChange={async (url) => {
               setLogoUrl(url);
               await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);
