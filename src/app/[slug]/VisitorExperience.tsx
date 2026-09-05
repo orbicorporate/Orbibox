@@ -575,7 +575,7 @@ function OrbiChat({
           className="flex-1 bg-transparent text-[14px] outline-none"
         />
         <button type="submit" disabled={sending} className="shrink-0 disabled:opacity-40">
-          <OrbiOrb size={40} />
+          <OrbiParticleSphere size={40} className="rounded-full" />
         </button>
       </form>
     </div>

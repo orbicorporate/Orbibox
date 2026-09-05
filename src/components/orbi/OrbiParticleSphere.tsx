@@ -17,7 +17,7 @@ import { useEffect, useRef } from "react";
  */
 export function OrbiParticleSphere({
   size = 44,
-  bg = "#000000",
+  bg = "transparent",
   variant = "sphere",
   className = "",
 }: {
@@ -129,8 +129,8 @@ export function OrbiParticleSphere({
         const k = morph * (variant === "whatsapp" ? 0.9 : 0.85);
         c = [c[0] + (morphColor[0] - c[0]) * k, c[1] + (morphColor[1] - c[1]) * k, c[2] + (morphColor[2] - c[2]) * k];
       }
-      const b = 0.7 + depth * 0.3;
-      return `rgba(${Math.round(c[0] * b)},${Math.round(c[1] * b)},${Math.round(c[2] * b)},${0.5 + depth * 0.5})`;
+      const b = 0.85 + depth * 0.15;
+      return `rgba(${Math.round(c[0] * b)},${Math.round(c[1] * b)},${Math.round(c[2] * b)},${0.6 + depth * 0.4})`;
     }
 
     const SPIN = 2.2, MORPH = 0.9, HOLD = 1.1;
@@ -156,8 +156,10 @@ export function OrbiParticleSphere({
       if (!running || !ctx) return;
       const time = (now - start) / 1000;
       ctx.clearRect(0, 0, size, size);
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, size, size);
+      if (bg !== "transparent") {
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, size, size);
+      }
 
       const morph = morphAt(time);
       const ay = time * 0.5 * (1 - morph);
