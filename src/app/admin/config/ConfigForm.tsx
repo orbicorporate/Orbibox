@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -25,12 +26,21 @@ const TIPO_LABEL: Record<string, string> = {
 };
 
 export function ConfigForm({ business }: { business: Business }) {
+  const router = useRouter();
   const supabase = createClient();
   const [b, setB] = useState(business);
   const [saved, setSaved] = useState(false);
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   function set<K extends keyof Business>(key: K, value: Business[K]) {
     setB((p) => ({ ...p, [key]: value }));
@@ -225,6 +235,14 @@ export function ConfigForm({ business }: { business: Business }) {
       >
         Personalidade da Orbi →
       </Link>
+
+      <button
+        onClick={handleSignOut}
+        disabled={signingOut}
+        className="mt-3 rounded-full border border-divider bg-surface-white py-3 text-center text-[14px] text-red-600 disabled:opacity-50"
+      >
+        {signingOut ? "Saindo…" : "Sair da conta"}
+      </button>
     </div>
   );
 }

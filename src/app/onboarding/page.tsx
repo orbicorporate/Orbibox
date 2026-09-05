@@ -236,8 +236,20 @@ export default function OnboardingPage() {
     router.refresh();
   }
 
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
   return (
-    <main className="flex min-h-screen items-center justify-center px-6 py-16">
+    <main className="relative flex min-h-screen items-center justify-center px-6 py-16">
+      <button
+        onClick={handleSignOut}
+        className="fixed right-4 top-4 z-10 rounded-full bg-surface-white px-3.5 py-2 text-[12px] font-medium text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.08)]"
+      >
+        Sair
+      </button>
       <Card className="w-full max-w-lg">
         {step === "dados" && (
           <>
