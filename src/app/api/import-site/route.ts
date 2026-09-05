@@ -259,6 +259,7 @@ ${site.text}`;
 
     return NextResponse.json({
       imported: inserted?.length ?? 0,
+      ids: inserted?.map((r) => r.id) ?? [],
       siteType,
       motivo: proposta.motivo ?? null,
       semFoto: rows.filter((r) => !r.image_url).length,

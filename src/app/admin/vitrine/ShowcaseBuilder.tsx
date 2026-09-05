@@ -86,6 +86,127 @@ export function ShowcaseBuilder({
   const [insightIdx, setInsightIdx] = useState(0);
   const [generatingInsight, setGeneratingInsight] = useState(false);
 
+  // Histórico de estados anteriores da vitrine — permite desfazer a última
+  // ação (edição, exclusão, criação, reorganização, importação, etc.) e
+  // também dá segurança pra "Renovar vitrine", que apaga tudo de uma vez.
+  type Snapshot = { items: Item[]; categories: string[]; coverUrls: string[] };
+  const [history, setHistory] = useState<Snapshot[]>([]);
+  const [undoing, setUndoing] = useState(false);
+
+  function snapshot() {
+    setHistory((h) => [
+      ...h.slice(-19),
+      { items: items.map((i) => ({ ...i })), categories: [...categories], coverUrls: [...coverUrls] },
+    ]);
+  }
+
+  async function undo() {
+    if (history.length === 0 || undoing) return;
+    setUndoing(true);
+    const prev = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    setEditingId(null);
+
+    const prevIds = new Set(prev.items.map((i) => i.id));
+    const currIds = new Set(items.map((i) => i.id));
+    const toInsert = prev.items.filter((i) => !currIds.has(i.id));
+    const toDelete = items.filter((i) => !prevIds.has(i.id));
+    const toUpdate = prev.items.filter((i) => {
+      if (!currIds.has(i.id)) return false;
+      const atual = items.find((c) => c.id === i.id);
+      return atual && JSON.stringify(atual) !== JSON.stringify(i);
+    });
+
+    try {
+      await Promise.all([
+        ...toInsert.map((i) =>
+          supabase.from("content_items").insert({
+            id: i.id,
+            business_id: businessId,
+            type: (i as unknown as { type?: string }).type ?? "product",
+            title: i.title,
+            description: i.description,
+            price: i.price,
+            price_type: i.price_type,
+            price_max: i.price_max,
+            image_url: i.image_url,
+            image_is_placeholder: i.image_is_placeholder,
+            gallery_urls: i.gallery_urls,
+            photo_format: i.photo_format,
+            brand_label: i.brand_label,
+            position: i.position,
+            status: i.status,
+            layout_size: i.layout_size,
+            box_color: i.box_color,
+            box_style: i.box_style,
+            ai_optimized: i.ai_optimized,
+            link_kind: i.link_kind,
+            target_url: i.target_url,
+          })
+        ),
+        ...toDelete.map((i) => supabase.from("content_items").delete().eq("id", i.id)),
+        ...toUpdate.map((i) =>
+          supabase
+            .from("content_items")
+            .update({
+              title: i.title,
+              description: i.description,
+              price: i.price,
+              price_type: i.price_type,
+              price_max: i.price_max,
+              image_url: i.image_url,
+              image_is_placeholder: i.image_is_placeholder,
+              gallery_urls: i.gallery_urls,
+              photo_format: i.photo_format,
+              brand_label: i.brand_label,
+              position: i.position,
+              status: i.status,
+              layout_size: i.layout_size,
+              box_color: i.box_color,
+              box_style: i.box_style,
+              ai_optimized: i.ai_optimized,
+              link_kind: i.link_kind,
+              target_url: i.target_url,
+            })
+            .eq("id", i.id)
+        ),
+        JSON.stringify(prev.categories) !== JSON.stringify(categories)
+          ? supabase.from("businesses").update({ vitrine_categories: prev.categories }).eq("id", businessId)
+          : Promise.resolve(),
+        JSON.stringify(prev.coverUrls) !== JSON.stringify(coverUrls)
+          ? supabase.from("businesses").update({ vitrine_cover_urls: prev.coverUrls }).eq("id", businessId)
+          : Promise.resolve(),
+      ]);
+    } finally {
+      setItems(prev.items);
+      setCategories(prev.categories);
+      setCoverUrls(prev.coverUrls);
+      setUndoing(false);
+    }
+  }
+
+  async function renovarVitrine() {
+    if (items.length === 0 && categories.length === 0 && coverUrls.length === 0) return;
+    if (
+      !window.confirm(
+        "Isso apaga todos os itens, categorias e a capa da sua vitrine, pra você recomeçar do zero. Dá pra desfazer logo em seguida se mudar de ideia. Confirma?"
+      )
+    )
+      return;
+    snapshot();
+    const ids = items.map((i) => i.id);
+    setEditingId(null);
+    setItems([]);
+    setCategories([]);
+    setCoverUrls([]);
+    setProposta(null);
+    setInsights(null);
+    await Promise.all([
+      ids.length > 0 ? supabase.from("content_items").delete().in("id", ids) : Promise.resolve(),
+      supabase.from("businesses").update({ vitrine_categories: [], vitrine_cover_urls: [] }).eq("id", businessId),
+    ]);
+  }
+
   async function generateInsights() {
     setGeneratingInsight(true);
     try {
@@ -127,6 +248,7 @@ export function ShowcaseBuilder({
   }
 
   async function save(id: string, fields: Partial<Item>) {
+    snapshot();
     patch(id, fields);
     await supabase.from("content_items").update(fields).eq("id", id);
   }
@@ -140,6 +262,7 @@ export function ShowcaseBuilder({
     const idx = ordered.findIndex((i) => i.id === item.id);
     const swap = ordered[idx + dir];
     if (!swap) return;
+    snapshot();
     patch(item.id, { position: swap.position });
     patch(swap.id, { position: item.position });
     await Promise.all([
@@ -150,6 +273,7 @@ export function ShowcaseBuilder({
 
   async function autoArrange() {
     setArranging(true);
+    snapshot();
     const porValor = [...ordered].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
     const ritmo: BoxSize[] = ["destaque", "medio", "medio", "largo", "medio", "medio"];
     const updates = porValor.map((it, i) => ({ id: it.id, layout_size: ritmo[i % ritmo.length], position: i }));
@@ -167,6 +291,7 @@ export function ShowcaseBuilder({
 
   async function createItem(brandLabel: string | null = null) {
     setCreating(true);
+    snapshot();
     // Nasce no topo — position mais baixo que tudo que já existe, não no fim da lista.
     const minPos = items.length > 0 ? Math.min(...items.map((i) => i.position)) : 0;
     const { data, error } = await supabase
@@ -192,6 +317,7 @@ export function ShowcaseBuilder({
       window.alert(`Já existe uma categoria "${trimmed}".`);
       return;
     }
+    snapshot();
     await saveCategories([...categories, trimmed]);
   }
 
@@ -223,8 +349,7 @@ export function ShowcaseBuilder({
       });
       if (res.ok) {
         const { description } = await res.json();
-        patch(item.id, { description, ai_optimized: true });
-        await supabase.from("content_items").update({ description, ai_optimized: true }).eq("id", item.id);
+        await save(item.id, { description, ai_optimized: true });
       }
     } finally {
       setImproving(null);
@@ -234,6 +359,7 @@ export function ShowcaseBuilder({
   async function importFromSite(e: React.FormEvent) {
     e.preventDefault();
     if (!importUrl.trim() || importing) return;
+    snapshot();
     setImporting(true);
     setImportMsg(null);
     try {
@@ -246,6 +372,10 @@ export function ShowcaseBuilder({
       if (!res.ok || data.imported === 0) {
         setImportMsg({ kind: "err", text: data.error ?? "Não foi possível importar." });
       } else {
+        if (Array.isArray(data.ids) && data.ids.length > 0) {
+          const { data: novos } = await supabase.from("content_items").select("*").in("id", data.ids);
+          if (novos && novos.length > 0) setItems((p) => [...p, ...(novos as Item[])]);
+        }
         setProposta({ siteType: data.siteType ?? "institucional", motivo: data.motivo ?? null, imported: data.imported ?? 0, semFoto: data.semFoto ?? 0 });
         setImportUrl("");
         setShowImport(false);
@@ -260,6 +390,7 @@ export function ShowcaseBuilder({
 
   async function deleteItem(item: Item) {
     if (!window.confirm(`Excluir "${item.title}"? Essa ação não pode ser desfeita.`)) return;
+    snapshot();
     setEditingId(null);
     setItems((p) => p.filter((i) => i.id !== item.id));
     await supabase.from("content_items").delete().eq("id", item.id);
@@ -268,6 +399,7 @@ export function ShowcaseBuilder({
   async function renameCategory(oldName: string) {
     const novo = window.prompt("Novo nome da categoria:", oldName === "Destaques" ? "" : oldName);
     if (novo === null) return;
+    snapshot();
     const value = novo.trim() || null;
     const ids = ordered.filter((i) => (i.brand_label?.trim() || "Destaques") === oldName).map((i) => i.id);
     setItems((p) => p.map((i) => (ids.includes(i.id) ? { ...i, brand_label: value } : i)));
@@ -286,6 +418,7 @@ export function ShowcaseBuilder({
       ? `Excluir a categoria "${name}"? Ela está vazia.`
       : `Excluir a categoria "${name}" e ${ids.length === 1 ? "seu 1 item" : `seus ${ids.length} itens`}? Essa ação não pode ser desfeita.`;
     if (!window.confirm(msg)) return;
+    snapshot();
     setItems((p) => p.filter((i) => !ids.includes(i.id)));
     if (ids.length > 0) await Promise.all(ids.map((id) => supabase.from("content_items").delete().eq("id", id)));
     if (categories.includes(name)) await saveCategories(categories.filter((c) => c !== name));
@@ -313,6 +446,20 @@ export function ShowcaseBuilder({
         <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
           Ver publicado ↗
         </Link>
+        <span className="mx-1 h-5 w-px bg-divider" />
+        <button
+          onClick={undo}
+          disabled={history.length === 0 || undoing}
+          className="flex items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary disabled:opacity-40"
+        >
+          {undoing ? "Desfazendo…" : "↺ Desfazer"}
+        </button>
+        <button
+          onClick={renovarVitrine}
+          className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-red-600"
+        >
+          Renovar vitrine
+        </button>
       </div>
 
       {showImport && (
@@ -343,6 +490,7 @@ export function ShowcaseBuilder({
             max={6}
             lockedRatio="banner"
             onChange={async (urls) => {
+              snapshot();
               setCoverUrls(urls);
               await supabase.from("businesses").update({ vitrine_cover_urls: urls }).eq("id", businessId);
             }}
