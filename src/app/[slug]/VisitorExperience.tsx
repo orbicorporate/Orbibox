@@ -396,17 +396,17 @@ function OrbiChat({
       if (seen.has(cat) && cat) continue;
       if (cat) seen.add(cat);
       picks.push(item.title);
-      if (picks.length === 7) break;
+      if (picks.length === 8) break;
     }
-    // Se sobrar espaço e ainda tiver itens (mesmo repetindo categoria), completa até 7.
-    if (picks.length < 7) {
+    // Se sobrar espaço e ainda tiver itens (mesmo repetindo categoria), completa até 8.
+    if (picks.length < 8) {
       for (const item of published) {
-        if (picks.length === 7) break;
+        if (picks.length === 8) break;
         if (!picks.includes(item.title)) picks.push(item.title);
       }
     }
     if (picks.length === 0) {
-      return ["Quero saber mais sobre vocês", "Como funciona", "Quais os valores", "Formas de pagamento", "Prazo de entrega", "Onde vocês atendem", "Quero falar com alguém"];
+      return ["Quero saber mais sobre vocês", "Como funciona", "Quais os valores", "Formas de pagamento", "Prazo de entrega", "Onde vocês atendem", "Quero um orçamento", "Quero falar com alguém"];
     }
     return picks;
   })();
@@ -486,7 +486,7 @@ function OrbiChat({
         ×
       </button>
 
-      <div className="flex flex-1 flex-col overflow-y-auto px-6 pb-32 pt-24">
+      <div className="flex flex-1 flex-col overflow-y-auto px-6 pb-40 pt-20">
         {/* Avatar */}
         <div className="mx-auto relative">
           <OrbiOrb size={112} />
@@ -496,10 +496,10 @@ function OrbiChat({
 
         {!started ? (
           <>
-            <h2 className="mt-6 text-center font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-tight tracking-[-0.02em]">
+            <h2 className="mt-5 text-center font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-tight tracking-[-0.02em]">
               Como posso<br />te ajudar?
             </h2>
-            <p className="mt-8 text-center text-[11px] font-medium uppercase tracking-wide text-text-tertiary">
+            <p className="mt-6 text-center text-[11px] font-medium uppercase tracking-wide text-text-tertiary">
               Sugestões de tema
             </p>
             <div className="mt-3 flex flex-col gap-3">
