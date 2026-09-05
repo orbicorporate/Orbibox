@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { OrbiChatIcon } from "@/components/orbi/OrbiChatIcon";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
@@ -269,7 +270,9 @@ export function BoxesManager({
                   </div>
                 )}
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[16px]" style={{ backgroundColor: isHero ? "#111318" : color, color: isHero ? "#fff" : fg }}>
-                  {icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
+                  {icon === "__chat__" ? (
+                    <OrbiChatIcon size={44} />
+                  ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -306,7 +309,9 @@ export function BoxesManager({
                 <>
                   <div className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-soft p-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-[14px]" style={{ backgroundColor: color, color: fg }}>
-                      {icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
+                      {icon === "__chat__" ? (
+                        <OrbiChatIcon size={36} />
+                      ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
                       ) : (
@@ -524,6 +529,16 @@ function BoxEditor({
       </button>
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
+
+      {/* Ícone especial: balão de conversa animado (render 3D). Ótimo pro box
+          de chat com a Orbi. */}
+      <button
+        onClick={() => { update({ icon: "__chat__" }); if (!liveOnly) onSave({ ...cfg, icon: "__chat__" }); }}
+        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__chat__" ? "border-on-background" : "border-divider"}`}
+      >
+        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiChatIcon size={32} /></span>
+        <span className="text-[13px] font-medium">Balão de conversa animado</span>
+      </button>
 
       {/* Logo específico deste box: usa o que já foi enviado aqui, senão cai
           no logotipo geral da empresa. Dá pra subir um na hora, só pra este box. */}

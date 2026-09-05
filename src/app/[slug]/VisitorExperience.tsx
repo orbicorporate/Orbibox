@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { OrbiChatIcon } from "@/components/orbi/OrbiChatIcon";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
 import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
@@ -189,7 +190,9 @@ export function VisitorExperience({
                     className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-[15px] ${o.color ? "text-white" : "bg-surface-soft"}`}
                     style={o.color ? { backgroundColor: o.color } : undefined}
                   >
-                    {o.icon === "__logo__" && (o.boxLogo || business.logo_url) ? (
+                    {o.icon === "__chat__" ? (
+                      <OrbiChatIcon size={44} className="rounded-full" />
+                    ) : o.icon === "__logo__" && (o.boxLogo || business.logo_url) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={o.boxLogo || business.logo_url!} alt="" className="h-full w-full object-cover" />
                     ) : (
