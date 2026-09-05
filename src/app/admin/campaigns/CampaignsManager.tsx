@@ -76,7 +76,7 @@ export function CampaignsManager({ businessId, initialCampaigns, contentOptions 
       {others.length > 0 && (
         <div>
           <p className="text-[13px] text-text-tertiary">Outras Oportunidades</p>
-          <div className="mt-2 flex gap-3 overflow-x-auto pb-1">
+          <div className="mt-2 flex gap-3 overflow-x-auto no-scrollbar pb-1">
             {others.map((o) => (
               <button key={o.id} onClick={() => setPick(o)} className="flex w-40 shrink-0 items-center gap-2 rounded-2xl border border-divider bg-surface-white p-2 text-left">
                 {o.image_url && (

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
@@ -74,6 +75,7 @@ export function VisitorExperience({
   isOwner: boolean;
 }) {
   const supabase = createClient();
+  const searchParams = useSearchParams();
   const [intent, setIntent] = useState<Intent | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -86,6 +88,13 @@ export function VisitorExperience({
       .then(({ data }) => data && setSessionId(data.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Vem de um link "Falar com a Orbi" de outra página (ex: página de produto)
+  // com ?chat=1 — abre o chat direto, sem passar pela tela de escolha.
+  useEffect(() => {
+    if (searchParams.get("chat") === "1") chooseIntent("duvida");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
@@ -150,7 +159,7 @@ export function VisitorExperience({
             <p className="text-[13px] uppercase tracking-wide text-text-tertiary">
               {business.name}
             </p>
-            <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[36px] font-medium leading-tight tracking-[-0.01em]">
+            <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">
               {business.hero_question?.trim() ? (
                 business.hero_question
               ) : (
@@ -162,7 +171,7 @@ export function VisitorExperience({
               )}
             </h1>
             <p className="mt-3 max-w-[280px] text-[14px] text-text-secondary">
-              Selecione uma opção para personalizar sua experiência.
+              Sugerimos visitar o Chat e a vitrine.
             </p>
             <div className="mt-10 flex w-full flex-col gap-3">
               {options.map((o) => (
@@ -251,7 +260,7 @@ function StoryView({ business, onBack }: { business: Business; onBack: () => voi
       {photos.length > 0 && (
         <>
           <div
-            className="flex snap-x snap-mandatory items-start gap-3 overflow-x-auto"
+            className="flex snap-x snap-mandatory items-start gap-3 overflow-x-auto no-scrollbar"
             onScroll={(e) => {
               const w = e.currentTarget.clientWidth || 1;
               setActive(Math.round(e.currentTarget.scrollLeft / w));
@@ -289,7 +298,7 @@ function StoryView({ business, onBack }: { business: Business; onBack: () => voi
       {cards.length > 0 && (
         <div className="mt-6">
           <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
-          <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
+          <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto no-scrollbar pb-1">
             {cards.map((c, i) => (
               <div key={i} className="w-[220px] shrink-0 snap-start rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[18px]">{c.icon || "◎"}</span>
@@ -560,7 +569,7 @@ function OrbiChat({
   );
 }
 
-function OrbiRecommendation({ businessId, onOrbi }: { businessId: string; onOrbi: () => void }) {
+function OrbiRecommendation({ businessId }: { businessId: string }) {
   const [rec, setRec] = useState<{ message: string; cta: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -587,13 +596,6 @@ function OrbiRecommendation({ businessId, onOrbi }: { businessId: string; onOrbi
         </span>
       </div>
       <p className="relative mt-3 text-[16px] leading-relaxed text-on-background">{rec.message}</p>
-      {/* Chama pra falar com a marca — abre o chat da Orbi, que já sabe desse interesse. */}
-      <button
-        onClick={onOrbi}
-        className="relative mt-4 inline-flex items-center gap-2 rounded-full bg-button-primary px-5 py-3 text-[14px] font-medium text-white"
-      >
-        ✦ Falar com a Orbi
-      </button>
     </div>
   );
 }
@@ -669,7 +671,7 @@ function VitrineCoverBleed({ business }: { business: Business }) {
     <div className="-mx-6 -mt-16">
       <div
         ref={trackRef}
-        className="flex snap-x snap-mandatory gap-0 overflow-x-auto"
+        className="flex snap-x snap-mandatory gap-0 overflow-x-auto no-scrollbar"
         onScroll={(e) => {
           const w = e.currentTarget.clientWidth || 1;
           setIdx(Math.round(e.currentTarget.scrollLeft / w));
@@ -703,7 +705,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
   return (
     <>
       {sections.length > 1 && (
-        <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+        <div className="mt-5 flex gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
             onClick={() => setActive(null)}
             className={`whitespace-nowrap rounded-full px-4 py-2 text-[13px] ${active === null ? "bg-button-primary text-white" : "border border-divider bg-surface-white text-text-secondary"}`}
@@ -851,7 +853,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 );
               })}
             </div>
-            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} onOrbi={onOrbi} /></div>}
+            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} /></div>}
           </div>
         ))}
       </div>

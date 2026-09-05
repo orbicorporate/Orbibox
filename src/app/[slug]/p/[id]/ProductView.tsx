@@ -32,7 +32,9 @@ type Item = {
 
 export function ProductView({ business, item }: { business: Business; item: Item }) {
   const [active, setActive] = useState(0);
-  const images = [item.image_url, ...item.gallery_urls].filter((u): u is string => !!u);
+  // A capa (image_url) só aparece sozinha quando não há carrossel próprio —
+  // se já existem outras fotos (gallery_urls), elas bastam e a capa não se repete.
+  const images = item.gallery_urls.length > 0 ? item.gallery_urls : [item.image_url].filter((u): u is string => !!u);
   // Mesmo formato escolhido no box — retrato ou paisagem, nunca mais o
   // quadrado fixo de antes. Consistente com a Vitrine e a grade pública.
   const ratio = COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
@@ -65,7 +67,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
       <div className="px-4 pt-3">
         {images.length > 0 ? (
           <div
-            className="flex snap-x snap-mandatory gap-3 overflow-x-auto"
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto no-scrollbar"
             onScroll={(e) => {
               const w = e.currentTarget.clientWidth || 1;
               setActive(Math.round(e.currentTarget.scrollLeft / w));
@@ -106,6 +108,13 @@ export function ProductView({ business, item }: { business: Business; item: Item
         {item.description && <p className="mt-4 text-[15px] leading-relaxed text-text-secondary">{item.description}</p>}
 
         <div className="mt-7 flex flex-col gap-2.5">
+          <Link
+            href={`/${business.slug}?chat=1`}
+            onClick={() => trackClick({ businessId: business.id, kind: "zara", contentItemId: item.id })}
+            className="inline-flex items-center justify-center gap-2 rounded-full orbi-gradient py-3.5 text-center text-[14px] font-medium text-on-background"
+          >
+            ✦ Falar com a Orbi
+          </Link>
           {item.target_url && (
             <a
               href={item.target_url}

@@ -903,7 +903,7 @@ function ItemCard({
 
             <div>
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor do box{item.image_url ? " · aparece se remover a foto" : ""}</p>
-              <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
+              <div className="mt-2 flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 {brandColors.length > 0 && (
                   <button onClick={() => setPaletteTab("Marca")} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${paletteTab === "Marca" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>✦ Marca</button>
                 )}

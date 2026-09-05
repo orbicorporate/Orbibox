@@ -606,7 +606,7 @@ function ColorPickerModal({
         <button onClick={onClose} className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" aria-label="Fechar" />
         <p className="text-center text-[14px] font-medium">Escolher cor</p>
 
-        <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1">
+        <div className="mt-4 flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
           {brandColors.length > 0 && (
             <button
               onClick={() => setTab("Marca")}
