@@ -274,6 +274,8 @@ export function BoxesManager({
                     <OrbiParticleSphere size={44} />
                   ) : icon === "__orbcheck__" ? (
                     <OrbiParticleSphere size={44} variant="check" />
+                  ) : icon === "__orbwa__" ? (
+                    <OrbiParticleSphere size={44} variant="whatsapp" />
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
@@ -315,6 +317,8 @@ export function BoxesManager({
                         <OrbiParticleSphere size={36} />
                       ) : icon === "__orbcheck__" ? (
                         <OrbiParticleSphere size={36} variant="check" />
+                      ) : icon === "__orbwa__" ? (
+                        <OrbiParticleSphere size={36} variant="whatsapp" />
                       ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
@@ -548,6 +552,14 @@ function BoxEditor({
       >
         <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiParticleSphere size={32} variant="check" /></span>
         <span className="text-[13px] font-medium">Partículas que formam um check</span>
+      </button>
+
+      <button
+        onClick={() => { update({ icon: "__orbwa__" }); if (!liveOnly) onSave({ ...cfg, icon: "__orbwa__" }); }}
+        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
+      >
+        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiParticleSphere size={32} variant="whatsapp" /></span>
+        <span className="text-[13px] font-medium">Partículas que formam um balão de conversa</span>
       </button>
 
       {/* Logo específico deste box: usa o que já foi enviado aqui, senão cai

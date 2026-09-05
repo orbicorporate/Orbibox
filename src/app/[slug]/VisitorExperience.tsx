@@ -194,6 +194,8 @@ export function VisitorExperience({
                       <OrbiParticleSphere size={44} className="rounded-full" />
                     ) : o.icon === "__orbcheck__" ? (
                       <OrbiParticleSphere size={44} variant="check" className="rounded-full" />
+                    ) : o.icon === "__orbwa__" ? (
+                      <OrbiParticleSphere size={44} variant="whatsapp" className="rounded-full" />
                     ) : o.icon === "__logo__" && (o.boxLogo || business.logo_url) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={o.boxLogo || business.logo_url!} alt="" className="h-full w-full object-cover" />
