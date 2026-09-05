@@ -924,6 +924,9 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                       <div className="flex items-center justify-between gap-3 p-4">
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">{item.title}</p>
+                          {item.description?.trim() && (
+                            <p className="mt-0.5 line-clamp-1 text-[12px] leading-snug text-text-tertiary">{item.description}</p>
+                          )}
                           {priceLabel && (
                             <p className="mt-0.5 font-[family-name:var(--font-manrope)] text-[15px] font-medium text-text-secondary">{priceLabel}</p>
                           )}

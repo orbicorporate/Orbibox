@@ -862,7 +862,9 @@ function ItemCard({
                     </span>
                   )}
                 </div>
-                {item.brand_label && <p className="mt-0.5 text-[13px] text-text-tertiary">{item.brand_label}</p>}
+                {item.description?.trim() && (
+                  <p className="mt-1 line-clamp-1 text-[12px] leading-snug text-text-tertiary">{item.description}</p>
+                )}
               </div>
               {priceLabel && (
                 <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[15px] font-medium">{priceLabel}</p>
