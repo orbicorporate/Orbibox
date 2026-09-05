@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PulseDetails } from "./PulseDetails";
 import { PulseDateFilter } from "./PulseDateFilter";
+import { PulseMarketing } from "./PulseMarketing";
 import { rangeFromParams, buildSeries } from "./date-range";
 
 export default async function PulsePage({
@@ -134,6 +135,8 @@ export default async function PulsePage({
           </div>
         </div>
       )}
+
+      <PulseMarketing businessId={business!.id} slug={business!.slug} />
     </div>
   );
 }
