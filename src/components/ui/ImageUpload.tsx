@@ -201,6 +201,14 @@ export function ImageUpload({
 
       {error && <p className="text-[12px] text-red-600">{error}</p>}
 
+      {!isAvatar && !value && (
+        <div className="rounded-2xl border border-divider bg-surface-soft p-3">
+          <p className="text-[13px] leading-relaxed text-on-background">
+            <span className="font-medium">Uma capa bonita faz toda a diferença</span> na primeira impressão de quem visita. Se você não tem uma imagem pronta, use o prompt abaixo pra gerar uma no ChatGPT (ou outro gerador) e traga aqui.
+          </p>
+        </div>
+      )}
+
       <button
         type="button"
         onClick={() => setShowPrompt((s) => !s)}

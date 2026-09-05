@@ -852,8 +852,8 @@ function ItemCard({
                 placeholder="Conte o que é, pra quem serve, o que inclui"
                 className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
               />
-              <button onClick={onImprove} disabled={improving} className="mt-2 rounded-full orbi-gradient px-4 py-2 text-[12px] font-medium text-on-background disabled:opacity-50">
-                {improving ? "Pensando…" : "✦ Melhorar texto"}
+              <button onClick={onImprove} disabled={improving} className={`mt-2 rounded-full orbi-gradient px-4 py-2 text-[12px] font-medium text-on-background ${improving ? "" : "disabled:opacity-50"}`}>
+                {improving ? <OrbiWorking label="Pensando…" variant="inline" /> : (item.description?.trim() ? "✦ Melhorar texto" : "✦ Gerar texto com IA")}
               </button>
             </div>
 

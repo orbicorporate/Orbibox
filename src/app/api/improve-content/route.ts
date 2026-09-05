@@ -27,9 +27,10 @@ export async function POST(req: NextRequest) {
       .eq("id", item.business_id)
       .maybeSingle();
 
-    const system = `Você é a Orbi, a camada de inteligência do Orbibox que ajuda donos de negócio a melhorar suas descrições de produto/serviço para converter mais visitantes em clientes.
+    const system = `Você é a Orbi, a camada de inteligência do Orbibox que ajuda donos de negócio a criar e melhorar descrições de produto/serviço para converter mais visitantes em clientes.
 Marca: ${business?.name ?? ""}. ${business?.brand_voice_summary ? `Tom de voz: ${business.brand_voice_summary}` : ""}
-Escreva SOMENTE a descrição melhorada, sem preâmbulo, sem aspas, sem explicações. Máximo 2 frases curtas, linguagem vendedora mas natural, sem exagero.`;
+Se já houver uma descrição, melhore-a. Se estiver vazia, crie uma do zero a partir do título do item.
+Escreva SOMENTE a descrição final, sem preâmbulo, sem aspas, sem explicações. Máximo 2 frases curtas, linguagem vendedora mas natural, sem exagero.`;
 
     const userMsg = `Item: ${item.title}${item.price != null ? ` (R$ ${Number(item.price).toFixed(2)})` : ""}
 Descrição atual: ${item.description || "(nenhuma)"}
