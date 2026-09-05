@@ -22,11 +22,38 @@ const KNOWLEDGE: { key: keyof Knowledge; label: string; href: string }[] = [
   { key: "diferenciais", label: "Estilo e Curadoria", href: "/admin/config" },
 ];
 
-export function AgentConfigForm({ config, businessName, knowledge }: { config: Config; businessName: string; knowledge: Knowledge }) {
+export function AgentConfigForm({ config, businessId, businessName, slug, knowledge }: { config: Config; businessId: string; businessName: string; slug: string; knowledge: Knowledge }) {
   const supabase = createClient();
   const [state, setState] = useState(config);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [buildingAbout, setBuildingAbout] = useState(false);
+  const [aboutBuilt, setAboutBuilt] = useState(false);
+  const [buildError, setBuildError] = useState<string | null>(null);
+
+  const knowledgeComplete = Object.values(knowledge).every(Boolean);
+
+  async function buildAboutPage() {
+    setBuildingAbout(true);
+    setBuildError(null);
+    try {
+      const res = await fetch("/api/build-about", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBuildError(data.error ?? "Não consegui montar a página agora.");
+      } else {
+        setAboutBuilt(true);
+      }
+    } catch {
+      setBuildError("Erro de conexão. Tenta de novo.");
+    } finally {
+      setBuildingAbout(false);
+    }
+  }
 
   function set(key: (typeof SLIDERS)[number]["key"], v: number) { setState((s) => ({ ...s, [key]: v })); setSaved(false); }
 
@@ -112,6 +139,48 @@ export function AgentConfigForm({ config, businessName, knowledge }: { config: C
           })}
         </div>
       </div>
+
+      {/* Quando tudo estiver preenchido, a Orbi já pode costurar a página
+          Sobre inteira com esse material — sem precisar escrever do zero. */}
+      {knowledgeComplete && (
+        <div className="rounded-[28px] orbi-gradient p-[1.5px]">
+          <div className="rounded-[27px] bg-surface-white p-5">
+            <p className="text-[14px] font-medium"><span className="orbi-gradient-text">✦</span> Base de conhecimento completa</p>
+            <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
+              {aboutBuilt
+                ? `Pronto — a página Sobre de ${businessName} já está montada com essas informações.`
+                : `A Orbi já pode montar a página Sobre completa de ${businessName} juntando tudo isso — história, diferenciais e o que o catálogo mostra.`}
+            </p>
+            {buildError && <p className="mt-2 text-[13px] text-red-600">{buildError}</p>}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {!aboutBuilt ? (
+                <button
+                  onClick={buildAboutPage}
+                  disabled={buildingAbout}
+                  className="rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-medium text-white disabled:opacity-50"
+                >
+                  {buildingAbout ? "Montando…" : "✦ Montar página Sobre"}
+                </button>
+              ) : (
+                <button
+                  onClick={buildAboutPage}
+                  disabled={buildingAbout}
+                  className="rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[13px] text-text-secondary disabled:opacity-50"
+                >
+                  {buildingAbout ? "Montando…" : "Montar de novo"}
+                </button>
+              )}
+              <Link
+                href={`/${slug}?tab=conhecer`}
+                target="_blank"
+                className="rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[13px] font-medium"
+              >
+                Ver página Sobre ↗
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Orbi Insight */}
       <div className="rounded-[28px] border border-divider bg-surface-white p-5">

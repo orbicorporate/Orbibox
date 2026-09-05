@@ -6,7 +6,7 @@ export default async function AgentPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, about_business, differentials, policies")
+    .select("id, name, slug, about_business, differentials, policies")
     .eq("owner_id", user!.id)
     .limit(1)
     .single();
@@ -24,7 +24,9 @@ export default async function AgentPage() {
       {config && (
         <AgentConfigForm
           config={config}
+          businessId={business!.id}
           businessName={business!.name}
+          slug={business!.slug}
           knowledge={{
             catalogo: (catalogCount ?? 0) > 0,
             historia: !!business!.about_business?.trim(),

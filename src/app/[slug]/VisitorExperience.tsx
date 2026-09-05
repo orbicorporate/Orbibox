@@ -91,8 +91,13 @@ export function VisitorExperience({
 
   // Vem de um link "Falar com a Orbi" de outra página (ex: página de produto)
   // com ?chat=1 — abre o chat direto, sem passar pela tela de escolha.
+  // ?tab=conhecer faz o mesmo pra página "Sobre" (ex: link do painel, depois
+  // de montar a página Sobre completa com a Orbi).
   useEffect(() => {
-    if (searchParams.get("chat") === "1") chooseIntent("duvida");
+    const chat = searchParams.get("chat");
+    const tab = searchParams.get("tab");
+    if (chat === "1") chooseIntent("duvida");
+    else if (tab === "conhecer") chooseIntent("conhecer");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
