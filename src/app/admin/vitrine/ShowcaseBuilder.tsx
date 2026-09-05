@@ -893,18 +893,23 @@ function ItemCard({
               </div>
             </div>
 
-            <div>
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Mais fotos (até 6) · viram um carrossel na página do item</p>
-              <div className="mt-2">
-                <GalleryUpload
-                  value={item.gallery_urls}
-                  businessId={businessId}
-                  lockedRatio="retrato"
-                  lockedReason="As fotos da galeria são sempre verticais (retrato), pra manter o carrossel uniforme."
-                  onChange={(urls) => save(item.id, { gallery_urls: urls })}
-                />
+            {(item.link_kind ?? "produto") === "produto" && (
+              <div>
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Mais fotos da página do produto (até 6)</p>
+                <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
+                  Só preencha se este item vai abrir uma página própria (opção lá embaixo). Essas fotos viram um carrossel dentro dessa página — pra mostrar o produto de vários ângulos. Se o item não abre página, pode pular.
+                </p>
+                <div className="mt-2">
+                  <GalleryUpload
+                    value={item.gallery_urls}
+                    businessId={businessId}
+                    lockedRatio="retrato"
+                    lockedReason="As fotos da galeria são sempre verticais (retrato), pra manter o carrossel uniforme."
+                    onChange={(urls) => save(item.id, { gallery_urls: urls })}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             <div>
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor do box{item.image_url ? " · aparece se remover a foto" : ""}</p>
