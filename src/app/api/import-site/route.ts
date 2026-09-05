@@ -207,8 +207,9 @@ ${site.text}`;
         ? (raw as { hex?: string }[]).map((c) => c?.hex).filter((h): h is string => typeof h === "string" && /^#[0-9a-fA-F]{6}$/.test(h))
         : [];
       if (hexes.length >= 2) return hexes;
-      // Curadoria fixa (chaves de BOX_COLORS) — tons claros e agradáveis.
-      return ["verde", "azul", "coral", "teal", "yung-lilas", "energy-amarelo"];
+      // Curadoria fixa (chaves de BOX_COLORS) — mistura de tons vivos e
+      // pastéis pra vitrine importada já sair colorida e com bom contraste.
+      return ["prim-azul", "bril-lima", "pastel-lavanda", "prim-verde", "energy-amarelo", "bril-pink", "pastel-ceu", "prim-roxo"];
     }
     const swatches = brandSwatches();
 

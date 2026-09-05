@@ -83,6 +83,43 @@ export const PALETTE_GROUPS: { name: string; colors: Record<string, Swatch> }[] 
       "energy-magenta": { bg: "#FFD3EE", fg: "#7A0A52", label: "Magenta" },
     },
   },
+  {
+    // Cores cheias, saturadas — o clássico "primária/secundária" bem forte,
+    // com texto claro por cima. Pra quem quer o box gritando cor.
+    name: "Primárias",
+    colors: {
+      "prim-vermelho": { bg: "#E5322B", fg: "#FFFFFF", label: "Vermelho" },
+      "prim-azul": { bg: "#1D4ED8", fg: "#FFFFFF", label: "Azul" },
+      "prim-amarelo": { bg: "#F5C400", fg: "#3D2E00", label: "Amarelo" },
+      "prim-verde": { bg: "#188A3A", fg: "#FFFFFF", label: "Verde" },
+      "prim-laranja": { bg: "#EA6A0A", fg: "#FFFFFF", label: "Laranja" },
+      "prim-roxo": { bg: "#6D28D9", fg: "#FFFFFF", label: "Roxo" },
+    },
+  },
+  {
+    // Tons suaves e leitosos, texto escuro — delicado sem ser sem graça.
+    name: "Pastel",
+    colors: {
+      "pastel-rosa": { bg: "#F8C8D4", fg: "#7A2438", label: "Rosa" },
+      "pastel-pessego": { bg: "#FBD5B5", fg: "#7A3B12", label: "Pêssego" },
+      "pastel-manteiga": { bg: "#FBEFB0", fg: "#6B5600", label: "Manteiga" },
+      "pastel-menta": { bg: "#BFEBD1", fg: "#0E4A2C", label: "Menta" },
+      "pastel-ceu": { bg: "#BFDCF5", fg: "#0C3A63", label: "Céu" },
+      "pastel-lavanda": { bg: "#DCCBF3", fg: "#43277A", label: "Lavanda" },
+    },
+  },
+  {
+    // Neon/brilhante, alta vibração. Fundo forte com texto de máximo contraste.
+    name: "Brilhante",
+    colors: {
+      "bril-lima": { bg: "#B7F34A", fg: "#1E3A00", label: "Lima neon" },
+      "bril-ciano": { bg: "#12E0D4", fg: "#003733", label: "Ciano" },
+      "bril-pink": { bg: "#FF3D9A", fg: "#FFFFFF", label: "Pink" },
+      "bril-roxo": { bg: "#8B2BFF", fg: "#FFFFFF", label: "Roxo elétrico" },
+      "bril-laranja": { bg: "#FF6A00", fg: "#FFFFFF", label: "Tangerina" },
+      "bril-azul": { bg: "#1FA2FF", fg: "#03294D", label: "Azul elétrico" },
+    },
+  },
 ];
 
 // Todas as cores das paletas fixas, achatadas — usado pra resolver por chave.
