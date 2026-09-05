@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, type BoxSize, type PriceType } from "@/lib/showcase";
+import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { whatsappLink } from "@/lib/track";
@@ -430,9 +431,9 @@ export function ShowcaseBuilder({
         <button
           onClick={autoArrange}
           disabled={arranging || items.length === 0}
-          className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-50"
+          className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-70"
         >
-          {arranging ? "Organizando…" : "✦ Organizar com Orbi"}
+          {arranging ? <OrbiWorking label="Organizando…" variant="inline" /> : "✦ Organizar com Orbi"}
         </button>
         <button onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50">
           + Novo item
@@ -470,9 +471,13 @@ export function ShowcaseBuilder({
             onChange={(e) => setImportUrl(e.target.value)}
             className="rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
           />
-          <button type="submit" disabled={importing} className="rounded-full orbi-gradient px-5 py-2.5 text-[13px] font-medium text-on-background disabled:opacity-50">
-            {importing ? "Lendo seu site…" : "✦ Importar com Orbi"}
-          </button>
+          {importing ? (
+            <OrbiWorking label="Lendo seu site…" />
+          ) : (
+            <button type="submit" className="rounded-full orbi-gradient px-5 py-2.5 text-[13px] font-medium text-on-background">
+              ✦ Importar com Orbi
+            </button>
+          )}
         </form>
       )}
       {importMsg && <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>}

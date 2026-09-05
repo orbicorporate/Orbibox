@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 
 type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
@@ -156,22 +157,23 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
                 : `A Orbi já pode montar a página Sobre completa de ${businessName} juntando tudo isso — história, diferenciais e o que o catálogo mostra.`}
             </p>
             {buildError && <p className="mt-2 text-[13px] text-red-600">{buildError}</p>}
+            {buildingAbout ? (
+              <div className="mt-4"><OrbiWorking label="Montando sua página Sobre…" /></div>
+            ) : (
             <div className="mt-4 flex flex-wrap gap-2">
               {!aboutBuilt ? (
                 <button
                   onClick={buildAboutPage}
-                  disabled={buildingAbout}
-                  className="rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-medium text-white disabled:opacity-50"
+                  className="rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-medium text-white"
                 >
-                  {buildingAbout ? "Montando…" : "✦ Montar página Sobre"}
+                  ✦ Montar página Sobre
                 </button>
               ) : (
                 <button
                   onClick={buildAboutPage}
-                  disabled={buildingAbout}
-                  className="rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[13px] text-text-secondary disabled:opacity-50"
+                  className="rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[13px] text-text-secondary"
                 >
-                  {buildingAbout ? "Montando…" : "Montar de novo"}
+                  Montar de novo
                 </button>
               )}
               <Link
@@ -182,6 +184,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
                 Ver página Sobre ↗
               </Link>
             </div>
+            )}
           </div>
         </div>
       )}
