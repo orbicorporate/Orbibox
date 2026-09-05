@@ -990,29 +990,61 @@ function ItemCard({
             </div>
 
             <div>
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Destino</p>
-              <p className="mt-1 text-[12px] text-text-tertiary">Pra onde vai quando tocam nesse item.</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Ao tocar no card…</p>
+              <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
+                Escolha o que acontece quando o cliente toca neste item na sua vitrine.
+              </p>
+              <div className="mt-3 flex flex-col gap-2">
+                {/* Página própria */}
                 <button
                   onClick={() => save(item.id, { link_kind: "produto", target_url: null })}
-                  className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${(item.link_kind ?? "produto") === "produto" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                  className={`flex flex-col items-start gap-0.5 rounded-2xl border-2 px-4 py-3 text-left ${(item.link_kind ?? "produto") === "produto" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                 >
-                  Página própria (descrição, fotos)
+                  <span className="flex items-center gap-1.5 text-[13px] font-semibold">
+                    {(item.link_kind ?? "produto") === "produto" && <span>✓</span>}
+                    Abrir uma página exclusiva do produto
+                  </span>
+                  <span className="text-[12px] leading-relaxed text-text-secondary">
+                    O Orbibox monta uma página só desse item — com a capa, as fotos do carrossel, a descrição e o preço. Ideal pra apresentar bem antes do cliente decidir.
+                  </span>
                 </button>
+
+                {/* Link externo */}
                 <button
                   onClick={() => save(item.id, { link_kind: "externo", target_url: item.target_url ?? "" })}
-                  className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${item.link_kind === "externo" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                  className={`flex flex-col items-start gap-0.5 rounded-2xl border-2 px-4 py-3 text-left ${item.link_kind === "externo" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                 >
-                  Link externo (WhatsApp, site…)
+                  <span className="flex items-center gap-1.5 text-[13px] font-semibold">
+                    {item.link_kind === "externo" && <span>✓</span>}
+                    Levar para um link externo
+                  </span>
+                  <span className="text-[12px] leading-relaxed text-text-secondary">
+                    Manda o cliente direto pra outro lugar — seu site, uma loja, o WhatsApp. Não abre página no Orbibox.
+                  </span>
+                </button>
+
+                {/* Sem página */}
+                <button
+                  onClick={() => save(item.id, { link_kind: "nenhum", target_url: null })}
+                  className={`flex flex-col items-start gap-0.5 rounded-2xl border-2 px-4 py-3 text-left ${item.link_kind === "nenhum" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
+                >
+                  <span className="flex items-center gap-1.5 text-[13px] font-semibold">
+                    {item.link_kind === "nenhum" && <span>✓</span>}
+                    Não abrir nada (só mostrar)
+                  </span>
+                  <span className="text-[12px] leading-relaxed text-text-secondary">
+                    O card fica só como vitrine, sem ser clicável. Bom pra destacar algo que não precisa de página nem link.
+                  </span>
                 </button>
               </div>
+
               {item.link_kind === "externo" && (
-                <div className="mt-2 flex flex-col gap-2">
+                <div className="mt-3 flex flex-col gap-2">
                   <input
                     value={item.target_url ?? ""}
                     onChange={(e) => patch(item.id, { target_url: e.target.value })}
                     onBlur={(e) => save(item.id, { target_url: e.target.value || null })}
-                    placeholder="https://…"
+                    placeholder="Cole o link aqui — https://…"
                     className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
                   />
                   {whatsapp && (
@@ -1038,9 +1070,11 @@ function ItemCard({
               {justSaved ? "✓ Salvo" : "Salvar"}
             </button>
 
-            <Link href={`/${slug}/p/${item.id}`} target="_blank" className="block rounded-full border border-divider py-3 text-center text-[13px] font-medium">
-              Ver página do item ↗
-            </Link>
+            {(item.link_kind ?? "produto") === "produto" && (
+              <Link href={`/${slug}/p/${item.id}`} target="_blank" className="block rounded-full border border-divider py-3 text-center text-[13px] font-medium">
+                Ver página do item ↗
+              </Link>
+            )}
             <button onClick={onDelete} className="block w-full rounded-full py-3 text-center text-[13px] font-medium text-red-600">
               Excluir item
             </button>

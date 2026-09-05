@@ -844,7 +844,14 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 const photo = !!item.image_url;
                 // Categoria de loja vai direto pro site do dono (decisão já tomada).
                 // Produto e serviço abrem a página interna — com carrossel, descrição e CTAs.
-                const destino = item.link_kind === "categoria" ? item.target_url : item.target_url && item.link_kind === "externo" ? item.target_url : `/${business.slug}/p/${item.id}`;
+                // "nenhum" = card só de vitrine, não clicável.
+                const destino = item.link_kind === "nenhum"
+                  ? null
+                  : item.link_kind === "categoria"
+                    ? item.target_url
+                    : item.target_url && item.link_kind === "externo"
+                      ? item.target_url
+                      : `/${business.slug}/p/${item.id}`;
                 const isExterno = item.link_kind === "categoria" || item.link_kind === "externo";
                 const kindClique: "categoria" | "produto" | "link" =
                   item.link_kind === "categoria" ? "categoria" : item.link_kind === "produto" ? "produto" : "link";
