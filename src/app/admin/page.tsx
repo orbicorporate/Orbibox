@@ -59,7 +59,10 @@ export default async function HojePage() {
     <div className="relative flex flex-col">
       {/* Sininho de notificação — pisca quando tem conversa que ainda não foi vista */}
       <Link href="/admin/conversas" className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white shadow" aria-label="Conversas">
-        <span className="text-[17px]">🔔</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M12 3a5 5 0 0 0-5 5v3.2c0 .7-.25 1.36-.7 1.9L5 15h14l-1.3-1.9a3 3 0 0 1-.7-1.9V8a5 5 0 0 0-5-5Z" />
+          <path d="M9.5 18a2.5 2.5 0 0 0 5 0" />
+        </svg>
         {unseenConversas > 0 && (
           <span className="notif-badge absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
             {unseenConversas > 9 ? "9+" : unseenConversas}
