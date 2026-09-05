@@ -431,7 +431,7 @@ export function ShowcaseBuilder({
         <button
           onClick={autoArrange}
           disabled={arranging || items.length === 0}
-          className={`rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background ${items.length === 0 ? "opacity-50" : ""}`}
+          className={`rounded-full px-4 py-2 text-[13px] font-medium ${arranging ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background"} ${items.length === 0 ? "opacity-50" : ""}`}
         >
           {arranging ? <OrbiWorking label="Organizando…" variant="inline" /> : "✦ Organizar com Orbi"}
         </button>
@@ -852,7 +852,7 @@ function ItemCard({
                 placeholder="Conte o que é, pra quem serve, o que inclui"
                 className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
               />
-              <button onClick={onImprove} disabled={improving} className={`mt-2 rounded-full orbi-gradient px-4 py-2 text-[12px] font-medium text-on-background ${improving ? "" : "disabled:opacity-50"}`}>
+              <button onClick={onImprove} disabled={improving} className={`mt-2 rounded-full px-4 py-2 text-[12px] font-medium ${improving ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}>
                 {improving ? <OrbiWorking label="Pensando…" variant="inline" /> : (item.description?.trim() ? "✦ Melhorar texto" : "✦ Gerar texto com IA")}
               </button>
             </div>

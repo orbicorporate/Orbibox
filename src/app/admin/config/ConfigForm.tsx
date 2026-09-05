@@ -198,7 +198,7 @@ export function ConfigForm({ business }: { business: Business }) {
           <button
             onClick={importFromSite}
             disabled={importing || !importUrl.trim()}
-            className={`shrink-0 rounded-full orbi-gradient px-4 py-2.5 text-[13px] font-medium text-on-background ${!importUrl.trim() && !importing ? "opacity-50" : ""}`}
+            className={`shrink-0 rounded-full px-4 py-2.5 text-[13px] font-medium ${importing ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background"} ${!importUrl.trim() && !importing ? "opacity-50" : ""}`}
           >
             {importing ? <OrbiWorking label="Lendo…" variant="inline" /> : "✦ Importar"}
           </button>
