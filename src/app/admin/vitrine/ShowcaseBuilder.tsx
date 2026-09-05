@@ -763,15 +763,15 @@ function ItemCard({
                 {priceLabel}
               </span>
             )}
-            {/* Só existe página própria pra abrir se o item não for um link de categoria/externo. */}
-            {item.link_kind !== "categoria" && item.link_kind !== "externo" && (
-              <span
-                className="mt-1 rounded-full px-3 py-1.5 text-[11px] font-medium"
-                style={{ backgroundColor: `${c.fg}1A`, color: c.fg }}
-              >
-                Quero saber mais
-              </span>
-            )}
+            {/* No editor, o card sem foto convida o dono a agir — não é o
+                CTA do visitante ("Quero saber mais"), que só faz sentido na
+                página pública. */}
+            <span
+              className="mt-1 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium"
+              style={{ backgroundColor: `${c.fg}1A`, color: c.fg }}
+            >
+              ＋ Toque para inserir imagem e editar
+            </span>
           </div>
         )}
 
