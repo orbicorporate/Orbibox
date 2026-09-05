@@ -117,11 +117,16 @@ export function VisitorExperience({
           if (cfg.action === "vitrine") chooseIntent("comprar");
           else if (cfg.action === "zara") chooseIntent("duvida");
           else if (cfg.action === "whatsapp") {
-            const link = cfg.url || (business.contact_whatsapp ? whatsappLink(business.contact_whatsapp) : null);
+            // O campo pode vir como número cru ("15997587720") ou já como
+            // link (wa.me/... ). Se não for um link http, monta via whatsappLink.
+            const raw = cfg.url?.trim() || business.contact_whatsapp || "";
+            const link = raw
+              ? (/^https?:\/\//i.test(raw) ? raw : whatsappLink(raw, `Olá! Vim pelo ${business.name}.`))
+              : null;
             if (link) { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(link, "_blank"); }
           } else if (cfg.url) {
             trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: cfg.url });
-            window.open(cfg.url, "_blank");
+            window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
         return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, onClick };
@@ -188,8 +193,8 @@ export function VisitorExperience({
                   className={`flex items-center gap-4 rounded-[24px] bg-surface-white p-4 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
                 >
                   <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-[15px] ${o.color ? "text-white" : "bg-surface-soft"}`}
-                    style={o.color ? { backgroundColor: o.color } : undefined}
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-[15px] ${o.color && o.color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
+                    style={o.color && o.color !== "transparent" ? { backgroundColor: o.color } : o.color === "transparent" ? { background: "transparent" } : undefined}
                   >
                     {o.icon === "__orb__" ? (
                       <OrbiParticleSphere size={44} className="rounded-full" />
