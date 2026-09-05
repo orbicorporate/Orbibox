@@ -894,12 +894,12 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                             </span>
                           )}
                           {isExterno ? (
-                            <span className="mt-1 text-[12px] opacity-70" style={{ color: c.fg }}>
-                              {item.link_kind === "categoria" ? "ver categoria ↗" : "ver no site ↗"}
+                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-medium" style={{ backgroundColor: `${c.fg}22`, color: c.fg }}>
+                              {item.link_kind === "categoria" ? "Ver categoria" : "Entrar no site"} <span aria-hidden>↗</span>
                             </span>
                           ) : (
-                            <span className="mt-1 rounded-full px-3 py-1.5 text-[11px] font-medium" style={{ backgroundColor: `${c.fg}1A`, color: c.fg }}>
-                              Quero saber mais
+                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-medium" style={{ backgroundColor: `${c.fg}22`, color: c.fg }}>
+                              Entrar <span aria-hidden>→</span>
                             </span>
                           )}
                         </div>
@@ -917,12 +917,17 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                         <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium leading-tight">{item.title}</p>
                         <div className="mt-1 flex items-center gap-2">
                           {item.brand_label && <p className="text-[13px] text-text-tertiary">{item.brand_label}</p>}
-                          {isExterno && (
-                            <p className="text-[12px] text-text-tertiary">{item.link_kind === "categoria" ? "· ver categoria" : "· ver no site"}</p>
-                          )}
                         </div>
                         {priceLabel && (
                           <p className="mt-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium">{priceLabel}</p>
+                        )}
+                        {destino && (
+                          <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">
+                            {isExterno
+                              ? (item.link_kind === "categoria" ? "Ver categoria" : "Entrar no site")
+                              : "Entrar"}
+                            <span aria-hidden>{isExterno ? "↗" : "→"}</span>
+                          </span>
                         )}
                       </div>
                     )}
