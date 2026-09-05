@@ -180,6 +180,8 @@ export const ICON_LIBRARY = [
   "⌘", "⏱\uFE0E", "⚙\uFE0E", "⚡\uFE0E", "➜", "→", "✓", "✔", "⊕", "⌖",
   // Contato / comunicação
   "☎\uFE0E", "✉\uFE0E", "✆\uFE0E", "@", "✎\uFE0E", "❝", "❞", "„", "‟", "»", "⚑", "⚐",
+  // Chat / conversa / balões de mensagem
+  "💬", "🗨\uFE0E", "🗯\uFE0E",
   // Dinheiro
   "$", "¤",
   // Pessoas

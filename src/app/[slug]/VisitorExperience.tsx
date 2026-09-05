@@ -51,7 +51,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string; logo_url?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -103,7 +103,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; icon: string; t: string; d: string; color?: string; ai?: boolean; onClick: () => void };
+  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; onClick: () => void };
   const options: Option[] = boxes
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .sort((a, b) => a.position - b.position)
@@ -122,12 +122,12 @@ export function VisitorExperience({
             window.open(cfg.url, "_blank");
           }
         };
-        return { key: b.id, icon: cfg.icon || "◆", t: label, d: cfg.subtitle || "", color: cfg.color, onClick };
+        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou — igual ao editor.
       const fallbackLabel = b.box_type === "content" ? `Sobre a ${business.name}` : base.t;
-      return { key: b.id, icon: cfg.icon || base.icon, t: cfg.label || fallbackLabel, d: base.d, color: cfg.color, ai: base.ai, onClick: () => chooseIntent(base.k) };
+      return { key: b.id, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: base.d, color: cfg.color, ai: base.ai, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
 
@@ -189,9 +189,9 @@ export function VisitorExperience({
                     className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-[15px] ${o.color ? "text-white" : "bg-surface-soft"}`}
                     style={o.color ? { backgroundColor: o.color } : undefined}
                   >
-                    {o.icon === "__logo__" && business.logo_url ? (
+                    {o.icon === "__logo__" && (o.boxLogo || business.logo_url) ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={business.logo_url} alt="" className="h-full w-full object-cover" />
+                      <img src={o.boxLogo || business.logo_url!} alt="" className="h-full w-full object-cover" />
                     ) : (
                       o.icon
                     )}

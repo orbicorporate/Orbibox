@@ -9,7 +9,7 @@ import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
-type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string; logo_url?: string };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
@@ -269,9 +269,9 @@ export function BoxesManager({
                   </div>
                 )}
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[16px]" style={{ backgroundColor: isHero ? "#111318" : color, color: isHero ? "#fff" : fg }}>
-                  {icon === "__logo__" && logoUrl ? (
+                  {icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={logoUrl} alt="" className="h-full w-full object-cover" />
+                    <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
                   ) : (
                     icon
                   )}
@@ -305,8 +305,13 @@ export function BoxesManager({
               {!isHero && (
                 <>
                   <div className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-soft p-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px]" style={{ backgroundColor: color, color: fg }}>
-                      {icon}
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-[14px]" style={{ backgroundColor: color, color: fg }}>
+                      {icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        icon
+                      )}
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-[13px] font-medium">{label || suggestedName}</p>
@@ -328,6 +333,7 @@ export function BoxesManager({
                   onSave={(next) => saveConfig(box, { ...next, label })}
                   onDelete={isCustom ? () => removeCustom(box) : undefined}
                   logoUrl={logoUrl}
+                  businessId={businessId}
                 />
               )}
 
@@ -442,7 +448,7 @@ export function BoxesManager({
             placeholder="Nome do botão (ex: Fale no WhatsApp)"
             className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
-          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} />
+          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} businessId={businessId} />
           <div className="mt-3 flex gap-2">
             <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
             <button onClick={() => setCreating(false)} className="rounded-full bg-surface-soft px-4 py-2 text-[13px]">Cancelar</button>
@@ -469,6 +475,7 @@ function BoxEditor({
   onDelete,
   liveOnly,
   logoUrl,
+  businessId,
 }: {
   initial: BoxConfig;
   isCustom: boolean;
@@ -477,6 +484,7 @@ function BoxEditor({
   onDelete?: () => void;
   liveOnly?: boolean;
   logoUrl?: string | null;
+  businessId: string;
 }) {
   const [cfg, setCfg] = useState<BoxConfig>(initial);
   const [colorModalOpen, setColorModalOpen] = useState(false);
@@ -516,16 +524,38 @@ function BoxEditor({
       </button>
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
-      {logoUrl && (
+
+      {/* Logo específico deste box: usa o que já foi enviado aqui, senão cai
+          no logotipo geral da empresa. Dá pra subir um na hora, só pra este box. */}
+      {(cfg.logo_url || logoUrl) && (
         <button
           onClick={() => { update({ icon: "__logo__" }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__" }); }}
           className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__logo__" ? "border-on-background" : "border-divider"}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={logoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
-          <span className="text-[13px] font-medium">Usar logotipo da empresa</span>
+          <img src={cfg.logo_url || logoUrl!} alt="" className="h-8 w-8 rounded-full object-cover" />
+          <span className="text-[13px] font-medium">Usar logotipo{cfg.logo_url ? " deste box" : " da empresa"}</span>
         </button>
       )}
+
+      <details className="self-start">
+        <summary className="cursor-pointer list-none text-[12px] font-medium text-text-secondary underline">
+          {cfg.logo_url ? "Trocar logotipo deste box" : "＋ Enviar um logotipo só pra este box"}
+        </summary>
+        <div className="mt-2">
+          <ImageUpload
+            value={cfg.logo_url ?? null}
+            businessId={businessId}
+            lockedRatio="quadrado"
+            promptKind="avatar"
+            onChange={(url) => {
+              const next = { ...cfg, logo_url: url ?? undefined, icon: url ? "__logo__" : cfg.icon };
+              setCfg(next);
+              onSave(next);
+            }}
+          />
+        </div>
+      </details>
       <div className="flex flex-wrap gap-1.5">
         {(showAllIcons ? ICON_CHOICES : ICON_CHOICES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (
           <button
