@@ -189,13 +189,14 @@ export function groupByCategory<T extends { brand_label: string | null; position
   return [...map.entries()].map(([name, list]) => ({ name, items: list }));
 }
 
-export type PriceType = "exato" | "a_partir" | "faixa" | "media";
+export type PriceType = "exato" | "a_partir" | "faixa" | "media" | "consulta";
 
 export const PRICE_TYPE_LABEL: Record<PriceType, string> = {
   exato: "Preço exato",
   a_partir: "A partir de",
   faixa: "Faixa de preço",
   media: "Média de",
+  consulta: "Sob consulta",
 };
 
 function brl(v: number) {
@@ -205,8 +206,10 @@ function brl(v: number) {
 /** Formata o preço de um item conforme o tipo escolhido — mesma regra usada
  * na Vitrine, na grade pública e na página do item, pra nunca ficar diferente. */
 export function formatPrice(item: { price: number | null; price_type?: string | null; price_max?: number | null }): string | null {
-  if (item.price == null) return null;
   const tipo = (item.price_type as PriceType) || "exato";
+  // "Sob consulta" não depende de valor — mostra o rótulo direto.
+  if (tipo === "consulta") return "Sob consulta";
+  if (item.price == null) return null;
   switch (tipo) {
     case "a_partir":
       return `A partir de ${brl(item.price)}`;

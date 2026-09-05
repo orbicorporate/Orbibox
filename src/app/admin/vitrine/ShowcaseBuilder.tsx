@@ -987,26 +987,32 @@ function ItemCard({
                   );
                 })}
               </div>
-              <div className="mt-2 flex gap-2">
-                <input
-                  value={item.price ?? ""}
-                  onChange={(e) => patch(item.id, { price: e.target.value ? Number(e.target.value) : null })}
-                  onBlur={(e) => save(item.id, { price: e.target.value ? Number(e.target.value) : null })}
-                  inputMode="decimal"
-                  placeholder={item.price_type === "faixa" ? "De" : "Sem preço"}
-                  className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-                />
-                {item.price_type === "faixa" && (
+              {item.price_type === "consulta" ? (
+                <p className="mt-2 text-[12px] text-text-tertiary">
+                  Sem valor — o card mostra só &quot;Sob consulta&quot;. Ideal quando o preço depende do projeto ou é combinado no contato.
+                </p>
+              ) : (
+                <div className="mt-2 flex gap-2">
                   <input
-                    value={item.price_max ?? ""}
-                    onChange={(e) => patch(item.id, { price_max: e.target.value ? Number(e.target.value) : null })}
-                    onBlur={(e) => save(item.id, { price_max: e.target.value ? Number(e.target.value) : null })}
+                    value={item.price ?? ""}
+                    onChange={(e) => patch(item.id, { price: e.target.value ? Number(e.target.value) : null })}
+                    onBlur={(e) => save(item.id, { price: e.target.value ? Number(e.target.value) : null })}
                     inputMode="decimal"
-                    placeholder="Até"
+                    placeholder={item.price_type === "faixa" ? "De" : "Sem preço"}
                     className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
                   />
-                )}
-              </div>
+                  {item.price_type === "faixa" && (
+                    <input
+                      value={item.price_max ?? ""}
+                      onChange={(e) => patch(item.id, { price_max: e.target.value ? Number(e.target.value) : null })}
+                      onBlur={(e) => save(item.id, { price_max: e.target.value ? Number(e.target.value) : null })}
+                      inputMode="decimal"
+                      placeholder="Até"
+                      className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                    />
+                  )}
+                </div>
+              )}
             </div>
 
             <div>
