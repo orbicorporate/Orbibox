@@ -112,28 +112,6 @@ export function OrbiParticleSphere({
     const GREEN = [90, 230, 120];
     const WHATSAPP = [37, 211, 102];
     const morphColor = variant === "whatsapp" ? WHATSAPP : GREEN;
-    function colorFor(t: number, depth: number, morph: number) {
-      const stops = [
-        [120, 220, 90],
-        [40, 190, 180],
-        [70, 120, 245],
-        [150, 90, 240],
-      ];
-      const seg = t * (stops.length - 1);
-      const i = Math.max(0, Math.min(stops.length - 2, Math.floor(seg)));
-      const f = seg - i;
-      let c = [
-        stops[i][0] + (stops[i + 1][0] - stops[i][0]) * f,
-        stops[i][1] + (stops[i + 1][1] - stops[i][1]) * f,
-        stops[i][2] + (stops[i + 1][2] - stops[i][2]) * f,
-      ];
-      if (morph > 0) {
-        const k = morph * (variant === "whatsapp" ? 0.9 : 0.85);
-        c = [c[0] + (morphColor[0] - c[0]) * k, c[1] + (morphColor[1] - c[1]) * k, c[2] + (morphColor[2] - c[2]) * k];
-      }
-      const b = 0.85 + depth * 0.15;
-      return `rgba(${Math.round(c[0] * b)},${Math.round(c[1] * b)},${Math.round(c[2] * b)},${0.6 + depth * 0.4})`;
-    }
 
     const SPIN = 2.2, MORPH = 0.9, HOLD = 1.1;
     // No modo "holdCheck" (concluiu no chat), morfa rápido e segura o check.
@@ -159,6 +137,31 @@ export function OrbiParticleSphere({
     }
     const targets = variant === "whatsapp" ? bubbleTarget : checkTarget;
 
+    // Pré-calcula a cor de cada partícula UMA vez (a matiz depende só de p.y,
+    // que não muda). Guardamos os 3 canais-base; no frame só aplicamos brilho.
+    // Isso evita montar milhares de strings de cor a cada quadro.
+    const baseRGB = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      const t = (pts[i].y + 1) / 2;
+      const stops = [
+        [120, 220, 90], [40, 190, 180], [70, 120, 245], [150, 90, 240],
+      ];
+      const seg = t * (stops.length - 1);
+      const s = Math.max(0, Math.min(stops.length - 2, Math.floor(seg)));
+      const f = seg - s;
+      baseRGB[i * 3] = stops[s][0] + (stops[s + 1][0] - stops[s][0]) * f;
+      baseRGB[i * 3 + 1] = stops[s][1] + (stops[s + 1][1] - stops[s][1]) * f;
+      baseRGB[i * 3 + 2] = stops[s][2] + (stops[s + 1][2] - stops[s][2]) * f;
+    }
+
+    // Buffers reutilizados a cada frame — nada é alocado dentro do loop, então
+    // o coletor de lixo não interrompe a animação (principal causa de travadas).
+    const sxA = new Float32Array(N);
+    const syA = new Float32Array(N);
+    const szA = new Float32Array(N);
+    const order = new Uint16Array(N);
+    for (let i = 0; i < N; i++) order[i] = i;
+
     let raf = 0;
     const start = performance.now();
     let running = true;
@@ -177,46 +180,58 @@ export function OrbiParticleSphere({
       const cosA = Math.cos(ay);
       const sinA = Math.sin(ay);
 
-      const drawn = pts
-        .map((p, idx) => {
-          const x = p.x * cosA - p.z * sinA;
-          const z = p.x * sinA + p.z * cosA;
-          const y = p.y;
-          const wave = 1 + 0.12 * Math.sin(y * 6 + time * 2.2) + 0.06 * Math.cos(x * 5 - time * 1.6);
-          const sx = x * wave, sy = y * wave, sz = z * wave;
-          if (morph > 0) {
-            const tg = targets[idx];
-            return {
-              x: sx + (tg.x - sx) * morph,
-              y: sy + (tg.y - sy) * morph,
-              z: sz + (tg.z - sz) * morph,
-              t: (p.y + 1) / 2,
-            };
-          }
-          return { x: sx, y: sy, z: sz, t: (p.y + 1) / 2 };
-        })
-        .sort((a, b) => a.z - b.z);
+      // Posiciona cada partícula nos buffers (sem alocar objetos).
+      for (let i = 0; i < N; i++) {
+        const p = pts[i];
+        const x = p.x * cosA - p.z * sinA;
+        const z = p.x * sinA + p.z * cosA;
+        const y = p.y;
+        const wave = 1 + 0.12 * Math.sin(y * 6 + time * 2.2) + 0.06 * Math.cos(x * 5 - time * 1.6);
+        let px = x * wave, py = y * wave, pz = z * wave;
+        if (morph > 0) {
+          const tg = targets[i];
+          px += (tg.x - px) * morph;
+          py += (tg.y - py) * morph;
+          pz += (tg.z - pz) * morph;
+        }
+        sxA[i] = px; syA[i] = py; szA[i] = pz;
+      }
 
-      for (const p of drawn) {
-        const depth = (p.z + 1) / 2;
-        const px = cx + p.x * R;
-        const py = cy + p.y * R;
+      // Ordena por profundidade reaproveitando o mesmo array de índices.
+      order.sort((a, b) => szA[a] - szA[b]);
+
+      const kMorph = morph * (variant === "whatsapp" ? 0.9 : 0.85);
+      for (let oi = 0; oi < N; oi++) {
+        const i = order[oi];
+        const depth = (szA[i] + 1) / 2;
+        const px = cx + sxA[i] * R;
+        const py = cy + syA[i] * R;
         const rad = (0.6 + depth * 1.2) * dotScale;
+        let r = baseRGB[i * 3], g = baseRGB[i * 3 + 1], b0 = baseRGB[i * 3 + 2];
+        if (kMorph > 0) {
+          r += (morphColor[0] - r) * kMorph;
+          g += (morphColor[1] - g) * kMorph;
+          b0 += (morphColor[2] - b0) * kMorph;
+        }
+        const b = 0.85 + depth * 0.15;
         ctx.beginPath();
-        ctx.fillStyle = colorFor(p.t, depth, morph);
-        ctx.arc(px, py, rad, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${(r * b) | 0},${(g * b) | 0},${(b0 * b) | 0},${0.6 + depth * 0.4})`;
+        ctx.arc(px, py, rad, 0, 6.283185307179586);
         ctx.fill();
       }
 
-      const glow = ctx.createRadialGradient(cx, cy - R * 0.2, 1, cx, cy, R * 1.3);
+      // Glow: gradiente criado uma vez por frame (barato) mas com as cores certas.
       const gc = morph > 0.5 ? (variant === "whatsapp" ? "rgba(37,211,102,0.24)" : "rgba(90,230,120,0.22)") : "rgba(120,150,255,0.20)";
-      glow.addColorStop(0, gc);
-      glow.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = glow;
+      glowGrad.addColorStop(0, gc);
+      ctx.fillStyle = glowGrad;
       ctx.fillRect(0, 0, size, size);
 
       raf = requestAnimationFrame(frame);
     }
+
+    // Gradiente do glow: criado UMA vez (posição fixa), só a cor muda por frame.
+    const glowGrad = ctx.createRadialGradient(cx, cy - R * 0.2, 1, cx, cy, R * 1.3);
+    glowGrad.addColorStop(1, "rgba(0,0,0,0)");
 
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
