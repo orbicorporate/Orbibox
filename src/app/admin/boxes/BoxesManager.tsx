@@ -14,7 +14,7 @@ type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: str
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
-const META: Record<string, { name: string; explica: string; icon: string; fixo?: boolean }> = {
+const META: Record<string, { name: string; explica: string; icon: string; fixo?: boolean; assinatura?: boolean }> = {
   hero: {
     name: "Tela inicial",
     explica: "A pergunta “O que trouxe você aqui hoje?”. É a tela em si, não um botão — por isso não tem nome nem cor pra editar.",
@@ -24,7 +24,9 @@ const META: Record<string, { name: string; explica: string; icon: string; fixo?:
   product: { name: "O que fazemos", explica: "Mostra seus produtos e serviços na vitrine que você montou.", icon: "▤" },
   content: { name: "Conhecer", explica: "Conta sobre a marca — texto e fotos, usando o tom de voz do seu DNA.", icon: "◫" },
   campaign: { name: "Presentear", explica: "Uma seleção pensada para quem vai comprar para outra pessoa.", icon: "◇" },
-  agent: { name: "Vamos conversar", explica: "Abre a conversa com sua assistente de IA.", icon: "◉" },
+  // O box da IA usa as partículas como assinatura fixa — é o "wow" do produto.
+  // Sempre existe (não dá pra excluir), mas o dono pode ativar/desativar.
+  agent: { name: "Pergunte o que quiser", explica: "Abre a conversa com a Orbi, sua IA. As partículas mostram que ali é inteligência artificial de verdade.", icon: "__orb__", assinatura: true },
 };
 
 const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
@@ -296,6 +298,7 @@ export function BoxesManager({
                     />
                   )}
                   {m.fixo && <span className="mt-1 inline-block rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">sempre ativo</span>}
+                  {m.assinatura && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary"><span className="orbi-gradient-text">✦</span> assinatura da IA</span>}
                 </div>
                 {!m.fixo && (
                   <button
@@ -333,13 +336,15 @@ export function BoxesManager({
                     </div>
                   </div>
 
-                  <button onClick={() => setEditingId(editing ? null : box.id)} className="mt-3 text-[12px] text-text-tertiary underline">
-                    {editing ? "Fechar" : "Cor, ícone e mais"}
-                  </button>
+                  {!m.assinatura && (
+                    <button onClick={() => setEditingId(editing ? null : box.id)} className="mt-3 text-[12px] text-text-tertiary underline">
+                      {editing ? "Fechar" : "Cor, ícone e mais"}
+                    </button>
+                  )}
                 </>
               )}
 
-              {editing && !isHero && (
+              {editing && !isHero && !m.assinatura && (
                 <BoxEditor
                   initial={cfg ?? { subtitle: "", icon: m.icon, color: "#111318", action: "link", url: "" }}
                   isCustom={isCustom}

@@ -431,7 +431,7 @@ export function ShowcaseBuilder({
         <button
           onClick={autoArrange}
           disabled={arranging || items.length === 0}
-          className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-70"
+          className={`rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background ${items.length === 0 ? "opacity-50" : ""}`}
         >
           {arranging ? <OrbiWorking label="Organizando…" variant="inline" /> : "✦ Organizar com Orbi"}
         </button>

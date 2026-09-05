@@ -60,7 +60,7 @@ const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: str
   product: { k: "comprar", icon: "▤", t: "O que fazemos", d: "Explore nosso catálogo completo." },
   content: { k: "conhecer", icon: "◫", t: "Conhecer", d: "Descubra nosso espaço e história." },
   campaign: { k: "presentear", icon: "◈", t: "Presentear", d: "Opções especiais e curadoria." },
-  agent: { k: "duvida", icon: "◉", t: "Vamos conversar", d: "", ai: true },
+  agent: { k: "duvida", icon: "__orb__", t: "Pergunte o que quiser", d: "Fale com a Orbi, nossa IA.", ai: true },
 };
 
 export function VisitorExperience({
