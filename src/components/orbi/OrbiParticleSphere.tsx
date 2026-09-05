@@ -35,9 +35,9 @@ export function OrbiParticleSphere({
     ctx.scale(dpr, dpr);
 
     // Gera uma malha de pontos sobre a superfície de uma esfera (Fibonacci
-    // sphere — distribuição uniforme, sem aglomerar nos polos). Menos pontos
-    // em ícones pequenos, pra cada partícula ficar visível e brilhante.
-    const N = size < 80 ? 240 : 460;
+    // sphere — distribuição uniforme, sem aglomerar nos polos). Densa, pra
+    // dar aquela superfície de partículas cheia com padrão de ondulação.
+    const N = size < 80 ? 700 : 1400;
     const pts: { x: number; y: number; z: number }[] = [];
     const golden = Math.PI * (3 - Math.sqrt(5));
     for (let i = 0; i < N; i++) {
@@ -104,7 +104,7 @@ export function OrbiParticleSphere({
         const depth = (p.z + 1) / 2; // 0..1
         const px = cx + p.x * R;
         const py = cy + p.y * R;
-        const rad = (0.7 + depth * 1.5) * dotScale;
+        const rad = (0.6 + depth * 1.2) * dotScale;
         const t = (p.y + 1) / 2;
         ctx.beginPath();
         ctx.fillStyle = colorFor(t, depth);
