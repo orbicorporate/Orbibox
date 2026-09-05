@@ -78,9 +78,10 @@ export function ProductView({ business, item }: { business: Business; item: Item
             }}
           >
             {images.map((src, i) => (
-              <div key={i} className="w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio }}>
+              <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt={item.title} className="h-full w-full object-cover" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
               </div>
             ))}
           </div>

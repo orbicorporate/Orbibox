@@ -272,9 +272,10 @@ function StoryView({ business, onBack }: { business: Business; onBack: () => voi
             }}
           >
             {photos.map((src, i) => (
-              <div key={i} className="w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
+              <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt={business.name} className="max-h-[460px] w-full object-cover" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
               </div>
             ))}
           </div>
@@ -676,14 +677,14 @@ function VitrineCoverBleed({ business }: { business: Business }) {
     <div className="-mx-6 -mt-16">
       <div
         ref={trackRef}
-        className="flex snap-x snap-mandatory gap-0 overflow-x-auto no-scrollbar"
+        className="flex snap-x snap-mandatory gap-0 overflow-x-auto no-scrollbar rounded-b-[28px]"
         onScroll={(e) => {
           const w = e.currentTarget.clientWidth || 1;
           setIdx(Math.round(e.currentTarget.scrollLeft / w));
         }}
       >
         {covers.map((src, i) => (
-          <div key={i} className="relative w-full shrink-0 snap-center" style={{ aspectRatio: 1920 / 830 }}>
+          <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-b-[28px]" style={{ aspectRatio: 1920 / 830 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt={business.name} className="h-full w-full object-cover" />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
