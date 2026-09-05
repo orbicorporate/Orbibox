@@ -264,8 +264,13 @@ export function BoxesManager({
                     <button onClick={() => move(box, 1)} disabled={idx === visibleBoxes.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
                   </div>
                 )}
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px]" style={{ backgroundColor: isHero ? "#111318" : color, color: isHero ? "#fff" : fg }}>
-                  {icon}
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[16px]" style={{ backgroundColor: isHero ? "#111318" : color, color: isHero ? "#fff" : fg }}>
+                  {icon === "__logo__" && logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logoUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    icon
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   {isHero ? (
@@ -318,6 +323,7 @@ export function BoxesManager({
                   brandColors={brandColors}
                   onSave={(next) => saveConfig(box, { ...next, label })}
                   onDelete={isCustom ? () => removeCustom(box) : undefined}
+                  logoUrl={logoUrl}
                 />
               )}
 
@@ -432,7 +438,7 @@ export function BoxesManager({
             placeholder="Nome do botão (ex: Fale no WhatsApp)"
             className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
-          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly />
+          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} />
           <div className="mt-3 flex gap-2">
             <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
             <button onClick={() => setCreating(false)} className="rounded-full bg-surface-soft px-4 py-2 text-[13px]">Cancelar</button>
@@ -458,6 +464,7 @@ function BoxEditor({
   onSave,
   onDelete,
   liveOnly,
+  logoUrl,
 }: {
   initial: BoxConfig;
   isCustom: boolean;
@@ -465,6 +472,7 @@ function BoxEditor({
   onSave: (cfg: BoxConfig) => void;
   onDelete?: () => void;
   liveOnly?: boolean;
+  logoUrl?: string | null;
 }) {
   const [cfg, setCfg] = useState<BoxConfig>(initial);
   const [colorModalOpen, setColorModalOpen] = useState(false);
@@ -504,6 +512,16 @@ function BoxEditor({
       </button>
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
+      {logoUrl && (
+        <button
+          onClick={() => { update({ icon: "__logo__" }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__" }); }}
+          className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__logo__" ? "border-on-background" : "border-divider"}`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
+          <span className="text-[13px] font-medium">Usar logotipo da empresa</span>
+        </button>
+      )}
       <div className="flex flex-wrap gap-1.5">
         {(showAllIcons ? ICON_CHOICES : ICON_CHOICES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (
           <button

@@ -172,10 +172,15 @@ export function VisitorExperience({
                   className={`flex items-center gap-4 rounded-[24px] bg-surface-white p-4 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
                 >
                   <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[15px] ${o.color ? "text-white" : "bg-surface-soft"}`}
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-[15px] ${o.color ? "text-white" : "bg-surface-soft"}`}
                     style={o.color ? { backgroundColor: o.color } : undefined}
                   >
-                    {o.icon}
+                    {o.icon === "__logo__" && business.logo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={business.logo_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      o.icon
+                    )}
                   </span>
                   <span className="flex-1">
                     <span className="block text-[15px] font-medium">
