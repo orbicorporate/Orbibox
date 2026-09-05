@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
-import { COVER_RATIO_BY_SIZE, formatPrice, sizeOf } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, formatPrice, sizeOf, youtubeId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 
 type Business = {
@@ -77,13 +77,28 @@ export function ProductView({ business, item }: { business: Business; item: Item
               }
             }}
           >
-            {images.map((src, i) => (
-              <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={item.title} className="h-full w-full object-cover" />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-              </div>
-            ))}
+            {images.map((src, i) => {
+              const ytId = youtubeId(src);
+              return (
+                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio }}>
+                  {ytId ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`}
+                      title={`${item.title} — vídeo ${i + 1}`}
+                      className="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt={item.title} className="h-full w-full object-cover" />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="flex w-full items-center justify-center rounded-[22px] bg-surface-soft text-[13px] text-text-tertiary" style={{ aspectRatio }}>

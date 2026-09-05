@@ -264,3 +264,26 @@ export const ANIMATED_ICONS = ["__orb__", "__orbcheck__", "__orbwa__", "__wadisc
 export function isAnimatedIcon(icon: string | null | undefined): boolean {
   return !!icon && (ANIMATED_ICONS as readonly string[]).includes(icon);
 }
+
+/** Extrai o ID de um vídeo do YouTube de várias formas de link
+ * (youtube.com/watch?v=, youtu.be/, /shorts/, /embed/). Retorna null se
+ * não for um link do YouTube. */
+export function youtubeId(url: string): string | null {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?[^ ]*v=)([\w-]{11})/,
+    /(?:youtu\.be\/)([\w-]{11})/,
+    /(?:youtube\.com\/shorts\/)([\w-]{11})/,
+    /(?:youtube\.com\/embed\/)([\w-]{11})/,
+  ];
+  for (const re of patterns) {
+    const m = url.match(re);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+/** Diz se uma entrada da galeria é um vídeo do YouTube (vs. uma imagem). */
+export function isYoutube(url: string): boolean {
+  return youtubeId(url) !== null;
+}
