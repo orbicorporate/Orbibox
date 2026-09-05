@@ -6,24 +6,30 @@ import { useState } from "react";
 type ItemInfo = { title: string; image_url: string | null; brand_label: string | null };
 
 const TIPOS = [
-  { kind: "categoria", label: "Categorias abertas", nota: "foram para o seu site" },
+  { kind: "categoria", label: "Cliques que levaram para o site", nota: "abriram seu site externo" },
   { kind: "produto", label: "Produtos abertos", nota: "foram para a página do produto" },
-  { kind: "whatsapp", label: "WhatsApp", nota: "iniciaram conversa" },
+  { kind: "link", label: "Cliques que levaram para outros links", nota: "abriram um link externo" },
+  { kind: "whatsapp", label: "Cliques que levaram para o WhatsApp", nota: "iniciaram conversa" },
+  { kind: "email", label: "Cliques que levaram para email", nota: "tocaram em enviar e-mail" },
   { kind: "ligar", label: "Ligações", nota: "tocaram em ligar" },
   { kind: "zara", label: "Conversas com a Orbi", nota: "pediram ajuda da IA" },
 ] as const;
+
+type PaginaVisitada = { id: string; aberturas: number; carrossel: number; cta: number };
 
 export function PulseDetails({
   porTipo,
   porTipoItem,
   itemMap,
   topItems,
+  paginas,
   slug,
 }: {
   porTipo: Record<string, number>;
   porTipoItem: Record<string, Record<string, number>>;
   itemMap: Record<string, ItemInfo>;
   topItems: { id: string; count: number }[];
+  paginas: PaginaVisitada[];
   slug: string;
 }) {
   const [open, setOpen] = useState<string | null>(null);
@@ -97,6 +103,41 @@ export function PulseDetails({
           );
         })}
       </div>
+
+      {paginas.length > 0 && (
+        <>
+          <p className="mt-8 text-[13px] uppercase tracking-wide text-text-tertiary">Páginas visitadas</p>
+          <div className="mt-3 flex flex-col gap-2">
+            {paginas.map((p) => {
+              const info = itemMap[p.id];
+              if (!info) return null;
+              return (
+                <Link
+                  key={p.id}
+                  href={`/${slug}/p/${p.id}`}
+                  target="_blank"
+                  className="flex items-center gap-3 rounded-2xl border border-divider bg-surface-white px-4 py-3"
+                >
+                  <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-surface-soft">
+                    {info.image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={info.image_url} alt="" className="h-full w-full object-cover" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-medium">{info.title}</p>
+                    <p className="mt-0.5 flex gap-3 text-[11px] text-text-tertiary">
+                      <span>{p.aberturas.toLocaleString("pt-BR")} aberturas</span>
+                      <span>{p.carrossel.toLocaleString("pt-BR")} rolagem de carrossel</span>
+                      <span>{p.cta.toLocaleString("pt-BR")} clique no CTA</span>
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {topItems.length > 0 && (
         <>

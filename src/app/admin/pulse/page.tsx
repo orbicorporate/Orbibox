@@ -1,8 +1,17 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PulseDetails } from "./PulseDetails";
+import { PulseDateFilter } from "./PulseDateFilter";
+import { rangeFromParams, buildSeries } from "./date-range";
 
-export default async function PulsePage() {
+export default async function PulsePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ since?: string; until?: string; label?: string }>;
+}) {
+  const sp = await searchParams;
+  const { since, until } = rangeFromParams(sp);
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const { data: business } = await supabase
@@ -12,9 +21,14 @@ export default async function PulsePage() {
     .limit(1)
     .single();
 
+  let visitasQuery = supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id);
+  let cliquesQuery = supabase.from("click_events").select("kind, created_at, content_item_id").eq("business_id", business!.id).limit(5000);
+  if (since) { visitasQuery = visitasQuery.gte("started_at", since); cliquesQuery = cliquesQuery.gte("created_at", since); }
+  if (until) { visitasQuery = visitasQuery.lte("started_at", until); cliquesQuery = cliquesQuery.lte("created_at", until); }
+
   const [visitasRes, cliquesRes, itemsRes] = await Promise.all([
-    supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
-    supabase.from("click_events").select("kind, created_at, content_item_id").eq("business_id", business!.id).limit(2000),
+    visitasQuery,
+    cliquesQuery,
     supabase.from("content_items").select("id, title, image_url, brand_label").eq("business_id", business!.id),
   ]);
 
@@ -45,27 +59,31 @@ export default async function PulsePage() {
   // Quantos por cento das visitas resultaram em alguma ação.
   const taxa = visitas > 0 ? Math.min(100, Math.round((totalCliques / visitas) * 100)) : 0;
 
-  // Últimos 7 dias, a partir dos cliques reais.
-  const hoje = new Date();
-  const dias = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(hoje);
-    d.setDate(hoje.getDate() - (6 - i));
-    return d;
-  });
-  const porDia = dias.map((d) => {
-    const chave = d.toISOString().slice(0, 10);
-    return cliques.filter((c) => (c.created_at ?? "").slice(0, 10) === chave).length;
-  });
+  // Série ao longo do tempo — dias ou meses, dependendo do período filtrado.
+  const { valores: porDia, labels: labelsDia } = buildSeries(cliques, since, until);
   const maxDia = Math.max(1, ...porDia);
   const w = 320, h = 90;
+  const pontos = Math.max(1, porDia.length - 1);
   const path = porDia
-    .map((v, i) => `${i === 0 ? "M" : "L"}${((i / 6) * w).toFixed(1)},${(h - (v / maxDia) * h).toFixed(1)}`)
+    .map((v, i) => `${i === 0 ? "M" : "L"}${((i / pontos) * w).toFixed(1)},${(h - (v / maxDia) * h).toFixed(1)}`)
     .join(" ");
-  const NOMES = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+  // Páginas visitadas: aberturas, rolagem de carrossel e clique no CTA por item.
+  const paginas = Object.keys(itemMap)
+    .map((id) => ({
+      id,
+      aberturas: porTipoItem["produto"]?.[id] ?? 0,
+      carrossel: porTipoItem["carrossel"]?.[id] ?? 0,
+      cta: porTipoItem["cta"]?.[id] ?? 0,
+    }))
+    .filter((p) => p.aberturas + p.carrossel + p.cta > 0)
+    .sort((a, b) => b.aberturas - a.aberturas);
 
   return (
     <div className="flex flex-col">
       <p className="mt-2 text-center text-[13px] uppercase tracking-wide text-text-tertiary">Orbi Pulse</p>
+
+      <PulseDateFilter />
 
       <div className="relative mx-auto mt-6 flex h-56 w-56 items-center justify-center">
         <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full -rotate-90">
@@ -89,7 +107,7 @@ export default async function PulsePage() {
         <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{visitas.toLocaleString("pt-BR")}</span>
       </div>
 
-      <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} slug={business!.slug} />
+      <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} paginas={paginas} slug={business!.slug} />
 
       {totalCliques === 0 ? (
         <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
@@ -104,12 +122,15 @@ export default async function PulsePage() {
         </div>
       ) : (
         <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
-          <p className="text-[14px] text-text-secondary">Últimos 7 dias</p>
+          <p className="text-[14px] text-text-secondary">{sp.label ?? "Últimos 7 dias"}</p>
           <svg viewBox={`0 0 ${w} ${h}`} className="mt-4 w-full">
             <path d={path} fill="none" stroke="var(--on-background)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <div className="mt-3 flex justify-between text-[11px] text-text-tertiary">
-            {dias.map((d, i) => <span key={i}>{NOMES[d.getDay()]}</span>)}
+            {labelsDia.map((l, i) => {
+              const step = Math.ceil(labelsDia.length / 8);
+              return <span key={i}>{i % step === 0 || i === labelsDia.length - 1 ? l : ""}</span>;
+            })}
           </div>
         </div>
       )}

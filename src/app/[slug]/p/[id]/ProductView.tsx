@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { COVER_RATIO_BY_SIZE, formatPrice, sizeOf } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
@@ -44,6 +44,10 @@ export function ProductView({ business, item }: { business: Business; item: Item
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Conta rolagem de carrossel uma única vez por visita à página (evita
+  // registrar um evento por pixel arrastado — só a intenção de folhear).
+  const scrolledRef = useRef(false);
+
   return (
     <main className="mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
       {/* Botão de voltar, fora da imagem — igual qualquer app, não sobrepõe a foto */}
@@ -65,6 +69,10 @@ export function ProductView({ business, item }: { business: Business; item: Item
             onScroll={(e) => {
               const w = e.currentTarget.clientWidth || 1;
               setActive(Math.round(e.currentTarget.scrollLeft / w));
+              if (!scrolledRef.current) {
+                scrolledRef.current = true;
+                trackClick({ businessId: business.id, kind: "carrossel", contentItemId: item.id });
+              }
             }}
           >
             {images.map((src, i) => (
@@ -103,14 +111,15 @@ export function ProductView({ business, item }: { business: Business; item: Item
               href={item.target_url}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() =>
+              onClick={() => {
                 trackClick({
                   businessId: business.id,
                   kind: item.link_kind === "categoria" ? "categoria" : "produto",
                   contentItemId: item.id,
                   targetUrl: item.target_url,
-                })
-              }
+                });
+                trackClick({ businessId: business.id, kind: "cta", contentItemId: item.id });
+              }}
               className="rounded-full bg-button-primary py-3.5 text-center text-[14px] font-medium text-white"
             >
               Ver no site ↗

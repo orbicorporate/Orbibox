@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 
 /** Tipos de clique que o Pulse conta separadamente. */
-export type ClickKind = "categoria" | "produto" | "whatsapp" | "ligar" | "email" | "zara" | "link" | "site";
+export type ClickKind = "categoria" | "produto" | "whatsapp" | "ligar" | "email" | "zara" | "link" | "site" | "carrossel" | "cta";
 
 /**
  * Registra o clique e segue o fluxo. Nunca bloqueia a navegação:
