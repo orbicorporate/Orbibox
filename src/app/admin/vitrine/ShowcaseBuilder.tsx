@@ -897,7 +897,7 @@ function ItemCard({
               <div>
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Mais fotos da página do produto (até 6)</p>
                 <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
-                  Só preencha se este item vai abrir uma página própria (opção lá embaixo). Essas fotos viram um carrossel dentro dessa página — pra mostrar o produto de vários ângulos. Se o item não abre página, pode pular.
+                  Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos que viram um carrossel dentro dela — pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
                 </p>
                 <div className="mt-2">
                   <GalleryUpload
