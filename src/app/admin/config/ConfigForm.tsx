@@ -14,6 +14,7 @@ type Business = {
   contact_phone: string | null;
   contact_email: string | null;
   contact_site: string | null;
+  address: string | null;
   about_business: string | null;
   differentials: string | null;
   policies: string | null;
@@ -49,7 +50,7 @@ export function ConfigForm({ business }: { business: Business }) {
 
   type CampoEditavel =
     | "contact_whatsapp" | "contact_phone" | "contact_email" | "contact_site"
-    | "about_business" | "differentials" | "policies";
+    | "address" | "about_business" | "differentials" | "policies";
 
   async function save(key: CampoEditavel, value: string) {
     const patch: Partial<Record<CampoEditavel, string | null>> = { [key]: value.trim() || null };
@@ -151,6 +152,15 @@ export function ConfigForm({ business }: { business: Business }) {
         onChange={(e) => set("contact_site", e.target.value)}
         onBlur={(e) => save("contact_site", e.target.value)}
         placeholder="https://seusite.com.br"
+        className={campo}
+      />
+
+      <p className={rotulo}>Endereço</p>
+      <input
+        value={b.address ?? ""}
+        onChange={(e) => set("address", e.target.value)}
+        onBlur={(e) => save("address", e.target.value)}
+        placeholder="Rua, número, bairro, cidade — aparece na página Sobre e abre no mapa"
         className={campo}
       />
 

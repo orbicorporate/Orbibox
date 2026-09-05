@@ -26,6 +26,7 @@ type Business = {
   about_business: string | null;
   differentials: string | null;
   differentials_cards: unknown;
+  address: string | null;
   story_photos: string[];
   vitrine_cover_urls: string[];
   hero_question: string | null;
@@ -239,7 +240,13 @@ export function VisitorExperience({
         )}
 
         {intent === "conhecer" && (
-          <StoryView business={business} onBack={() => setIntent(null)} />
+          <StoryView
+            business={business}
+            onBack={() => setIntent(null)}
+            onCatalog={() => chooseIntent("comprar")}
+            onOrbi={() => chooseIntent("duvida")}
+            sessionId={sessionId}
+          />
         )}
 
         {intent === "duvida" && sessionId && (
@@ -250,7 +257,19 @@ export function VisitorExperience({
   );
 }
 
-function StoryView({ business, onBack }: { business: Business; onBack: () => void }) {
+function StoryView({
+  business,
+  onBack,
+  onCatalog,
+  onOrbi,
+  sessionId,
+}: {
+  business: Business;
+  onBack: () => void;
+  onCatalog: () => void;
+  onOrbi: () => void;
+  sessionId: string | null;
+}) {
   const [active, setActive] = useState(0);
   const photos = business.story_photos ?? [];
   const rawCards = business.differentials_cards;
@@ -322,6 +341,48 @@ function StoryView({ business, onBack }: { business: Business; onBack: () => voi
           </div>
         </div>
       )}
+
+      {business.address && (
+        <div className="mt-6">
+          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Endereço</p>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 flex items-start gap-2.5 rounded-[18px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]"
+          >
+            <span className="mt-0.5 shrink-0 text-[16px]">✛</span>
+            <span className="text-[14px] leading-relaxed text-text-secondary">{business.address}</span>
+          </a>
+        </div>
+      )}
+
+      {/* Três caminhos a partir daqui: ver o catálogo, WhatsApp, ou conversar com a IA. */}
+      <div className="mt-8 flex flex-col gap-2.5">
+        <button
+          onClick={onCatalog}
+          className="flex items-center justify-center gap-2 rounded-full bg-button-primary py-3.5 text-[14px] font-medium text-white"
+        >
+          Ir para o catálogo →
+        </button>
+        {business.contact_whatsapp && (
+          <a
+            href={whatsappLink(business.contact_whatsapp, `Olá! Vim pelo ${business.name}.`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", sessionId })}
+            className="flex items-center justify-center gap-2 rounded-full border-2 border-[#25D366] bg-surface-white py-3.5 text-[14px] font-medium text-on-background"
+          >
+            <span className="text-[15px]">☎</span> WhatsApp
+          </a>
+        )}
+        <button
+          onClick={onOrbi}
+          className="flex items-center justify-center gap-2 rounded-full border border-divider bg-surface-white py-3.5 text-[14px] font-medium"
+        >
+          ✦ Conversar com a Orbi
+        </button>
+      </div>
     </div>
   );
 }

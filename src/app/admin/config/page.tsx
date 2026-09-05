@@ -6,7 +6,7 @@ export default async function ConfigPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug, site_type, contact_whatsapp, contact_phone, contact_email, contact_site, about_business, differentials, policies")
+    .select("id, name, slug, site_type, contact_whatsapp, contact_phone, contact_email, contact_site, address, about_business, differentials, policies")
     .eq("owner_id", user!.id)
     .limit(1)
     .single();
