@@ -84,6 +84,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
           <input
             value={state.agent_name}
             onChange={(e) => { setState((s) => ({ ...s, agent_name: e.target.value })); setSaved(false); }}
+            placeholder="Orbi"
             className="w-full bg-transparent font-[family-name:var(--font-manrope)] text-[18px] font-medium outline-none"
           />
           <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">
@@ -92,6 +93,9 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
           <p className="mt-1 text-[12px] text-text-secondary">Agente Especialista de Conversão e Curadoria</p>
         </div>
       </div>
+      <p className="-mt-3 px-1 text-[12px] leading-relaxed text-text-tertiary">
+        ✦ Toque no nome acima para personalizar — dê à IA o nome da sua marca (ex.: “{businessName}”, “Nina”, “Léo”) ou deixe como <span className="font-medium text-text-secondary">Orbi</span>. É assim que ela vai se apresentar aos visitantes.
+      </p>
 
       {/* Ajuste de comportamento */}
       <div>
