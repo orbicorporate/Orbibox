@@ -457,6 +457,7 @@ function OrbiChat({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [justDone, setJustDone] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
   const [typedPlaceholder, setTypedPlaceholder] = useState("");
 
   // Sugestões puxadas do que existe de verdade no negócio — nunca genéricas.
@@ -553,6 +554,12 @@ function OrbiChat({
 
   const started = messages.length > 0;
 
+  // Sempre que chega uma mensagem nova ou a Orbi começa a pensar, rola até o
+  // fim pra o visitante ver a resposta sem precisar arrastar manualmente.
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length, sending, justDone]);
+
   return (
     <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col bg-background-main/95 backdrop-blur">
       {/* Fechar */}
@@ -564,7 +571,7 @@ function OrbiChat({
         ×
       </button>
 
-      <div className="flex flex-1 flex-col overflow-y-auto px-6 pb-40 pt-20">
+      <div className="flex flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-40 pt-20" style={{ WebkitOverflowScrolling: "touch" }}>
         {/* Avatar */}
         <div className="mx-auto relative">
           <OrbiOrb size={112} />
@@ -627,6 +634,7 @@ function OrbiChat({
             )}
           </div>
         )}
+        <div ref={endRef} />
       </div>
 
       {/* Campo fixo */}
@@ -644,8 +652,20 @@ function OrbiChat({
           placeholder={typedPlaceholder}
           className="flex-1 bg-transparent text-[14px] outline-none"
         />
-        <button type="submit" disabled={sending} className="shrink-0 disabled:opacity-40">
-          <OrbiParticleSphere size={40} className="rounded-full" />
+        <button
+          type="submit"
+          disabled={sending || !input.trim()}
+          aria-label="Enviar mensagem"
+          className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${input.trim() && !sending ? "orbi-gradient" : "bg-surface-soft"}`}
+        >
+          {sending ? (
+            <OrbiParticleSphere size={36} className="rounded-full" />
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={input.trim() ? "text-on-background" : "text-text-tertiary"} aria-hidden>
+              <path d="M7 11l5-5 5 5" />
+              <path d="M12 6v13" />
+            </svg>
+          )}
         </button>
       </form>
     </div>
