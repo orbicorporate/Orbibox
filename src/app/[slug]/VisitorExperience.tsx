@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
 import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
@@ -200,8 +201,8 @@ export function VisitorExperience({
                       <OrbiParticleSphere size={44} className="rounded-full" />
                     ) : o.icon === "__orbcheck__" ? (
                       <OrbiParticleSphere size={44} variant="check" className="rounded-full" />
-                    ) : o.icon === "__orbwa__" ? (
-                      <OrbiParticleSphere size={44} variant="whatsapp" className="rounded-full" />
+                    ) : o.icon === "__orbwa__" || o.icon === "__wadisc__" ? (
+                      <OrbiContactDisc size={44} className="rounded-full" />
                     ) : o.icon === "__logo__" && (o.boxLogo || business.logo_url) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={o.boxLogo || business.logo_url!} alt="" className="h-full w-full object-cover" />

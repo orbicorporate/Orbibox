@@ -7,6 +7,7 @@ import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
@@ -278,7 +279,7 @@ export function BoxesManager({
                   ) : icon === "__orbcheck__" ? (
                     <OrbiParticleSphere size={44} variant="check" />
                   ) : icon === "__orbwa__" ? (
-                    <OrbiParticleSphere size={44} variant="whatsapp" />
+                    <OrbiContactDisc size={44} />
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
@@ -322,7 +323,7 @@ export function BoxesManager({
                       ) : icon === "__orbcheck__" ? (
                         <OrbiParticleSphere size={36} variant="check" />
                       ) : icon === "__orbwa__" ? (
-                        <OrbiParticleSphere size={36} variant="whatsapp" />
+                        <OrbiContactDisc size={36} />
                       ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
@@ -570,6 +571,15 @@ function BoxEditor({
       )}
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
+
+      {/* Emblema 3D animado de contato — ótimo pro box de WhatsApp. */}
+      <button
+        onClick={() => { update({ icon: "__wadisc__" }); if (!liveOnly) onSave({ ...cfg, icon: "__wadisc__" }); }}
+        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__wadisc__" || cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
+      >
+        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiContactDisc size={32} /></span>
+        <span className="text-[13px] font-medium">Emblema de contato animado</span>
+      </button>
 
       {/* Logo específico deste box: usa o que já foi enviado aqui, senão cai
           no logotipo geral da empresa. Dá pra subir um na hora, só pra este box. */}
