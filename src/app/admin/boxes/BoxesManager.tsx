@@ -8,7 +8,7 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
-import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT } from "@/lib/showcase";
+import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string; logo_url?: string };
@@ -273,7 +273,7 @@ export function BoxesManager({
                     <button onClick={() => move(box, 1)} disabled={idx === visibleBoxes.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
                   </div>
                 )}
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[16px]" style={{ backgroundColor: isHero ? "#111318" : color === "transparent" ? "transparent" : color, color: isHero ? "#fff" : fg }}>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[16px]" style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: isHero ? "#fff" : fg }}>
                   {icon === "__orb__" ? (
                     <OrbiParticleSphere size={44} />
                   ) : icon === "__orbcheck__" ? (
@@ -317,7 +317,7 @@ export function BoxesManager({
               {!isHero && (
                 <>
                   <div className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-soft p-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-[14px]" style={{ backgroundColor: color === "transparent" ? "transparent" : color, color: fg }}>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-[14px]" style={{ backgroundColor: (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: fg }}>
                       {icon === "__orb__" ? (
                         <OrbiParticleSphere size={36} />
                       ) : icon === "__orbcheck__" ? (
@@ -510,7 +510,7 @@ function BoxEditor({
   const [colorModalOpen, setColorModalOpen] = useState(false);
   const [showAllIcons, setShowAllIcons] = useState(false);
   const color = cfg.color || "#111318";
-  const isParticle = cfg.icon === "__orb__" || cfg.icon === "__orbcheck__" || cfg.icon === "__orbwa__";
+  const animated = isAnimatedIcon(cfg.icon);
 
   function update(next: Partial<BoxConfig>) {
     const merged = { ...cfg, ...next };
@@ -521,6 +521,17 @@ function BoxEditor({
   function pickColor(hex: string) {
     update({ color: hex });
     if (!liveOnly) onSave({ ...cfg, color: hex });
+  }
+
+  // Regra do app: escolher um ícone animado força fundo transparente (o
+  // ícone herda o fundo do box, sem quadradinho de cor por trás). Ícone
+  // normal volta a poder ter cor de fundo.
+  function pickIcon(icon: string) {
+    const next: BoxConfig = { ...cfg, icon };
+    if (isAnimatedIcon(icon)) next.color = "transparent";
+    else if (cfg.color === "transparent") next.color = "#111318";
+    setCfg(next);
+    onSave(next);
   }
 
   return (
@@ -535,28 +546,13 @@ function BoxEditor({
         />
       )}
 
-      {/* Ícones de partícula pedem fundo claro ou transparente — então em vez
-          do seletor de cores cheio, oferecemos só neutro/transparente. */}
-      {isParticle ? (
-        <>
-          <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Fundo do ícone</p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => pickColor("#F2F2F2")}
-              className={`flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-4 ${color !== "transparent" ? "border-on-background" : "border-divider"}`}
-            >
-              <span className="h-7 w-7 rounded-full border border-divider" style={{ backgroundColor: "#F2F2F2" }} />
-              <span className="text-[13px] font-medium">Neutro</span>
-            </button>
-            <button
-              onClick={() => pickColor("transparent")}
-              className={`flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-4 ${color === "transparent" ? "border-on-background" : "border-divider"}`}
-            >
-              <span className="orbi-checkerboard h-7 w-7 rounded-full border border-divider" />
-              <span className="text-[13px] font-medium">Transparente</span>
-            </button>
-          </div>
-        </>
+      {/* Ícone animado roda sempre com fundo transparente (regra do app) —
+          então nem mostramos seletor de cor, só avisamos. */}
+      {animated ? (
+        <div className="flex items-center gap-2 rounded-2xl bg-surface-soft px-4 py-2.5">
+          <span className="orbi-checkerboard h-6 w-6 shrink-0 rounded-full border border-divider" />
+          <span className="text-[12px] leading-relaxed text-text-secondary">Ícone animado — fundo transparente automático, pra ele aparecer sozinho.</span>
+        </div>
       ) : (
         <>
           <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Cor</p>
@@ -574,7 +570,7 @@ function BoxEditor({
 
       {/* Emblema 3D animado de contato — ótimo pro box de WhatsApp. */}
       <button
-        onClick={() => { update({ icon: "__wadisc__" }); if (!liveOnly) onSave({ ...cfg, icon: "__wadisc__" }); }}
+        onClick={() => pickIcon("__wadisc__")}
         className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__wadisc__" || cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
       >
         <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiContactDisc size={32} /></span>
@@ -616,7 +612,7 @@ function BoxEditor({
         {(showAllIcons ? ICON_CHOICES : ICON_CHOICES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (
           <button
             key={ic}
-            onClick={() => { update({ icon: ic }); if (!liveOnly) onSave({ ...cfg, icon: ic }); }}
+            onClick={() => pickIcon(ic)}
             className={`flex h-9 w-9 items-center justify-center rounded-full border text-[14px] ${cfg.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}
           >
             {ic}

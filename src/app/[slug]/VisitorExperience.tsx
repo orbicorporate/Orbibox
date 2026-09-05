@@ -9,7 +9,7 @@ import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
-import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, isAnimatedIcon } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 
@@ -194,8 +194,8 @@ export function VisitorExperience({
                   className={`flex items-center gap-4 rounded-[24px] bg-surface-white p-4 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
                 >
                   <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-[15px] ${o.color && o.color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
-                    style={o.color && o.color !== "transparent" ? { backgroundColor: o.color } : o.color === "transparent" ? { background: "transparent" } : undefined}
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-[15px] ${isAnimatedIcon(o.icon) ? "" : o.color && o.color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
+                    style={isAnimatedIcon(o.icon) ? { background: "transparent" } : o.color && o.color !== "transparent" ? { backgroundColor: o.color } : o.color === "transparent" ? { background: "transparent" } : undefined}
                   >
                     {o.icon === "__orb__" ? (
                       <OrbiParticleSphere size={44} className="rounded-full" />
