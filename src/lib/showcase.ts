@@ -121,6 +121,25 @@ export function sizeOf(key: string | null | undefined): BoxSize {
     : "medio";
 }
 
+/**
+ * Tamanho de fonte do título num card sem foto — se adapta ao formato do
+ * card e ao comprimento do título. Card grande (destaque/largo) comporta
+ * fonte maior; título longo puxa pra baixo pra não estourar. Retorna string
+ * com "px" pronta pro style inline.
+ */
+export function titleFontSize(title: string, size: BoxSize): string {
+  const len = (title ?? "").trim().length;
+  // teto por formato do card
+  const base = size === "destaque" ? 30 : size === "largo" ? 24 : size === "alto" ? 22 : 20;
+  // encolhe conforme o título fica longo
+  let px = base;
+  if (len > 14) px -= 2;
+  if (len > 22) px -= 3;
+  if (len > 34) px -= 3;
+  if (len > 48) px -= 3;
+  return `${Math.max(13, px)}px`;
+}
+
 // Agrupa itens em seções por categoria, preservando a ordem de position.
 export function groupByCategory<T extends { brand_label: string | null; position: number }>(items: T[]) {
   const ordered = [...items].sort((a, b) => a.position - b.position);

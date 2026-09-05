@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
-import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 
@@ -854,9 +854,14 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                         </>
                       ) : (
                         // Sem foto: o nome vira o conteúdo do box, centralizado — sem
-                        // rodapé branco repetindo a mesma informação embaixo.
-                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-12 text-center" style={{ backgroundColor: c.bg }}>
-                          <span className="font-[family-name:var(--font-open-sans)] text-[21px] font-bold leading-snug" style={{ color: c.fg }}>
+                        // rodapé branco repetindo a mesma informação embaixo. A fonte
+                        // se ajusta ao formato do card e ao tamanho do título, pra
+                        // título longo em card pequeno não estourar nem ficar apertado.
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-6 text-center" style={{ backgroundColor: c.bg }}>
+                          <span
+                            className="font-[family-name:var(--font-open-sans)] font-bold leading-snug"
+                            style={{ color: c.fg, fontSize: titleFontSize(item.title, size) }}
+                          >
                             {item.title}
                           </span>
                           {priceLabel && (

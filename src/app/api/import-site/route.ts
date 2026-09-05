@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
     const { data: business } = await supabase
       .from("businesses")
-      .select("id, name, owner_id")
+      .select("id, name, owner_id, brand_colors")
       .eq("id", businessId)
       .maybeSingle();
     if (!business || business.owner_id !== user.id) {
@@ -197,9 +197,28 @@ ${site.text}`;
       .eq("business_id", businessId);
     const startPos = count ?? 0;
 
+    // Paleta pra vestir os cards que vierem SEM foto — assim a vitrine
+    // importada já nasce colorida e bonita, em vez de um monte de quadrado
+    // cinza. Usa as cores do DNA da marca (definidas pela Orbi); se não houver,
+    // cai numa curadoria fixa de tons suaves. As cores entram intercaladas.
+    function brandSwatches(): string[] {
+      const raw = business!.brand_colors;
+      const hexes: string[] = Array.isArray(raw)
+        ? (raw as { hex?: string }[]).map((c) => c?.hex).filter((h): h is string => typeof h === "string" && /^#[0-9a-fA-F]{6}$/.test(h))
+        : [];
+      if (hexes.length >= 2) return hexes;
+      // Curadoria fixa (chaves de BOX_COLORS) — tons claros e agradáveis.
+      return ["verde", "azul", "coral", "teal", "yung-lilas", "energy-amarelo"];
+    }
+    const swatches = brandSwatches();
+
     const RHYTHM = ["destaque", "medio", "medio", "largo", "medio", "medio"];
+    let semFotoIdx = 0;
     const rows = items.slice(0, 12).map((it, i) => {
       const img = resolveImage(it);
+      // Sem foto: veste com uma cor da paleta, alternando pra não repetir
+      // duas iguais em seguida. Com foto: mantém o estilo de foto.
+      const cor = img.url ? "neutro" : swatches[semFotoIdx++ % swatches.length];
       return {
         business_id: businessId,
         type: it.type === "service" || it.type === "link" ? it.type : "product",
@@ -214,9 +233,8 @@ ${site.text}`;
         link_kind: ["categoria", "produto", "externo"].includes(it.link_kind ?? "") ? it.link_kind : null,
         // Ritmo visual: o primeiro vira destaque, os demais alternam.
         layout_size: RHYTHM[i % RHYTHM.length],
-        // Sem foto do site, o box nasce em cor neutra (não inventamos imagem).
         box_style: img.url ? "foto" : "cor",
-        box_color: "neutro",
+        box_color: cor,
         source_url: url,
         status: "published" as const,
         ai_optimized: true,

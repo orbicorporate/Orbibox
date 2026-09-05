@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
-import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, type BoxSize, type PriceType } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, type BoxSize, type PriceType } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { whatsappLink } from "@/lib/track";
@@ -747,10 +747,10 @@ function ItemCard({
           // Sem foto: o próprio nome vira o conteúdo do box — centralizado, sem
           // rodapé branco separado. O card inteiro (tratado pelo container pai) continua clicável pra editar.
           <div
-            className="flex h-full w-full flex-col items-center justify-center gap-2 px-12 text-center"
+            className="flex h-full w-full flex-col items-center justify-center gap-2 px-6 text-center"
             style={{ backgroundColor: c.bg }}
           >
-            <span className="font-[family-name:var(--font-open-sans)] text-[21px] font-bold leading-snug" style={{ color: c.fg }}>
+            <span className="font-[family-name:var(--font-open-sans)] font-bold leading-snug" style={{ color: c.fg, fontSize: titleFontSize(item.title, sizeOf(item.layout_size)) }}>
               {item.title}
             </span>
             {priceLabel && (
