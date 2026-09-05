@@ -770,7 +770,7 @@ function ItemCard({
               className="mt-1 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium"
               style={{ backgroundColor: `${c.fg}1A`, color: c.fg }}
             >
-              ＋ Toque para inserir imagem e editar
+              ＋ Editar box
             </span>
           </div>
         )}
