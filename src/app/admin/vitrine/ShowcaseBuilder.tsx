@@ -259,6 +259,21 @@ export function ShowcaseBuilder({
     await supabase.from("businesses").update({ vitrine_categories: next }).eq("id", businessId);
   }
 
+  // Move uma categoria pra cima/baixo na ordem em que aparecem na vitrine.
+  // "Destaques" (itens sem categoria) fica sempre por último e não se move.
+  async function moveCategory(name: string, dir: -1 | 1) {
+    if (name === "Destaques") return;
+    // Garante que todos os nomes reais estejam na lista ordenável.
+    const nomesReais = allCategoryNames.slice();
+    const idx = nomesReais.indexOf(name);
+    const alvo = idx + dir;
+    if (idx < 0 || alvo < 0 || alvo >= nomesReais.length) return;
+    snapshot();
+    const next = nomesReais.slice();
+    [next[idx], next[alvo]] = [next[alvo], next[idx]];
+    await saveCategories(next);
+  }
+
   async function move(item: Item, dir: -1 | 1) {
     const idx = ordered.findIndex((i) => i.id === item.id);
     const swap = ordered[idx + dir];
@@ -542,11 +557,34 @@ export function ShowcaseBuilder({
       )}
 
       <div className="mt-6 flex flex-col gap-8">
-        {sections.map((sec) => (
+        {sections.map((sec, si) => {
+          const isDestaques = sec.name === "Destaques";
+          const realCount = sections.filter((s) => s.name !== "Destaques").length;
+          return (
           <div key={sec.name}>
             <div className="mb-3 flex items-center justify-between gap-2">
               <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
-              <div className="flex shrink-0 gap-1.5">
+              <div className="flex shrink-0 items-center gap-1.5">
+                {!isDestaques && (
+                  <>
+                    <button
+                      onClick={() => moveCategory(sec.name, -1)}
+                      disabled={si === 0}
+                      aria-label="Subir categoria"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-text-secondary disabled:opacity-30"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => moveCategory(sec.name, 1)}
+                      disabled={si >= realCount - 1}
+                      aria-label="Descer categoria"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-text-secondary disabled:opacity-30"
+                    >
+                      ↓
+                    </button>
+                  </>
+                )}
                 <button onClick={() => renameCategory(sec.name)} aria-label="Renomear categoria" className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-text-secondary">✎</button>
                 <button onClick={() => deleteCategory(sec.name)} aria-label="Excluir categoria" className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-red-600">×</button>
               </div>
@@ -588,7 +626,8 @@ export function ShowcaseBuilder({
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Orbi Insight — a esfera de verdade, e um lote de 7 ângulos diferentes pra navegar sem repetir. */}
