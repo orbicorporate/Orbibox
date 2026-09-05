@@ -52,9 +52,6 @@ export default async function HojePage() {
   };
   const cta = CTA[opportunity?.category ?? ""] ?? { label: "Ativar campanha", href: "/admin/campaigns" };
 
-  const fullName = (user!.user_metadata?.full_name as string | undefined) ?? "";
-  const firstName = fullName.split(" ")[0] || "você";
-
   return (
     <div className="relative flex flex-col">
       {/* Sininho de notificação — pisca quando tem conversa que ainda não foi vista */}
@@ -70,13 +67,14 @@ export default async function HojePage() {
         )}
       </Link>
 
-      {/* Saudação dentro de um halo circular */}
+      {/* Saudação dentro de um halo circular — nome do negócio, não do usuário
+          que abriu o painel, já que mais gente da equipe também vai entrar. */}
       <div className="relative mx-auto mt-6 flex h-64 w-64 flex-col items-center justify-center text-center">
         <div className="orbi-halo absolute inset-0" aria-hidden>
           <span className="orbi-halo__dot" />
         </div>
         <h1 className="font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
-          Olá, {firstName}
+          Olá, {business!.name}
         </h1>
         <p className="mt-1 px-6 text-[14px] text-text-secondary">Seu negócio está indo bem hoje.</p>
       </div>
