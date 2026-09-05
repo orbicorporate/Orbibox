@@ -913,18 +913,17 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                       )}
                     </div>
                     {photo && (
-                      <div className="p-5">
-                        <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium leading-tight">{item.title}</p>
-                        <div className="mt-1 flex items-center gap-2">
-                          {item.brand_label && <p className="text-[13px] text-text-tertiary">{item.brand_label}</p>}
+                      <div className="flex items-center justify-between gap-3 p-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">{item.title}</p>
+                          {priceLabel && (
+                            <p className="mt-0.5 font-[family-name:var(--font-manrope)] text-[15px] font-medium text-text-secondary">{priceLabel}</p>
+                          )}
                         </div>
-                        {priceLabel && (
-                          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium">{priceLabel}</p>
-                        )}
                         {destino && (
-                          <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-button-primary px-3.5 py-2 text-[12px] font-medium text-white">
                             {isExterno
-                              ? (item.link_kind === "categoria" ? "Ver categoria" : "Entrar no site")
+                              ? (item.link_kind === "categoria" ? "Ver" : "Entrar")
                               : "Entrar"}
                             <span aria-hidden>{isExterno ? "↗" : "→"}</span>
                           </span>
