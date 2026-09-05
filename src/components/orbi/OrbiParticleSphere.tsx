@@ -19,11 +19,13 @@ export function OrbiParticleSphere({
   size = 44,
   bg = "transparent",
   variant = "sphere",
+  holdCheck = false,
   className = "",
 }: {
   size?: number;
   bg?: string;
   variant?: "sphere" | "check" | "whatsapp";
+  holdCheck?: boolean;
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -134,17 +136,26 @@ export function OrbiParticleSphere({
     }
 
     const SPIN = 2.2, MORPH = 0.9, HOLD = 1.1;
-    const CYCLE = SPIN + MORPH + HOLD + MORPH;
+    // No modo "holdCheck" (concluiu no chat), morfa rápido e segura o check.
+    const spinDur = holdCheck ? 0.15 : SPIN;
+    const morphDur = holdCheck ? 0.45 : MORPH;
+    const CYCLE = holdCheck ? 999 : spinDur + morphDur + HOLD + morphDur;
     function ease(x: number) {
       return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
     }
     function morphAt(time: number) {
       if (variant === "sphere") return 0;
+      if (holdCheck) {
+        // vai até o check e fica lá.
+        if (time < spinDur) return 0;
+        if (time < spinDur + morphDur) return ease((time - spinDur) / morphDur);
+        return 1;
+      }
       const t = time % CYCLE;
-      if (t < SPIN) return 0;
-      if (t < SPIN + MORPH) return ease((t - SPIN) / MORPH);
-      if (t < SPIN + MORPH + HOLD) return 1;
-      return ease(1 - (t - SPIN - MORPH - HOLD) / MORPH);
+      if (t < spinDur) return 0;
+      if (t < spinDur + morphDur) return ease((t - spinDur) / morphDur);
+      if (t < spinDur + morphDur + HOLD) return 1;
+      return ease(1 - (t - spinDur - morphDur - HOLD) / morphDur);
     }
     const targets = variant === "whatsapp" ? bubbleTarget : checkTarget;
 
@@ -219,7 +230,7 @@ export function OrbiParticleSphere({
       running = false;
       cancelAnimationFrame(raf);
     };
-  }, [size, bg, variant]);
+  }, [size, bg, variant, holdCheck]);
 
   return (
     <canvas

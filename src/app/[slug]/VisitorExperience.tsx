@@ -456,6 +456,7 @@ function OrbiChat({
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [justDone, setJustDone] = useState(false);
   const [typedPlaceholder, setTypedPlaceholder] = useState("");
 
   // Sugestões puxadas do que existe de verdade no negócio — nunca genéricas.
@@ -531,6 +532,7 @@ function OrbiChat({
     setInput("");
     setMessages((prev) => [...prev, { role: "visitor", content: text }]);
     setSending(true);
+    setJustDone(false);
     await supabase.from("messages").insert({ conversation_id: conversationId, role: "visitor", content: text });
     try {
       const res = await fetch("/api/orbi-chat", {
@@ -540,7 +542,10 @@ function OrbiChat({
       });
       const data = await res.json();
       const reply = res.ok && data.reply ? data.reply : "Desculpa, tive um problema aqui — pode tentar de novo?";
+      // Ao terminar: mostra o check por um instante ("pronto") antes de exibir a resposta.
+      setJustDone(true);
       setMessages((prev) => [...prev, { role: "agent", content: reply }]);
+      window.setTimeout(() => setJustDone(false), 1400);
     } finally {
       setSending(false);
     }
@@ -602,11 +607,10 @@ function OrbiChat({
                 <div className="flex flex-col gap-3">{formatMessage(m.content)}</div>
               </div>
             ))}
-            {sending && (
-              <div className="flex max-w-[40%] items-center gap-2 self-start rounded-2xl bg-surface-white px-4 py-3 shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
-                <span className="orbi-thinking-dot h-2.5 w-2.5 shrink-0 rounded-full bg-orbi-gradient-start" />
-                <span className="orbi-thinking-dot h-2.5 w-2.5 shrink-0 rounded-full bg-orbi-gradient-start" style={{ animationDelay: "0.2s" }} />
-                <span className="orbi-thinking-dot h-2.5 w-2.5 shrink-0 rounded-full bg-orbi-gradient-start" style={{ animationDelay: "0.4s" }} />
+            {(sending || justDone) && (
+              <div className="flex items-center gap-2.5 self-start rounded-2xl bg-surface-white px-3 py-2 shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
+                <OrbiParticleSphere size={36} variant={justDone ? "check" : "sphere"} holdCheck={justDone} className="rounded-full" />
+                <span className="text-[13px] text-text-tertiary">{justDone ? "Pronto" : `${agentName} está pensando…`}</span>
               </div>
             )}
             {whatsapp && !sending && (

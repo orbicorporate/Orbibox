@@ -517,15 +517,6 @@ function BoxEditor({
     if (!liveOnly) onSave({ ...cfg, color: hex });
   }
 
-  // Ao escolher um ícone de partícula, o fundo do box fica neutro
-  // automaticamente (as partículas leem melhor em fundo claro). Guarda o
-  // valor escolhido junto.
-  function pickParticle(icon: string) {
-    const next = { ...cfg, icon, color: cfg.color && cfg.color !== "#111318" && !isParticle ? cfg.color : "#F2F2F2" };
-    setCfg(next);
-    onSave(next);
-  }
-
   return (
     <div className="mt-3 flex flex-col gap-2.5">
       {isCustom && (
@@ -574,30 +565,6 @@ function BoxEditor({
       )}
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
-
-      <button
-        onClick={() => pickParticle("__orb__")}
-        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__orb__" ? "border-on-background" : "border-divider"}`}
-      >
-        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiParticleSphere size={32} /></span>
-        <span className="text-[13px] font-medium">Esfera de partículas animada</span>
-      </button>
-
-      <button
-        onClick={() => pickParticle("__orbcheck__")}
-        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__orbcheck__" ? "border-on-background" : "border-divider"}`}
-      >
-        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiParticleSphere size={32} variant="check" /></span>
-        <span className="text-[13px] font-medium">Partículas que formam um check</span>
-      </button>
-
-      <button
-        onClick={() => pickParticle("__orbwa__")}
-        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
-      >
-        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiParticleSphere size={32} variant="whatsapp" /></span>
-        <span className="text-[13px] font-medium">Partículas que formam um balão de conversa</span>
-      </button>
 
       {/* Logo específico deste box: usa o que já foi enviado aqui, senão cai
           no logotipo geral da empresa. Dá pra subir um na hora, só pra este box. */}
