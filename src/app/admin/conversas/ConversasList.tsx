@@ -15,6 +15,32 @@ function formatData(iso: string) {
   return `${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}, ${hora}`;
 }
 
+/**
+ * Procura um número de telefone/WhatsApp nas mensagens do visitante. A Orbi
+ * pede o contato durante a conversa, então ele fica no texto — não numa coluna
+ * separada. Aceita formatos comuns brasileiros (com/sem DDD, com/sem +55).
+ * Retorna só os dígitos, ou null se não achar.
+ */
+function acharWhatsapp(messages: Msg[]): string | null {
+  for (const m of messages) {
+    if (m.role !== "visitor") continue;
+    // sequência com 10 a 13 dígitos, tolerando espaços, hífens, parênteses e +.
+    const match = m.content.match(/(\+?\d[\d\s().-]{8,}\d)/);
+    if (match) {
+      const digits = match[1].replace(/\D/g, "");
+      if (digits.length >= 10 && digits.length <= 13) return digits;
+    }
+  }
+  return null;
+}
+
+function formatFone(digits: string) {
+  const d = digits.replace(/^55/, "");
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return digits;
+}
+
 export function ConversasList({ conversations }: { conversations: Conversa[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -40,17 +66,35 @@ export function ConversasList({ conversations }: { conversations: Conversa[] }) 
         const visitorMsgs = c.messages.filter((m) => m.role === "visitor");
         const preview = visitorMsgs[0]?.content ?? c.messages[0]?.content ?? "(sem mensagens)";
         const open = openId === c.id;
+        const whats = acharWhatsapp(c.messages);
         return (
           <div key={c.id} className="overflow-hidden rounded-[24px] border border-divider bg-surface-white">
             <button onClick={() => setOpenId(open ? null : c.id)} className="flex w-full items-start justify-between gap-3 p-4 text-left">
               <div className="min-w-0">
-                <p className="text-[12px] text-text-tertiary">{formatData(c.startedAt)}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-[12px] text-text-tertiary">{formatData(c.startedAt)}</p>
+                  {whats && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#25D366]/12 px-2 py-0.5 text-[10px] font-semibold text-[#128C3E]">
+                      ☎ tem contato
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 truncate text-[14px] text-on-background">{preview}</p>
               </div>
               <span className="shrink-0 text-[12px] text-text-tertiary">{c.messages.length} {c.messages.length === 1 ? "msg" : "msgs"}</span>
             </button>
             {open && (
               <div className="flex flex-col gap-3 border-t border-divider p-4">
+                {whats && (
+                  <a
+                    href={`https://wa.me/${whats.startsWith("55") ? whats : `55${whats}`}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-3 text-[14px] font-medium text-white"
+                  >
+                    ☎ Responder no WhatsApp · {formatFone(whats)}
+                  </a>
+                )}
                 {c.messages.length === 0 ? (
                   <p className="text-[13px] text-text-tertiary">Sem mensagens registradas.</p>
                 ) : (

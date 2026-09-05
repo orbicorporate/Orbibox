@@ -41,8 +41,8 @@ export default async function ConversasPage() {
         Conversas
       </h1>
       <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-        Tudo que a Orbi conversou com quem visitou seu link — inclusive nome e contato que ela anotou
-        pra você retornar.
+        Tudo que a Orbi conversou com quem visitou seu link. O contato só aparece nas conversas em que a
+        pessoa deixou o WhatsApp — nessas, marcamos com a etiqueta <span className="font-medium text-[#128C3E]">☎ tem contato</span> e você responde direto por lá.
       </p>
       <ConversasList conversations={list} />
     </div>
