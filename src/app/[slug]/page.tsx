@@ -1,6 +1,49 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { VisitorExperience } from "./VisitorExperience";
+
+/**
+ * Preview do link (Open Graph) — o que aparece quando alguém cola o link do
+ * Orbibox no WhatsApp, Instagram, etc. WhatsApp só mostra imagem estática
+ * (nada de animação), então usamos, nesta ordem: a capa da Vitrine, depois o
+ * logotipo do negócio. A esfera animada da Orbi fica só dentro do app.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: b } = await supabase
+    .from("businesses")
+    .select("name, about_business, logo_url, vitrine_cover_url, vitrine_cover_urls")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!b) return { title: "Orbibox" };
+
+  const capa = b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls[0]) || b.logo_url || null;
+  const descricao = b.about_business?.slice(0, 160) || `Conheça ${b.name} — produtos, serviços e contato num só link.`;
+
+  return {
+    title: b.name,
+    description: descricao,
+    openGraph: {
+      title: b.name,
+      description: descricao,
+      type: "website",
+      ...(capa ? { images: [{ url: capa }] } : {}),
+    },
+    twitter: {
+      card: capa ? "summary_large_image" : "summary",
+      title: b.name,
+      description: descricao,
+      ...(capa ? { images: [capa] } : {}),
+    },
+  };
+}
 
 export default async function VisitorPage({
   params,
