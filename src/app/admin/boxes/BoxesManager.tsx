@@ -689,15 +689,15 @@ function BoxEditor({
                 <div className="mt-2 flex flex-col gap-2 text-[12px] leading-relaxed text-text-secondary">
                   <p className="font-medium text-on-background">Jeito mais rápido (leva direto pra dar a nota):</p>
                   <ol className="ml-1 flex flex-col gap-1.5">
-                    <li>1. No computador, pesquise o nome do seu negócio no Google.</li>
-                    <li>2. No painel da empresa (à direita), clique em <span className="font-medium">“Peça avaliações”</span>.</li>
+                    <li>1. No computador, faça login no Google com o e-mail do seu perfil do <span className="font-medium">Google Meu Negócio</span> (o que gerencia a empresa).</li>
+                    <li>2. Pesquise o nome do seu negócio no Google. No painel da empresa (à direita), clique em <span className="font-medium">“Peça avaliações”</span>.</li>
                     <li>3. O Google gera um link curto (ex: <span className="font-medium">g.page/r/…</span>). Copie e cole aqui.</li>
                   </ol>
                   <p className="mt-1 font-medium text-on-background">Não achou essa opção? Use o link do perfil:</p>
                   <ol className="ml-1 flex flex-col gap-1.5">
-                    <li>1. Abra o Google Maps e procure seu negócio.</li>
-                    <li>2. Toque em <span className="font-medium">Compartilhar</span> e copie o link.</li>
-                    <li>3. Cole aqui — o cliente cai no perfil e avalia por lá.</li>
+                    <li>1. Pesquise o nome do seu negócio no Google.</li>
+                    <li>2. No painel da empresa, toque em <span className="font-medium">Compartilhar</span> e copie o link do perfil.</li>
+                    <li>3. Cole aqui — o cliente cai no seu perfil do Google e avalia por lá.</li>
                   </ol>
                   <p className="mt-1">Ainda não tem o negócio no Google? Cadastre grátis em <span className="font-medium">google.com/business</span> — leva 5 minutos e é essencial pra aparecer nas buscas.</p>
                 </div>
