@@ -171,9 +171,9 @@ export function VisitorExperience({
         {intent === null && (
           <div className="flex flex-col items-center text-center">
             {business.logo_url ? (
-              <OrbiAvatar logoUrl={business.logo_url} size={112} className="mb-8" />
+              <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
             ) : (
-              <OrbiOrb size={112} className="mb-8" />
+              <OrbiOrb size={96} className="mb-8" />
             )}
             <p className="text-[13px] uppercase tracking-wide text-text-tertiary">
               {business.name}
