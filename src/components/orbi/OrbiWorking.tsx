@@ -15,21 +15,23 @@ import { OrbiParticleSphere } from "./OrbiParticleSphere";
 export function OrbiWorking({
   label = "Orbi está trabalhando…",
   variant = "bar",
+  colors,
 }: {
   label?: string;
   variant?: "bar" | "inline";
+  colors?: [string, string];
 }) {
   if (variant === "inline") {
     return (
       <span className="inline-flex items-center gap-2">
-        <OrbiParticleSphere size={22} className="rounded-full" />
+        <OrbiParticleSphere size={22} colors={colors} className="rounded-full" />
         <span className="text-[13px] text-text-secondary">{label}</span>
       </span>
     );
   }
   return (
     <div className="flex items-center gap-3 rounded-full bg-surface-soft px-4 py-3">
-      <OrbiParticleSphere size={30} className="rounded-full" />
+      <OrbiParticleSphere size={30} colors={colors} className="rounded-full" />
       <span className="text-[14px] font-medium text-text-secondary">{label}</span>
     </div>
   );

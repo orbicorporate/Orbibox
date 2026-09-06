@@ -287,3 +287,22 @@ export function youtubeId(url: string): string | null {
 export function isYoutube(url: string): boolean {
   return youtubeId(url) !== null;
 }
+
+/** Curadoria de cores vibrantes pra Orbi (esfera de partículas) — sempre
+ * saturadas o bastante pra ficarem bonitas na animação, evitando tons
+ * apagados demais. A pessoa escolhe duas; qualquer combinação funciona bem
+ * porque o degradê interpola suavemente entre elas. */
+export const ORBI_SPHERE_COLORS: { hex: string; label: string }[] = [
+  { hex: "#7FE84A", label: "Verde-limão" },
+  { hex: "#12E0D4", label: "Ciano" },
+  { hex: "#1FA2FF", label: "Azul elétrico" },
+  { hex: "#1D4ED8", label: "Azul" },
+  { hex: "#8B2BFF", label: "Roxo elétrico" },
+  { hex: "#6D28D9", label: "Roxo" },
+  { hex: "#FF3D9A", label: "Pink" },
+  { hex: "#E5322B", label: "Vermelho" },
+  { hex: "#FF6A00", label: "Tangerina" },
+  { hex: "#F5C400", label: "Amarelo" },
+  { hex: "#188A3A", label: "Verde" },
+  { hex: "#F0F0EA", label: "Prata" },
+];

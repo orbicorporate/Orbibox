@@ -11,6 +11,9 @@ export default async function AgentPage() {
     .limit(1)
     .single();
   const { data: config } = await supabase.from("agent_configs").select("*").eq("business_id", business!.id).maybeSingle();
+  const orbiColors = Array.isArray(config?.orbi_colors) && config.orbi_colors.length === 2
+    ? (config.orbi_colors as [string, string])
+    : null;
   const { count: catalogCount } = await supabase
     .from("content_items")
     .select("id", { count: "exact", head: true })
@@ -23,7 +26,7 @@ export default async function AgentPage() {
       <p className="mt-1 text-[14px] text-text-secondary">Defina como a Orbi interage com seus visitantes.</p>
       {config && (
         <AgentConfigForm
-          config={config}
+          config={{ ...config, orbi_colors: orbiColors }}
           businessId={business!.id}
           businessName={business!.name}
           slug={business!.slug}

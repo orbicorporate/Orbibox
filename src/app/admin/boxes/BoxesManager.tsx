@@ -65,6 +65,7 @@ export function BoxesManager({
   initialHeroQuestion,
   initialLogoUrl,
   brandColors,
+  orbiColors,
 }: {
   businessId: string;
   businessName: string;
@@ -76,6 +77,7 @@ export function BoxesManager({
   initialHeroQuestion: string | null;
   initialLogoUrl: string | null;
   brandColors: BrandColor[];
+  orbiColors: [string, string] | null;
 }) {
   const supabase = createClient();
   const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
@@ -285,9 +287,9 @@ export function BoxesManager({
                 )}
                 <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: isHero ? "#fff" : fg }}>
                   {icon === "__orb__" ? (
-                    <OrbiParticleSphere size={44} />
+                    <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} />
                   ) : icon === "__orbcheck__" ? (
-                    <OrbiParticleSphere size={44} variant="check" />
+                    <OrbiParticleSphere size={44} variant="check" colors={orbiColors ?? undefined} />
                   ) : icon === "__orbwa__" || icon === "__wadisc__" ? (
                     <OrbiContactDisc size={44} />
                   ) : icon === "__google__" ? (
@@ -331,9 +333,9 @@ export function BoxesManager({
                   <div className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-soft p-3">
                     <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: fg }}>
                       {icon === "__orb__" ? (
-                        <OrbiParticleSphere size={36} />
+                        <OrbiParticleSphere size={36} colors={orbiColors ?? undefined} />
                       ) : icon === "__orbcheck__" ? (
-                        <OrbiParticleSphere size={36} variant="check" />
+                        <OrbiParticleSphere size={36} variant="check" colors={orbiColors ?? undefined} />
                       ) : icon === "__orbwa__" || icon === "__wadisc__" ? (
                         <OrbiContactDisc size={36} />
                       ) : icon === "__google__" ? (

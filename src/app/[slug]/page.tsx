@@ -81,11 +81,14 @@ export default async function VisitorPage({
       .select("id, box_type, title, is_active, position, config")
       .eq("business_id", business.id)
       .order("position", { ascending: true }),
-    supabase.from("agent_configs").select("agent_name").eq("business_id", business.id).maybeSingle(),
+    supabase.from("agent_configs").select("agent_name, orbi_colors").eq("business_id", business.id).maybeSingle(),
   ]);
   const content = contentRes.data;
   const boxes = boxesRes.data;
   const agentConfig = agentRes.data;
+  const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length === 2
+    ? (agentConfig.orbi_colors as [string, string])
+    : null;
 
   return (
     <VisitorExperience
@@ -93,6 +96,7 @@ export default async function VisitorPage({
       content={content ?? []}
       boxes={boxes ?? []}
       agentName={agentConfig?.agent_name ?? "Orbi"}
+      orbiColors={orbiColors}
       isOwner={isOwner}
     />
   );

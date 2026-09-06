@@ -71,12 +71,14 @@ export function VisitorExperience({
   content,
   boxes,
   agentName,
+  orbiColors,
   isOwner,
 }: {
   business: Business;
   content: ContentItem[];
   boxes: BoxRow[];
   agentName: string;
+  orbiColors: [string, string] | null;
   isOwner: boolean;
 }) {
   const supabase = createClient();
@@ -202,9 +204,9 @@ export function VisitorExperience({
                     style={isAnimatedIcon(o.icon) ? { background: "transparent" } : o.color && o.color !== "transparent" ? { backgroundColor: o.color } : o.color === "transparent" ? { background: "transparent" } : undefined}
                   >
                     {o.icon === "__orb__" ? (
-                      <OrbiParticleSphere size={44} className="rounded-full" />
+                      <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} className="rounded-full" />
                     ) : o.icon === "__orbcheck__" ? (
-                      <OrbiParticleSphere size={44} variant="check" className="rounded-full" />
+                      <OrbiParticleSphere size={44} variant="check" colors={orbiColors ?? undefined} className="rounded-full" />
                     ) : o.icon === "__orbwa__" || o.icon === "__wadisc__" ? (
                       <OrbiContactDisc size={44} className="rounded-full" />
                     ) : o.icon === "__google__" ? (
@@ -264,7 +266,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
+          <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
         )}
       </div>
     </main>
@@ -449,6 +451,7 @@ function OrbiChat({
   businessId,
   sessionId,
   agentName,
+  orbiColors,
   content,
   whatsapp,
   onBack,
@@ -456,6 +459,7 @@ function OrbiChat({
   businessId: string;
   sessionId: string;
   agentName: string;
+  orbiColors: [string, string] | null;
   content: ContentItem[];
   whatsapp: string | null;
   onBack: () => void;
@@ -626,7 +630,7 @@ function OrbiChat({
             ))}
             {(sending || justDone) && (
               <div className="flex items-center gap-2.5 self-start rounded-2xl bg-surface-white px-3 py-2 shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
-                <OrbiParticleSphere size={36} variant={justDone ? "check" : "sphere"} holdCheck={justDone} className="rounded-full" />
+                <OrbiParticleSphere size={36} variant={justDone ? "check" : "sphere"} holdCheck={justDone} colors={orbiColors ?? undefined} className="rounded-full" />
                 <span className="text-[13px] text-text-tertiary">{justDone ? "Pronto" : `${agentName} está pensando…`}</span>
               </div>
             )}
@@ -669,7 +673,7 @@ function OrbiChat({
           className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${input.trim() && !sending ? "orbi-gradient" : "bg-surface-soft"}`}
         >
           {sending ? (
-            <OrbiParticleSphere size={36} className="rounded-full" />
+            <OrbiParticleSphere size={36} colors={orbiColors ?? undefined} className="rounded-full" />
           ) : (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={input.trim() ? "text-on-background" : "text-text-tertiary"} aria-hidden>
               <path d="M7 11l5-5 5 5" />

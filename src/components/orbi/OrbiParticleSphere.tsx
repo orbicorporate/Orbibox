@@ -15,20 +15,46 @@ import { useEffect, useRef } from "react";
  * `bg` é o fundo do quadradinho (preto por padrão, que deixa as partículas
  * vibrantes).
  */
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const num = parseInt(full, 16);
+  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+/** Monta 4 pontos de degradê interpolando suavemente entre duas cores —
+ * mantém o mesmo efeito visual de "matiz variando conforme a altura", só que
+ * com as cores que a pessoa escolheu em vez do verde/roxo padrão. */
+function buildGradientStops(colorA: string, colorB: string): number[][] {
+  const a = hexToRgb(colorA);
+  const b = hexToRgb(colorB);
+  const steps = 4;
+  return Array.from({ length: steps }, (_, i) => {
+    const t = i / (steps - 1);
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  });
+}
+
 export function OrbiParticleSphere({
   size = 44,
   bg = "transparent",
   variant = "sphere",
   holdCheck = false,
+  colors,
   className = "",
 }: {
   size?: number;
   bg?: string;
   variant?: "sphere" | "check" | "whatsapp";
   holdCheck?: boolean;
+  /** Duas cores (hex) escolhidas pela pessoa em Configurações da Orbi —
+   * substituem o degradê verde/roxo padrão. Ex: ["#22C35E", "#7C3AED"]. */
+  colors?: [string, string];
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const colorA = colors?.[0];
+  const colorB = colors?.[1];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -140,12 +166,15 @@ export function OrbiParticleSphere({
     // Pré-calcula a cor de cada partícula UMA vez (a matiz depende só de p.y,
     // que não muda). Guardamos os 3 canais-base; no frame só aplicamos brilho.
     // Isso evita montar milhares de strings de cor a cada quadro.
+    // Se a pessoa escolheu duas cores próprias (Configurações da Orbi), o
+    // degradê de 4 tons vira uma interpolação suave entre elas; senão usa o
+    // padrão verde→turquesa→azul→roxo.
+    const stops = colorA && colorB ? buildGradientStops(colorA, colorB) : [
+      [120, 220, 90], [40, 190, 180], [70, 120, 245], [150, 90, 240],
+    ];
     const baseRGB = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
       const t = (pts[i].y + 1) / 2;
-      const stops = [
-        [120, 220, 90], [40, 190, 180], [70, 120, 245], [150, 90, 240],
-      ];
       const seg = t * (stops.length - 1);
       const s = Math.max(0, Math.min(stops.length - 2, Math.floor(seg)));
       const f = seg - s;
@@ -221,7 +250,9 @@ export function OrbiParticleSphere({
       }
 
       // Glow: gradiente criado uma vez por frame (barato) mas com as cores certas.
-      const gc = morph > 0.5 ? (variant === "whatsapp" ? "rgba(37,211,102,0.24)" : "rgba(90,230,120,0.22)") : "rgba(120,150,255,0.20)";
+      // No estado base (sem morph), usa a primeira cor escolhida, se houver.
+      const baseGlow = colorA ? `rgba(${hexToRgb(colorA).join(",")},0.20)` : "rgba(120,150,255,0.20)";
+      const gc = morph > 0.5 ? (variant === "whatsapp" ? "rgba(37,211,102,0.24)" : "rgba(90,230,120,0.22)") : baseGlow;
       glowGrad.addColorStop(0, gc);
       ctx.fillStyle = glowGrad;
       ctx.fillRect(0, 0, size, size);
@@ -245,7 +276,7 @@ export function OrbiParticleSphere({
       running = false;
       cancelAnimationFrame(raf);
     };
-  }, [size, bg, variant, holdCheck]);
+  }, [size, bg, variant, holdCheck, colorA, colorB]);
 
   return (
     <canvas
