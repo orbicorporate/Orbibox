@@ -566,24 +566,25 @@ function OrbiChat({
 
   const started = messages.length > 0;
 
-  // Sempre que chega uma mensagem nova ou a Orbi começa a pensar, rola até o
-  // fim pra o visitante ver a resposta sem precisar arrastar manualmente.
+  // Auto-scroll só DEPOIS que a conversa começou — enquanto está nas sugestões,
+  // o visitante rola livremente. Rolar pro fim só quando chega mensagem/pensa.
   useEffect(() => {
+    if (!started && !sending) return;
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages.length, sending, justDone]);
+  }, [messages.length, sending, justDone, started]);
 
   return (
     <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col bg-background-main/95 backdrop-blur">
-      {/* Fechar */}
+      {/* Fechar — z-index acima do conteúdo pra o toque nunca ser bloqueado */}
       <button
         onClick={onBack}
-        className="absolute left-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white text-[16px] shadow"
+        className="absolute left-5 top-5 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white text-[16px] shadow"
         aria-label="Fechar"
       >
         ×
       </button>
 
-      <div className="flex flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-40 pt-20" style={{ WebkitOverflowScrolling: "touch" }}>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-40 pt-20" style={{ WebkitOverflowScrolling: "touch" }}>
         {/* Avatar */}
         <div className="mx-auto relative">
           <OrbiOrb size={112} />
