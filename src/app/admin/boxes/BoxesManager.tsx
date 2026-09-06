@@ -11,6 +11,7 @@ import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon } from "@/lib/showcase";
+import { addToLogoGallery } from "@/lib/logoGallery";
 
 type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar"; url?: string; logo_url?: string };
@@ -64,6 +65,7 @@ export function BoxesManager({
   initialDifferentialsCards,
   initialHeroQuestion,
   initialLogoUrl,
+  initialLogoGallery,
   brandColors,
   orbiColors,
 }: {
@@ -76,6 +78,7 @@ export function BoxesManager({
   initialDifferentialsCards: DifferentialCard[];
   initialHeroQuestion: string | null;
   initialLogoUrl: string | null;
+  initialLogoGallery: string[];
   brandColors: BrandColor[];
   orbiColors: [string, string] | null;
 }) {
@@ -86,6 +89,7 @@ export function BoxesManager({
   const [cards, setCards] = useState<DifferentialCard[]>(initialDifferentialsCards);
   const [heroQuestion, setHeroQuestion] = useState(initialHeroQuestion ?? "");
   const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
+  const [logoGallery, setLogoGallery] = useState<string[]>(initialLogoGallery);
   const [aboutImportUrl, setAboutImportUrl] = useState("");
   const [importingAbout, setImportingAbout] = useState(false);
   const [aboutImportMsg, setAboutImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
@@ -257,6 +261,7 @@ export function BoxesManager({
             onChange={async (url) => {
               setLogoUrl(url);
               await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);
+              if (url) setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url));
             }}
           />
         </div>
@@ -368,6 +373,8 @@ export function BoxesManager({
                   onSave={(next) => saveConfig(box, { ...next, label })}
                   onDelete={isCustom ? () => removeCustom(box) : undefined}
                   logoUrl={logoUrl}
+                  logoGallery={logoGallery}
+                  onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))}
                   businessId={businessId}
                 />
               )}
@@ -483,7 +490,7 @@ export function BoxesManager({
             placeholder="Nome do botão (ex: Fale no WhatsApp)"
             className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
-          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} businessId={businessId} />
+          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} logoGallery={logoGallery} onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))} businessId={businessId} />
           <div className="mt-3 flex gap-2">
             <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
             <button onClick={() => setCreating(false)} className="rounded-full bg-surface-soft px-4 py-2 text-[13px]">Cancelar</button>
@@ -522,6 +529,8 @@ function BoxEditor({
   onDelete,
   liveOnly,
   logoUrl,
+  logoGallery,
+  onNewLogo,
   businessId,
 }: {
   initial: BoxConfig;
@@ -531,6 +540,8 @@ function BoxEditor({
   onDelete?: () => void;
   liveOnly?: boolean;
   logoUrl?: string | null;
+  logoGallery?: string[];
+  onNewLogo?: (url: string) => void;
   businessId: string;
 }) {
   const [cfg, setCfg] = useState<BoxConfig>(initial);
@@ -612,33 +623,46 @@ function BoxEditor({
         <span className="text-[13px] font-medium">Google animado</span>
       </button>
 
-      {/* Logo específico deste box: usa o que já foi enviado aqui, senão cai
-          no logotipo geral da empresa. Dá pra subir um na hora, só pra este box. */}
-      {(cfg.logo_url || logoUrl) && (
-        <button
-          onClick={() => { update({ icon: "__logo__" }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__" }); }}
-          className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__logo__" ? "border-on-background" : "border-divider"}`}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={cfg.logo_url || logoUrl!} alt="" className="h-8 w-8 rounded-full object-cover" />
-          <span className="text-[13px] font-medium">Usar logotipo{cfg.logo_url ? " deste box" : " da empresa"}</span>
-        </button>
-      )}
+      {/* Logotipo: mostra todos os que já foram enviados (em Configurações ou
+          em qualquer outro box) como sugestão pronta — sempre a biblioteca
+          inteira, em todo box, novo ou existente. */}
+      {(() => {
+        const gallery = Array.from(new Set([...(logoUrl ? [logoUrl] : []), ...(logoGallery ?? [])]));
+        return gallery.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Logotipos já enviados</p>
+            <div className="flex flex-wrap gap-2">
+              {gallery.map((url) => (
+                <button
+                  key={url}
+                  onClick={() => { update({ icon: "__logo__", logo_url: url }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__", logo_url: url }); }}
+                  className={`h-11 w-11 overflow-hidden rounded-full border-2 ${cfg.icon === "__logo__" && (cfg.logo_url ?? logoUrl) === url ? "border-on-background" : "border-transparent"}`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      })()}
 
       <details className="self-start">
         <summary className="cursor-pointer list-none text-[12px] font-medium text-text-secondary underline">
-          {cfg.logo_url ? "Trocar logotipo deste box" : "＋ Enviar um logotipo só pra este box"}
+          ＋ Enviar um novo logotipo
         </summary>
         <div className="mt-2">
           <ImageUpload
-            value={cfg.logo_url ?? null}
+            value={null}
             businessId={businessId}
             lockedRatio="quadrado"
             promptKind="avatar"
             onChange={(url) => {
-              const next = { ...cfg, logo_url: url ?? undefined, icon: url ? "__logo__" : cfg.icon };
+              if (!url) return;
+              const next = { ...cfg, logo_url: url, icon: "__logo__" };
               setCfg(next);
               onSave(next);
+              onNewLogo?.(url);
             }}
           />
         </div>

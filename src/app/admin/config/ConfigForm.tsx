@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
 
 type Business = {
   id: string;
@@ -19,6 +21,8 @@ type Business = {
   about_business: string | null;
   differentials: string | null;
   policies: string | null;
+  logo_url: string | null;
+  logo_gallery: unknown;
 };
 
 const TIPO_LABEL: Record<string, string> = {
@@ -31,11 +35,21 @@ export function ConfigForm({ business }: { business: Business }) {
   const router = useRouter();
   const supabase = createClient();
   const [b, setB] = useState(business);
+  const [logoGallery, setLogoGallery] = useState<string[]>(parseLogoGallery(business.logo_gallery));
   const [saved, setSaved] = useState(false);
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+
+  async function saveLogo(url: string | null) {
+    setB((p) => ({ ...p, logo_url: url }));
+    await supabase.from("businesses").update({ logo_url: url }).eq("id", b.id);
+    if (url) {
+      const next = await addToLogoGallery(supabase, b.id, logoGallery, url);
+      setLogoGallery(next);
+    }
+  }
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -103,6 +117,28 @@ export function ConfigForm({ business }: { business: Business }) {
 
   return (
     <div className="mt-6 flex flex-col pb-4">
+      {/* Logotipo — super indicado: usado como avatar da tela inicial e vira
+          sugestão de ícone em qualquer box, novo ou existente. */}
+      <div className="rounded-[24px] orbi-gradient p-[1.5px]">
+        <div className="rounded-[23px] bg-surface-white p-5">
+          <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">
+            Logotipo da empresa <span className="orbi-gradient-text">★ super indicado</span>
+          </p>
+          <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+            Fica disponível como avatar da tela inicial e, a partir de agora, também vira sugestão pronta na biblioteca de ícones de qualquer box — inclusive os que você criar depois.
+          </p>
+          <div className="mt-3">
+            <ImageUpload
+              value={b.logo_url}
+              businessId={b.id}
+              lockedRatio="quadrado"
+              promptKind="avatar"
+              onChange={saveLogo}
+            />
+          </div>
+        </div>
+      </div>
+
       {b.site_type && (
         <div className="rounded-[22px] bg-surface-soft p-4">
           <p className="text-[13px] text-text-secondary">

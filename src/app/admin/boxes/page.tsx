@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { BoxesManager } from "./BoxesManager";
+import { parseLogoGallery } from "@/lib/logoGallery";
 
 export default async function BoxesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug, story_photos, story_photo_format, about_business, differentials, differentials_cards, hero_question, logo_url, brand_colors")
+    .select("id, name, slug, story_photos, story_photo_format, about_business, differentials, differentials_cards, hero_question, logo_url, logo_gallery, brand_colors")
     .eq("owner_id", user!.id)
     .limit(1)
     .single();
@@ -45,6 +46,7 @@ export default async function BoxesPage() {
         initialDifferentialsCards={differentialsCards}
         initialHeroQuestion={business!.hero_question}
         initialLogoUrl={business!.logo_url}
+        initialLogoGallery={parseLogoGallery(business!.logo_gallery)}
         brandColors={brandColors}
         orbiColors={orbiColors}
       />
