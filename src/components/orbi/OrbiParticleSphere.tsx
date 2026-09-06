@@ -72,10 +72,12 @@ export function OrbiParticleSphere({
 
     // Malha de pontos sobre a esfera (Fibonacci sphere — distribuição uniforme).
     // N são as partículas "principais" (também usadas nas formas de check/
-    // balão); MICRO é uma segunda leva, só decorativa, com metade da
-    // espessura — dá aquele efeito de brilho fino espalhado pela esfera.
+    // balão); MICRO é uma segunda leva, bem numerosa (o dobro do que seria só
+    // "um extra"), só decorativa — dá aquele efeito de areia fina bem cheia.
+    // Todos os pontos (principais e micro) saem na metade do tamanho de base
+    // (aplicado mais abaixo, no cálculo do raio de cada frame).
     const N = size < 80 ? 700 : 1400;
-    const M = Math.round(N * 0.45);
+    const M = Math.round(N * 0.9);
     const TOTAL = N + M;
 
     function fibSphere(n: number) {
@@ -276,7 +278,7 @@ export function OrbiParticleSphere({
         const depth = (szA[i] + 1) / 2;
         const px = cx + sxA[i] * R;
         const py = cy + syA[i] * R;
-        const rad = (0.6 + depth * 1.2) * dotScale * sizeMul[i];
+        const rad = (0.6 + depth * 1.2) * dotScale * sizeMul[i] * 0.5;
         let r = baseRGB[i * 3], g = baseRGB[i * 3 + 1], b0 = baseRGB[i * 3 + 2];
         if (kMorph > 0 && i < N) {
           r += (morphColor[0] - r) * kMorph;
