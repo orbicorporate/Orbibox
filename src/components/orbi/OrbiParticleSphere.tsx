@@ -188,17 +188,24 @@ export function OrbiParticleSphere({
     // Se a pessoa escolheu cores próprias (Configurações da Orbi), o degradê
     // de 4 tons vira uma interpolação suave entre a primária e a secundária;
     // senão usa o padrão verde→turquesa→azul→roxo. A cor de detalhe (se
-    // houver) substitui a cor de ~10% das partículas — um destaque espalhado,
-    // não misturado no degradê.
+    // houver) substitui a cor de uma faixa concentrada na parte de baixo da
+    // esfera (não misturada no degradê) — um destaque visível, não espalhado
+    // aleatoriamente. Essas partículas também ficam na metade do tamanho.
     const stops = colorA && colorB ? buildGradientStops(colorA, colorB) : [
       [120, 220, 90], [40, 190, 180], [70, 120, 245], [150, 90, 240],
     ];
     const detailRGB = colorC ? hexToRgb(colorC) : null;
+    // p.y > 0.6 cobre ~20% dos pontos de uma esfera Fibonacci, sempre na
+    // mesma região (a parte de baixo, já que canvas-y positivo = pra baixo).
+    const DETAIL_Y_THRESHOLD = 0.6;
     const baseRGB = new Float32Array(TOTAL * 3);
+    const sizeMul = new Float32Array(TOTAL);
     for (let i = 0; i < TOTAL; i++) {
       const p = i < N ? pts[i] : microPts[i - N];
-      const isDetail = detailRGB && i % 10 === 0;
-      if (isDetail) {
+      const micro = i >= N;
+      const isDetail = !!detailRGB && p.y > DETAIL_Y_THRESHOLD;
+      sizeMul[i] = isDetail ? 0.5 : micro ? 0.5 : 1;
+      if (isDetail && detailRGB) {
         baseRGB[i * 3] = detailRGB[0];
         baseRGB[i * 3 + 1] = detailRGB[1];
         baseRGB[i * 3 + 2] = detailRGB[2];
@@ -269,8 +276,7 @@ export function OrbiParticleSphere({
         const depth = (szA[i] + 1) / 2;
         const px = cx + sxA[i] * R;
         const py = cy + syA[i] * R;
-        let rad = (0.6 + depth * 1.2) * dotScale;
-        if (isMicro[i]) rad *= 0.5;
+        const rad = (0.6 + depth * 1.2) * dotScale * sizeMul[i];
         let r = baseRGB[i * 3], g = baseRGB[i * 3 + 1], b0 = baseRGB[i * 3 + 2];
         if (kMorph > 0 && i < N) {
           r += (morphColor[0] - r) * kMorph;

@@ -128,7 +128,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
           <div className="flex-1">
             <p className="text-[14px] font-medium">Cores da Orbi</p>
             <p className="mt-0.5 text-[12px] leading-relaxed text-text-secondary">
-              Cor primária e secundária se misturam por toda a esfera; a cor de detalhe aparece só num toque, em ~10% das partículas.
+              Cor primária e secundária se misturam por toda a esfera; a cor de detalhe forma uma faixa fina na parte de baixo, em pontinhos menores.
             </p>
           </div>
         </div>
