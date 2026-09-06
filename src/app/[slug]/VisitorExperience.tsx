@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
+import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
 import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, isAnimatedIcon } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
@@ -106,7 +107,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; onClick: () => void };
+  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; onClick: () => void };
   const options: Option[] = boxes
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .sort((a, b) => a.position - b.position)
@@ -135,7 +136,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, onClick };
+        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, stars: cfg.action === "avaliar", onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou — igual ao editor.
@@ -208,6 +209,8 @@ export function VisitorExperience({
                       <OrbiParticleSphere size={44} variant="check" className="rounded-full" />
                     ) : o.icon === "__orbwa__" || o.icon === "__wadisc__" ? (
                       <OrbiContactDisc size={44} className="rounded-full" />
+                    ) : o.icon === "__google__" ? (
+                      <OrbiGoogleIcon size={44} className="rounded-full" />
                     ) : o.icon === "__logo__" && (o.boxLogo || business.logo_url) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={o.boxLogo || business.logo_url!} alt="" className="h-full w-full object-cover" />
@@ -220,6 +223,9 @@ export function VisitorExperience({
                       {o.t}
                       {o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}
                     </span>
+                    {o.stars && (
+                      <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>
+                    )}
                     <span className="block text-[12px] text-text-tertiary">
                       {o.ai ? `Fale com a ${agentName}, nossa IA.` : o.d}
                     </span>

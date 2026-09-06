@@ -8,6 +8,7 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
+import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
@@ -194,7 +195,7 @@ export function BoxesManager({
   // Atalho: já abre o criador com um box de avaliação do Google pré-montado
   // (nome, ícone de estrela e ação "avaliar") — é só a pessoa colar o link.
   function novoBoxAvaliacao() {
-    setDraft({ label: "Avalie no Google", subtitle: "Deixe sua nota, leva 10 segundos", icon: "★", action: "avaliar", url: "", color: "#F5C400" });
+    setDraft({ label: "Avalie no Google", subtitle: "Deixe sua nota, leva 10 segundos", icon: "__google__", action: "avaliar", url: "", color: "transparent" });
     setCreating(true);
   }
 
@@ -286,8 +287,10 @@ export function BoxesManager({
                     <OrbiParticleSphere size={44} />
                   ) : icon === "__orbcheck__" ? (
                     <OrbiParticleSphere size={44} variant="check" />
-                  ) : icon === "__orbwa__" ? (
+                  ) : icon === "__orbwa__" || icon === "__wadisc__" ? (
                     <OrbiContactDisc size={44} />
+                  ) : icon === "__google__" ? (
+                    <OrbiGoogleIcon size={44} />
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
@@ -308,6 +311,7 @@ export function BoxesManager({
                   )}
                   {m.fixo && <span className="mt-1 inline-block rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">sempre ativo</span>}
                   {m.assinatura && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary"><span className="orbi-gradient-text">✦</span> assinatura da IA</span>}
+                  {(cfg?.action === "avaliar" || icon === "__google__") && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
                 </div>
                 {!m.fixo && (
                   <button
@@ -330,8 +334,10 @@ export function BoxesManager({
                         <OrbiParticleSphere size={36} />
                       ) : icon === "__orbcheck__" ? (
                         <OrbiParticleSphere size={36} variant="check" />
-                      ) : icon === "__orbwa__" ? (
+                      ) : icon === "__orbwa__" || icon === "__wadisc__" ? (
                         <OrbiContactDisc size={36} />
+                      ) : icon === "__google__" ? (
+                        <OrbiGoogleIcon size={36} />
                       ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={cfg?.logo_url || logoUrl!} alt="" className="h-full w-full object-cover" />
@@ -488,7 +494,7 @@ export function BoxesManager({
             onClick={novoBoxAvaliacao}
             className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F5C400]/20 text-[18px] text-[#B58900]">★</span>
+            <span className="h-10 w-10 shrink-0 overflow-hidden rounded-full"><OrbiGoogleIcon size={40} /></span>
             <span>
               <span className="block text-[13px] font-medium">＋ Box de avaliação no Google</span>
               <span className="block text-[12px] text-text-tertiary">O cliente toca e já dá as estrelas. Ótimo pra reputação.</span>
@@ -595,6 +601,14 @@ function BoxEditor({
       >
         <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiContactDisc size={32} /></span>
         <span className="text-[13px] font-medium">Emblema de contato animado</span>
+      </button>
+
+      <button
+        onClick={() => pickIcon("__google__")}
+        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__google__" ? "border-on-background" : "border-divider"}`}
+      >
+        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiGoogleIcon size={32} /></span>
+        <span className="text-[13px] font-medium">Google animado</span>
       </button>
 
       {/* Logo específico deste box: usa o que já foi enviado aqui, senão cai
