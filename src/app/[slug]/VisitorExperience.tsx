@@ -34,6 +34,7 @@ type Business = {
   vitrine_cover_urls: string[];
   hero_question: string | null;
   logo_url: string | null;
+  hero_avatar: string | null;
 };
 
 type ContentItem = {
@@ -173,7 +174,14 @@ export function VisitorExperience({
       <div className="relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center justify-center px-6 py-16">
         {intent === null && (
           <div className="flex flex-col items-center text-center">
-            {business.logo_url ? (
+            {business.hero_avatar === "particle" ? (
+              <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="mb-8 rounded-full" />
+            ) : business.hero_avatar === "logo" && business.logo_url ? (
+              <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
+            ) : business.hero_avatar === "sphere" ? (
+              <OrbiOrb size={96} className="mb-8" />
+            ) : business.logo_url ? (
+              // "auto" (padrão): mantém o comportamento de sempre — logo se tiver, senão a esfera.
               <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
             ) : (
               <OrbiOrb size={96} className="mb-8" />

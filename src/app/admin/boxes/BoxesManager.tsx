@@ -66,6 +66,7 @@ export function BoxesManager({
   initialHeroQuestion,
   initialLogoUrl,
   initialLogoGallery,
+  initialHeroAvatar,
   brandColors,
   orbiColors,
 }: {
@@ -79,6 +80,7 @@ export function BoxesManager({
   initialHeroQuestion: string | null;
   initialLogoUrl: string | null;
   initialLogoGallery: string[];
+  initialHeroAvatar: string | null;
   brandColors: BrandColor[];
   orbiColors: string[] | null;
 }) {
@@ -90,6 +92,12 @@ export function BoxesManager({
   const [heroQuestion, setHeroQuestion] = useState(initialHeroQuestion ?? "");
   const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
   const [logoGallery, setLogoGallery] = useState<string[]>(initialLogoGallery);
+  const [heroAvatar, setHeroAvatar] = useState(initialHeroAvatar ?? "auto");
+
+  async function saveHeroAvatar(value: string) {
+    setHeroAvatar(value);
+    await supabase.from("businesses").update({ hero_avatar: value }).eq("id", businessId);
+  }
   const [aboutImportUrl, setAboutImportUrl] = useState("");
   const [importingAbout, setImportingAbout] = useState(false);
   const [aboutImportMsg, setAboutImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
@@ -248,9 +256,36 @@ export function BoxesManager({
       <div className="rounded-[20px] bg-surface-soft p-4">
         <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Avatar da tela inicial</p>
         <p className="mt-1 text-[12px] text-text-secondary">
-          Por padrão é a esfera da Orbi. Se quiser, troque pelo seu logotipo — ele aparece redondo, com um brilho animado ao redor.
+          Escolha o que aparece no topo da tela inicial: a esfera clássica da Orbi, seu logotipo, ou a esfera já com as cores que você configurou em Personalidade da Marca.
         </p>
-        <div className="mt-2">
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => saveHeroAvatar("sphere")}
+            className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${(heroAvatar === "sphere" || (heroAvatar === "auto" && !logoUrl)) ? "border-on-background" : "border-transparent"}`}
+          >
+            <OrbiOrb size={40} />
+            <span className="text-[11px] font-medium">Esfera clássica</span>
+          </button>
+          <button
+            onClick={() => logoUrl && saveHeroAvatar("logo")}
+            disabled={!logoUrl}
+            className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 disabled:opacity-40 ${(heroAvatar === "logo" || (heroAvatar === "auto" && !!logoUrl)) ? "border-on-background" : "border-transparent"}`}
+          >
+            {logoUrl ? <OrbiLogoBadge logoUrl={logoUrl} size={40} /> : <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px]">◎</span>}
+            <span className="text-[11px] font-medium">Logotipo</span>
+          </button>
+          <button
+            onClick={() => saveHeroAvatar("particle")}
+            className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${heroAvatar === "particle" ? "border-on-background" : "border-transparent"}`}
+          >
+            <OrbiParticleSphere size={40} colors={orbiColors ?? undefined} className="rounded-full" />
+            <span className="text-[11px] font-medium">Orbi configurada</span>
+          </button>
+        </div>
+        {!logoUrl && (
+          <p className="mt-2 text-[11px] text-text-tertiary">Envie um logotipo abaixo pra poder usar essa opção.</p>
+        )}
+        <div className="mt-3">
           <ImageUpload
             value={logoUrl}
             businessId={businessId}
@@ -262,6 +297,7 @@ export function BoxesManager({
               setLogoUrl(url);
               await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);
               if (url) setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url));
+              else if (heroAvatar === "logo") saveHeroAvatar("sphere");
             }}
           />
         </div>
