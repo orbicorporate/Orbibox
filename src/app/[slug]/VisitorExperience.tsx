@@ -189,9 +189,6 @@ export function VisitorExperience({
                 </>
               )}
             </h1>
-            <p className="mt-3 max-w-[280px] text-[14px] text-text-secondary">
-              Sugerimos visitar o Chat e a vitrine.
-            </p>
             <div className="mt-10 flex w-full flex-col gap-3">
               {options.map((o) => (
                 <button
