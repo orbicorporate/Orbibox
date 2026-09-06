@@ -258,33 +258,51 @@ export function BoxesManager({
         <p className="mt-1 text-[12px] text-text-secondary">
           Escolha o que aparece no topo da tela inicial: a esfera clássica da Orbi, seu logotipo, ou a esfera já com as cores que você configurou em Personalidade da Marca.
         </p>
-        <div className="mt-3 flex gap-2">
-          <button
-            onClick={() => saveHeroAvatar("sphere")}
-            className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${(heroAvatar === "sphere" || (heroAvatar === "auto" && !logoUrl)) ? "border-on-background" : "border-transparent"}`}
-          >
-            <OrbiOrb size={40} />
-            <span className="text-[11px] font-medium">Esfera clássica</span>
-          </button>
-          <button
-            onClick={() => logoUrl && saveHeroAvatar("logo")}
-            disabled={!logoUrl}
-            className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 disabled:opacity-40 ${(heroAvatar === "logo" || (heroAvatar === "auto" && !!logoUrl)) ? "border-on-background" : "border-transparent"}`}
-          >
-            {logoUrl ? <OrbiLogoBadge logoUrl={logoUrl} size={40} /> : <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px]">◎</span>}
-            <span className="text-[11px] font-medium">Logotipo</span>
-          </button>
-          <button
-            onClick={() => saveHeroAvatar("particle")}
-            className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${heroAvatar === "particle" ? "border-on-background" : "border-transparent"}`}
-          >
-            <OrbiParticleSphere size={40} colors={orbiColors ?? undefined} className="rounded-full" />
-            <span className="text-[11px] font-medium">Orbi configurada</span>
-          </button>
-        </div>
-        {!logoUrl && (
-          <p className="mt-2 text-[11px] text-text-tertiary">Envie um logotipo abaixo pra poder usar essa opção.</p>
-        )}
+        {(() => {
+          // Qualquer logo já enviado — em Configurações ou em qualquer box —
+          // conta aqui. Se o logo "oficial" (logo_url) ainda não foi definido,
+          // usa o mais recente da galeria como avatar.
+          const availableLogo = logoUrl ?? logoGallery[logoGallery.length - 1] ?? null;
+          async function pickLogoAvatar() {
+            if (!availableLogo) return;
+            if (!logoUrl) {
+              setLogoUrl(availableLogo);
+              await supabase.from("businesses").update({ logo_url: availableLogo }).eq("id", businessId);
+            }
+            saveHeroAvatar("logo");
+          }
+          return (
+            <>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={() => saveHeroAvatar("sphere")}
+                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${(heroAvatar === "sphere" || (heroAvatar === "auto" && !availableLogo)) ? "border-on-background" : "border-transparent"}`}
+                >
+                  <OrbiOrb size={40} />
+                  <span className="text-[11px] font-medium">Esfera clássica</span>
+                </button>
+                <button
+                  onClick={pickLogoAvatar}
+                  disabled={!availableLogo}
+                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 disabled:opacity-40 ${(heroAvatar === "logo" || (heroAvatar === "auto" && !!availableLogo)) ? "border-on-background" : "border-transparent"}`}
+                >
+                  {availableLogo ? <OrbiLogoBadge logoUrl={availableLogo} size={40} /> : <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px]">◎</span>}
+                  <span className="text-[11px] font-medium">Logotipo</span>
+                </button>
+                <button
+                  onClick={() => saveHeroAvatar("particle")}
+                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${heroAvatar === "particle" ? "border-on-background" : "border-transparent"}`}
+                >
+                  <OrbiParticleSphere size={40} colors={orbiColors ?? undefined} className="rounded-full" />
+                  <span className="text-[11px] font-medium">Orbi configurada</span>
+                </button>
+              </div>
+              {!availableLogo && (
+                <p className="mt-2 text-[11px] text-text-tertiary">Envie um logotipo abaixo pra poder usar essa opção.</p>
+              )}
+            </>
+          );
+        })()}
         <div className="mt-3">
           <ImageUpload
             value={logoUrl}
