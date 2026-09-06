@@ -283,7 +283,7 @@ export function BoxesManager({
                     <button onClick={() => move(box, 1)} disabled={idx === visibleBoxes.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
                   </div>
                 )}
-                <div className={`flex h-11 w-11 shrink-0 items-center justify-center text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden rounded-2xl"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: isHero ? "#fff" : fg }}>
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: isHero ? "#fff" : fg }}>
                   {icon === "__orb__" ? (
                     <OrbiParticleSphere size={44} />
                   ) : icon === "__orbcheck__" ? (
@@ -329,7 +329,7 @@ export function BoxesManager({
               {!isHero && (
                 <>
                   <div className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-soft p-3">
-                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center text-[14px] ${icon === "__logo__" ? "" : "overflow-hidden rounded-full"}`} style={{ backgroundColor: (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: fg }}>
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: fg }}>
                       {icon === "__orb__" ? (
                         <OrbiParticleSphere size={36} />
                       ) : icon === "__orbcheck__" ? (

@@ -198,7 +198,7 @@ export function VisitorExperience({
                   className={`flex items-center gap-4 rounded-[24px] bg-surface-white p-4 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
                 >
                   <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center text-[15px] ${o.icon === "__logo__" ? "" : "overflow-hidden rounded-full"} ${isAnimatedIcon(o.icon) ? "" : o.color && o.color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[15px] ${o.icon === "__logo__" ? "" : "overflow-hidden"} ${isAnimatedIcon(o.icon) ? "" : o.color && o.color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
                     style={isAnimatedIcon(o.icon) ? { background: "transparent" } : o.color && o.color !== "transparent" ? { backgroundColor: o.color } : o.color === "transparent" ? { background: "transparent" } : undefined}
                   >
                     {o.icon === "__orb__" ? (
