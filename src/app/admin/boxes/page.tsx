@@ -13,8 +13,8 @@ export default async function BoxesPage() {
     .single();
   const { data: boxes } = await supabase.from("smart_boxes").select("*").eq("business_id", business!.id).order("position", { ascending: true });
   const { data: agentConfig } = await supabase.from("agent_configs").select("orbi_colors").eq("business_id", business!.id).maybeSingle();
-  const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length === 2
-    ? (agentConfig.orbi_colors as [string, string])
+  const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length >= 2
+    ? (agentConfig.orbi_colors as string[])
     : null;
 
   const raw = business!.brand_colors;

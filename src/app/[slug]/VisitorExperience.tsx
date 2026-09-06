@@ -78,7 +78,7 @@ export function VisitorExperience({
   content: ContentItem[];
   boxes: BoxRow[];
   agentName: string;
-  orbiColors: [string, string] | null;
+  orbiColors: string[] | null;
   isOwner: boolean;
 }) {
   const supabase = createClient();
@@ -459,7 +459,7 @@ function OrbiChat({
   businessId: string;
   sessionId: string;
   agentName: string;
-  orbiColors: [string, string] | null;
+  orbiColors: string[] | null;
   content: ContentItem[];
   whatsapp: string | null;
   onBack: () => void;

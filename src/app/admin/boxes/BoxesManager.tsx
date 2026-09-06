@@ -80,7 +80,7 @@ export function BoxesManager({
   initialLogoUrl: string | null;
   initialLogoGallery: string[];
   brandColors: BrandColor[];
-  orbiColors: [string, string] | null;
+  orbiColors: string[] | null;
 }) {
   const supabase = createClient();
   const [boxes, setBoxes] = useState<Box[]>(initialBoxes);

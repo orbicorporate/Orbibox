@@ -86,8 +86,8 @@ export default async function VisitorPage({
   const content = contentRes.data;
   const boxes = boxesRes.data;
   const agentConfig = agentRes.data;
-  const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length === 2
-    ? (agentConfig.orbi_colors as [string, string])
+  const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length >= 2
+    ? (agentConfig.orbi_colors as string[])
     : null;
 
   return (

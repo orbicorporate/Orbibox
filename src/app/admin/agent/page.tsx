@@ -11,8 +11,8 @@ export default async function AgentPage() {
     .limit(1)
     .single();
   const { data: config } = await supabase.from("agent_configs").select("*").eq("business_id", business!.id).maybeSingle();
-  const orbiColors = Array.isArray(config?.orbi_colors) && config.orbi_colors.length === 2
-    ? (config.orbi_colors as [string, string])
+  const orbiColors = Array.isArray(config?.orbi_colors) && config.orbi_colors.length >= 2
+    ? (config.orbi_colors as string[])
     : null;
   const { count: catalogCount } = await supabase
     .from("content_items")

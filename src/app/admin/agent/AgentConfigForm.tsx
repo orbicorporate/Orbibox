@@ -8,7 +8,7 @@ import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { ORBI_SPHERE_COLORS } from "@/lib/showcase";
 
-type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: [string, string] | null; };
+type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
 
 const SLIDERS = [
@@ -61,10 +61,21 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
   function set(key: (typeof SLIDERS)[number]["key"], v: number) { setState((s) => ({ ...s, [key]: v })); setSaved(false); }
 
   // Cores da esfera da Orbi — salva na hora (mesmo padrão dos seletores de
-  // cor do resto do app). Sempre duas cores; a esfera interpola entre elas.
-  const orbiColors: [string, string] = state.orbi_colors ?? ["#7FE84A", "#8B2BFF"];
-  async function pickOrbiColor(slot: 0 | 1, hex: string) {
-    const next: [string, string] = slot === 0 ? [hex, orbiColors[1]] : [orbiColors[0], hex];
+  // cor do resto do app). Primária e secundária sempre existem; a esfera
+  // interpola entre elas. A cor de detalhe é opcional e aparece em ~10% das
+  // partículas, como um destaque espalhado.
+  const orbiColors: string[] = state.orbi_colors && state.orbi_colors.length >= 2
+    ? state.orbi_colors
+    : ["#7FE84A", "#8B2BFF"];
+  const orbiDetail = orbiColors[2] ?? null;
+  async function pickOrbiColor(slot: 0 | 1 | 2, hex: string) {
+    const next = [...orbiColors];
+    next[slot] = hex;
+    setState((s) => ({ ...s, orbi_colors: next }));
+    await supabase.from("agent_configs").update({ orbi_colors: next }).eq("id", state.id);
+  }
+  async function clearOrbiDetail() {
+    const next = [orbiColors[0], orbiColors[1]];
     setState((s) => ({ ...s, orbi_colors: next }));
     await supabase.from("agent_configs").update({ orbi_colors: next }).eq("id", state.id);
   }
@@ -113,17 +124,17 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
           marca escolher. Aplica em todo lugar que a esfera aparece. */}
       <div className="rounded-[28px] border border-divider bg-surface-white p-5">
         <div className="flex items-center gap-4">
-          <OrbiParticleSphere key={`${orbiColors[0]}-${orbiColors[1]}`} size={64} colors={orbiColors} className="rounded-full" />
+          <OrbiParticleSphere key={orbiColors.join("-")} size={64} colors={orbiColors} className="rounded-full" />
           <div className="flex-1">
             <p className="text-[14px] font-medium">Cores da Orbi</p>
             <p className="mt-0.5 text-[12px] leading-relaxed text-text-secondary">
-              Escolha duas cores — a esfera sempre gira misturando as duas, em qualquer lugar que ela aparecer.
+              Cor primária e secundária se misturam por toda a esfera; a cor de detalhe aparece só num toque, em ~10% das partículas.
             </p>
           </div>
         </div>
         {([0, 1] as const).map((slot) => (
           <div key={slot} className="mt-4">
-            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">{slot === 0 ? "Primeira cor" : "Segunda cor"}</p>
+            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">{slot === 0 ? "Cor primária" : "Cor secundária"}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {ORBI_SPHERE_COLORS.map((c) => (
                 <button
@@ -137,6 +148,27 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
             </div>
           </div>
         ))}
+
+        {/* Terceira fileira: cor de detalhe, opcional, com presença sutil (10%). */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Cor de detalhe (opcional)</p>
+            {orbiDetail && (
+              <button onClick={clearOrbiDetail} className="text-[11px] text-text-tertiary underline">remover</button>
+            )}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {ORBI_SPHERE_COLORS.map((c) => (
+              <button
+                key={c.hex}
+                onClick={() => pickOrbiColor(2, c.hex)}
+                aria-label={c.label}
+                className={`h-8 w-8 rounded-full border-2 ${orbiDetail === c.hex ? "border-on-background" : "border-transparent"}`}
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Ajuste de comportamento */}

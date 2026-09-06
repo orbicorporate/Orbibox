@@ -19,7 +19,7 @@ export function OrbiWorking({
 }: {
   label?: string;
   variant?: "bar" | "inline";
-  colors?: [string, string];
+  colors?: string[];
 }) {
   if (variant === "inline") {
     return (

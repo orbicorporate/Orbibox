@@ -47,14 +47,17 @@ export function OrbiParticleSphere({
   bg?: string;
   variant?: "sphere" | "check" | "whatsapp";
   holdCheck?: boolean;
-  /** Duas cores (hex) escolhidas pela pessoa em Configurações da Orbi —
-   * substituem o degradê verde/roxo padrão. Ex: ["#22C35E", "#7C3AED"]. */
-  colors?: [string, string];
+  /** Cores escolhidas pela pessoa em Configurações da Orbi: [primária,
+   * secundária, detalhe?]. A esfera interpola entre a primária e a
+   * secundária; a cor de detalhe (opcional) aparece em ~10% das partículas,
+   * espalhada como um destaque. Ex: ["#22C35E", "#7C3AED", "#D9EC37"]. */
+  colors?: string[];
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const colorA = colors?.[0];
   const colorB = colors?.[1];
+  const colorC = colors?.[2];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,18 +71,34 @@ export function OrbiParticleSphere({
     ctx.scale(dpr, dpr);
 
     // Malha de pontos sobre a esfera (Fibonacci sphere — distribuição uniforme).
+    // N são as partículas "principais" (também usadas nas formas de check/
+    // balão); MICRO é uma segunda leva, só decorativa, com metade da
+    // espessura — dá aquele efeito de brilho fino espalhado pela esfera.
     const N = size < 80 ? 700 : 1400;
-    const pts: { x: number; y: number; z: number }[] = [];
-    const golden = Math.PI * (3 - Math.sqrt(5));
-    for (let i = 0; i < N; i++) {
-      const y = 1 - (i / (N - 1)) * 2;
-      const r = Math.sqrt(1 - y * y);
-      const theta = golden * i;
-      pts.push({ x: Math.cos(theta) * r, y, z: Math.sin(theta) * r });
+    const M = Math.round(N * 0.45);
+    const TOTAL = N + M;
+
+    function fibSphere(n: number) {
+      const arr: { x: number; y: number; z: number }[] = [];
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < n; i++) {
+        const y = 1 - (i / (n - 1)) * 2;
+        const r = Math.sqrt(1 - y * y);
+        const theta = golden * i;
+        arr.push({ x: Math.cos(theta) * r, y, z: Math.sin(theta) * r });
+      }
+      return arr;
     }
+    const pts = fibSphere(N);
+    const microPts = fibSphere(M);
+    // Marca quais índices (0..TOTAL) são micro, pra saber o raio na hora de desenhar.
+    const isMicro = new Uint8Array(TOTAL);
+    for (let i = N; i < TOTAL; i++) isMicro[i] = 1;
 
     // Alvos formando um "check" no plano frontal: perna curta (esquerda-baixo)
     // e perna longa (direita-cima). y positivo = pra baixo na tela.
+    // Só as partículas principais (0..N) participam do morph — as micro
+    // continuam de fundo, sempre em esfera, e vão sumindo conforme ele avança.
     const A = [-0.45, -0.05], B = [-0.15, 0.30], C = [0.5, -0.4];
     const l1 = Math.hypot(B[0] - A[0], B[1] - A[1]);
     const l2 = Math.hypot(C[0] - B[0], C[1] - B[1]);
@@ -166,15 +185,26 @@ export function OrbiParticleSphere({
     // Pré-calcula a cor de cada partícula UMA vez (a matiz depende só de p.y,
     // que não muda). Guardamos os 3 canais-base; no frame só aplicamos brilho.
     // Isso evita montar milhares de strings de cor a cada quadro.
-    // Se a pessoa escolheu duas cores próprias (Configurações da Orbi), o
-    // degradê de 4 tons vira uma interpolação suave entre elas; senão usa o
-    // padrão verde→turquesa→azul→roxo.
+    // Se a pessoa escolheu cores próprias (Configurações da Orbi), o degradê
+    // de 4 tons vira uma interpolação suave entre a primária e a secundária;
+    // senão usa o padrão verde→turquesa→azul→roxo. A cor de detalhe (se
+    // houver) substitui a cor de ~10% das partículas — um destaque espalhado,
+    // não misturado no degradê.
     const stops = colorA && colorB ? buildGradientStops(colorA, colorB) : [
       [120, 220, 90], [40, 190, 180], [70, 120, 245], [150, 90, 240],
     ];
-    const baseRGB = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++) {
-      const t = (pts[i].y + 1) / 2;
+    const detailRGB = colorC ? hexToRgb(colorC) : null;
+    const baseRGB = new Float32Array(TOTAL * 3);
+    for (let i = 0; i < TOTAL; i++) {
+      const p = i < N ? pts[i] : microPts[i - N];
+      const isDetail = detailRGB && i % 10 === 0;
+      if (isDetail) {
+        baseRGB[i * 3] = detailRGB[0];
+        baseRGB[i * 3 + 1] = detailRGB[1];
+        baseRGB[i * 3 + 2] = detailRGB[2];
+        continue;
+      }
+      const t = (p.y + 1) / 2;
       const seg = t * (stops.length - 1);
       const s = Math.max(0, Math.min(stops.length - 2, Math.floor(seg)));
       const f = seg - s;
@@ -185,11 +215,11 @@ export function OrbiParticleSphere({
 
     // Buffers reutilizados a cada frame — nada é alocado dentro do loop, então
     // o coletor de lixo não interrompe a animação (principal causa de travadas).
-    const sxA = new Float32Array(N);
-    const syA = new Float32Array(N);
-    const szA = new Float32Array(N);
-    const order = new Uint16Array(N);
-    for (let i = 0; i < N; i++) order[i] = i;
+    const sxA = new Float32Array(TOTAL);
+    const syA = new Float32Array(TOTAL);
+    const szA = new Float32Array(TOTAL);
+    const order = new Uint16Array(TOTAL);
+    for (let i = 0; i < TOTAL; i++) order[i] = i;
 
     let raf = 0;
     const start = performance.now();
@@ -209,15 +239,16 @@ export function OrbiParticleSphere({
       const cosA = Math.cos(ay);
       const sinA = Math.sin(ay);
 
-      // Posiciona cada partícula nos buffers (sem alocar objetos).
-      for (let i = 0; i < N; i++) {
-        const p = pts[i];
+      // Posiciona cada partícula nos buffers (sem alocar objetos). As micro
+      // (i >= N) não têm alvo de morph — continuam sempre em esfera.
+      for (let i = 0; i < TOTAL; i++) {
+        const p = i < N ? pts[i] : microPts[i - N];
         const x = p.x * cosA - p.z * sinA;
         const z = p.x * sinA + p.z * cosA;
         const y = p.y;
         const wave = 1 + 0.12 * Math.sin(y * 6 + time * 2.2) + 0.06 * Math.cos(x * 5 - time * 1.6);
         let px = x * wave, py = y * wave, pz = z * wave;
-        if (morph > 0) {
+        if (morph > 0 && i < N) {
           const tg = targets[i];
           px += (tg.x - px) * morph;
           py += (tg.y - py) * morph;
@@ -230,21 +261,26 @@ export function OrbiParticleSphere({
       order.sort((a, b) => szA[a] - szA[b]);
 
       const kMorph = morph * (variant === "whatsapp" ? 0.9 : 0.85);
-      for (let oi = 0; oi < N; oi++) {
+      // As micro somem suavemente conforme o morph avança, pra não disputar
+      // atenção com o check/balão se formando.
+      const microAlpha = 1 - morph * 0.85;
+      for (let oi = 0; oi < TOTAL; oi++) {
         const i = order[oi];
         const depth = (szA[i] + 1) / 2;
         const px = cx + sxA[i] * R;
         const py = cy + syA[i] * R;
-        const rad = (0.6 + depth * 1.2) * dotScale;
+        let rad = (0.6 + depth * 1.2) * dotScale;
+        if (isMicro[i]) rad *= 0.5;
         let r = baseRGB[i * 3], g = baseRGB[i * 3 + 1], b0 = baseRGB[i * 3 + 2];
-        if (kMorph > 0) {
+        if (kMorph > 0 && i < N) {
           r += (morphColor[0] - r) * kMorph;
           g += (morphColor[1] - g) * kMorph;
           b0 += (morphColor[2] - b0) * kMorph;
         }
         const b = 0.85 + depth * 0.15;
+        const alpha = (0.6 + depth * 0.4) * (isMicro[i] ? microAlpha : 1);
         ctx.beginPath();
-        ctx.fillStyle = `rgba(${(r * b) | 0},${(g * b) | 0},${(b0 * b) | 0},${0.6 + depth * 0.4})`;
+        ctx.fillStyle = `rgba(${(r * b) | 0},${(g * b) | 0},${(b0 * b) | 0},${alpha})`;
         ctx.arc(px, py, rad, 0, 6.283185307179586);
         ctx.fill();
       }
@@ -276,7 +312,7 @@ export function OrbiParticleSphere({
       running = false;
       cancelAnimationFrame(raf);
     };
-  }, [size, bg, variant, holdCheck, colorA, colorB]);
+  }, [size, bg, variant, holdCheck, colorA, colorB, colorC]);
 
   return (
     <canvas

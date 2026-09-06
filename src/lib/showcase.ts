@@ -305,4 +305,8 @@ export const ORBI_SPHERE_COLORS: { hex: string; label: string }[] = [
   { hex: "#F5C400", label: "Amarelo" },
   { hex: "#188A3A", label: "Verde" },
   { hex: "#F0F0EA", label: "Prata" },
+  { hex: "#D9EC37", label: "Verde-amarelado" },
+  { hex: "#111318", label: "Preto" },
+  { hex: "#FFFFFF", label: "Branco" },
+  { hex: "#4A4A4A", label: "Grafite" },
 ];
