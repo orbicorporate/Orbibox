@@ -11,7 +11,7 @@ import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
-type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link"; url?: string; logo_url?: string };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar"; url?: string; logo_url?: string };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
@@ -34,6 +34,7 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   vitrine: "Abre a Vitrine",
   zara: "Abre a Orbi",
   whatsapp: "Abre o WhatsApp",
+  avaliar: "Avaliar no Google",
   link: "Abre um link",
 };
 
@@ -188,6 +189,13 @@ export function BoxesManager({
       setCreating(false);
       setDraft({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
     }
+  }
+
+  // Atalho: já abre o criador com um box de avaliação do Google pré-montado
+  // (nome, ícone de estrela e ação "avaliar") — é só a pessoa colar o link.
+  function novoBoxAvaliacao() {
+    setDraft({ label: "Avalie no Google", subtitle: "Deixe sua nota, leva 10 segundos", icon: "★", action: "avaliar", url: "", color: "#F5C400" });
+    setCreating(true);
   }
 
   const ordered = [...boxes].sort((a, b) => a.position - b.position);
@@ -475,12 +483,24 @@ export function BoxesManager({
           </div>
         </div>
       ) : (
-        <button
-          onClick={() => setCreating(true)}
-          className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-center text-[13px] font-medium text-text-secondary"
-        >
-          + Criar bloco personalizado (WhatsApp, portfólio, outro link)
-        </button>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={novoBoxAvaliacao}
+            className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F5C400]/20 text-[18px] text-[#B58900]">★</span>
+            <span>
+              <span className="block text-[13px] font-medium">＋ Box de avaliação no Google</span>
+              <span className="block text-[12px] text-text-tertiary">O cliente toca e já dá as estrelas. Ótimo pra reputação.</span>
+            </span>
+          </button>
+          <button
+            onClick={() => setCreating(true)}
+            className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-center text-[13px] font-medium text-text-secondary"
+          >
+            + Criar bloco personalizado (WhatsApp, portfólio, outro link)
+          </button>
+        </div>
       )}
     </div>
   );
@@ -651,6 +671,38 @@ function BoxEditor({
               placeholder={cfg.action === "whatsapp" ? "https://wa.me/55... (vazio usa o WhatsApp de Configurações)" : "https://..."}
               className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
             />
+          )}
+
+          {cfg.action === "avaliar" && (
+            <div className="flex flex-col gap-2">
+              <input
+                value={cfg.url ?? ""}
+                onChange={(e) => update({ url: e.target.value })}
+                onBlur={() => !liveOnly && onSave(cfg)}
+                placeholder="Cole aqui o link de avaliação ou do perfil no Google"
+                className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+              />
+              <details className="rounded-2xl bg-surface-soft p-3">
+                <summary className="cursor-pointer list-none text-[12px] font-medium text-on-background">
+                  ✦ Como pegar o link do Google (toque pra ver)
+                </summary>
+                <div className="mt-2 flex flex-col gap-2 text-[12px] leading-relaxed text-text-secondary">
+                  <p className="font-medium text-on-background">Jeito mais rápido (leva direto pra dar a nota):</p>
+                  <ol className="ml-1 flex flex-col gap-1.5">
+                    <li>1. No computador, pesquise o nome do seu negócio no Google.</li>
+                    <li>2. No painel da empresa (à direita), clique em <span className="font-medium">“Peça avaliações”</span>.</li>
+                    <li>3. O Google gera um link curto (ex: <span className="font-medium">g.page/r/…</span>). Copie e cole aqui.</li>
+                  </ol>
+                  <p className="mt-1 font-medium text-on-background">Não achou essa opção? Use o link do perfil:</p>
+                  <ol className="ml-1 flex flex-col gap-1.5">
+                    <li>1. Abra o Google Maps e procure seu negócio.</li>
+                    <li>2. Toque em <span className="font-medium">Compartilhar</span> e copie o link.</li>
+                    <li>3. Cole aqui — o cliente cai no perfil e avalia por lá.</li>
+                  </ol>
+                  <p className="mt-1">Ainda não tem o negócio no Google? Cadastre grátis em <span className="font-medium">google.com/business</span> — leva 5 minutos e é essencial pra aparecer nas buscas.</p>
+                </div>
+              </details>
+            </div>
           )}
         </>
       )}
