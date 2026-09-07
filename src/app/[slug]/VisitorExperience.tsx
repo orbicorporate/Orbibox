@@ -168,7 +168,7 @@ export function VisitorExperience({
       {/* Halo suave — atmosfera "líquida". Fica na parte de baixo da tela,
           longe do avatar, pra não brigar de contraste com ele. */}
       <div
-        className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[110px]"
+        className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[80px]"
         style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
       />
 
@@ -410,7 +410,7 @@ function StoryView({
             onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", sessionId })}
             className="flex items-center justify-center gap-2 rounded-full border-2 border-[#25D366] bg-surface-white py-3.5 text-[14px] font-medium text-on-background"
           >
-            <span className="text-[15px]">☎</span> WhatsApp
+            <OrbiContactDisc size={22} /> WhatsApp
           </a>
         )}
         <button
@@ -600,11 +600,11 @@ function OrbiChat({
   }, [messages.length, sending, justDone, started]);
 
   return (
-    <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main/95 backdrop-blur">
+    <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main">
       {/* Mesmo halo da tela inicial, pra não ficar um fundo parado/liso aqui —
           a marca continua presente mesmo depois de abrir o chat. */}
       <div
-        className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[110px]"
+        className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[80px]"
         style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
       />
 
@@ -674,7 +674,7 @@ function OrbiChat({
                 onClick={() => trackClick({ businessId, kind: "whatsapp", sessionId })}
                 className="flex items-center justify-center gap-2 self-start rounded-full border-2 border-[#25D366] bg-surface-white px-5 py-3 text-[14px] font-medium text-on-background"
               >
-                <span className="text-[15px]">☎</span>
+                <OrbiContactDisc size={22} />
                 Prefiro falar direto por WhatsApp
               </a>
             )}
