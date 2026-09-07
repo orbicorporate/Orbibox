@@ -988,27 +988,27 @@ function ItemCard({
 
             {(item.link_kind ?? "produto") === "produto" && (
               <div>
-                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Mais fotos da página do produto (até 6)</p>
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos e vídeos da página do produto (até 6)</p>
                 <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
-                  Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos que viram um carrossel dentro dela — pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
+                  Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos/vídeos que viram um carrossel dentro dela — pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
+                  <span className="font-medium text-text-secondary">Repara:</span> esse carrossel é sempre em formato retrato — diferente da foto de capa lá em cima, que segue o formato do card ({SIZE_LABEL[sizeOf(item.layout_size)]}). São duas coisas independentes.
                 </p>
                 <div className="mt-2">
                   <GalleryUpload
-                    value={item.gallery_urls.filter((u) => !isVideoUrl(u))}
+                    value={item.gallery_urls}
                     businessId={businessId}
                     lockedRatio="retrato"
                     lockedReason="As fotos da galeria são sempre verticais (retrato), pra manter o carrossel uniforme."
-                    onChange={(urls) => {
-                      // Mantém os vídeos do YouTube e troca só as fotos.
-                      const videos = item.gallery_urls.filter((u) => isVideoUrl(u));
-                      save(item.id, { gallery_urls: [...urls, ...videos] });
-                    }}
+                    onChange={(urls) => save(item.id, { gallery_urls: urls })}
                   />
                 </div>
 
-                {/* Vídeo do YouTube no carrossel */}
                 <YoutubeAdder
                   videos={item.gallery_urls.filter((u) => isVideoUrl(u))}
+                  hint="Cole o link — ele entra na grade acima, no fim da fila. Depois é só usar as setinhas pra mover pra posição que quiser."
+                  showList={false}
                   onAdd={(url) => {
                     if (item.gallery_urls.includes(url)) return;
                     save(item.id, { gallery_urls: [...item.gallery_urls, url] });

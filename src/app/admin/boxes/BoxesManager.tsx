@@ -520,24 +520,24 @@ export function BoxesManager({
                     </div>
                   </div>
                   <div>
-                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos da história (carrossel)</p>
-                    <p className="mt-1 text-[12px] text-text-secondary">Aparecem em carrossel, acima do texto.</p>
+                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos e vídeos da história (carrossel)</p>
+                    <p className="mt-1 text-[12px] text-text-secondary">
+                      Aparecem em carrossel, acima do texto — nessa mesma ordem. Vídeo entra direto na grade abaixo, junto das fotos; use as setinhas ‹ › pra escolher a posição dele.
+                    </p>
                     <div className="mt-2">
                       <GalleryUpload
-                        value={storyPhotos.filter((u) => !isVideoUrl(u))}
+                        value={storyPhotos}
                         businessId={businessId}
                         lockedRatio="paisagem"
                         lockedReason="As fotos são sempre no formato paisagem, pra combinar com fotos de espaço/equipe e manter o carrossel uniforme."
-                        onChange={(urls) => {
-                          const videos = storyPhotos.filter((u) => isVideoUrl(u));
-                          saveStoryPhotos([...urls, ...videos]);
-                        }}
+                        onChange={saveStoryPhotos}
                       />
                     </div>
                     <YoutubeAdder
                       videos={storyPhotos.filter((u) => isVideoUrl(u))}
-                      label="Vídeos do YouTube na história"
-                      hint="Cole o link de um vídeo do YouTube — ele entra no mesmo carrossel da história, junto das fotos."
+                      label="Adicionar vídeo (YouTube ou Reels)"
+                      hint="Cole o link — ele entra na grade acima, no fim da fila. Depois é só usar as setinhas pra mover pra posição que quiser."
+                      showList={false}
                       onAdd={(url) => {
                         if (storyPhotos.includes(url)) return;
                         saveStoryPhotos([...storyPhotos, url]);

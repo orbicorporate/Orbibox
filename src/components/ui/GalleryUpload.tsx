@@ -3,11 +3,18 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageCropModal, RATIOS, type Ratio } from "./ImageCropModal";
+import { isVideoUrl, youtubeId, instagramReelId } from "@/lib/showcase";
 
 /**
  * Fileira compacta de miniaturas — cada uma abre o seletor de arquivo e,
  * depois, o recorte (onde dá pra escolher quadrado, retrato ou paisagem).
  * Dá pra reordenar com as setinhas, sem precisar de arrastar.
+ *
+ * Vídeos (YouTube/Reels) que entrarem no mesmo array aparecem aqui também,
+ * com uma miniatura própria — as mesmas setinhas de reordenar servem pra
+ * escolher a posição deles no carrossel junto das fotos. Clicar num slot de
+ * vídeo não abre o seletor de arquivo (vídeo se adiciona colando o link, em
+ * outro campo) — só os slots vazios e os de foto abrem o seletor.
  *
  * `lockedRatio` trava o formato do recorte no que já foi definido pela
  * primeira foto do item (capa ou galeria) — evita misturar proporção.
@@ -38,6 +45,9 @@ export function GalleryUpload({
   const targetIndexRef = useRef<number>(0);
 
   function openPicker(index: number) {
+    // Slot de vídeo não abre seletor de arquivo — vídeo se adiciona colando
+    // o link, em outro campo. Só slots vazios ou com foto abrem o seletor.
+    if (value[index] && isVideoUrl(value[index])) return;
     targetIndexRef.current = index;
     inputRef.current?.click();
   }
@@ -83,14 +93,29 @@ export function GalleryUpload({
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-3 gap-2">
-        {slots.map((url, i) => (
+        {slots.map((url, i) => {
+          const video = url && isVideoUrl(url);
+          const ytId = video ? youtubeId(url) : null;
+          const igId = video && !ytId ? instagramReelId(url) : null;
+          const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null;
+          return (
           <div
             key={i}
             className="relative overflow-hidden rounded-xl border border-dashed border-divider bg-surface-soft"
             style={{ aspectRatio: lockedRatio ? RATIOS[lockedRatio].value : 1 }}
           >
             <button type="button" onClick={() => openPicker(i)} className="absolute inset-0">
-              {url ? (
+              {video ? (
+                <span className="relative flex h-full w-full items-center justify-center bg-on-background">
+                  {thumb ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={thumb} alt="" className="h-full w-full object-cover opacity-70" />
+                  ) : igId ? (
+                    <span className="text-[11px] text-white/70">Reels</span>
+                  ) : null}
+                  <span className="absolute flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[12px]">▶</span>
+                </span>
+              ) : url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={url} alt="" className="h-full w-full object-cover" />
               ) : uploadingIndex === i ? (
@@ -124,7 +149,8 @@ export function GalleryUpload({
               </>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <input

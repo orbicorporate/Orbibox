@@ -6,7 +6,11 @@ import { youtubeId, instagramReelId, isVideoUrl } from "@/lib/showcase";
 /** Campo pra adicionar vídeos (YouTube ou Reels do Instagram) a um carrossel
  * (produto ou história da marca) — reaproveitado em mais de um lugar do
  * painel. YouTube entra sempre em paisagem; Reels sempre em vertical — cada
- * um no formato que o vídeo realmente tem. */
+ * um no formato que o vídeo realmente tem.
+ *
+ * `showList` (padrão true) mostra a lista dos já adicionados com botão de
+ * remover — desligue quando o vídeo já aparece em outro lugar (ex: dentro da
+ * grade de fotos, que também reordena), pra não duplicar o controle. */
 export function YoutubeAdder({
   videos,
   onAdd,
@@ -14,6 +18,7 @@ export function YoutubeAdder({
   max = 3,
   label = "Vídeos (YouTube ou Reels)",
   hint = "Cole o link de um vídeo do YouTube ou de um Reels do Instagram — ele entra no mesmo carrossel, junto das fotos, sempre no formato certo (paisagem ou vertical).",
+  showList = true,
 }: {
   videos: string[];
   onAdd: (url: string) => void;
@@ -21,6 +26,7 @@ export function YoutubeAdder({
   max?: number;
   label?: string;
   hint?: string;
+  showList?: boolean;
 }) {
   const [url, setUrl] = useState("");
   const [erro, setErro] = useState(false);
@@ -61,7 +67,7 @@ export function YoutubeAdder({
         </div>
       )}
       {erro && <p className="mt-1.5 text-[12px] text-red-600">Esse link não parece ser do YouTube nem do Instagram. Confere e tenta de novo.</p>}
-      {videos.length > 0 && (
+      {showList && videos.length > 0 && (
         <div className="mt-2 flex flex-col gap-2">
           {videos.map((v) => {
             const ytId = youtubeId(v);
