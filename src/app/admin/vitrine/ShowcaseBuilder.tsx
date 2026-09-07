@@ -1020,20 +1020,33 @@ function ItemCard({
             {item.image_url && (
               <div>
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Como mostrar a foto</p>
+                <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
+                  “Recortada” corta a foto pra preencher o card todo, sem sobrar espaço. “Com moldura” mostra a foto inteira, sem cortar nada, com a cor de fundo aparecendo nas bordas.
+                </p>
                 <div className="mt-2 flex gap-2">
                   <button
                     onClick={() => save(item.id, { box_style: "foto" })}
-                    className={`flex-1 rounded-2xl border-2 px-3 py-2.5 text-left text-[12px] font-medium ${(item.box_style ?? "foto") === "foto" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft text-text-secondary"}`}
+                    className={`flex-1 rounded-2xl border-2 p-2.5 text-left ${(item.box_style ?? "foto") === "foto" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                   >
-                    Recortada
-                    <span className="block font-normal text-text-tertiary">Preenche o card inteiro</span>
+                    {/* Mini prévia: foto preenchendo o quadrado até a borda. */}
+                    <div className="h-14 w-full overflow-hidden rounded-lg bg-surface-soft">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={item.image_url} alt="" className="h-full w-full object-cover" />
+                    </div>
+                    <span className="mt-2 block text-[12px] font-medium">Recortada</span>
+                    <span className="block text-[11px] font-normal text-text-tertiary">Preenche o card, corta o excesso</span>
                   </button>
                   <button
                     onClick={() => save(item.id, { box_style: "foto_mat" })}
-                    className={`flex-1 rounded-2xl border-2 px-3 py-2.5 text-left text-[12px] font-medium ${item.box_style === "foto_mat" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft text-text-secondary"}`}
+                    className={`flex-1 rounded-2xl border-2 p-2.5 text-left ${item.box_style === "foto_mat" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                   >
-                    Com moldura
-                    <span className="block font-normal text-text-tertiary">Foto inteira sobre a cor abaixo</span>
+                    {/* Mini prévia: foto inteira, com borda da cor do box aparecendo. */}
+                    <div className="flex h-14 w-full items-center justify-center rounded-lg p-1.5" style={{ backgroundColor: c.bg }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={item.image_url} alt="" className="h-full w-full object-contain" />
+                    </div>
+                    <span className="mt-2 block text-[12px] font-medium">Com moldura</span>
+                    <span className="block text-[11px] font-normal text-text-tertiary">Foto inteira, sem cortar</span>
                   </button>
                 </div>
               </div>
@@ -1239,8 +1252,11 @@ function YoutubeAdder({
 }) {
   const [url, setUrl] = useState("");
   const [erro, setErro] = useState(false);
+  const MAX = 3;
+  const cheio = videos.length >= MAX;
 
   function add() {
+    if (cheio) return;
     const limpo = url.trim();
     if (!limpo) return;
     if (!youtubeId(limpo)) {
@@ -1254,21 +1270,25 @@ function YoutubeAdder({
 
   return (
     <div className="mt-3">
-      <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Vídeo do YouTube (opcional)</p>
+      <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Vídeos do YouTube (opcional, até {MAX})</p>
       <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
-        Cole o link de um vídeo do YouTube — ele entra no mesmo carrossel, junto das fotos.
+        Cole o link de um vídeo do YouTube — ele entra no mesmo carrossel, junto das fotos. Pode adicionar até {MAX}.
       </p>
-      <div className="mt-2 flex gap-2">
-        <input
-          value={url}
-          onChange={(e) => { setUrl(e.target.value); setErro(false); }}
-          placeholder="https://youtube.com/watch?v=…"
-          className="min-w-0 flex-1 rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-        />
-        <button onClick={add} className="shrink-0 rounded-full bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white">
-          Adicionar
-        </button>
-      </div>
+      {cheio ? (
+        <p className="mt-2 text-[12px] text-text-tertiary">Você já adicionou o máximo de {MAX} vídeos. Remova um pra trocar.</p>
+      ) : (
+        <div className="mt-2 flex gap-2">
+          <input
+            value={url}
+            onChange={(e) => { setUrl(e.target.value); setErro(false); }}
+            placeholder="https://youtube.com/watch?v=…"
+            className="min-w-0 flex-1 rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+          />
+          <button onClick={add} className="shrink-0 rounded-full bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white">
+            Adicionar
+          </button>
+        </div>
+      )}
       {erro && <p className="mt-1.5 text-[12px] text-red-600">Esse link não parece ser do YouTube. Confere e tenta de novo.</p>}
       {videos.length > 0 && (
         <div className="mt-2 flex flex-col gap-2">
