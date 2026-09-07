@@ -170,8 +170,10 @@ export function VisitorExperience({
         style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
       />
 
-      {/* O dono, navegando o próprio link, ganha um atalho de volta pro painel. */}
-      {isOwner && (
+      {/* O dono, navegando o próprio link, ganha um atalho de volta pro painel —
+          só na tela inicial. Escondido nos overlays (chat, catálogo, sobre)
+          porque senão fica borrado atrás do fundo semitransparente deles. */}
+      {isOwner && intent === null && (
         <Link
           href="/admin"
           className="fixed right-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[12px] font-medium text-white shadow-lg backdrop-blur"
@@ -494,6 +496,8 @@ function OrbiChat({
 
   // Sugestões puxadas do que existe de verdade no negócio — nunca genéricas.
   // Prioriza itens variados (categorias diferentes) pra cobrir mais opções.
+  // Só 5 — o suficiente pra caber na tela sem precisar rolar, com a barra de
+  // digitar sempre visível.
   const QUICK = (() => {
     const published = [...content].sort((a, b) => a.position - b.position);
     const seen = new Set<string>();
@@ -503,17 +507,17 @@ function OrbiChat({
       if (seen.has(cat) && cat) continue;
       if (cat) seen.add(cat);
       picks.push(item.title);
-      if (picks.length === 8) break;
+      if (picks.length === 5) break;
     }
-    // Se sobrar espaço e ainda tiver itens (mesmo repetindo categoria), completa até 8.
-    if (picks.length < 8) {
+    // Se sobrar espaço e ainda tiver itens (mesmo repetindo categoria), completa até 5.
+    if (picks.length < 5) {
       for (const item of published) {
-        if (picks.length === 8) break;
+        if (picks.length === 5) break;
         if (!picks.includes(item.title)) picks.push(item.title);
       }
     }
     if (picks.length === 0) {
-      return ["Quero saber mais sobre vocês", "Como funciona", "Quais os valores", "Formas de pagamento", "Prazo de entrega", "Onde vocês atendem", "Quero um orçamento", "Quero falar com alguém"];
+      return ["Quero saber mais sobre vocês", "Como funciona", "Quais os valores", "Formas de pagamento", "Quero falar com alguém"];
     }
     return picks;
   })();
