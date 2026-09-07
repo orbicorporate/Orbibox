@@ -163,10 +163,10 @@ export function VisitorExperience({
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background-main">
-      {/* Halo suave — atmosfera "líquida". Bem maior que o miolo visível da
-          tela, pra não deixar um fundo cinza aparecendo atrás do avatar. */}
+      {/* Halo suave — atmosfera "líquida". Fica na parte de baixo da tela,
+          longe do avatar, pra não brigar de contraste com ele. */}
       <div
-        className="pointer-events-none absolute -top-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[110px]"
+        className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[110px]"
         style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
       />
 
