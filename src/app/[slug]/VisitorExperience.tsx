@@ -342,7 +342,7 @@ function StoryView({
             {photos.map((src, i) => {
               const ytId = youtubeId(src);
               return (
-                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio: "4 / 5" }}>
+                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio: "16 / 9" }}>
                   {ytId ? (
                     <iframe
                       src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`}
@@ -953,46 +953,28 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                   <>
                     <div className="relative" style={{ aspectRatio: RATIOS[ratio].value }}>
                       {photo ? (
-                        item.box_style === "foto_mat" ? (
-                          // "Moldura": a foto inteira, sem cortar, sobre a cor
-                          // extraída do próprio produto — em vez do fundo
-                          // branco de estúdio cru, ganha uma moldura combinando.
-                          <div className="flex h-full w-full items-center justify-center p-5" style={{ backgroundColor: c.bg }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={item.image_url!}
-                              alt={item.title}
-                              className="h-full w-full object-contain"
-                              onError={(e) => {
-                                const img = e.currentTarget;
-                                img.style.display = "none";
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={item.image_url!}
-                              alt={item.title}
-                              className="h-full w-full object-cover"
-                              onError={(e) => {
-                                const img = e.currentTarget;
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={item.image_url!}
+                            alt={item.title}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              const img = e.currentTarget;
+                              img.style.display = "none";
+                              if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
+                            }}
+                            onLoad={(e) => {
+                              // Mesmo problema do editor: link que "carrega" mas devolve arquivo vazio.
+                              const img = e.currentTarget;
+                              if (img.naturalWidth === 0 || img.naturalHeight === 0) {
                                 img.style.display = "none";
                                 if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
-                              }}
-                              onLoad={(e) => {
-                                // Mesmo problema do editor: link que "carrega" mas devolve arquivo vazio.
-                                const img = e.currentTarget;
-                                if (img.naturalWidth === 0 || img.naturalHeight === 0) {
-                                  img.style.display = "none";
-                                  if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
-                                }
-                              }}
-                            />
-                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                          </>
-                        )
+                              }
+                            }}
+                          />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                        </>
                       ) : (
                         // Sem foto: o nome vira o conteúdo do box, centralizado — sem
                         // rodapé branco repetindo a mesma informação embaixo. A fonte

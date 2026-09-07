@@ -526,8 +526,8 @@ export function BoxesManager({
                       <GalleryUpload
                         value={storyPhotos.filter((u) => !isYoutube(u))}
                         businessId={businessId}
-                        lockedRatio="retrato"
-                        lockedReason="As fotos são sempre verticais (retrato), pra manter o carrossel uniforme."
+                        lockedRatio="paisagem"
+                        lockedReason="As fotos são sempre no formato paisagem, pra combinar com fotos de espaço/equipe e manter o carrossel uniforme."
                         onChange={(urls) => {
                           const videos = storyPhotos.filter((u) => isYoutube(u));
                           saveStoryPhotos([...urls, ...videos]);
