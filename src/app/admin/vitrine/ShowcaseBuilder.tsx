@@ -53,18 +53,24 @@ export function ShowcaseBuilder({
   items: initial,
   slug,
   businessId,
+  businessName,
   brandColors = [],
   initialCategories = [],
   initialCoverUrl = null,
   whatsapp = null,
+  initialCatalogTitle = null,
+  initialCatalogSubtitle = null,
 }: {
   items: Item[];
   slug: string;
   businessId: string;
+  businessName: string;
   brandColors?: BrandColor[];
   initialCategories?: string[];
   initialCoverUrl?: string[] | null;
   whatsapp?: string | null;
+  initialCatalogTitle?: string | null;
+  initialCatalogSubtitle?: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -72,6 +78,15 @@ export function ShowcaseBuilder({
   const [coverUrls, setCoverUrls] = useState<string[]>(initialCoverUrl ?? []);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>(initialCategories);
+  const [catalogTitle, setCatalogTitle] = useState(initialCatalogTitle ?? "");
+  const [catalogSubtitle, setCatalogSubtitle] = useState(initialCatalogSubtitle ?? "");
+
+  async function saveCatalogTexts() {
+    await supabase.from("businesses").update({
+      catalog_title: catalogTitle.trim() || null,
+      catalog_subtitle: catalogSubtitle.trim() || null,
+    }).eq("id", businessId);
+  }
   // Aba de paleta ativa no editor de cor. "Marca" só existe se a Orbi já
   // extraiu cores no DNA da marca (onboarding) — senão começa no Padrão.
   const [paletteTab, setPaletteTab] = useState<string>(brandColors.length > 0 ? "Marca" : "Padrão");
@@ -496,6 +511,30 @@ export function ShowcaseBuilder({
         </form>
       )}
       {importMsg && <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>}
+
+      {/* Título e subtítulo que aparecem no topo da página de catálogo pro
+          visitante. Em branco, usa o padrão: "[Nome] — Catálogo" / "Explore
+          nossas soluções." */}
+      <div className="mt-5 rounded-[24px] bg-surface-soft p-5">
+        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Título da página de catálogo</p>
+        <p className="mt-1 text-[13px] text-text-secondary">
+          O que o visitante vê no topo, ao abrir “O que fazemos”. Deixe em branco pra usar o padrão.
+        </p>
+        <input
+          value={catalogTitle}
+          onChange={(e) => setCatalogTitle(e.target.value)}
+          onBlur={saveCatalogTexts}
+          placeholder={`${businessName} — Catálogo`}
+          className="mt-3 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+        />
+        <input
+          value={catalogSubtitle}
+          onChange={(e) => setCatalogSubtitle(e.target.value)}
+          onBlur={saveCatalogTexts}
+          placeholder="Explore nossas soluções."
+          className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+        />
+      </div>
 
       {/* Capa da Vitrine — opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
       <div className="mt-5 rounded-[24px] bg-surface-soft p-5">

@@ -36,6 +36,8 @@ type Business = {
   logo_url: string | null;
   hero_avatar: string | null;
   hero_gradient: unknown;
+  catalog_title: string | null;
+  catalog_subtitle: string | null;
 };
 
 type ContentItem = {
@@ -259,11 +261,11 @@ export function VisitorExperience({
           <div className="w-full">
             <VitrineCoverBleed business={business} />
             <button onClick={() => setIntent(null)} className="mb-5 mt-5 text-[13px] text-text-tertiary hover:underline">← voltar</button>
-            <h2 className="font-[family-name:var(--font-manrope)] text-[30px] font-medium tracking-[-0.01em]">
-              {intent === "presentear" ? "Para presentear" : `${business.name} — Catálogo`}
+            <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">
+              {intent === "presentear" ? "Para presentear" : (business.catalog_title || `${business.name} — Catálogo`)}
             </h2>
             <p className="mt-1 text-[15px] text-text-secondary">
-              {intent === "presentear" ? "Seleções que fazem sentido para dar de presente" : "Conheça tudo o que temos pra oferecer"}
+              {intent === "presentear" ? "Seleções que fazem sentido para dar de presente" : (business.catalog_subtitle || "Explore nossas soluções.")}
             </p>
 
             {content.length === 0 ? (
