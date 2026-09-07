@@ -244,3 +244,20 @@ body {
   background-position: 0 0, 0 4px, 4px -4px, -4px 0;
   background-color: #fff;
 }
+
+/* Pin de mapa animado — quica suavemente, com a sombra pulsando embaixo,
+   igual um marcador de mapa "caindo" no lugar. Usado no card de endereço. */
+@keyframes orbiPinBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes orbiPinShadow {
+  0%, 100% { transform: scaleX(1); opacity: 0.35; }
+  50% { transform: scaleX(0.7); opacity: 0.18; }
+}
+.orbi-pin-icon {
+  animation: orbiPinBounce 1.8s ease-in-out infinite;
+}
+.orbi-pin-shadow {
+  animation: orbiPinShadow 1.8s ease-in-out infinite;
+}

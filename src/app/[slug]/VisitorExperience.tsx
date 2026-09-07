@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
+import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
@@ -386,18 +387,30 @@ function StoryView({
       {business.address && (
         <div className="mt-6">
           <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Endereço</p>
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 flex items-start gap-2.5 rounded-[18px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]"
-          >
-            <span className="mt-0.5 shrink-0 text-[16px]">✛</span>
-            <span className="flex-1">
-              <span className="block text-[14px] leading-relaxed text-text-secondary">{business.address}</span>
-              <span className="mt-1 block text-[12px] text-text-tertiary">Toque para abrir no Waze ou Google Maps</span>
-            </span>
-          </a>
+          <div className="mt-2 rounded-[18px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+            <div className="flex items-start gap-3">
+              <OrbiMapPin size={26} className="shrink-0" />
+              <span className="text-[14px] leading-relaxed text-text-secondary">{business.address}</span>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <a
+                href={`https://waze.com/ul?q=${encodeURIComponent(business.address)}&navigate=yes`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+              >
+                Abrir no Waze
+              </a>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+              >
+                Abrir no Google
+              </a>
+            </div>
+          </div>
         </div>
       )}
 
