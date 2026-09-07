@@ -874,6 +874,18 @@ function ItemCard({
           ✕
         </button>
 
+        {/* Tag preta de editar: deixa explícito que o box é editável, sem
+            depender do usuário descobrir que o card inteiro é clicável. */}
+        {hasPhoto && !editing && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleEdit(); }}
+            className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-on-background/85 px-2.5 py-1 text-[11px] font-medium text-white shadow backdrop-blur"
+            aria-label="Editar item"
+          >
+            ✎ Editar
+          </button>
+        )}
+
         {/* Selos no canto — só o que precisa da foto pra fazer sentido fica aqui.
             O status (Ativo/Rascunho) agora mora no rodapé branco, junto do título,
             exceto quando não tem rodapé (sem foto ou foto quebrada). */}
