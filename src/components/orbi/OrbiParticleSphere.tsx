@@ -298,20 +298,8 @@ export function OrbiParticleSphere({
         ctx.fill();
       }
 
-      // Glow: gradiente criado uma vez por frame (barato) mas com as cores certas.
-      // No estado base (sem morph), usa a primeira cor escolhida, se houver.
-      const baseGlow = colorA ? `rgba(${hexToRgb(colorA).join(",")},0.20)` : "rgba(120,150,255,0.20)";
-      const gc = morph > 0.5 ? (variant === "whatsapp" ? "rgba(37,211,102,0.24)" : "rgba(90,230,120,0.22)") : baseGlow;
-      glowGrad.addColorStop(0, gc);
-      ctx.fillStyle = glowGrad;
-      ctx.fillRect(0, 0, size, size);
-
       raf = requestAnimationFrame(frame);
     }
-
-    // Gradiente do glow: criado UMA vez (posição fixa), só a cor muda por frame.
-    const glowGrad = ctx.createRadialGradient(cx, cy - R * 0.2, 1, cx, cy, R * 1.3);
-    glowGrad.addColorStop(1, "rgba(0,0,0,0)");
 
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
