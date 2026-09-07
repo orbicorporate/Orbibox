@@ -77,7 +77,7 @@ export function OrbiParticleSphere({
     // Todos os pontos (principais e micro) saem na metade do tamanho de base
     // (aplicado mais abaixo, no cálculo do raio de cada frame).
     const N = size < 80 ? 700 : 1400;
-    const M = Math.round(N * 1.4);
+    const M = Math.round(N * 2.1);
     const TOTAL = N + M;
 
     function fibSphere(n: number) {
@@ -290,8 +290,8 @@ export function OrbiParticleSphere({
           g += (morphColor[1] - g) * kMorph;
           b0 += (morphColor[2] - b0) * kMorph;
         }
-        const b = 0.75 + depth * 0.25;
-        const alpha = (0.85 + depth * 0.15) * (isMicro[i] ? microAlpha : 1);
+        const b = 0.65 + depth * 0.35;
+        const alpha = (0.95 + depth * 0.05) * (isMicro[i] ? microAlpha : 1);
         ctx.beginPath();
         ctx.fillStyle = `rgba(${(r * b) | 0},${(g * b) | 0},${(b0 * b) | 0},${alpha})`;
         ctx.arc(px, py, rad, 0, 6.283185307179586);
