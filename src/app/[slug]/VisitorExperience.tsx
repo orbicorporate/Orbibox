@@ -822,6 +822,7 @@ function VitrineCoverBleed({ business }: { business: Business }) {
   const covers = business.vitrine_cover_urls ?? [];
   const [idx, setIdx] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Passa sozinha a cada 2s — a pessoa também pode arrastar quando quiser.
   useEffect(() => {
@@ -844,8 +845,16 @@ function VitrineCoverBleed({ business }: { business: Business }) {
         ref={trackRef}
         className="flex snap-x snap-mandatory gap-0 overflow-x-auto no-scrollbar rounded-b-[28px]"
         onScroll={(e) => {
-          const w = e.currentTarget.clientWidth || 1;
-          setIdx(Math.round(e.currentTarget.scrollLeft / w));
+          // Só recalcula o índice depois que o scroll assenta — senão o
+          // próprio scroll automático (suave, leva ~300ms) dispara vários
+          // eventos no meio do caminho e a leitura prematura "cancela" o
+          // avanço, fazendo o carrossel parecer travado.
+          const el = e.currentTarget;
+          if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+          scrollTimeout.current = setTimeout(() => {
+            const w = el.clientWidth || 1;
+            setIdx(Math.round(el.scrollLeft / w));
+          }, 120);
         }}
       >
         {covers.map((src, i) => (
