@@ -3,10 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
 const METRICS = [
-  { key: "discovery", label: "Visitas", icon: "◎", href: "/admin/pulse" },
-  { key: "interest", label: "Interesses", icon: "♡", href: "/admin/pulse" },
-  { key: "conversion", label: "Conversões", icon: "▤", href: "/admin/conversas" },
-  { key: "relationship", label: "Ações", icon: "☞", href: "/admin/pulse" },
+  { key: "discovery", label: "Visitas", explica: "Pessoas que abriram seu link", icon: "◎", href: "/admin/pulse" },
+  { key: "interest", label: "Interesses", explica: "Escolheram uma opção na tela inicial", icon: "♡", href: "/admin/pulse" },
+  { key: "conversion", label: "Conversas reais", explica: "Trocaram mensagem de verdade com a Orbi", icon: "▤", href: "/admin/conversas" },
+  { key: "relationship", label: "Ações", explica: "Cliques em produtos, links e WhatsApp", icon: "☞", href: "/admin/pulse" },
 ] as const;
 
 export default async function HojePage() {
@@ -25,22 +25,34 @@ export default async function HojePage() {
 
 
   // Tudo que depende só do business roda em paralelo — antes eram 6 idas ao banco em fila.
-  const [oppRes, visitsRes, convsRes, interestedRes, actionsRes, unseenRes] = await Promise.all([
+  const [oppRes, visitsRes, convRowsRes, interestedRes, actionsRes, unseenRes] = await Promise.all([
     supabase.from("opportunities").select("*").eq("business_id", business!.id).eq("status", "open").order("impact_score", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
-    supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
+    supabase.from("conversations").select("id").eq("business_id", business!.id),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id).not("intent", "is", null),
-    supabase.from("campaigns").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
+    // "Ações" = cliques de verdade (produto, link, WhatsApp…) — mesma fonte do Pulse,
+    // não a tabela de campanhas (isso não tinha nada a ver com o que o visitante faz).
+    supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", business!.id).eq("seen_by_owner", false),
   ]);
   const opportunity = oppRes.data;
-  const visits = visitsRes.count, convs = convsRes.count, interested = interestedRes.count, actions = actionsRes.count;
+  const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
   const unseenConversas = unseenRes.count ?? 0;
+
+  // "Conversas reais" só conta quem de fato trocou mensagem com a Orbi — não
+  // toda vez que alguém abriu o chat e fechou sem digitar nada (isso inflava
+  // o número e não batia com o que aparecia no Pulse/Conversas).
+  const convIds = (convRowsRes.data ?? []).map((c) => c.id);
+  let realConvs = 0;
+  if (convIds.length > 0) {
+    const { data: msgRows } = await supabase.from("messages").select("conversation_id").in("conversation_id", convIds).eq("role", "visitor");
+    realConvs = new Set((msgRows ?? []).map((m) => m.conversation_id)).size;
+  }
 
   const values: Record<string, number> = {
     discovery: visits ?? 0,
     interest: interested ?? 0,
-    conversion: convs ?? 0,
+    conversion: realConvs,
     relationship: actions ?? 0,
   };
 
@@ -88,13 +100,18 @@ export default async function HojePage() {
         Ver meu Orbibox ↗
       </Link>
 
-      {/* Métricas em lista — cada uma leva pro Pulse, onde dá pra ver o detalhe */}
+      {/* Métricas em lista — cada uma leva pro Pulse (ou Conversas), onde dá
+          pra ver o detalhe. Mesma fonte de dados do Pulse, então os números
+          batem entre as duas telas. */}
       <div className="mt-8 flex flex-col">
         {METRICS.map((m) => (
           <Link key={m.key} href={m.href} className="flex items-center justify-between border-b border-divider py-4 active:opacity-60">
             <div className="flex items-center gap-3">
               <span className="text-[16px] text-text-secondary">{m.icon}</span>
-              <span className="text-[15px] text-text-secondary">{m.label}</span>
+              <div>
+                <span className="block text-[15px] text-text-secondary">{m.label}</span>
+                <span className="block text-[12px] text-text-tertiary">{m.explica}</span>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">
