@@ -99,13 +99,16 @@ export function OrbiVisualPanel({
 
         <div className="mt-5 border-t border-divider pt-4">
           <div className="flex items-center gap-4">
-            {/* Mini réplica da tela real: fundo claro da página + o halo
-                desfocado na parte de baixo, do jeito que aparece de verdade —
-                não um quadrado sólido, que enganaria sobre o resultado. */}
+            {/* Mini réplica da tela real: fundo claro da página + o brilho na
+                parte de baixo. Usa gradiente radial com transparência (em vez
+                de blur, que em caixa pequena corta feio) — fica limpo em
+                qualquer tamanho e ainda representa o efeito de verdade. */}
             <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background-main">
               <span
-                className="absolute -bottom-5 left-1/2 h-11 w-11 -translate-x-1/2 rounded-full opacity-60 blur-md"
-                style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
+                className="absolute inset-0"
+                style={{
+                  background: `radial-gradient(circle at 50% 115%, ${heroGradient[0]}CC, ${heroGradient[1]}66 45%, transparent 72%)`,
+                }}
               />
             </span>
             <div className="flex-1">
