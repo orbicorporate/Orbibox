@@ -66,25 +66,27 @@ export default async function HojePage() {
 
   return (
     <div className="relative flex flex-col">
-      {/* Sininho de notificação — pisca quando tem conversa que ainda não foi vista */}
-      <Link href="/admin/conversas" className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white shadow" aria-label="Conversas">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M12 3a5 5 0 0 0-5 5v3.2c0 .7-.25 1.36-.7 1.9L5 15h14l-1.3-1.9a3 3 0 0 1-.7-1.9V8a5 5 0 0 0-5-5Z" />
-          <path d="M9.5 18a2.5 2.5 0 0 0 5 0" />
-        </svg>
-        {unseenConversas > 0 && (
-          <span className="notif-badge absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
-            {unseenConversas > 9 ? "9+" : unseenConversas}
-          </span>
-        )}
-      </Link>
-
       {/* Saudação dentro de um halo circular — nome do negócio, não do usuário
           que abriu o painel, já que mais gente da equipe também vai entrar. */}
       <div className="relative mx-auto mt-6 flex h-64 w-64 items-center justify-center">
         <div className="orbi-halo absolute inset-0" aria-hidden>
           <span className="orbi-halo__dot" />
         </div>
+
+        {/* Sininho de notificação — perto do nome, canto inferior direito do
+            halo. Pisca quando tem conversa que ainda não foi vista. */}
+        <Link href="/admin/conversas" className="absolute bottom-6 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white shadow" aria-label="Conversas">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M12 3a5 5 0 0 0-5 5v3.2c0 .7-.25 1.36-.7 1.9L5 15h14l-1.3-1.9a3 3 0 0 1-.7-1.9V8a5 5 0 0 0-5-5Z" />
+            <path d="M9.5 18a2.5 2.5 0 0 0 5 0" />
+          </svg>
+          {unseenConversas > 0 && (
+            <span className="notif-badge absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+              {unseenConversas > 9 ? "9+" : unseenConversas}
+            </span>
+          )}
+        </Link>
+
         <div className="absolute left-1/2 top-1/2 w-[90vw] max-w-[420px] -translate-x-1/2 -translate-y-1/2 text-center">
           <h1 className="whitespace-nowrap font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">
             Olá, {business!.name}
