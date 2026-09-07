@@ -92,17 +92,21 @@ export function GalleryUpload({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 items-start gap-2">
         {slots.map((url, i) => {
           const video = url && isVideoUrl(url);
           const ytId = video ? youtubeId(url) : null;
           const igId = video && !ytId ? instagramReelId(url) : null;
           const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null;
+          // Vídeo mostra no formato real dele (paisagem pro YouTube, vertical
+          // pro Reels) — não espremido no formato retrato das fotos. É assim
+          // que ele vai aparecer de verdade na página.
+          const videoRatio = ytId ? 16 / 9 : igId ? 9 / 16 : null;
           return (
           <div
             key={i}
             className="relative overflow-hidden rounded-xl border border-dashed border-divider bg-surface-soft"
-            style={{ aspectRatio: lockedRatio ? RATIOS[lockedRatio].value : 1 }}
+            style={{ aspectRatio: videoRatio ?? (lockedRatio ? RATIOS[lockedRatio].value : 1) }}
           >
             <button type="button" onClick={() => openPicker(i)} className="absolute inset-0">
               {video ? (
