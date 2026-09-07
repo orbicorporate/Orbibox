@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { askClaude } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
+import { extractAccentBoxColor } from "@/lib/imageAccentColor";
 
 export const maxDuration = 60;
 
@@ -215,11 +216,26 @@ ${site.text}`;
 
     const RHYTHM = ["destaque", "medio", "medio", "largo", "medio", "medio"];
     let semFotoIdx = 0;
-    const rows = items.slice(0, 12).map((it, i) => {
+    const picked = items.slice(0, 12);
+    // Pra fotos de produto (geralmente em fundo branco de estúdio), tenta achar
+    // a cor predominante do produto em si — o card ganha essa cor como "moldura"
+    // atrás da foto, em vez do branco sem graça. Roda em paralelo, e se falhar
+    // (rede, formato, timeout) o item só fica sem cor de destaque — sem quebrar
+    // a importação. Serviço/link não precisam disso.
+    const accents = await Promise.all(
+      picked.map((it) => {
+        const img = resolveImage(it);
+        if (!img.url || it.type === "service" || it.type === "link") return Promise.resolve(null);
+        return extractAccentBoxColor(img.url);
+      })
+    );
+    const rows = picked.map((it, i) => {
       const img = resolveImage(it);
+      const accent = accents[i];
       // Sem foto: veste com uma cor da paleta, alternando pra não repetir
-      // duas iguais em seguida. Com foto: mantém o estilo de foto.
-      const cor = img.url ? "neutro" : swatches[semFotoIdx++ % swatches.length];
+      // duas iguais em seguida. Com foto: usa a cor extraída da própria foto,
+      // se achou uma — senão fica neutro (comportamento de sempre).
+      const cor = img.url ? (accent ?? "neutro") : swatches[semFotoIdx++ % swatches.length];
       return {
         business_id: businessId,
         type: it.type === "service" || it.type === "link" ? it.type : "product",
@@ -234,7 +250,9 @@ ${site.text}`;
         link_kind: ["categoria", "produto", "externo"].includes(it.link_kind ?? "") ? it.link_kind : null,
         // Ritmo visual: o primeiro vira destaque, os demais alternam.
         layout_size: RHYTHM[i % RHYTHM.length],
-        box_style: img.url ? "foto" : "cor",
+        // "foto_mat" = mostra a foto inteira (sem cortar) sobre a cor extraída,
+        // como uma moldura — só quando achamos uma cor de destaque de verdade.
+        box_style: img.url ? (accent ? "foto_mat" : "foto") : "cor",
         box_color: cor,
         source_url: url,
         status: "published" as const,

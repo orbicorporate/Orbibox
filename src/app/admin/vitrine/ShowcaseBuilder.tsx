@@ -796,19 +796,31 @@ function ItemCard({
         role={!editing ? "button" : undefined}
       >
         {hasPhoto ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={item.image_url!}
-            alt={item.title}
-            className="h-full w-full object-cover"
-            onError={() => setImgFailed(true)}
-            onLoad={(e) => {
-              // Alguns links "carregam" mas devolvem um arquivo vazio/corrompido —
-              // o navegador não dispara onError nesse caso, então checamos o tamanho real.
-              const img = e.currentTarget;
-              if (img.naturalWidth === 0 || img.naturalHeight === 0) setImgFailed(true);
-            }}
-          />
+          item.box_style === "foto_mat" ? (
+            <div className="flex h-full w-full items-center justify-center p-5" style={{ backgroundColor: c.bg }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.image_url!}
+                alt={item.title}
+                className="h-full w-full object-contain"
+                onError={() => setImgFailed(true)}
+              />
+            </div>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.image_url!}
+              alt={item.title}
+              className="h-full w-full object-cover"
+              onError={() => setImgFailed(true)}
+              onLoad={(e) => {
+                // Alguns links "carregam" mas devolvem um arquivo vazio/corrompido —
+                // o navegador não dispara onError nesse caso, então checamos o tamanho real.
+                const img = e.currentTarget;
+                if (img.naturalWidth === 0 || img.naturalHeight === 0) setImgFailed(true);
+              }}
+            />
+          )
         ) : editing ? (
           <div className="h-full w-full" style={{ backgroundColor: broken ? "#FBEAEA" : c.bg }} />
         ) : broken ? (
@@ -1005,8 +1017,32 @@ function ItemCard({
               </div>
             )}
 
+            {item.image_url && (
+              <div>
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Como mostrar a foto</p>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => save(item.id, { box_style: "foto" })}
+                    className={`flex-1 rounded-2xl border-2 px-3 py-2.5 text-left text-[12px] font-medium ${(item.box_style ?? "foto") === "foto" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft text-text-secondary"}`}
+                  >
+                    Recortada
+                    <span className="block font-normal text-text-tertiary">Preenche o card inteiro</span>
+                  </button>
+                  <button
+                    onClick={() => save(item.id, { box_style: "foto_mat" })}
+                    className={`flex-1 rounded-2xl border-2 px-3 py-2.5 text-left text-[12px] font-medium ${item.box_style === "foto_mat" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft text-text-secondary"}`}
+                  >
+                    Com moldura
+                    <span className="block font-normal text-text-tertiary">Foto inteira sobre a cor abaixo</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div>
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor do box{item.image_url ? " · aparece se remover a foto" : ""}</p>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
+                Cor do box{item.image_url ? (item.box_style === "foto_mat" ? " · a moldura atrás da foto" : " · aparece se remover a foto ou usar moldura") : ""}
+              </p>
               <div className="mt-2 flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 {brandColors.length > 0 && (
                   <button onClick={() => setPaletteTab("Marca")} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${paletteTab === "Marca" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>✦ Marca</button>

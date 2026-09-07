@@ -922,28 +922,46 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                   <>
                     <div className="relative" style={{ aspectRatio: RATIOS[ratio].value }}>
                       {photo ? (
-                        <>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={item.image_url!}
-                            alt={item.title}
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              const img = e.currentTarget;
-                              img.style.display = "none";
-                              if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
-                            }}
-                            onLoad={(e) => {
-                              // Mesmo problema do editor: link que "carrega" mas devolve arquivo vazio.
-                              const img = e.currentTarget;
-                              if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        item.box_style === "foto_mat" ? (
+                          // "Moldura": a foto inteira, sem cortar, sobre a cor
+                          // extraída do próprio produto — em vez do fundo
+                          // branco de estúdio cru, ganha uma moldura combinando.
+                          <div className="flex h-full w-full items-center justify-center p-5" style={{ backgroundColor: c.bg }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={item.image_url!}
+                              alt={item.title}
+                              className="h-full w-full object-contain"
+                              onError={(e) => {
+                                const img = e.currentTarget;
+                                img.style.display = "none";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={item.image_url!}
+                              alt={item.title}
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                const img = e.currentTarget;
                                 img.style.display = "none";
                                 if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
-                              }
-                            }}
-                          />
-                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                        </>
+                              }}
+                              onLoad={(e) => {
+                                // Mesmo problema do editor: link que "carrega" mas devolve arquivo vazio.
+                                const img = e.currentTarget;
+                                if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                                  img.style.display = "none";
+                                  if (img.parentElement) img.parentElement.style.backgroundColor = c.bg;
+                                }
+                              }}
+                            />
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                          </>
+                        )
                       ) : (
                         // Sem foto: o nome vira o conteúdo do box, centralizado — sem
                         // rodapé branco repetindo a mesma informação embaixo. A fonte

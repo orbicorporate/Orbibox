@@ -1,7 +1,7 @@
 // Vocabulário compartilhado da vitrine — usado no construtor (admin) e na vitrine pública.
 
 export type BoxSize = "destaque" | "largo" | "medio" | "alto";
-export type BoxStyle = "cor" | "foto";
+export type BoxStyle = "cor" | "foto" | "foto_mat";
 
 export const SIZE_LABEL: Record<BoxSize, string> = {
   destaque: "Destaque",
