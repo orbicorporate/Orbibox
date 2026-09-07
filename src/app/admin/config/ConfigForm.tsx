@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
+import { OrbiVisualPanel } from "./OrbiVisualPanel";
 
 type Business = {
   id: string;
@@ -31,7 +32,7 @@ const TIPO_LABEL: Record<string, string> = {
   links: "Página de links",
 };
 
-export function ConfigForm({ business }: { business: Business }) {
+export function ConfigForm({ business, orbiColors, heroGradient }: { business: Business; orbiColors: string[] | null; heroGradient: string[] | null }) {
   const router = useRouter();
   const supabase = createClient();
   const [b, setB] = useState(business);
@@ -137,6 +138,10 @@ export function ConfigForm({ business }: { business: Business }) {
             />
           </div>
         </div>
+      </div>
+
+      <div className="mt-4">
+        <OrbiVisualPanel businessId={b.id} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} />
       </div>
 
       {b.site_type && (

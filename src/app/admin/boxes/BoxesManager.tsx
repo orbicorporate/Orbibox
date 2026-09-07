@@ -297,6 +297,9 @@ export function BoxesManager({
                   <span className="text-[11px] font-medium">Orbi configurada</span>
                 </button>
               </div>
+              <Link href="/admin/config#cores-orbi" className="mt-2 inline-block text-[11px] font-medium text-text-secondary underline">
+                ✦ Configurar cor
+              </Link>
               {!availableLogo && (
                 <p className="mt-2 text-[11px] text-text-tertiary">Envie um logotipo abaixo pra poder usar essa opção.</p>
               )}

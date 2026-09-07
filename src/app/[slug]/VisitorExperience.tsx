@@ -35,6 +35,7 @@ type Business = {
   hero_question: string | null;
   logo_url: string | null;
   hero_avatar: string | null;
+  hero_gradient: unknown;
 };
 
 type ContentItem = {
@@ -156,10 +157,18 @@ export function VisitorExperience({
     }
   }
 
+  const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
+    ? (business.hero_gradient as string[])
+    : ["#B7F34A", "#6EE7D8"];
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-background-main">
-      {/* Halo suave — atmosfera "líquida" */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full orbi-gradient opacity-20 blur-3xl" />
+      {/* Halo suave — atmosfera "líquida". Bem maior que o miolo visível da
+          tela, pra não deixar um fundo cinza aparecendo atrás do avatar. */}
+      <div
+        className="pointer-events-none absolute -top-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[110px]"
+        style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
+      />
 
       {/* O dono, navegando o próprio link, ganha um atalho de volta pro painel. */}
       {isOwner && (

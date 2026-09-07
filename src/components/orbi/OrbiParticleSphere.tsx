@@ -77,7 +77,7 @@ export function OrbiParticleSphere({
     // Todos os pontos (principais e micro) saem na metade do tamanho de base
     // (aplicado mais abaixo, no cálculo do raio de cada frame).
     const N = size < 80 ? 700 : 1400;
-    const M = Math.round(N * 0.9);
+    const M = Math.round(N * 1.4);
     const TOTAL = N + M;
 
     function fibSphere(n: number) {
@@ -190,36 +190,41 @@ export function OrbiParticleSphere({
     // Se a pessoa escolheu cores próprias (Configurações da Orbi), o degradê
     // de 4 tons vira uma interpolação suave entre a primária e a secundária;
     // senão usa o padrão verde→turquesa→azul→roxo. A cor de detalhe (se
-    // houver) substitui a cor de uma faixa concentrada na parte de baixo da
-    // esfera (não misturada no degradê) — um destaque visível, não espalhado
-    // aleatoriamente. Essas partículas também ficam na metade do tamanho.
+    // houver) se mistura suavemente na parte de baixo — um degradê de verdade
+    // (smoothstep), não uma troca abrupta de cor num grupo de partículas.
     const stops = colorA && colorB ? buildGradientStops(colorA, colorB) : [
       [120, 220, 90], [40, 190, 180], [70, 120, 245], [150, 90, 240],
     ];
     const detailRGB = colorC ? hexToRgb(colorC) : null;
-    // p.y > 0.6 cobre ~20% dos pontos de uma esfera Fibonacci, sempre na
-    // mesma região (a parte de baixo, já que canvas-y positivo = pra baixo).
-    const DETAIL_Y_THRESHOLD = 0.6;
+    // Zona de transição ampla (da metade pro fundo) pra ficar bem distribuída
+    // e suave, sem parecer um remendo de outra cor colado embaixo.
+    const DETAIL_Y0 = -0.15, DETAIL_Y1 = 0.9;
+    function smoothstep(x: number) {
+      const c = Math.max(0, Math.min(1, x));
+      return c * c * (3 - 2 * c);
+    }
     const baseRGB = new Float32Array(TOTAL * 3);
     const sizeMul = new Float32Array(TOTAL);
     for (let i = 0; i < TOTAL; i++) {
       const p = i < N ? pts[i] : microPts[i - N];
       const micro = i >= N;
-      const isDetail = !!detailRGB && p.y > DETAIL_Y_THRESHOLD;
-      sizeMul[i] = isDetail ? 0.5 : micro ? 0.5 : 1;
-      if (isDetail && detailRGB) {
-        baseRGB[i * 3] = detailRGB[0];
-        baseRGB[i * 3 + 1] = detailRGB[1];
-        baseRGB[i * 3 + 2] = detailRGB[2];
-        continue;
-      }
+      sizeMul[i] = micro ? 0.5 : 1;
       const t = (p.y + 1) / 2;
       const seg = t * (stops.length - 1);
       const s = Math.max(0, Math.min(stops.length - 2, Math.floor(seg)));
       const f = seg - s;
-      baseRGB[i * 3] = stops[s][0] + (stops[s + 1][0] - stops[s][0]) * f;
-      baseRGB[i * 3 + 1] = stops[s][1] + (stops[s + 1][1] - stops[s][1]) * f;
-      baseRGB[i * 3 + 2] = stops[s][2] + (stops[s + 1][2] - stops[s][2]) * f;
+      let r = stops[s][0] + (stops[s + 1][0] - stops[s][0]) * f;
+      let g = stops[s][1] + (stops[s + 1][1] - stops[s][1]) * f;
+      let b = stops[s][2] + (stops[s + 1][2] - stops[s][2]) * f;
+      if (detailRGB) {
+        const w = smoothstep((p.y - DETAIL_Y0) / (DETAIL_Y1 - DETAIL_Y0));
+        r += (detailRGB[0] - r) * w;
+        g += (detailRGB[1] - g) * w;
+        b += (detailRGB[2] - b) * w;
+      }
+      baseRGB[i * 3] = r;
+      baseRGB[i * 3 + 1] = g;
+      baseRGB[i * 3 + 2] = b;
     }
 
     // Buffers reutilizados a cada frame — nada é alocado dentro do loop, então
