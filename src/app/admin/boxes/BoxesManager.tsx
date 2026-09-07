@@ -10,7 +10,8 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
-import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon } from "@/lib/showcase";
+import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon, isYoutube } from "@/lib/showcase";
+import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery } from "@/lib/logoGallery";
 
 type BrandColor = { hex: string; role?: string };
@@ -523,13 +524,26 @@ export function BoxesManager({
                     <p className="mt-1 text-[12px] text-text-secondary">Aparecem em carrossel, acima do texto.</p>
                     <div className="mt-2">
                       <GalleryUpload
-                        value={storyPhotos}
+                        value={storyPhotos.filter((u) => !isYoutube(u))}
                         businessId={businessId}
                         lockedRatio="retrato"
                         lockedReason="As fotos são sempre verticais (retrato), pra manter o carrossel uniforme."
-                        onChange={saveStoryPhotos}
+                        onChange={(urls) => {
+                          const videos = storyPhotos.filter((u) => isYoutube(u));
+                          saveStoryPhotos([...urls, ...videos]);
+                        }}
                       />
                     </div>
+                    <YoutubeAdder
+                      videos={storyPhotos.filter((u) => isYoutube(u))}
+                      label="Vídeos do YouTube na história"
+                      hint="Cole o link de um vídeo do YouTube — ele entra no mesmo carrossel da história, junto das fotos."
+                      onAdd={(url) => {
+                        if (storyPhotos.includes(url)) return;
+                        saveStoryPhotos([...storyPhotos, url]);
+                      }}
+                      onRemove={(url) => saveStoryPhotos(storyPhotos.filter((u) => u !== url))}
+                    />
                   </div>
                 </div>
               )}

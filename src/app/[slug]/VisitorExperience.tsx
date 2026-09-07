@@ -12,7 +12,7 @@ import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
-import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, isAnimatedIcon } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, isAnimatedIcon, youtubeId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 
@@ -339,13 +339,28 @@ function StoryView({
               setActive(Math.round(e.currentTarget.scrollLeft / w));
             }}
           >
-            {photos.map((src, i) => (
-              <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={business.name} className="max-h-[460px] w-full object-cover" />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-              </div>
-            ))}
+            {photos.map((src, i) => {
+              const ytId = youtubeId(src);
+              return (
+                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio: "4 / 5" }}>
+                  {ytId ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`}
+                      title={`${business.name} — vídeo ${i + 1}`}
+                      className="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt={business.name} className="h-full w-full object-cover" />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
           {photos.length > 1 && (
             <div className="mt-3 flex justify-center gap-1.5">
