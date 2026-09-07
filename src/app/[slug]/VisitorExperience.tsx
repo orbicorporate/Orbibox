@@ -397,7 +397,10 @@ function StoryView({
             className="mt-2 flex items-start gap-2.5 rounded-[18px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]"
           >
             <span className="mt-0.5 shrink-0 text-[16px]">✛</span>
-            <span className="text-[14px] leading-relaxed text-text-secondary">{business.address}</span>
+            <span className="flex-1">
+              <span className="block text-[14px] leading-relaxed text-text-secondary">{business.address}</span>
+              <span className="mt-1 block text-[12px] text-text-tertiary">Toque para abrir no Waze ou Google Maps</span>
+            </span>
           </a>
         </div>
       )}
