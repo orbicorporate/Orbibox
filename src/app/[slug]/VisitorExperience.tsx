@@ -165,13 +165,9 @@ export function VisitorExperience({
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background-main">
-      {/* Um toque bem sutil da paleta no topo — não um halo colorido chamativo
-          (que brigaria de contraste com a Orbi), só o suficiente pra não
-          cortar seco pro cinza claro plano. Puxa as mesmas cores do fundo. */}
-      <div
-        className="pointer-events-none absolute -top-56 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full opacity-[0.04] blur-[100px]"
-        style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
-      />
+      {/* Nada de cor no topo — qualquer toque, mesmo bem sutil, cria uma forma
+          redonda que destoa do fundo plano atrás da esfera. Fica só o cinza
+          claro puro aqui em cima, sempre, independente da paleta escolhida. */}
 
       {/* Halo suave — atmosfera "líquida". Fica na parte de baixo da tela,
           longe do avatar, pra não brigar de contraste com ele. */}
@@ -612,12 +608,7 @@ function OrbiChat({
 
   return (
     <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main">
-      {/* Toque sutil da paleta no topo, igual à tela inicial — disfarça o
-          corte seco pro cinza claro sem competir de contraste com a Orbi. */}
-      <div
-        className="pointer-events-none absolute -top-56 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full opacity-[0.04] blur-[100px]"
-        style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
-      />
+      {/* Nada de cor no topo aqui também — mesmo motivo da tela inicial. */}
 
       {/* Mesmo halo da tela inicial, pra não ficar um fundo parado/liso aqui —
           a marca continua presente mesmo depois de abrir o chat. */}
