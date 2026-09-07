@@ -797,7 +797,10 @@ function ItemCard({
         role={!editing ? "button" : undefined}
       >
         {hasPhoto ? (
-          item.box_style === "foto_mat" ? (
+          item.box_style === "foto_mat" && !editing ? (
+            // "Com moldura" só faz sentido no card fechado (o que aparece na
+            // vitrine) — aqui em cima, editando, a foto sempre mostra cheia,
+            // pra dar pra ver os detalhes sem a moldura atrapalhando.
             <div className="flex h-full w-full items-center justify-center p-5" style={{ backgroundColor: c.bg }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
