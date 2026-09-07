@@ -25,8 +25,8 @@ export default async function HojePage() {
 
 
   // Tudo que depende só do business roda em paralelo — antes eram 6 idas ao banco em fila.
-  const [oppRes, visitsRes, convRowsRes, interestedRes, actionsRes, unseenRes] = await Promise.all([
-    supabase.from("opportunities").select("*").eq("business_id", business!.id).eq("status", "open").order("impact_score", { ascending: false }).limit(1).maybeSingle(),
+  const [oppRes, visitsRes, convRowsRes, interestedRes, actionsRes, unseenRes, itemsCountRes] = await Promise.all([
+    supabase.from("opportunities").select("*").eq("business_id", business!.id).eq("status", "open").order("impact_score", { ascending: false }).limit(2),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("conversations").select("id").eq("business_id", business!.id),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id).not("intent", "is", null),
@@ -34,8 +34,18 @@ export default async function HojePage() {
     // não a tabela de campanhas (isso não tinha nada a ver com o que o visitante faz).
     supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", business!.id).eq("seen_by_owner", false),
+    supabase.from("content_items").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
   ]);
-  const opportunity = oppRes.data;
+  // O insight "Importe seu catálogo" só faz sentido antes de a Vitrine ter
+  // conteúdo — se a pessoa já importou ou cadastrou produtos manualmente,
+  // ele fecha sozinho aqui (nunca mais aparece) e mostra o próximo da fila.
+  const hasItems = (itemsCountRes.count ?? 0) > 0;
+  const openOpps = oppRes.data ?? [];
+  let opportunity = openOpps[0] ?? null;
+  if (opportunity && opportunity.category === "descoberta" && hasItems) {
+    await supabase.from("opportunities").update({ status: "resolved" }).eq("id", opportunity.id);
+    opportunity = openOpps[1] ?? null;
+  }
   const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
   const unseenConversas = unseenRes.count ?? 0;
 
