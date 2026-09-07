@@ -10,12 +10,13 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
+import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon, isVideoUrl } from "@/lib/showcase";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery } from "@/lib/logoGallery";
 
 type BrandColor = { hex: string; role?: string };
-type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar"; url?: string; logo_url?: string };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco"; url?: string; logo_url?: string };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
@@ -39,6 +40,7 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   zara: "Abre a Orbi",
   whatsapp: "Abre o WhatsApp",
   avaliar: "Avaliar no Google",
+  endereco: "Mostra o endereço",
   link: "Abre um link",
 };
 
@@ -68,6 +70,7 @@ export function BoxesManager({
   initialLogoUrl,
   initialLogoGallery,
   initialHeroAvatar,
+  initialAddress,
   brandColors,
   orbiColors,
 }: {
@@ -82,6 +85,7 @@ export function BoxesManager({
   initialLogoUrl: string | null;
   initialLogoGallery: string[];
   initialHeroAvatar: string | null;
+  initialAddress: string | null;
   brandColors: BrandColor[];
   orbiColors: string[] | null;
 }) {
@@ -212,6 +216,13 @@ export function BoxesManager({
   // (nome, ícone de estrela e ação "avaliar") — é só a pessoa colar o link.
   function novoBoxAvaliacao() {
     setDraft({ label: "Avalie no Google", subtitle: "Deixe sua nota, leva 10 segundos", icon: "__google__", action: "avaliar", url: "", color: "transparent" });
+    setCreating(true);
+  }
+
+  // Atalho: box de endereço pré-montado — a pessoa só cola o endereço e o
+  // box já sai pronto com os botões de Waze e Google Maps.
+  function novoBoxEndereco() {
+    setDraft({ label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", action: "endereco", url: initialAddress ?? "", color: "transparent" });
     setCreating(true);
   }
 
@@ -357,6 +368,8 @@ export function BoxesManager({
                     <OrbiContactDisc size={44} />
                   ) : icon === "__google__" ? (
                     <OrbiGoogleIcon size={44} />
+                  ) : icon === "__pin__" ? (
+                    <OrbiMapPin size={30} />
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={40} />
                   ) : (
@@ -403,6 +416,8 @@ export function BoxesManager({
                         <OrbiContactDisc size={36} />
                       ) : icon === "__google__" ? (
                         <OrbiGoogleIcon size={36} />
+                      ) : icon === "__pin__" ? (
+                        <OrbiMapPin size={26} />
                       ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                         <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={33} />
                       ) : (
@@ -580,6 +595,16 @@ export function BoxesManager({
             </span>
           </button>
           <button
+            onClick={novoBoxEndereco}
+            className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={28} /></span>
+            <span>
+              <span className="block text-[13px] font-medium">＋ Box de endereço</span>
+              <span className="block text-[12px] text-text-tertiary">Cole o endereço e o box já sai pronto com Waze e Google Maps.</span>
+            </span>
+          </button>
+          <button
             onClick={() => setCreating(true)}
             className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-center text-[13px] font-medium text-text-secondary"
           >
@@ -692,6 +717,13 @@ function BoxEditor({
       >
         <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiGoogleIcon size={32} /></span>
         <span className="text-[13px] font-medium">Google animado</span>
+      </button>
+      <button
+        onClick={() => pickIcon("__pin__")}
+        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__pin__" ? "border-on-background" : "border-divider"}`}
+      >
+        <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={22} /></span>
+        <span className="text-[13px] font-medium">Pin animado</span>
       </button>
 
       {/* Logotipo: mostra todos os que já foram enviados (em Configurações ou
@@ -812,6 +844,21 @@ function BoxEditor({
                   <p className="mt-1">Ainda não tem o negócio no Google? Cadastre grátis em <span className="font-medium">google.com/business</span> — leva 5 minutos e é essencial pra aparecer nas buscas.</p>
                 </div>
               </details>
+            </div>
+          )}
+
+          {cfg.action === "endereco" && (
+            <div className="flex flex-col gap-2">
+              <input
+                value={cfg.url ?? ""}
+                onChange={(e) => update({ url: e.target.value })}
+                onBlur={() => !liveOnly && onSave(cfg)}
+                placeholder="Rua, número — bairro, cidade"
+                className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+              />
+              <p className="text-[12px] leading-relaxed text-text-tertiary">
+                O visitante vê esse endereço com um botão pra abrir no Waze e outro no Google Maps.
+              </p>
             </div>
           )}
         </>

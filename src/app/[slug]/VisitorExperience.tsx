@@ -59,9 +59,9 @@ type ContentItem = {
   link_kind: string | null;
 };
 
-type Intent = "comprar" | "conhecer" | "presentear" | "duvida";
+type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "endereco";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar"; url?: string; logo_url?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco"; url?: string; logo_url?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -90,6 +90,10 @@ export function VisitorExperience({
   const searchParams = useSearchParams();
   const [intent, setIntent] = useState<Intent | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  // Endereço que abriu a tela "endereco" — pode não ser o business.address
+  // (o box guarda o seu próprio, pra funcionar mesmo sem endereço configurado
+  // em Configurações).
+  const [enderecoTapped, setEnderecoTapped] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
@@ -138,6 +142,13 @@ export function VisitorExperience({
             if (cfg.url) {
               trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: cfg.url });
               window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
+            }
+          } else if (cfg.action === "endereco") {
+            const addr = cfg.url?.trim() || business.address;
+            if (addr) {
+              trackClick({ businessId: business.id, kind: "link", sessionId });
+              setEnderecoTapped(addr);
+              chooseIntent("endereco");
             }
           } else if (cfg.url) {
             trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: cfg.url });
@@ -237,6 +248,8 @@ export function VisitorExperience({
                       <OrbiContactDisc size={44} className="rounded-full" />
                     ) : o.icon === "__google__" ? (
                       <OrbiGoogleIcon size={44} className="rounded-full" />
+                    ) : o.icon === "__pin__" ? (
+                      <OrbiMapPin size={30} />
                     ) : o.icon === "__logo__" && (o.boxLogo || business.logo_url) ? (
                       <OrbiLogoBadge logoUrl={o.boxLogo || business.logo_url!} size={40} />
                     ) : (
@@ -294,8 +307,51 @@ export function VisitorExperience({
         {intent === "duvida" && sessionId && (
           <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
         )}
+
+        {intent === "endereco" && enderecoTapped && (
+          <div className="w-full text-left">
+            <button onClick={() => setIntent(null)} className="mb-4 text-[13px] text-text-tertiary hover:underline">
+              ← voltar
+            </button>
+            <AddressCard address={enderecoTapped} />
+          </div>
+        )}
       </div>
     </main>
+  );
+}
+
+/** Card de endereço — pin animado, texto, e botões pra abrir no Waze ou
+ * Google Maps. Usado na página "Sobre" e no box de endereço avulso. */
+function AddressCard({ address }: { address: string }) {
+  return (
+    <div className="mt-6">
+      <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Endereço</p>
+      <div className="mt-2 rounded-[18px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+        <div className="flex items-start gap-3">
+          <OrbiMapPin size={26} className="shrink-0" />
+          <span className="text-[14px] leading-relaxed text-text-secondary">{address}</span>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <a
+            href={`https://waze.com/ul?q=${encodeURIComponent(address)}&navigate=yes`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+          >
+            Abrir no Waze
+          </a>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+          >
+            Abrir no Google
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -414,35 +470,7 @@ function StoryView({
         </div>
       )}
 
-      {business.address && (
-        <div className="mt-6">
-          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Endereço</p>
-          <div className="mt-2 rounded-[18px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
-            <div className="flex items-start gap-3">
-              <OrbiMapPin size={26} className="shrink-0" />
-              <span className="text-[14px] leading-relaxed text-text-secondary">{business.address}</span>
-            </div>
-            <div className="mt-3 flex gap-2">
-              <a
-                href={`https://waze.com/ul?q=${encodeURIComponent(business.address)}&navigate=yes`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
-              >
-                Abrir no Waze
-              </a>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
-              >
-                Abrir no Google
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+      {business.address && <AddressCard address={business.address} />}
 
       {/* Três caminhos a partir daqui: ver o catálogo, WhatsApp, ou conversar com a IA. */}
       <div className="mt-8 flex flex-col gap-2.5">
