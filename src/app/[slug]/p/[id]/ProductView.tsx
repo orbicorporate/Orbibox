@@ -67,7 +67,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
       <div className="px-4 pt-3">
         {images.length > 0 ? (
           <div
-            className="flex snap-x snap-mandatory gap-3 overflow-x-auto no-scrollbar"
+            className="flex snap-x snap-mandatory items-start gap-3 overflow-x-auto no-scrollbar"
             onScroll={(e) => {
               const w = e.currentTarget.clientWidth || 1;
               setActive(Math.round(e.currentTarget.scrollLeft / w));
