@@ -290,8 +290,8 @@ export function OrbiParticleSphere({
           g += (morphColor[1] - g) * kMorph;
           b0 += (morphColor[2] - b0) * kMorph;
         }
-        const b = 0.85 + depth * 0.15;
-        const alpha = (0.6 + depth * 0.4) * (isMicro[i] ? microAlpha : 1);
+        const b = 0.75 + depth * 0.25;
+        const alpha = (0.85 + depth * 0.15) * (isMicro[i] ? microAlpha : 1);
         ctx.beginPath();
         ctx.fillStyle = `rgba(${(r * b) | 0},${(g * b) | 0},${(b0 * b) | 0},${alpha})`;
         ctx.arc(px, py, rad, 0, 6.283185307179586);
