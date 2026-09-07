@@ -34,7 +34,7 @@ export function OrbiContactDisc({
 
     const cx = size / 2;
     const cy = size / 2;
-    const R = size * 0.34;
+    const R = size * 0.4;
 
     function drawSymbol(scaleX: number, alpha: number) {
       if (!ctx) return;

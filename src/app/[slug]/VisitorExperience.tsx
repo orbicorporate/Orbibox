@@ -283,7 +283,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
+          <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
         )}
       </div>
     </main>
@@ -469,6 +469,7 @@ function OrbiChat({
   sessionId,
   agentName,
   orbiColors,
+  heroGradient,
   content,
   whatsapp,
   onBack,
@@ -477,6 +478,7 @@ function OrbiChat({
   sessionId: string;
   agentName: string;
   orbiColors: string[] | null;
+  heroGradient: string[];
   content: ContentItem[];
   whatsapp: string | null;
   onBack: () => void;
@@ -592,7 +594,14 @@ function OrbiChat({
   }, [messages.length, sending, justDone, started]);
 
   return (
-    <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col bg-background-main/95 backdrop-blur">
+    <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main/95 backdrop-blur">
+      {/* Mesmo halo da tela inicial, pra não ficar um fundo parado/liso aqui —
+          a marca continua presente mesmo depois de abrir o chat. */}
+      <div
+        className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[110px]"
+        style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
+      />
+
       {/* Fechar — z-index acima do conteúdo pra o toque nunca ser bloqueado */}
       <button
         onClick={onBack}
@@ -602,10 +611,10 @@ function OrbiChat({
         ×
       </button>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-40 pt-20" style={{ WebkitOverflowScrolling: "touch" }}>
-        {/* Avatar */}
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-40 pt-20" style={{ WebkitOverflowScrolling: "touch" }}>
+        {/* Avatar — a esfera configurada da Orbi, não mais a esfera de vidro genérica. */}
         <div className="mx-auto relative">
-          <OrbiOrb size={112} />
+          <OrbiParticleSphere size={112} colors={orbiColors ?? undefined} className="rounded-full" />
           <span className="absolute bottom-3 right-3 h-4 w-4 rounded-full border-2 border-surface-white bg-orbi-gradient-start" />
         </div>
         <p className="mt-2 text-center text-[13px] text-text-tertiary">{agentName} · online</p>
