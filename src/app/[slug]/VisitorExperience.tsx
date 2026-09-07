@@ -169,7 +169,7 @@ export function VisitorExperience({
           (que brigaria de contraste com a Orbi), só o suficiente pra não
           cortar seco pro cinza claro plano. Puxa as mesmas cores do fundo. */}
       <div
-        className="pointer-events-none absolute -top-40 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full opacity-[0.08] blur-[80px]"
+        className="pointer-events-none absolute -top-56 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full opacity-[0.04] blur-[100px]"
         style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
       />
 
@@ -612,7 +612,7 @@ function OrbiChat({
       {/* Toque sutil da paleta no topo, igual à tela inicial — disfarça o
           corte seco pro cinza claro sem competir de contraste com a Orbi. */}
       <div
-        className="pointer-events-none absolute -top-40 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full opacity-[0.08] blur-[80px]"
+        className="pointer-events-none absolute -top-56 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full opacity-[0.04] blur-[100px]"
         style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
       />
 
