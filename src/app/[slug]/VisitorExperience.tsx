@@ -332,8 +332,12 @@ function StoryView({
 
       {photos.length > 0 && (
         <>
+          {(() => {
+            const slideAspects = photos.map((src) => (instagramReelId(src) ? 9 / 16 : 16 / 9));
+            return (
           <div
-            className="flex snap-x snap-mandatory items-start gap-3 overflow-x-auto no-scrollbar"
+            className="flex snap-x snap-mandatory items-start gap-3 overflow-x-auto no-scrollbar transition-[aspect-ratio] duration-300 ease-out"
+            style={{ aspectRatio: slideAspects[active] ?? 16 / 9 }}
             onScroll={(e) => {
               const w = e.currentTarget.clientWidth || 1;
               setActive(Math.round(e.currentTarget.scrollLeft / w));
@@ -342,12 +346,8 @@ function StoryView({
             {photos.map((src, i) => {
               const ytId = youtubeId(src);
               const igId = instagramReelId(src);
-              // As fotos daqui são paisagem (16:9); vídeo do YouTube já combina.
-              // Reels é vertical de verdade — não faz sentido espremer, então
-              // usa o formato dele mesmo.
-              const slideAspect = igId ? "9 / 16" : "16 / 9";
               return (
-                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio: slideAspect }}>
+                <div key={i} className="relative h-full w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
                   {ytId ? (
                     <iframe
                       src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`}
@@ -375,6 +375,8 @@ function StoryView({
               );
             })}
           </div>
+            );
+          })()}
           {photos.length > 1 && (
             <div className="mt-3 flex justify-center gap-1.5">
               {photos.map((_, i) => (

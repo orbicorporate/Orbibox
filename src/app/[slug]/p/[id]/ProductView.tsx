@@ -63,11 +63,22 @@ export function ProductView({ business, item }: { business: Business; item: Item
         </Link>
       </div>
 
-      {/* Carrossel estilo post: quadrado, cantos arredondados, com respiro nas laterais */}
+      {/* Carrossel estilo post: quadrado, cantos arredondados, com respiro nas laterais.
+          A altura acompanha o slide atual — foto (retrato) e vídeo (paisagem)
+          raramente têm a mesma proporção, então em vez de deixar sobrar um
+          vazio embaixo do mais baixo, o carrossel inteiro muda de altura
+          conforme a pessoa folheia. */}
       <div className="px-4 pt-3">
-        {images.length > 0 ? (
+        {images.length > 0 ? (() => {
+          const slideAspects = images.map((src) => {
+            const ytId = youtubeId(src);
+            const igId = instagramReelId(src);
+            return ytId ? 16 / 9 : igId ? 9 / 16 : aspectRatio;
+          });
+          return (
           <div
-            className="flex snap-x snap-mandatory items-start gap-3 overflow-x-auto no-scrollbar"
+            className="flex snap-x snap-mandatory items-start gap-3 overflow-x-auto no-scrollbar transition-[aspect-ratio] duration-300 ease-out"
+            style={{ aspectRatio: slideAspects[active] ?? aspectRatio }}
             onScroll={(e) => {
               const w = e.currentTarget.clientWidth || 1;
               setActive(Math.round(e.currentTarget.scrollLeft / w));
@@ -80,11 +91,8 @@ export function ProductView({ business, item }: { business: Business; item: Item
             {images.map((src, i) => {
               const ytId = youtubeId(src);
               const igId = instagramReelId(src);
-              // Vídeo sempre no formato dele de verdade — YouTube é paisagem,
-              // Reels é vertical — nunca espremido no formato do card de foto.
-              const slideAspect = ytId ? 16 / 9 : igId ? 9 / 16 : aspectRatio;
               return (
-                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio: slideAspect }}>
+                <div key={i} className="relative h-full w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft">
                   {ytId ? (
                     <iframe
                       src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`}
@@ -112,7 +120,8 @@ export function ProductView({ business, item }: { business: Business; item: Item
               );
             })}
           </div>
-        ) : (
+          );
+        })() : (
           <div className="flex w-full items-center justify-center rounded-[22px] bg-surface-soft text-[13px] text-text-tertiary" style={{ aspectRatio }}>
             sem foto
           </div>
