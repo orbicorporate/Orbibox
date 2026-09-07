@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
-import { COVER_RATIO_BY_SIZE, formatPrice, sizeOf, youtubeId } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, formatPrice, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 
 type Business = {
@@ -79,14 +79,26 @@ export function ProductView({ business, item }: { business: Business; item: Item
           >
             {images.map((src, i) => {
               const ytId = youtubeId(src);
+              const igId = instagramReelId(src);
+              // Vídeo sempre no formato dele de verdade — YouTube é paisagem,
+              // Reels é vertical — nunca espremido no formato do card de foto.
+              const slideAspect = ytId ? 16 / 9 : igId ? 9 / 16 : aspectRatio;
               return (
-                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio }}>
+                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio: slideAspect }}>
                   {ytId ? (
                     <iframe
                       src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`}
                       title={`${item.title} — vídeo ${i + 1}`}
                       className="h-full w-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : igId ? (
+                    <iframe
+                      src={`https://www.instagram.com/reel/${igId}/embed`}
+                      title={`${item.title} — reels ${i + 1}`}
+                      className="h-full w-full"
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                       allowFullScreen
                     />
                   ) : (

@@ -288,6 +288,26 @@ export function isYoutube(url: string): boolean {
   return youtubeId(url) !== null;
 }
 
+/** Extrai o código de um Reels/post do Instagram (instagram.com/reel/CODE/,
+ * /reels/CODE/, /p/CODE/, /tv/CODE/). Retorna null se não for um link do
+ * Instagram desses formatos. */
+export function instagramReelId(url: string): string | null {
+  if (!url) return null;
+  const m = url.match(/instagram\.com\/(?:reel|reels|p|tv)\/([A-Za-z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+/** Diz se uma entrada da galeria é um Reels/post do Instagram. */
+export function isInstagramReel(url: string): boolean {
+  return instagramReelId(url) !== null;
+}
+
+/** Diz se uma entrada da galeria é um vídeo de qualquer tipo suportado
+ * (YouTube ou Instagram) — útil pra filtrar fotos de vídeos de forma genérica. */
+export function isVideoUrl(url: string): boolean {
+  return isYoutube(url) || isInstagramReel(url);
+}
+
 /** Curadoria de cores vibrantes pra Orbi (esfera de partículas) — sempre
  * saturadas o bastante pra ficarem bonitas na animação, evitando tons
  * apagados demais. A pessoa escolhe duas; qualquer combinação funciona bem

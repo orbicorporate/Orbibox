@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
-import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isYoutube, type BoxSize, type PriceType } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { RATIOS } from "@/components/ui/ImageCropModal";
@@ -994,13 +994,13 @@ function ItemCard({
                 </p>
                 <div className="mt-2">
                   <GalleryUpload
-                    value={item.gallery_urls.filter((u) => !isYoutube(u))}
+                    value={item.gallery_urls.filter((u) => !isVideoUrl(u))}
                     businessId={businessId}
                     lockedRatio="retrato"
                     lockedReason="As fotos da galeria são sempre verticais (retrato), pra manter o carrossel uniforme."
                     onChange={(urls) => {
                       // Mantém os vídeos do YouTube e troca só as fotos.
-                      const videos = item.gallery_urls.filter((u) => isYoutube(u));
+                      const videos = item.gallery_urls.filter((u) => isVideoUrl(u));
                       save(item.id, { gallery_urls: [...urls, ...videos] });
                     }}
                   />
@@ -1008,7 +1008,7 @@ function ItemCard({
 
                 {/* Vídeo do YouTube no carrossel */}
                 <YoutubeAdder
-                  videos={item.gallery_urls.filter((u) => isYoutube(u))}
+                  videos={item.gallery_urls.filter((u) => isVideoUrl(u))}
                   onAdd={(url) => {
                     if (item.gallery_urls.includes(url)) return;
                     save(item.id, { gallery_urls: [...item.gallery_urls, url] });

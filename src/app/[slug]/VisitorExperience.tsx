@@ -12,7 +12,7 @@ import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
-import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, isAnimatedIcon, youtubeId } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, isAnimatedIcon, youtubeId, instagramReelId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 
@@ -341,14 +341,27 @@ function StoryView({
           >
             {photos.map((src, i) => {
               const ytId = youtubeId(src);
+              const igId = instagramReelId(src);
+              // As fotos daqui são paisagem (16:9); vídeo do YouTube já combina.
+              // Reels é vertical de verdade — não faz sentido espremer, então
+              // usa o formato dele mesmo.
+              const slideAspect = igId ? "9 / 16" : "16 / 9";
               return (
-                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio: "16 / 9" }}>
+                <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-[22px] bg-surface-soft" style={{ aspectRatio: slideAspect }}>
                   {ytId ? (
                     <iframe
                       src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`}
                       title={`${business.name} — vídeo ${i + 1}`}
                       className="h-full w-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : igId ? (
+                    <iframe
+                      src={`https://www.instagram.com/reel/${igId}/embed`}
+                      title={`${business.name} — reels ${i + 1}`}
+                      className="h-full w-full"
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                       allowFullScreen
                     />
                   ) : (
