@@ -10,7 +10,7 @@ export function OrbiAvatar({ logoUrl, size = 96, className = "" }: { logoUrl: st
       <div className="orbi-avatar-ring absolute inset-0 rounded-full">
         <span className="orbi-avatar-dot absolute rounded-full" />
       </div>
-      <div className="relative h-full w-full overflow-hidden rounded-full bg-surface-soft">
+      <div className="relative h-full w-full overflow-hidden rounded-full bg-background-main">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoUrl} alt="" className="h-full w-full object-cover" />
         <div className="orbi-avatar-shine pointer-events-none absolute inset-0" />
