@@ -99,10 +99,15 @@ export function OrbiVisualPanel({
 
         <div className="mt-5 border-t border-divider pt-4">
           <div className="flex items-center gap-4">
-            <span
-              className="h-14 w-14 shrink-0 rounded-2xl"
-              style={{ background: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
-            />
+            {/* Mini réplica da tela real: fundo claro da página + o halo
+                desfocado na parte de baixo, do jeito que aparece de verdade —
+                não um quadrado sólido, que enganaria sobre o resultado. */}
+            <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background-main">
+              <span
+                className="absolute -bottom-5 left-1/2 h-11 w-11 -translate-x-1/2 rounded-full opacity-60 blur-md"
+                style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
+              />
+            </span>
             <div className="flex-1">
               <p className="text-[14px] font-medium">Fundo da tela inicial</p>
               <p className="mt-0.5 text-[12px] leading-relaxed text-text-secondary">
