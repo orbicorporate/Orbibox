@@ -47,11 +47,16 @@
   --font-body: var(--font-geist-sans);
 }
 
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
 body {
   background: var(--background-main);
   color: var(--on-background);
   touch-action: manipulation;
+  /* Impede o "bounce" de borracha do iOS de vazar por trás de overlays
+     (chat, modais) mesmo com o corpo travado via position:fixed — esse
+     efeito acontece no nível do documento, então precisa ser desligado
+     aqui também, não só no elemento que trava o scroll. */
+  overscroll-behavior: none;
 }
 
 /* Degradê da inteligência — usar só em elementos de IA */
