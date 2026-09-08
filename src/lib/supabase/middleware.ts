@@ -60,5 +60,24 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // Assinatura que já existiu mas está com problema (pagamento falhou,
+  // cancelada, etc) — manda pra tela de planos pra reativar. Quem nunca
+  // teve assinatura (ainda não passou pelo checkout) não é bloqueado aqui;
+  // fica no limite padrão de 1 negócio / sem chat até assinar.
+  if (user && isAdmin && path !== "/admin/planos") {
+    const { data: subscription } = await supabase
+      .from("subscriptions")
+      .select("status")
+      .eq("owner_id", user.id)
+      .maybeSingle();
+
+    if (subscription && ["past_due", "canceled", "incomplete"].includes(subscription.status)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/planos";
+      url.searchParams.set("blocked", "1");
+      return NextResponse.redirect(url);
+    }
+  }
+
   return supabaseResponse;
 }

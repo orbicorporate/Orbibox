@@ -48,14 +48,17 @@ export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
     .maybeSingle();
 
   const isActive = ACTIVE_STATUSES.has(subscription.status);
+  const isTrialing = subscription.status === "trialing";
 
   return {
     subscription,
     plan,
     isActive,
-    isTrialing: subscription.status === "trialing",
-    hasAiChat: isActive && (plan?.has_ai_chat ?? false),
-    maxBusinesses: isActive ? (plan?.max_businesses ?? 1) : 1,
+    isTrialing,
+    // No teste de 3 dias a pessoa sente o potencial completo (Titânio +
+    // Nióbio juntos), independente de qual plano ela selecionou no checkout.
+    hasAiChat: isTrialing ? true : isActive && (plan?.has_ai_chat ?? false),
+    maxBusinesses: isTrialing ? 999 : isActive ? (plan?.max_businesses ?? 1) : 1,
     trialEndsAt: subscription.trial_ends_at,
   };
 }
@@ -74,6 +77,7 @@ export async function getOwnerHasAiChat(ownerId: string): Promise<boolean> {
     .maybeSingle();
 
   if (!subscription || !ACTIVE_STATUSES.has(subscription.status)) return false;
+  if (subscription.status === "trialing") return true; // teste dá acesso completo
 
   const { data: plan } = await supabase
     .from("plans")

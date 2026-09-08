@@ -29,6 +29,7 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
 
   const currentPlanId = access.subscription?.plan_id ?? null;
   const currentStatus = access.subscription?.status ?? null;
+  const inGoodStanding = currentStatus === "active" || currentStatus === "trialing" || currentStatus === "comped";
 
   async function handleAssinar(planId: string) {
     setError(null);
@@ -84,7 +85,7 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
 
       {plans.map((plan) => {
         const priceCents = cycle === "yearly" ? plan.yearly_price_cents : plan.monthly_price_cents;
-        const isCurrent = currentPlanId === plan.id && currentStatus !== "canceled";
+        const isCurrent = currentPlanId === plan.id && inGoodStanding;
 
         return (
           <Card key={plan.id} className="flex flex-col gap-3">
