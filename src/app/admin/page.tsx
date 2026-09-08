@@ -25,8 +25,8 @@ export default async function HojePage() {
 
 
   // Tudo que depende só do business roda em paralelo — antes eram 6 idas ao banco em fila.
-  const [oppRes, visitsRes, convRowsRes, interestedRes, actionsRes, itemsCountRes] = await Promise.all([
-    supabase.from("opportunities").select("*").eq("business_id", business!.id).eq("status", "open").order("impact_score", { ascending: false }).limit(2),
+  const [agentRes, visitsRes, convRowsRes, interestedRes, actionsRes, itemsCountRes] = await Promise.all([
+    supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed, objectives").eq("business_id", business!.id).maybeSingle(),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("conversations").select("id").eq("business_id", business!.id),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id).not("intent", "is", null),
@@ -35,17 +35,70 @@ export default async function HojePage() {
     supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("content_items").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
   ]);
-  // O insight "Importe seu catálogo" só faz sentido antes de a Vitrine ter
-  // conteúdo — se a pessoa já importou ou cadastrou produtos manualmente,
-  // ele fecha sozinho aqui (nunca mais aparece) e mostra o próximo da fila.
-  const hasItems = (itemsCountRes.count ?? 0) > 0;
-  const openOpps = oppRes.data ?? [];
-  let opportunity = openOpps[0] ?? null;
-  if (opportunity && opportunity.category === "descoberta" && hasItems) {
-    await supabase.from("opportunities").update({ status: "resolved" }).eq("id", opportunity.id);
-    opportunity = openOpps[1] ?? null;
-  }
   const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
+
+  // Insight sempre atual — em vez de uma tabela fixa que nunca se atualizava
+  // sozinha, verifica o estado de verdade do negócio a cada carregamento e
+  // sugere o próximo passo que ainda falta, em ordem de prioridade. Assim
+  // que a pessoa resolve um, o próximo já aparece — nunca fica preso num
+  // insight antigo, e nunca sobra sem sugestão nenhuma.
+  const agentConfig = agentRes.data;
+  const hasItems = (itemsCountRes.count ?? 0) > 0;
+  const toneConfigured = !!agentConfig && (
+    agentConfig.tone_formal_informal !== 50 ||
+    agentConfig.tone_reserved_energetic !== 50 ||
+    agentConfig.tone_concise_detailed !== 50 ||
+    (agentConfig.objectives?.length ?? 0) > 0
+  );
+  const insightsQueue: { title: string; description: string; ctaLabel: string; href: string }[] = [];
+  if (!hasItems) {
+    insightsQueue.push({
+      title: "Importe seu catálogo",
+      description: "Cole o link do seu site na Vitrine — a Orbi transforma seus produtos em boxes automaticamente.",
+      ctaLabel: "Abrir Vitrine",
+      href: "/admin/vitrine",
+    });
+  }
+  if (!toneConfigured) {
+    insightsQueue.push({
+      title: "Configure o tom de voz da Orbi",
+      description: "Defina como a assistente deve conversar com seus visitantes.",
+      ctaLabel: "Configurar Orbi",
+      href: "/admin/agent",
+    });
+  }
+  if (!business!.logo_url) {
+    insightsQueue.push({
+      title: "Adicione seu logotipo",
+      description: "Deixa a página com a cara da sua marca — aparece no avatar, no chat e em vários lugares.",
+      ctaLabel: "Enviar logotipo",
+      href: "/admin/config",
+    });
+  }
+  if (!business!.contact_whatsapp) {
+    insightsQueue.push({
+      title: "Configure seu WhatsApp",
+      description: "Sem WhatsApp cadastrado, os visitantes não conseguem falar direto com você.",
+      ctaLabel: "Adicionar WhatsApp",
+      href: "/admin/config",
+    });
+  }
+  if (!business!.address) {
+    insightsQueue.push({
+      title: "Adicione seu endereço",
+      description: "Ganha um box pronto na tela inicial, com botões pro Waze e Google Maps.",
+      ctaLabel: "Adicionar endereço",
+      href: "/admin/boxes",
+    });
+  }
+  // Sem nenhum pendente: sempre sobra uma sugestão de divulgação, pra nunca
+  // ficar sem nada pra fazer.
+  const insight = insightsQueue[0] ?? {
+    title: "Compartilhe seu Orbibox",
+    description: "Já está tudo pronto — hora de divulgar. Cole o link nos stories, na bio do Instagram, ou manda no WhatsApp.",
+    ctaLabel: "Ver meu Orbibox",
+    href: `/${business!.slug}`,
+  };
 
   // "Conversas reais" só conta quem de fato trocou mensagem com a Orbi — não
   // toda vez que alguém abriu o chat e fechou sem digitar nada (isso inflava
@@ -63,14 +116,6 @@ export default async function HojePage() {
     conversion: realConvs,
     relationship: actions ?? 0,
   };
-
-  // O botão do insight leva para onde a ação realmente acontece.
-  const CTA: Record<string, { label: string; href: string }> = {
-    descoberta: { label: "Abrir vitrine", href: "/admin/vitrine" },
-    relacionamento: { label: "Configurar Orbi", href: "/admin/agent" },
-    conversao: { label: "Ativar campanha", href: "/admin/campaigns" },
-  };
-  const cta = CTA[opportunity?.category ?? ""] ?? { label: "Ativar campanha", href: "/admin/campaigns" };
 
   return (
     <div className="relative flex flex-col">
@@ -119,24 +164,22 @@ export default async function HojePage() {
         ))}
       </div>
 
-      {/* Insight Orbi */}
-      {opportunity && (
-        <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
-          <OrbiOrb size={56} />
-          <p className="mt-4 font-[family-name:var(--font-manrope)] text-[20px] font-medium">
-            Insight Orbi
-          </p>
-          <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-            {opportunity.description ?? opportunity.title}
-          </p>
-          <Link
-            href={cta.href}
-            className="mt-5 inline-flex items-center gap-2 rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white"
-          >
-            {cta.label} →
-          </Link>
-        </div>
-      )}
+      {/* Insight Orbi — sempre tem um, prioriza o que ainda falta fazer */}
+      <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
+        <OrbiOrb size={56} />
+        <p className="mt-4 font-[family-name:var(--font-manrope)] text-[20px] font-medium">
+          Insight Orbi
+        </p>
+        <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
+          {insight.description}
+        </p>
+        <Link
+          href={insight.href}
+          className="mt-5 inline-flex items-center gap-2 rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white"
+        >
+          {insight.ctaLabel} →
+        </Link>
+      </div>
     </div>
   );
 }
