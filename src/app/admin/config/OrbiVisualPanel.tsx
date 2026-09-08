@@ -9,6 +9,26 @@ const DEFAULT_ORBI = ["#7FE84A", "#8B2BFF"];
 // Mesmas cores que o degradê padrão da tela inicial sempre usou.
 const DEFAULT_HERO = ["#B7F34A", "#6EE7D8"];
 
+type PickerKey = "primaria" | "secundaria" | "detalhe" | "hero1" | "hero2";
+
+// Cada botão mostra só a cor atual (uma bolinha) + o nome — a paleta inteira
+// só aparece quando toca, numa folha que sobe de baixo.
+function ColorRow({ label, hex, onOpen, extra }: { label: string; hex: string | null; onOpen: () => void; extra?: React.ReactNode }) {
+  return (
+    <div className="mt-3 flex items-center justify-between">
+      <button onClick={onOpen} className="flex flex-1 items-center gap-3 rounded-2xl bg-surface-soft px-3 py-2.5 text-left">
+        <span
+          className="h-7 w-7 shrink-0 rounded-full border border-divider"
+          style={hex ? { backgroundColor: hex } : { background: "repeating-linear-gradient(45deg, #ddd, #ddd 3px, transparent 3px, transparent 6px)" }}
+        />
+        <span className="flex-1 text-[13px] font-medium">{label}</span>
+        <span className="text-text-tertiary">›</span>
+      </button>
+      {extra}
+    </div>
+  );
+}
+
 export function OrbiVisualPanel({
   businessId,
   initialOrbiColors,
@@ -26,6 +46,8 @@ export function OrbiVisualPanel({
     initialHeroGradient && initialHeroGradient.length >= 2 ? initialHeroGradient : DEFAULT_HERO
   );
   const orbiDetail = orbiColors[2] ?? null;
+  // Só uma folha de cor aberta por vez — toca no botão, escolhe, fecha.
+  const [openPicker, setOpenPicker] = useState<PickerKey | null>(null);
 
   // upsert por business_id — funciona mesmo se a linha em agent_configs ainda
   // não existir (evita depender de outra tela ter criado ela primeiro).
@@ -59,43 +81,17 @@ export function OrbiVisualPanel({
             </p>
           </div>
         </div>
-        {([0, 1] as const).map((slot) => (
-          <div key={slot} className="mt-4">
-            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">{slot === 0 ? "Cor primária" : "Cor secundária"}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {ORBI_SPHERE_COLORS.map((c) => (
-                <button
-                  key={c.hex}
-                  onClick={() => pickOrbiColor(slot, c.hex)}
-                  aria-label={c.label}
-                  className={`h-8 w-8 rounded-full border-2 ${orbiColors[slot] === c.hex ? "border-on-background" : "border-transparent"}`}
-                  style={{ backgroundColor: c.hex }}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
 
-        {/* Terceira fileira: cor de detalhe, opcional — degradê suave, concentrado embaixo. */}
-        <div className="mt-4">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Cor de detalhe (opcional)</p>
-            {orbiDetail && (
-              <button onClick={clearOrbiDetail} className="text-[11px] text-text-tertiary underline">remover</button>
-            )}
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {ORBI_SPHERE_COLORS.map((c) => (
-              <button
-                key={c.hex}
-                onClick={() => pickOrbiColor(2, c.hex)}
-                aria-label={c.label}
-                className={`h-8 w-8 rounded-full border-2 ${orbiDetail === c.hex ? "border-on-background" : "border-transparent"}`}
-                style={{ backgroundColor: c.hex }}
-              />
-            ))}
-          </div>
-        </div>
+        <ColorRow label="Cor primária" hex={orbiColors[0]} onOpen={() => setOpenPicker("primaria")} />
+        <ColorRow label="Cor secundária" hex={orbiColors[1]} onOpen={() => setOpenPicker("secundaria")} />
+        <ColorRow
+          label="Cor de detalhe (opcional)"
+          hex={orbiDetail}
+          onOpen={() => setOpenPicker("detalhe")}
+          extra={orbiDetail && (
+            <button onClick={clearOrbiDetail} className="ml-2 shrink-0 text-[11px] text-text-tertiary underline">remover</button>
+          )}
+        />
 
         <div className="mt-5 border-t border-divider pt-4">
           <div className="flex items-center gap-4">
@@ -118,21 +114,60 @@ export function OrbiVisualPanel({
               </p>
             </div>
           </div>
-          {([0, 1] as const).map((slot) => (
-            <div key={slot} className="mt-4">
-              <p className="text-[11px] uppercase tracking-wide text-text-tertiary">{slot === 0 ? "Cor 1" : "Cor 2"}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {ORBI_SPHERE_COLORS.map((c) => (
-                  <button
-                    key={c.hex}
-                    onClick={() => pickHeroColor(slot, c.hex)}
-                    aria-label={c.label}
-                    className={`h-8 w-8 rounded-full border-2 ${heroGradient[slot] === c.hex ? "border-on-background" : "border-transparent"}`}
-                    style={{ backgroundColor: c.hex }}
-                  />
-                ))}
-              </div>
-            </div>
+          <ColorRow label="Cor 1" hex={heroGradient[0]} onOpen={() => setOpenPicker("hero1")} />
+          <ColorRow label="Cor 2" hex={heroGradient[1]} onOpen={() => setOpenPicker("hero2")} />
+        </div>
+      </div>
+
+      {openPicker && (
+        <ColorPickerSheet
+          current={
+            openPicker === "primaria" ? orbiColors[0]
+            : openPicker === "secundaria" ? orbiColors[1]
+            : openPicker === "detalhe" ? orbiDetail
+            : openPicker === "hero1" ? heroGradient[0]
+            : heroGradient[1]
+          }
+          onSelect={(hex) => {
+            if (openPicker === "primaria") pickOrbiColor(0, hex);
+            else if (openPicker === "secundaria") pickOrbiColor(1, hex);
+            else if (openPicker === "detalhe") pickOrbiColor(2, hex);
+            else if (openPicker === "hero1") pickHeroColor(0, hex);
+            else pickHeroColor(1, hex);
+          }}
+          onClose={() => setOpenPicker(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Folha que sobe de baixo com a paleta inteira — só aparece quando a
+ * pessoa toca num dos botões de cor, em vez de ficar sempre visível. */
+function ColorPickerSheet({
+  current,
+  onSelect,
+  onClose,
+}: {
+  current: string | null;
+  onSelect: (hex: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50" onClick={onClose}>
+      <div className="max-h-[70vh] overflow-y-auto rounded-t-[28px] bg-surface-white p-5" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" aria-label="Fechar" />
+        <p className="text-center text-[14px] font-medium">Escolher cor</p>
+        <div className="mt-4 grid grid-cols-6 gap-3 pb-2">
+          {ORBI_SPHERE_COLORS.map((c) => (
+            <button
+              key={c.hex}
+              onClick={() => { onSelect(c.hex); onClose(); }}
+              aria-label={c.label}
+              title={c.label}
+              className={`aspect-square rounded-full border-2 ${current?.toLowerCase() === c.hex.toLowerCase() ? "border-on-background" : "border-transparent"}`}
+              style={{ backgroundColor: c.hex }}
+            />
           ))}
         </div>
       </div>
