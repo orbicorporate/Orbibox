@@ -341,7 +341,7 @@ export function BoxesManager({
           const isHero = false;
           const isCustom = box.box_type === "custom";
           const cfg = box.config as BoxConfig | null;
-          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Bloco livre", explica: "Um caminho extra que você define — WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
+          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Box livre", explica: "Um caminho extra que você define — WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
           // O box "Sobre" já sugere o nome da marca — o dono usa, ajusta ou desativa.
           const suggestedName = box.box_type === "content" ? `Sobre a ${businessName}` : m.name;
           const label = cfg?.label ?? (isCustom ? box.title ?? "" : suggestedName);
@@ -569,7 +569,7 @@ export function BoxesManager({
 
       {creating ? (
         <div className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4">
-          <p className="text-[13px] font-medium">Novo bloco personalizado</p>
+          <p className="text-[13px] font-medium">Nova Box personalizada</p>
           <input
             value={draft.label ?? ""}
             onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
@@ -606,9 +606,13 @@ export function BoxesManager({
           </button>
           <button
             onClick={() => setCreating(true)}
-            className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-center text-[13px] font-medium text-text-secondary"
+            className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
           >
-            + Criar bloco personalizado (WhatsApp, portfólio, outro link)
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]">＋</span>
+            <span>
+              <span className="block text-[13px] font-medium">＋ Box personalizada</span>
+              <span className="block text-[12px] text-text-tertiary">WhatsApp, portfólio, ou qualquer outro link — você escolhe o nome, o ícone e a cor.</span>
+            </span>
           </button>
         </div>
       )}
@@ -866,7 +870,7 @@ function BoxEditor({
 
       {onDelete && (
         <button onClick={onDelete} className="mt-1 self-start text-[12px] text-red-600">
-          Excluir este bloco
+          Excluir esta Box
         </button>
       )}
 

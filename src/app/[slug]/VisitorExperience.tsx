@@ -307,6 +307,14 @@ export function VisitorExperience({
                 )}
                 </div>
               ))}
+              {options.length === 0 && (
+                <div className="rounded-[24px] bg-surface-white p-5 text-center shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
+                  <p className="text-[14px] font-medium">Ainda não tem nada por aqui</p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-text-tertiary">
+                    Essa página está sendo montada. Volta mais tarde pra conferir.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}

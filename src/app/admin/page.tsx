@@ -27,7 +27,7 @@ export default async function HojePage() {
 
 
   // Tudo que depende só do business roda em paralelo — antes eram 6 idas ao banco em fila.
-  const [agentRes, visitsRes, convRowsRes, interestedRes, actionsRes, itemsPhotoRes] = await Promise.all([
+  const [agentRes, visitsRes, convRowsRes, interestedRes, actionsRes, itemsPhotoRes, activeBoxesRes] = await Promise.all([
     supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed, objectives, orbi_colors").eq("business_id", business!.id).maybeSingle(),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("conversations").select("id").eq("business_id", business!.id),
@@ -36,8 +36,10 @@ export default async function HojePage() {
     // não a tabela de campanhas (isso não tinha nada a ver com o que o visitante faz).
     supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("content_items").select("image_url, image_is_placeholder, description").eq("business_id", business!.id),
+    supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", business!.id).eq("is_active", true),
   ]);
   const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
+  const activeBoxes = activeBoxesRes.count ?? 0;
 
   // Insight sempre atual — em vez de uma tabela fixa que nunca se atualizava
   // sozinha, verifica o estado de verdade do negócio a cada carregamento e
@@ -60,6 +62,14 @@ export default async function HojePage() {
   const rawDiff = business!.differentials_cards;
   const hasDifferentials = (Array.isArray(rawDiff) && rawDiff.length > 0) || !!business!.differentials?.trim();
   const insightsQueue: { title: string; description: string; ctaLabel: string; href: string; share?: boolean }[] = [];
+  if (activeBoxes === 0) {
+    insightsQueue.push({
+      title: "Ative pelo menos uma Box antes de divulgar",
+      description: "Sem nenhuma Box ativa, quem abre seu link não vê nenhuma opção — a página fica vazia. Ative ou crie uma Box pra poder compartilhar.",
+      ctaLabel: "Configurar Boxes",
+      href: "/admin/boxes",
+    });
+  }
   if (!hasItems) {
     insightsQueue.push({
       title: "Importe seu catálogo",
@@ -235,6 +245,13 @@ export default async function HojePage() {
           Ver
         </Link>
       </div>
+
+      {activeBoxes === 0 && (
+        <p className="mx-auto mt-3 max-w-[280px] text-center text-[12px] leading-relaxed text-red-600">
+          ⚠ Ainda não dá pra divulgar — sua página está sem nenhuma Box ativa, então quem abrir o link não vê nada.{" "}
+          <Link href="/admin/boxes" className="underline">Resolver agora</Link>
+        </p>
+      )}
 
       {!business!.tour_completed_at && (
         <Link
