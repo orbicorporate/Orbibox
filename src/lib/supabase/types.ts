@@ -64,6 +64,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["smart_boxes"]["Insert"]>
         Relationships: []
       }
+      plans: {
+        Row: { id: string; name: string; description: string | null; monthly_price_cents: number; yearly_price_cents: number; stripe_product_id: string | null; stripe_price_id_monthly: string | null; stripe_price_id_yearly: string | null; max_businesses: number; has_ai_chat: boolean; created_at: string; updated_at: string }
+        Insert: { id: string; name: string; description?: string | null; monthly_price_cents: number; yearly_price_cents: number; stripe_product_id?: string | null; stripe_price_id_monthly?: string | null; stripe_price_id_yearly?: string | null; max_businesses?: number; has_ai_chat?: boolean; created_at?: string; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["plans"]["Insert"]>
+        Relationships: []
+      }
+      subscriptions: {
+        Row: { id: string; owner_id: string; plan_id: string; billing_cycle: string; status: string; stripe_customer_id: string | null; stripe_subscription_id: string | null; stripe_price_id: string | null; trial_ends_at: string | null; current_period_end: string | null; cancel_at_period_end: boolean; created_at: string; updated_at: string }
+        Insert: { id?: string; owner_id: string; plan_id: string; billing_cycle?: string; status?: string; stripe_customer_id?: string | null; stripe_subscription_id?: string | null; stripe_price_id?: string | null; trial_ends_at?: string | null; current_period_end?: string | null; cancel_at_period_end?: boolean; created_at?: string; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["subscriptions"]["Insert"]>
+        Relationships: []
+      }
       visitor_sessions: {
         Row: { business_id: string; device: string | null; id: string; intent: string | null; last_seen_at: string; referrer: string | null; source: string | null; started_at: string }
         Insert: { business_id: string; device?: string | null; id?: string; intent?: string | null; last_seen_at?: string; referrer?: string | null; source?: string | null; started_at?: string }
