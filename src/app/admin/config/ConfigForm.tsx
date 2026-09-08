@@ -25,6 +25,7 @@ type Business = {
   logo_url: string | null;
   logo_gallery: unknown;
   share_image_url: string | null;
+  share_description: string | null;
   vitrine_cover_url: string | null;
   vitrine_cover_urls: unknown;
 };
@@ -74,7 +75,7 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
 
   type CampoEditavel =
     | "contact_whatsapp" | "contact_phone" | "contact_email" | "contact_site"
-    | "address" | "about_business" | "differentials" | "policies";
+    | "address" | "about_business" | "differentials" | "policies" | "share_description";
 
   async function save(key: CampoEditavel, value: string) {
     const patch: Partial<Record<CampoEditavel, string | null>> = { [key]: value.trim() || null };
@@ -178,6 +179,21 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
               : "Ainda não tem nenhuma imagem — o link fica sem capa."}
           </p>
         )}
+
+        <p className="mt-4 text-[13px] font-medium">Descrição do link</p>
+        <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
+          O texto que aparece embaixo do nome. Apps como WhatsApp cortam em poucas linhas — curto é melhor. Sem preencher, usa o começo do texto de &quot;Sobre nós&quot;.
+        </p>
+        <textarea
+          value={b.share_description ?? ""}
+          onChange={(e) => set("share_description", e.target.value)}
+          onBlur={(e) => save("share_description", e.target.value)}
+          placeholder="Ex.: Agência de marketing full-service em Sorocaba — dados, estratégia e criatividade."
+          maxLength={140}
+          rows={3}
+          className="mt-2 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+        />
+        <p className="mt-1 text-right text-[11px] text-text-tertiary">{(b.share_description ?? "").length}/140</p>
       </div>
 
       {b.site_type && (
