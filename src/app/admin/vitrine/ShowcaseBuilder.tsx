@@ -11,6 +11,7 @@ import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { MiniTour } from "@/components/tour/MiniTour";
+import { useDialogs } from "@/hooks/useDialogs";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { whatsappLink } from "@/lib/track";
 
@@ -78,6 +79,7 @@ export function ShowcaseBuilder({
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const { confirm, prompt, alert: alertDialog, DialogRenderer } = useDialogs();
   const [items, setItems] = useState<Item[]>(initial);
   const [coverUrls, setCoverUrls] = useState<string[]>(initialCoverUrl ?? []);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -215,9 +217,12 @@ export function ShowcaseBuilder({
   async function renovarVitrine() {
     if (items.length === 0 && categories.length === 0 && coverUrls.length === 0) return;
     if (
-      !window.confirm(
-        "Isso apaga todos os itens, categorias e a capa da sua vitrine, pra você recomeçar do zero. Dá pra desfazer logo em seguida se mudar de ideia. Confirma?"
-      )
+      !(await confirm({
+        title: "Renovar vitrine",
+        message: "Isso apaga todos os itens, categorias e a capa da sua vitrine, pra você recomeçar do zero. Dá pra desfazer logo em seguida se mudar de ideia.",
+        confirmLabel: "Renovar",
+        danger: true,
+      }))
     )
       return;
     snapshot();
@@ -352,11 +357,11 @@ export function ShowcaseBuilder({
   }
 
   async function createCategory() {
-    const nome = window.prompt("Nome da nova categoria:");
+    const nome = await prompt({ title: "Nome da nova categoria", placeholder: "Ex: Bebidas" });
     if (!nome || !nome.trim()) return;
     const trimmed = nome.trim();
     if (allCategoryNamesRef().includes(trimmed)) {
-      window.alert(`Já existe uma categoria "${trimmed}".`);
+      await alertDialog(`Já existe uma categoria "${trimmed}".`);
       return;
     }
     snapshot();
@@ -374,7 +379,7 @@ export function ShowcaseBuilder({
     // Só deixa publicar se o dono escolheu uma foto ou uma cor de propósito —
     // "neutro" é o padrão de quem nunca mexeu, não uma escolha de verdade.
     if (s === "published" && !item.image_url && item.box_color === "neutro") {
-      window.alert("Escolha uma foto ou uma cor pra esse item antes de publicar — assim ele fica com cara de coisa pensada, não em branco.");
+      await alertDialog("Escolha uma foto ou uma cor pra esse item antes de publicar — assim ele fica com cara de coisa pensada, não em branco.");
       setEditingId(item.id);
       return;
     }
@@ -431,7 +436,7 @@ export function ShowcaseBuilder({
   }
 
   async function deleteItem(item: Item) {
-    if (!window.confirm(`Excluir "${item.title}"? Essa ação não pode ser desfeita.`)) return;
+    if (!(await confirm({ title: "Excluir item", message: `Excluir "${item.title}"? Essa ação não pode ser desfeita.`, confirmLabel: "Excluir", danger: true }))) return;
     snapshot();
     setEditingId(null);
     setItems((p) => p.filter((i) => i.id !== item.id));
@@ -439,7 +444,7 @@ export function ShowcaseBuilder({
   }
 
   async function renameCategory(oldName: string) {
-    const novo = window.prompt("Novo nome da categoria:", oldName === "Destaques" ? "" : oldName);
+    const novo = await prompt({ title: "Novo nome da categoria", initialValue: oldName === "Destaques" ? "" : oldName, placeholder: "Nome da categoria" });
     if (novo === null) return;
     snapshot();
     const value = novo.trim() || null;
@@ -459,7 +464,7 @@ export function ShowcaseBuilder({
     const msg = ids.length === 0
       ? `Excluir a categoria "${name}"? Ela está vazia.`
       : `Excluir a categoria "${name}" e ${ids.length === 1 ? "seu 1 item" : `seus ${ids.length} itens`}? Essa ação não pode ser desfeita.`;
-    if (!window.confirm(msg)) return;
+    if (!(await confirm({ title: "Excluir categoria", message: msg, confirmLabel: "Excluir", danger: true }))) return;
     snapshot();
     setItems((p) => p.filter((i) => !ids.includes(i.id)));
     if (ids.length > 0) await Promise.all(ids.map((id) => supabase.from("content_items").delete().eq("id", id)));
@@ -468,6 +473,7 @@ export function ShowcaseBuilder({
 
   return (
     <div className="mt-5 flex flex-col">
+      <DialogRenderer />
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={autoArrange}
@@ -676,6 +682,7 @@ export function ShowcaseBuilder({
                   whatsapp={whatsapp}
                   showIntroTour={editingId === item.id && !introDone}
                   onIntroDone={finishIntro}
+                  promptFn={prompt}
                 />
               ))}
               {sec.items.length === 0 && (
@@ -763,6 +770,7 @@ function ItemCard({
   whatsapp,
   showIntroTour = false,
   onIntroDone,
+  promptFn,
 }: {
   item: Item;
   editing: boolean;
@@ -786,6 +794,7 @@ function ItemCard({
   whatsapp?: string | null;
   showIntroTour?: boolean;
   onIntroDone?: () => void;
+  promptFn: (options: { title: string; placeholder?: string }) => Promise<string | null>;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
@@ -886,7 +895,7 @@ function ItemCard({
 
         {/* X pequeno pra excluir direto, sem precisar abrir a edição. */}
         <button
-          onClick={(e) => { e.stopPropagation(); if (window.confirm(`Excluir "${item.title}"?`)) onDelete(); }}
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
           className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-surface-white/95 text-[13px] text-text-secondary shadow backdrop-blur"
           aria-label="Excluir item"
         >
@@ -1132,9 +1141,9 @@ function ItemCard({
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Categoria (vira seção)</p>
               <select
                 value={item.brand_label ?? ""}
-                onChange={(e) => {
+                onChange={async (e) => {
                   if (e.target.value === "__nova__") {
-                    const nome = window.prompt("Nome da nova categoria:");
+                    const nome = await promptFn({ title: "Nome da nova categoria", placeholder: "Ex: Bebidas" });
                     if (nome && nome.trim()) {
                       const trimmed = nome.trim();
                       save(item.id, { brand_label: trimmed });

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useDialogs } from "@/hooks/useDialogs";
 
 type Msg = { role: string; content: string };
 type Conversa = { id: string; startedAt: string; messages: Msg[] };
@@ -50,6 +51,7 @@ const PERIODOS = [
 ] as const;
 
 export function ConversasList({ conversations }: { conversations: Conversa[] }) {
+  const { confirm, DialogRenderer } = useDialogs();
   const [openId, setOpenId] = useState<string | null>(null);
   const [soComContato, setSoComContato] = useState(false);
   const [periodo, setPeriodo] = useState<(typeof PERIODOS)[number]["key"]>("todos");
@@ -67,7 +69,7 @@ export function ConversasList({ conversations }: { conversations: Conversa[] }) 
   }, []);
 
   async function excluir(id: string) {
-    if (!window.confirm("Excluir esta conversa? Essa ação não pode ser desfeita.")) return;
+    if (!(await confirm({ title: "Excluir conversa", message: "Excluir esta conversa? Essa ação não pode ser desfeita.", confirmLabel: "Excluir", danger: true }))) return;
     setExcluindo(id);
     const supabase = createClient();
     // Apaga as mensagens primeiro, depois a conversa (evita ficar mensagem órfã).
@@ -98,6 +100,7 @@ export function ConversasList({ conversations }: { conversations: Conversa[] }) 
 
   return (
     <div className="mt-5 flex flex-col">
+      <DialogRenderer />
       {/* Filtros */}
       <div className="flex flex-wrap items-center gap-2">
         <button
