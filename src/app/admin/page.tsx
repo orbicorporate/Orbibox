@@ -25,7 +25,7 @@ export default async function HojePage() {
 
 
   // Tudo que depende só do business roda em paralelo — antes eram 6 idas ao banco em fila.
-  const [agentRes, visitsRes, convRowsRes, interestedRes, actionsRes, itemsCountRes] = await Promise.all([
+  const [agentRes, visitsRes, convRowsRes, interestedRes, actionsRes, itemsPhotoRes] = await Promise.all([
     supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed, objectives").eq("business_id", business!.id).maybeSingle(),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("conversations").select("id").eq("business_id", business!.id),
@@ -33,7 +33,7 @@ export default async function HojePage() {
     // "Ações" = cliques de verdade (produto, link, WhatsApp…) — mesma fonte do Pulse,
     // não a tabela de campanhas (isso não tinha nada a ver com o que o visitante faz).
     supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
-    supabase.from("content_items").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
+    supabase.from("content_items").select("image_url, image_is_placeholder").eq("business_id", business!.id),
   ]);
   const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
 
@@ -43,7 +43,10 @@ export default async function HojePage() {
   // que a pessoa resolve um, o próximo já aparece — nunca fica preso num
   // insight antigo, e nunca sobra sem sugestão nenhuma.
   const agentConfig = agentRes.data;
-  const hasItems = (itemsCountRes.count ?? 0) > 0;
+  const items = itemsPhotoRes.data ?? [];
+  const hasItems = items.length > 0;
+  // Fotos que faltam ou que são placeholder (não a foto de verdade do produto).
+  const itemsWithoutPhoto = items.filter((it) => !it.image_url || it.image_is_placeholder).length;
   const toneConfigured = !!agentConfig && (
     agentConfig.tone_formal_informal !== 50 ||
     agentConfig.tone_reserved_energetic !== 50 ||
@@ -56,6 +59,16 @@ export default async function HojePage() {
       title: "Importe seu catálogo",
       description: "Cole o link do seu site na Vitrine — a Orbi transforma seus produtos em boxes automaticamente.",
       ctaLabel: "Abrir Vitrine",
+      href: "/admin/vitrine",
+    });
+  }
+  if (hasItems && itemsWithoutPhoto > 0) {
+    insightsQueue.push({
+      title: "Capriche nas fotos da Vitrine",
+      description: itemsWithoutPhoto === items.length
+        ? "Nenhum item tem foto ainda — fotos bonitas fazem toda diferença na primeira impressão."
+        : `${itemsWithoutPhoto} ${itemsWithoutPhoto === 1 ? "item ainda não tem" : "itens ainda não têm"} foto de verdade — capriche pra ficar mais convidativo.`,
+      ctaLabel: "Editar Vitrine",
       href: "/admin/vitrine",
     });
   }
@@ -88,6 +101,15 @@ export default async function HojePage() {
       title: "Adicione seu endereço",
       description: "Ganha um box pronto na tela inicial, com botões pro Waze e Google Maps.",
       ctaLabel: "Adicionar endereço",
+      href: "/admin/boxes",
+    });
+  }
+  const storyPhotos = (business!.story_photos as string[] | null) ?? [];
+  if (storyPhotos.length === 0) {
+    insightsQueue.push({
+      title: "Complete a página sobre o seu negócio",
+      description: "Adicione fotos do espaço, da equipe ou dos bastidores no carrossel — ajuda o visitante a confiar mais antes de comprar.",
+      ctaLabel: "Adicionar fotos",
       href: "/admin/boxes",
     });
   }
