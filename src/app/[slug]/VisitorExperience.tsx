@@ -590,6 +590,27 @@ function OrbiChat({
   const endRef = useRef<HTMLDivElement>(null);
   const [typedPlaceholder, setTypedPlaceholder] = useState("");
 
+  // Trava o scroll da página por trás enquanto o chat (overlay fixed) está
+  // aberto — sem isso, no iOS o dedo "vaza" pro fundo e a página de trás
+  // rola junto, mesmo com o chat cobrindo a tela inteira. Restaura a posição
+  // exata de onde a pessoa estava ao fechar.
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    const body = document.body;
+    const prev = { position: body.style.position, top: body.style.top, width: body.style.width, overflow: body.style.overflow };
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+    return () => {
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      body.style.overflow = prev.overflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
+
   // Sugestões puxadas do que existe de verdade no negócio — nunca genéricas.
   // Prioriza itens variados (categorias diferentes) pra cobrir mais opções.
   // Só 5 — o suficiente pra caber na tela sem precisar rolar, com a barra de
