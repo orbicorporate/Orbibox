@@ -21,7 +21,7 @@ export default async function ConfigPage() {
 
   return (
     <div className="flex flex-col">
-      <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
+      <h1 data-tour="config" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
         Configurações
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">

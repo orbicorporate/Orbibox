@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { BottomNav } from "@/components/mobile/BottomNav";
 import { AppHeader } from "@/components/mobile/AppHeader";
+import { TourOverlay } from "@/components/tour/TourOverlay";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -13,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug")
+    .select("id, name, slug, tour_completed_at")
     .eq("owner_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -34,6 +36,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <AppHeader unseenConversas={unseenConversas ?? 0} />
       <main className="flex-1 px-6 pb-28 pt-2">{children}</main>
       <BottomNav />
+      <Suspense fallback={null}>
+        <TourOverlay businessId={business.id} />
+      </Suspense>
     </div>
   );
 }

@@ -29,7 +29,7 @@ export default async function BoxesPage() {
 
   return (
     <div className="flex flex-col">
-      <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
+      <h1 data-tour="boxes" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
         Smart Boxes
       </h1>
       <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">

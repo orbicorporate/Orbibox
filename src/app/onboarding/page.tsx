@@ -232,7 +232,7 @@ export default function OnboardingPage() {
   }
 
   function goToApp() {
-    router.push(importSummary && importSummary.imported > 0 ? "/admin/vitrine" : "/admin");
+    router.push("/admin/agent?tour=0");
     router.refresh();
   }
 

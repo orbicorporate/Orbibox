@@ -82,7 +82,7 @@ export default async function PulsePage({
 
   return (
     <div className="flex flex-col">
-      <p className="mt-2 text-center text-[13px] uppercase tracking-wide text-text-tertiary">Orbi Pulse</p>
+      <p data-tour="pulse" className="mt-2 text-center text-[13px] uppercase tracking-wide text-text-tertiary">Orbi Pulse</p>
 
       <PulseDateFilter />
 

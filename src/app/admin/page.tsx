@@ -236,6 +236,16 @@ export default async function HojePage() {
         </Link>
       </div>
 
+      {!business!.tour_completed_at && (
+        <Link
+          href="/admin/agent?tour=0"
+          className="mt-6 flex items-center justify-between rounded-2xl border border-divider bg-surface-white px-4 py-3.5"
+        >
+          <span className="text-[14px] font-medium">✦ Conheça o Orbibox num tour rápido</span>
+          <span className="text-text-tertiary">→</span>
+        </Link>
+      )}
+
       {/* Métricas em lista — cada uma leva pro Pulse (ou Conversas), onde dá
           pra ver o detalhe. Mesma fonte de dados do Pulse, então os números
           batem entre as duas telas. */}
@@ -260,7 +270,7 @@ export default async function HojePage() {
       </div>
 
       {/* Insight Orbi — sempre tem um, prioriza o que ainda falta fazer */}
-      <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
+      <div data-tour="insights" className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
         <OrbiOrb size={56} />
         <p className="mt-4 font-[family-name:var(--font-manrope)] text-[20px] font-medium">
           Insight Orbi
