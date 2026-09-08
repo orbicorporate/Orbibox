@@ -25,11 +25,26 @@ const STATUS_LABEL: Record<string, string> = {
 export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessInfo }) {
   const [cycle, setCycle] = useState<Cycle>((access.subscription?.billing_cycle as Cycle) ?? "monthly");
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [loadingPortal, setLoadingPortal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const currentPlanId = access.subscription?.plan_id ?? null;
   const currentStatus = access.subscription?.status ?? null;
   const inGoodStanding = currentStatus === "active" || currentStatus === "trialing" || currentStatus === "comped";
+
+  async function handleGerenciarAssinatura() {
+    setError(null);
+    setLoadingPortal(true);
+    try {
+      const res = await fetch("/api/billing-portal", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Não foi possível abrir o portal.");
+      window.open(data.url, "_self");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro inesperado.");
+      setLoadingPortal(false);
+    }
+  }
 
   async function handleAssinar(planId: string) {
     setError(null);
@@ -62,6 +77,15 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
             <p className="mt-1 text-[13px] text-text-secondary">
               Teste grátis até {new Date(access.trialEndsAt).toLocaleDateString("pt-BR")}
             </p>
+          )}
+          {access.subscription?.stripe_customer_id && (
+            <button
+              onClick={handleGerenciarAssinatura}
+              disabled={loadingPortal}
+              className="mt-3 text-[13px] font-medium text-on-background underline"
+            >
+              {loadingPortal ? "Abrindo…" : "Gerenciar cartão / cancelar assinatura"}
+            </button>
           )}
         </Card>
       )}

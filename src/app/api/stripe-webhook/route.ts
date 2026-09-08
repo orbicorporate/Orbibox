@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendEmail } from "@/lib/email";
+import { paymentFailedEmail } from "@/lib/email-templates";
 
 // Necessário pra ler o corpo raw e validar a assinatura do webhook.
 export const runtime = "nodejs";
@@ -68,6 +70,24 @@ async function upsertFromSubscription(subscription: Stripe.Subscription, ownerId
     );
 }
 
+async function notifyPaymentFailed(ownerId: string) {
+  const supabase = createServiceClient();
+
+  const [{ data: profile }, { data: business }] = await Promise.all([
+    supabase.from("profiles").select("email").eq("id", ownerId).maybeSingle(),
+    supabase.from("businesses").select("name").eq("owner_id", ownerId).limit(1).maybeSingle(),
+  ]);
+
+  if (!profile?.email) return;
+
+  const { subject, html } = paymentFailedEmail({
+    businessName: business?.name ?? "seu negócio",
+    manageUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://orbibox-orbi-app.vercel.app"}/admin/planos`,
+  });
+
+  await sendEmail({ to: profile.email, subject, html });
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
@@ -124,6 +144,8 @@ export async function POST(req: NextRequest) {
           const id = typeof subscriptionId === "string" ? subscriptionId : subscriptionId.id;
           const subscription = await stripe.subscriptions.retrieve(id);
           await upsertFromSubscription(subscription);
+          const ownerId = subscription.metadata?.owner_id;
+          if (ownerId) await notifyPaymentFailed(ownerId);
         }
         break;
       }
