@@ -25,7 +25,7 @@ export default async function HojePage() {
 
 
   // Tudo que depende só do business roda em paralelo — antes eram 6 idas ao banco em fila.
-  const [oppRes, visitsRes, convRowsRes, interestedRes, actionsRes, unseenRes, itemsCountRes] = await Promise.all([
+  const [oppRes, visitsRes, convRowsRes, interestedRes, actionsRes, itemsCountRes] = await Promise.all([
     supabase.from("opportunities").select("*").eq("business_id", business!.id).eq("status", "open").order("impact_score", { ascending: false }).limit(2),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("conversations").select("id").eq("business_id", business!.id),
@@ -33,7 +33,6 @@ export default async function HojePage() {
     // "Ações" = cliques de verdade (produto, link, WhatsApp…) — mesma fonte do Pulse,
     // não a tabela de campanhas (isso não tinha nada a ver com o que o visitante faz).
     supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
-    supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", business!.id).eq("seen_by_owner", false),
     supabase.from("content_items").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
   ]);
   // O insight "Importe seu catálogo" só faz sentido antes de a Vitrine ter
@@ -47,7 +46,6 @@ export default async function HojePage() {
     opportunity = openOpps[1] ?? null;
   }
   const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
-  const unseenConversas = unseenRes.count ?? 0;
 
   // "Conversas reais" só conta quem de fato trocou mensagem com a Orbi — não
   // toda vez que alguém abriu o chat e fechou sem digitar nada (isso inflava
@@ -82,20 +80,6 @@ export default async function HojePage() {
         <div className="orbi-halo absolute inset-0" aria-hidden>
           <span className="orbi-halo__dot" />
         </div>
-
-        {/* Sininho de notificação — perto do nome, canto inferior direito do
-            halo. Pisca quando tem conversa que ainda não foi vista. */}
-        <Link href="/admin/conversas" className="absolute bottom-6 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white shadow" aria-label="Conversas">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M12 3a5 5 0 0 0-5 5v3.2c0 .7-.25 1.36-.7 1.9L5 15h14l-1.3-1.9a3 3 0 0 1-.7-1.9V8a5 5 0 0 0-5-5Z" />
-            <path d="M9.5 18a2.5 2.5 0 0 0 5 0" />
-          </svg>
-          {unseenConversas > 0 && (
-            <span className="notif-badge absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
-              {unseenConversas > 9 ? "9+" : unseenConversas}
-            </span>
-          )}
-        </Link>
 
         <div className="absolute left-1/2 top-1/2 w-[90vw] max-w-[420px] -translate-x-1/2 -translate-y-1/2 text-center">
           <h1 className="whitespace-nowrap font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">
