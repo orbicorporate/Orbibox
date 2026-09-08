@@ -24,7 +24,7 @@ export async function generateMetadata({
 
   if (!b) return { title: "Orbibox" };
 
-  const capa = b.share_image_url || b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls[0]) || b.logo_url || null;
+  const capa = b.share_image_url || b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls[0]) || b.logo_url || `/${slug}/opengraph-image`;
   const descricao = b.about_business?.slice(0, 160) || `Conheça ${b.name} — produtos, serviços e contato num só link.`;
 
   return {
@@ -34,13 +34,13 @@ export async function generateMetadata({
       title: b.name,
       description: descricao,
       type: "website",
-      ...(capa ? { images: [{ url: capa }] } : {}),
+      images: [{ url: capa }],
     },
     twitter: {
-      card: capa ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: b.name,
       description: descricao,
-      ...(capa ? { images: [capa] } : {}),
+      images: [capa],
     },
   };
 }

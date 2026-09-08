@@ -147,7 +147,12 @@ export default async function HojePage() {
   }
   // Sem nenhum pendente: alterna entre dicas de divulgação — pra nunca ficar
   // sem sugestão, e pra não repetir sempre a mesma quando já está tudo pronto.
-  const host = (await headers()).get("host") ?? "orbibox-orbi-app.vercel.app";
+  // URL pública de verdade — NUNCA usa o host da requisição sozinho, porque
+  // se a pessoa está acessando o painel por uma URL específica de deploy
+  // (não o domínio principal), essa URL fica protegida pelo Vercel e mostra
+  // "Protected Deployment" pra quem recebe o link. VERCEL_PROJECT_PRODUCTION_URL
+  // é o domínio estável de produção — sempre o certo pra compartilhar.
+  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL || (await headers()).get("host") || "orbibox-orbi-app.vercel.app";
   const proto = host.includes("localhost") ? "http" : "https";
   const shareUrl = `${proto}://${host}/${business!.slug}`;
   const growthTips: { title: string; description: string; ctaLabel: string; href: string; share?: boolean }[] = [
