@@ -28,14 +28,14 @@ export default async function HojePage() {
 
   // Tudo que depende só do business roda em paralelo — antes eram 6 idas ao banco em fila.
   const [agentRes, visitsRes, convRowsRes, interestedRes, actionsRes, itemsPhotoRes] = await Promise.all([
-    supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed, objectives").eq("business_id", business!.id).maybeSingle(),
+    supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed, objectives, orbi_colors").eq("business_id", business!.id).maybeSingle(),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
     supabase.from("conversations").select("id").eq("business_id", business!.id),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id).not("intent", "is", null),
     // "Ações" = cliques de verdade (produto, link, WhatsApp…) — mesma fonte do Pulse,
     // não a tabela de campanhas (isso não tinha nada a ver com o que o visitante faz).
     supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
-    supabase.from("content_items").select("image_url, image_is_placeholder").eq("business_id", business!.id),
+    supabase.from("content_items").select("image_url, image_is_placeholder, description").eq("business_id", business!.id),
   ]);
   const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
 
@@ -49,12 +49,16 @@ export default async function HojePage() {
   const hasItems = items.length > 0;
   // Fotos que faltam ou que são placeholder (não a foto de verdade do produto).
   const itemsWithoutPhoto = items.filter((it) => !it.image_url || it.image_is_placeholder).length;
+  const itemsWithoutDescription = items.filter((it) => !it.description || it.description.trim().length < 10).length;
   const toneConfigured = !!agentConfig && (
     agentConfig.tone_formal_informal !== 50 ||
     agentConfig.tone_reserved_energetic !== 50 ||
     agentConfig.tone_concise_detailed !== 50 ||
     (agentConfig.objectives?.length ?? 0) > 0
   );
+  const orbiColorsConfigured = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length >= 2;
+  const rawDiff = business!.differentials_cards;
+  const hasDifferentials = (Array.isArray(rawDiff) && rawDiff.length > 0) || !!business!.differentials?.trim();
   const insightsQueue: { title: string; description: string; ctaLabel: string; href: string; share?: boolean }[] = [];
   if (!hasItems) {
     insightsQueue.push({
@@ -80,6 +84,14 @@ export default async function HojePage() {
       description: "Defina como a assistente deve conversar com seus visitantes.",
       ctaLabel: "Configurar Orbi",
       href: "/admin/agent",
+    });
+  }
+  if (!orbiColorsConfigured) {
+    insightsQueue.push({
+      title: "Personalize a cor da sua Orbi",
+      description: "Escolha as cores da esfera de acordo com a paleta da sua marca — deixa tudo mais consistente com sua identidade.",
+      ctaLabel: "Configurar cores",
+      href: "/admin/config#cores-orbi",
     });
   }
   if (!business!.logo_url) {
@@ -115,19 +127,59 @@ export default async function HojePage() {
       href: "/admin/boxes",
     });
   }
-  // Sem nenhum pendente: sempre sobra uma sugestão de divulgação, pra nunca
-  // ficar sem nada pra fazer. URL absoluta de verdade (domínio da requisição),
-  // não fixa — funciona certo mesmo se o domínio mudar.
+  if (!hasDifferentials) {
+    insightsQueue.push({
+      title: "Mostre seus diferenciais",
+      description: "O que faz seu negócio especial? Frete grátis, garantia, atendimento rápido — pequenos detalhes que pesam na decisão de compra.",
+      ctaLabel: "Adicionar diferenciais",
+      href: "/admin/boxes",
+    });
+  }
+  if (hasItems && itemsWithoutDescription > 0) {
+    insightsQueue.push({
+      title: "Capriche nas descrições da Vitrine",
+      description: itemsWithoutDescription === items.length
+        ? "Nenhum item tem descrição ainda — um texto curto e bom ajuda o visitante a entender o que está comprando."
+        : `${itemsWithoutDescription} ${itemsWithoutDescription === 1 ? "item ainda não tem" : "itens ainda não têm"} descrição — um texto curto já faz diferença.`,
+      ctaLabel: "Editar Vitrine",
+      href: "/admin/vitrine",
+    });
+  }
+  // Sem nenhum pendente: alterna entre dicas de divulgação — pra nunca ficar
+  // sem sugestão, e pra não repetir sempre a mesma quando já está tudo pronto.
   const host = (await headers()).get("host") ?? "orbibox-orbi-app.vercel.app";
   const proto = host.includes("localhost") ? "http" : "https";
   const shareUrl = `${proto}://${host}/${business!.slug}`;
-  const insight = insightsQueue[0] ?? {
-    title: "Compartilhe seu Orbibox",
-    description: "Já está tudo pronto — hora de divulgar. Cole o link nos stories, na bio do Instagram, ou manda no WhatsApp.",
-    ctaLabel: "Compartilhar Orbibox",
-    href: `/${business!.slug}`,
-    share: true,
-  };
+  const growthTips: { title: string; description: string; ctaLabel: string; href: string; share?: boolean }[] = [
+    {
+      title: "Compartilhe seu Orbibox",
+      description: "Já está tudo pronto — hora de divulgar. Cole o link nos stories, na bio do Instagram, ou manda no WhatsApp.",
+      ctaLabel: "Compartilhar Orbibox",
+      href: `/${business!.slug}`,
+      share: true,
+    },
+    {
+      title: "Poste num grupo do WhatsApp",
+      description: "Grupos de bairro, de clientes ou de parceiros são ótimos pra divulgar — manda o link com uma chamada rápida tipo \"acabei de lançar meu catálogo online\".",
+      ctaLabel: "Compartilhar Orbibox",
+      href: `/${business!.slug}`,
+      share: true,
+    },
+    {
+      title: "Troque o link da bio do Instagram",
+      description: "É o lugar mais visto do seu perfil — coloca o link do seu Orbibox lá em vez de um link genérico.",
+      ctaLabel: "Compartilhar Orbibox",
+      href: `/${business!.slug}`,
+      share: true,
+    },
+    {
+      title: "Confira como está indo",
+      description: "Dá uma olhada nas visitas e conversas mais recentes — o Pulse mostra tudo o que aconteceu na sua página.",
+      ctaLabel: "Abrir Pulse",
+      href: "/admin/pulse",
+    },
+  ];
+  const insight = insightsQueue[0] ?? growthTips[new Date().getDate() % growthTips.length];
 
   // "Conversas reais" só conta quem de fato trocou mensagem com a Orbi — não
   // toda vez que alguém abriu o chat e fechou sem digitar nada (isso inflava
