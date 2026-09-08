@@ -31,19 +31,21 @@ export async function generateMetadata({
   const descricao = fonteDescricao.length > 90
     ? `${fonteDescricao.slice(0, 90).replace(/\s+\S*$/, "")}…`
     : fonteDescricao;
+  // Título do preview do link — o convite vem antes do nome, não só o nome cru.
+  const tituloPreview = `Visite nosso Orbibox - ${b.name}`;
 
   return {
     title: b.name,
     description: descricao,
     openGraph: {
-      title: b.name,
+      title: tituloPreview,
       description: descricao,
       type: "website",
       images: [{ url: capa }],
     },
     twitter: {
       card: "summary_large_image",
-      title: b.name,
+      title: tituloPreview,
       description: descricao,
       images: [capa],
     },
