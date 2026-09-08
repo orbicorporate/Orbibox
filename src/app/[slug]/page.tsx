@@ -28,8 +28,8 @@ export async function generateMetadata({
   // Curto de propósito — WhatsApp e afins cortam a descrição em poucas linhas
   // (~3), então um texto longo só fica truncado no meio de uma palavra.
   const fonteDescricao = b.share_description?.trim() || b.about_business?.trim() || `Conheça ${b.name} — produtos, serviços e contato num só link.`;
-  const descricao = fonteDescricao.length > 120
-    ? `${fonteDescricao.slice(0, 120).replace(/\s+\S*$/, "")}…`
+  const descricao = fonteDescricao.length > 90
+    ? `${fonteDescricao.slice(0, 90).replace(/\s+\S*$/, "")}…`
     : fonteDescricao;
 
   return {

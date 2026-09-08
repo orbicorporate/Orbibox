@@ -46,6 +46,7 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [generatingDesc, setGeneratingDesc] = useState(false);
 
   async function saveLogo(url: string | null) {
     setB((p) => ({ ...p, logo_url: url }));
@@ -59,6 +60,23 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
   async function saveShareImage(url: string | null) {
     setB((p) => ({ ...p, share_image_url: url }));
     await supabase.from("businesses").update({ share_image_url: url }).eq("id", b.id);
+  }
+
+  async function generateShareDescription() {
+    setGeneratingDesc(true);
+    try {
+      const res = await fetch("/api/generate-share-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId: b.id }),
+      });
+      if (res.ok) {
+        const { description } = await res.json();
+        setB((p) => ({ ...p, share_description: description }));
+      }
+    } finally {
+      setGeneratingDesc(false);
+    }
   }
 
   async function handleSignOut() {
@@ -182,18 +200,27 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
 
         <p className="mt-4 text-[13px] font-medium">Descrição do link</p>
         <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
-          O texto que aparece embaixo do nome. Apps como WhatsApp cortam em poucas linhas — curto é melhor. Sem preencher, usa o começo do texto de &quot;Sobre nós&quot;.
+          O texto que aparece embaixo do nome — que já mostra o nome do negócio, então não precisa repetir aqui. Curto é melhor: até 3 linhas cabem no preview do WhatsApp.
         </p>
         <textarea
           value={b.share_description ?? ""}
           onChange={(e) => set("share_description", e.target.value)}
           onBlur={(e) => save("share_description", e.target.value)}
-          placeholder="Ex.: Agência de marketing full-service em Sorocaba — dados, estratégia e criatividade."
-          maxLength={140}
+          placeholder="Ex.: Agência full-service que une dados, estratégia e criatividade."
+          maxLength={90}
           rows={3}
           className="mt-2 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
         />
-        <p className="mt-1 text-right text-[11px] text-text-tertiary">{(b.share_description ?? "").length}/140</p>
+        <div className="mt-1 flex items-center justify-between">
+          <button
+            onClick={generateShareDescription}
+            disabled={generatingDesc}
+            className="rounded-full orbi-gradient px-4 py-1.5 text-[12px] font-medium text-on-background disabled:opacity-60"
+          >
+            {generatingDesc ? "Gerando…" : "✦ Gerar com IA"}
+          </button>
+          <p className="text-[11px] text-text-tertiary">{(b.share_description ?? "").length}/90</p>
+        </div>
       </div>
 
       {b.site_type && (
