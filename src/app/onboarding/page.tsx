@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -37,6 +38,7 @@ export default function OnboardingPage() {
   const [name, setName] = useState("");
   const [instagram, setInstagram] = useState("");
   const [website, setWebsite] = useState("");
+  const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -113,6 +115,7 @@ export default function OnboardingPage() {
       name,
       instagram_handle: instagram || null,
       website_url: website || null,
+      about_business: description.trim() || null,
       brand_personality: traits,
       brand_colors: colors,
       brand_voice_summary: voice,
@@ -259,6 +262,13 @@ export default function OnboardingPage() {
               <input required placeholder="Nome do negócio" value={name} onChange={(e) => setName(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <input placeholder="@seuinstagram" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <input placeholder="seusite.com.br — de onde vêm seus produtos" value={website} onChange={(e) => setWebsite(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <textarea
+                placeholder="Em poucas palavras, o que vocês fazem? (a Orbi usa isso pra conversar com seus clientes, mesmo sem site)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                className="resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
+              />
               <Button type="submit" variant="orbi">✦ Analisar com Orbi</Button>
             </form>
           </>
@@ -332,11 +342,26 @@ export default function OnboardingPage() {
             )}
 
             <div className="rounded-2xl border border-divider p-4">
-              <p className="text-[13px] font-medium">✦ A Orbi já está pronta pra atender</p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
-                Ela já sabe o que seu negócio faz, recomenda produtos ou serviços, conversa com quem visita seu link e
-                pode direcionar pra você quando o cliente precisar de atendimento humano de verdade.
-              </p>
+              {description.trim() || (importSummary.siteType && !importSummary.fetchError) ? (
+                <>
+                  <p className="text-[13px] font-medium">✦ A Orbi já está pronta pra atender</p>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
+                    Ela já sabe o que seu negócio faz, recomenda produtos ou serviços, conversa com quem visita seu link e
+                    pode direcionar pra você quando o cliente precisar de atendimento humano de verdade.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-[13px] font-medium">✦ A Orbi ainda não conhece seu negócio</p>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
+                    Sem site nem descrição, ela não sabe o que responder pros seus clientes ainda. Leva 30 segundos pra
+                    resolver — vale a pena antes de compartilhar seu link.
+                  </p>
+                  <Link href="/admin/boxes" className="mt-3 inline-block text-[13px] font-medium underline">
+                    Contar sobre o negócio →
+                  </Link>
+                </>
+              )}
             </div>
 
             <Button onClick={goToApp} variant="orbi">Ir para o meu Orbibox →</Button>
