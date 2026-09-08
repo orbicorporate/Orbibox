@@ -815,7 +815,11 @@ function ItemCard({
   }, [broken]);
 
   return (
-    <div id={`item-${item.id}`} className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${widthClass}`}>
+    <div
+      id={`item-${item.id}`}
+      className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${widthClass}`}
+      style={!editing && hasPhoto ? { backgroundColor: c.bg } : undefined}
+    >
       <div
         className="relative"
         style={{ aspectRatio: RATIOS[ratio].value, minHeight: 150 }}
@@ -929,23 +933,24 @@ function ItemCard({
             <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium">{item.title}</p>
+                  <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium" style={hasPhoto ? { color: c.fg } : undefined}>{item.title}</p>
                   {hasPhoto && (
                     <span
                       onClick={(e) => { e.stopPropagation(); onTogglePublish(); }}
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-surface-soft px-2.5 py-1 text-[11px] font-medium text-text-secondary"
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-surface-white/70 px-2.5 py-1 text-[11px] font-medium"
+                      style={{ color: c.fg }}
                     >
-                      <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
+                      <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : ""}`} style={item.status !== "published" ? { backgroundColor: c.fg, opacity: 0.5 } : undefined} />
                       {item.status === "published" ? "Ativo" : "Rascunho"}
                     </span>
                   )}
                 </div>
                 {item.description?.trim() && (
-                  <p className="mt-1 line-clamp-1 text-[12px] leading-snug text-text-tertiary">{item.description}</p>
+                  <p className="mt-1 line-clamp-1 text-[12px] leading-snug" style={hasPhoto ? { color: c.fg, opacity: 0.7 } : undefined}>{item.description}</p>
                 )}
               </div>
               {priceLabel && (
-                <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[15px] font-medium">{priceLabel}</p>
+                <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[15px] font-medium" style={hasPhoto ? { color: c.fg } : undefined}>{priceLabel}</p>
               )}
             </button>
           ) : (

@@ -1113,12 +1113,12 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                     {photo && (
                       <div className="flex items-center justify-between gap-3 p-4">
                         <div className="min-w-0 flex-1">
-                          <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">{item.title}</p>
+                          <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight" style={{ color: c.fg }}>{item.title}</p>
                           {item.description?.trim() && (
-                            <p className="mt-0.5 line-clamp-1 text-[12px] leading-snug text-text-tertiary">{item.description}</p>
+                            <p className="mt-0.5 line-clamp-1 text-[12px] leading-snug" style={{ color: c.fg, opacity: 0.7 }}>{item.description}</p>
                           )}
                           {priceLabel && (
-                            <p className="mt-0.5 font-[family-name:var(--font-manrope)] text-[15px] font-medium text-text-secondary">{priceLabel}</p>
+                            <p className="mt-0.5 font-[family-name:var(--font-manrope)] text-[15px] font-medium" style={{ color: c.fg, opacity: 0.85 }}>{priceLabel}</p>
                           )}
                         </div>
                         {destino && (
@@ -1142,10 +1142,11 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 );
 
                 const classe = `block overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${size === "medio" ? "w-[calc(50%-10px)]" : "w-full"}`;
+                const cardStyle = photo ? { backgroundColor: c.bg } : undefined;
 
                 if (!destino) {
                   return (
-                    <div key={item.id} className={classe}>
+                    <div key={item.id} className={classe} style={cardStyle}>
                       {miolo}
                     </div>
                   );
@@ -1158,6 +1159,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                     rel="noopener noreferrer"
                     onClick={() => trackClick({ businessId: business.id, kind: kindClique, contentItemId: item.id, sessionId, targetUrl: destino })}
                     className={classe}
+                    style={cardStyle}
                   >
                     {miolo}
                   </a>
@@ -1167,6 +1169,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                     href={destino}
                     onClick={() => trackClick({ businessId: business.id, kind: "produto", contentItemId: item.id, sessionId, targetUrl: destino })}
                     className={classe}
+                    style={cardStyle}
                   >
                     {miolo}
                   </Link>
