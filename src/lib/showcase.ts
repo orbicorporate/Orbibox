@@ -329,4 +329,14 @@ export const ORBI_SPHERE_COLORS: { hex: string; label: string }[] = [
   { hex: "#111318", label: "Preto" },
   { hex: "#FFFFFF", label: "Branco" },
   { hex: "#4A4A4A", label: "Grafite" },
+  // Tons nobres — mais sóbrios e sofisticados, pra marcas com uma
+  // identidade mais elegante em vez de vibrante/lúdica.
+  { hex: "#7A1F3D", label: "Vinho" },
+  { hex: "#046A38", label: "Esmeralda" },
+  { hex: "#14213D", label: "Azul-marinho" },
+  { hex: "#B8860B", label: "Dourado" },
+  { hex: "#5B2A6E", label: "Ameixa" },
+  { hex: "#B5533C", label: "Terracota" },
+  { hex: "#6E5A3D", label: "Bronze" },
+  { hex: "#2E4034", label: "Verde-caça" },
 ];
