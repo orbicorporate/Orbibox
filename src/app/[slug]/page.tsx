@@ -18,13 +18,13 @@ export async function generateMetadata({
   const supabase = await createClient();
   const { data: b } = await supabase
     .from("businesses")
-    .select("name, about_business, logo_url, vitrine_cover_url, vitrine_cover_urls")
+    .select("name, about_business, logo_url, vitrine_cover_url, vitrine_cover_urls, share_image_url")
     .eq("slug", slug)
     .maybeSingle();
 
   if (!b) return { title: "Orbibox" };
 
-  const capa = b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls[0]) || b.logo_url || null;
+  const capa = b.share_image_url || b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls[0]) || b.logo_url || null;
   const descricao = b.about_business?.slice(0, 160) || `Conheça ${b.name} — produtos, serviços e contato num só link.`;
 
   return {

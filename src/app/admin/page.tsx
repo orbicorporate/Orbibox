@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 
 const METRICS = [
   { key: "discovery", label: "Visitas", explica: "Pessoas que abriram seu link", icon: "◎", href: "/admin/pulse" },
@@ -53,7 +55,7 @@ export default async function HojePage() {
     agentConfig.tone_concise_detailed !== 50 ||
     (agentConfig.objectives?.length ?? 0) > 0
   );
-  const insightsQueue: { title: string; description: string; ctaLabel: string; href: string }[] = [];
+  const insightsQueue: { title: string; description: string; ctaLabel: string; href: string; share?: boolean }[] = [];
   if (!hasItems) {
     insightsQueue.push({
       title: "Importe seu catálogo",
@@ -114,12 +116,17 @@ export default async function HojePage() {
     });
   }
   // Sem nenhum pendente: sempre sobra uma sugestão de divulgação, pra nunca
-  // ficar sem nada pra fazer.
+  // ficar sem nada pra fazer. URL absoluta de verdade (domínio da requisição),
+  // não fixa — funciona certo mesmo se o domínio mudar.
+  const host = (await headers()).get("host") ?? "orbibox-orbi-app.vercel.app";
+  const proto = host.includes("localhost") ? "http" : "https";
+  const shareUrl = `${proto}://${host}/${business!.slug}`;
   const insight = insightsQueue[0] ?? {
     title: "Compartilhe seu Orbibox",
     description: "Já está tudo pronto — hora de divulgar. Cole o link nos stories, na bio do Instagram, ou manda no WhatsApp.",
-    ctaLabel: "Ver meu Orbibox",
+    ctaLabel: "Compartilhar Orbibox",
     href: `/${business!.slug}`,
+    share: true,
   };
 
   // "Conversas reais" só conta quem de fato trocou mensagem com a Orbi — não
@@ -155,13 +162,22 @@ export default async function HojePage() {
           <p className="mt-1 text-[14px] text-text-secondary">Seu negócio está indo bem hoje.</p>
         </div>
       </div>
-      <Link
-        href={`/${business!.slug}`}
-        target="_blank"
-        className="mx-auto -mt-2 rounded-full border border-divider bg-surface-white px-4 py-1.5 text-[12px] text-text-secondary"
-      >
-        Ver meu Orbibox ↗
-      </Link>
+      <div className="mx-auto -mt-2 flex items-center gap-2">
+        <ShareOrbiboxButton
+          url={shareUrl}
+          title={`${business!.name} — Orbibox`}
+          className="flex items-center gap-1.5 rounded-full bg-on-background px-4 py-2 text-[13px] font-medium text-white"
+        >
+          ↗ Compartilhar Orbibox
+        </ShareOrbiboxButton>
+        <Link
+          href={`/${business!.slug}`}
+          target="_blank"
+          className="rounded-full border border-divider bg-surface-white px-3 py-2 text-[12px] text-text-secondary"
+        >
+          Ver
+        </Link>
+      </div>
 
       {/* Métricas em lista — cada uma leva pro Pulse (ou Conversas), onde dá
           pra ver o detalhe. Mesma fonte de dados do Pulse, então os números
@@ -195,12 +211,22 @@ export default async function HojePage() {
         <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
           {insight.description}
         </p>
-        <Link
-          href={insight.href}
-          className="mt-5 inline-flex items-center gap-2 rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white"
-        >
-          {insight.ctaLabel} →
-        </Link>
+        {insight.share ? (
+          <ShareOrbiboxButton
+            url={shareUrl}
+            title={`${business!.name} — Orbibox`}
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white"
+          >
+            {insight.ctaLabel} →
+          </ShareOrbiboxButton>
+        ) : (
+          <Link
+            href={insight.href}
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white"
+          >
+            {insight.ctaLabel} →
+          </Link>
+        )}
       </div>
     </div>
   );

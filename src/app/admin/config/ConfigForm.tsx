@@ -24,6 +24,9 @@ type Business = {
   policies: string | null;
   logo_url: string | null;
   logo_gallery: unknown;
+  share_image_url: string | null;
+  vitrine_cover_url: string | null;
+  vitrine_cover_urls: unknown;
 };
 
 const TIPO_LABEL: Record<string, string> = {
@@ -50,6 +53,11 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
       const next = await addToLogoGallery(supabase, b.id, logoGallery, url);
       setLogoGallery(next);
     }
+  }
+
+  async function saveShareImage(url: string | null) {
+    setB((p) => ({ ...p, share_image_url: url }));
+    await supabase.from("businesses").update({ share_image_url: url }).eq("id", b.id);
   }
 
   async function handleSignOut() {
@@ -142,6 +150,34 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
 
       <div className="mt-4">
         <OrbiVisualPanel businessId={b.id} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} />
+      </div>
+
+      {/* Capa do link — a imagem estática que aparece quando alguém cola o
+          link no WhatsApp, Instagram etc. Sem escolher uma, usa a capa da
+          Vitrine ou o logotipo, nessa ordem (a mesma cascata de sempre). */}
+      <div className="mt-4 rounded-[24px] bg-surface-soft p-5">
+        <p className="text-[14px] font-medium">Capa do link</p>
+        <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+          A imagem que aparece quando alguém cola seu link no WhatsApp, Instagram ou qualquer outro app. Sem escolher uma aqui, usa automaticamente a capa da Vitrine ou o logotipo.
+        </p>
+        <div className="mt-3">
+          <ImageUpload
+            value={b.share_image_url}
+            businessId={b.id}
+            lockedRatio="paisagem"
+            promptKind="capa"
+            onChange={saveShareImage}
+          />
+        </div>
+        {!b.share_image_url && (
+          <p className="mt-2 text-[12px] text-text-tertiary">
+            {(b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && (b.vitrine_cover_urls as string[])[0]))
+              ? "Hoje está usando a capa da Vitrine."
+              : b.logo_url
+              ? "Hoje está usando o logotipo."
+              : "Ainda não tem nenhuma imagem — o link fica sem capa."}
+          </p>
+        )}
       </div>
 
       {b.site_type && (
