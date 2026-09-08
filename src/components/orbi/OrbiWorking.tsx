@@ -30,7 +30,7 @@ export function OrbiWorking({
     );
   }
   return (
-    <div className="flex items-center gap-3 rounded-full bg-surface-soft px-4 py-3">
+    <div className="flex items-center gap-3 px-1 py-3">
       <OrbiParticleSphere size={30} colors={colors} className="rounded-full" />
       <span className="text-[14px] font-medium text-text-secondary">{label}</span>
     </div>

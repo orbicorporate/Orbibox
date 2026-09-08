@@ -141,7 +141,13 @@ export function ProductView({ business, item }: { business: Business; item: Item
         {formatPrice(item) && (
           <p className="mt-2 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{formatPrice(item)}</p>
         )}
-        {item.description && <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-text-secondary">{item.description}</p>}
+        {item.description && (
+          <div className="mt-4 flex flex-col gap-2 text-[15px] leading-relaxed text-text-secondary">
+            {item.description.split("\n").filter((line) => line.trim()).map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
+          </div>
+        )}
 
         <div className="mt-7 flex flex-col gap-2.5">
           <Link
