@@ -59,7 +59,7 @@ type ContentItem = {
   link_kind: string | null;
 };
 
-type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "endereco";
+type Intent = "comprar" | "conhecer" | "presentear" | "duvida";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
 type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco"; url?: string; logo_url?: string };
 
@@ -90,10 +90,9 @@ export function VisitorExperience({
   const searchParams = useSearchParams();
   const [intent, setIntent] = useState<Intent | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  // Endereço que abriu a tela "endereco" — pode não ser o business.address
-  // (o box guarda o seu próprio, pra funcionar mesmo sem endereço configurado
-  // em Configurações).
-  const [enderecoTapped, setEnderecoTapped] = useState<string | null>(null);
+  // Box de endereço expande direto na Home (sem navegar pra outra tela) —
+  // guarda qual box está expandido agora (ou null se nenhum).
+  const [expandedBox, setExpandedBox] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
@@ -119,7 +118,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; onClick: () => void };
+  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; address?: string; onClick: () => void };
   const options: Option[] = boxes
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .sort((a, b) => a.position - b.position)
@@ -147,15 +146,14 @@ export function VisitorExperience({
             const addr = cfg.url?.trim() || business.address;
             if (addr) {
               trackClick({ businessId: business.id, kind: "link", sessionId });
-              setEnderecoTapped(addr);
-              chooseIntent("endereco");
+              setExpandedBox((prev) => (prev === b.id ? null : b.id));
             }
           } else if (cfg.url) {
             trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: cfg.url });
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, stars: cfg.action === "avaliar", onClick };
+        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, stars: cfg.action === "avaliar", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou — igual ao editor.
@@ -231,10 +229,10 @@ export function VisitorExperience({
             </h1>
             <div className="mt-10 flex w-full flex-col gap-3">
               {options.map((o) => (
+                <div key={o.key}>
                 <button
-                  key={o.key}
                   onClick={o.onClick}
-                  className={`flex items-center gap-4 rounded-[24px] bg-surface-white p-4 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
+                  className={`flex w-full items-center gap-4 rounded-[24px] bg-surface-white p-4 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
                 >
                   <span
                     className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[15px] ${o.icon === "__logo__" ? "" : "overflow-hidden"} ${isAnimatedIcon(o.icon) ? "" : o.color && o.color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
@@ -268,8 +266,36 @@ export function VisitorExperience({
                       {o.ai ? `Fale com a ${agentName}, nossa IA.` : o.d}
                     </span>
                   </span>
-                  <span className="text-text-tertiary">→</span>
+                  <span className="text-text-tertiary">{o.address ? (expandedBox === o.key ? "▾" : "▸") : "→"}</span>
                 </button>
+                {/* Box de endereço expande aqui embaixo, na hora — sem
+                    navegar pra outra tela só pra mostrar 2 botões. */}
+                {o.address && expandedBox === o.key && (
+                  <div className="-mt-1 rounded-b-[24px] bg-surface-white px-4 pb-4 pt-1 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
+                    <div className="border-t border-divider pt-3">
+                      <p className="text-[13px] leading-relaxed text-text-secondary">{o.address}</p>
+                      <div className="mt-3 flex gap-2">
+                        <a
+                          href={`https://waze.com/ul?q=${encodeURIComponent(o.address)}&navigate=yes`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+                        >
+                          Abrir no Waze
+                        </a>
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+                        >
+                          Abrir no Google
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                </div>
               ))}
             </div>
           </div>
@@ -306,15 +332,6 @@ export function VisitorExperience({
 
         {intent === "duvida" && sessionId && (
           <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
-        )}
-
-        {intent === "endereco" && enderecoTapped && (
-          <div className="w-full text-left">
-            <button onClick={() => setIntent(null)} className="mb-4 text-[13px] text-text-tertiary hover:underline">
-              ← voltar
-            </button>
-            <AddressCard address={enderecoTapped} />
-          </div>
         )}
       </div>
     </main>
