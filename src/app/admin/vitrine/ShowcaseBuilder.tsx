@@ -10,6 +10,7 @@ import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { RATIOS } from "@/components/ui/ImageCropModal";
+import { MiniTour } from "@/components/tour/MiniTour";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { whatsappLink } from "@/lib/track";
 
@@ -61,6 +62,7 @@ export function ShowcaseBuilder({
   whatsapp = null,
   initialCatalogTitle = null,
   initialCatalogSubtitle = null,
+  introSeen = false,
 }: {
   items: Item[];
   slug: string;
@@ -72,6 +74,7 @@ export function ShowcaseBuilder({
   whatsapp?: string | null;
   initialCatalogTitle?: string | null;
   initialCatalogSubtitle?: string | null;
+  introSeen?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -81,6 +84,13 @@ export function ShowcaseBuilder({
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [catalogTitle, setCatalogTitle] = useState(initialCatalogTitle ?? "");
   const [catalogSubtitle, setCatalogSubtitle] = useState(initialCatalogSubtitle ?? "");
+  const [introDone, setIntroDone] = useState(introSeen);
+
+  async function finishIntro() {
+    if (introDone) return;
+    setIntroDone(true);
+    await supabase.from("businesses").update({ vitrine_intro_seen: true }).eq("id", businessId);
+  }
 
   async function saveCatalogTexts() {
     await supabase.from("businesses").update({
@@ -591,8 +601,18 @@ export function ShowcaseBuilder({
       </p>
 
       {items.length === 0 && (
-        <div className="mt-5 rounded-[28px] border border-divider bg-surface-white p-6 text-[14px] text-text-secondary">
-          Nenhum item ainda. Toque em “+ Novo item” ou importe do seu site.
+        <div className="mt-5 rounded-[28px] border border-divider bg-surface-white p-6">
+          <p className="text-[15px] font-medium">✦ Comece importando seu catálogo</p>
+          <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
+            Cole o link do seu site e a Orbi organiza seus produtos ou serviços na Vitrine automaticamente — muito
+            mais rápido do que criar item por item.
+          </p>
+          <button
+            onClick={() => setShowImport(true)}
+            className="orbi-gradient mt-4 rounded-full px-5 py-2.5 text-[13px] font-medium text-on-background"
+          >
+            ✦ Importar do site
+          </button>
         </div>
       )}
 
@@ -654,6 +674,8 @@ export function ShowcaseBuilder({
                   onDelete={() => deleteItem(item)}
                   slug={slug}
                   whatsapp={whatsapp}
+                  showIntroTour={editingId === item.id && !introDone}
+                  onIntroDone={finishIntro}
                 />
               ))}
               {sec.items.length === 0 && (
@@ -739,6 +761,8 @@ function ItemCard({
   onDelete,
   slug,
   whatsapp,
+  showIntroTour = false,
+  onIntroDone,
 }: {
   item: Item;
   editing: boolean;
@@ -760,6 +784,8 @@ function ItemCard({
   onDelete: () => void;
   slug: string;
   whatsapp?: string | null;
+  showIntroTour?: boolean;
+  onIntroDone?: () => void;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
@@ -924,6 +950,15 @@ function ItemCard({
             </button>
           ) : (
           <div className="flex flex-col gap-4">
+            <MiniTour
+              active={showIntroTour}
+              onDone={() => onIntroDone?.()}
+              steps={[
+                { id: "item-formato", title: "Formato do card", body: "Escolha como esse item aparece na grade da Vitrine — de destaque, largo, médio ou alto. Dá pra mudar quando quiser." },
+                { id: "item-capa", title: "Foto de capa", body: "É a imagem que aparece no card, dentro da Vitrine. Segue o formato escolhido acima." },
+                { id: "item-destino", title: "Página própria do produto", body: "Ative \"Abrir uma página exclusiva\" pra esse item ganhar sua própria página, com carrossel de fotos, descrição e preço — ótimo pra apresentar bem antes da venda." },
+              ]}
+            />
             <div className="flex items-start justify-between gap-3">
               <input
                 value={item.title}
@@ -957,7 +992,7 @@ function ItemCard({
               <button onClick={() => move(item, 1)} disabled={idx === total - 1} className="h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30" aria-label="Mover para frente">→</button>
             </div>
 
-            <div>
+            <div data-tour="item-formato">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
               <div className="mt-2 flex gap-2">
                 {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {
@@ -972,7 +1007,7 @@ function ItemCard({
               </div>
             </div>
 
-            <div>
+            <div data-tour="item-capa">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Foto de capa</p>
               <div className="mt-2">
                 <ImageUpload
@@ -1109,7 +1144,7 @@ function ItemCard({
               </select>
             </div>
 
-            <div>
+            <div data-tour="item-destino">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Ao tocar no card…</p>
               <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
                 Escolha o que acontece quando o cliente toca neste item na sua vitrine.
