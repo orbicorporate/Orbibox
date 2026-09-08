@@ -1022,8 +1022,11 @@ function ItemCard({
             </div>
 
             {(item.link_kind ?? "produto") === "produto" && (
-              <div>
-                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos e vídeos da página do produto (até 6)</p>
+              <div className="rounded-[22px] border border-orbi-gradient-start/30 bg-orbi-gradient-start/[0.06] p-4">
+                <p className="inline-flex items-center gap-1.5 rounded-full bg-surface-white px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+                  📄 Conteúdo da página própria
+                </p>
+                <p className="mt-2.5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Fotos e vídeos (até 6)</p>
                 <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
                   Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos/vídeos que viram um carrossel dentro dela — pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
                 </p>
