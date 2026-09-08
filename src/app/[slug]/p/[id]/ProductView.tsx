@@ -113,7 +113,6 @@ export function ProductView({ business, item }: { business: Business; item: Item
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={src} alt={item.title} className="h-full w-full object-cover" />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
                     </>
                   )}
                 </div>
@@ -142,7 +141,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
         {formatPrice(item) && (
           <p className="mt-2 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{formatPrice(item)}</p>
         )}
-        {item.description && <p className="mt-4 text-[15px] leading-relaxed text-text-secondary">{item.description}</p>}
+        {item.description && <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-text-secondary">{item.description}</p>}
 
         <div className="mt-7 flex flex-col gap-2.5">
           <Link

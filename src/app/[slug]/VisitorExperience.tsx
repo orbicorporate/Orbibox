@@ -441,7 +441,6 @@ function StoryView({
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={src} alt={business.name} className="h-full w-full object-cover" />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
                     </>
                   )}
                 </div>
@@ -936,7 +935,6 @@ function VitrineCoverBleed({ business }: { business: Business }) {
           <div key={i} className="relative w-full shrink-0 snap-center overflow-hidden rounded-b-[28px]" style={{ aspectRatio: 1920 / 830 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt={business.name} className="h-full w-full object-cover" />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
           </div>
         ))}
       </div>
