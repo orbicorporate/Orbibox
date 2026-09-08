@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ConfigForm } from "./ConfigForm";
 
@@ -26,6 +27,13 @@ export default async function ConfigPage() {
       <p className="mt-1 text-[14px] text-text-secondary">
         Contatos que aparecem para o visitante e o que a Orbi sabe sobre o seu negócio.
       </p>
+      <Link
+        href="/admin/planos"
+        className="mt-4 flex items-center justify-between rounded-2xl border border-divider bg-surface-white px-4 py-3.5 text-[14px] font-medium"
+      >
+        Plano e cobrança
+        <span className="text-text-tertiary">→</span>
+      </Link>
       <ConfigForm business={business!} orbiColors={orbiColors} heroGradient={heroGradient} />
     </div>
   );

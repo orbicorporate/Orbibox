@@ -78,6 +78,7 @@ export function VisitorExperience({
   agentName,
   orbiColors,
   isOwner,
+  hasAiChat,
 }: {
   business: Business;
   content: ContentItem[];
@@ -85,6 +86,7 @@ export function VisitorExperience({
   agentName: string;
   orbiColors: string[] | null;
   isOwner: boolean;
+  hasAiChat: boolean;
 }) {
   const supabase = createClient();
   const searchParams = useSearchParams();
@@ -111,7 +113,7 @@ export function VisitorExperience({
   useEffect(() => {
     const chat = searchParams.get("chat");
     const tab = searchParams.get("tab");
-    if (chat === "1") chooseIntent("duvida");
+    if (chat === "1" && hasAiChat) chooseIntent("duvida");
     else if (tab === "conhecer") chooseIntent("conhecer");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
@@ -121,6 +123,13 @@ export function VisitorExperience({
   type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; address?: string; onClick: () => void };
   const options: Option[] = boxes
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
+    .filter((b) => {
+      if (hasAiChat) return true;
+      if (b.box_type === "agent") return false;
+      const cfg = (b.config ?? {}) as CustomConfig;
+      if (b.box_type === "custom" && cfg.action === "zara") return false;
+      return true;
+    })
     .sort((a, b) => a.position - b.position)
     .map((b): Option | null => {
       const cfg = (b.config ?? {}) as CustomConfig;
@@ -163,6 +172,7 @@ export function VisitorExperience({
     .filter((o): o is Option => o !== null);
 
   async function chooseIntent(value: Intent) {
+    if (value === "duvida" && !hasAiChat) return;
     setIntent(value);
     if (sessionId) {
       await supabase.from("visitor_sessions").update({ intent: value }).eq("id", sessionId);
@@ -315,7 +325,7 @@ export function VisitorExperience({
             {content.length === 0 ? (
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
             ) : (
-              <Showcase content={content} business={business} sessionId={sessionId} onOrbi={() => chooseIntent("duvida")} />
+              <Showcase content={content} business={business} sessionId={sessionId} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
             )}
           </div>
         )}
@@ -325,7 +335,7 @@ export function VisitorExperience({
             business={business}
             onBack={() => setIntent(null)}
             onCatalog={() => chooseIntent("comprar")}
-            onOrbi={() => chooseIntent("duvida")}
+            onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined}
             sessionId={sessionId}
           />
         )}
@@ -382,7 +392,7 @@ function StoryView({
   business: Business;
   onBack: () => void;
   onCatalog: () => void;
-  onOrbi: () => void;
+  onOrbi?: () => void;
   sessionId: string | null;
 }) {
   const [active, setActive] = useState(0);
@@ -507,12 +517,14 @@ function StoryView({
             <OrbiContactDisc size={22} /> WhatsApp
           </a>
         )}
-        <button
-          onClick={onOrbi}
-          className="flex items-center justify-center gap-2 rounded-full border border-divider bg-surface-white py-3.5 text-[14px] font-medium"
-        >
-          ✦ Conversar com a Orbi
-        </button>
+        {onOrbi && (
+          <button
+            onClick={onOrbi}
+            className="flex items-center justify-center gap-2 rounded-full border border-divider bg-surface-white py-3.5 text-[14px] font-medium"
+          >
+            ✦ Conversar com a Orbi
+          </button>
+        )}
       </div>
     </div>
   );
@@ -970,7 +982,7 @@ function VitrineCoverBleed({ business }: { business: Business }) {
   );
 }
 
-function Showcase({ content, business, sessionId, onOrbi }: { content: ContentItem[]; business: Business; sessionId: string | null; onOrbi: () => void }) {
+function Showcase({ content, business, sessionId, onOrbi }: { content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void }) {
   const sections = groupByCategory(content);
   const [active, setActive] = useState<string | null>(null);
 

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getOwnerHasAiChat } from "@/lib/plans";
 import { VisitorExperience } from "./VisitorExperience";
 
 /**
@@ -75,8 +76,8 @@ export default async function VisitorPage({
   } = await supabase.auth.getUser();
   const isOwner = !!user && user.id === business.owner_id;
 
-  // As três dependem só do business — vão juntas em vez de em fila.
-  const [contentRes, boxesRes, agentRes] = await Promise.all([
+  // As quatro dependem só do business — vão juntas em vez de em fila.
+  const [contentRes, boxesRes, agentRes, hasAiChat] = await Promise.all([
     supabase
       .from("content_items")
       .select("id, title, description, price, price_type, price_max, image_url, brand_label, type, position, layout_size, box_color, box_style, target_url, link_kind")
@@ -89,6 +90,7 @@ export default async function VisitorPage({
       .eq("business_id", business.id)
       .order("position", { ascending: true }),
     supabase.from("agent_configs").select("agent_name, orbi_colors").eq("business_id", business.id).maybeSingle(),
+    getOwnerHasAiChat(business.owner_id),
   ]);
   const content = contentRes.data;
   const boxes = boxesRes.data;
@@ -105,6 +107,7 @@ export default async function VisitorPage({
       agentName={agentConfig?.agent_name ?? "Orbi"}
       orbiColors={orbiColors}
       isOwner={isOwner}
+      hasAiChat={hasAiChat}
     />
   );
 }

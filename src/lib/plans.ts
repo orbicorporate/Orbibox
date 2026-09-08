@@ -60,6 +60,30 @@ export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
   };
 }
 
+// Usado na página pública do visitante — ali quem está logado (se alguém
+// estiver) não é o dono, então a leitura via RLS normal não enxergaria a
+// assinatura do dono. Precisa da service role.
+export async function getOwnerHasAiChat(ownerId: string): Promise<boolean> {
+  const { createServiceClient } = await import("@/lib/supabase/service");
+  const supabase = createServiceClient();
+
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("status, plan_id")
+    .eq("owner_id", ownerId)
+    .maybeSingle();
+
+  if (!subscription || !ACTIVE_STATUSES.has(subscription.status)) return false;
+
+  const { data: plan } = await supabase
+    .from("plans")
+    .select("has_ai_chat")
+    .eq("id", subscription.plan_id)
+    .maybeSingle();
+
+  return plan?.has_ai_chat ?? false;
+}
+
 export async function getAllPlans(): Promise<Plan[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("plans").select("*").order("monthly_price_cents");
