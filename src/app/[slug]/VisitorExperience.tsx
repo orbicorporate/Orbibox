@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { OrbiFloatingButton } from "./OrbiFloatingButton";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
@@ -396,6 +397,12 @@ export function VisitorExperience({
           <CupomFlow business={business} sessionId={sessionId} onBack={() => setIntent(null)} />
         )}
       </div>
+
+      {/* Orbi flutuante — sempre à mão, exceto quando o chat já está aberto ou
+          o dono está visualizando a própria página. Só pra quem tem chat. */}
+      {hasAiChat && !isOwner && intent !== "duvida" && sessionId && (
+        <OrbiFloatingButton onOpen={() => chooseIntent("duvida")} orbiColors={orbiColors} agentName={agentName} />
+      )}
     </main>
   );
 }
