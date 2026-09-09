@@ -21,14 +21,29 @@ const CONTEXTO: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { imageBase64, mediaType, theme } = await req.json();
-    if (!imageBase64) {
-      return NextResponse.json({ error: "imageBase64 é obrigatório." }, { status: 400 });
-    }
+    const { imageBase64, imageUrl, mediaType, theme } = await req.json();
 
     const apiKey = process.env.ANTHROPIC_API_KEY || process.env.CHAVE_API_ANTROPICA;
     if (!apiKey) {
       return NextResponse.json({ error: "Chave da API não configurada." }, { status: 500 });
+    }
+
+    // Aceita a imagem em base64 (foto nova) OU uma URL (foto já salva) — nesse
+    // caso baixa a imagem no servidor e converte pra base64.
+    let base64 = imageBase64 as string | undefined;
+    let mt = mediaType as string | undefined;
+    if (!base64 && imageUrl) {
+      const imgRes = await fetch(imageUrl);
+      if (!imgRes.ok) {
+        return NextResponse.json({ error: "Não foi possível baixar a imagem." }, { status: 400 });
+      }
+      mt = imgRes.headers.get("content-type") ?? "image/jpeg";
+      const buf = Buffer.from(await imgRes.arrayBuffer());
+      base64 = buf.toString("base64");
+    }
+
+    if (!base64) {
+      return NextResponse.json({ error: "imageBase64 ou imageUrl é obrigatório." }, { status: 400 });
     }
 
     const ramo = CONTEXTO[theme] ?? "um negócio";
@@ -49,7 +64,7 @@ export async function POST(req: NextRequest) {
           {
             role: "user",
             content: [
-              { type: "image", source: { type: "base64", media_type: mediaType || "image/jpeg", data: imageBase64 } },
+              { type: "image", source: { type: "base64", media_type: mt || "image/jpeg", data: base64 } },
               { type: "text", text: "Nomeie este item." },
             ],
           },

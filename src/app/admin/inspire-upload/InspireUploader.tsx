@@ -64,6 +64,29 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
     setItems((prev) => prev.map((it) => (it.url === url ? { ...it, suggesting: false } : it)));
   }
 
+  // Sugere nome pra todas as fotos que estão sem nome, usando a URL (funciona
+  // pra fotos já salvas também, não só recém-enviadas).
+  async function sugerirTodos() {
+    const alvos = items.filter((it) => !it.title.trim());
+    if (alvos.length === 0) return;
+    setItems((prev) => prev.map((it) => (!it.title.trim() ? { ...it, suggesting: true } : it)));
+    await Promise.all(
+      alvos.map(async (alvo) => {
+        try {
+          const res = await fetch("/api/name-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageUrl: alvo.url, theme }),
+          });
+          const data = await res.json();
+          setItems((prev) => prev.map((it) => (it.url === alvo.url ? { ...it, title: data.name || it.title, suggesting: false } : it)));
+        } catch {
+          setItems((prev) => prev.map((it) => (it.url === alvo.url ? { ...it, suggesting: false } : it)));
+        }
+      })
+    );
+  }
+
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
@@ -160,9 +183,17 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
 
       {items.length > 0 && (
         <div className="rounded-2xl border border-divider bg-surface-white p-4">
-          <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">
-            Nomes ({items.length}) · a IA sugere, você ajusta
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">
+              Nomes ({items.length})
+            </p>
+            <button
+              onClick={sugerirTodos}
+              className="rounded-full border border-divider bg-surface-white px-3 py-1.5 text-[12px] font-medium text-text-secondary"
+            >
+              ✦ Sugerir nomes com IA
+            </button>
+          </div>
           <div className="mt-3 flex flex-col gap-3">
             {items.map((r, i) => (
               <div key={r.url} className="flex gap-3">
