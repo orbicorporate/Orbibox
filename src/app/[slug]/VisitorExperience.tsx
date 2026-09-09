@@ -56,6 +56,7 @@ type ContentItem = {
   box_color: string;
   footer_color: string | null;
   box_style: string;
+  title_placement: string;
   target_url: string | null;
   link_kind: string | null;
 };
@@ -1220,6 +1221,14 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                             }}
                           />
                           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                          {item.title_placement === "sobre" && (
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent p-4 pt-10">
+                              <p className="font-[family-name:var(--font-manrope)] font-semibold leading-tight text-white" style={{ fontSize: titleFontSize(item.title, size) }}>
+                                {item.title}
+                              </p>
+                              {priceLabel && <p className="mt-0.5 text-[13px] text-white/85">{priceLabel}</p>}
+                            </div>
+                          )}
                         </>
                       ) : (
                         // Sem foto: o nome vira o conteúdo do box, centralizado — sem
@@ -1257,7 +1266,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                         </span>
                       )}
                     </div>
-                    {photo && (
+                    {photo && item.title_placement !== "sobre" && (
                       <div className="flex items-center justify-between gap-3 p-4">
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight" style={fc ? { color: fc.fg } : undefined}>{item.title}</p>

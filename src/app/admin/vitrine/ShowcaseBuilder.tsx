@@ -37,6 +37,7 @@ type Item = {
   box_color: string;
   footer_color: string | null;
   box_style: string;
+  title_placement: string;
   ai_optimized: boolean;
   link_kind: string | null;
   target_url: string | null;
@@ -876,7 +877,8 @@ function ItemCard({
         role={!editing ? "button" : undefined}
       >
         {hasPhoto ? (
-          // eslint-disable-next-line @next/next/no-img-element
+          <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={item.image_url!}
             alt={item.title}
@@ -889,6 +891,15 @@ function ItemCard({
               if (img.naturalWidth === 0 || img.naturalHeight === 0) setImgFailed(true);
             }}
           />
+          {item.title_placement === "sobre" && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent p-4 pt-10">
+              <span className="font-[family-name:var(--font-open-sans)] font-bold leading-snug text-white" style={{ fontSize: titleFontSize(item.title, sizeOf(item.layout_size)) }}>
+                {item.title}
+              </span>
+              {priceLabel && <span className="mt-0.5 block text-[13px] text-white/85">{priceLabel}</span>}
+            </div>
+          )}
+          </>
         ) : editing ? (
           <div className="h-full w-full" style={{ backgroundColor: broken ? "#FBEAEA" : c.bg }} />
         ) : broken ? (
@@ -1161,6 +1172,29 @@ function ItemCard({
                         <button key={key} onClick={() => save(item.id, { footer_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.footer_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
                       ))}
                 </div>
+              </div>
+            )}
+
+            {item.image_url && (
+              <div>
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do card</p>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => save(item.id, { title_placement: "faixa" })}
+                    className={`flex-1 rounded-2xl border-2 px-3 py-2.5 text-[13px] font-medium ${(item.title_placement ?? "faixa") === "faixa" ? "border-on-background" : "border-divider text-text-secondary"}`}
+                  >
+                    Na faixa branca
+                  </button>
+                  <button
+                    onClick={() => save(item.id, { title_placement: "sobre" })}
+                    className={`flex-1 rounded-2xl border-2 px-3 py-2.5 text-[13px] font-medium ${item.title_placement === "sobre" ? "border-on-background" : "border-divider text-text-secondary"}`}
+                  >
+                    Sobre a imagem
+                  </button>
+                </div>
+                <p className="mt-1 text-[11px] text-text-tertiary">
+                  &quot;Sobre a imagem&quot; deixa o nome dentro da foto, com um degradê pra ficar legível — visual mais editorial.
+                </p>
               </div>
             )}
 
