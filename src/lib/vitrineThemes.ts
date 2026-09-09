@@ -88,6 +88,20 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     ],
   },
   {
+    id: "fitness",
+    name: "Loja Fitness",
+    vibe: "Enérgico, atlético",
+    exampleBusiness: "Move Store",
+    description: "Roupas, acessórios e suplementos com tons de grafite e verde-limão contido. Pra loja fitness, moda esportiva, suplementos, equipamentos.",
+    bg: "#EFF1EE",
+    colors: [
+      { hex: "#E9ECE8", role: "Fundo" },
+      { hex: "#22271F", role: "Contraste" },
+      { hex: "#6E8B3D", role: "Detalhe" },
+      { hex: "#9BA69A", role: "Suave" },
+    ],
+  },
+  {
     id: "servicos",
     name: "Serviços",
     vibe: "Confiável, corporativo",
