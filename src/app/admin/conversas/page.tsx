@@ -44,7 +44,7 @@ export default async function ConversasPage() {
         Tudo que a Orbi conversou com quem visitou seu link. O contato só aparece nas conversas em que a
         pessoa deixou o WhatsApp — nessas, marcamos com a etiqueta <span className="font-medium text-[#128C3E]">☎ tem contato</span> e você responde direto por lá.
       </p>
-      <ConversasList conversations={list} />
+      <ConversasList conversations={list} businessId={business!.id} />
     </div>
   );
 }

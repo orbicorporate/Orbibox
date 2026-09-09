@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
+import { acharWhatsapp, formatFone } from "@/lib/utils";
 
 type Msg = { role: string; content: string };
 type Conversa = { id: string; startedAt: string; messages: Msg[] };
@@ -16,32 +17,6 @@ function formatData(iso: string) {
   return `${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}, ${hora}`;
 }
 
-/**
- * Procura um número de telefone/WhatsApp nas mensagens do visitante. A Orbi
- * pede o contato durante a conversa, então ele fica no texto — não numa coluna
- * separada. Aceita formatos comuns brasileiros (com/sem DDD, com/sem +55).
- * Retorna só os dígitos, ou null se não achar.
- */
-function acharWhatsapp(messages: Msg[]): string | null {
-  for (const m of messages) {
-    if (m.role !== "visitor") continue;
-    // sequência com 10 a 13 dígitos, tolerando espaços, hífens, parênteses e +.
-    const match = m.content.match(/(\+?\d[\d\s().-]{8,}\d)/);
-    if (match) {
-      const digits = match[1].replace(/\D/g, "");
-      if (digits.length >= 10 && digits.length <= 13) return digits;
-    }
-  }
-  return null;
-}
-
-function formatFone(digits: string) {
-  const d = digits.replace(/^55/, "");
-  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  return digits;
-}
-
 const PERIODOS = [
   { key: "todos", label: "Todos", horas: null },
   { key: "24h", label: "24h", horas: 24 },
@@ -50,13 +25,14 @@ const PERIODOS = [
   { key: "30d", label: "30 dias", horas: 24 * 30 },
 ] as const;
 
-export function ConversasList({ conversations }: { conversations: Conversa[] }) {
+export function ConversasList({ conversations, businessId }: { conversations: Conversa[]; businessId: string }) {
   const { confirm, DialogRenderer } = useDialogs();
   const [openId, setOpenId] = useState<string | null>(null);
   const [soComContato, setSoComContato] = useState(false);
   const [periodo, setPeriodo] = useState<(typeof PERIODOS)[number]["key"]>("todos");
   const [excluidas, setExcluidas] = useState<Set<string>>(new Set());
   const [excluindo, setExcluindo] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   // Momento em que a tela abriu — base estável pros filtros de período.
   const [agora] = useState(() => Date.now());
 
@@ -67,6 +43,74 @@ export function ConversasList({ conversations }: { conversations: Conversa[] }) 
     supabase.from("conversations").update({ seen_by_owner: true }).in("id", conversations.map((c) => c.id)).then();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function exportarContatos() {
+    setExporting(true);
+    try {
+      const supabase = createClient();
+
+      // Busca TODAS as conversas (não só as 50 mostradas na lista) pra não
+      // deixar contato de fora do export.
+      const { data: todasConversas } = await supabase
+        .from("conversations")
+        .select("id, started_at")
+        .eq("business_id", businessId)
+        .order("started_at", { ascending: false });
+
+      const ids = (todasConversas ?? []).map((c) => c.id);
+      const { data: todasMensagens } = ids.length > 0
+        ? await supabase.from("messages").select("conversation_id, role, content").in("conversation_id", ids)
+        : { data: [] };
+
+      const porConversa: Record<string, Msg[]> = {};
+      for (const m of todasMensagens ?? []) {
+        (porConversa[m.conversation_id] ??= []).push({ role: m.role, content: m.content });
+      }
+
+      const linhas: { nome: string; whatsapp: string; origem: string; data: string }[] = [];
+
+      for (const c of todasConversas ?? []) {
+        const tel = acharWhatsapp(porConversa[c.id] ?? []);
+        if (tel) linhas.push({ nome: "", whatsapp: formatFone(tel), origem: "Conversa com a Orbi", data: c.started_at });
+      }
+
+      const { data: vouchers } = await supabase
+        .from("voucher_redemptions")
+        .select("voucher_id, visitor_name, visitor_whatsapp, claimed_at")
+        .eq("business_id", businessId)
+        .not("visitor_whatsapp", "is", null);
+
+      const voucherIds = [...new Set((vouchers ?? []).map((v) => v.voucher_id))];
+      const { data: voucherTitulos } = voucherIds.length > 0
+        ? await supabase.from("vouchers").select("id, title").in("id", voucherIds)
+        : { data: [] };
+      const tituloPorId = new Map((voucherTitulos ?? []).map((v) => [v.id, v.title]));
+
+      for (const v of vouchers ?? []) {
+        linhas.push({
+          nome: v.visitor_name ?? "",
+          whatsapp: v.visitor_whatsapp ?? "",
+          origem: `Cupom: ${tituloPorId.get(v.voucher_id) ?? "—"}`,
+          data: v.claimed_at,
+        });
+      }
+
+      if (linhas.length === 0) return;
+
+      const header = "Nome,WhatsApp,Origem,Data\n";
+      const csvBody = linhas
+        .map((l) => [l.nome, l.whatsapp, l.origem, new Date(l.data).toLocaleString("pt-BR")].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+      const blob = new Blob(["\uFEFF" + header + csvBody], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `contatos-orbibox-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   async function excluir(id: string) {
     if (!(await confirm({ title: "Excluir conversa", message: "Excluir esta conversa? Essa ação não pode ser desfeita.", confirmLabel: "Excluir", danger: true }))) return;
@@ -120,6 +164,14 @@ export function ConversasList({ conversations }: { conversations: Conversa[] }) 
           </button>
         ))}
       </div>
+
+      <button
+        onClick={exportarContatos}
+        disabled={exporting}
+        className="mt-2 self-start rounded-full border border-divider bg-surface-white px-3.5 py-1.5 text-[12px] font-medium text-text-secondary disabled:opacity-50"
+      >
+        {exporting ? "Exportando…" : "⬇ Exportar contatos (CSV)"}
+      </button>
 
       {visiveis.length === 0 ? (
         <div className="mt-5 rounded-[24px] border border-divider bg-surface-white p-6 text-center text-[14px] text-text-secondary">
