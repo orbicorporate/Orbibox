@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import { contrastFg } from "@/lib/showcase";
 import { VITRINE_THEMES, type ThemeBox, type VitrineTheme } from "@/lib/vitrineThemes";
 
-// Classe de grid por formato — mesma lógica da vitrine real (2 colunas).
 const SPAN: Record<ThemeBox["size"], string> = {
   destaque: "col-span-2 aspect-[16/9]",
   largo: "col-span-2 aspect-[21/9]",
@@ -15,14 +14,15 @@ const SPAN: Record<ThemeBox["size"], string> = {
 };
 
 function MockBox({ box, theme }: { box: ThemeBox; theme: VitrineTheme }) {
+  const photo = box.img != null ? theme.photos[box.img] : undefined;
   const bgColor = box.colorIdx != null ? theme.colors[box.colorIdx].hex : theme.colors[0].hex;
   const fg = contrastFg(bgColor);
 
-  if (box.photo) {
+  if (photo) {
     return (
-      <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[0].hex }}>
+      <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[3].hex }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={box.photo} alt={box.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <img src={photo} alt={box.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2.5">
           <p className="text-[12px] font-semibold leading-tight text-white">{box.title}</p>
           {box.price && <p className="text-[10px] text-white/85">{box.price}</p>}
@@ -49,7 +49,6 @@ function MockBox({ box, theme }: { box: ThemeBox; theme: VitrineTheme }) {
 function ThemePreview({ theme }: { theme: VitrineTheme }) {
   return (
     <div className="rounded-[20px] p-3" style={{ backgroundColor: theme.bg }}>
-      {/* Mini cabeçalho da vitrine fake */}
       <div className="mb-3 flex items-center gap-2 px-1">
         <div className="h-7 w-7 rounded-full" style={{ backgroundColor: theme.colors[1].hex }} />
         <div>
@@ -70,7 +69,7 @@ export function InspireModal({ businessId, onClose }: { businessId: string; onCl
   const router = useRouter();
   const supabase = createClient();
   const [applying, setApplying] = useState<string | null>(null);
-  const [openId, setOpenId] = useState<string | null>(VITRINE_THEMES[0]?.id ?? null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   async function usarTema(themeId: string) {
     const tema = VITRINE_THEMES.find((t) => t.id === themeId);
@@ -93,8 +92,8 @@ export function InspireModal({ businessId, onClose }: { businessId: string; onCl
           <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-[14px]">✕</button>
         </div>
         <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
-          Veja vitrines completas de exemplo, com fotos reais. Ao escolher um estilo, a Orbi aplica a paleta de cores
-          na sua conta — as fotos aqui são só pra você se inspirar.
+          Veja vitrines completas de exemplo por tipo de negócio. Ao escolher um estilo, a Orbi aplica a paleta de
+          cores na sua conta — as fotos aqui são só pra você se inspirar.
         </p>
 
         <div className="mt-5 flex flex-col gap-4">

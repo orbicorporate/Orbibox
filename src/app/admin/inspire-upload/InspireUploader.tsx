@@ -57,12 +57,15 @@ export function InspireUploader() {
           className="mt-1.5 w-full rounded-xl border border-divider bg-surface-white px-3 py-2.5 text-[14px] outline-none"
         >
           <option value="moda">Moda</option>
-          <option value="servico">Serviço</option>
-          <option value="misterio">Mistério</option>
-          <option value="vibrante">Vibrante</option>
-          <option value="discreto">Discreto</option>
-          <option value="luxo">Luxo</option>
-          <option value="extrovertido">Extrovertido</option>
+          <option value="restaurante">Restaurante</option>
+          <option value="loja">Loja</option>
+          <option value="servicos">Serviços</option>
+          <option value="pizzaria">Pizzaria</option>
+          <option value="imobiliaria">Imobiliária</option>
+          <option value="fotografo">Fotógrafo</option>
+          <option value="salao">Salão / Barbearia</option>
+          <option value="doceria">Doceria</option>
+          <option value="academia">Academia</option>
         </select>
         <p className="mt-2 text-[12px] text-text-tertiary">
           As fotos viram {theme}-01.jpg, {theme}-02.jpg… na ordem que você selecionar. Selecione todas de uma vez.
