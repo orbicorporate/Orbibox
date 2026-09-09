@@ -20,6 +20,9 @@ export type VitrineTheme = {
   description: string;
   bg: string;
   colors: ThemeColor[];
+  // "contain" mostra a foto inteira (sem cortar lettering/gráficos); "cover"
+  // preenche o card cortando as bordas. Padrão é cover.
+  fit?: "cover" | "contain";
 };
 
 
@@ -160,6 +163,7 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     exampleBusiness: "Ápice Capital",
     description: "Tom institucional em azul-marinho profundo e dourado discreto. Pra assessoria de investimentos, gestão de patrimônio, planejamento financeiro.",
     bg: "#EEF1F4",
+    fit: "contain",
     colors: [
       { hex: "#E8ECF1", role: "Fundo" },
       { hex: "#16233A", role: "Contraste" },
