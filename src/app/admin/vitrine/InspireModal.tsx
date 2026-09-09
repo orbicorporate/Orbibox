@@ -21,10 +21,9 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
 
   const title = photo.title?.trim();
   const price = photo.price?.trim();
-  // "contain" mostra a foto inteira (não corta lettering/gráficos); nesse caso
-  // um fundo neutro preenche as sobras nas laterais.
-  const imgFit = theme.fit === "contain" ? "object-contain" : "object-cover";
-  const imgBg = theme.fit === "contain" ? theme.colors[0].hex : undefined;
+  // Posição do recorte — fotos com texto (ex: investimentos) usam "top" pra
+  // não cortar o lettering, que costuma estar no topo. Padrão: center.
+  const objPos = theme.objectPosition ?? "center";
 
   // "faixa": foto no aspect ratio do formato + faixa BRANCA embaixo (igual à
   // vitrine real — o card é branco e cresce pra caber o rodapé).
@@ -33,9 +32,9 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
     const ratioClass = { destaque: "aspect-[16/9]", largo: "aspect-[1920/830]", medio: "aspect-square", alto: "aspect-[4/5]" }[box.size];
     return (
       <div className={`overflow-hidden rounded-[16px] bg-surface-white shadow-[0_2px_10px_rgba(17,19,24,0.06)] ${spanCols}`}>
-        <div className={`relative w-full ${ratioClass}`} style={imgBg ? { backgroundColor: imgBg } : undefined}>
+        <div className={`relative w-full ${ratioClass}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={photo.url} alt={title || "Exemplo"} className={`absolute inset-0 h-full w-full ${imgFit}`} loading="lazy" />
+          <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} loading="lazy" />
         </div>
         {title && (
           <div className="p-2">
@@ -49,9 +48,9 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
 
   // "sobre": nome sobre a imagem, com degradê.
   return (
-    <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: imgBg ?? theme.colors[3].hex }}>
+    <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[3].hex }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={photo.url} alt={title || "Exemplo"} className={`absolute inset-0 h-full w-full ${imgFit}`} loading="lazy" />
+      <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} loading="lazy" />
       {title && (
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2.5">
           <p className="text-[12px] font-semibold leading-tight text-white">{title}</p>

@@ -20,9 +20,10 @@ export type VitrineTheme = {
   description: string;
   bg: string;
   colors: ThemeColor[];
-  // "contain" mostra a foto inteira (sem cortar lettering/gráficos); "cover"
-  // preenche o card cortando as bordas. Padrão é cover.
-  fit?: "cover" | "contain";
+  // Posição do recorte da foto (object-position). Fotos com texto/lettering
+  // ficam melhor com "top" (preserva o topo, onde o texto costuma estar).
+  // Padrão é "center".
+  objectPosition?: string;
 };
 
 
@@ -157,13 +158,27 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     ],
   },
   {
+    id: "arquitetura",
+    name: "Escritório de Arquitetura",
+    vibe: "Minimalista, refinado",
+    exampleBusiness: "Traço Studio",
+    description: "Projetos e ambientes com muito respiro, tons de concreto e madeira. Pra arquiteto, designer de interiores, urbanista, paisagismo.",
+    bg: "#F0EFEC",
+    colors: [
+      { hex: "#EDEBE7", role: "Fundo" },
+      { hex: "#2A2926", role: "Contraste" },
+      { hex: "#9C8163", role: "Detalhe" },
+      { hex: "#B8B5AD", role: "Suave" },
+    ],
+  },
+  {
     id: "investimentos",
     name: "Consultoria de Investimentos",
     vibe: "Sóbrio, confiável",
     exampleBusiness: "Ápice Capital",
     description: "Tom institucional em azul-marinho profundo e dourado discreto. Pra assessoria de investimentos, gestão de patrimônio, planejamento financeiro.",
     bg: "#EEF1F4",
-    fit: "contain",
+    objectPosition: "center top",
     colors: [
       { hex: "#E8ECF1", role: "Fundo" },
       { hex: "#16233A", role: "Contraste" },
