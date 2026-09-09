@@ -33,6 +33,7 @@ type Item = {
   status: string;
   layout_size: string;
   box_color: string;
+  footer_color: string | null;
   box_style: string;
   ai_optimized: boolean;
   link_kind: string | null;
@@ -797,6 +798,7 @@ function ItemCard({
   promptFn: (options: { title: string; placeholder?: string }) => Promise<string | null>;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
+  const [footerPaletteTab, setFooterPaletteTab] = useState<string>(brandColors.length > 0 ? "Marca" : PALETTE_GROUPS[0].name);
   const [justSaved, setJustSaved] = useState(false);
   const [lastUrl, setLastUrl] = useState(item.image_url);
   if (item.image_url !== lastUrl) {
@@ -805,6 +807,9 @@ function ItemCard({
   }
   const size = sizeOf(item.layout_size);
   const c = colorOf(item.box_color);
+  // Cor do rodapé é independente da "Cor do box" (essa é só pro estado sem
+  // foto). Sem escolha, o rodapé fica branco puro, como sempre foi.
+  const fc = item.footer_color ? colorOf(item.footer_color) : null;
   const hasPhoto = !!item.image_url && !imgFailed;
   // Tinha foto, mas o link quebrou — diferente de "nunca teve foto".
   const broken = !!item.image_url && imgFailed;
@@ -827,7 +832,7 @@ function ItemCard({
     <div
       id={`item-${item.id}`}
       className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${widthClass}`}
-      style={!editing && hasPhoto ? { backgroundColor: c.bg } : undefined}
+      style={!editing && hasPhoto && fc ? { backgroundColor: fc.bg } : undefined}
     >
       <div
         className="relative"
@@ -942,24 +947,24 @@ function ItemCard({
             <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium" style={hasPhoto ? { color: c.fg } : undefined}>{item.title}</p>
+                  <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium" style={fc ? { color: fc.fg } : undefined}>{item.title}</p>
                   {hasPhoto && (
                     <span
                       onClick={(e) => { e.stopPropagation(); onTogglePublish(); }}
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-surface-white/70 px-2.5 py-1 text-[11px] font-medium"
-                      style={{ color: c.fg }}
+                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${fc ? "bg-surface-white/70" : "bg-surface-soft text-text-secondary"}`}
+                      style={fc ? { color: fc.fg } : undefined}
                     >
-                      <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : ""}`} style={item.status !== "published" ? { backgroundColor: c.fg, opacity: 0.5 } : undefined} />
+                      <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : fc ? "" : "bg-text-tertiary"}`} style={item.status !== "published" && fc ? { backgroundColor: fc.fg, opacity: 0.5 } : undefined} />
                       {item.status === "published" ? "Ativo" : "Rascunho"}
                     </span>
                   )}
                 </div>
                 {item.description?.trim() && (
-                  <p className="mt-1 line-clamp-1 text-[12px] leading-snug" style={hasPhoto ? { color: c.fg, opacity: 0.7 } : undefined}>{item.description}</p>
+                  <p className={`mt-1 line-clamp-1 text-[12px] leading-snug ${fc ? "" : "text-text-tertiary"}`} style={fc ? { color: fc.fg, opacity: 0.7 } : undefined}>{item.description}</p>
                 )}
               </div>
               {priceLabel && (
-                <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[15px] font-medium" style={hasPhoto ? { color: c.fg } : undefined}>{priceLabel}</p>
+                <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[15px] font-medium" style={fc ? { color: fc.fg } : undefined}>{priceLabel}</p>
               )}
             </button>
           ) : (
@@ -1092,6 +1097,32 @@ function ItemCard({
                     ))}
               </div>
             </div>
+
+            {item.image_url && (
+              <div>
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
+                  Cor do rodapé · independente da cor do box acima
+                </p>
+                <div className="mt-2 flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                  <button onClick={() => save(item.id, { footer_color: null })} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${!item.footer_color ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>Branco (padrão)</button>
+                  {brandColors.length > 0 && (
+                    <button onClick={() => setFooterPaletteTab("Marca")} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${footerPaletteTab === "Marca" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>✦ Marca</button>
+                  )}
+                  {PALETTE_GROUPS.map((g) => (
+                    <button key={g.name} onClick={() => setFooterPaletteTab(g.name)} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${footerPaletteTab === g.name ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>{g.name}</button>
+                  ))}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2.5">
+                  {footerPaletteTab === "Marca"
+                    ? brandColors.map((bc, i) => (
+                        <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { footer_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.footer_color?.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: bc.hex }} />
+                      ))
+                    : Object.entries(PALETTE_GROUPS.find((g) => g.name === footerPaletteTab)?.colors ?? {}).map(([key, cc]) => (
+                        <button key={key} onClick={() => save(item.id, { footer_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.footer_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
+                      ))}
+                </div>
+              </div>
+            )}
 
             <div>
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Preço</p>

@@ -54,6 +54,7 @@ type ContentItem = {
   position: number;
   layout_size: string;
   box_color: string;
+  footer_color: string | null;
   box_style: string;
   target_url: string | null;
   link_kind: string | null;
@@ -1141,6 +1142,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
             <div className="flex flex-wrap gap-5">
               {sec.items.map((item) => {
                 const c = colorOf(item.box_color);
+                const fc = item.footer_color ? colorOf(item.footer_color) : null;
                 const size = sizeOf(item.layout_size);
                 const ratio = COVER_RATIO_BY_SIZE[size];
                 // Mesma correção de sempre: "tem foto" é só ter uma URL.
@@ -1225,12 +1227,12 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                     {photo && (
                       <div className="flex items-center justify-between gap-3 p-4">
                         <div className="min-w-0 flex-1">
-                          <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight" style={{ color: c.fg }}>{item.title}</p>
+                          <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight" style={fc ? { color: fc.fg } : undefined}>{item.title}</p>
                           {item.description?.trim() && (
-                            <p className="mt-0.5 line-clamp-1 text-[12px] leading-snug" style={{ color: c.fg, opacity: 0.7 }}>{item.description}</p>
+                            <p className={`mt-0.5 line-clamp-1 text-[12px] leading-snug ${fc ? "" : "text-text-tertiary"}`} style={fc ? { color: fc.fg, opacity: 0.7 } : undefined}>{item.description}</p>
                           )}
                           {priceLabel && (
-                            <p className="mt-0.5 font-[family-name:var(--font-manrope)] text-[15px] font-medium" style={{ color: c.fg, opacity: 0.85 }}>{priceLabel}</p>
+                            <p className={`mt-0.5 font-[family-name:var(--font-manrope)] text-[15px] font-medium ${fc ? "" : "text-text-secondary"}`} style={fc ? { color: fc.fg, opacity: 0.85 } : undefined}>{priceLabel}</p>
                           )}
                         </div>
                         {destino && (
@@ -1254,7 +1256,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 );
 
                 const classe = `block overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${size === "medio" ? "w-[calc(50%-10px)]" : "w-full"}`;
-                const cardStyle = photo ? { backgroundColor: c.bg } : undefined;
+                const cardStyle = photo && fc ? { backgroundColor: fc.bg } : undefined;
 
                 if (!destino) {
                   return (
