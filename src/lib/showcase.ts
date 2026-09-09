@@ -129,7 +129,7 @@ export const BOX_COLORS: Record<string, Swatch> = Object.assign(
 );
 
 /** Preto ou branco, o que der mais contraste sobre o hex informado. */
-function contrastFg(hex: string): string {
+export function contrastFg(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);

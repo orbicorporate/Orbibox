@@ -11,6 +11,7 @@ import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { MiniTour } from "@/components/tour/MiniTour";
+import { InspireModal } from "./InspireModal";
 import { useDialogs } from "@/hooks/useDialogs";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { whatsappLink } from "@/lib/track";
@@ -108,6 +109,7 @@ export function ShowcaseBuilder({
   const [creating, setCreating] = useState(false);
   const [improving, setImproving] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
+  const [showInspire, setShowInspire] = useState(false);
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
@@ -492,6 +494,9 @@ export function ShowcaseBuilder({
         <button onClick={() => setShowImport((v) => !v)} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
           ✦ Importar do site
         </button>
+        <button onClick={() => setShowInspire(true)} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
+          ✦ Inspire-se
+        </button>
         <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
           Ver publicado ↗
         </Link>
@@ -636,8 +641,19 @@ export function ShowcaseBuilder({
           >
             ✦ Importar do site
           </button>
+          <p className="mt-4 text-[13px] leading-relaxed text-text-secondary">
+            Ainda não sabe por onde começar? Dá uma olhada em alguns estilos prontos primeiro.
+          </p>
+          <button
+            onClick={() => setShowInspire(true)}
+            className="mt-2 rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[13px] font-medium"
+          >
+            ✦ Inspire-se
+          </button>
         </div>
       )}
+
+      {showInspire && <InspireModal businessId={businessId} onClose={() => setShowInspire(false)} />}
 
       <div className="mt-6 flex flex-col gap-8">
         {sections.map((sec, si) => {
