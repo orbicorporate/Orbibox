@@ -57,9 +57,11 @@ function ThemePreview({ theme, photos }: { theme: VitrineTheme; photos: string[]
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 [grid-auto-flow:dense]">
-        {theme.boxes.map((box, i) => (
-          <MockBox key={i} box={box} theme={theme} photos={photos} />
-        ))}
+        {theme.boxes
+          .filter((box) => box.img == null || photos[box.img])
+          .map((box, i) => (
+            <MockBox key={i} box={box} theme={theme} photos={photos} />
+          ))}
       </div>
     </div>
   );
