@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { contrastFg } from "@/lib/showcase";
 import { VITRINE_THEMES, type ThemeBox, type ThemePhoto, type VitrineTheme } from "@/lib/vitrineThemes";
 
 const SPAN: Record<ThemeBox["size"], string> = {
@@ -15,42 +14,39 @@ const SPAN: Record<ThemeBox["size"], string> = {
 
 function MockBox({ box, theme, photos }: { box: ThemeBox; theme: VitrineTheme; photos: ThemePhoto[] }) {
   const photo = box.img != null ? photos[box.img] : undefined;
-  const bgColor = box.colorIdx != null ? theme.colors[box.colorIdx].hex : theme.colors[0].hex;
-  const fg = contrastFg(bgColor);
+  if (!photo) return null;
 
-  if (photo) {
-    // Nome/preço vêm da própria foto (definidos no upload); se não tiver,
-    // cai no texto padrão do box.
-    const title = photo.title?.trim() || box.title;
-    const price = photo.price?.trim() || box.price;
-    return (
-      <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[3].hex }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photo.url} alt={title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+  // Nome/preço vêm da própria foto (definidos no upload). Sem nome, a foto
+  // aparece limpa, sem faixa de texto embaixo.
+  const title = photo.title?.trim();
+  const price = photo.price?.trim();
+  return (
+    <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[3].hex }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      {title && (
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2.5">
           <p className="text-[12px] font-semibold leading-tight text-white">{title}</p>
           {price && <p className="text-[10px] text-white/85">{price}</p>}
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`flex flex-col justify-between rounded-[16px] p-3 ${SPAN[box.size]}`} style={{ backgroundColor: bgColor }}>
-      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: fg, opacity: 0.6 }}>
-        {box.label ?? ""}
-      </span>
-      <div>
-        <p className="font-[family-name:var(--font-manrope)] text-[15px] font-semibold leading-tight" style={{ color: fg }}>
-          {box.title}
-        </p>
-        {box.price && <p className="mt-0.5 text-[11px]" style={{ color: fg, opacity: 0.8 }}>{box.price}</p>}
-      </div>
+      )}
     </div>
   );
 }
 
+// Ritmo de tamanhos que se repete conforme entram mais fotos — dá variação
+// visual (uma foto grande, uma alta, duas médias, uma larga…) sem depender de
+// um número fixo de boxes. Assim a grade cresce junto com as fotos.
+const SIZE_RHYTHM: ThemeBox["size"][] = ["destaque", "alto", "medio", "medio", "largo", "medio", "alto", "medio", "medio", "largo", "medio", "medio"];
+
 function ThemePreview({ theme, photos }: { theme: VitrineTheme; photos: ThemePhoto[] }) {
+  // Um box por foto enviada — usa o nome/preço da própria foto.
+  const boxes: ThemeBox[] = photos.map((_, i) => ({
+    title: "",
+    size: SIZE_RHYTHM[i % SIZE_RHYTHM.length],
+    img: i,
+  }));
+
   return (
     <div className="rounded-[20px] p-3" style={{ backgroundColor: theme.bg }}>
       <div className="mb-3 flex items-center gap-2 px-1">
@@ -61,11 +57,9 @@ function ThemePreview({ theme, photos }: { theme: VitrineTheme; photos: ThemePho
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 [grid-auto-flow:dense]">
-        {theme.boxes
-          .filter((box) => box.img == null || photos[box.img])
-          .map((box, i) => (
-            <MockBox key={i} box={box} theme={theme} photos={photos} />
-          ))}
+        {boxes.map((box, i) => (
+          <MockBox key={i} box={box} theme={theme} photos={photos} />
+        ))}
       </div>
     </div>
   );
