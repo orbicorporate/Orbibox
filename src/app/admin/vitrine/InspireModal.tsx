@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { VITRINE_THEMES, type ThemeBox, type ThemePhoto, type VitrineTheme } from "@/lib/vitrineThemes";
 import type { InspireThemeData } from "@/lib/inspirePhotos";
-import { contrastFg } from "@/lib/showcase";
 
 const SPAN: Record<ThemeBox["size"], string> = {
   destaque: "col-span-2 aspect-[16/9]",
@@ -21,19 +20,19 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
   const title = photo.title?.trim();
   const price = photo.price?.trim();
 
-  // "faixa": foto em cima, nome numa faixa clara embaixo (mais limpo/legível).
+  // "faixa": foto em cima, nome numa faixa BRANCA embaixo (igual à vitrine
+  // real — o card é branco, não a cor de fundo do tema).
   if (titleStyle === "faixa") {
-    const fg = contrastFg(theme.colors[0].hex);
     return (
-      <div className={`flex flex-col overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[0].hex }}>
+      <div className={`flex flex-col overflow-hidden rounded-[16px] bg-surface-white shadow-[0_2px_10px_rgba(17,19,24,0.06)] ${SPAN[box.size]}`}>
         <div className="relative flex-1">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         </div>
         {title && (
           <div className="p-2">
-            <p className="truncate text-[11px] font-semibold leading-tight" style={{ color: fg }}>{title}</p>
-            {price && <p className="text-[10px]" style={{ color: fg, opacity: 0.7 }}>{price}</p>}
+            <p className="truncate text-[11px] font-semibold leading-tight text-on-background">{title}</p>
+            {price && <p className="text-[10px] text-text-secondary">{price}</p>}
           </div>
         )}
       </div>
