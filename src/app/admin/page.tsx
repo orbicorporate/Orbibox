@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
+import { QRCodeButton } from "@/components/ui/QRCodeButton";
 
 const METRICS = [
   { key: "discovery", label: "Visitas", explica: "Pessoas que abriram seu link", icon: "◎", href: "/admin/pulse" },
@@ -244,6 +245,13 @@ export default async function HojePage() {
         >
           Ver
         </Link>
+        <QRCodeButton
+          url={shareUrl}
+          businessName={business!.name}
+          className="rounded-full border border-divider bg-surface-white px-3 py-2 text-[12px] text-text-secondary"
+        >
+          QR Code
+        </QRCodeButton>
       </div>
 
       {activeBoxes === 0 && (

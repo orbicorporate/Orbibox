@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnerHasAiChat, getOwnerHasVouchers } from "@/lib/plans";
+import { filterLive } from "@/lib/scheduling";
 import { VisitorExperience } from "./VisitorExperience";
 
 /**
@@ -80,21 +81,24 @@ export default async function VisitorPage({
   const [contentRes, boxesRes, agentRes, hasAiChat, hasVouchers] = await Promise.all([
     supabase
       .from("content_items")
-      .select("id, title, description, price, price_type, price_max, image_url, brand_label, type, position, layout_size, box_color, footer_color, box_style, target_url, link_kind")
+      .select("id, title, description, price, price_type, price_max, image_url, brand_label, type, position, layout_size, box_color, footer_color, box_style, target_url, link_kind, starts_at, ends_at")
       .eq("business_id", business.id)
       .eq("status", "published")
       .order("position", { ascending: true }),
     supabase
       .from("smart_boxes")
-      .select("id, box_type, title, is_active, position, config")
+      .select("id, box_type, title, is_active, position, config, starts_at, ends_at")
       .eq("business_id", business.id)
       .order("position", { ascending: true }),
     supabase.from("agent_configs").select("agent_name, orbi_colors").eq("business_id", business.id).maybeSingle(),
     getOwnerHasAiChat(business.owner_id),
     getOwnerHasVouchers(business.owner_id),
   ]);
-  const content = contentRes.data;
-  const boxes = boxesRes.data;
+  // Fora da janela de data agendada = como se não existisse pro visitante,
+  // mesmo estando "publicado"/"ativo" — assim não precisa lembrar de
+  // desligar manualmente uma promoção que já venceu.
+  const content = filterLive(contentRes.data ?? []);
+  const boxes = filterLive(boxesRes.data ?? []);
   const agentConfig = agentRes.data;
   const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length >= 2
     ? (agentConfig.orbi_colors as string[])
@@ -103,8 +107,8 @@ export default async function VisitorPage({
   return (
     <VisitorExperience
       business={business}
-      content={content ?? []}
-      boxes={boxes ?? []}
+      content={content}
+      boxes={boxes}
       agentName={agentConfig?.agent_name ?? "Orbi"}
       orbiColors={orbiColors}
       isOwner={isOwner}

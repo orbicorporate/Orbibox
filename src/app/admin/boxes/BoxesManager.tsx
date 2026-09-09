@@ -14,10 +14,11 @@ import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon, isVideoUrl } from "@/lib/showcase";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery } from "@/lib/logoGallery";
+import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 
 type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom"; url?: string; logo_url?: string };
-type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
+type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown; starts_at: string | null; ends_at: string | null };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
 const META: Record<string, { name: string; explica: string; icon: string; fixo?: boolean; assinatura?: boolean }> = {
@@ -144,6 +145,11 @@ export function BoxesManager({
   async function saveConfig(box: Box, cfg: BoxConfig) {
     setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, title: cfg.label ?? b.title, config: cfg } : b)));
     await supabase.from("smart_boxes").update({ title: cfg.label || box.title, config: cfg }).eq("id", box.id);
+  }
+
+  async function saveSchedule(box: Box, startsAt: string | null, endsAt: string | null) {
+    setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, starts_at: startsAt, ends_at: endsAt } : b)));
+    await supabase.from("smart_boxes").update({ starts_at: startsAt, ends_at: endsAt }).eq("id", box.id);
   }
 
   async function removeCustom(box: Box) {
@@ -400,6 +406,11 @@ export function BoxesManager({
                   {m.fixo && <span className="mt-1 inline-block rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">sempre ativo</span>}
                   {m.assinatura && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary"><span className="orbi-gradient-text">✦</span> assinatura da IA</span>}
                   {(cfg?.action === "avaliar" || icon === "__google__") && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
+                  {box.ends_at && new Date(box.ends_at) < new Date() ? (
+                    <span className="mt-1 inline-block rounded-full bg-red-50 px-2 py-0.5 text-[10px] text-red-600">expirado</span>
+                  ) : box.starts_at && new Date(box.starts_at) > new Date() ? (
+                    <span className="mt-1 inline-block rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">agendado</span>
+                  ) : null}
                 </div>
                 {!m.fixo && (
                   <button
@@ -460,6 +471,41 @@ export function BoxesManager({
                   onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))}
                   businessId={businessId}
                 />
+              )}
+
+              {editing && !isHero && !m.fixo && (
+                <div className="mt-4 border-t border-divider pt-4">
+                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Agendar (opcional)</p>
+                  <p className="mt-1 text-[12px] text-text-secondary">
+                    Ativa e desativa sozinho nas datas escolhidas — bom pra promoção por tempo limitado, sem precisar
+                    lembrar de desligar.
+                  </p>
+                  <div className="mt-2 flex gap-2">
+                    <div className="flex-1">
+                      <p className="text-[11px] text-text-tertiary">Começa em</p>
+                      <input
+                        type="datetime-local"
+                        defaultValue={isoToDatetimeLocal(box.starts_at)}
+                        onBlur={(e) => saveSchedule(box, datetimeLocalToIso(e.target.value), box.ends_at)}
+                        className="mt-1 w-full rounded-xl border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[11px] text-text-tertiary">Termina em</p>
+                      <input
+                        type="datetime-local"
+                        defaultValue={isoToDatetimeLocal(box.ends_at)}
+                        onBlur={(e) => saveSchedule(box, box.starts_at, datetimeLocalToIso(e.target.value))}
+                        className="mt-1 w-full rounded-xl border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                      />
+                    </div>
+                  </div>
+                  {(box.starts_at || box.ends_at) && (
+                    <button onClick={() => saveSchedule(box, null, null)} className="mt-2 text-[11px] text-red-600">
+                      Remover agendamento
+                    </button>
+                  )}
+                </div>
               )}
 
               {box.box_type === "content" && editing && (

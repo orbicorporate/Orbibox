@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
+import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { RATIOS } from "@/components/ui/ImageCropModal";
@@ -39,6 +40,8 @@ type Item = {
   ai_optimized: boolean;
   link_kind: string | null;
   target_url: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
 };
 
 /** Formatos desenhados como miniatura, para escolher pelo olho e não pela palavra. */
@@ -969,6 +972,11 @@ function ItemCard({
               ✦ imagem sugerida
             </span>
           )}
+          {item.ends_at && new Date(item.ends_at) < new Date() ? (
+            <span className="rounded-full bg-red-600/90 px-3 py-1 text-[11px] font-medium text-white backdrop-blur">expirado</span>
+          ) : item.starts_at && new Date(item.starts_at) > new Date() ? (
+            <span className="rounded-full bg-on-background/80 px-3 py-1 text-[11px] font-medium text-white backdrop-blur">agendado</span>
+          ) : null}
         </div>
 
       </div>
@@ -1197,6 +1205,38 @@ function ItemCard({
                     />
                   )}
                 </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Agendar (opcional)</p>
+              <p className="mt-1 text-[12px] text-text-secondary">
+                Publica e some da Vitrine sozinho nas datas escolhidas — bom pra promoção por tempo limitado.
+              </p>
+              <div className="mt-2 flex gap-2">
+                <div className="flex-1">
+                  <p className="text-[11px] text-text-tertiary">Começa em</p>
+                  <input
+                    type="datetime-local"
+                    defaultValue={isoToDatetimeLocal(item.starts_at)}
+                    onBlur={(e) => save(item.id, { starts_at: datetimeLocalToIso(e.target.value) })}
+                    className="mt-1 w-full rounded-xl border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[11px] text-text-tertiary">Termina em</p>
+                  <input
+                    type="datetime-local"
+                    defaultValue={isoToDatetimeLocal(item.ends_at)}
+                    onBlur={(e) => save(item.id, { ends_at: datetimeLocalToIso(e.target.value) })}
+                    className="mt-1 w-full rounded-xl border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                  />
+                </div>
+              </div>
+              {(item.starts_at || item.ends_at) && (
+                <button onClick={() => save(item.id, { starts_at: null, ends_at: null })} className="mt-2 text-[11px] text-red-600">
+                  Remover agendamento
+                </button>
               )}
             </div>
 

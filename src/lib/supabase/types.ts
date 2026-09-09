@@ -22,8 +22,8 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["campaigns"]["Insert"]>
         Relationships: []
       }
-      content_items: { Row: { target_url: string | null; link_kind: string | null; ai_optimized: boolean; ai_score: number | null; box_color: string; footer_color: string | null; box_style: string; brand_label: string | null; layout_size: string; business_id: string; created_at: string; description: string | null; gallery_urls: string[]; photo_format: string | null; id: string; image_is_placeholder: boolean; image_url: string | null; images: Json; position: number; price: number | null; price_type: string; price_max: number | null; source_url: string | null; status: string; title: string; type: string; updated_at: string }
-        Insert: { target_url?: string | null; link_kind?: string | null; ai_optimized?: boolean; ai_score?: number | null; box_color?: string; footer_color?: string | null; box_style?: string; brand_label?: string | null; layout_size?: string; business_id: string; created_at?: string; description?: string | null; gallery_urls?: string[]; photo_format?: string | null; id?: string; image_is_placeholder?: boolean; image_url?: string | null; images?: Json; position?: number; price?: number | null; price_type?: string; price_max?: number | null; source_url?: string | null; status?: string; title: string; type: string; updated_at?: string }
+      content_items: { Row: { target_url: string | null; link_kind: string | null; ai_optimized: boolean; ai_score: number | null; box_color: string; footer_color: string | null; box_style: string; starts_at: string | null; ends_at: string | null; brand_label: string | null; layout_size: string; business_id: string; created_at: string; description: string | null; gallery_urls: string[]; photo_format: string | null; id: string; image_is_placeholder: boolean; image_url: string | null; images: Json; position: number; price: number | null; price_type: string; price_max: number | null; source_url: string | null; status: string; title: string; type: string; updated_at: string }
+        Insert: { target_url?: string | null; link_kind?: string | null; ai_optimized?: boolean; ai_score?: number | null; box_color?: string; footer_color?: string | null; box_style?: string; starts_at?: string | null; ends_at?: string | null; brand_label?: string | null; layout_size?: string; business_id: string; created_at?: string; description?: string | null; gallery_urls?: string[]; photo_format?: string | null; id?: string; image_is_placeholder?: boolean; image_url?: string | null; images?: Json; position?: number; price?: number | null; price_type?: string; price_max?: number | null; source_url?: string | null; status?: string; title: string; type: string; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["content_items"]["Insert"]>
         Relationships: []
       }
@@ -59,8 +59,8 @@ export type Database = {
         Relationships: []
       }
       smart_boxes: {
-        Row: { auto_arranged: boolean; box_type: string; business_id: string; config: Json; created_at: string; id: string; is_active: boolean; position: number; title: string | null; updated_at: string }
-        Insert: { auto_arranged?: boolean; box_type: string; business_id: string; config?: Json; created_at?: string; id?: string; is_active?: boolean; position?: number; title?: string | null; updated_at?: string }
+        Row: { auto_arranged: boolean; box_type: string; business_id: string; config: Json; created_at: string; id: string; is_active: boolean; position: number; title: string | null; updated_at: string; starts_at: string | null; ends_at: string | null }
+        Insert: { auto_arranged?: boolean; box_type: string; business_id: string; config?: Json; created_at?: string; id?: string; is_active?: boolean; position?: number; title?: string | null; updated_at?: string; starts_at?: string | null; ends_at?: string | null }
         Update: Partial<Database["public"]["Tables"]["smart_boxes"]["Insert"]>
         Relationships: []
       }
