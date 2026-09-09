@@ -30,16 +30,20 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
   if (titleStyle === "faixa") {
     const spanCols = box.size === "destaque" || box.size === "largo" ? "col-span-2" : "col-span-1";
     const ratioClass = { destaque: "aspect-[16/9]", largo: "aspect-[1920/830]", medio: "aspect-square", alto: "aspect-[4/5]" }[box.size];
+    // Mesmos valores da vitrine real: cantos 24px, sombra suave, rodapé p-4,
+    // título Manrope 17px. Fontes reduzidas proporcionalmente no card médio
+    // (que é metade da largura) pra caber sem estourar.
+    const isMed = box.size === "medio";
     return (
-      <div className={`overflow-hidden rounded-[16px] bg-surface-white shadow-[0_2px_10px_rgba(17,19,24,0.06)] ${spanCols}`}>
+      <div className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${spanCols}`}>
         <div className={`relative w-full ${ratioClass}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} loading="lazy" />
         </div>
         {title && (
-          <div className="p-2">
-            <p className="truncate text-[11px] font-semibold leading-tight text-on-background">{title}</p>
-            {price && <p className="text-[10px] text-text-secondary">{price}</p>}
+          <div className={isMed ? "p-3" : "p-4"}>
+            <p className={`truncate font-[family-name:var(--font-manrope)] font-medium leading-tight text-on-background ${isMed ? "text-[14px]" : "text-[17px]"}`}>{title}</p>
+            {price && <p className={`mt-0.5 font-[family-name:var(--font-manrope)] font-medium text-text-secondary ${isMed ? "text-[13px]" : "text-[15px]"}`}>{price}</p>}
           </div>
         )}
       </div>
@@ -48,7 +52,7 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
 
   // "sobre": nome sobre a imagem, com degradê.
   return (
-    <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[3].hex }}>
+    <div className={`relative overflow-hidden rounded-[24px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[3].hex }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} loading="lazy" />
       {title && (
@@ -83,7 +87,7 @@ function ThemePreview({ theme, photos, titleStyle }: { theme: VitrineTheme; phot
           <p className="text-[9px] uppercase tracking-wide" style={{ color: theme.colors[1].hex, opacity: 0.5 }}>Vitrine de exemplo</p>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 [grid-auto-flow:dense]">
+      <div className="grid grid-cols-2 gap-2.5 [grid-auto-flow:dense]">
         {boxes.map((box, i) => (
           <MockBox key={i} box={box} theme={theme} photos={photos} titleStyle={titleStyle} />
         ))}
