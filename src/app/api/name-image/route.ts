@@ -16,7 +16,7 @@ const CONTEXTO: Record<string, string> = {
   fotografo: "um fotógrafo/estúdio",
   salao: "um salão de beleza/barbearia",
   doceria: "uma doceria/confeitaria",
-  academia: "uma academia/estúdio fitness",
+  investimentos: "uma assessoria de investimentos / gestão de patrimônio (fotos institucionais, gráficos, reuniões, escritório)",
 };
 
 export async function POST(req: NextRequest) {

@@ -10,7 +10,7 @@ const TEMAS = [
   ["moda", "Moda"], ["restaurante", "Restaurante"], ["loja", "Loja"],
   ["servicos", "Serviços"], ["pizzaria", "Pizzaria"], ["imobiliaria", "Imobiliária"],
   ["fotografo", "Fotógrafo"], ["salao", "Salão / Barbearia"], ["doceria", "Doceria"],
-  ["academia", "Academia"],
+  ["investimentos", "Consultoria de Investimentos"],
 ];
 
 // Lê um File como base64 puro (sem o prefixo data:...).
