@@ -13,8 +13,8 @@ const SPAN: Record<ThemeBox["size"], string> = {
   alto: "col-span-1 row-span-2 aspect-[3/5]",
 };
 
-function MockBox({ box, theme }: { box: ThemeBox; theme: VitrineTheme }) {
-  const photo = box.img != null ? theme.photos[box.img] : undefined;
+function MockBox({ box, theme, photos }: { box: ThemeBox; theme: VitrineTheme; photos: string[] }) {
+  const photo = box.img != null ? photos[box.img] : undefined;
   const bgColor = box.colorIdx != null ? theme.colors[box.colorIdx].hex : theme.colors[0].hex;
   const fg = contrastFg(bgColor);
 
@@ -46,7 +46,7 @@ function MockBox({ box, theme }: { box: ThemeBox; theme: VitrineTheme }) {
   );
 }
 
-function ThemePreview({ theme }: { theme: VitrineTheme }) {
+function ThemePreview({ theme, photos }: { theme: VitrineTheme; photos: string[] }) {
   return (
     <div className="rounded-[20px] p-3" style={{ backgroundColor: theme.bg }}>
       <div className="mb-3 flex items-center gap-2 px-1">
@@ -58,18 +58,22 @@ function ThemePreview({ theme }: { theme: VitrineTheme }) {
       </div>
       <div className="grid grid-cols-2 gap-2 [grid-auto-flow:dense]">
         {theme.boxes.map((box, i) => (
-          <MockBox key={i} box={box} theme={theme} />
+          <MockBox key={i} box={box} theme={theme} photos={photos} />
         ))}
       </div>
     </div>
   );
 }
 
-export function InspireModal({ businessId, onClose }: { businessId: string; onClose: () => void }) {
+export function InspireModal({ businessId, inspirePhotos, onClose }: { businessId: string; inspirePhotos: Record<string, string[]>; onClose: () => void }) {
   const router = useRouter();
   const supabase = createClient();
   const [applying, setApplying] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+
+  // Só mostra temas que já têm fotos cadastradas — os que ainda não foram
+  // preenchidos pelo painel de upload ficam ocultos até terem imagem.
+  const temasComFoto = VITRINE_THEMES.filter((t) => (inspirePhotos[t.id]?.length ?? 0) > 0);
 
   async function usarTema(themeId: string) {
     const tema = VITRINE_THEMES.find((t) => t.id === themeId);
@@ -97,7 +101,7 @@ export function InspireModal({ businessId, onClose }: { businessId: string; onCl
         </p>
 
         <div className="mt-5 flex flex-col gap-4">
-          {VITRINE_THEMES.map((tema) => {
+          {temasComFoto.map((tema) => {
             const open = openId === tema.id;
             return (
               <div key={tema.id} className="overflow-hidden rounded-[24px] border border-divider bg-surface-white">
@@ -117,7 +121,7 @@ export function InspireModal({ businessId, onClose }: { businessId: string; onCl
                 {open && (
                   <div className="border-t border-divider p-4">
                     <p className="mb-3 text-[12.5px] leading-relaxed text-text-secondary">{tema.description}</p>
-                    <ThemePreview theme={tema} />
+                    <ThemePreview theme={tema} photos={inspirePhotos[tema.id] ?? []} />
                     <button
                       onClick={() => usarTema(tema.id)}
                       disabled={applying !== null}

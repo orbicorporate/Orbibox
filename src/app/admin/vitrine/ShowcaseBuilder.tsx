@@ -70,6 +70,7 @@ export function ShowcaseBuilder({
   initialCatalogTitle = null,
   initialCatalogSubtitle = null,
   introSeen = false,
+  inspirePhotos = {},
 }: {
   items: Item[];
   slug: string;
@@ -82,6 +83,7 @@ export function ShowcaseBuilder({
   initialCatalogTitle?: string | null;
   initialCatalogSubtitle?: string | null;
   introSeen?: boolean;
+  inspirePhotos?: Record<string, string[]>;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -657,7 +659,7 @@ export function ShowcaseBuilder({
         </div>
       )}
 
-      {showInspire && <InspireModal businessId={businessId} onClose={() => setShowInspire(false)} />}
+      {showInspire && <InspireModal businessId={businessId} inspirePhotos={inspirePhotos} onClose={() => setShowInspire(false)} />}
 
       <div className="mt-6 flex flex-col gap-8">
         {sections.map((sec, si) => {

@@ -94,6 +94,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["business_admins"]["Insert"]>
         Relationships: []
       }
+      inspire_theme_photos: {
+        Row: { theme_id: string; photos: Json; updated_at: string }
+        Insert: { theme_id: string; photos?: Json; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["inspire_theme_photos"]["Insert"]>
+        Relationships: []
+      }
       visitor_sessions: {
         Row: { business_id: string; device: string | null; id: string; intent: string | null; last_seen_at: string; referrer: string | null; source: string | null; started_at: string }
         Insert: { business_id: string; device?: string | null; id?: string; intent?: string | null; last_seen_at?: string; referrer?: string | null; source?: string | null; started_at?: string }

@@ -17,13 +17,9 @@ export type VitrineTheme = {
   description: string;
   bg: string;
   colors: ThemeColor[];
-  photos: string[]; // URLs no Storage (box-images/inspire), preenchidas conforme upload
   boxes: ThemeBox[];
 };
 
-// Base pública do Storage do projeto.
-const S = "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire";
-const p = (name: string) => `${S}/${name}`;
 
 // 10 vitrines de EXEMPLO por ramo de negócio. Paletas sóbrias e nobres,
 // nunca preto ou vermelho de fundo. As fotos são ilustração; "Usar esse
@@ -41,11 +37,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#2E2A26", role: "Contraste" },
       { hex: "#A8927A", role: "Detalhe" },
       { hex: "#C9BBA8", role: "Suave" },
-    ],
-    photos: [
-      p("moda-08.jpg"), p("moda-01.jpg"), p("moda-03.jpg"), p("moda-09.jpg"),
-      p("moda-12.jpg"), p("moda-07.jpg"), p("moda-05.jpg"), p("moda-02.jpg"),
-      p("moda-10.jpg"),
     ],
     boxes: [
       { title: "Coleção Inverno", price: "a partir de R$ 289", size: "destaque", img: 0 },
@@ -74,7 +65,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#B08A4A", role: "Detalhe" },
       { hex: "#8A6E4E", role: "Suave" },
     ],
-    photos: [],
     boxes: [
       { title: "Menu do dia", price: "R$ 68", size: "destaque", img: 0 },
       { title: "Entradas", size: "medio", colorIdx: 2 },
@@ -101,7 +91,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#7C8A7E", role: "Detalhe" },
       { hex: "#C4C2B8", role: "Suave" },
     ],
-    photos: [],
     boxes: [
       { title: "Mais vendidos", size: "destaque", img: 0 },
       { title: "Novidades", size: "medio", colorIdx: 2 },
@@ -128,7 +117,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#4A7A68", role: "Detalhe" },
       { hex: "#9FB3AC", role: "Suave" },
     ],
-    photos: [],
     boxes: [
       { title: "Nossos serviços", size: "destaque", img: 0 },
       { title: "Consultoria", size: "medio", colorIdx: 1 },
@@ -155,7 +143,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#6E8B4E", role: "Detalhe" },
       { hex: "#C08A3E", role: "Suave" },
     ],
-    photos: [],
     boxes: [
       { title: "Pizza da casa", price: "R$ 54", size: "destaque", img: 0 },
       { title: "Sabores", size: "medio", colorIdx: 3, label: "24 opções" },
@@ -182,7 +169,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#5E7A8C", role: "Detalhe" },
       { hex: "#B7A88E", role: "Suave" },
     ],
-    photos: [],
     boxes: [
       { title: "Destaque da semana", price: "R$ 890 mil", size: "destaque", img: 0 },
       { title: "Apartamentos", size: "medio", colorIdx: 2 },
@@ -209,7 +195,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#847C70", role: "Detalhe" },
       { hex: "#BEB6A8", role: "Suave" },
     ],
-    photos: [],
     boxes: [
       { title: "Portfólio", size: "destaque", img: 0 },
       { title: "Ensaios", size: "medio", colorIdx: 1 },
@@ -236,7 +221,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#A06A48", role: "Detalhe" },
       { hex: "#9A9490", role: "Suave" },
     ],
-    photos: [],
     boxes: [
       { title: "Nossos cortes", size: "destaque", img: 0 },
       { title: "Corte + barba", price: "R$ 70", size: "medio", colorIdx: 2 },
@@ -263,7 +247,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#C98F84", role: "Detalhe" },
       { hex: "#D8C3AE", role: "Suave" },
     ],
-    photos: [],
     boxes: [
       { title: "Bolo do mês", price: "R$ 120", size: "destaque", img: 0 },
       { title: "Docinhos", size: "medio", colorIdx: 2, label: "cento a partir de R$ 90" },
@@ -290,7 +273,6 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#5E7345", role: "Detalhe" },
       { hex: "#A2A89A", role: "Suave" },
     ],
-    photos: [],
     boxes: [
       { title: "Conheça o espaço", size: "destaque", img: 0 },
       { title: "Musculação", size: "medio", colorIdx: 1 },

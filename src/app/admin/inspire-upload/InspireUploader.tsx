@@ -11,6 +11,8 @@ export function InspireUploader() {
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<Uploaded[]>([]);
   const [log, setLog] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -43,6 +45,18 @@ export function InspireUploader() {
 
     setResults(novos);
     setBusy(false);
+  }
+
+  async function salvarTema() {
+    if (results.length === 0 || saving) return;
+    setSaving(true);
+    setSaveMsg(null);
+    const urls = results.map((r) => r.url);
+    const { error } = await supabase
+      .from("inspire_theme_photos")
+      .upsert({ theme_id: theme, photos: urls, updated_at: new Date().toISOString() }, { onConflict: "theme_id" });
+    setSaving(false);
+    setSaveMsg(error ? `Erro ao salvar: ${error.message}` : "✓ Tema salvo! Já aparece no Inspire-se.");
   }
 
   const urlsText = results.map((r) => `${r.file}\t${r.url}`).join("\n");
@@ -108,6 +122,14 @@ export function InspireUploader() {
             onClick={(e) => (e.target as HTMLTextAreaElement).select()}
             className="mt-3 h-24 w-full rounded-xl border border-divider bg-surface-soft p-2 font-mono text-[11px]"
           />
+          <button
+            onClick={salvarTema}
+            disabled={saving}
+            className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
+          >
+            {saving ? "Salvando…" : `Salvar tema "${theme}" no Inspire-se`}
+          </button>
+          {saveMsg && <p className={`mt-2 text-center text-[12px] font-medium ${saveMsg.startsWith("✓") ? "text-green-700" : "text-red-600"}`}>{saveMsg}</p>}
         </div>
       )}
     </div>

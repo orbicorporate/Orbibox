@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
+import { getInspirePhotos } from "@/lib/inspirePhotos";
 import { ShowcaseBuilder } from "./ShowcaseBuilder";
 
 type BrandColor = { hex: string; role?: string };
@@ -25,6 +26,8 @@ export default async function VitrinePage() {
     ? raw.filter((c): c is BrandColor => !!c && typeof c === "object" && typeof (c as BrandColor).hex === "string")
     : [];
 
+  const inspirePhotos = await getInspirePhotos();
+
   return (
     <div className="flex flex-col">
       <h1 data-tour="vitrine" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
@@ -45,6 +48,7 @@ export default async function VitrinePage() {
         initialCatalogTitle={business!.catalog_title}
         initialCatalogSubtitle={business!.catalog_subtitle}
         introSeen={business!.vitrine_intro_seen}
+        inspirePhotos={inspirePhotos}
       />
     </div>
   );
