@@ -1,5 +1,15 @@
 export type ThemeColor = { hex: string; role: string };
-export type ThemeExampleItem = { title: string; price: string; photo: string };
+
+// Um box do mockup: ou tem foto (photo) ou é cor sólida (usa a cor do tema
+// pelo índice colorIdx). size segue o mesmo sistema da vitrine real.
+export type ThemeBox = {
+  title: string;
+  price?: string;
+  size: "destaque" | "largo" | "medio" | "alto";
+  photo?: string;
+  colorIdx?: number; // índice em colors[], usado quando não tem foto
+  label?: string;
+};
 
 export type VitrineTheme = {
   id: string;
@@ -7,137 +17,44 @@ export type VitrineTheme = {
   vibe: string;
   exampleBusiness: string;
   description: string;
+  bg: string; // fundo da vitrine de exemplo (nunca preto/vermelho)
   colors: ThemeColor[];
-  items: ThemeExampleItem[];
+  boxes: ThemeBox[];
 };
 
-// Ajuda a montar a URL final da imagem, com tamanho/qualidade consistentes.
-function unsplash(photoId: string) {
-  return `https://images.unsplash.com/${photoId}?w=1200&q=80&auto=format&fit=crop`;
-}
+const px = (id: string) => `https://cdn.pixabay.com/get/${id}_1920.jpg`;
 
-// Cada tema é uma vitrine de EXEMPLO — com fotos reais (banco licenciado pra
-// uso comercial) de um negócio fictício, só pra mostrar o potencial visual.
-// "Usar esse estilo" aplica a paleta de cor na conta; as fotos aqui são só
-// ilustração, nunca entram na vitrine de verdade do usuário.
+// Vitrines de EXEMPLO — fotos reais (Pixabay, licença livre, sem atribuição)
+// de um negócio fictício, só pra mostrar o potencial visual. "Usar esse
+// estilo" aplica só a paleta de cor na conta; as fotos nunca entram na
+// vitrine real do usuário.
 export const VITRINE_THEMES: VitrineTheme[] = [
   {
     id: "moda",
     name: "Estilo Moda",
     vibe: "Editorial, atemporal",
     exampleBusiness: "Ateliê Norte",
-    description: "Fotos de arara e still de roupa, tons neutros. Pra brechó, boutique, ateliê de costura.",
+    description:
+      "Grade elegante misturando fotos de peças e boxes em tons terrosos. Pra boutique, brechó, ateliê, loja de roupa.",
+    bg: "#F5F1EA",
     colors: [
-      { hex: "#F5F1E8", role: "Fundo" },
-      { hex: "#2B2A28", role: "Contraste" },
-      { hex: "#8C7A5C", role: "Detalhe" },
-      { hex: "#D8CFC0", role: "Suave" },
+      { hex: "#EFE8DC", role: "Fundo" },
+      { hex: "#2E2A26", role: "Contraste" },
+      { hex: "#A8927A", role: "Detalhe" },
+      { hex: "#C9BBA8", role: "Suave" },
     ],
-    items: [
-      { title: "Coleção Inverno", price: "R$ 289", photo: unsplash("photo-1761090617068-f1b3257d27ad") },
-      { title: "Peça Assinatura", price: "R$ 349", photo: unsplash("photo-1761682719767-36b43e4acd63") },
-    ],
-  },
-  {
-    id: "servico",
-    name: "Estilo Serviço",
-    vibe: "Confiável, corporativo",
-    exampleBusiness: "Grupo Meridiano",
-    description: "Ambiente profissional, tom sério. Pra consultoria, agência, escritório, contabilidade.",
-    colors: [
-      { hex: "#EEF1EF", role: "Fundo" },
-      { hex: "#16332B", role: "Contraste" },
-      { hex: "#4A7A68", role: "Detalhe" },
-      { hex: "#C7D2CC", role: "Suave" },
-    ],
-    items: [
-      { title: "Consultoria Estratégica", price: "Sob consulta", photo: unsplash("photo-1758518729463-0bb73ed899ac") },
-      { title: "Planejamento Anual", price: "Sob consulta", photo: unsplash("photo-1758518730136-1bf4fa26ccbf") },
-    ],
-  },
-  {
-    id: "misterio",
-    name: "Estilo Mistério",
-    vibe: "Intrigante, elegante",
-    exampleBusiness: "Caixa Preta",
-    description: "Preto, dourado, embalagem que dá vontade de abrir. Pra loja de presentes, curadoria, box surpresa.",
-    colors: [
-      { hex: "#141414", role: "Fundo" },
-      { hex: "#D4AF6A", role: "Detalhe" },
-      { hex: "#3A1E1E", role: "Contraste" },
-      { hex: "#2A2A2A", role: "Suave" },
-    ],
-    items: [
-      { title: "Box Surpresa", price: "R$ 129", photo: unsplash("photo-1607614564906-234871d9608f") },
-      { title: "Edição Limitada", price: "R$ 189", photo: unsplash("photo-1671749999622-4087a86868cc") },
-    ],
-  },
-  {
-    id: "vibrante",
-    name: "Estilo Vibrante",
-    vibe: "Alto-astral, colorido",
-    exampleBusiness: "Doce Verão",
-    description: "Cores saturadas, energia alta. Pra sorveteria, doceria, festa, marca jovem.",
-    colors: [
-      { hex: "#FFF6E5", role: "Fundo" },
-      { hex: "#FF5A8A", role: "Principal" },
-      { hex: "#1FB6A8", role: "Contraste" },
-      { hex: "#FFC933", role: "Detalhe" },
-    ],
-    items: [
-      { title: "Sorvete Artesanal", price: "R$ 18", photo: unsplash("photo-1567206563064-6f60f40a2b57") },
-      { title: "Gelato da Casa", price: "R$ 22", photo: unsplash("photo-1762857362159-840f0b18dc8e") },
-    ],
-  },
-  {
-    id: "discreto",
-    name: "Estilo Discreto",
-    vibe: "Calmo, sofisticado",
-    exampleBusiness: "Estúdio Cinza",
-    description: "Tons neutros, luz suave, sem pressa. Pra estética, terapia, wellness, skincare.",
-    colors: [
-      { hex: "#F2F0EA", role: "Fundo" },
-      { hex: "#5C6357", role: "Contraste" },
-      { hex: "#A8AD9E", role: "Detalhe" },
-      { hex: "#DEDCD3", role: "Suave" },
-    ],
-    items: [
-      { title: "Ritual Facial", price: "R$ 220", photo: unsplash("photo-1760862652442-e8ff7ebdd2f8") },
-      { title: "Linha Natural", price: "R$ 95", photo: unsplash("photo-1764581218410-303283f5fd9c") },
-    ],
-  },
-  {
-    id: "luxo",
-    name: "Estilo Luxo",
-    vibe: "Alto padrão, exclusivo",
-    exampleBusiness: "Casa Dumont",
-    description: "Fundo escuro, luz baixa, detalhe dourado. Pra restaurante fino, joalheria, hotel boutique.",
-    colors: [
-      { hex: "#12100D", role: "Fundo" },
-      { hex: "#C9A24B", role: "Detalhe" },
-      { hex: "#3D3324", role: "Contraste" },
-      { hex: "#2A2822", role: "Suave" },
-    ],
-    items: [
-      { title: "Menu Degustação", price: "R$ 480", photo: unsplash("photo-1753727471014-efe38840c7c7") },
-      { title: "Harmonização", price: "R$ 180", photo: unsplash("photo-1530367086713-83fee2b59d84") },
-    ],
-  },
-  {
-    id: "extrovertido",
-    name: "Extrovertido",
-    vibe: "Divertido, ousado",
-    exampleBusiness: "Fogo & Cia",
-    description: "Cores fortes, comida com atitude. Pra hamburgueria, food truck, bar, marca com personalidade.",
-    colors: [
-      { hex: "#1A1A1A", role: "Fundo" },
-      { hex: "#E63946", role: "Principal" },
-      { hex: "#FFB703", role: "Detalhe" },
-      { hex: "#6A0DAD", role: "Contraste" },
-    ],
-    items: [
-      { title: "Burger da Casa", price: "R$ 34", photo: unsplash("photo-1700513970028-d8a630d21c6e") },
-      { title: "Combo Duplo", price: "R$ 52", photo: unsplash("photo-1560971017-56ff49e80303") },
+    boxes: [
+      { title: "Coleção Inverno", price: "a partir de R$ 289", size: "destaque", photo: px("gf9f1e817cd50d4a396c57b14d3b996767bfd373842bfeea81db817e2f523d76c85e42a24f0ea6f539d9beb59307dcf5f") },
+      { title: "Vestidos", size: "medio", colorIdx: 1, label: "18 peças" },
+      { title: "Alfaiataria", price: "R$ 349", size: "alto", photo: px("gdc3360edb0f99c59b45f2b3eb7327bae9ae7d9135084ae722236433579b7674bc704ba7539640668a6dc062a5d1fdf65") },
+      { title: "Acessórios", size: "medio", colorIdx: 2 },
+      { title: "Novidades da semana", size: "largo", colorIdx: 3 },
+      { title: "Bolsas de couro", price: "R$ 259", size: "medio", photo: px("g8bb87b9d352a09a1c0d5554918545eb91a483f8dd76989065a14054c8b48aefda982fea48242be6cb6050dded1ab0438") },
+      { title: "Sapatos", size: "medio", colorIdx: 1 },
+      { title: "Óculos", price: "R$ 180", size: "medio", photo: px("g6d98512c6bb335114be679d78496bcad1efa4e0096a5ebea22f58d0e0621fb9cee62850cda00a7c9f9316ab66f5652ab") },
+      { title: "Sob medida", size: "largo", colorIdx: 2, label: "fale com a gente" },
+      { title: "Outlet", price: "até 50% off", size: "medio", colorIdx: 3 },
+      { title: "Lookbook", size: "medio", photo: px("g4c249b35ff790a7adece0d1ff404634097e26126c716596b8ed07db84c42c182f58a33568db025444b59f4eb0c7dae8b") },
     ],
   },
 ];

@@ -3,13 +3,74 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { VITRINE_THEMES } from "@/lib/vitrineThemes";
+import { contrastFg } from "@/lib/showcase";
+import { VITRINE_THEMES, type ThemeBox, type VitrineTheme } from "@/lib/vitrineThemes";
+
+// Classe de grid por formato — mesma lógica da vitrine real (2 colunas).
+const SPAN: Record<ThemeBox["size"], string> = {
+  destaque: "col-span-2 aspect-[16/9]",
+  largo: "col-span-2 aspect-[21/9]",
+  medio: "col-span-1 aspect-square",
+  alto: "col-span-1 row-span-2 aspect-[3/5]",
+};
+
+function MockBox({ box, theme }: { box: ThemeBox; theme: VitrineTheme }) {
+  const bgColor = box.colorIdx != null ? theme.colors[box.colorIdx].hex : theme.colors[0].hex;
+  const fg = contrastFg(bgColor);
+
+  if (box.photo) {
+    return (
+      <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[0].hex }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={box.photo} alt={box.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2.5">
+          <p className="text-[12px] font-semibold leading-tight text-white">{box.title}</p>
+          {box.price && <p className="text-[10px] text-white/85">{box.price}</p>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col justify-between rounded-[16px] p-3 ${SPAN[box.size]}`} style={{ backgroundColor: bgColor }}>
+      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: fg, opacity: 0.6 }}>
+        {box.label ?? ""}
+      </span>
+      <div>
+        <p className="font-[family-name:var(--font-manrope)] text-[15px] font-semibold leading-tight" style={{ color: fg }}>
+          {box.title}
+        </p>
+        {box.price && <p className="mt-0.5 text-[11px]" style={{ color: fg, opacity: 0.8 }}>{box.price}</p>}
+      </div>
+    </div>
+  );
+}
+
+function ThemePreview({ theme }: { theme: VitrineTheme }) {
+  return (
+    <div className="rounded-[20px] p-3" style={{ backgroundColor: theme.bg }}>
+      {/* Mini cabeçalho da vitrine fake */}
+      <div className="mb-3 flex items-center gap-2 px-1">
+        <div className="h-7 w-7 rounded-full" style={{ backgroundColor: theme.colors[1].hex }} />
+        <div>
+          <p className="text-[13px] font-semibold" style={{ color: theme.colors[1].hex }}>{theme.exampleBusiness}</p>
+          <p className="text-[9px] uppercase tracking-wide" style={{ color: theme.colors[1].hex, opacity: 0.5 }}>Vitrine de exemplo</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2 [grid-auto-flow:dense]">
+        {theme.boxes.map((box, i) => (
+          <MockBox key={i} box={box} theme={theme} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function InspireModal({ businessId, onClose }: { businessId: string; onClose: () => void }) {
   const router = useRouter();
   const supabase = createClient();
   const [applying, setApplying] = useState<string | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(VITRINE_THEMES[0]?.id ?? null);
 
   async function usarTema(themeId: string) {
     const tema = VITRINE_THEMES.find((t) => t.id === themeId);
@@ -24,7 +85,7 @@ export function InspireModal({ businessId, onClose }: { businessId: string; onCl
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
       <div
-        className="max-h-[88vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-background-main p-6 sm:rounded-[28px]"
+        className="max-h-[90vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-background-main p-6 sm:rounded-[28px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -32,8 +93,8 @@ export function InspireModal({ businessId, onClose }: { businessId: string; onCl
           <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-[14px]">✕</button>
         </div>
         <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
-          Vitrines de exemplo, com fotos reais, pra você ver o potencial. As fotos aqui são só ilustração — ao
-          escolher um estilo, a Orbi aplica a paleta de cores na sua conta.
+          Veja vitrines completas de exemplo, com fotos reais. Ao escolher um estilo, a Orbi aplica a paleta de cores
+          na sua conta — as fotos aqui são só pra você se inspirar.
         </p>
 
         <div className="mt-5 flex flex-col gap-4">
@@ -56,28 +117,12 @@ export function InspireModal({ businessId, onClose }: { businessId: string; onCl
 
                 {open && (
                   <div className="border-t border-divider p-4">
-                    <p className="text-[11px] uppercase tracking-wide text-text-tertiary">
-                      Exemplo · {tema.exampleBusiness}
-                    </p>
-                    <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">{tema.description}</p>
-
-                    <div className="mt-3 flex gap-2.5">
-                      {tema.items.map((item, i) => (
-                        <div key={i} className="flex-1 overflow-hidden rounded-[18px]" style={{ backgroundColor: tema.colors[0].hex }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={item.photo} alt={item.title} className="aspect-square w-full object-cover" />
-                          <div className="p-2.5">
-                            <p className="truncate text-[12px] font-medium" style={{ color: tema.colors[1].hex }}>{item.title}</p>
-                            <p className="text-[11px]" style={{ color: tema.colors[1].hex, opacity: 0.7 }}>{item.price}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
+                    <p className="mb-3 text-[12.5px] leading-relaxed text-text-secondary">{tema.description}</p>
+                    <ThemePreview theme={tema} />
                     <button
                       onClick={() => usarTema(tema.id)}
                       disabled={applying !== null}
-                      className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
+                      className="mt-4 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
                     >
                       {applying === tema.id ? "Aplicando…" : "Usar esse estilo"}
                     </button>
