@@ -595,6 +595,22 @@ export function ShowcaseBuilder({
                 : `Montei ${proposta.imported} boxes com os serviços que encontrei, usando as fotos do próprio site.`}
               {proposta.semFoto > 0 && ` ${proposta.semFoto} ${proposta.semFoto === 1 ? "box ficou" : "boxes ficaram"} sem foto, em cor neutra.`}
             </p>
+            {proposta.semFoto > 0 && (
+              <div className="mt-3 flex items-center gap-3 rounded-[18px] bg-surface-soft p-3">
+                <div
+                  className="flex h-16 w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl px-1.5 text-center"
+                  style={{ backgroundColor: colorOf("neutro").bg }}
+                >
+                  <span className="font-[family-name:var(--font-open-sans)] text-[11px] font-bold leading-tight" style={{ color: colorOf("neutro").fg }}>
+                    Ex: Item
+                  </span>
+                </div>
+                <p className="text-[12px] leading-relaxed text-text-secondary">
+                  É assim que fica: o nome vira o destaque, com fundo colorido no lugar da foto. Dá pra trocar a cor ou
+                  adicionar uma foto depois, quando quiser — não precisa ser agora.
+                </p>
+              </div>
+            )}
             <button onClick={() => setProposta(null)} className="mt-4 rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-medium text-white">
               Beleza, revisar os itens
             </button>
