@@ -100,9 +100,42 @@ export function VisitorExperience({
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
 
   useEffect(() => {
+    // Detecta origem e dispositivo do visitante — antes era fixo "direct/web",
+    // o que não dizia nada. Origem vem do referrer (de onde a pessoa clicou)
+    // ou de um ?utm_source= no link; dispositivo, do user agent.
+    const detectarOrigem = (): string => {
+      const utm = new URLSearchParams(window.location.search).get("utm_source");
+      if (utm) return utm.toLowerCase();
+      const ref = document.referrer;
+      if (!ref) return "direto";
+      try {
+        const host = new URL(ref).hostname.replace(/^www\./, "");
+        if (host.includes("instagram")) return "instagram";
+        if (host.includes("google")) return "google";
+        if (host.includes("facebook") || host.includes("fb.")) return "facebook";
+        if (host.includes("tiktok")) return "tiktok";
+        if (host.includes("youtube")) return "youtube";
+        if (host.includes("wa.me") || host.includes("whatsapp")) return "whatsapp";
+        if (host.includes("t.co") || host.includes("twitter") || host === "x.com") return "twitter/x";
+        if (host.includes("linkedin")) return "linkedin";
+        // Mesmo domínio = navegação interna, não conta como origem externa.
+        if (host === window.location.hostname.replace(/^www\./, "")) return "direto";
+        return host;
+      } catch {
+        return "direto";
+      }
+    };
+
+    const detectarDispositivo = (): string => {
+      const ua = navigator.userAgent;
+      if (/iPad|Tablet/i.test(ua)) return "tablet";
+      if (/Mobi|Android|iPhone/i.test(ua)) return "celular";
+      return "computador";
+    };
+
     supabase
       .from("visitor_sessions")
-      .insert({ business_id: business.id, source: "direct", device: "web" })
+      .insert({ business_id: business.id, source: detectarOrigem(), device: detectarDispositivo(), referrer: document.referrer || null })
       .select("id")
       .single()
       .then(({ data }) => data && setSessionId(data.id));
