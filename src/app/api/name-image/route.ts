@@ -8,6 +8,7 @@ const MODEL = "claude-sonnet-5";
 // Contexto por ramo pra a IA nomear no jargão certo do negócio.
 const CONTEXTO: Record<string, string> = {
   moda: "uma loja de roupas/moda (boutique, brechó, ateliê)",
+  joalheria: "uma joalheria / ourivesaria (anéis, colares, brincos, alianças, relógios, semijoias)",
   restaurante: "um restaurante",
   loja: "uma loja de artigos/presentes/decoração",
   servicos: "uma empresa de serviços (consultoria, agência)",

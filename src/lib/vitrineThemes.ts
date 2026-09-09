@@ -46,6 +46,20 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     ],
   },
   {
+    id: "joalheria",
+    name: "Joalheria",
+    vibe: "Sofisticado, precioso",
+    exampleBusiness: "Ouro Fino",
+    description: "Peças em destaque com brilho, champagne e dourado sobre fundo claro. Pra joalheria, ourivesaria, relojoaria, semijoias.",
+    bg: "#F4F1EC",
+    colors: [
+      { hex: "#F0EBE2", role: "Fundo" },
+      { hex: "#2B2620", role: "Contraste" },
+      { hex: "#B69455", role: "Detalhe" },
+      { hex: "#CBBBA0", role: "Suave" },
+    ],
+  },
+  {
     id: "restaurante",
     name: "Restaurante",
     vibe: "Sofisticado, acolhedor",

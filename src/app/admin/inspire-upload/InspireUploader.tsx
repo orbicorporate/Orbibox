@@ -7,7 +7,7 @@ import type { InspireThemeData } from "@/lib/inspirePhotos";
 type Item = { url: string; title: string; price: string; suggesting?: boolean };
 
 const TEMAS = [
-  ["moda", "Moda"], ["restaurante", "Restaurante"], ["loja", "Loja"],
+  ["moda", "Moda"], ["joalheria", "Joalheria"], ["restaurante", "Restaurante"], ["loja", "Loja"],
   ["servicos", "Serviços"], ["pizzaria", "Pizzaria"], ["imobiliaria", "Imobiliária"],
   ["fotografo", "Fotógrafo"], ["salao", "Salão / Barbearia"], ["doceria", "Doceria"],
   ["sorveteria", "Sorveteria"], ["arquitetura", "Escritório de Arquitetura"],
