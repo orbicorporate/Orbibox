@@ -172,6 +172,20 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     ],
   },
   {
+    id: "grafica",
+    name: "Gráfica / Papelaria",
+    vibe: "Criativo, organizado",
+    exampleBusiness: "Papel & Tinta",
+    description: "Impressos, cadernos e materiais com tons de índigo, kraft e mostarda. Pra gráfica, papelaria, ateliê de convites, personalizados.",
+    bg: "#F1F0EC",
+    colors: [
+      { hex: "#EDECE6", role: "Fundo" },
+      { hex: "#26304A", role: "Contraste" },
+      { hex: "#C79A3E", role: "Detalhe" },
+      { hex: "#B0A88E", role: "Suave" },
+    ],
+  },
+  {
     id: "salao",
     name: "Salão / Barbearia",
     vibe: "Estiloso, caprichado",
