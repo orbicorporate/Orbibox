@@ -99,6 +99,16 @@ export function getOwnerHasVouchers(ownerId: string): Promise<boolean> {
   return getOwnerFeatureAccess(ownerId, "has_vouchers");
 }
 
+// Um administrador convidado está logado com o próprio user_id, não o do
+// dono — então checar plano por user_id direto sempre daria "sem acesso"
+// pra ele. Resolve pelo dono de verdade do negócio antes de checar.
+export async function getAccessInfoForBusiness(businessId: string): Promise<AccessInfo> {
+  const supabase = await createClient();
+  const { data: business } = await supabase.from("businesses").select("owner_id").eq("id", businessId).maybeSingle();
+  if (!business) return NO_ACCESS;
+  return getAccessInfo(business.owner_id);
+}
+
 export async function getAllPlans(): Promise<Plan[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("plans").select("*").order("monthly_price_cents");

@@ -88,6 +88,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["voucher_redemptions"]["Insert"]>
         Relationships: []
       }
+      business_admins: {
+        Row: { id: string; business_id: string; email: string; user_id: string | null; role: string; invited_at: string; accepted_at: string | null }
+        Insert: { id?: string; business_id: string; email: string; user_id?: string | null; role?: string; invited_at?: string; accepted_at?: string | null }
+        Update: Partial<Database["public"]["Tables"]["business_admins"]["Insert"]>
+        Relationships: []
+      }
       visitor_sessions: {
         Row: { business_id: string; device: string | null; id: string; intent: string | null; last_seen_at: string; referrer: string | null; source: string | null; started_at: string }
         Insert: { business_id: string; device?: string | null; id?: string; intent?: string | null; last_seen_at?: string; referrer?: string | null; source?: string | null; started_at?: string }

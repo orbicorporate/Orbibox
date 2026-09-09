@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getAccessInfo } from "@/lib/plans";
+import { getAccessInfoForBusiness } from "@/lib/plans";
+import { getCurrentBusinessId } from "@/lib/business";
 import { AgentConfigForm } from "./AgentConfigForm";
 
 export default async function AgentPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const access = await getAccessInfo(user!.id);
+  const businessId = await getCurrentBusinessId(user!.id);
+  const access = businessId ? await getAccessInfoForBusiness(businessId) : null;
 
-  if (!access.hasAiChat) {
+  if (!access?.hasAiChat) {
     return (
       <div className="flex flex-col">
         <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Personalidade da Marca (AgentBox)</h1>
@@ -32,8 +34,7 @@ export default async function AgentPage() {
   const { data: business } = await supabase
     .from("businesses")
     .select("id, name, slug, about_business, differentials, policies")
-    .eq("owner_id", user!.id)
-    .limit(1)
+    .eq("id", businessId!)
     .single();
   const { data: config } = await supabase.from("agent_configs").select("*").eq("business_id", business!.id).maybeSingle();
   const orbiColors = Array.isArray(config?.orbi_colors) && config.orbi_colors.length >= 2

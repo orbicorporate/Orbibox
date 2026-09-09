@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { BottomNav } from "@/components/mobile/BottomNav";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { TourOverlay } from "@/components/tour/TourOverlay";
@@ -13,13 +14,45 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!user) redirect("/login");
 
-  const { data: business } = await supabase
+  // Se o e-mail dele bate com um convite de administrador pendente, vincula
+  // agora — precisa da service role porque, antes de vinculado, a política de
+  // RLS ainda não deixa esse usuário enxergar a própria linha do convite.
+  if (user.email) {
+    const service = createServiceClient();
+    await service
+      .from("business_admins")
+      .update({ user_id: user.id, accepted_at: new Date().toISOString() })
+      .eq("email", user.email.toLowerCase())
+      .is("user_id", null);
+  }
+
+  let { data: business } = await supabase
     .from("businesses")
     .select("id, name, slug, tour_completed_at")
     .eq("owner_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  // Não é dono de nenhum negócio, mas pode ter sido convidado como
+  // administrador de um — busca pelo vínculo em vez do owner_id.
+  if (!business) {
+    const { data: membership } = await supabase
+      .from("business_admins")
+      .select("business_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (membership) {
+      const { data: memberBusiness } = await supabase
+        .from("businesses")
+        .select("id, name, slug, tour_completed_at")
+        .eq("id", membership.business_id)
+        .maybeSingle();
+      business = memberBusiness;
+    }
+  }
 
   if (!business) redirect("/onboarding");
 

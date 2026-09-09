@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getAccessInfo } from "@/lib/plans";
+import { getAccessInfoForBusiness } from "@/lib/plans";
+import { getCurrentBusinessId } from "@/lib/business";
 import { VouchersManager } from "./VouchersManager";
 
 export default async function VouchersPage() {
@@ -8,9 +9,10 @@ export default async function VouchersPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const access = await getAccessInfo(user!.id);
+  const businessId = await getCurrentBusinessId(user!.id);
+  const access = businessId ? await getAccessInfoForBusiness(businessId) : null;
 
-  if (!access.hasVouchers) {
+  if (!access?.hasVouchers) {
     return (
       <div className="flex flex-col">
         <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Cupons</h1>
@@ -34,8 +36,7 @@ export default async function VouchersPage() {
   const { data: business } = await supabase
     .from("businesses")
     .select("id, name")
-    .eq("owner_id", user!.id)
-    .limit(1)
+    .eq("id", businessId!)
     .single();
 
   const { data: vouchers } = await supabase
