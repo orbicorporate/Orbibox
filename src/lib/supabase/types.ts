@@ -95,8 +95,8 @@ export type Database = {
         Relationships: []
       }
       inspire_theme_photos: {
-        Row: { theme_id: string; photos: Json; updated_at: string }
-        Insert: { theme_id: string; photos?: Json; updated_at?: string }
+        Row: { theme_id: string; photos: Json; title_style: string; updated_at: string }
+        Insert: { theme_id: string; photos?: Json; title_style?: string; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["inspire_theme_photos"]["Insert"]>
         Relationships: []
       }

@@ -13,7 +13,7 @@ import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { MiniTour } from "@/components/tour/MiniTour";
 import { InspireModal } from "./InspireModal";
-import type { ThemePhoto } from "@/lib/vitrineThemes";
+import type { InspireThemeData } from "@/lib/inspirePhotos";
 import { useDialogs } from "@/hooks/useDialogs";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { whatsappLink } from "@/lib/track";
@@ -84,7 +84,7 @@ export function ShowcaseBuilder({
   initialCatalogTitle?: string | null;
   initialCatalogSubtitle?: string | null;
   introSeen?: boolean;
-  inspirePhotos?: Record<string, ThemePhoto[]>;
+  inspirePhotos?: Record<string, InspireThemeData>;
 }) {
   const router = useRouter();
   const supabase = createClient();

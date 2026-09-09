@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { VITRINE_THEMES, type ThemeBox, type ThemePhoto, type VitrineTheme } from "@/lib/vitrineThemes";
+import type { InspireThemeData } from "@/lib/inspirePhotos";
+import { contrastFg } from "@/lib/showcase";
 
 const SPAN: Record<ThemeBox["size"], string> = {
   destaque: "col-span-2 aspect-[16/9]",
@@ -12,14 +14,33 @@ const SPAN: Record<ThemeBox["size"], string> = {
   alto: "col-span-1 row-span-2 aspect-[3/5]",
 };
 
-function MockBox({ box, theme, photos }: { box: ThemeBox; theme: VitrineTheme; photos: ThemePhoto[] }) {
+function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: VitrineTheme; photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }) {
   const photo = box.img != null ? photos[box.img] : undefined;
   if (!photo) return null;
 
-  // Nome/preço vêm da própria foto (definidos no upload). Sem nome, a foto
-  // aparece limpa, sem faixa de texto embaixo.
   const title = photo.title?.trim();
   const price = photo.price?.trim();
+
+  // "faixa": foto em cima, nome numa faixa clara embaixo (mais limpo/legível).
+  if (titleStyle === "faixa") {
+    const fg = contrastFg(theme.colors[0].hex);
+    return (
+      <div className={`flex flex-col overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[0].hex }}>
+        <div className="relative flex-1">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        </div>
+        {title && (
+          <div className="p-2">
+            <p className="truncate text-[11px] font-semibold leading-tight" style={{ color: fg }}>{title}</p>
+            {price && <p className="text-[10px]" style={{ color: fg, opacity: 0.7 }}>{price}</p>}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // "sobre": nome sobre a imagem, com degradê.
   return (
     <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[3].hex }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -39,7 +60,7 @@ function MockBox({ box, theme, photos }: { box: ThemeBox; theme: VitrineTheme; p
 // um número fixo de boxes. Assim a grade cresce junto com as fotos.
 const SIZE_RHYTHM: ThemeBox["size"][] = ["destaque", "alto", "medio", "medio", "largo", "medio", "alto", "medio", "medio", "largo", "medio", "medio"];
 
-function ThemePreview({ theme, photos }: { theme: VitrineTheme; photos: ThemePhoto[] }) {
+function ThemePreview({ theme, photos, titleStyle }: { theme: VitrineTheme; photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }) {
   // Um box por foto enviada — usa o nome/preço da própria foto.
   const boxes: ThemeBox[] = photos.map((_, i) => ({
     title: "",
@@ -58,14 +79,14 @@ function ThemePreview({ theme, photos }: { theme: VitrineTheme; photos: ThemePho
       </div>
       <div className="grid grid-cols-2 gap-2 [grid-auto-flow:dense]">
         {boxes.map((box, i) => (
-          <MockBox key={i} box={box} theme={theme} photos={photos} />
+          <MockBox key={i} box={box} theme={theme} photos={photos} titleStyle={titleStyle} />
         ))}
       </div>
     </div>
   );
 }
 
-export function InspireModal({ businessId, inspirePhotos, onClose }: { businessId: string; inspirePhotos: Record<string, ThemePhoto[]>; onClose: () => void }) {
+export function InspireModal({ businessId, inspirePhotos, onClose }: { businessId: string; inspirePhotos: Record<string, InspireThemeData>; onClose: () => void }) {
   const router = useRouter();
   const supabase = createClient();
   const [applying, setApplying] = useState<string | null>(null);
@@ -73,7 +94,7 @@ export function InspireModal({ businessId, inspirePhotos, onClose }: { businessI
 
   // Só mostra temas que já têm fotos cadastradas — os que ainda não foram
   // preenchidos pelo painel de upload ficam ocultos até terem imagem.
-  const temasComFoto = VITRINE_THEMES.filter((t) => (inspirePhotos[t.id]?.length ?? 0) > 0);
+  const temasComFoto = VITRINE_THEMES.filter((t) => (inspirePhotos[t.id]?.photos.length ?? 0) > 0);
 
   async function usarTema(themeId: string) {
     const tema = VITRINE_THEMES.find((t) => t.id === themeId);
@@ -121,7 +142,7 @@ export function InspireModal({ businessId, inspirePhotos, onClose }: { businessI
                 {open && (
                   <div className="border-t border-divider p-4">
                     <p className="mb-3 text-[12.5px] leading-relaxed text-text-secondary">{tema.description}</p>
-                    <ThemePreview theme={tema} photos={inspirePhotos[tema.id] ?? []} />
+                    <ThemePreview theme={tema} photos={inspirePhotos[tema.id]?.photos ?? []} titleStyle={inspirePhotos[tema.id]?.titleStyle ?? "sobre"} />
                     <button
                       onClick={() => usarTema(tema.id)}
                       disabled={applying !== null}

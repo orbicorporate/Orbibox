@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { ThemePhoto } from "@/lib/vitrineThemes";
+import type { InspireThemeData } from "@/lib/inspirePhotos";
 
 type Item = { url: string; title: string; price: string; suggesting?: boolean };
 
@@ -27,12 +27,13 @@ function fileToBase64(file: File): Promise<{ data: string; mediaType: string }> 
   });
 }
 
-export function InspireUploader({ existing }: { existing: Record<string, ThemePhoto[]> }) {
+export function InspireUploader({ existing }: { existing: Record<string, InspireThemeData> }) {
   const supabase = createClient();
   const [theme, setTheme] = useState("moda");
   const [busy, setBusy] = useState(false);
+  const [titleStyle, setTitleStyle] = useState<"faixa" | "sobre">(existing["moda"]?.titleStyle ?? "sobre");
   const [items, setItems] = useState<Item[]>(
-    (existing["moda"] ?? []).map((p) => ({ url: p.url, title: p.title ?? "", price: p.price ?? "" }))
+    (existing["moda"]?.photos ?? []).map((p) => ({ url: p.url, title: p.title ?? "", price: p.price ?? "" }))
   );
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
@@ -41,7 +42,8 @@ export function InspireUploader({ existing }: { existing: Record<string, ThemePh
   function trocarTema(novo: string) {
     setTheme(novo);
     setSaveMsg(null);
-    setItems((existing[novo] ?? []).map((p) => ({ url: p.url, title: p.title ?? "", price: p.price ?? "" })));
+    setTitleStyle(existing[novo]?.titleStyle ?? "sobre");
+    setItems((existing[novo]?.photos ?? []).map((p) => ({ url: p.url, title: p.title ?? "", price: p.price ?? "" })));
   }
 
   async function sugerirNome(url: string, base64: string, mediaType: string) {
@@ -110,7 +112,7 @@ export function InspireUploader({ existing }: { existing: Record<string, ThemePh
     const photos = items.map((r) => ({ url: r.url, title: r.title.trim(), price: r.price.trim() }));
     const { error } = await supabase
       .from("inspire_theme_photos")
-      .upsert({ theme_id: theme, photos, updated_at: new Date().toISOString() }, { onConflict: "theme_id" });
+      .upsert({ theme_id: theme, photos, title_style: titleStyle, updated_at: new Date().toISOString() }, { onConflict: "theme_id" });
     setSaving(false);
     setSaveMsg(error ? `Erro ao salvar: ${error.message}` : "✓ Tema salvo! Já aparece no Inspire-se.");
   }
@@ -133,6 +135,22 @@ export function InspireUploader({ existing }: { existing: Record<string, ThemePh
             ? `${items.length} foto(s) neste tema. Edite os nomes ou adicione mais.`
             : "Selecione as fotos deste tema. A IA sugere um nome pra cada uma."}
         </p>
+
+        <p className="mt-3 text-[13px] font-medium">Estilo do nome</p>
+        <div className="mt-1.5 flex gap-2">
+          <button
+            onClick={() => setTitleStyle("sobre")}
+            className={`flex-1 rounded-xl border-2 px-3 py-2 text-[13px] font-medium ${titleStyle === "sobre" ? "border-on-background" : "border-divider text-text-secondary"}`}
+          >
+            Sobre a imagem
+          </button>
+          <button
+            onClick={() => setTitleStyle("faixa")}
+            className={`flex-1 rounded-xl border-2 px-3 py-2 text-[13px] font-medium ${titleStyle === "faixa" ? "border-on-background" : "border-divider text-text-secondary"}`}
+          >
+            Faixa branca
+          </button>
+        </div>
 
         <label className="mt-3 flex cursor-pointer items-center justify-center rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
           {busy ? "Enviando…" : items.length > 0 ? "Adicionar mais fotos" : "Escolher fotos e enviar"}

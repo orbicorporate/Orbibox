@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import type { ThemePhoto } from "@/lib/vitrineThemes";
 
-// Aceita os dois formatos salvos no banco: lista de strings (URLs, formato
-// antigo) ou lista de objetos { url, title, price } (novo). Normaliza sempre
-// pra ThemePhoto.
+export type InspireThemeData = { photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" };
+
+// Aceita os dois formatos salvos: lista de strings (URLs, antigo) ou lista de
+// objetos { url, title, price } (novo). Normaliza sempre pra ThemePhoto.
 function normalize(raw: unknown): ThemePhoto[] {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -18,12 +19,15 @@ function normalize(raw: unknown): ThemePhoto[] {
     .filter((p): p is ThemePhoto => p !== null);
 }
 
-export async function getInspirePhotos(): Promise<Record<string, ThemePhoto[]>> {
+export async function getInspirePhotos(): Promise<Record<string, InspireThemeData>> {
   const supabase = await createClient();
-  const { data } = await supabase.from("inspire_theme_photos").select("theme_id, photos");
-  const map: Record<string, ThemePhoto[]> = {};
+  const { data } = await supabase.from("inspire_theme_photos").select("theme_id, photos, title_style");
+  const map: Record<string, InspireThemeData> = {};
   for (const row of data ?? []) {
-    map[row.theme_id] = normalize(row.photos);
+    map[row.theme_id] = {
+      photos: normalize(row.photos),
+      titleStyle: row.title_style === "faixa" ? "faixa" : "sobre",
+    };
   }
   return map;
 }
