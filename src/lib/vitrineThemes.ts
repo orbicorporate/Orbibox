@@ -116,6 +116,20 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     ],
   },
   {
+    id: "hamburgueria",
+    name: "Hamburgueria",
+    vibe: "Descolado, saboroso",
+    exampleBusiness: "Brasa Burger",
+    description: "Lanches em close com tons de mostarda, terracota e madeira. Pra hamburgueria, food truck, lanchonete, delivery.",
+    bg: "#F4EEE6",
+    colors: [
+      { hex: "#EFE6D6", role: "Fundo" },
+      { hex: "#2E2119", role: "Contraste" },
+      { hex: "#C88A3C", role: "Detalhe" },
+      { hex: "#A56A45", role: "Suave" },
+    ],
+  },
+  {
     id: "imobiliaria",
     name: "Imobiliária",
     vibe: "Elegante, confiável",

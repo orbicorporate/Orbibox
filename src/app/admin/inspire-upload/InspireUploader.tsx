@@ -8,7 +8,8 @@ type Item = { url: string; title: string; price: string; suggesting?: boolean };
 
 const TEMAS = [
   ["moda", "Moda"], ["joalheria", "Joalheria"], ["restaurante", "Restaurante"], ["loja", "Loja"],
-  ["servicos", "Serviços"], ["pizzaria", "Pizzaria"], ["imobiliaria", "Imobiliária"],
+  ["servicos", "Serviços"], ["pizzaria", "Pizzaria"], ["hamburgueria", "Hamburgueria"],
+  ["imobiliaria", "Imobiliária"],
   ["fotografo", "Fotógrafo"], ["salao", "Salão / Barbearia"], ["estetica", "Clínica de Estética"],
   ["doceria", "Doceria"],
   ["sorveteria", "Sorveteria"], ["arquitetura", "Escritório de Arquitetura"],

@@ -13,6 +13,7 @@ const CONTEXTO: Record<string, string> = {
   loja: "uma loja de artigos/presentes/decoração",
   servicos: "uma empresa de serviços (consultoria, agência)",
   pizzaria: "uma pizzaria",
+  hamburgueria: "uma hamburgueria / lanchonete (hambúrgueres, batatas, combos, milk-shakes, lanches)",
   imobiliaria: "uma imobiliária",
   fotografo: "um fotógrafo/estúdio",
   salao: "um salão de beleza/barbearia",
