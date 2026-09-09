@@ -1,10 +1,14 @@
 export type ThemeColor = { hex: string; role: string };
 
+// Uma foto do tema já traz o próprio nome/preço, definidos no upload —
+// assim a foto e o texto sempre combinam, independente da ordem.
+export type ThemePhoto = { url: string; title?: string; price?: string };
+
 export type ThemeBox = {
   title: string;
   price?: string;
   size: "destaque" | "largo" | "medio" | "alto";
-  img?: number; // índice na lista de fotos do tema (photos[]); ausente = box de cor
+  img?: number; // índice na lista de fotos do tema; ausente = box de cor
   colorIdx?: number; // cor usada quando não tem foto
   label?: string;
 };

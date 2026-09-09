@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { contrastFg } from "@/lib/showcase";
-import { VITRINE_THEMES, type ThemeBox, type VitrineTheme } from "@/lib/vitrineThemes";
+import { VITRINE_THEMES, type ThemeBox, type ThemePhoto, type VitrineTheme } from "@/lib/vitrineThemes";
 
 const SPAN: Record<ThemeBox["size"], string> = {
   destaque: "col-span-2 aspect-[16/9]",
@@ -13,19 +13,23 @@ const SPAN: Record<ThemeBox["size"], string> = {
   alto: "col-span-1 row-span-2 aspect-[3/5]",
 };
 
-function MockBox({ box, theme, photos }: { box: ThemeBox; theme: VitrineTheme; photos: string[] }) {
+function MockBox({ box, theme, photos }: { box: ThemeBox; theme: VitrineTheme; photos: ThemePhoto[] }) {
   const photo = box.img != null ? photos[box.img] : undefined;
   const bgColor = box.colorIdx != null ? theme.colors[box.colorIdx].hex : theme.colors[0].hex;
   const fg = contrastFg(bgColor);
 
   if (photo) {
+    // Nome/preço vêm da própria foto (definidos no upload); se não tiver,
+    // cai no texto padrão do box.
+    const title = photo.title?.trim() || box.title;
+    const price = photo.price?.trim() || box.price;
     return (
       <div className={`relative overflow-hidden rounded-[16px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[3].hex }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photo} alt={box.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <img src={photo.url} alt={title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2.5">
-          <p className="text-[12px] font-semibold leading-tight text-white">{box.title}</p>
-          {box.price && <p className="text-[10px] text-white/85">{box.price}</p>}
+          <p className="text-[12px] font-semibold leading-tight text-white">{title}</p>
+          {price && <p className="text-[10px] text-white/85">{price}</p>}
         </div>
       </div>
     );
@@ -46,7 +50,7 @@ function MockBox({ box, theme, photos }: { box: ThemeBox; theme: VitrineTheme; p
   );
 }
 
-function ThemePreview({ theme, photos }: { theme: VitrineTheme; photos: string[] }) {
+function ThemePreview({ theme, photos }: { theme: VitrineTheme; photos: ThemePhoto[] }) {
   return (
     <div className="rounded-[20px] p-3" style={{ backgroundColor: theme.bg }}>
       <div className="mb-3 flex items-center gap-2 px-1">
@@ -67,7 +71,7 @@ function ThemePreview({ theme, photos }: { theme: VitrineTheme; photos: string[]
   );
 }
 
-export function InspireModal({ businessId, inspirePhotos, onClose }: { businessId: string; inspirePhotos: Record<string, string[]>; onClose: () => void }) {
+export function InspireModal({ businessId, inspirePhotos, onClose }: { businessId: string; inspirePhotos: Record<string, ThemePhoto[]>; onClose: () => void }) {
   const router = useRouter();
   const supabase = createClient();
   const [applying, setApplying] = useState<string | null>(null);
