@@ -997,6 +997,20 @@ function ItemCard({
       {(hasPhoto || editing) && (
         <div className="p-5">
           {!editing ? (
+            hasPhoto && item.title_placement === "sobre" ? (
+              // Nome já aparece sobre a foto — aqui embaixo fica só o status,
+              // sem repetir título/descrição/preço.
+              <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
+                <span
+                  onClick={(e) => { e.stopPropagation(); onTogglePublish(); }}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-surface-soft px-2.5 py-1 text-[11px] font-medium text-text-secondary"
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
+                  {item.status === "published" ? "Ativo" : "Rascunho"}
+                </span>
+                <span className="text-[12px] text-text-tertiary">Toque para editar</span>
+              </button>
+            ) : (
             <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
@@ -1020,6 +1034,7 @@ function ItemCard({
                 <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[15px] font-medium" style={fc ? { color: fc.fg } : undefined}>{priceLabel}</p>
               )}
             </button>
+            )
           ) : (
           <div className="flex flex-col gap-4">
             <MiniTour
