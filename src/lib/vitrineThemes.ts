@@ -158,6 +158,20 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     ],
   },
   {
+    id: "estetica",
+    name: "Clínica de Estética",
+    vibe: "Clean, cuidado",
+    exampleBusiness: "Pele & Arte",
+    description: "Ambiente clean e procedimentos com tons de rosé, nude e verde suave. Pra clínica de estética, depilação, harmonização, spa.",
+    bg: "#F6F1EF",
+    colors: [
+      { hex: "#F2E9E6", role: "Fundo" },
+      { hex: "#3E332F", role: "Contraste" },
+      { hex: "#C79A8E", role: "Detalhe" },
+      { hex: "#A8B7A6", role: "Suave" },
+    ],
+  },
+  {
     id: "doceria",
     name: "Doceria",
     vibe: "Delicado, afetivo",
