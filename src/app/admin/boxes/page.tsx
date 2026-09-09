@@ -1,19 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
-import { getAccessInfo } from "@/lib/plans";
+import { getAccessInfoForBusiness } from "@/lib/plans";
+import { getCurrentBusinessId } from "@/lib/business";
 import { BoxesManager } from "./BoxesManager";
 import { parseLogoGallery } from "@/lib/logoGallery";
 
 export default async function BoxesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const businessId = await getCurrentBusinessId(user!.id);
   const [{ data: business }, access] = await Promise.all([
     supabase
       .from("businesses")
       .select("id, name, slug, story_photos, story_photo_format, about_business, differentials, differentials_cards, hero_question, hero_avatar, logo_url, logo_gallery, brand_colors, address")
-      .eq("owner_id", user!.id)
-      .limit(1)
+      .eq("id", businessId!)
       .single(),
-    getAccessInfo(user!.id),
+    businessId ? getAccessInfoForBusiness(businessId) : Promise.resolve(null),
   ]);
   const { data: boxes } = await supabase.from("smart_boxes").select("*").eq("business_id", business!.id).order("position", { ascending: true });
   const { data: agentConfig } = await supabase.from("agent_configs").select("orbi_colors").eq("business_id", business!.id).maybeSingle();
@@ -55,7 +56,7 @@ export default async function BoxesPage() {
         initialAddress={business!.address}
         brandColors={brandColors}
         orbiColors={orbiColors}
-        hasVouchers={access.hasVouchers}
+        hasVouchers={access?.hasVouchers ?? false}
       />
     </div>
   );

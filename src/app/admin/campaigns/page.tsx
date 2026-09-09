@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentBusinessId } from "@/lib/business";
 import { CampaignsManager } from "./CampaignsManager";
 
 export default async function CampaignsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: business } = await supabase.from("businesses").select("id").eq("owner_id", user!.id).limit(1).single();
+  const businessId = await getCurrentBusinessId(user!.id);
+  const { data: business } = await supabase.from("businesses").select("id").eq("id", businessId!).single();
   const { data: campaigns } = await supabase.from("campaigns").select("*").eq("business_id", business!.id).order("created_at", { ascending: false });
   const { data: content } = await supabase
     .from("content_items")

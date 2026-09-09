@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentBusinessId } from "@/lib/business";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 import { QRCodeButton } from "@/components/ui/QRCodeButton";
@@ -18,11 +19,11 @@ export default async function HojePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const businessId = await getCurrentBusinessId(user!.id);
   const { data: business } = await supabase
     .from("businesses")
     .select("*")
-    .eq("owner_id", user!.id)
-    .order("created_at", { ascending: false })
+    .eq("id", businessId!)
     .limit(1)
     .single();
 

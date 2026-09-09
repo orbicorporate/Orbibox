@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentBusinessId } from "@/lib/business";
 import { PulseDetails } from "./PulseDetails";
 import { PulseDateFilter } from "./PulseDateFilter";
 import { PulseMarketing } from "./PulseMarketing";
@@ -15,11 +16,11 @@ export default async function PulsePage({
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const businessId = await getCurrentBusinessId(user!.id);
   const { data: business } = await supabase
     .from("businesses")
     .select("id, slug")
-    .eq("owner_id", user!.id)
-    .limit(1)
+    .eq("id", businessId!)
     .single();
 
   let visitasQuery = supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id);

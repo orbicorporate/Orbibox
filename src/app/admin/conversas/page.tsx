@@ -1,14 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentBusinessId } from "@/lib/business";
 import { ConversasList } from "./ConversasList";
 
 export default async function ConversasPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const businessId = await getCurrentBusinessId(user!.id);
   const { data: business } = await supabase
     .from("businesses")
     .select("id")
-    .eq("owner_id", user!.id)
-    .limit(1)
+    .eq("id", businessId!)
     .single();
 
   const { data: conversations } = await supabase

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentBusinessId } from "@/lib/business";
 import { ShowcaseBuilder } from "./ShowcaseBuilder";
 
 type BrandColor = { hex: string; role?: string };
@@ -6,11 +7,11 @@ type BrandColor = { hex: string; role?: string };
 export default async function VitrinePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const businessId = await getCurrentBusinessId(user!.id);
   const { data: business } = await supabase
     .from("businesses")
     .select("id, slug, name, brand_colors, vitrine_categories, vitrine_cover_urls, contact_whatsapp, catalog_title, catalog_subtitle, vitrine_intro_seen")
-    .eq("owner_id", user!.id)
-    .limit(1)
+    .eq("id", businessId!)
     .single();
   const { data: items } = await supabase
     .from("content_items")
