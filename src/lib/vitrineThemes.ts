@@ -158,6 +158,20 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     ],
   },
   {
+    id: "sorveteria",
+    name: "Sorveteria",
+    vibe: "Alegre, refrescante",
+    exampleBusiness: "Gelato Bello",
+    description: "Cores cremosas e refrescantes, com um toque de menta e pêssego. Pra sorveteria, gelateria, açaí, milk-shake.",
+    bg: "#F3F6F2",
+    colors: [
+      { hex: "#EDF4F1", role: "Fundo" },
+      { hex: "#3A4A44", role: "Contraste" },
+      { hex: "#E39A82", role: "Detalhe" },
+      { hex: "#8FC7B5", role: "Suave" },
+    ],
+  },
+  {
     id: "arquitetura",
     name: "Escritório de Arquitetura",
     vibe: "Minimalista, refinado",

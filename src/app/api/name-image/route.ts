@@ -16,6 +16,7 @@ const CONTEXTO: Record<string, string> = {
   fotografo: "um fotógrafo/estúdio",
   salao: "um salão de beleza/barbearia",
   doceria: "uma doceria/confeitaria",
+  sorveteria: "uma sorveteria / gelateria (sorvetes, casquinhas, taças, milk-shakes, açaí)",
   arquitetura: "um escritório de arquitetura / design de interiores (projetos, ambientes, plantas, obras)",
   investimentos: "uma assessoria de investimentos / gestão de patrimônio (fotos institucionais, gráficos, reuniões, escritório)",
 };
