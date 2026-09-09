@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { ThemePhoto } from "@/lib/vitrineThemes";
 
-type Uploaded = { file: string; url: string; title: string; price: string };
+type Item = { url: string; title: string; price: string; suggesting?: boolean };
 
 const TEMAS = [
   ["moda", "Moda"], ["restaurante", "Restaurante"], ["loja", "Loja"],
@@ -12,24 +13,66 @@ const TEMAS = [
   ["academia", "Academia"],
 ];
 
-export function InspireUploader() {
+// Lê um File como base64 puro (sem o prefixo data:...).
+function fileToBase64(file: File): Promise<{ data: string; mediaType: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const data = result.split(",")[1] ?? "";
+      resolve({ data, mediaType: file.type || "image/jpeg" });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+export function InspireUploader({ existing }: { existing: Record<string, ThemePhoto[]> }) {
   const supabase = createClient();
   const [theme, setTheme] = useState("moda");
   const [busy, setBusy] = useState(false);
-  const [results, setResults] = useState<Uploaded[]>([]);
+  const [items, setItems] = useState<Item[]>(
+    (existing["moda"] ?? []).map((p) => ({ url: p.url, title: p.title ?? "", price: p.price ?? "" }))
+  );
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  // Trocar de tema carrega o que já está salvo naquele tema, pra editar.
+  function trocarTema(novo: string) {
+    setTheme(novo);
+    setSaveMsg(null);
+    setItems((existing[novo] ?? []).map((p) => ({ url: p.url, title: p.title ?? "", price: p.price ?? "" })));
+  }
+
+  async function sugerirNome(url: string, base64: string, mediaType: string) {
+    try {
+      const res = await fetch("/api/name-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mediaType, theme }),
+      });
+      const data = await res.json();
+      if (res.ok && data.name) {
+        setItems((prev) => prev.map((it) => (it.url === url ? { ...it, title: it.title || data.name, suggesting: false } : it)));
+        return;
+      }
+    } catch {
+      // ignora — fica sem sugestão, usuário digita
+    }
+    setItems((prev) => prev.map((it) => (it.url === url ? { ...it, suggesting: false } : it)));
+  }
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
     setBusy(true);
     setSaveMsg(null);
-    const novos: Uploaded[] = [];
+    const base = items.length;
+    const novos: { item: Item; base64: string; mediaType: string }[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const nome = `${theme}-${String(i + 1).padStart(2, "0")}.jpg`;
+      const nome = `${theme}-${String(base + i + 1).padStart(2, "0")}.jpg`;
       const path = `inspire/${nome}`;
       try {
         const { error } = await supabase.storage.from("box-images").upload(path, file, {
@@ -38,27 +81,33 @@ export function InspireUploader() {
         });
         if (error) continue;
         const { data } = supabase.storage.from("box-images").getPublicUrl(path);
-        novos.push({ file: nome, url: data.publicUrl, title: "", price: "" });
+        const { data: b64, mediaType } = await fileToBase64(file);
+        novos.push({ item: { url: data.publicUrl, title: "", price: "", suggesting: true }, base64: b64, mediaType });
       } catch {
         // ignora falha individual
       }
     }
 
-    setResults(novos);
+    setItems((prev) => [...prev, ...novos.map((n) => n.item)]);
     setBusy(false);
+
+    // Dispara as sugestões da IA em paralelo (uma por foto nova).
+    novos.forEach((n) => sugerirNome(n.item.url, n.base64, n.mediaType));
   }
 
   function updateField(idx: number, field: "title" | "price", value: string) {
-    setResults((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
+    setItems((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
+  }
+
+  function removerFoto(idx: number) {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
   }
 
   async function salvarTema() {
-    if (results.length === 0 || saving) return;
+    if (saving) return;
     setSaving(true);
     setSaveMsg(null);
-    // Salva cada foto com seu nome e preço — assim a imagem e o texto sempre
-    // combinam, independente da posição na grade.
-    const photos = results.map((r) => ({ url: r.url, title: r.title.trim(), price: r.price.trim() }));
+    const photos = items.map((r) => ({ url: r.url, title: r.title.trim(), price: r.price.trim() }));
     const { error } = await supabase
       .from("inspire_theme_photos")
       .upsert({ theme_id: theme, photos, updated_at: new Date().toISOString() }, { onConflict: "theme_id" });
@@ -72,7 +121,7 @@ export function InspireUploader() {
         <label className="text-[13px] font-medium">Tema</label>
         <select
           value={theme}
-          onChange={(e) => setTheme(e.target.value)}
+          onChange={(e) => trocarTema(e.target.value)}
           className="mt-1.5 w-full rounded-xl border border-divider bg-surface-white px-3 py-2.5 text-[14px] outline-none"
         >
           {TEMAS.map(([id, label]) => (
@@ -80,31 +129,32 @@ export function InspireUploader() {
           ))}
         </select>
         <p className="mt-2 text-[12px] text-text-tertiary">
-          Selecione todas as fotos de uma vez. Depois, dê um nome (e preço, se quiser) pra cada uma — assim a foto e o
-          texto sempre combinam na vitrine.
+          {items.length > 0
+            ? `${items.length} foto(s) neste tema. Edite os nomes ou adicione mais.`
+            : "Selecione as fotos deste tema. A IA sugere um nome pra cada uma."}
         </p>
 
         <label className="mt-3 flex cursor-pointer items-center justify-center rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
-          {busy ? "Enviando…" : "Escolher fotos e enviar"}
+          {busy ? "Enviando…" : items.length > 0 ? "Adicionar mais fotos" : "Escolher fotos e enviar"}
           <input type="file" accept="image/*" multiple onChange={handleFiles} disabled={busy} className="hidden" />
         </label>
       </div>
 
-      {results.length > 0 && (
+      {items.length > 0 && (
         <div className="rounded-2xl border border-divider bg-surface-white p-4">
           <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">
-            Nomeie cada foto ({results.length})
+            Nomes ({items.length}) · a IA sugere, você ajusta
           </p>
           <div className="mt-3 flex flex-col gap-3">
-            {results.map((r, i) => (
-              <div key={r.file} className="flex gap-3">
+            {items.map((r, i) => (
+              <div key={r.url} className="flex gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={r.url} alt={r.file} className="h-20 w-20 shrink-0 rounded-lg object-cover" />
+                <img src={r.url} alt="" className="h-20 w-20 shrink-0 rounded-lg object-cover" />
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <input
                     value={r.title}
                     onChange={(e) => updateField(i, "title", e.target.value)}
-                    placeholder="Nome (ex: Prato assinatura)"
+                    placeholder={r.suggesting ? "✦ Pensando num nome…" : "Nome"}
                     className="w-full rounded-lg border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
                   />
                   <input
@@ -114,6 +164,9 @@ export function InspireUploader() {
                     className="w-full rounded-lg border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
                   />
                 </div>
+                <button onClick={() => removerFoto(i)} className="shrink-0 self-start text-[12px] text-red-600">
+                  ✕
+                </button>
               </div>
             ))}
           </div>
