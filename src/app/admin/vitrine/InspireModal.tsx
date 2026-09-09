@@ -6,11 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 import { VITRINE_THEMES, type ThemeBox, type ThemePhoto, type VitrineTheme } from "@/lib/vitrineThemes";
 import type { InspireThemeData } from "@/lib/inspirePhotos";
 
+// Mesmos aspect ratios da vitrine real: destaque=paisagem(16/9),
+// largo=banner(bem largo), médio=quadrado, alto=retrato(4/5).
 const SPAN: Record<ThemeBox["size"], string> = {
   destaque: "col-span-2 aspect-[16/9]",
-  largo: "col-span-2 aspect-[21/9]",
+  largo: "col-span-2 aspect-[1920/830]",
   medio: "col-span-1 aspect-square",
-  alto: "col-span-1 row-span-2 aspect-[3/5]",
+  alto: "col-span-1 row-span-2 aspect-[4/5]",
 };
 
 function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: VitrineTheme; photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }) {
@@ -20,12 +22,14 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
   const title = photo.title?.trim();
   const price = photo.price?.trim();
 
-  // "faixa": foto em cima, nome numa faixa BRANCA embaixo (igual à vitrine
-  // real — o card é branco, não a cor de fundo do tema).
+  // "faixa": foto no aspect ratio do formato + faixa BRANCA embaixo (igual à
+  // vitrine real — o card é branco e cresce pra caber o rodapé).
   if (titleStyle === "faixa") {
+    const spanCols = box.size === "destaque" || box.size === "largo" ? "col-span-2" : "col-span-1";
+    const ratioClass = { destaque: "aspect-[16/9]", largo: "aspect-[1920/830]", medio: "aspect-square", alto: "aspect-[4/5]" }[box.size];
     return (
-      <div className={`flex flex-col overflow-hidden rounded-[16px] bg-surface-white shadow-[0_2px_10px_rgba(17,19,24,0.06)] ${SPAN[box.size]}`}>
-        <div className="relative flex-1">
+      <div className={`overflow-hidden rounded-[16px] bg-surface-white shadow-[0_2px_10px_rgba(17,19,24,0.06)] ${spanCols}`}>
+        <div className={`relative w-full ${ratioClass}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         </div>
