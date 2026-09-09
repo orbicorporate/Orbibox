@@ -16,7 +16,7 @@ import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery } from "@/lib/logoGallery";
 
 type BrandColor = { hex: string; role?: string };
-type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco"; url?: string; logo_url?: string };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom"; url?: string; logo_url?: string };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
@@ -42,6 +42,7 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   avaliar: "Avaliar no Google",
   endereco: "Mostra o endereço",
   link: "Abre um link",
+  cupom: "Abre os cupons",
 };
 
 const ICON_CHOICES = ICON_LIBRARY;
@@ -73,6 +74,7 @@ export function BoxesManager({
   initialAddress,
   brandColors,
   orbiColors,
+  hasVouchers,
 }: {
   businessId: string;
   businessName: string;
@@ -88,6 +90,7 @@ export function BoxesManager({
   initialAddress: string | null;
   brandColors: BrandColor[];
   orbiColors: string[] | null;
+  hasVouchers: boolean;
 }) {
   const supabase = createClient();
   const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
@@ -223,6 +226,13 @@ export function BoxesManager({
   // box já sai pronto com os botões de Waze e Google Maps.
   function novoBoxEndereco() {
     setDraft({ label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", action: "endereco", url: initialAddress ?? "", color: "transparent" });
+    setCreating(true);
+  }
+
+  // Atalho: box de cupom — abre o gerenciador de vouchers (criação e resgate
+  // ficam numa página própria, não dá pra configurar direto por aqui).
+  function novoBoxCupom() {
+    setDraft({ label: "Cupons", subtitle: "Descontos por tempo limitado", icon: "🎟️", action: "cupom", url: "", color: "transparent" });
     setCreating(true);
   }
 
@@ -604,6 +614,29 @@ export function BoxesManager({
               <span className="block text-[12px] text-text-tertiary">Cole o endereço e o box já sai pronto com Waze e Google Maps.</span>
             </span>
           </button>
+          {hasVouchers ? (
+            <button
+              onClick={novoBoxCupom}
+              className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]">🎟️</span>
+              <span>
+                <span className="block text-[13px] font-medium">＋ Box de cupons</span>
+                <span className="block text-[12px] text-text-tertiary">Desconto com estoque limitado e código único por resgate.</span>
+              </span>
+            </button>
+          ) : (
+            <Link
+              href="/admin/planos"
+              className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left opacity-70"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]">🎟️</span>
+              <span>
+                <span className="block text-[13px] font-medium">＋ Box de cupons 💎 Nióbio</span>
+                <span className="block text-[12px] text-text-tertiary">Exclusivo do plano Nióbio — toque pra ver os planos.</span>
+              </span>
+            </Link>
+          )}
           <button
             onClick={() => setCreating(true)}
             className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"

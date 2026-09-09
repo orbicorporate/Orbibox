@@ -14,6 +14,7 @@ export interface AccessInfo {
   isActive: boolean;
   isTrialing: boolean;
   hasAiChat: boolean;
+  hasVouchers: boolean;
   maxBusinesses: number;
   trialEndsAt: string | null;
 }
@@ -26,6 +27,7 @@ const NO_ACCESS: AccessInfo = {
   isActive: false,
   isTrialing: false,
   hasAiChat: false,
+  hasVouchers: false,
   maxBusinesses: 1,
   trialEndsAt: null,
 };
@@ -58,6 +60,7 @@ export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
     // No teste de 3 dias a pessoa sente o potencial completo (Titânio +
     // Nióbio juntos), independente de qual plano ela selecionou no checkout.
     hasAiChat: isTrialing ? true : isActive && (plan?.has_ai_chat ?? false),
+    hasVouchers: isTrialing ? true : isActive && (plan?.has_vouchers ?? false),
     maxBusinesses: isTrialing ? 999 : isActive ? (plan?.max_businesses ?? 1) : 1,
     trialEndsAt: subscription.trial_ends_at,
   };
@@ -66,7 +69,7 @@ export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
 // Usado na página pública do visitante — ali quem está logado (se alguém
 // estiver) não é o dono, então a leitura via RLS normal não enxergaria a
 // assinatura do dono. Precisa da service role.
-export async function getOwnerHasAiChat(ownerId: string): Promise<boolean> {
+async function getOwnerFeatureAccess(ownerId: string, feature: "has_ai_chat" | "has_vouchers"): Promise<boolean> {
   const { createServiceClient } = await import("@/lib/supabase/service");
   const supabase = createServiceClient();
 
@@ -81,11 +84,19 @@ export async function getOwnerHasAiChat(ownerId: string): Promise<boolean> {
 
   const { data: plan } = await supabase
     .from("plans")
-    .select("has_ai_chat")
+    .select("has_ai_chat, has_vouchers")
     .eq("id", subscription.plan_id)
     .maybeSingle();
 
-  return plan?.has_ai_chat ?? false;
+  return (plan?.[feature] as boolean | undefined) ?? false;
+}
+
+export function getOwnerHasAiChat(ownerId: string): Promise<boolean> {
+  return getOwnerFeatureAccess(ownerId, "has_ai_chat");
+}
+
+export function getOwnerHasVouchers(ownerId: string): Promise<boolean> {
+  return getOwnerFeatureAccess(ownerId, "has_vouchers");
 }
 
 export async function getAllPlans(): Promise<Plan[]> {

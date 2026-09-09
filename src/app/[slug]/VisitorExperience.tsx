@@ -59,9 +59,9 @@ type ContentItem = {
   link_kind: string | null;
 };
 
-type Intent = "comprar" | "conhecer" | "presentear" | "duvida";
+type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco"; url?: string; logo_url?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom"; url?: string; logo_url?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -79,6 +79,7 @@ export function VisitorExperience({
   orbiColors,
   isOwner,
   hasAiChat,
+  hasVouchers,
 }: {
   business: Business;
   content: ContentItem[];
@@ -87,6 +88,7 @@ export function VisitorExperience({
   orbiColors: string[] | null;
   isOwner: boolean;
   hasAiChat: boolean;
+  hasVouchers: boolean;
 }) {
   const supabase = createClient();
   const searchParams = useSearchParams();
@@ -128,6 +130,7 @@ export function VisitorExperience({
       if (b.box_type === "agent") return false;
       const cfg = (b.config ?? {}) as CustomConfig;
       if (b.box_type === "custom" && cfg.action === "zara") return false;
+      if (b.box_type === "custom" && cfg.action === "cupom" && !hasVouchers) return false;
       return true;
     })
     .sort((a, b) => a.position - b.position)
@@ -157,6 +160,8 @@ export function VisitorExperience({
               trackClick({ businessId: business.id, kind: "link", sessionId });
               setExpandedBox((prev) => (prev === b.id ? null : b.id));
             }
+          } else if (cfg.action === "cupom") {
+            chooseIntent("cupom");
           } else if (cfg.url) {
             trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: cfg.url });
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
@@ -351,8 +356,115 @@ export function VisitorExperience({
         {intent === "duvida" && sessionId && (
           <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
         )}
+
+        {intent === "cupom" && (
+          <CupomFlow business={business} sessionId={sessionId} onBack={() => setIntent(null)} />
+        )}
       </div>
     </main>
+  );
+}
+
+type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number };
+
+function voucherDiscountLabel(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
+  return v.discount_type === "percent" ? `${v.discount_value}% de desconto` : `R$ ${v.discount_value} de desconto`;
+}
+
+/** Tela de cupons — lista os ativos, deixa a pessoa resgatar (nome +
+ * WhatsApp) e mostra o código único que ela leva até o negócio. */
+function CupomFlow({ business, sessionId, onBack }: { business: Business; sessionId: string | null; onBack: () => void }) {
+  const supabase = createClient();
+  const [vouchers, setVouchers] = useState<VoucherPublic[] | null>(null);
+  const [claiming, setClaiming] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [result, setResult] = useState<{ code: string; title: string; expiresAt: string | null } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("vouchers")
+      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed")
+      .eq("business_id", business.id)
+      .eq("is_active", true)
+      .then(({ data }) => setVouchers((data as VoucherPublic[]) ?? []));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [business.id]);
+
+  async function resgatar(voucherId: string) {
+    setError(null);
+    try {
+      const res = await fetch("/api/vouchers/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voucherId, name: name.trim() || null, whatsapp: whatsapp.trim() || null }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Não foi possível resgatar esse cupom.");
+        return;
+      }
+      trackClick({ businessId: business.id, kind: "cupom", sessionId });
+      setResult({ code: data.code, title: data.title, expiresAt: data.expires_at });
+      setClaiming(null);
+    } catch {
+      setError("Erro de conexão ao resgatar o cupom.");
+    }
+  }
+
+  return (
+    <div className="w-full">
+      <button onClick={onBack} className="mb-5 mt-5 text-[13px] text-text-tertiary hover:underline">← voltar</button>
+      <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">Cupons</h2>
+
+      {result ? (
+        <div className="mt-5 rounded-[24px] bg-surface-white p-6 text-center shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+          <p className="text-[13px] text-text-secondary">{result.title}</p>
+          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[36px] font-bold tracking-[0.05em]">{result.code}</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-text-tertiary">
+            Mostre esse código pro {business.name} — no balcão ou pelo WhatsApp — pra usar o desconto.
+            {result.expiresAt && ` Vale até ${new Date(result.expiresAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}.`}
+          </p>
+        </div>
+      ) : (
+        <div className="mt-5 flex flex-col gap-3">
+          {vouchers === null && <p className="text-[13px] text-text-tertiary">Carregando…</p>}
+          {vouchers?.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum cupom disponível no momento.</p>}
+          {vouchers?.map((v) => {
+            const restam = v.quantity_total - v.quantity_claimed;
+            return (
+              <div key={v.id} className="rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+                <p className="text-[15px] font-medium">{v.title}</p>
+                <p className="mt-0.5 text-[13px] text-text-secondary">{voucherDiscountLabel(v)}</p>
+                {v.description?.trim() && <p className="mt-1 text-[12px] text-text-tertiary">{v.description}</p>}
+                <p className="mt-1 text-[11px] text-text-tertiary">{restam > 0 ? `${restam} restantes` : "Esgotado"}</p>
+
+                {claiming === v.id ? (
+                  <div className="mt-3 flex flex-col gap-2">
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" className="rounded-xl border border-divider px-3 py-2 text-[14px] outline-none focus:border-on-background" />
+                    <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Seu WhatsApp (opcional)" className="rounded-xl border border-divider px-3 py-2 text-[14px] outline-none focus:border-on-background" />
+                    {error && <p className="text-[12px] text-red-600">{error}</p>}
+                    <div className="flex gap-2">
+                      <button onClick={() => { setClaiming(null); setError(null); }} className="flex-1 rounded-full bg-surface-soft py-2 text-[12px] font-medium">Cancelar</button>
+                      <button onClick={() => resgatar(v.id)} className="flex-1 rounded-full bg-button-primary py-2 text-[12px] font-medium text-white">Confirmar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setClaiming(v.id); setError(null); }}
+                    disabled={restam <= 0}
+                    className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
+                  >
+                    {restam > 0 ? "Resgatar" : "Esgotado"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

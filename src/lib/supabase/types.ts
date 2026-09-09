@@ -65,8 +65,8 @@ export type Database = {
         Relationships: []
       }
       plans: {
-        Row: { id: string; name: string; description: string | null; monthly_price_cents: number; yearly_price_cents: number; stripe_product_id: string | null; stripe_price_id_monthly: string | null; stripe_price_id_yearly: string | null; max_businesses: number; has_ai_chat: boolean; created_at: string; updated_at: string }
-        Insert: { id: string; name: string; description?: string | null; monthly_price_cents: number; yearly_price_cents: number; stripe_product_id?: string | null; stripe_price_id_monthly?: string | null; stripe_price_id_yearly?: string | null; max_businesses?: number; has_ai_chat?: boolean; created_at?: string; updated_at?: string }
+        Row: { id: string; name: string; description: string | null; monthly_price_cents: number; yearly_price_cents: number; stripe_product_id: string | null; stripe_price_id_monthly: string | null; stripe_price_id_yearly: string | null; max_businesses: number; has_ai_chat: boolean; has_vouchers: boolean; created_at: string; updated_at: string }
+        Insert: { id: string; name: string; description?: string | null; monthly_price_cents: number; yearly_price_cents: number; stripe_product_id?: string | null; stripe_price_id_monthly?: string | null; stripe_price_id_yearly?: string | null; max_businesses?: number; has_ai_chat?: boolean; has_vouchers?: boolean; created_at?: string; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["plans"]["Insert"]>
         Relationships: []
       }
@@ -74,6 +74,18 @@ export type Database = {
         Row: { id: string; owner_id: string; plan_id: string; billing_cycle: string; status: string; stripe_customer_id: string | null; stripe_subscription_id: string | null; stripe_price_id: string | null; trial_ends_at: string | null; current_period_end: string | null; cancel_at_period_end: boolean; created_at: string; updated_at: string }
         Insert: { id?: string; owner_id: string; plan_id: string; billing_cycle?: string; status?: string; stripe_customer_id?: string | null; stripe_subscription_id?: string | null; stripe_price_id?: string | null; trial_ends_at?: string | null; current_period_end?: string | null; cancel_at_period_end?: boolean; created_at?: string; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["subscriptions"]["Insert"]>
+        Relationships: []
+      }
+      vouchers: {
+        Row: { id: string; business_id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; expires_hours: number | null; is_active: boolean; created_at: string; updated_at: string }
+        Insert: { id?: string; business_id: string; title: string; description?: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed?: number; expires_hours?: number | null; is_active?: boolean; created_at?: string; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["vouchers"]["Insert"]>
+        Relationships: []
+      }
+      voucher_redemptions: {
+        Row: { id: string; voucher_id: string; business_id: string; code: string; visitor_name: string | null; visitor_whatsapp: string | null; status: string; claimed_at: string; expires_at: string | null; redeemed_at: string | null; created_at: string }
+        Insert: { id?: string; voucher_id: string; business_id: string; code: string; visitor_name?: string | null; visitor_whatsapp?: string | null; status?: string; claimed_at?: string; expires_at?: string | null; redeemed_at?: string | null; created_at?: string }
+        Update: Partial<Database["public"]["Tables"]["voucher_redemptions"]["Insert"]>
         Relationships: []
       }
       visitor_sessions: {
@@ -84,7 +96,12 @@ export type Database = {
       }
     }
     Views: { [_ in never]: never }
-    Functions: { [_ in never]: never }
+    Functions: {
+      claim_voucher: {
+        Args: { p_voucher_id: string; p_visitor_name: string | null; p_visitor_whatsapp: string | null }
+        Returns: { code: string; expires_at: string | null; title: string; discount_type: string; discount_value: number }[]
+      }
+    }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }
   }
