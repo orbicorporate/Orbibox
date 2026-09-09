@@ -4,8 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
 
-// Busca o HTML do site e limpa deixando texto + urls de imagem visíveis.
-async function fetchSite(url: string): Promise<{ text: string; images: string[]; links: string[]; base: string; html: string } | null> {
+// Busca o HTML do site e limpa deixando texto + imagens (com contexto) visíveis.
+async function fetchSite(url: string): Promise<{ text: string; images: { id: string; url: string; alt: string; context: string }[]; links: string[]; base: string; html: string } | null> {
   try {
     const normalized = url.startsWith("http") ? url : `https://${url}`;
     const res = await fetch(normalized, {
@@ -20,17 +20,48 @@ async function fetchSite(url: string): Promise<{ text: string; images: string[];
     const html = await res.text();
     const base = new URL(normalized).origin;
 
-    // Coleta URLs de imagem (src e data-src, incluindo og:image)
-    const imgs = new Set<string>();
-    const ogMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
-    if (ogMatch) imgs.add(ogMatch[1]);
-    const imgRegex = /<img[^>]+(?:data-src|src)=["']([^"']+)["']/gi;
-    let m: RegExpExecArray | null;
-    while ((m = imgRegex.exec(html)) && imgs.size < 40) {
-      let src = m[1];
+    // Coleta imagens com contexto: alt (diz o que É a imagem) e um pedaço de
+    // texto ao redor (diz DE QUE PARTE da página ela veio) — sem isso, a Orbi
+    // só vê uma URL solta e não tem como saber se é o produto, uma logo de
+    // parceiro, um ícone decorativo, etc.
+    const images: { id: string; url: string; alt: string; context: string }[] = [];
+    const seen = new Set<string>();
+    // Regex mais permissivo: pega o <img ...> inteiro pra extrair src/data-src E alt do mesmo bloco.
+    const imgTagRegex = /<img\b[^>]*>/gi;
+    let tagMatch: RegExpExecArray | null;
+    while ((tagMatch = imgTagRegex.exec(html)) && images.length < 30) {
+      const tag = tagMatch[0];
+      const srcMatch = tag.match(/(?:data-src|src)=["']([^"']+)["']/i);
+      if (!srcMatch) continue;
+      let src = srcMatch[1];
       if (src.startsWith("//")) src = "https:" + src;
       else if (src.startsWith("/")) src = base + src;
-      if (src.startsWith("http") && !src.match(/\.(svg|gif)(\?|$)/i)) imgs.add(src);
+      if (!src.startsWith("http") || /\.(svg|gif)(\?|$)/i.test(src)) continue;
+      if (seen.has(src)) continue;
+      seen.add(src);
+
+      const altMatch = tag.match(/alt=["']([^"']*)["']/i);
+      const alt = (altMatch?.[1] ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
+
+      // ~200 caracteres de texto puro antes da tag, pra saber em qual seção
+      // da página (qual produto/serviço) essa imagem está encaixada.
+      const before = html.slice(Math.max(0, tagMatch.index - 600), tagMatch.index);
+      const context = before
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(-200);
+
+      images.push({ id: `img${images.length}`, url: src, alt, context });
+    }
+    // og:image entra por último, sem contexto de posição (é imagem de
+    // compartilhamento da página inteira, não de um item específico).
+    const ogMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+    if (ogMatch && images.length < 30 && !seen.has(ogMatch[1])) {
+      images.push({ id: `img${images.length}`, url: ogMatch[1], alt: "(imagem de compartilhamento da página, não de um item específico)", context: "" });
     }
 
     // Links internos — viram destino dos boxes de categoria/produto
@@ -53,7 +84,7 @@ async function fetchSite(url: string): Promise<{ text: string; images: string[];
       .replace(/\s+/g, " ")
       .trim();
 
-    return { text: text.slice(0, 12000), images: [...imgs], links: [...links], base, html: html.slice(0, 4000) };
+    return { text: text.slice(0, 12000), images, links: [...links], base, html: html.slice(0, 4000) };
   } catch {
     return null;
   }
@@ -114,7 +145,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Não consegui acessar esse site. Verifique o link." }, { status: 422 });
     }
 
-    const imgList = site.images.map((u, i) => `[img${i}] ${u}`).join("\n");
+    const imgList = site.images
+      .map((img) => `[${img.id}] alt="${img.alt || "(sem alt)"}" | contexto antes da imagem: "...${img.context || "(sem contexto)"}" | ${img.url}`)
+      .join("\n");
 
     const system = `Você é a Orbi, o motor de leitura de sites do Orbibox. Você recebe o conteúdo de um site e precisa (a) entender que TIPO de negócio é e (b) propor a melhor estrutura de vitrine.
 
@@ -136,10 +169,17 @@ PASSO 3 — Extraia o conhecimento do negócio (alimenta a assistente de IA):
 
 REGRAS GERAIS:
 - target_url deve ser um link REAL da lista de links fornecida. Nunca invente URL.
-- image_hint: escolha a imagem mais provável da lista pelo id [imgN]. Se nenhuma servir, use null — NÃO invente imagem.
 - price: número em reais quando houver no site, senão null. Nunca invente preço.
 - brand_label: a categoria do item, poucas e repetidas entre itens semelhantes.
 - description: 1 frase curta baseada no site.
+
+REGRA DE IMAGEM (a mais importante — leia com atenção):
+Cada imagem candidata vem com [imgN], o "alt" (o que ela É, quando o site informou) e o texto que aparecia logo ANTES dela na página (em que seção/produto ela estava encaixada). Use isso pra decidir, não o nome do arquivo.
+- Só escolha image_hint quando o alt OU o contexto deixam CLARO que aquela imagem é uma FOTO DESSE item específico (do produto, do prato, do ambiente do serviço).
+- NUNCA escolha uma imagem que seja: logo de marca/parceiro/fornecedor (ex: "Harley-Davidson", "Visa", "Mastercard", bandeiras de cartão, selos de certificação), ícone decorativo, foto de equipe/fundador, banner genérico de topo de página, ou imagem de compartilhamento social (og:image) que não seja do item em si.
+- Se o alt ou contexto mencionam uma marca/empresa DIFERENTE do negócio "${business.name}" sendo importado, é quase certo que é logo de parceiro — não use.
+- Na dúvida, ou se não achar nada com sinal forte o suficiente, use null. Um item sem foto (fundo colorido, nome em destaque) fica com aparência muito melhor e mais profissional do que um item com a foto errada. Prefira sempre null a arriscar.
+- Cada imagem só pode ser usada em UM item — não repita a mesma imagem pra itens diferentes.
 
 Responda SOMENTE JSON válido:
 {"site_type":"ecommerce","motivo":"uma frase explicando como você reconheceu","about_business":"","differentials":"","policies":null,"contact_whatsapp":null,"contact_phone":null,"contact_email":null,"items":[{"title":"","description":"","price":null,"type":"product","brand_label":null,"image_hint":"img0","target_url":null,"link_kind":"categoria"}]}`;
@@ -180,13 +220,12 @@ ${site.text}`;
     function resolveImage(it: Extracted): { url: string | null; placeholder: boolean } {
       const hint = it.image_hint;
       if (hint) {
-        const idx = Number(hint.replace("img", ""));
-        if (Number.isFinite(idx) && site!.images[idx]) {
-          return { url: site!.images[idx], placeholder: false };
-        }
+        const found = site!.images.find((img) => img.id === hint);
+        if (found) return { url: found.url, placeholder: false };
       }
-      // Sem foto no site: o box fica em branco com cor neutra, como combinado.
-      // Não inventamos imagem de banco de imagens — o dono coloca a dele.
+      // Sem foto no site (ou a Orbi preferiu não arriscar): o box fica em
+      // cor sólida, como combinado. Não inventamos imagem de banco de
+      // imagens — o dono coloca a dele se/quando quiser.
       return { url: null, placeholder: false };
     }
 
@@ -215,9 +254,16 @@ ${site.text}`;
 
     const RHYTHM = ["destaque", "medio", "medio", "largo", "medio", "medio"];
     let semFotoIdx = 0;
+    const usedImages = new Set<string>();
     const picked = items.slice(0, 12);
     const rows = picked.map((it, i) => {
       const img = resolveImage(it);
+      // Trava de segurança: se por algum motivo a Orbi repetiu a mesma
+      // imagem em dois itens, só o primeiro fica com ela — o resto vira cor.
+      if (img.url) {
+        if (usedImages.has(img.url)) img.url = null;
+        else usedImages.add(img.url);
+      }
       // Sem foto: veste com uma cor da paleta, alternando pra não repetir
       // duas iguais em seguida. Com foto: fica neutro, recortada (sem "moldura").
       const cor = img.url ? "neutro" : swatches[semFotoIdx++ % swatches.length];
