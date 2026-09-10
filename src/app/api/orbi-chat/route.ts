@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessId, conversationId, message, history } = await req.json();
+    const { businessId, conversationId, message, history, trialMode } = await req.json();
 
     if (!businessId || !message) {
       return NextResponse.json({ error: "businessId e message são obrigatórios." }, { status: 400 });
@@ -68,6 +68,14 @@ Regras:
 - Se for listar 2 ou mais itens (produtos, serviços, opções), use uma lista com "- " no início de cada linha, uma por linha, nunca tudo numa frase só separado por vírgula.
 - Pode usar **negrito** em nomes de produtos/serviços e valores importantes, com moderação.`;
 
+    // No modo teste (dono experimentando), a Orbi é mais proativa em mostrar o
+    // que sabe fazer: sempre que possível recomenda um produto/serviço com card,
+    // pra o dono ver o poder da ferramenta. Se não houver catálogo, sugere o
+    // que o negócio faz de forma envolvente e convida a criar a vitrine.
+    const systemFinal = trialMode
+      ? `${system}\n\nMODO DEMONSTRAÇÃO: o dono do negócio está te testando pra decidir se assina. Seja impressionante. Sempre que houver produtos no catálogo, recomende pelo menos um com a marcação [[produto:ID]] pra mostrar os cards clicáveis. Se o catálogo estiver vazio, explique de forma animada o que você conseguiria fazer com a vitrine dele preenchida, e incentive-o a montar a Vitrine. Mostre valor em cada resposta.`
+      : system;
+
     const messages = [
       ...((history ?? []) as { role: string; content: string }[]).map((m) => ({
         role: m.role === "agent" ? ("assistant" as const) : ("user" as const),
@@ -76,7 +84,7 @@ Regras:
       { role: "user" as const, content: message },
     ];
 
-    const reply = await askClaude({ system, messages, maxTokens: 500 });
+    const reply = await askClaude({ system: systemFinal, messages, maxTokens: 500 });
 
     if (conversationId) {
       await supabase.from("messages").insert({ conversation_id: conversationId, role: "agent", content: reply });

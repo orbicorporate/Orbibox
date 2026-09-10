@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 
-const FREE_TRIALS = 2;
+const FREE_TRIALS = 3;
 
 // Retorna quantos testes restam e, se solicitado (consume=true), gasta um.
 // Nióbio tem acesso ilimitado (não gasta teste).
