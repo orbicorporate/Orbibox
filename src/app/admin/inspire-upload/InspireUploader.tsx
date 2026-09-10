@@ -9,7 +9,7 @@ type Item = { url: string; title: string; price: string; suggesting?: boolean };
 const TEMAS = [
   ["moda", "Moda"], ["joalheria", "Joalheria"], ["restaurante", "Restaurante"], ["loja", "Loja"],
   ["fitness", "Loja Fitness"],
-  ["servicos", "Serviços"], ["pizzaria", "Pizzaria"], ["hamburgueria", "Hamburgueria"],
+  ["servicos", "Serviços"], ["agencia", "Agência de Marketing"], ["pizzaria", "Pizzaria"], ["hamburgueria", "Hamburgueria"],
   ["imobiliaria", "Imobiliária"],
   ["fotografo", "Fotógrafo"], ["grafica", "Gráfica / Papelaria"],
   ["salao", "Salão / Barbearia"], ["estetica", "Clínica de Estética"],

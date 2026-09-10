@@ -116,6 +116,20 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     ],
   },
   {
+    id: "agencia",
+    name: "Agência de Marketing",
+    vibe: "Inovador, estratégico",
+    exampleBusiness: "Nova Mídia",
+    description: "Cases, resultados e criativos com tons de grafite, roxo e verde-limão. Pra agência, social media, tráfego, branding.",
+    bg: "#EEF0F4",
+    colors: [
+      { hex: "#E9EBF1", role: "Fundo" },
+      { hex: "#1E1B2E", role: "Contraste" },
+      { hex: "#6C4AE0", role: "Detalhe" },
+      { hex: "#8E93A8", role: "Suave" },
+    ],
+  },
+  {
     id: "pizzaria",
     name: "Pizzaria",
     vibe: "Aconchegante, saboroso",
