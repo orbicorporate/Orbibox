@@ -109,6 +109,10 @@ export type Database = {
     }
     Views: { [_ in never]: never }
     Functions: {
+      business_progress: {
+        Args: { p_business_id: string }
+        Returns: Record<string, boolean>
+      }
       is_super_admin: {
         Args: Record<string, never>
         Returns: boolean

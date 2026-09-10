@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { BackButton } from "./BackButton";
+import { ProgressBadge } from "@/components/ProgressWidgets";
 
-export function AppHeader({ unseenConversas = 0 }: { unseenConversas?: number }) {
+export function AppHeader({ unseenConversas = 0, progressPct = 100 }: { unseenConversas?: number; progressPct?: number }) {
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between bg-background-main/90 px-6 py-4 backdrop-blur">
       <div className="flex items-center gap-2">
@@ -13,6 +14,7 @@ export function AppHeader({ unseenConversas = 0 }: { unseenConversas?: number })
         </span>
       </div>
       <div className="flex items-center gap-2">
+        <ProgressBadge pct={progressPct} />
         {/* Sino de notificação — pisca quando tem conversa que ainda não foi
             vista. Ao lado do ícone de configurações, sempre alinhado. */}
         <Link href="/admin/conversas" className="relative flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft" aria-label="Conversas">

@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { BottomNav } from "@/components/mobile/BottomNav";
 import { AdminOrbiFloating } from "./AdminOrbiFloating";
 import { AppHeader } from "@/components/mobile/AppHeader";
+import { getBusinessProgress } from "@/lib/progress";
 import { TourOverlay } from "@/components/tour/TourOverlay";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -65,6 +66,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("business_id", business.id)
     .eq("seen_by_owner", false);
 
+  const headerProgress = await getBusinessProgress(business.id);
+
   // Dados pra Orbi flutuante do painel: plano (define o comportamento) + o que
   // ela precisa pra o teste (nome, cores, produtos, endereço).
   const { getAccessInfoForBusiness } = await import("@/lib/plans");
@@ -76,7 +79,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background-main">
-      <AppHeader unseenConversas={unseenConversas ?? 0} />
+      <AppHeader unseenConversas={unseenConversas ?? 0} progressPct={headerProgress.pct} />
       <main className="flex-1 px-6 pb-32 pt-4">{children}</main>
       <BottomNav />
       <AdminOrbiFloating

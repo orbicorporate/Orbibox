@@ -2,6 +2,8 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
+import { getBusinessProgress } from "@/lib/progress";
+import { ProgressCard } from "@/components/ProgressWidgets";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 import { QRCodeButton } from "@/components/ui/QRCodeButton";
@@ -42,6 +44,7 @@ export default async function HojePage() {
   ]);
   const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
   const activeBoxes = activeBoxesRes.count ?? 0;
+  const progress = await getBusinessProgress(business!.id);
 
   // Insight sempre atual — em vez de uma tabela fixa que nunca se atualizava
   // sozinha, verifica o estado de verdade do negócio a cada carregamento e
@@ -254,6 +257,8 @@ export default async function HojePage() {
           QR Code
         </QRCodeButton>
       </div>
+
+      <ProgressCard done={progress.done} pct={progress.pct} />
 
       {activeBoxes === 0 && (
         <p className="mx-auto mt-3 max-w-[280px] text-center text-[12px] leading-relaxed text-red-600">
