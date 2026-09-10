@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     const { data: content } = await supabase
       .from("content_items")
-      .select("title, description, price")
+      .select("id, title, description, price, image_url, link_kind")
       .eq("business_id", businessId)
       .eq("status", "published")
       .limit(15);
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       : "próxima e direta";
 
     const catalog = (content ?? [])
-      .map((c) => `- ${c.title}${c.price != null ? ` (R$ ${Number(c.price).toFixed(2)})` : ""}${c.description ? `: ${c.description}` : ""}`)
+      .map((c) => `- [id:${c.id}] ${c.title}${c.price != null ? ` (R$ ${Number(c.price).toFixed(2)})` : ""}${c.description ? `: ${c.description}` : ""}`)
       .join("\n");
 
     const system = `Você é ${agentName}, a assistente de IA (AgentBox) do negócio "${business?.name ?? "este negócio"}" dentro do Orbibox — uma plataforma de "web adaptativa".
@@ -51,6 +51,7 @@ ${business?.brand_voice_summary ? `Tom da marca: ${business.brand_voice_summary}
 ${catalog ? `Catálogo disponível:\n${catalog}` : "O catálogo ainda não tem produtos publicados."}
 
 Regras:
+- Recomende produtos/serviços da vitrine quando fizer sentido pra ajudar a pessoa. Pra mostrar um card clicável com a foto do produto, escreva a marcação [[produto:ID]] usando o id que aparece no catálogo (ex: [[produto:abc-123]]). Coloque a marcação numa linha própria, logo depois de mencionar o produto no texto. Use no máximo 2 por resposta, e só de produtos que existem no catálogo acima. Não descreva a marcação, só a escreva.
 - Respostas curtas (2-4 frases), como uma conversa real de chat, nunca um texto formal.
 - Nunca invente produtos, preços ou promessas que não estejam no catálogo acima.
 - Nunca use a expressão "dono do negócio" ou "dono" — soa amador. Diga "nosso time" ou "um especialista da área".

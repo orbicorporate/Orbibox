@@ -390,7 +390,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <OrbiChat businessId={business.id} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
+          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
         )}
 
         {intent === "cupom" && (
@@ -696,9 +696,20 @@ function StoryView({
  * Transforma o texto puro da IA em parágrafos, listas com marcador e
  * **negrito** de verdade — em vez de um bloco só, apertado e sem cor.
  */
-function formatMessage(text: string) {
-  const blocks = text.split(/\n{2,}/);
-  return blocks.map((block, bi) => {
+function formatMessage(text: string, products?: ContentItem[], slug?: string, businessId?: string, sessionId?: string | null) {
+  // Extrai marcações [[produto:ID]] e as troca por cards clicáveis no fim.
+  const productIds: string[] = [];
+  const cleaned = text.replace(/\[\[produto:([^\]]+)\]\]/g, (_, id) => {
+    productIds.push(String(id).trim());
+    return "";
+  });
+
+  const cards = productIds
+    .map((id) => products?.find((p) => p.id === id))
+    .filter((p): p is ContentItem => !!p);
+
+  const blocks = cleaned.split(/\n{2,}/).filter((b) => b.trim() !== "");
+  const textNodes = blocks.map((block, bi) => {
     const lines = block.split("\n").filter((l) => l.trim() !== "");
     const isBulletBlock = lines.length > 0 && lines.every((l) => /^[-*•]\s+/.test(l.trim()));
     if (isBulletBlock) {
@@ -724,6 +735,35 @@ function formatMessage(text: string) {
       </p>
     );
   });
+
+  return (
+    <>
+      {textNodes}
+      {cards.map((p) => {
+        const destino = (p.link_kind ?? "produto") === "produto" ? `/${slug}/p/${p.id}` : (p.target_url || `/${slug}`);
+        return (
+          <a
+            key={p.id}
+            href={destino}
+            onClick={() => businessId && trackClick({ businessId, kind: "produto", contentItemId: p.id, sessionId })}
+            className="mt-1 flex items-center gap-3 overflow-hidden rounded-2xl bg-surface-white p-2 shadow-[0_2px_12px_rgba(17,19,24,0.08)] ring-1 ring-black/5"
+          >
+            {p.image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={p.image_url} alt={p.title} className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+            ) : (
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[18px]">✦</span>
+            )}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[14px] font-medium text-on-background">{p.title}</span>
+              <span className="block text-[12px] text-text-secondary">{formatPrice(p) || "Ver detalhes"}</span>
+            </span>
+            <span className="shrink-0 pr-1 text-text-tertiary">→</span>
+          </a>
+        );
+      })}
+    </>
+  );
 }
 
 function formatInline(text: string) {
@@ -738,6 +778,7 @@ function formatInline(text: string) {
 
 function OrbiChat({
   businessId,
+  slug,
   sessionId,
   agentName,
   orbiColors,
@@ -747,6 +788,7 @@ function OrbiChat({
   onBack,
 }: {
   businessId: string;
+  slug: string;
   sessionId: string;
   agentName: string;
   orbiColors: string[] | null;
@@ -814,12 +856,44 @@ function OrbiChat({
   })();
 
   useEffect(() => {
-    supabase
-      .from("conversations")
-      .insert({ business_id: businessId, visitor_session_id: sessionId, channel: "web" })
-      .select("id")
-      .single()
-      .then(({ data }) => data && setConversationId(data.id));
+    // Retoma a conversa anterior desse visitante (guardada no localStorage),
+    // carregando o histórico — assim, ao reabrir o chat em qualquer página, a
+    // pessoa continua de onde parou em vez de começar do zero.
+    let cancelled = false;
+    async function initConversa() {
+      let savedId: string | null = null;
+      try { savedId = localStorage.getItem(`orbi_conv_${businessId}`); } catch { /* ignora */ }
+
+      if (savedId) {
+        // Confere se a conversa ainda existe e carrega as mensagens dela.
+        const { data: conv } = await supabase.from("conversations").select("id").eq("id", savedId).maybeSingle();
+        if (conv && !cancelled) {
+          const { data: msgs } = await supabase
+            .from("messages")
+            .select("role, content")
+            .eq("conversation_id", savedId)
+            .order("created_at", { ascending: true });
+          if (!cancelled) {
+            setConversationId(savedId);
+            if (msgs && msgs.length > 0) setMessages(msgs.map((m) => ({ role: m.role, content: m.content })));
+          }
+          return;
+        }
+      }
+
+      // Sem conversa salva (ou expirada): cria uma nova e guarda o id.
+      const { data } = await supabase
+        .from("conversations")
+        .insert({ business_id: businessId, visitor_session_id: sessionId, channel: "web" })
+        .select("id")
+        .single();
+      if (data && !cancelled) {
+        setConversationId(data.id);
+        try { localStorage.setItem(`orbi_conv_${businessId}`, data.id); } catch { /* ignora */ }
+      }
+    }
+    initConversa();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -948,7 +1022,7 @@ function OrbiChat({
                     : "ml-auto bg-on-background text-white"
                 }`}
               >
-                <div className="flex flex-col gap-3">{formatMessage(m.content)}</div>
+                <div className="flex flex-col gap-3">{formatMessage(m.content, content, slug, businessId, sessionId)}</div>
               </div>
             ))}
             {(sending || justDone) && (
