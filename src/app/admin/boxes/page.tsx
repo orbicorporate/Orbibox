@@ -57,6 +57,7 @@ export default async function BoxesPage() {
         brandColors={brandColors}
         orbiColors={orbiColors}
         hasVouchers={access?.hasVouchers ?? false}
+        hasAiChat={access?.hasAiChat ?? false}
       />
     </div>
   );

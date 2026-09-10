@@ -76,6 +76,7 @@ export function BoxesManager({
   brandColors,
   orbiColors,
   hasVouchers,
+  hasAiChat,
 }: {
   businessId: string;
   businessName: string;
@@ -92,6 +93,7 @@ export function BoxesManager({
   brandColors: BrandColor[];
   orbiColors: string[] | null;
   hasVouchers: boolean;
+  hasAiChat: boolean;
 }) {
   const supabase = createClient();
   const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
@@ -261,6 +263,17 @@ export function BoxesManager({
   const ordered = [...boxes].sort((a, b) => a.position - b.position);
   const visibleBoxes = ordered.filter((b) => b.box_type !== "hero");
   const ativos = ordered.filter((b) => b.is_active && !META[b.box_type]?.fixo).length;
+
+  // Box da Orbi (IA): existe pra o negócio mas está desativado? Nesse caso
+  // mostramos um atalho pra reativar na área de sugestões.
+  const orbiBox = ordered.find((b) => b.box_type === "agent");
+  const orbiDesativada = !!orbiBox && !orbiBox.is_active;
+
+  async function reativarOrbi() {
+    if (!orbiBox) return;
+    setBoxes((p) => p.map((b) => (b.id === orbiBox.id ? { ...b, is_active: true } : b)));
+    await supabase.from("smart_boxes").update({ is_active: true }).eq("id", orbiBox.id);
+  }
 
   return (
     <div className="mt-5 flex flex-col gap-4">
@@ -669,6 +682,32 @@ export function BoxesManager({
           </button>
 
           <p className="mt-2 px-1 text-[13px] font-medium text-text-secondary">Ou use uma pronta:</p>
+
+          {orbiDesativada && (
+            hasAiChat ? (
+              <button
+                onClick={reativarOrbi}
+                className="flex items-center gap-3 rounded-[22px] border border-dashed border-orbi-gradient-start/40 bg-surface-white p-4 text-left"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiParticleSphere size={40} colors={orbiColors ?? undefined} className="rounded-full" /></span>
+                <span>
+                  <span className="block text-[14px] font-medium">✦ Box da Orbi (IA)</span>
+                  <span className="block text-[12.5px] text-text-tertiary">Está desativada. Toque pra reativar a conversa com a IA na sua página.</span>
+                </span>
+              </button>
+            ) : (
+              <Link
+                href="/admin/planos"
+                className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left opacity-70"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiParticleSphere size={40} className="rounded-full" /></span>
+                <span>
+                  <span className="block text-[14px] font-medium">✦ Box da Orbi (IA) 💎 Nióbio</span>
+                  <span className="block text-[12.5px] text-text-tertiary">A IA conversa com seus visitantes. Exclusivo do Nióbio — toque pra ver.</span>
+                </span>
+              </Link>
+            )
+          )}
 
           <button
             onClick={novoBoxWhatsapp}
