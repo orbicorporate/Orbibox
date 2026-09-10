@@ -528,6 +528,7 @@ export function BoxesManager({
                   logoGallery={logoGallery}
                   onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))}
                   businessId={businessId}
+                  orbiColors={orbiColors}
                 />
               )}
 
@@ -689,7 +690,7 @@ export function BoxesManager({
             placeholder="Nome do botão (ex: Fale no WhatsApp)"
             className="mt-3 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
-          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} logoGallery={logoGallery} onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))} businessId={businessId} />
+          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} logoGallery={logoGallery} onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))} businessId={businessId} orbiColors={orbiColors} />
           {createError && <p className="mt-2 text-[12px] text-red-600">{createError}</p>}
           <div className="mt-3 flex gap-2">
             <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
@@ -828,6 +829,7 @@ function BoxEditor({
   logoGallery,
   onNewLogo,
   businessId,
+  orbiColors,
 }: {
   initial: BoxConfig;
   isCustom: boolean;
@@ -839,6 +841,7 @@ function BoxEditor({
   logoGallery?: string[];
   onNewLogo?: (url: string) => void;
   businessId: string;
+  orbiColors?: string[] | null;
 }) {
   const [cfg, setCfg] = useState<BoxConfig>(initial);
   const [colorModalOpen, setColorModalOpen] = useState(false);
@@ -965,11 +968,23 @@ function BoxEditor({
       )}
 
       {/* Ícone animado roda sempre com fundo transparente (regra do app) —
-          então nem mostramos seletor de cor, só avisamos. */}
+          então nem mostramos seletor de cor, só a prévia real do ícone. */}
       {animated ? (
-        <div className="flex items-center gap-2 rounded-2xl bg-surface-soft px-4 py-2.5">
-          <span className="orbi-checkerboard h-6 w-6 shrink-0 rounded-full border border-divider" />
-          <span className="text-[12px] leading-relaxed text-text-secondary">Ícone animado — fundo transparente automático, pra ele aparecer sozinho.</span>
+        <div className="flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full">
+            {cfg.icon === "__orb__" ? (
+              <OrbiParticleSphere size={36} colors={orbiColors ?? undefined} />
+            ) : cfg.icon === "__orbcheck__" ? (
+              <OrbiParticleSphere size={36} variant="check" colors={orbiColors ?? undefined} />
+            ) : cfg.icon === "__orbwa__" || cfg.icon === "__wadisc__" ? (
+              <OrbiContactDisc size={36} />
+            ) : cfg.icon === "__google__" ? (
+              <OrbiGoogleIcon size={36} />
+            ) : cfg.icon === "__pin__" ? (
+              <OrbiMapPin size={26} />
+            ) : null}
+          </span>
+          <span className="text-[13px] leading-relaxed text-text-secondary">Esse ícone já vem com cor e movimento próprios — por isso não dá pra escolher um fundo atrás dele, ele aparece sozinho.</span>
         </div>
       ) : (
         <>
