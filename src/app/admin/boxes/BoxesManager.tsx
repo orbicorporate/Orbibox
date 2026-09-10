@@ -114,6 +114,8 @@ export function BoxesManager({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [draft, setDraft] = useState<BoxConfig>({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
+  const [draftLabel, setDraftLabel] = useState("");
+  const [createError, setCreateError] = useState<string | null>(null);
 
   async function toggleActive(box: Box) {
     if (META[box.box_type]?.fixo) return;
@@ -208,37 +210,46 @@ export function BoxesManager({
   }
 
   async function createCustom() {
-    if (!draft.label?.trim()) return;
+    const nome = draftLabel.trim();
+    if (!nome) {
+      setCreateError("Dê um nome pro botão antes de criar.");
+      return;
+    }
+    setCreateError(null);
+    const config = { ...draft, label: nome };
     const { data, error } = await supabase
       .from("smart_boxes")
-      .insert({ business_id: businessId, box_type: "custom", title: draft.label.trim(), position: boxes.length, is_active: true, config: draft })
+      .insert({ business_id: businessId, box_type: "custom", title: nome, position: boxes.length, is_active: true, config })
       .select()
       .single();
     if (!error && data) {
       setBoxes((p) => [...p, data as Box]);
       setCreating(false);
       setDraft({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
+      setDraftLabel("");
+    } else {
+      setCreateError("Não foi possível criar. Tente de novo.");
     }
   }
 
   // Atalho: já abre o criador com um box de avaliação do Google pré-montado
   // (nome, ícone de estrela e ação "avaliar") — é só a pessoa colar o link.
   function novoBoxAvaliacao() {
-    setDraft({ label: "Avalie no Google", subtitle: "Deixe sua nota, leva 10 segundos", icon: "__google__", action: "avaliar", url: "", color: "transparent" });
+    setDraftLabel("Avalie no Google"); setDraft({ label: "Avalie no Google", subtitle: "Deixe sua nota, leva 10 segundos", icon: "__google__", action: "avaliar", url: "", color: "transparent" });
     setCreating(true);
   }
 
   // Atalho: box de endereço pré-montado — a pessoa só cola o endereço e o
   // box já sai pronto com os botões de Waze e Google Maps.
   function novoBoxEndereco() {
-    setDraft({ label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", action: "endereco", url: initialAddress ?? "", color: "transparent" });
+    setDraftLabel("Como chegar"); setDraft({ label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", action: "endereco", url: initialAddress ?? "", color: "transparent" });
     setCreating(true);
   }
 
   // Atalho: box de cupom — abre o gerenciador de vouchers (criação e resgate
   // ficam numa página própria, não dá pra configurar direto por aqui).
   function novoBoxCupom() {
-    setDraft({ label: "Cupons", subtitle: "Descontos por tempo limitado", icon: "🎟️", action: "cupom", url: "", color: "transparent" });
+    setDraftLabel("Cupons"); setDraft({ label: "Cupons", subtitle: "Descontos por tempo limitado", icon: "🎟️", action: "cupom", url: "", color: "transparent" });
     setCreating(true);
   }
 
@@ -626,16 +637,23 @@ export function BoxesManager({
       {creating ? (
         <div className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4">
           <p className="text-[13px] font-medium">Nova Box personalizada</p>
+          <p className="mt-0.5 text-[12px] text-text-tertiary">Ou use uma pronta:</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <button onClick={novoBoxAvaliacao} className="rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium">⭐ Avaliação Google</button>
+            <button onClick={novoBoxEndereco} className="rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium">📍 Endereço</button>
+            {hasVouchers && <button onClick={novoBoxCupom} className="rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium">🎟️ Cupons</button>}
+          </div>
           <input
-            value={draft.label ?? ""}
-            onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
+            value={draftLabel}
+            onChange={(e) => { setDraftLabel(e.target.value); setCreateError(null); }}
             placeholder="Nome do botão (ex: Fale no WhatsApp)"
-            className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+            className="mt-3 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
           <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} logoGallery={logoGallery} onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))} businessId={businessId} />
+          {createError && <p className="mt-2 text-[12px] text-red-600">{createError}</p>}
           <div className="mt-3 flex gap-2">
             <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
-            <button onClick={() => setCreating(false)} className="rounded-full bg-surface-soft px-4 py-2 text-[13px]">Cancelar</button>
+            <button onClick={() => { setCreating(false); setCreateError(null); }} className="rounded-full bg-surface-soft px-4 py-2 text-[13px]">Cancelar</button>
           </div>
         </div>
       ) : (
