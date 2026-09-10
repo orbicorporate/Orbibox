@@ -101,6 +101,10 @@ export function VisitorExperience({
   const searchParams = useSearchParams();
   const [intent, setIntent] = useState<Intent | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  // Pergunta digitada na tela cheia da CuradoriaOrbi — passa pro campo do
+  // chat real já preenchida, pronta pra mandar, em vez de perder o que a
+  // pessoa escreveu.
+  const [orbiPrefill, setOrbiPrefill] = useState<string | undefined>(undefined);
   // Box de endereço expande direto na Home (sem navegar pra outra tela) —
   // guarda qual box está expandido agora (ou null se nenhum).
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
@@ -216,8 +220,9 @@ export function VisitorExperience({
     })
     .filter((o): o is Option => o !== null);
 
-  async function chooseIntent(value: Intent) {
+  async function chooseIntent(value: Intent, prefill?: string) {
     if (value === "duvida" && !hasAiChat) return;
+    setOrbiPrefill(prefill);
     setIntent(value);
     if (sessionId) {
       await supabase.from("visitor_sessions").update({ intent: value }).eq("id", sessionId);
@@ -345,7 +350,7 @@ export function VisitorExperience({
 
             {hasAiChat && content.length >= 3 && (
               <div className="mt-6 w-full">
-                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} />
+                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} agentName={agentName} onAskOrbi={hasAiChat ? (q) => chooseIntent("duvida", q) : undefined} />
               </div>
             )}
           </div>
@@ -364,7 +369,7 @@ export function VisitorExperience({
 
             {hasAiChat && content.length >= 3 && (
               <div className="mt-5">
-                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} compact />
+                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} agentName={agentName} onAskOrbi={hasAiChat ? (q) => chooseIntent("duvida", q) : undefined} compact />
               </div>
             )}
 
@@ -387,7 +392,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} onBack={() => setIntent(null)} />
+          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} initialInput={orbiPrefill} onBack={() => setIntent(null)} />
         )}
 
         {intent === "cupom" && (
@@ -818,6 +823,7 @@ function OrbiChat({
   whatsapp,
   address,
   suggestedQuestions,
+  initialInput,
   onBack,
 }: {
   businessId: string;
@@ -830,12 +836,13 @@ function OrbiChat({
   whatsapp: string | null;
   address: string | null;
   suggestedQuestions: string[];
+  initialInput?: string;
   onBack: () => void;
 }) {
   const supabase = createClient();
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialInput ?? "");
   const [sending, setSending] = useState(false);
   const [justDone, setJustDone] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
