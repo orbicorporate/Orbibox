@@ -48,10 +48,10 @@ export function OrbiFloatingButton({ onOpen, orbiColors, agentName }: { onOpen: 
       <button
         onClick={abrir}
         aria-label={`Conversar com a ${agentName}`}
-        className="pointer-events-auto flex h-14 w-14 items-center justify-center overflow-hidden rounded-full shadow-[0_6px_24px_rgba(0,0,0,0.28)] ring-1 ring-white/10 transition-transform active:scale-95"
-        style={{ backgroundColor: "#141518" }}
+        className="pointer-events-auto flex h-16 w-16 items-center justify-center transition-transform active:scale-95"
+        style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.25))" }}
       >
-        <OrbiParticleSphere size={56} colors={orbiColors ?? undefined} bg="#141518" className="rounded-full" />
+        <OrbiParticleSphere size={64} colors={orbiColors ?? undefined} vivid className="rounded-full" />
       </button>
     </div>,
     document.body

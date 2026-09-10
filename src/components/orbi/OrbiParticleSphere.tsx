@@ -42,11 +42,13 @@ export function OrbiParticleSphere({
   holdCheck = false,
   colors,
   className = "",
+  vivid = false,
 }: {
   size?: number;
   bg?: string;
   variant?: "sphere" | "check" | "whatsapp";
   holdCheck?: boolean;
+  vivid?: boolean;
   /** Cores escolhidas pela pessoa em Configurações da Orbi: [primária,
    * secundária, detalhe?]. A esfera interpola entre a primária e a
    * secundária; a cor de detalhe (opcional) aparece em ~10% das partículas,
@@ -290,13 +292,22 @@ export function OrbiParticleSphere({
           g += (morphColor[1] - g) * kMorph;
           b0 += (morphColor[2] - b0) * kMorph;
         }
-        const b = 0.65 + depth * 0.35;
+        const b = vivid ? 0.8 + depth * 0.4 : 0.65 + depth * 0.35;
         const alpha = (0.95 + depth * 0.05) * (isMicro[i] ? microAlpha : 1);
         ctx.beginPath();
-        ctx.fillStyle = `rgba(${(r * b) | 0},${(g * b) | 0},${(b0 * b) | 0},${alpha})`;
+        // No modo vivid, os pontos da frente (depth alto) ganham um brilho
+        // (glow) que os deixa mais "de luz".
+        if (vivid && depth > 0.6) {
+          ctx.shadowBlur = 4 * depth;
+          ctx.shadowColor = `rgba(${Math.min(255, (r * b) | 0)},${Math.min(255, (g * b) | 0)},${Math.min(255, (b0 * b) | 0)},0.9)`;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+        ctx.fillStyle = `rgba(${Math.min(255, (r * b) | 0)},${Math.min(255, (g * b) | 0)},${Math.min(255, (b0 * b) | 0)},${alpha})`;
         ctx.arc(px, py, rad, 0, 6.283185307179586);
         ctx.fill();
       }
+      ctx.shadowBlur = 0;
 
       raf = requestAnimationFrame(frame);
     }
@@ -313,7 +324,7 @@ export function OrbiParticleSphere({
       running = false;
       cancelAnimationFrame(raf);
     };
-  }, [size, bg, variant, holdCheck, colorA, colorB, colorC]);
+  }, [size, bg, variant, holdCheck, colorA, colorB, colorC, vivid]);
 
   return (
     <canvas
