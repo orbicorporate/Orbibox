@@ -43,8 +43,19 @@ export async function POST(req: NextRequest) {
 
     const contexto = `Negócio: ${biz?.name ?? ""}. ${biz?.about_business ? "Sobre: " + biz.about_business + ". " : ""}${biz?.differentials ? "Diferenciais: " + biz.differentials + ". " : ""}\n\nCatálogo:\n${catalog}`;
 
-    // MODO 1: gerar as perguntas-chave estratégicas a partir do catálogo real.
+    // MODO 1: perguntas-chave. Se o dono definiu uma customizada, usa ela.
     if (mode === "questions") {
+      const { data: cfg } = await supabase
+        .from("agent_configs")
+        .select("curation_question, curation_options")
+        .eq("business_id", businessId)
+        .maybeSingle();
+      const custom = cfg?.curation_question?.trim();
+      const customOpts = Array.isArray(cfg?.curation_options) ? (cfg.curation_options as string[]).filter(Boolean) : [];
+      if (custom && customOpts.length >= 2) {
+        return NextResponse.json({ pergunta: custom, opcoes: customOpts.slice(0, 4) });
+      }
+
       const system = `Você é a inteligência de curadoria de uma vitrine. Olhando o catálogo de um negócio específico, crie UMA pergunta curta e envolvente pra fazer ao visitante (como "O que bateu vontade hoje?" numa sorveteria, ou "Qual seu momento?" numa loja), e de 3 a 4 respostas possíveis, curtas (1-3 palavras cada), que dividam o catálogo de formas úteis e reais pra ESSE negócio. As respostas devem refletir o que o catálogo realmente oferece — nada genérico. Português do Brasil, tom leve.
 
 Responda APENAS um JSON válido, sem texto antes ou depois, no formato:

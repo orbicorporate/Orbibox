@@ -5,8 +5,8 @@ export type Database = {
   public: {
     Tables: {
       agent_configs: {
-        Row: { agent_name: string; business_id: string; created_at: string; id: string; objectives: string[]; orbi_colors: Json; sample_responses: Json; tone_concise_detailed: number; tone_formal_informal: number; tone_reserved_energetic: number; suggested_questions: Json; updated_at: string }
-        Insert: { agent_name?: string; business_id: string; created_at?: string; id?: string; objectives?: string[]; orbi_colors?: Json; sample_responses?: Json; tone_concise_detailed?: number; tone_formal_informal?: number; tone_reserved_energetic?: number; suggested_questions?: Json; updated_at?: string }
+        Row: { agent_name: string; business_id: string; created_at: string; id: string; objectives: string[]; orbi_colors: Json; sample_responses: Json; tone_concise_detailed: number; tone_formal_informal: number; tone_reserved_energetic: number; suggested_questions: Json; curation_question: string | null; curation_options: Json; updated_at: string }
+        Insert: { agent_name?: string; business_id: string; created_at?: string; id?: string; objectives?: string[]; orbi_colors?: Json; sample_responses?: Json; tone_concise_detailed?: number; tone_formal_informal?: number; tone_reserved_energetic?: number; suggested_questions?: Json; curation_question?: string | null; curation_options?: Json; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["agent_configs"]["Insert"]>
         Relationships: []
       }

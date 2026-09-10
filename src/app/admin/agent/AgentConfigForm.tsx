@@ -7,7 +7,7 @@ import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 
-type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; };
+type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; curation_question: string | null; curation_options: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
 
 const SLIDERS = [
@@ -74,6 +74,8 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
       tone_concise_detailed: state.tone_concise_detailed,
       objectives: state.objectives,
       suggested_questions: state.suggested_questions.map((q) => q.trim()).filter(Boolean),
+      curation_question: state.curation_question?.trim() || null,
+      curation_options: (state.curation_options ?? []).map((o) => o.trim()).filter(Boolean),
     }).eq("id", state.id);
     setSaving(false);
     if (!error) setSaved(true);
@@ -222,6 +224,40 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
                 });
               }}
               placeholder={`Sugestão ${i + 1} (ex: ${["Quais os valores?", "Como funciona?", "Vocês entregam?", "Quero falar com alguém"][i]})`}
+              className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Pergunta da curadoria (Orbi recomenda) */}
+      <div className="rounded-[28px] border border-divider bg-surface-white p-5">
+        <p className="text-[14px] font-medium">✦ Pergunta da curadoria</p>
+        <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+          Na sua página, a {state.agent_name} pergunta algo e recomenda produtos que combinam com a resposta. Deixe em
+          branco pra ela criar a pergunta sozinha (analisando seu catálogo), ou defina a sua.
+        </p>
+        <input
+          value={state.curation_question ?? ""}
+          onChange={(e) => { setSaved(false); setState((s) => ({ ...s, curation_question: e.target.value })); }}
+          placeholder="Ex: O que você procura hoje?"
+          className="mt-3 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+        />
+        <p className="mt-3 text-[12px] font-medium text-text-tertiary">Respostas (2 a 4)</p>
+        <div className="mt-1.5 flex flex-col gap-2">
+          {[0, 1, 2, 3].map((i) => (
+            <input
+              key={i}
+              value={state.curation_options?.[i] ?? ""}
+              onChange={(e) => {
+                setSaved(false);
+                setState((s) => {
+                  const next = [...(s.curation_options ?? [])];
+                  next[i] = e.target.value;
+                  return { ...s, curation_options: next };
+                });
+              }}
+              placeholder={`Resposta ${i + 1}${i < 2 ? "" : " (opcional)"}`}
               className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
             />
           ))}

@@ -26,6 +26,7 @@ export function CuradoriaOrbi({
   const [frase, setFrase] = useState<string | null>(null);
   const [curados, setCurados] = useState<Product[]>([]);
   const [curating, setCurating] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     let cancel = false;
@@ -73,7 +74,20 @@ export function CuradoriaOrbi({
       <div className="flex items-center gap-2.5">
         <OrbiParticleSphere size={32} colors={orbiColors ?? undefined} vivid className="rounded-full" />
         <span className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Orbi recomenda</span>
+        <button
+          onClick={() => setShowHelp((v) => !v)}
+          aria-label="Como funciona"
+          className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-soft text-[11px] font-bold text-text-secondary"
+        >
+          ?
+        </button>
       </div>
+      {showHelp && (
+        <p className="mt-2 rounded-2xl bg-surface-soft p-3 text-[13px] leading-relaxed text-text-secondary">
+          A Orbi é a inteligência artificial daqui. Ela entende o que você procura e separa, do catálogo, as opções que
+          mais combinam com você — como um atendente que já te conhece.
+        </p>
+      )}
 
       {loadingQ ? (
         <p className="mt-3 text-[15px] text-text-tertiary">Pensando na melhor pergunta pra você…</p>
