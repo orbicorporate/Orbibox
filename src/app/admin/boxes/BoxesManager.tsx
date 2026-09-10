@@ -17,7 +17,7 @@ import { addToLogoGallery } from "@/lib/logoGallery";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 
 type BrandColor = { hex: string; role?: string };
-type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom"; url?: string; logo_url?: string };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown; starts_at: string | null; ends_at: string | null };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
@@ -856,6 +856,26 @@ function BoxEditor({
 
   return (
     <div className="mt-3 flex flex-col gap-2.5">
+      <p className="text-[13px] font-medium text-text-secondary">Formato na tela inicial</p>
+      <div className="flex flex-wrap gap-2">
+        {([
+          { v: "auto", t: "Automático" },
+          { v: "medio", t: "Metade (lado a lado)" },
+          { v: "largo", t: "Linha toda" },
+        ] as const).map(({ v, t }) => (
+          <button
+            key={v}
+            onClick={() => { update({ layout: v }); if (!liveOnly) onSave({ ...cfg, layout: v }); }}
+            className={`rounded-full px-3.5 py-2 text-[13px] font-medium ${(cfg.layout ?? "auto") === v ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+      <p className="text-[12px] leading-relaxed text-text-tertiary">
+        No automático, a Orbi decide o melhor formato pra não deixar espaço vazio na tela. Em &quot;Metade&quot;, se não houver outro box pra formar par ao lado, ele vira linha toda de qualquer forma — pra nunca sobrar espaço.
+      </p>
+
       {isCustom && (
         <input
           value={cfg.subtitle ?? ""}

@@ -66,7 +66,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom"; url?: string; logo_url?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -166,7 +166,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; address?: string; onClick: () => void };
+  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; address?: string; layoutOverride?: "largo" | "medio"; onClick: () => void };
   const options: Option[] = boxes
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -211,12 +211,12 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, stars: cfg.action === "avaliar", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, onClick };
+        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, stars: cfg.action === "avaliar", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou — igual ao editor.
       const fallbackLabel = b.box_type === "content" ? `Sobre a ${business.name}` : base.t;
-      return { key: b.id, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: base.d, color: cfg.color, ai: base.ai, onClick: () => chooseIntent(base.k) };
+      return { key: b.id, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: base.d, color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
 
@@ -293,18 +293,19 @@ export function VisitorExperience({
                 // card horizontal e compacto) ou "medio" (metade, card
                 // vertical). Só forma par de médios quando o próximo item
                 // também pode ser médio — nunca deixa um médio sozinho na
-                // linha (isso é que deixava espaço vazio do lado). Endereço
-                // e itens com estrela são sempre largos.
+                // linha (isso é que deixava espaço vazio do lado). Endereço,
+                // itens com estrela, e boxes com formato "Largo" escolhido
+                // manualmente no admin são sempre largos.
                 const withLayout: { o: (typeof options)[number]; largo: boolean }[] = [];
                 for (let i = 0; i < options.length; i++) {
                   const o = options[i];
-                  const forcaLargo = !!o.address || !!o.stars;
+                  const forcaLargo = !!o.address || !!o.stars || o.layoutOverride === "largo";
                   if (forcaLargo) {
                     withLayout.push({ o, largo: true });
                     continue;
                   }
                   const proximo = options[i + 1];
-                  const proximoForcaLargo = proximo ? (!!proximo.address || !!proximo.stars) : true;
+                  const proximoForcaLargo = proximo ? (!!proximo.address || !!proximo.stars || proximo.layoutOverride === "largo") : true;
                   if (proximo && !proximoForcaLargo) {
                     withLayout.push({ o, largo: false }, { o: proximo, largo: false });
                     i++;
