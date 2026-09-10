@@ -84,7 +84,7 @@ export function PulseAudience({
         rows={origens}
         total={totalSessoes}
         emojiMap={EMOJI_ORIGEM}
-        footer={origens.some((o) => o.nome === "Link direto") ? "“Link direto” são as pessoas que abriram seu link sem passar por uma rede social — digitando o endereço, por um link salvo, pelo WhatsApp, ou por um QR code. Pra medir uma campanha específica, coloque ?utm_source=instagram (ou o nome que quiser) no fim do link do anúncio." : undefined}
+        footer={origens.some((o) => o.nome === "Link direto") ? "“Link direto” é quando a pessoa chega sem ter clicado num link de rede social — por exemplo, digitando seu endereço, por um link salvo, pelo seu QR code, ou por um link que você mandou no WhatsApp. É normal ser a maioria no começo." : undefined}
       />
       <BarList
         title="Em qual aparelho"
