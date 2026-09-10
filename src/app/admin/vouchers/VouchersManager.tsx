@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
 import type { Database } from "@/lib/supabase/types";
@@ -11,12 +12,13 @@ function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
   return v.discount_type === "percent" ? `${v.discount_value}% off` : `R$ ${v.discount_value} off`;
 }
 
-export function VouchersManager({ businessId, initialVouchers }: { businessId: string; initialVouchers: Voucher[] }) {
+export function VouchersManager({ businessId, initialVouchers, canSave = true }: { businessId: string; initialVouchers: Voucher[]; canSave?: boolean }) {
   const supabase = createClient();
   const { confirm, DialogRenderer } = useDialogs();
   const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   // Form de criação
   const [title, setTitle] = useState("");
@@ -60,6 +62,11 @@ export function VouchersManager({ businessId, initialVouchers }: { businessId: s
   async function createVoucher(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !discountValue || !quantityTotal || saving) return;
+    // Titânio montou o cupom pra ver como é — na hora de salvar, pede o upgrade.
+    if (!canSave) {
+      setShowUpgrade(true);
+      return;
+    }
     setSaving(true);
     try {
       const { data, error } = await supabase
@@ -103,6 +110,23 @@ export function VouchersManager({ businessId, initialVouchers }: { businessId: s
   return (
     <div className="mt-5 flex flex-col gap-6">
       <DialogRenderer />
+      {showUpgrade && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6" onClick={() => setShowUpgrade(false)}>
+          <div className="w-full max-w-[340px] rounded-[24px] bg-surface-white p-6 text-center" onClick={(e) => e.stopPropagation()}>
+            <p className="text-[16px] font-semibold">Cupons são do plano Nióbio 💎</p>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
+              Você montou seu cupom — pra ele valer de verdade na sua página, com código único e controle de estoque,
+              é só ativar o Nióbio. Seu cupom fica salvo assim que assinar.
+            </p>
+            <Link href="/admin/planos" className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-button-primary py-3 text-[14px] font-medium text-white">
+              Assinar Nióbio
+            </Link>
+            <button onClick={() => setShowUpgrade(false)} className="mt-2 w-full rounded-full py-2 text-[13px] text-text-secondary">
+              Voltar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Resgate rápido — pensado pra ser usado na frente do cliente, no balcão */}
       <div className="rounded-[24px] border border-divider bg-surface-white p-5">

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { AgentConfigForm } from "./AgentConfigForm";
+import { OrbiTrial } from "./OrbiTrial";
 
 export default async function AgentPage() {
   const supabase = await createClient();
@@ -11,20 +12,29 @@ export default async function AgentPage() {
   const access = businessId ? await getAccessInfoForBusiness(businessId) : null;
 
   if (!access?.hasAiChat) {
+    // Titânio: em vez de bloquear, deixa experimentar a Orbi (2 grátis) pra
+    // sentir o valor, com o convite pra assinar.
+    const { data: cfg } = businessId
+      ? await supabase.from("agent_configs").select("agent_name, orbi_colors").eq("business_id", businessId).maybeSingle()
+      : { data: null };
+    const trialColors = Array.isArray(cfg?.orbi_colors) && cfg.orbi_colors.length >= 2 ? (cfg.orbi_colors as string[]) : null;
+
     return (
       <div className="flex flex-col">
         <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Personalidade da Marca (AgentBox)</h1>
         <div className="mt-6 rounded-2xl border border-divider bg-surface-white p-6">
-          <p className="text-[15px] font-medium">Isso é exclusivo do plano Nióbio 💎</p>
-          <p className="mt-1 text-[14px] text-text-secondary">
-            No plano Nióbio a Orbi conversa de verdade com seus visitantes: tira dúvidas, captura contato e tem um
-            agente treinado especialmente pro seu negócio.
+          <p className="text-[15px] font-medium">✦ A Orbi é uma IA que conversa com seus clientes</p>
+          <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
+            Ela atende 24h na sua página, tira dúvidas, recomenda produtos e captura contatos automaticamente — como
+            uma vendedora que nunca dorme. É o recurso mais avançado do Orbibox, exclusivo do plano Nióbio.
           </p>
+          <p className="mt-3 text-[13px] font-medium text-text-secondary">Experimente agora, de graça:</p>
+          {businessId && <OrbiTrial businessId={businessId} agentName={cfg?.agent_name ?? "Orbi"} orbiColors={trialColors} />}
           <Link
             href="/admin/planos"
-            className="mt-4 inline-flex items-center justify-center rounded-full bg-button-primary px-5 py-2.5 text-[14px] font-medium text-white"
+            className="mt-3 inline-flex items-center justify-center text-[13px] font-medium underline"
           >
-            Ver planos
+            Ver planos e ativar de vez
           </Link>
         </div>
       </div>
