@@ -51,11 +51,6 @@ export function OrbiFloatingButton({ onOpen, orbiColors, agentName }: { onOpen: 
         className="pointer-events-auto relative flex h-16 w-16 items-center justify-center transition-transform active:scale-95"
         style={{ filter: "drop-shadow(0 4px 14px rgba(0,0,0,0.3))" }}
       >
-        {/* Halo branco leve e contido atrás, só pra destacar do fundo */}
-        {/* Miolo bem preto e concentrado no centro, esmaecendo pras bordas —
-            dá profundidade e faz as partículas saltarem no meio. */}
-        <span className="absolute inset-[6px] rounded-full bg-[radial-gradient(circle,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.35)_12%,rgba(0,0,0,0.12)_28%,transparent_45%)]" />
-        <OrbiParticleSphere size={64} colors={orbiColors ?? undefined} vivid className="relative rounded-full" />
         <OrbiParticleSphere size={64} colors={orbiColors ?? undefined} vivid className="relative rounded-full" />
       </button>
     </div>,
