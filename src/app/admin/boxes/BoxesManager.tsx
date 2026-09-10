@@ -13,6 +13,8 @@ import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon, isVideoUrl } from "@/lib/showcase";
 import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
+import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
+import { HelperText } from "@/components/ui/HelperText";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery } from "@/lib/logoGallery";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
@@ -483,7 +485,7 @@ export function BoxesManager({
                       title={label || suggestedName}
                       ai={m.assinatura}
                       stars={cfg?.action === "avaliar"}
-                      description={cfg?.subtitle || m.explica}
+                      description={cfg?.subtitle || (isCustom ? "" : (BOX_DEFAULT_DESCRIPTION[box.box_type] || ""))}
                       className={(!cfg?.layout || cfg.layout === "auto") ? "max-w-[190px]" : cfg.layout === "medio" ? "max-w-[190px]" : ""}
                     />
                     {(!cfg?.layout || cfg.layout === "auto") && (
@@ -514,34 +516,33 @@ export function BoxesManager({
               )}
 
               {editing && !isHero && !m.fixo && (
-                <div className="mt-4 border-t border-divider pt-4">
-                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Agendar (opcional)</p>
-                  <p className="mt-1 text-[12px] text-text-secondary">
-                    Ativa e desativa sozinho nas datas escolhidas — bom pra promoção por tempo limitado, sem precisar
-                    lembrar de desligar.
-                  </p>
-                  <div className="mt-2 flex gap-2">
+                <div className="mt-5 rounded-2xl bg-surface-soft p-4">
+                  <p className="text-[13px] font-medium text-text-secondary">Agendar (opcional)</p>
+                  <HelperText>
+                    Ativa e desativa sozinho nas datas escolhidas — bom pra promoção por tempo limitado, sem precisar lembrar de desligar.
+                  </HelperText>
+                  <div className="mt-3 flex gap-2">
                     <div className="flex-1">
-                      <p className="text-[11px] text-text-tertiary">Começa em</p>
+                      <p className="text-[12px] text-text-tertiary">Começa em</p>
                       <input
                         type="datetime-local"
                         defaultValue={isoToDatetimeLocal(box.starts_at)}
                         onBlur={(e) => saveSchedule(box, datetimeLocalToIso(e.target.value), box.ends_at)}
-                        className="mt-1 w-full rounded-xl border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                        className="mt-1 w-full rounded-xl border border-divider bg-surface-white px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[11px] text-text-tertiary">Termina em</p>
+                      <p className="text-[12px] text-text-tertiary">Termina em</p>
                       <input
                         type="datetime-local"
                         defaultValue={isoToDatetimeLocal(box.ends_at)}
                         onBlur={(e) => saveSchedule(box, box.starts_at, datetimeLocalToIso(e.target.value))}
-                        className="mt-1 w-full rounded-xl border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                        className="mt-1 w-full rounded-xl border border-divider bg-surface-white px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
                       />
                     </div>
                   </div>
                   {(box.starts_at || box.ends_at) && (
-                    <button onClick={() => saveSchedule(box, null, null)} className="mt-2 text-[11px] text-red-600">
+                    <button onClick={() => saveSchedule(box, null, null)} className="mt-3 text-[12px] font-medium text-red-600">
                       Remover agendamento
                     </button>
                   )}
@@ -853,6 +854,20 @@ function BoxEditor({
 
   return (
     <div className="mt-3 flex flex-col gap-2.5">
+      <div>
+        <p className="text-[13px] font-medium text-text-secondary">Texto de apoio</p>
+        <p className="mt-0.5 text-[12px] leading-relaxed text-text-tertiary">
+          {isCustom ? "Aparece embaixo do título, no card." : "Aparece embaixo do título, no card. Deixe em branco pra usar o texto padrão."}
+        </p>
+        <input
+          value={cfg.subtitle ?? ""}
+          onChange={(e) => update({ subtitle: e.target.value })}
+          onBlur={() => !liveOnly && onSave(cfg)}
+          placeholder="Texto curto — cabe até 2 linhas no card"
+          className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+        />
+      </div>
+
       <p className="text-[13px] font-medium text-text-secondary">Formato na tela inicial</p>
       <div className="flex flex-wrap gap-2">
         {([
@@ -872,16 +887,6 @@ function BoxEditor({
       <p className="text-[12px] leading-relaxed text-text-tertiary">
         No automático, a Orbi decide o melhor formato pra não deixar espaço vazio na tela. Em &quot;Metade&quot;, se não houver outro box pra formar par ao lado, ele vira linha toda de qualquer forma — pra nunca sobrar espaço.
       </p>
-
-      {isCustom && (
-        <input
-          value={cfg.subtitle ?? ""}
-          onChange={(e) => update({ subtitle: e.target.value })}
-          onBlur={() => !liveOnly && onSave(cfg)}
-          placeholder="Subtítulo curto (opcional)"
-          className="rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-        />
-      )}
 
       {isCustom && (
         <>

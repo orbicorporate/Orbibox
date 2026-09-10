@@ -100,7 +100,7 @@ export function HomeOptionCardContent({
         <span className="min-w-0 flex-1">
           <span className="block text-[17px] font-semibold">{renderedTitle}</span>
           {stars && <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
-          <span className="mt-0.5 block text-[13px] text-text-tertiary">{description}</span>
+          <span className="mt-0.5 line-clamp-2 block text-[13px] text-text-tertiary">{description}</span>
         </span>
         <span className="shrink-0 text-text-tertiary">{addressIndicator ?? "→"}</span>
       </>
@@ -113,7 +113,7 @@ export function HomeOptionCardContent({
       <span>
         <span className="flex min-h-[48px] items-end text-[19px] font-semibold leading-tight">{renderedTitle}</span>
         {stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
-        <span className="mt-1 block text-[13px] leading-snug text-text-tertiary">{description}</span>
+        <span className="mt-1 line-clamp-2 block text-[13px] leading-snug text-text-tertiary">{description}</span>
       </span>
     </>
   );

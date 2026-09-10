@@ -13,6 +13,7 @@ import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
 import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, youtubeId, instagramReelId } from "@/lib/showcase";
+import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
@@ -69,10 +70,10 @@ type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: 
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
-  product: { k: "comprar", icon: "▤", t: "O que fazemos", d: "Explore nosso catálogo completo." },
-  content: { k: "conhecer", icon: "◫", t: "Conhecer", d: "Descubra nosso espaço e história." },
-  campaign: { k: "presentear", icon: "◈", t: "Presentear", d: "Opções especiais e curadoria." },
-  agent: { k: "duvida", icon: "__orb__", t: "Pergunte o que quiser", d: "Fale com a Orbi, nossa IA.", ai: true },
+  product: { k: "comprar", icon: "▤", t: "O que fazemos", d: BOX_DEFAULT_DESCRIPTION.product },
+  content: { k: "conhecer", icon: "◫", t: "Conhecer", d: BOX_DEFAULT_DESCRIPTION.content },
+  campaign: { k: "presentear", icon: "◈", t: "Presentear", d: BOX_DEFAULT_DESCRIPTION.campaign },
+  agent: { k: "duvida", icon: "__orb__", t: "Pergunte o que quiser", d: BOX_DEFAULT_DESCRIPTION.agent, ai: true },
 };
 
 export function VisitorExperience({
@@ -221,7 +222,7 @@ export function VisitorExperience({
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou — igual ao editor.
       const fallbackLabel = b.box_type === "content" ? `Sobre a ${business.name}` : base.t;
-      return { key: b.id, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: base.d, color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick: () => chooseIntent(base.k) };
+      return { key: b.id, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || base.d, color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
 
