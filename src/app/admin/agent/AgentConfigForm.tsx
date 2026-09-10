@@ -87,9 +87,9 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
     : `Boa tarde. Com base no seu interesse, recomendo conhecer nossa nova coleção — ideal para a estação.`;
 
   return (
-    <div className="mt-6 flex flex-col gap-6 pb-6">
+    <div className="mt-6 flex flex-col gap-7 pb-8">
       {/* Perfil da agente */}
-      <div className="flex items-center gap-4 rounded-[28px] border border-divider bg-surface-white p-5">
+      <div className="flex items-center gap-4 rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
         <OrbiOrb size={64} />
         <div className="flex-1">
           <input
@@ -115,8 +115,8 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
 
       {/* Ajuste de comportamento */}
       <div>
-        <p className="text-[14px] font-medium">Ajuste de Comportamento</p>
-        <div className="mt-3 flex flex-col gap-5 rounded-[28px] border border-divider bg-surface-white p-5">
+        <p className="px-1 text-[15px] font-semibold">Ajuste de Comportamento</p>
+        <div className="mt-4 flex flex-col gap-5 rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
           {SLIDERS.map((s) => (
             <div key={s.key}>
               <div className="flex justify-between text-[11px] uppercase tracking-wide text-text-tertiary">
@@ -130,8 +130,8 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
 
       {/* Preview de interação */}
       <div>
-        <p className="text-[14px] font-medium">Preview de Interação</p>
-        <div className="mt-3 flex flex-col gap-3 rounded-[28px] border border-divider bg-surface-white p-5">
+        <p className="px-1 text-[15px] font-semibold">Preview de Interação</p>
+        <div className="mt-4 flex flex-col gap-3 rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
           <div className="self-end rounded-2xl bg-surface-soft px-4 py-2 text-[13px]">Oi, procuro algo pro verão.</div>
           <div className="max-w-[85%] rounded-2xl bg-on-background px-4 py-3 text-[13px] leading-relaxed text-white">{preview}</div>
         </div>
@@ -205,7 +205,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
       )}
 
       {/* Perguntas sugeridas no chat */}
-      <div className="rounded-[28px] border border-divider bg-surface-white p-5">
+      <div className="rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
         <p className="text-[14px] font-medium">Perguntas sugeridas no chat</p>
         <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
           Os 4 botões que aparecem no início da conversa. Deixe em branco pra a {state.agent_name} sugerir sozinha, com base no seu catálogo.
@@ -231,7 +231,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
       </div>
 
       {/* Pergunta da curadoria (Orbi recomenda) */}
-      <div className="rounded-[28px] border border-divider bg-surface-white p-5">
+      <div className="rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
         <p className="text-[14px] font-medium">✦ Pergunta da curadoria</p>
         <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
           Na sua página, a {state.agent_name} pergunta algo e recomenda produtos que combinam com a resposta. Deixe em
@@ -265,7 +265,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
       </div>
 
       {/* Orbi Insight */}
-      <div className="rounded-[28px] border border-divider bg-surface-white p-5">
+      <div className="rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
         <p className="text-[14px] font-medium"><span className="orbi-gradient-text">✦</span> Orbi Insight</p>
         <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
           {state.agent_name} está pronta para performar com abordagens {casual ? "próximas e inspiradoras" : "precisas e consultivas"} para os visitantes de {businessName}.

@@ -64,8 +64,8 @@ export default async function AgentPage() {
 
   return (
     <div className="flex flex-col">
-      <h1 data-tour="orbi-ai" className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Personalidade da Marca (AgentBox)</h1>
-      <p className="mt-1 text-[14px] text-text-secondary">Defina como a Orbi interage com seus visitantes.</p>
+      <h1 data-tour="orbi-ai" className="mt-2 font-[family-name:var(--font-manrope)] text-[27px] font-semibold leading-tight tracking-[-0.02em]">Personalidade da Marca</h1>
+      <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">Defina como a Orbi interage com seus visitantes.</p>
       {config && (
         <AgentConfigForm
           config={{ ...config, orbi_colors: orbiColors, suggested_questions: Array.isArray(config!.suggested_questions) ? (config!.suggested_questions as string[]) : [], curation_options: Array.isArray(config!.curation_options) ? (config!.curation_options as string[]) : [] }}
