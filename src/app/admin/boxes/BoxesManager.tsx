@@ -253,6 +253,11 @@ export function BoxesManager({
     setCreating(true);
   }
 
+  function novoBoxWhatsapp() {
+    setDraftLabel("Fale no WhatsApp"); setDraft({ label: "Fale no WhatsApp", subtitle: "Atendimento rápido", icon: "__wadisc__", action: "whatsapp", url: "", color: "transparent" });
+    setCreating(true);
+  }
+
   const ordered = [...boxes].sort((a, b) => a.position - b.position);
   const visibleBoxes = ordered.filter((b) => b.box_type !== "hero");
   const ativos = ordered.filter((b) => b.is_active && !META[b.box_type]?.fixo).length;
@@ -636,13 +641,7 @@ export function BoxesManager({
 
       {creating ? (
         <div className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4">
-          <p className="text-[13px] font-medium">Nova Box personalizada</p>
-          <p className="mt-0.5 text-[12px] text-text-tertiary">Ou use uma pronta:</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <button onClick={novoBoxAvaliacao} className="rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium">⭐ Avaliação Google</button>
-            <button onClick={novoBoxEndereco} className="rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium">📍 Endereço</button>
-            {hasVouchers && <button onClick={novoBoxCupom} className="rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium">🎟️ Cupons</button>}
-          </div>
+          <p className="text-[14px] font-medium">Nova Box personalizada</p>
           <input
             value={draftLabel}
             onChange={(e) => { setDraftLabel(e.target.value); setCreateError(null); }}
@@ -659,13 +658,36 @@ export function BoxesManager({
       ) : (
         <div className="flex flex-col gap-2">
           <button
+            onClick={() => setCreating(true)}
+            className="orbi-gradient flex items-center gap-3 rounded-[22px] p-4 text-left text-on-background"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-white/40 text-[20px]">＋</span>
+            <span>
+              <span className="block text-[14px] font-semibold">Criar Box personalizada</span>
+              <span className="block text-[12.5px] opacity-80">Você escolhe o que ela faz, o nome, a cor e o ícone.</span>
+            </span>
+          </button>
+
+          <p className="mt-2 px-1 text-[13px] font-medium text-text-secondary">Ou use uma pronta:</p>
+
+          <button
+            onClick={novoBoxWhatsapp}
+            className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiContactDisc size={40} /></span>
+            <span>
+              <span className="block text-[14px] font-medium">Box de WhatsApp</span>
+              <span className="block text-[12.5px] text-text-tertiary">Abre a conversa direto, com sua mensagem pronta.</span>
+            </span>
+          </button>
+          <button
             onClick={novoBoxAvaliacao}
             className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
           >
             <span className="h-10 w-10 shrink-0 overflow-hidden rounded-full"><OrbiGoogleIcon size={40} /></span>
             <span>
-              <span className="block text-[13px] font-medium">＋ Box de avaliação no Google</span>
-              <span className="block text-[12px] text-text-tertiary">O cliente toca e já dá as estrelas. Ótimo pra reputação.</span>
+              <span className="block text-[14px] font-medium">Box de avaliação no Google</span>
+              <span className="block text-[12.5px] text-text-tertiary">O cliente toca e já dá as estrelas.</span>
             </span>
           </button>
           <button
@@ -674,8 +696,8 @@ export function BoxesManager({
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={28} /></span>
             <span>
-              <span className="block text-[13px] font-medium">＋ Box de endereço</span>
-              <span className="block text-[12px] text-text-tertiary">Cole o endereço e o box já sai pronto com Waze e Google Maps.</span>
+              <span className="block text-[14px] font-medium">Box de endereço</span>
+              <span className="block text-[12.5px] text-text-tertiary">Sai pronto com Waze e Google Maps.</span>
             </span>
           </button>
           {hasVouchers ? (
@@ -685,8 +707,8 @@ export function BoxesManager({
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]">🎟️</span>
               <span>
-                <span className="block text-[13px] font-medium">＋ Box de cupons</span>
-                <span className="block text-[12px] text-text-tertiary">Desconto com estoque limitado e código único por resgate.</span>
+                <span className="block text-[14px] font-medium">Box de cupons</span>
+                <span className="block text-[12.5px] text-text-tertiary">Desconto com código único por resgate.</span>
               </span>
             </button>
           ) : (
@@ -696,21 +718,11 @@ export function BoxesManager({
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]">🎟️</span>
               <span>
-                <span className="block text-[13px] font-medium">＋ Box de cupons 💎 Nióbio</span>
-                <span className="block text-[12px] text-text-tertiary">Exclusivo do plano Nióbio — toque pra ver os planos.</span>
+                <span className="block text-[14px] font-medium">Box de cupons 💎 Nióbio</span>
+                <span className="block text-[12.5px] text-text-tertiary">Exclusivo do plano Nióbio — toque pra ver.</span>
               </span>
             </Link>
           )}
-          <button
-            onClick={() => setCreating(true)}
-            className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]">＋</span>
-            <span>
-              <span className="block text-[13px] font-medium">＋ Box personalizada</span>
-              <span className="block text-[12px] text-text-tertiary">WhatsApp, portfólio, ou qualquer outro link — você escolhe o nome, o ícone e a cor.</span>
-            </span>
-          </button>
         </div>
       )}
     </div>
@@ -785,7 +797,7 @@ function BoxEditor({
         <>
           <p className="text-[13px] font-medium text-text-secondary">Ao tocar, o botão…</p>
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(ACTION_LABEL) as (keyof typeof ACTION_LABEL)[]).map((a) => (
+            {(["vitrine", "zara", "whatsapp", "link"] as (keyof typeof ACTION_LABEL)[]).map((a) => (
               <button
                 key={a}
                 onClick={() => { update({ action: a }); if (!liveOnly) onSave({ ...cfg, action: a }); }}
