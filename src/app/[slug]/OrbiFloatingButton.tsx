@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 
 export function OrbiFloatingButton({ onOpen, orbiColors, agentName }: { onOpen: () => void; orbiColors: string[] | null; agentName: string }) {
   const [showHint, setShowHint] = useState(false);
@@ -53,9 +52,9 @@ export function OrbiFloatingButton({ onOpen, orbiColors, agentName }: { onOpen: 
       <button
         onClick={abrir}
         aria-label={`Conversar com a ${agentName}`}
-        className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-[0_6px_24px_rgba(0,0,0,0.22)] ring-1 ring-black/5 transition-transform active:scale-95"
+        className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#B7F34A] text-[11px] font-bold text-black shadow-[0_6px_24px_rgba(0,0,0,0.35)] ring-2 ring-black/10 transition-transform active:scale-95"
       >
-        <OrbiParticleSphere size={52} colors={orbiColors ?? undefined} className="rounded-full" />
+        Orbi
       </button>
     </div>,
     document.body
