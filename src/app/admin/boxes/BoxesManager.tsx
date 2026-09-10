@@ -758,12 +758,12 @@ export function BoxesManager({
           {hasVouchers ? (
             <button
               onClick={novoBoxCupom}
-              className="orbi-gradient flex items-center gap-3 rounded-[22px] p-[1.5px] text-left"
+              className="flex items-center gap-3 rounded-[22px] bg-gradient-to-r from-[#FF5A4D] to-[#FF3B6E] p-[2px] text-left shadow-[0_4px_20px_rgba(255,59,110,0.25)]"
             >
-              <span className="flex flex-1 items-center gap-3 rounded-[21px] bg-surface-white p-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[20px]">🎟️</span>
+              <span className="flex flex-1 items-center gap-3 rounded-[20px] bg-surface-white p-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF5A4D] to-[#FF3B6E] text-[20px]">🎟️</span>
                 <span>
-                  <span className="block text-[14px] font-semibold">✦ Box de cupons · atrai clientes</span>
+                  <span className="block text-[14px] font-semibold">🎟️ Box de cupons · atrai clientes</span>
                   <span className="block text-[12.5px] text-text-tertiary">Coloca suas ofertas na página. Código único, estoque controlado, captura contato.</span>
                 </span>
               </span>
@@ -771,12 +771,12 @@ export function BoxesManager({
           ) : (
             <Link
               href="/admin/vouchers"
-              className="orbi-gradient flex items-center gap-3 rounded-[22px] p-[1.5px] text-left"
+              className="flex items-center gap-3 rounded-[22px] bg-gradient-to-r from-[#FF5A4D] to-[#FF3B6E] p-[2px] text-left shadow-[0_4px_20px_rgba(255,59,110,0.25)]"
             >
-              <span className="flex flex-1 items-center gap-3 rounded-[21px] bg-surface-white p-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[20px]">🎟️</span>
+              <span className="flex flex-1 items-center gap-3 rounded-[20px] bg-surface-white p-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF5A4D] to-[#FF3B6E] text-[20px]">🎟️</span>
                 <span>
-                  <span className="block text-[14px] font-semibold">✦ Box de cupons · atrai clientes <span className="orbi-gradient-text">novidade</span></span>
+                  <span className="block text-[14px] font-semibold">🎟️ Box de cupons <span className="rounded-full bg-gradient-to-r from-[#FF5A4D] to-[#FF3B6E] bg-clip-text text-transparent">novidade</span></span>
                   <span className="block text-[12.5px] text-text-tertiary">Ofertas com código único que trazem gente nova. Toque pra ver como funciona.</span>
                 </span>
               </span>

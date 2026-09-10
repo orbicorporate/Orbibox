@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     const { data: biz } = await supabase
       .from("businesses")
-      .select("orbi_trial_count, owner_id")
+      .select("orbi_trial_count, orbi_trial_last_at, owner_id")
       .eq("id", businessId)
       .maybeSingle();
 
@@ -33,14 +33,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Sem permissão." }, { status: 403 });
     }
 
-    const used = biz.orbi_trial_count ?? 0;
+    // Se o dono voltou depois de um tempo (mais de 6h desde o último teste),
+    // ganha uma nova rodada de testes grátis — incentiva ele a voltar e
+    // experimentar de novo antes de decidir assinar.
+    let used = biz.orbi_trial_count ?? 0;
+    const lastAt = biz.orbi_trial_last_at ? new Date(biz.orbi_trial_last_at).getTime() : 0;
+    const seisHoras = 6 * 60 * 60 * 1000;
+    if (used >= FREE_TRIALS && lastAt > 0 && Date.now() - lastAt > seisHoras) {
+      used = 0;
+      await supabase.from("businesses").update({ orbi_trial_count: 0 }).eq("id", businessId);
+    }
+
     const remaining = Math.max(0, FREE_TRIALS - used);
 
     if (consume) {
       if (remaining <= 0) {
         return NextResponse.json({ unlimited: false, remaining: 0, blocked: true });
       }
-      await supabase.from("businesses").update({ orbi_trial_count: used + 1 }).eq("id", businessId);
+      await supabase.from("businesses").update({ orbi_trial_count: used + 1, orbi_trial_last_at: new Date().toISOString() }).eq("id", businessId);
       return NextResponse.json({ unlimited: false, remaining: remaining - 1, blocked: false });
     }
 

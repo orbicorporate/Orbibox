@@ -38,13 +38,13 @@ function BarList({
   return (
     <div className="rounded-[24px] border border-divider bg-surface-white p-5">
       <p className="font-[family-name:var(--font-manrope)] text-[16px] font-medium">{title}</p>
-      <p className="mt-0.5 text-[12px] text-text-tertiary">{subtitle}</p>
+      <p className="mt-0.5 text-[13px] text-text-tertiary">{subtitle}</p>
       <div className="mt-4 flex flex-col gap-2.5">
         {rows.slice(0, 6).map((r) => {
           const pct = total > 0 ? Math.round((r.count / total) * 100) : 0;
           return (
             <div key={r.nome}>
-              <div className="flex items-center justify-between text-[13px]">
+              <div className="flex items-center justify-between text-[14px]">
                 <span className="flex items-center gap-1.5">
                   <span>{emojiMap[r.nome] ?? "•"}</span>
                   {r.nome}
@@ -60,7 +60,7 @@ function BarList({
           );
         })}
       </div>
-      {footer && <p className="mt-3 text-[11.5px] leading-relaxed text-text-tertiary">{footer}</p>}
+      {footer && <p className="mt-3 text-[12.5px] leading-relaxed text-text-tertiary">{footer}</p>}
     </div>
   );
 }

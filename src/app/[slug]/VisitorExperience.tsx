@@ -245,7 +245,7 @@ export function VisitorExperience({
       {isOwner && intent === null && (
         <Link
           href="/admin"
-          className="fixed right-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[12px] font-medium text-white shadow-lg backdrop-blur"
+          className="fixed right-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur"
         >
           ← Meu painel
         </Link>
@@ -266,7 +266,7 @@ export function VisitorExperience({
             ) : (
               <OrbiOrb size={96} className="mb-8" />
             )}
-            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">
+            <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
               {business.name}
             </p>
             <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">
@@ -313,9 +313,9 @@ export function VisitorExperience({
                       {o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}
                     </span>
                     {o.stars && (
-                      <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>
+                      <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>
                     )}
-                    <span className="block text-[12px] text-text-tertiary">
+                    <span className="block text-[13px] text-text-tertiary">
                       {o.ai ? `Fale com a ${agentName}, nossa IA.` : o.d}
                     </span>
                   </span>
@@ -326,13 +326,13 @@ export function VisitorExperience({
                 {o.address && expandedBox === o.key && (
                   <div className="-mt-1 rounded-b-[24px] bg-surface-white px-4 pb-4 pt-1 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
                     <div className="border-t border-divider pt-3">
-                      <p className="text-[13px] leading-relaxed text-text-secondary">{o.address}</p>
+                      <p className="text-[14px] leading-relaxed text-text-secondary">{o.address}</p>
                       <div className="mt-3 flex gap-2">
                         <a
                           href={`https://waze.com/ul?q=${encodeURIComponent(o.address)}&navigate=yes`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+                          className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium"
                         >
                           Abrir no Waze
                         </a>
@@ -340,7 +340,7 @@ export function VisitorExperience({
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+                          className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium"
                         >
                           Abrir no Google
                         </a>
@@ -353,7 +353,7 @@ export function VisitorExperience({
               {options.length === 0 && (
                 <div className="rounded-[24px] bg-surface-white p-5 text-center shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
                   <p className="text-[14px] font-medium">Ainda não tem nada por aqui</p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-text-tertiary">
+                  <p className="mt-1 text-[14px] leading-relaxed text-text-tertiary">
                     Essa página está sendo montada. Volta mais tarde pra conferir.
                   </p>
                 </div>
@@ -365,7 +365,7 @@ export function VisitorExperience({
         {(intent === "comprar" || intent === "presentear") && (
           <div className="w-full">
             <VitrineCoverBleed business={business} />
-            <button onClick={() => setIntent(null)} className="mb-5 mt-5 text-[13px] text-text-tertiary hover:underline">← voltar</button>
+            <button onClick={() => setIntent(null)} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
             <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">
               {intent === "presentear" ? "Para presentear" : (business.catalog_title || `${business.name} — Catálogo`)}
             </h2>
@@ -459,46 +459,46 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
 
   return (
     <div className="w-full">
-      <button onClick={onBack} className="mb-5 mt-5 text-[13px] text-text-tertiary hover:underline">← voltar</button>
+      <button onClick={onBack} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
       <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">Cupons</h2>
 
       {result ? (
         <div className="mt-5 rounded-[24px] bg-surface-white p-6 text-center shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
-          <p className="text-[13px] text-text-secondary">{result.title}</p>
+          <p className="text-[14px] text-text-secondary">{result.title}</p>
           <p className="mt-2 font-[family-name:var(--font-manrope)] text-[36px] font-bold tracking-[0.05em]">{result.code}</p>
-          <p className="mt-2 text-[13px] leading-relaxed text-text-tertiary">
+          <p className="mt-2 text-[14px] leading-relaxed text-text-tertiary">
             Mostre esse código pro {business.name} — no balcão ou pelo WhatsApp — pra usar o desconto.
             {result.expiresAt && ` Vale até ${new Date(result.expiresAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}.`}
           </p>
         </div>
       ) : (
         <div className="mt-5 flex flex-col gap-3">
-          {vouchers === null && <p className="text-[13px] text-text-tertiary">Carregando…</p>}
-          {vouchers?.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum cupom disponível no momento.</p>}
+          {vouchers === null && <p className="text-[14px] text-text-tertiary">Carregando…</p>}
+          {vouchers?.length === 0 && <p className="text-[14px] text-text-tertiary">Nenhum cupom disponível no momento.</p>}
           {vouchers?.map((v) => {
             const restam = v.quantity_total - v.quantity_claimed;
             return (
               <div key={v.id} className="rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
                 <p className="text-[15px] font-medium">{v.title}</p>
-                <p className="mt-0.5 text-[13px] text-text-secondary">{voucherDiscountLabel(v)}</p>
-                {v.description?.trim() && <p className="mt-1 text-[12px] text-text-tertiary">{v.description}</p>}
-                <p className="mt-1 text-[11px] text-text-tertiary">{restam > 0 ? `${restam} restantes` : "Esgotado"}</p>
+                <p className="mt-0.5 text-[14px] text-text-secondary">{voucherDiscountLabel(v)}</p>
+                {v.description?.trim() && <p className="mt-1 text-[13px] text-text-tertiary">{v.description}</p>}
+                <p className="mt-1 text-[12px] text-text-tertiary">{restam > 0 ? `${restam} restantes` : "Esgotado"}</p>
 
                 {claiming === v.id ? (
                   <div className="mt-3 flex flex-col gap-2">
                     <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" className="rounded-xl border border-divider px-3 py-2 text-[14px] outline-none focus:border-on-background" />
                     <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Seu WhatsApp (opcional)" className="rounded-xl border border-divider px-3 py-2 text-[14px] outline-none focus:border-on-background" />
-                    {error && <p className="text-[12px] text-red-600">{error}</p>}
+                    {error && <p className="text-[13px] text-red-600">{error}</p>}
                     <div className="flex gap-2">
-                      <button onClick={() => { setClaiming(null); setError(null); }} className="flex-1 rounded-full bg-surface-soft py-2 text-[12px] font-medium">Cancelar</button>
-                      <button onClick={() => resgatar(v.id)} className="flex-1 rounded-full bg-button-primary py-2 text-[12px] font-medium text-white">Confirmar</button>
+                      <button onClick={() => { setClaiming(null); setError(null); }} className="flex-1 rounded-full bg-surface-soft py-2 text-[13px] font-medium">Cancelar</button>
+                      <button onClick={() => resgatar(v.id)} className="flex-1 rounded-full bg-button-primary py-2 text-[13px] font-medium text-white">Confirmar</button>
                     </div>
                   </div>
                 ) : (
                   <button
                     onClick={() => { setClaiming(v.id); setError(null); }}
                     disabled={restam <= 0}
-                    className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
+                    className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
                   >
                     {restam > 0 ? "Resgatar" : "Esgotado"}
                   </button>
@@ -517,7 +517,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
 function AddressCard({ address }: { address: string }) {
   return (
     <div className="mt-6">
-      <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Endereço</p>
+      <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Endereço</p>
       <div className="mt-2 rounded-[18px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
         <div className="flex items-start gap-3">
           <OrbiMapPin size={26} className="shrink-0" />
@@ -528,7 +528,7 @@ function AddressCard({ address }: { address: string }) {
             href={`https://waze.com/ul?q=${encodeURIComponent(address)}&navigate=yes`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+            className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium"
           >
             Abrir no Waze
           </a>
@@ -536,7 +536,7 @@ function AddressCard({ address }: { address: string }) {
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 rounded-full border border-divider py-2.5 text-center text-[13px] font-medium"
+            className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium"
           >
             Abrir no Google
           </a>
@@ -573,7 +573,7 @@ function StoryView({
 
   return (
     <div className="w-full text-left">
-      <button onClick={onBack} className="mb-4 text-[13px] text-text-tertiary hover:underline">
+      <button onClick={onBack} className="mb-4 text-[14px] text-text-tertiary hover:underline">
         ← voltar
       </button>
 
@@ -640,20 +640,20 @@ function StoryView({
 
       {business.about_business && (
         <div className="mt-6">
-          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Sobre nós</p>
+          <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Sobre nós</p>
           <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">{business.about_business}</p>
         </div>
       )}
 
       {cards.length > 0 && (
         <div className="mt-6">
-          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
+          <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
           <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto no-scrollbar pb-1">
             {cards.map((c, i) => (
               <div key={i} className="w-[220px] shrink-0 snap-start rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[18px]">{c.icon || "◎"}</span>
                 <p className="mt-3 font-[family-name:var(--font-manrope)] text-[16px] font-semibold leading-snug">{c.title}</p>
-                {c.description && <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">{c.description}</p>}
+                {c.description && <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">{c.description}</p>}
               </div>
             ))}
           </div>
@@ -765,7 +765,7 @@ function formatMessage(text: string, products?: ContentItem[], slug?: string, bu
             )}
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[15px] font-semibold text-on-background">{p.title}</span>
-              <span className="block text-[13px] text-text-secondary">{formatPrice(p) || "Ver detalhes"}</span>
+              <span className="block text-[14px] text-text-secondary">{formatPrice(p) || "Ver detalhes"}</span>
             </span>
             <span className="shrink-0 pr-1 text-[18px] text-text-tertiary">→</span>
           </a>
@@ -1006,14 +1006,14 @@ function OrbiChat({
           <OrbiParticleSphere size={112} colors={orbiColors ?? undefined} className="rounded-full" />
           <span className="absolute bottom-3 right-3 h-4 w-4 rounded-full border-2 border-surface-white bg-orbi-gradient-start" />
         </div>
-        <p className="mt-2 text-center text-[13px] text-text-tertiary">{agentName} · online</p>
+        <p className="mt-2 text-center text-[14px] text-text-tertiary">{agentName} · online</p>
 
         {!started ? (
           <>
             <h2 className="mt-5 text-center font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-tight tracking-[-0.02em]">
               Como posso<br />te ajudar?
             </h2>
-            <p className="mt-6 text-center text-[11px] font-medium uppercase tracking-wide text-text-tertiary">
+            <p className="mt-6 text-center text-[12px] font-medium uppercase tracking-wide text-text-tertiary">
               Sugestões de tema
             </p>
             <div className="mt-3 flex flex-col gap-3">
@@ -1046,7 +1046,7 @@ function OrbiChat({
             {(sending || justDone) && (
               <div className="flex items-center gap-2.5 self-start rounded-2xl bg-surface-white px-3 py-2 shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
                 <OrbiParticleSphere size={36} variant={justDone ? "check" : "sphere"} holdCheck={justDone} colors={orbiColors ?? undefined} className="rounded-full" />
-                <span className="text-[13px] text-text-tertiary">{justDone ? "Pronto" : `${agentName} está pensando…`}</span>
+                <span className="text-[14px] text-text-tertiary">{justDone ? "Pronto" : `${agentName} está pensando…`}</span>
               </div>
             )}
             {whatsapp && !sending && (
@@ -1126,8 +1126,8 @@ function OrbiRecommendation({ businessId }: { businessId: string }) {
   return (
     <div className="orbi-card-light rounded-[28px] p-5">
       <div className="relative flex items-center gap-2">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-on-background/10 text-[12px]">✦</span>
-        <span className="text-[12px] font-semibold uppercase tracking-wide text-on-background/70">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-on-background/10 text-[13px]">✦</span>
+        <span className="text-[13px] font-semibold uppercase tracking-wide text-on-background/70">
           Orbi Intelligence
         </span>
       </div>
@@ -1252,7 +1252,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
         <div className="mt-5 flex gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
             onClick={() => setActive(null)}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-[13px] ${active === null ? "bg-button-primary text-white" : "border border-divider bg-surface-white text-text-secondary"}`}
+            className={`whitespace-nowrap rounded-full px-4 py-2 text-[14px] ${active === null ? "bg-button-primary text-white" : "border border-divider bg-surface-white text-text-secondary"}`}
           >
             Tudo
           </button>
@@ -1260,7 +1260,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
             <button
               key={s.name}
               onClick={() => setActive(s.name)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-[13px] ${active === s.name ? "bg-button-primary text-white" : "border border-divider bg-surface-white text-text-secondary"}`}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-[14px] ${active === s.name ? "bg-button-primary text-white" : "border border-divider bg-surface-white text-text-secondary"}`}
             >
               {s.name}
             </button>
@@ -1329,7 +1329,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                               <p className="font-[family-name:var(--font-manrope)] font-semibold leading-tight text-white" style={{ fontSize: titleFontSize(item.title, size) }}>
                                 {item.title}
                               </p>
-                              {priceLabel && <p className="mt-0.5 text-[13px] text-white/85">{priceLabel}</p>}
+                              {priceLabel && <p className="mt-0.5 text-[14px] text-white/85">{priceLabel}</p>}
                             </div>
                           )}
                         </>
@@ -1351,11 +1351,11 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                             </span>
                           )}
                           {isExterno ? (
-                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-medium" style={{ backgroundColor: `${c.fg}22`, color: c.fg }}>
+                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium" style={{ backgroundColor: `${c.fg}22`, color: c.fg }}>
                               {item.link_kind === "categoria" ? "Ver categoria" : "Entrar no site"} <span aria-hidden>↗</span>
                             </span>
                           ) : (
-                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-medium" style={{ backgroundColor: `${c.fg}22`, color: c.fg }}>
+                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium" style={{ backgroundColor: `${c.fg}22`, color: c.fg }}>
                               Entrar <span aria-hidden>→</span>
                             </span>
                           )}
@@ -1364,7 +1364,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                       {/* Sem foto já mostra a tag/o destino dentro do próprio box — a setinha
                           no canto só faz sentido quando tem foto por cima e nada mais avisa. */}
                       {destino && photo && (
-                        <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/25 text-[12px] text-white backdrop-blur-sm">
+                        <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/25 text-[13px] text-white backdrop-blur-sm">
                           {isExterno ? "↗" : "›"}
                         </span>
                       )}
@@ -1374,7 +1374,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight" style={fc ? { color: fc.fg } : undefined}>{item.title}</p>
                           {item.description?.trim() && (
-                            <p className={`mt-0.5 line-clamp-1 text-[12px] leading-snug ${fc ? "" : "text-text-tertiary"}`} style={fc ? { color: fc.fg, opacity: 0.7 } : undefined}>{item.description}</p>
+                            <p className={`mt-0.5 line-clamp-1 text-[13px] leading-snug ${fc ? "" : "text-text-tertiary"}`} style={fc ? { color: fc.fg, opacity: 0.7 } : undefined}>{item.description}</p>
                           )}
                           {priceLabel && (
                             <p className={`mt-0.5 font-[family-name:var(--font-manrope)] text-[15px] font-medium ${fc ? "" : "text-text-secondary"}`} style={fc ? { color: fc.fg, opacity: 0.85 } : undefined}>{priceLabel}</p>
@@ -1383,11 +1383,11 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                         {destino && (
                           size === "medio" ? (
                             // Card pequeno: só a bolinha com a seta, pro título respirar.
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-button-primary text-[12px] text-white">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-button-primary text-[13px] text-white">
                               {isExterno ? "↗" : "→"}
                             </span>
                           ) : (
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-button-primary px-3 py-1.5 text-[11px] font-medium text-white">
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-button-primary px-3 py-1.5 text-[12px] font-medium text-white">
                               {isExterno
                                 ? (item.link_kind === "categoria" ? "Ver" : "Entrar")
                                 : "Entrar"}

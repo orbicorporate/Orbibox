@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiTrial } from "@/app/admin/agent/OrbiTrial";
 
@@ -22,6 +22,13 @@ export function AdminOrbiFloating({
   products: Product[];
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Não aparece em telas onde atraparia botões de ação ou seria redundante:
+  // a própria config da Orbi, e a de cupons (que tem o "Novo cupom" no rodapé).
+  if (pathname?.startsWith("/admin/agent") || pathname?.startsWith("/admin/vouchers")) {
+    return null;
+  }
 
   // Nióbio: já tem a Orbi ativa, então a flutuante é um atalho rápido pra
   // configurar/ajustar a personalidade dela (leva pro AgentBox).

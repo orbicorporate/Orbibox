@@ -114,14 +114,14 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6" onClick={() => setShowUpgrade(false)}>
           <div className="w-full max-w-[340px] rounded-[24px] bg-surface-white p-6 text-center" onClick={(e) => e.stopPropagation()}>
             <p className="text-[16px] font-semibold">Cupons são do plano Nióbio 💎</p>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
+            <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
               Você montou seu cupom — pra ele valer de verdade na sua página, com código único e controle de estoque,
               é só ativar o Nióbio. Seu cupom fica salvo assim que assinar.
             </p>
             <Link href="/admin/planos" className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-button-primary py-3 text-[14px] font-medium text-white">
               Assinar Nióbio
             </Link>
-            <button onClick={() => setShowUpgrade(false)} className="mt-2 w-full rounded-full py-2 text-[13px] text-text-secondary">
+            <button onClick={() => setShowUpgrade(false)} className="mt-2 w-full rounded-full py-2 text-[14px] text-text-secondary">
               Voltar
             </button>
           </div>
@@ -130,8 +130,8 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
 
       {/* Resgate rápido — pensado pra ser usado na frente do cliente, no balcão */}
       <div className="rounded-[24px] border border-divider bg-surface-white p-5">
-        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Resgatar código</p>
-        <p className="mt-1.5 text-[12.5px] leading-relaxed text-text-secondary">
+        <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Resgatar código</p>
+        <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
           Quando o cliente chegar com o cupom, ele te mostra um código (ele pega na sua página, no chat, ou você vê aqui
           na lista). Digite o código abaixo e toque em confirmar — o sistema valida na hora e marca como usado, pra
           ninguém repetir.
@@ -152,7 +152,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
           </button>
         </form>
         {redeemResult && (
-          <p className={`mt-2.5 text-[13px] font-medium ${redeemResult.ok ? "text-green-700" : "text-red-600"}`}>
+          <p className={`mt-2.5 text-[14px] font-medium ${redeemResult.ok ? "text-green-700" : "text-red-600"}`}>
             {redeemResult.message}
           </p>
         )}
@@ -165,29 +165,29 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="truncate text-[15px] font-medium">{v.title}</p>
-                <p className="mt-0.5 text-[13px] text-text-secondary">{discountLabel(v)}</p>
+                <p className="mt-0.5 text-[14px] text-text-secondary">{discountLabel(v)}</p>
               </div>
               <button
                 onClick={() => toggleActive(v)}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-medium ${v.is_active ? "bg-surface-soft text-text-secondary" : "bg-surface-soft text-text-tertiary"}`}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${v.is_active ? "bg-surface-soft text-text-secondary" : "bg-surface-soft text-text-tertiary"}`}
               >
                 <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${v.is_active ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
                 {v.is_active ? "Ativo" : "Pausado"}
               </button>
             </div>
-            <p className="mt-2 text-[12px] text-text-tertiary">
+            <p className="mt-2 text-[13px] text-text-tertiary">
               {v.quantity_claimed} de {v.quantity_total} resgatados
               {v.expires_hours ? ` · código expira em ${v.expires_hours}h se não for usado` : " · sem validade"}
             </p>
-            {v.description?.trim() && <p className="mt-1 text-[12px] text-text-tertiary">{v.description}</p>}
-            <button onClick={() => deleteVoucher(v)} className="mt-2 text-[12px] text-red-600">
+            {v.description?.trim() && <p className="mt-1 text-[13px] text-text-tertiary">{v.description}</p>}
+            <button onClick={() => deleteVoucher(v)} className="mt-2 text-[13px] text-red-600">
               Excluir
             </button>
           </div>
         ))}
 
         {vouchers.length === 0 && !creating && (
-          <div className="rounded-[24px] border border-divider bg-surface-white p-6 text-center text-[13px] text-text-secondary">
+          <div className="rounded-[24px] border border-divider bg-surface-white p-6 text-center text-[14px] text-text-secondary">
             Nenhum cupom ainda.
           </div>
         )}
@@ -195,7 +195,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
 
       {creating ? (
         <form onSubmit={createVoucher} className="flex flex-col gap-3 rounded-[24px] border border-divider bg-surface-white p-5">
-          <p className="text-[13px] font-medium">Novo cupom</p>
+          <p className="text-[14px] font-medium">Novo cupom</p>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -228,7 +228,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
             />
           </div>
           <div>
-            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Quantos cupons disponíveis</p>
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Quantos cupons disponíveis</p>
             <input
               value={quantityTotal}
               onChange={(e) => setQuantityTotal(e.target.value)}
@@ -239,7 +239,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
             />
           </div>
           <div>
-            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Validade do código após resgate (em horas)</p>
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Validade do código após resgate (em horas)</p>
             <input
               value={expiresHours}
               onChange={(e) => setExpiresHours(e.target.value)}
@@ -248,18 +248,18 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
               min="1"
               className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
             />
-            <p className="mt-1 text-[11px] text-text-tertiary">
+            <p className="mt-1 text-[12px] text-text-tertiary">
               Se a pessoa resgatar e não aparecer dentro desse prazo, a vaga volta pro estoque.
             </p>
           </div>
           <div className="mt-1 flex gap-2">
-            <button type="button" onClick={() => setCreating(false)} className="flex-1 rounded-full bg-surface-soft px-4 py-2.5 text-[13px] font-medium">
+            <button type="button" onClick={() => setCreating(false)} className="flex-1 rounded-full bg-surface-soft px-4 py-2.5 text-[14px] font-medium">
               Cancelar
             </button>
             <button
               type="submit"
               disabled={saving || !title.trim() || !discountValue || !quantityTotal}
-              className="flex-1 rounded-full bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
+              className="flex-1 rounded-full bg-button-primary px-4 py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
             >
               {saving ? "Criando…" : "Criar cupom"}
             </button>
