@@ -17,6 +17,12 @@ export default async function AgentPage() {
     const { data: cfg } = businessId
       ? await supabase.from("agent_configs").select("agent_name, orbi_colors").eq("business_id", businessId).maybeSingle()
       : { data: null };
+    const { data: bizData } = businessId
+      ? await supabase.from("businesses").select("slug, address").eq("id", businessId).maybeSingle()
+      : { data: null };
+    const { data: trialProducts } = businessId
+      ? await supabase.from("content_items").select("id, title, price, price_type, price_max, image_url, link_kind, target_url").eq("business_id", businessId).eq("status", "published").limit(20)
+      : { data: [] };
     const trialColors = Array.isArray(cfg?.orbi_colors) && cfg.orbi_colors.length >= 2 ? (cfg.orbi_colors as string[]) : null;
 
     return (
@@ -29,7 +35,7 @@ export default async function AgentPage() {
             uma vendedora que nunca dorme. É o recurso mais avançado do Orbibox, exclusivo do plano Nióbio.
           </p>
           <p className="mt-3 text-[13px] font-medium text-text-secondary">Experimente agora, de graça:</p>
-          {businessId && <OrbiTrial businessId={businessId} agentName={cfg?.agent_name ?? "Orbi"} orbiColors={trialColors} />}
+          {businessId && <OrbiTrial businessId={businessId} address={bizData?.address ?? null} products={trialProducts ?? []} agentName={cfg?.agent_name ?? "Orbi"} orbiColors={trialColors} />}
           <Link
             href="/admin/planos"
             className="mt-3 inline-flex items-center justify-center text-[13px] font-medium underline"
