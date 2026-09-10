@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { PulseDetails } from "./PulseDetails";
 import { PulseAudience } from "./PulseAudience";
+import { PulseRecomendacao } from "./PulseRecomendacao";
+import { getAccessInfoForBusiness } from "@/lib/plans";
 import { PulseDateFilter } from "./PulseDateFilter";
 import { PulseMarketing } from "./PulseMarketing";
 import { rangeFromParams, buildSeries } from "./date-range";
@@ -97,6 +99,17 @@ export default async function PulsePage({
     .slice(0, 8)
     .map(([id, count]) => ({ id, count }));
 
+  // Produto mais clicado, pra box de recomendação da Orbi.
+  const topId = topItems[0]?.id;
+  const topItemRec = topId && itemMap[topId]
+    ? { title: itemMap[topId].title, image_url: itemMap[topId].image_url, clicks: topItems[0].count }
+    : null;
+  const [pulseAccess, agentCfgRes] = await Promise.all([
+    getAccessInfoForBusiness(business!.id),
+    supabase.from("agent_configs").select("orbi_colors").eq("business_id", business!.id).maybeSingle(),
+  ]);
+  const pulseOrbiColors = Array.isArray(agentCfgRes.data?.orbi_colors) && agentCfgRes.data.orbi_colors.length >= 2 ? (agentCfgRes.data.orbi_colors as string[]) : null;
+
   // Quantos por cento das visitas resultaram em alguma ação.
   const taxa = visitas > 0 ? Math.min(100, Math.round((totalCliques / visitas) * 100)) : 0;
 
@@ -149,6 +162,8 @@ export default async function PulsePage({
       </div>
 
       <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} paginas={paginas} slug={business!.slug} />
+
+      <PulseRecomendacao businessId={business!.id} topItem={topItemRec} hasAiChat={pulseAccess.hasAiChat} orbiColors={pulseOrbiColors} />
 
       <PulseAudience origens={origens} dispositivos={dispositivos} totalSessoes={totalSessoes} />
 
