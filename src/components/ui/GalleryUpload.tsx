@@ -65,10 +65,13 @@ export function GalleryUpload({
     const index = targetIndexRef.current;
     setPendingFile(null);
     setUploadingIndex(index);
-    const path = `${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+    // Usa a extensão certa pro tipo real do blob (webp ou jpg), pra o Storage
+    // servir com o Content-Type correto e o navegador reconhecer.
+    const ext = blob.type === "image/webp" ? "webp" : "jpg";
+    const path = `${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from("box-images")
-      .upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: "image/jpeg" });
+      .upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: blob.type || "image/jpeg" });
     setUploadingIndex(null);
     if (upErr) { setError("Não consegui enviar a foto. Tente de novo."); return; }
     const { data } = supabase.storage.from("box-images").getPublicUrl(path);

@@ -107,15 +107,32 @@ export function ImageCropModal({
     const cropW = FRAME_W / scale;
     const cropH = frameH / scale;
 
-    const outW = 1000;
+    // Resolução de saída: banner (capa da vitrine) aparece em largura total,
+    // então merece mais pixels pra ficar nítido em telas grandes. Os outros
+    // formatos (cards) aparecem menores, 1000px basta.
+    const outW = ratio === "banner" ? 1600 : 1000;
     const outH = Math.round(outW / RATIOS[ratio].value);
     const canvas = document.createElement("canvas");
     canvas.width = outW;
     canvas.height = outH;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    // Suaviza o redimensionamento (melhor qualidade ao reduzir).
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
     ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
-    canvas.toBlob((blob) => { if (blob) onConfirm(blob, ratio); }, "image/jpeg", 0.9);
+
+    // WebP é ~30% mais leve que JPEG na mesma qualidade. Se o navegador não
+    // suportar exportar WebP (raro), cai pra JPEG automaticamente.
+    const done = (blob: Blob | null) => { if (blob) onConfirm(blob, ratio); };
+    canvas.toBlob(
+      (webp) => {
+        if (webp && webp.type === "image/webp") done(webp);
+        else canvas.toBlob(done, "image/jpeg", 0.9);
+      },
+      "image/webp",
+      0.85
+    );
   }
 
   return (

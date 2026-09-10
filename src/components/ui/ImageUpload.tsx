@@ -108,10 +108,11 @@ export function ImageUpload({
   async function uploadBlob(blob: Blob, ratio: Ratio) {
     setPendingFile(null);
     setUploading(true);
-    const path = `${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+    const ext = blob.type === "image/webp" ? "webp" : "jpg";
+    const path = `${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from("box-images")
-      .upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: "image/jpeg" });
+      .upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: blob.type || "image/jpeg" });
     setUploading(false);
     if (upErr) {
       setError("Não consegui enviar a foto. Tente de novo.");
