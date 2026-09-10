@@ -38,12 +38,34 @@ export default async function PulsePage({
   ]);
 
   // Origem do tráfego e dispositivo — de onde vêm os visitantes e em que
-  // aparelho, agregados pra virarem barrinhas no painel.
+  // aparelho. Normaliza variações (valores antigos em inglês + novos) pra não
+  // aparecerem duplicados nas barras.
+  const normalizaOrigem = (raw: string | null): string => {
+    const s = (raw || "").toLowerCase().trim();
+    if (!s || s === "direct" || s === "direto") return "Direto";
+    if (s.includes("instagram")) return "Instagram";
+    if (s.includes("google")) return "Google";
+    if (s.includes("facebook") || s === "fb") return "Facebook";
+    if (s.includes("tiktok")) return "TikTok";
+    if (s.includes("youtube")) return "YouTube";
+    if (s.includes("whatsapp") || s.includes("wa.me")) return "WhatsApp";
+    if (s.includes("twitter") || s === "x.com" || s === "t.co") return "Twitter/X";
+    if (s.includes("linkedin")) return "LinkedIn";
+    return raw!.charAt(0).toUpperCase() + raw!.slice(1);
+  };
+  const normalizaDispositivo = (raw: string | null): string => {
+    const s = (raw || "").toLowerCase().trim();
+    if (s === "celular" || s === "mobile") return "Celular";
+    if (s === "computador" || s === "desktop") return "Computador";
+    if (s === "tablet") return "Tablet";
+    return "Não identificado";
+  };
+
   const porOrigem: Record<string, number> = {};
   const porDispositivo: Record<string, number> = {};
   for (const s of sessoesRes.data ?? []) {
-    const org = s.source || "direto";
-    const dev = s.device || "—";
+    const org = normalizaOrigem(s.source);
+    const dev = normalizaDispositivo(s.device);
     porOrigem[org] = (porOrigem[org] ?? 0) + 1;
     porDispositivo[dev] = (porDispositivo[dev] ?? 0) + 1;
   }

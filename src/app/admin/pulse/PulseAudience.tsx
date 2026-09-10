@@ -1,21 +1,22 @@
 "use client";
 
 const EMOJI_ORIGEM: Record<string, string> = {
-  direto: "🔗",
-  instagram: "📷",
-  google: "🔍",
-  facebook: "👍",
-  tiktok: "🎵",
-  youtube: "▶️",
-  whatsapp: "💬",
-  "twitter/x": "𝕏",
-  linkedin: "💼",
+  Direto: "🔗",
+  Instagram: "📷",
+  Google: "🔍",
+  Facebook: "👍",
+  TikTok: "🎵",
+  YouTube: "▶️",
+  WhatsApp: "💬",
+  "Twitter/X": "𝕏",
+  LinkedIn: "💼",
 };
 
 const EMOJI_DISPOSITIVO: Record<string, string> = {
-  celular: "📱",
-  computador: "💻",
-  tablet: "📱",
+  Celular: "📱",
+  Computador: "💻",
+  Tablet: "📱",
+  "Não identificado": "•",
 };
 
 function BarList({
@@ -42,7 +43,7 @@ function BarList({
           return (
             <div key={r.nome}>
               <div className="flex items-center justify-between text-[13px]">
-                <span className="flex items-center gap-1.5 capitalize">
+                <span className="flex items-center gap-1.5">
                   <span>{emojiMap[r.nome] ?? "•"}</span>
                   {r.nome}
                 </span>
