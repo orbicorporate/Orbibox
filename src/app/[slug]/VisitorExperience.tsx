@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiFloatingButton } from "./OrbiFloatingButton";
+import { CuradoriaOrbi } from "./CuradoriaOrbi";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
@@ -359,6 +360,12 @@ export function VisitorExperience({
                 </div>
               )}
             </div>
+
+            {hasAiChat && content.length >= 3 && (
+              <div className="mt-6 w-full">
+                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} />
+              </div>
+            )}
           </div>
         )}
 
@@ -372,6 +379,12 @@ export function VisitorExperience({
             <p className="mt-1 text-[15px] text-text-secondary">
               {intent === "presentear" ? "Seleções que fazem sentido para dar de presente" : (business.catalog_subtitle || "Explore nossas soluções.")}
             </p>
+
+            {hasAiChat && content.length >= 3 && (
+              <div className="mt-5">
+                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} compact />
+              </div>
+            )}
 
             {content.length === 0 ? (
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
