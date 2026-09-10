@@ -29,16 +29,45 @@ export default async function VouchersPage() {
       </p>
 
       {!canSave && (
-        <div className="mt-4 rounded-2xl border border-orbi-gradient-start/40 bg-surface-white p-5">
-          <p className="text-[14px] font-semibold">✦ Como funcionam os cupons</p>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
-            Você cria uma oferta (ex: 10% off, 50 unidades). Cada cliente resgata na sua página e recebe um código
-            único. Na hora do atendimento, você digita o código e ele é validado na hora, sem risco de alguém usar
-            duas vezes. É controle de promoção com tecnologia de verdade, exclusivo do Nióbio.
-          </p>
-          <p className="mt-2 text-[12.5px] text-text-tertiary">
-            Monte seu cupom abaixo pra ver como é. Na hora de salvar, você ativa o Nióbio.
-          </p>
+        <div className="mt-4 flex flex-col gap-3">
+          {/* Card de venda com benefícios visuais */}
+          <div className="orbi-gradient rounded-[24px] p-[2px]">
+            <div className="rounded-[22px] bg-surface-white p-5">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-soft px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-text-secondary">
+                🎟️ Recurso Nióbio
+              </span>
+              <p className="mt-3 font-[family-name:var(--font-manrope)] text-[19px] font-semibold leading-tight">
+                Transforme visitantes em clientes com cupons inteligentes
+              </p>
+              <p className="mt-2 text-[13.5px] leading-relaxed text-text-secondary">
+                Não é um cupomzinho comum. É um sistema completo de promoção com controle total, que atrai gente nova e
+                faz ela vir até você.
+              </p>
+
+              <div className="mt-4 flex flex-col gap-3">
+                {[
+                  { icon: "🧲", t: "Atrai cliente novo", d: "A oferta aparece na sua página e no chat da Orbi, dando aquele empurrãozinho pra pessoa decidir comprar." },
+                  { icon: "🔐", t: "Código único por pessoa", d: "Cada cliente recebe um código exclusivo. Ninguém usa o cupom de outro, nem repete o mesmo duas vezes." },
+                  { icon: "📦", t: "Estoque sob controle", d: "Você define quantos cupons existem (ex: 50). Quando acabam, a oferta fecha sozinha. Sem prejuízo, sem surpresa." },
+                  { icon: "📱", t: "Validação na hora, no seu celular", d: "No atendimento, você digita o código do cliente e confirma na hora. O sistema avisa se é válido ou já foi usado." },
+                  { icon: "📇", t: "Cada resgate vira um contato", d: "Quem pega o cupom deixa nome e WhatsApp. Você monta uma lista de clientes interessados, pronta pra vender de novo." },
+                ].map((b) => (
+                  <div key={b.t} className="flex items-start gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[17px]">{b.icon}</span>
+                    <div>
+                      <p className="text-[14px] font-semibold">{b.t}</p>
+                      <p className="mt-0.5 text-[12.5px] leading-relaxed text-text-secondary">{b.d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-surface-soft p-4 text-center">
+            <p className="text-[13px] font-medium">✨ Monte seu primeiro cupom abaixo pra ver como é fácil</p>
+            <p className="mt-0.5 text-[12px] text-text-tertiary">Você configura tudo agora. Na hora de salvar e ativar, é só assinar o Nióbio.</p>
+          </div>
         </div>
       )}
 

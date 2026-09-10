@@ -131,7 +131,12 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
       {/* Resgate rápido — pensado pra ser usado na frente do cliente, no balcão */}
       <div className="rounded-[24px] border border-divider bg-surface-white p-5">
         <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Resgatar código</p>
-        <form onSubmit={handleRedeem} className="mt-2 flex gap-2">
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-text-secondary">
+          Quando o cliente chegar com o cupom, ele te mostra um código (ele pega na sua página, no chat, ou você vê aqui
+          na lista). Digite o código abaixo e toque em confirmar — o sistema valida na hora e marca como usado, pra
+          ninguém repetir.
+        </p>
+        <form onSubmit={handleRedeem} className="mt-3 flex gap-2">
           <input
             value={code}
             onChange={(e) => { setCode(e.target.value.toUpperCase()); setRedeemResult(null); }}
