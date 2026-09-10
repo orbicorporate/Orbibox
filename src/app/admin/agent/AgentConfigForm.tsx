@@ -7,7 +7,7 @@ import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 
-type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; };
+type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
 
 const SLIDERS = [
@@ -73,6 +73,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
       tone_reserved_energetic: state.tone_reserved_energetic,
       tone_concise_detailed: state.tone_concise_detailed,
       objectives: state.objectives,
+      suggested_questions: state.suggested_questions.map((q) => q.trim()).filter(Boolean),
     }).eq("id", state.id);
     setSaving(false);
     if (!error) setSaved(true);
@@ -200,6 +201,32 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
           </div>
         </div>
       )}
+
+      {/* Perguntas sugeridas no chat */}
+      <div className="rounded-[28px] border border-divider bg-surface-white p-5">
+        <p className="text-[14px] font-medium">Perguntas sugeridas no chat</p>
+        <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+          Os 4 botões que aparecem no início da conversa. Deixe em branco pra a {state.agent_name} sugerir sozinha, com base no seu catálogo.
+        </p>
+        <div className="mt-3 flex flex-col gap-2">
+          {[0, 1, 2, 3].map((i) => (
+            <input
+              key={i}
+              value={state.suggested_questions[i] ?? ""}
+              onChange={(e) => {
+                setSaved(false);
+                setState((s) => {
+                  const next = [...s.suggested_questions];
+                  next[i] = e.target.value;
+                  return { ...s, suggested_questions: next };
+                });
+              }}
+              placeholder={`Sugestão ${i + 1} (ex: ${["Quais os valores?", "Como funciona?", "Vocês entregam?", "Quero falar com alguém"][i]})`}
+              className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Orbi Insight */}
       <div className="rounded-[28px] border border-divider bg-surface-white p-5">

@@ -90,7 +90,7 @@ export default async function VisitorPage({
       .select("id, box_type, title, is_active, position, config, starts_at, ends_at")
       .eq("business_id", business.id)
       .order("position", { ascending: true }),
-    supabase.from("agent_configs").select("agent_name, orbi_colors").eq("business_id", business.id).maybeSingle(),
+    supabase.from("agent_configs").select("agent_name, orbi_colors, suggested_questions").eq("business_id", business.id).maybeSingle(),
     getOwnerHasAiChat(business.owner_id),
     getOwnerHasVouchers(business.owner_id),
   ]);
@@ -110,6 +110,7 @@ export default async function VisitorPage({
       content={content}
       boxes={boxes}
       agentName={agentConfig?.agent_name ?? "Orbi"}
+      suggestedQuestions={Array.isArray(agentConfig?.suggested_questions) ? (agentConfig.suggested_questions as string[]) : []}
       orbiColors={orbiColors}
       isOwner={isOwner}
       hasAiChat={hasAiChat}

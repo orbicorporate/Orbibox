@@ -83,6 +83,7 @@ export function VisitorExperience({
   isOwner,
   hasAiChat,
   hasVouchers,
+  suggestedQuestions = [],
 }: {
   business: Business;
   content: ContentItem[];
@@ -92,6 +93,7 @@ export function VisitorExperience({
   isOwner: boolean;
   hasAiChat: boolean;
   hasVouchers: boolean;
+  suggestedQuestions?: string[];
 }) {
   const supabase = createClient();
   const searchParams = useSearchParams();
@@ -390,7 +392,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} onBack={() => setIntent(null)} />
+          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} onBack={() => setIntent(null)} />
         )}
 
         {intent === "cupom" && (
@@ -793,6 +795,7 @@ function OrbiChat({
   content,
   whatsapp,
   address,
+  suggestedQuestions,
   onBack,
 }: {
   businessId: string;
@@ -804,6 +807,7 @@ function OrbiChat({
   content: ContentItem[];
   whatsapp: string | null;
   address: string | null;
+  suggestedQuestions: string[];
   onBack: () => void;
 }) {
   const supabase = createClient();
@@ -841,6 +845,12 @@ function OrbiChat({
   // Só 5 — o suficiente pra caber na tela sem precisar rolar, com a barra de
   // digitar sempre visível.
   const QUICK = (() => {
+    // Se o dono configurou perguntas no painel, usa elas (até 4).
+    if (suggestedQuestions && suggestedQuestions.length > 0) {
+      return suggestedQuestions.slice(0, 4);
+    }
+    // Senão, a Orbi gera automaticamente a partir do catálogo — itens de
+    // categorias variadas pra cobrir mais opções. Só 4.
     const published = [...content].sort((a, b) => a.position - b.position);
     const seen = new Set<string>();
     const picks: string[] = [];
@@ -849,17 +859,16 @@ function OrbiChat({
       if (seen.has(cat) && cat) continue;
       if (cat) seen.add(cat);
       picks.push(item.title);
-      if (picks.length === 5) break;
+      if (picks.length === 4) break;
     }
-    // Se sobrar espaço e ainda tiver itens (mesmo repetindo categoria), completa até 5.
-    if (picks.length < 5) {
+    if (picks.length < 4) {
       for (const item of published) {
-        if (picks.length === 5) break;
+        if (picks.length === 4) break;
         if (!picks.includes(item.title)) picks.push(item.title);
       }
     }
     if (picks.length === 0) {
-      return ["Quero saber mais sobre vocês", "Como funciona", "Quais os valores", "Formas de pagamento", "Quero falar com alguém"];
+      return ["Quero saber mais sobre vocês", "Como funciona", "Quais os valores", "Quero falar com alguém"];
     }
     return picks;
   })();

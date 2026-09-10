@@ -52,7 +52,7 @@ export default async function AgentPage() {
       <p className="mt-1 text-[14px] text-text-secondary">Defina como a Orbi interage com seus visitantes.</p>
       {config && (
         <AgentConfigForm
-          config={{ ...config, orbi_colors: orbiColors }}
+          config={{ ...config, orbi_colors: orbiColors, suggested_questions: Array.isArray(config!.suggested_questions) ? (config!.suggested_questions as string[]) : [] }}
           businessId={business!.id}
           businessName={business!.name}
           slug={business!.slug}
