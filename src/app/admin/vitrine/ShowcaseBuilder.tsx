@@ -874,48 +874,88 @@ export function ShowcaseBuilder({
   );
 }
 
-const COVER_EXAMPLE_PHOTOS = [
-  "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-01.jpg",
-  "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-02.jpg",
+const COVER_EXAMPLE_COVERS = [
   "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-03.jpg",
+  "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-04.jpg",
+  "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-07.jpg",
 ];
+// Itens que preenchem a vitrine de exemplo abaixo da capa (esmaecidos).
+const COVER_EXAMPLE_ITEMS: { url: string; title: string; size: "destaque" | "medio" | "alto" | "largo" }[] = [
+  { url: "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-01.jpg", title: "Doce de Leite Crocante", size: "destaque" },
+  { url: "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-02.jpg", title: "Avelã", size: "alto" },
+  { url: "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-05.jpg", title: "Pistache", size: "medio" },
+  { url: "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-06.jpg", title: "Gelato Artesanal", size: "medio" },
+  { url: "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-08.jpg", title: "Caramelo Salgado", size: "largo" },
+  { url: "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-09.jpg", title: "Chocolate Chantilly", size: "medio" },
+  { url: "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-10.jpg", title: "Caramelo", size: "medio" },
+];
+
+const EX_SPAN: Record<string, string> = {
+  destaque: "col-span-2 aspect-[16/9]",
+  largo: "col-span-2 aspect-[1920/830]",
+  medio: "col-span-1 aspect-square",
+  alto: "col-span-1 row-span-2 aspect-[4/5]",
+};
 
 function CoverExampleModal({ onClose }: { onClose: () => void }) {
   const [idx, setIdx] = useState(0);
+
+  // Troca de foto da capa sozinho, pra mostrar que vira carrossel.
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % COVER_EXAMPLE_COVERS.length), 1800);
+    return () => clearInterval(t);
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6" onClick={onClose}>
-      <div className="w-full max-w-[360px] overflow-hidden rounded-[24px] bg-background-main" onClick={(e) => e.stopPropagation()}>
-        {/* Mini prévia de uma vitrine com capa em carrossel */}
-        <div className="bg-surface-soft p-4">
-          <div className="relative overflow-hidden rounded-[16px]" style={{ aspectRatio: 1920 / 830 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={COVER_EXAMPLE_PHOTOS[idx]} alt="Exemplo de capa" className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
-              {COVER_EXAMPLE_PHOTOS.map((_, i) => (
-                <span key={i} className={`h-1.5 rounded-full transition-all ${i === idx ? "w-4 bg-white" : "w-1.5 bg-white/60"}`} />
-              ))}
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center" onClick={onClose}>
+      <div className="max-h-[88vh] w-full max-w-[380px] overflow-hidden rounded-t-[24px] bg-[#F3F6F2] sm:rounded-[24px]" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-4 pt-4">
+          <p className="text-[14px] font-medium">É aqui que a capa aparece</p>
+          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-white text-[13px]">✕</button>
+        </div>
+
+        {/* Vitrine de exemplo, rolável. Capa iluminada em cima; itens esmaecidos. */}
+        <div className="mt-3 max-h-[62vh] overflow-y-auto px-4 pb-4">
+          {/* CAPA — destacada (anel + sombra), o foco da tela */}
+          <div className="relative">
+            <div className="absolute -inset-2 rounded-[22px] bg-[#8FC7B5]/40 blur-md" />
+            <div className="relative overflow-hidden rounded-[18px] shadow-[0_10px_30px_rgba(0,0,0,0.18)] ring-2 ring-[#8FC7B5]" style={{ aspectRatio: 1920 / 830 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={COVER_EXAMPLE_COVERS[idx]} alt="Capa" className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500" />
+              <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">✦ Capa da Vitrine</div>
+              <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+                {COVER_EXAMPLE_COVERS.map((_, i) => (
+                  <span key={i} className={`h-1.5 rounded-full transition-all ${i === idx ? "w-4 bg-white" : "w-1.5 bg-white/60"}`} />
+                ))}
+              </div>
             </div>
           </div>
-          {/* Uns cards de vitrine embaixo, só pra dar contexto */}
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <div className="aspect-square rounded-[12px] bg-surface-white" />
-            <div className="aspect-square rounded-[12px] bg-surface-white" />
+
+          {/* Nome do negócio de exemplo */}
+          <p className="mt-4 px-1 font-[family-name:var(--font-manrope)] text-[18px] font-semibold text-[#3A4A44] opacity-40">Gelato Bello</p>
+
+          {/* Itens da vitrine — esmaecidos, só pra dar contexto de "tela cheia" */}
+          <div className="mt-2 grid grid-cols-2 gap-2 opacity-40 [grid-auto-flow:dense]">
+            {COVER_EXAMPLE_ITEMS.map((item, i) => (
+              <div key={i} className={`relative overflow-hidden rounded-[14px] bg-surface-white ${EX_SPAN[item.size]}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={item.url} alt={item.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent p-2">
+                  <p className="text-[10px] font-semibold text-white">{item.title}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="p-4">
-          <p className="text-[14px] font-medium">Assim fica a capa</p>
-          <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
-            As fotos grandes aparecem no topo da sua Vitrine, antes dos produtos. Com mais de uma, viram um carrossel
-            que desliza sozinho — ótimo pra mostrar o espaço, a equipe ou o clima do seu negócio.
+
+        <div className="border-t border-divider bg-background-main p-4">
+          <p className="text-[12.5px] leading-relaxed text-text-secondary">
+            A capa fica no topo, antes dos produtos. Com mais de uma foto, vira um carrossel que desliza sozinho — ótimo
+            pra mostrar o espaço, a equipe ou o clima do seu negócio.
           </p>
-          <div className="mt-3 flex gap-2">
-            <button onClick={() => setIdx((i) => (i + 1) % COVER_EXAMPLE_PHOTOS.length)} className="flex-1 rounded-full bg-surface-soft py-2.5 text-[13px] font-medium">
-              Ver próxima foto
-            </button>
-            <button onClick={onClose} className="flex-1 rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
-              Entendi
-            </button>
-          </div>
+          <button onClick={onClose} className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
+            Entendi
+          </button>
         </div>
       </div>
     </div>
