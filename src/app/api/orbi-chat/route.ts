@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     const { data: business } = await supabase
       .from("businesses")
-      .select("name, brand_voice_summary, about_business, differentials, policies, contact_whatsapp")
+      .select("name, brand_voice_summary, about_business, differentials, policies, contact_whatsapp, address")
       .eq("id", businessId)
       .maybeSingle();
 
@@ -47,12 +47,13 @@ export async function POST(req: NextRequest) {
     const system = `Você é ${agentName}, a assistente de IA (AgentBox) do negócio "${business?.name ?? "este negócio"}" dentro do Orbibox — uma plataforma de "web adaptativa".
 Seu tom de voz é: ${toneDesc}.
 Objetivos da conversa: ${agentConfig?.objectives?.join(", ") || "ajudar o visitante"}.
-${business?.brand_voice_summary ? `Tom da marca: ${business.brand_voice_summary}` : ""}\n${business?.about_business ? `Sobre o negócio: ${business.about_business}` : ""}\n${business?.differentials ? `Diferenciais: ${business.differentials}` : ""}\n${business?.policies ? `Políticas (entrega, trocas, horários): ${business.policies}` : ""}
+${business?.brand_voice_summary ? `Tom da marca: ${business.brand_voice_summary}` : ""}\n${business?.about_business ? `Sobre o negócio: ${business.about_business}` : ""}\n${business?.differentials ? `Diferenciais: ${business.differentials}` : ""}\n${business?.policies ? `Políticas (entrega, trocas, horários): ${business.policies}` : ""}\n${business?.address ? `Endereço: ${business.address}` : ""}
 ${catalog ? `Catálogo disponível:\n${catalog}` : "O catálogo ainda não tem produtos publicados."}
 
 Regras:
+- Se a pessoa perguntar onde fica, o endereço, como chegar, ou localização, e houver um endereço no contexto acima, responda com o endereço e escreva a marcação [[endereco]] numa linha própria — ela vira um card com botões de Waze e Google Maps. Se não houver endereço no contexto, diga que pode passar pelo WhatsApp.
 - Recomende produtos/serviços da vitrine quando fizer sentido pra ajudar a pessoa. Pra mostrar um card clicável com a foto do produto, escreva a marcação [[produto:ID]] usando o id que aparece no catálogo (ex: [[produto:abc-123]]). Coloque a marcação numa linha própria, logo depois de mencionar o produto no texto. Use no máximo 2 por resposta, e só de produtos que existem no catálogo acima. Não descreva a marcação, só a escreva.
-- Respostas curtas (2-4 frases), como uma conversa real de chat, nunca um texto formal.
+- Respostas CURTAS e diretas (2 a 3 frases no máximo), como uma conversa real de chat no celular. Vá direto ao ponto, sem enrolação nem introduções longas.
 - Nunca invente produtos, preços ou promessas que não estejam no catálogo acima.
 - Nunca use a expressão "dono do negócio" ou "dono" — soa amador. Diga "nosso time" ou "um especialista da área".
 - NUNCA use travessão (—) em nenhuma resposta, em hipótese alguma. Use vírgula, ponto ou duas frases separadas no lugar.

@@ -390,7 +390,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
+          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} onBack={() => setIntent(null)} />
         )}
 
         {intent === "cupom" && (
@@ -696,13 +696,19 @@ function StoryView({
  * Transforma o texto puro da IA em parágrafos, listas com marcador e
  * **negrito** de verdade — em vez de um bloco só, apertado e sem cor.
  */
-function formatMessage(text: string, products?: ContentItem[], slug?: string, businessId?: string, sessionId?: string | null) {
-  // Extrai marcações [[produto:ID]] e as troca por cards clicáveis no fim.
+function formatMessage(text: string, products?: ContentItem[], slug?: string, businessId?: string, sessionId?: string | null, address?: string | null) {
+  // Extrai marcações [[produto:ID]] e [[endereco]] e as troca por cards.
   const productIds: string[] = [];
-  const cleaned = text.replace(/\[\[produto:([^\]]+)\]\]/g, (_, id) => {
-    productIds.push(String(id).trim());
-    return "";
-  });
+  let showAddress = false;
+  const cleaned = text
+    .replace(/\[\[produto:([^\]]+)\]\]/g, (_, id) => {
+      productIds.push(String(id).trim());
+      return "";
+    })
+    .replace(/\[\[endereco\]\]/gi, () => {
+      showAddress = true;
+      return "";
+    });
 
   const cards = productIds
     .map((id) => products?.find((p) => p.id === id))
@@ -739,6 +745,7 @@ function formatMessage(text: string, products?: ContentItem[], slug?: string, bu
   return (
     <>
       {textNodes}
+      {showAddress && address && <AddressCard address={address} />}
       {cards.map((p) => {
         const destino = (p.link_kind ?? "produto") === "produto" ? `/${slug}/p/${p.id}` : (p.target_url || `/${slug}`);
         return (
@@ -746,19 +753,19 @@ function formatMessage(text: string, products?: ContentItem[], slug?: string, bu
             key={p.id}
             href={destino}
             onClick={() => businessId && trackClick({ businessId, kind: "produto", contentItemId: p.id, sessionId })}
-            className="mt-1 flex items-center gap-3 overflow-hidden rounded-2xl bg-surface-white p-2 shadow-[0_2px_12px_rgba(17,19,24,0.08)] ring-1 ring-black/5"
+            className="mt-1.5 flex items-center gap-3.5 overflow-hidden rounded-2xl bg-surface-white p-2.5 shadow-[0_2px_12px_rgba(17,19,24,0.08)] ring-1 ring-black/5"
           >
             {p.image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.image_url} alt={p.title} className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+              <img src={p.image_url} alt={p.title} className="h-18 w-18 shrink-0 rounded-xl object-cover" style={{ height: 72, width: 72 }} />
             ) : (
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[18px]">✦</span>
+              <span className="flex shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[22px]" style={{ height: 72, width: 72 }}>✦</span>
             )}
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[14px] font-medium text-on-background">{p.title}</span>
-              <span className="block text-[12px] text-text-secondary">{formatPrice(p) || "Ver detalhes"}</span>
+              <span className="block truncate text-[15px] font-semibold text-on-background">{p.title}</span>
+              <span className="block text-[13px] text-text-secondary">{formatPrice(p) || "Ver detalhes"}</span>
             </span>
-            <span className="shrink-0 pr-1 text-text-tertiary">→</span>
+            <span className="shrink-0 pr-1 text-[18px] text-text-tertiary">→</span>
           </a>
         );
       })}
@@ -785,6 +792,7 @@ function OrbiChat({
   heroGradient,
   content,
   whatsapp,
+  address,
   onBack,
 }: {
   businessId: string;
@@ -795,6 +803,7 @@ function OrbiChat({
   heroGradient: string[];
   content: ContentItem[];
   whatsapp: string | null;
+  address: string | null;
   onBack: () => void;
 }) {
   const supabase = createClient();
@@ -1016,13 +1025,13 @@ function OrbiChat({
             {messages.map((m, i) => (
               <div
                 key={i}
-                className={`max-w-[85%] rounded-2xl px-5 py-4 text-[15px] leading-7 ${
+                className={`max-w-[85%] rounded-2xl px-5 py-4 text-[16px] leading-[1.6] ${
                   m.role === "agent"
                     ? "bg-gradient-to-br from-orbi-gradient-start/15 via-surface-white to-orbi-gradient-end/10 shadow-[0_2px_12px_rgba(17,19,24,0.06)]"
                     : "ml-auto bg-on-background text-white"
                 }`}
               >
-                <div className="flex flex-col gap-3">{formatMessage(m.content, content, slug, businessId, sessionId)}</div>
+                <div className="flex flex-col gap-3">{formatMessage(m.content, content, slug, businessId, sessionId, address)}</div>
               </div>
             ))}
             {(sending || justDone) && (
