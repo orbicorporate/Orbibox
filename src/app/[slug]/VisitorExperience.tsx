@@ -1067,9 +1067,13 @@ function OrbiChat({
       </div>
 
       {/* Campo fixo */}
+      {/* Faixa de fundo sólida da base até acima do campo — impede que as
+          mensagens que rolam por trás apareçam no vão abaixo do campo. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-background-main" />
+
       <form
         onSubmit={(e) => { e.preventDefault(); sendText(input); }}
-        className="absolute inset-x-6 bottom-8 flex items-center gap-2 rounded-full bg-surface-white p-2 pl-4 shadow-[0_8px_30px_rgba(17,19,24,0.12)]"
+        className="absolute inset-x-6 bottom-8 z-10 flex items-center gap-2 rounded-full bg-surface-white p-2 pl-4 shadow-[0_8px_30px_rgba(17,19,24,0.12)]"
       >
         <span className="relative flex h-2.5 w-2.5 shrink-0">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orbi-gradient-start opacity-75" />
