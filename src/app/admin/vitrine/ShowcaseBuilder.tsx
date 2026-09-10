@@ -566,12 +566,8 @@ export function ShowcaseBuilder({
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          onClick={autoArrange}
-          disabled={arranging || items.length === 0}
-          className={`rounded-full px-4 py-2 text-[13px] font-medium ${arranging ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background"} ${items.length === 0 ? "opacity-50" : ""}`}
-        >
-          {arranging ? <OrbiWorking label="Organizando…" variant="inline" /> : "✦ Organizar com Orbi"}
+        <button onClick={() => setShowImport((v) => !v)} className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background">
+          ✦ Importar do site
         </button>
         <button onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50">
           + Novo item
@@ -579,13 +575,17 @@ export function ShowcaseBuilder({
         <button onClick={createCategory} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary">
           + Categoria
         </button>
-        <button onClick={() => setShowImport((v) => !v)} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
-          ✦ Importar do site
+        <button
+          onClick={autoArrange}
+          disabled={arranging || items.length === 0}
+          className={`rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary ${items.length === 0 ? "opacity-50" : ""}`}
+        >
+          {arranging ? <OrbiWorking label="Organizando…" variant="inline" /> : "✦ Organizar com Orbi"}
         </button>
+        <span className="mx-1 h-5 w-px bg-divider" />
         <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
           Ver publicado ↗
         </Link>
-        <span className="mx-1 h-5 w-px bg-divider" />
         <button
           onClick={undo}
           disabled={history.length === 0 || undoing}
