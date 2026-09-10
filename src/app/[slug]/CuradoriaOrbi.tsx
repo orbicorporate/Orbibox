@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { formatPrice } from "@/lib/showcase";
-import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkle } from "@/components/orbi/OrbiInsightCard";
+import { OrbiInsightCard, OrbiInsightHeader, OrbiSparkle } from "@/components/orbi/OrbiInsightCard";
 
 type Product = { id: string; title: string; price: number | null; price_type: string | null; price_max: number | null; image_url: string | null };
 
@@ -33,8 +34,15 @@ export function CuradoriaOrbi({
   const [curating, setCurating] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   // Tela cheia com a frase em destaque — abre ao tocar no resultado pronto.
+  // Renderizada via portal (direto no body) porque, dentro da árvore normal,
+  // um ancestral com transform/overflow quebra o "fixed" e a tela cheia
+  // aparecia duplicada, empurrada pra baixo do card em vez de cobrir tudo.
   const [expanded, setExpanded] = useState(false);
   const [followUp, setFollowUp] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     let cancel = false;
@@ -97,13 +105,13 @@ export function CuradoriaOrbi({
           <button
             onClick={() => setShowHelp((v) => !v)}
             aria-label="Como funciona"
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-white text-[11px] font-bold text-text-secondary"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/50 text-[11px] font-bold text-text-secondary"
           >
             ?
           </button>
         </div>
         {showHelp && (
-          <p className="mt-2 rounded-2xl bg-surface-soft p-3 text-[13px] leading-relaxed text-text-secondary">
+          <p className="mt-2 rounded-2xl bg-white/40 p-3 text-[13px] leading-relaxed text-text-secondary">
             A Orbi é a inteligência artificial daqui. Ela entende o que você procura e separa, do catálogo, as opções que
             mais combinam com você — como um atendente que já te conhece.
           </p>
@@ -119,7 +127,7 @@ export function CuradoriaOrbi({
                 <button
                   key={o}
                   onClick={() => escolher(o)}
-                  className="rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] font-medium transition-colors hover:border-on-background"
+                  className="rounded-full border border-divider bg-white/50 px-4 py-2.5 text-[14px] font-medium transition-colors hover:border-on-background"
                 >
                   {o}
                 </button>
@@ -140,9 +148,11 @@ export function CuradoriaOrbi({
               </div>
             ) : (
               <>
+                {/* Prévia curta — a fonte grande só entra quando abre a tela cheia. */}
                 {frase && (
-                  <button onClick={() => setExpanded(true)} className="block text-left">
-                    <OrbiInsightMessage>{frase}</OrbiInsightMessage>
+                  <button onClick={() => setExpanded(true)} className="mt-3 flex w-full items-start gap-2 text-left">
+                    <span className="flex-1 text-[14px] leading-relaxed text-text-secondary">{frase}</span>
+                    <span className="mt-0.5 shrink-0 text-[13px] text-text-tertiary">⤢</span>
                   </button>
                 )}
                 {curados.length > 0 && (
@@ -151,13 +161,13 @@ export function CuradoriaOrbi({
                       <a
                         key={p.id}
                         href={`/${slug}/p/${p.id}`}
-                        className="flex items-center gap-3.5 rounded-2xl bg-surface-soft p-2.5"
+                        className="flex items-center gap-3.5 rounded-2xl bg-white/40 p-2.5"
                       >
                         {p.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={p.image_url} alt={p.title} className="shrink-0 rounded-xl object-cover" style={{ height: 64, width: 64 }} />
                         ) : (
-                          <span className="flex shrink-0 items-center justify-center rounded-xl bg-surface-white text-[20px]" style={{ height: 64, width: 64 }}>✦</span>
+                          <span className="flex shrink-0 items-center justify-center rounded-xl bg-white/60 text-[20px]" style={{ height: 64, width: 64 }}>✦</span>
                         )}
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[15px] font-semibold">{p.title}</span>
@@ -175,9 +185,11 @@ export function CuradoriaOrbi({
       </OrbiInsightCard>
 
       {/* Tela cheia — mesma referência que a Orbi usava como "Zara IA":
-          seta de voltar, frase em destaque, e campo pra continuar perguntando. */}
-      {expanded && frase && (
-        <div className="orbi-card-light fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden">
+          seta de voltar, frase em destaque, e campo pra continuar perguntando.
+          Portal pro body: garante "fixed" cobrindo a tela de verdade, sem
+          depender de nenhum ancestral não-transformado. */}
+      {mounted && expanded && frase && createPortal(
+        <div className="orbi-card-light fixed inset-0 z-[9999] mx-auto flex max-w-[440px] flex-col overflow-hidden">
           <div className="flex items-center gap-3 px-6 pt-8">
             <button
               onClick={() => setExpanded(false)}
@@ -207,13 +219,13 @@ export function CuradoriaOrbi({
                   <a
                     key={p.id}
                     href={`/${slug}/p/${p.id}`}
-                    className="flex items-center gap-3.5 rounded-2xl bg-surface-white p-2.5"
+                    className="flex items-center gap-3.5 rounded-2xl bg-white/50 p-2.5"
                   >
                     {p.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={p.image_url} alt={p.title} className="shrink-0 rounded-xl object-cover" style={{ height: 64, width: 64 }} />
                     ) : (
-                      <span className="flex shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[20px]" style={{ height: 64, width: 64 }}>
+                      <span className="flex shrink-0 items-center justify-center rounded-xl bg-white/60 text-[20px]" style={{ height: 64, width: 64 }}>
                         <OrbiSparkle size={20} />
                       </span>
                     )}
@@ -229,7 +241,7 @@ export function CuradoriaOrbi({
           </div>
 
           <form onSubmit={enviarPergunta} className="px-6 pb-8 pt-3">
-            <div className="flex items-center gap-2 rounded-full bg-surface-white px-5 py-3.5 shadow-[0_8px_30px_rgba(17,19,24,0.10)]">
+            <div className="flex items-center gap-2 rounded-full bg-white/70 px-5 py-3.5 shadow-[0_8px_30px_rgba(17,19,24,0.10)]">
               <input
                 value={followUp}
                 onChange={(e) => setFollowUp(e.target.value)}
@@ -243,7 +255,8 @@ export function CuradoriaOrbi({
               </button>
             </div>
           </form>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
