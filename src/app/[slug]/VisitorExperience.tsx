@@ -269,7 +269,7 @@ export function VisitorExperience({
             <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
               {business.name}
             </p>
-            <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">
+            <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-[1.1] tracking-[-0.02em]">
               {business.hero_question?.trim() ? (
                 business.hero_question
               ) : (
@@ -280,7 +280,7 @@ export function VisitorExperience({
                 </>
               )}
             </h1>
-            <div className="mt-10 flex w-full flex-col gap-3">
+            <div className="mt-10 flex w-full flex-col gap-3.5">
               {options.map((o) => (
                 <div key={o.key}>
                 <button

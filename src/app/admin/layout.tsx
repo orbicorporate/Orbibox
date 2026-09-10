@@ -77,7 +77,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background-main">
       <AppHeader unseenConversas={unseenConversas ?? 0} />
-      <main className="flex-1 px-6 pb-28 pt-2">{children}</main>
+      <main className="flex-1 px-6 pb-32 pt-4">{children}</main>
       <BottomNav />
       <AdminOrbiFloating
         businessId={business.id}

@@ -132,9 +132,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
       <div className="rounded-[24px] border border-divider bg-surface-white p-5">
         <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Resgatar código</p>
         <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-          Quando o cliente chegar com o cupom, ele te mostra um código (ele pega na sua página, no chat, ou você vê aqui
-          na lista). Digite o código abaixo e toque em confirmar — o sistema valida na hora e marca como usado, pra
-          ninguém repetir.
+          Cliente chegou com o cupom? Digite o código dele abaixo e confirme. O sistema valida na hora e marca como usado.
         </p>
         <form onSubmit={handleRedeem} className="mt-3 flex gap-2">
           <input

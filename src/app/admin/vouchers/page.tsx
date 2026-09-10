@@ -46,11 +46,11 @@ export default async function VouchersPage() {
 
               <div className="mt-4 flex flex-col gap-3">
                 {[
-                  { icon: "🧲", t: "Atrai cliente novo", d: "A oferta aparece na sua página e no chat da Orbi, dando aquele empurrãozinho pra pessoa decidir comprar." },
-                  { icon: "🔐", t: "Código único por pessoa", d: "Cada cliente recebe um código exclusivo. Ninguém usa o cupom de outro, nem repete o mesmo duas vezes." },
-                  { icon: "📦", t: "Estoque sob controle", d: "Você define quantos cupons existem (ex: 50). Quando acabam, a oferta fecha sozinha. Sem prejuízo, sem surpresa." },
-                  { icon: "📱", t: "Validação na hora, no seu celular", d: "No atendimento, você digita o código do cliente e confirma na hora. O sistema avisa se é válido ou já foi usado." },
-                  { icon: "📇", t: "Cada resgate vira um contato", d: "Quem pega o cupom deixa nome e WhatsApp. Você monta uma lista de clientes interessados, pronta pra vender de novo." },
+                  { icon: "🧲", t: "Atrai cliente novo", d: "A oferta aparece na página e no chat da Orbi." },
+                  { icon: "🔐", t: "Código único por pessoa", d: "Ninguém repete nem usa o cupom de outro." },
+                  { icon: "📦", t: "Estoque sob controle", d: "Você define quantos são. Acabou, fecha sozinho." },
+                  { icon: "📱", t: "Valida no seu celular", d: "Digita o código do cliente e confirma na hora." },
+                  { icon: "📇", t: "Cada resgate vira contato", d: "Monta uma lista de clientes pra vender de novo." },
                 ].map((b, bi) => (
                   <div key={b.t} className="flex animate-[fadeInUp_0.5s_ease] items-start gap-3" style={{ animationDelay: `${bi * 90}ms`, animationFillMode: "backwards" }}>
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[17px]">{b.icon}</span>
