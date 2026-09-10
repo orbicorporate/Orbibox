@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessId } = await req.json();
+    const { businessId, sessionId } = await req.json();
     if (!businessId) return NextResponse.json({ error: "businessId obrigatório." }, { status: 400 });
 
     const supabase = await createClient();
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     const { data: content } = await supabase
       .from("content_items")
-      .select("title, description, price, brand_label")
+      .select("id, title, description, price, brand_label")
       .eq("business_id", businessId)
       .eq("status", "published")
       .limit(12);
@@ -29,9 +29,35 @@ export async function POST(req: NextRequest) {
       .map((c) => `- ${c.title}${c.brand_label ? ` (${c.brand_label})` : ""}${c.price != null ? ` R$ ${Number(c.price).toFixed(2)}` : ""}${c.description ? `: ${c.description}` : ""}`)
       .join("\n");
 
+    // O que essa pessoa clicou de verdade nessa sessão (categoria ou produto)
+    // — sem isso, a recomendação era só um chute em cima do catálogo inteiro
+    // e ignorava o interesse que o visitante já tinha sinalizado.
+    let interesseDetectado = "";
+    if (sessionId) {
+      const { data: clicks } = await supabase
+        .from("click_events")
+        .select("content_item_id, kind, created_at")
+        .eq("visitor_session_id", sessionId)
+        .in("kind", ["categoria", "produto"])
+        .not("content_item_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      const clickedIds = [...new Set((clicks ?? []).map((c) => c.content_item_id).filter(Boolean))] as string[];
+      if (clickedIds.length > 0) {
+        const clickedTitles = clickedIds
+          .map((id) => content.find((c) => c.id === id)?.title)
+          .filter(Boolean);
+        if (clickedTitles.length > 0) {
+          interesseDetectado = `O visitante clicou especificamente em: ${clickedTitles.join(", ")}. A recomendação PRECISA partir disso — não sugira outra categoria.`;
+        }
+      }
+    }
+
     const system = `Você é a Orbi, a inteligência do Orbibox do negócio "${business?.name ?? ""}".
 ${business?.brand_voice_summary ? `Tom de voz: ${business.brand_voice_summary}` : ""}
-Olhando o catálogo, escreva uma recomendação contextual curta e calorosa para o visitante — como um vendedor atencioso notaria um padrão e sugeriria algo. Ex: "Notei que você gosta de X. Que tal conhecer Y?".
+${interesseDetectado || "Olhando o catálogo, escreva uma recomendação contextual curta e calorosa para o visitante — como um vendedor atencioso notaria um padrão e sugeriria algo."}
+Ex: "Notei seu interesse em X. Que tal conhecer Y, que combina com isso?".
 Responda SOMENTE JSON válido, sem markdown:
 {"message":"uma a duas frases, no máximo 30 palavras","cta":"texto curto do botão, máx 3 palavras"}
 Baseie-se apenas nos itens reais abaixo. Não invente produtos.`;

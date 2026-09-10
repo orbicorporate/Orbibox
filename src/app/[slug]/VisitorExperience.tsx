@@ -1129,7 +1129,7 @@ function OrbiChat({
   );
 }
 
-function OrbiRecommendation({ businessId }: { businessId: string }) {
+function OrbiRecommendation({ businessId, sessionId }: { businessId: string; sessionId: string | null }) {
   const [rec, setRec] = useState<{ message: string; cta: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -1137,13 +1137,16 @@ function OrbiRecommendation({ businessId }: { businessId: string }) {
     fetch("/api/recommend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ businessId }),
+      // Manda o sessionId pra API poder olhar o que essa pessoa clicou
+      // de verdade (categoria/produto) e basear a recomendação nisso,
+      // em vez de sugerir algo genérico do catálogo.
+      body: JSON.stringify({ businessId, sessionId }),
     })
       .then((r) => r.json())
       .then((d) => { if (d.message) setRec({ message: d.message, cta: d.cta ?? "Explorar" }); })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sessionId]);
 
   if (loading || !rec) return null;
 
@@ -1462,7 +1465,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 );
               })}
             </div>
-            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} /></div>}
+            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} /></div>}
           </div>
         ))}
       </div>
