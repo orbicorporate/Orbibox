@@ -17,6 +17,7 @@ import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
 import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, isAnimatedIcon, youtubeId, instagramReelId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
+import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
 
 type Business = {
   id: string;
@@ -1129,7 +1130,7 @@ function OrbiChat({
   );
 }
 
-function OrbiRecommendation({ businessId, sessionId }: { businessId: string; sessionId: string | null }) {
+function OrbiRecommendation({ businessId, sessionId, onOrbi }: { businessId: string; sessionId: string | null; onOrbi?: () => void }) {
   const [rec, setRec] = useState<{ message: string; cta: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -1151,15 +1152,15 @@ function OrbiRecommendation({ businessId, sessionId }: { businessId: string; ses
   if (loading || !rec) return null;
 
   return (
-    <div className="orbi-card-light rounded-[28px] p-5">
-      <div className="relative flex items-center gap-2">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-on-background/10 text-[13px]">✦</span>
-        <span className="text-[13px] font-semibold uppercase tracking-wide text-on-background/70">
-          Orbi Intelligence
-        </span>
-      </div>
-      <p className="relative mt-3 text-[16px] leading-relaxed text-on-background">{rec.message}</p>
-    </div>
+    <OrbiInsightCard>
+      <OrbiInsightHeader />
+      <OrbiInsightMessage>{rec.message}</OrbiInsightMessage>
+      {onOrbi && (
+        <button onClick={onOrbi} className={orbiInsightCtaClass}>
+          {rec.cta} <OrbiSparkleMini />
+        </button>
+      )}
+    </OrbiInsightCard>
   );
 }
 
@@ -1465,7 +1466,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 );
               })}
             </div>
-            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} /></div>}
+            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} onOrbi={onOrbi} /></div>}
           </div>
         ))}
       </div>

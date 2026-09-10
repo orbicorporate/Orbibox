@@ -16,8 +16,8 @@ import { InspireModal } from "./InspireModal";
 import { VITRINE_THEMES } from "@/lib/vitrineThemes";
 import type { InspireThemeData } from "@/lib/inspirePhotos";
 import { useDialogs } from "@/hooks/useDialogs";
-import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { whatsappLink } from "@/lib/track";
+import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -826,37 +826,32 @@ export function ShowcaseBuilder({
         })}
       </div>
 
-      {/* Orbi Insight — a esfera de verdade, e um lote de 7 ângulos diferentes pra navegar sem repetir. */}
+      {/* Orbi Insight — um lote de 7 ângulos diferentes pra navegar sem repetir. */}
       {items.length > 0 && (
-        <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
+        <OrbiInsightCard className="mt-6">
           <div className="flex items-start justify-between gap-3">
-            <OrbiOrb size={48} />
+            <OrbiInsightHeader />
             {insights && insights.length > 1 && (
-              <span className="mt-1 shrink-0 rounded-full bg-surface-white px-3 py-1 text-[11px] font-medium text-text-tertiary">
+              <span className="shrink-0 rounded-full bg-surface-white px-3 py-1 text-[11px] font-medium text-text-tertiary">
                 {insightIdx + 1} de {insights.length}
               </span>
             )}
           </div>
-          <p className="mt-4 font-[family-name:var(--font-manrope)] text-[19px] font-medium">Orbi Insight</p>
-          <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
+          <OrbiInsightMessage>
             {insights?.[insightIdx] ??
               (publishedCount === 0
                 ? "Nenhum item está ativo — os visitantes ainda não veem nada na sua vitrine. Publique pelo menos um."
                 : `Você tem ${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}. Toque abaixo pra Orbi analisar sua vitrine de verdade.`)}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
+          </OrbiInsightMessage>
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             {!insights ? (
-              <button
-                onClick={generateInsights}
-                disabled={generatingInsight}
-                className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-60"
-              >
-                {generatingInsight ? "Analisando sua vitrine…" : "✦ Gerar insights"}
+              <button onClick={generateInsights} disabled={generatingInsight} className={`${orbiInsightCtaClass} !mt-0 disabled:opacity-60`}>
+                {generatingInsight ? "Analisando sua vitrine…" : "Gerar insights"} <OrbiSparkleMini />
               </button>
             ) : (
               <>
-                <button onClick={nextInsight} className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background">
-                  Próximo insight →
+                <button onClick={nextInsight} className={`${orbiInsightCtaClass} !mt-0`}>
+                  Próximo insight <OrbiSparkleMini />
                 </button>
                 <button
                   onClick={generateInsights}
@@ -868,7 +863,7 @@ export function ShowcaseBuilder({
               </>
             )}
           </div>
-        </div>
+        </OrbiInsightCard>
       )}
     </div>
   );

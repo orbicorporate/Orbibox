@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getBusinessProgress } from "@/lib/progress";
 import { ProgressCard } from "@/components/ProgressWidgets";
-import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 import { QRCodeButton } from "@/components/ui/QRCodeButton";
 
@@ -301,30 +301,20 @@ export default async function HojePage() {
       </div>
 
       {/* Insight Orbi — sempre tem um, prioriza o que ainda falta fazer */}
-      <div data-tour="insights" className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
-        <OrbiOrb size={56} />
-        <p className="mt-4 font-[family-name:var(--font-manrope)] text-[20px] font-medium">
-          Insight Orbi
-        </p>
-        <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-          {insight.description}
-        </p>
-        {insight.share ? (
-          <ShareOrbiboxButton
-            url={shareUrl}
-            title={`${business!.name} — Orbibox`}
-            className="mt-5 inline-flex items-center gap-2 rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white"
-          >
-            {insight.ctaLabel} →
-          </ShareOrbiboxButton>
-        ) : (
-          <Link
-            href={insight.href}
-            className="mt-5 inline-flex items-center gap-2 rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white"
-          >
-            {insight.ctaLabel} →
-          </Link>
-        )}
+      <div data-tour="insights">
+        <OrbiInsightCard>
+          <OrbiInsightHeader />
+          <OrbiInsightMessage>{insight.description}</OrbiInsightMessage>
+          {insight.share ? (
+            <ShareOrbiboxButton url={shareUrl} title={`${business!.name} — Orbibox`} className={orbiInsightCtaClass}>
+              {insight.ctaLabel} <OrbiSparkleMini />
+            </ShareOrbiboxButton>
+          ) : (
+            <Link href={insight.href} className={orbiInsightCtaClass}>
+              {insight.ctaLabel} <OrbiSparkleMini />
+            </Link>
+          )}
+        </OrbiInsightCard>
       </div>
     </div>
   );

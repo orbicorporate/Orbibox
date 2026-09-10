@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/components/orbi/OrbiInsightCard";
 
 type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; curation_question: string | null; curation_options: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
@@ -265,12 +266,12 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
       </div>
 
       {/* Orbi Insight */}
-      <div className="rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
-        <p className="text-[14px] font-medium"><span className="orbi-gradient-text">✦</span> Orbi Insight</p>
-        <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
+      <OrbiInsightCard>
+        <OrbiInsightHeader />
+        <OrbiInsightMessage>
           {state.agent_name} está pronta para performar com abordagens {casual ? "próximas e inspiradoras" : "precisas e consultivas"} para os visitantes de {businessName}.
-        </p>
-      </div>
+        </OrbiInsightMessage>
+      </OrbiInsightCard>
 
       <button onClick={save} disabled={saving} className="rounded-full bg-button-primary py-4 text-[13px] font-medium uppercase tracking-wide text-white disabled:opacity-50">
         {saving ? "Salvando…" : saved ? "✓ Personalidade salva" : "Salvar personalidade"}

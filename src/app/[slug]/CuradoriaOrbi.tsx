@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { formatPrice } from "@/lib/showcase";
+import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/components/orbi/OrbiInsightCard";
 
 type Product = { id: string; title: string; price: number | null; price_type: string | null; price_max: number | null; image_url: string | null };
 
@@ -70,14 +71,13 @@ export function CuradoriaOrbi({
   if (!loadingQ && !pergunta) return null;
 
   return (
-    <div className={`rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${compact ? "" : ""}`}>
-      <div className="flex items-center gap-2.5">
-        <OrbiParticleSphere size={32} colors={orbiColors ?? undefined} vivid className="rounded-full" />
-        <span className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Orbi recomenda</span>
+    <OrbiInsightCard className={compact ? "" : ""}>
+      <div className="flex items-center gap-2">
+        <OrbiInsightHeader />
         <button
           onClick={() => setShowHelp((v) => !v)}
           aria-label="Como funciona"
-          className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-soft text-[11px] font-bold text-text-secondary"
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-white text-[11px] font-bold text-text-secondary"
         >
           ?
         </button>
@@ -120,7 +120,7 @@ export function CuradoriaOrbi({
             </div>
           ) : (
             <>
-              {frase && <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">{frase}</p>}
+              {frase && <OrbiInsightMessage>{frase}</OrbiInsightMessage>}
               {curados.length > 0 && (
                 <div className="mt-3 flex flex-col gap-2.5">
                   {curados.map((p) => (
@@ -148,6 +148,6 @@ export function CuradoriaOrbi({
           )}
         </>
       )}
-    </div>
+    </OrbiInsightCard>
   );
 }
