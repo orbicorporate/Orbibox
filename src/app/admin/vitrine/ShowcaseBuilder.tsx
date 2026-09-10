@@ -13,6 +13,7 @@ import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { MiniTour } from "@/components/tour/MiniTour";
 import { InspireModal } from "./InspireModal";
+import { VITRINE_THEMES } from "@/lib/vitrineThemes";
 import type { InspireThemeData } from "@/lib/inspirePhotos";
 import { useDialogs } from "@/hooks/useDialogs";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
@@ -117,6 +118,48 @@ export function ShowcaseBuilder({
   const [improving, setImproving] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [showInspire, setShowInspire] = useState(false);
+  const [applyingPalette, setApplyingPalette] = useState<string | null>(null);
+  const [currentBrandColors, setCurrentBrandColors] = useState<BrandColor[]>(brandColors);
+
+  // Aplica uma paleta na vitrine inteira: salva como paleta da marca E
+  // re-pinta os itens existentes (itens com foto recebem cor no rodapé;
+  // itens sem foto recebem cor de fundo). Distribui as cores alternando pra
+  // não ficar tudo igual.
+  async function aplicarPaleta(paletteId: string, cores: BrandColor[]) {
+    if (applyingPalette || cores.length === 0) return;
+    setApplyingPalette(paletteId);
+    snapshot();
+
+    // Cores utilizáveis (pula a primeira, que costuma ser o fundo claro).
+    const usaveis = cores.length > 2 ? cores.slice(1) : cores;
+
+    const updates = items.map((item, idx) => {
+      const cor = usaveis[idx % usaveis.length].hex;
+      // Com foto: pinta o rodapé. Sem foto: pinta o box.
+      return item.image_url
+        ? { id: item.id, footer_color: cor }
+        : { id: item.id, box_color: cor };
+    });
+
+    setItems((prev) =>
+      prev.map((item, idx) => {
+        const cor = usaveis[idx % usaveis.length].hex;
+        return item.image_url ? { ...item, footer_color: cor } : { ...item, box_color: cor };
+      })
+    );
+    setCurrentBrandColors(cores);
+
+    await Promise.all([
+      supabase.from("businesses").update({ brand_colors: cores }).eq("id", businessId),
+      ...updates.map((u) =>
+        supabase
+          .from("content_items")
+          .update("footer_color" in u ? { footer_color: u.footer_color } : { box_color: u.box_color })
+          .eq("id", u.id)
+      ),
+    ]);
+    setApplyingPalette(null);
+  }
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
@@ -484,6 +527,44 @@ export function ShowcaseBuilder({
   return (
     <div className="mt-5 flex flex-col">
       <DialogRenderer />
+
+      <button
+        onClick={() => setShowInspire(true)}
+        className="orbi-gradient mb-4 flex items-center gap-3 rounded-[22px] p-4 text-left text-on-background shadow-[0_4px_20px_rgba(183,243,74,0.25)]"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-white/40 text-[20px]">✦</span>
+        <span className="flex-1">
+          <span className="block text-[15px] font-semibold leading-tight">Inspire-se pra montar sua vitrine</span>
+          <span className="block text-[12.5px] leading-snug opacity-80">Veja vitrines prontas por tipo de negócio e aplique o estilo num toque</span>
+        </span>
+        <span className="text-[18px]">→</span>
+      </button>
+
+      {items.length > 0 && (
+        <div className="mb-4 rounded-[18px] border border-divider bg-surface-white p-3">
+          <p className="mb-2 px-1 text-[12px] font-medium text-text-secondary">Paleta da vitrine · toque pra aplicar</p>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            {currentBrandColors.length > 0 && (
+              <PaletteChip
+                label="✦ Sugestão da Orbi"
+                cores={currentBrandColors}
+                loading={applyingPalette === "orbi"}
+                onClick={() => aplicarPaleta("orbi", currentBrandColors)}
+              />
+            )}
+            {VITRINE_THEMES.map((t) => (
+              <PaletteChip
+                key={t.id}
+                label={t.name}
+                cores={t.colors}
+                loading={applyingPalette === t.id}
+                onClick={() => aplicarPaleta(t.id, t.colors)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={autoArrange}
@@ -500,9 +581,6 @@ export function ShowcaseBuilder({
         </button>
         <button onClick={() => setShowImport((v) => !v)} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
           ✦ Importar do site
-        </button>
-        <button onClick={() => setShowInspire(true)} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
-          ✦ Inspire-se
         </button>
         <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
           Ver publicado ↗
@@ -784,6 +862,27 @@ export function ShowcaseBuilder({
         </div>
       )}
     </div>
+  );
+}
+
+function PaletteChip({ label, cores, loading, onClick }: { label: string; cores: { hex: string }[]; loading: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="flex shrink-0 items-center gap-2 rounded-full border border-divider bg-surface-white px-3 py-2 disabled:opacity-50"
+    >
+      <span className="flex">
+        {cores.slice(0, 4).map((c, i) => (
+          <span
+            key={i}
+            className="h-5 w-5 rounded-full border-2 border-surface-white"
+            style={{ backgroundColor: c.hex, marginLeft: i === 0 ? 0 : -8 }}
+          />
+        ))}
+      </span>
+      <span className="whitespace-nowrap text-[12px] font-medium">{loading ? "Aplicando…" : label}</span>
+    </button>
   );
 }
 
