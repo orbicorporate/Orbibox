@@ -6,6 +6,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { HelperText } from "@/components/ui/HelperText";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
 import { OrbiVisualPanel } from "./OrbiVisualPanel";
 
@@ -133,7 +134,7 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
   }
 
   const campo = "mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background";
-  const rotulo = "mt-5 text-[12px] uppercase tracking-wide text-text-tertiary";
+  const rotulo = "mt-7 text-[13px] uppercase tracking-wide text-text-tertiary";
 
   // Sinaliza o que a Orbi realmente sabe — sem chip decorativo.
   const conhecimento = [
@@ -148,14 +149,14 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
       {/* Logotipo — super indicado: usado como avatar da tela inicial e vira
           sugestão de ícone em qualquer box, novo ou existente. */}
       <div className="rounded-[24px] orbi-gradient p-[1.5px]">
-        <div className="rounded-[23px] bg-surface-white p-5">
+        <div className="rounded-[23px] bg-surface-white p-6">
           <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">
             Logotipo da empresa <span className="orbi-gradient-text">★ super indicado</span>
           </p>
-          <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+          <HelperText>
             Fica disponível como avatar da tela inicial e, a partir de agora, também vira sugestão pronta na biblioteca de ícones de qualquer box — inclusive os que você criar depois.
-          </p>
-          <div className="mt-3">
+          </HelperText>
+          <div className="mt-4">
             <ImageUpload
               value={b.logo_url}
               businessId={b.id}
@@ -167,19 +168,19 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-6">
         <OrbiVisualPanel businessId={b.id} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} />
       </div>
 
       {/* Capa do link — a imagem estática que aparece quando alguém cola o
           link no WhatsApp, Instagram etc. Sem escolher uma, usa a capa da
           Vitrine ou o logotipo, nessa ordem (a mesma cascata de sempre). */}
-      <div className="mt-4 rounded-[24px] bg-surface-soft p-5">
-        <p className="text-[14px] font-medium">Capa do link</p>
-        <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+      <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
+        <p className="text-[15px] font-medium">Capa do link</p>
+        <HelperText>
           A imagem que aparece quando alguém cola seu link no WhatsApp, Instagram ou qualquer outro app. Sem escolher uma aqui, usa automaticamente a capa da Vitrine ou o logotipo.
-        </p>
-        <div className="mt-3">
+        </HelperText>
+        <div className="mt-4">
           <ImageUpload
             value={b.share_image_url}
             businessId={b.id}
@@ -189,7 +190,7 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
           />
         </div>
         {!b.share_image_url && (
-          <p className="mt-2 text-[12px] text-text-tertiary">
+          <p className="mt-3 text-[13px] text-text-tertiary">
             {(b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && (b.vitrine_cover_urls as string[])[0]))
               ? "Hoje está usando a capa da Vitrine."
               : b.logo_url
@@ -198,10 +199,10 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
           </p>
         )}
 
-        <p className="mt-4 text-[13px] font-medium">Descrição do link</p>
-        <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
+        <p className="mt-6 text-[14px] font-medium">Descrição do link</p>
+        <HelperText>
           O texto que aparece embaixo do nome — que já mostra o nome do negócio, então não precisa repetir aqui. Curto é melhor: até 3 linhas cabem no preview do WhatsApp.
-        </p>
+        </HelperText>
         <textarea
           value={b.share_description ?? ""}
           onChange={(e) => set("share_description", e.target.value)}
@@ -209,33 +210,31 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
           placeholder="Ex.: Agência full-service que une dados, estratégia e criatividade."
           maxLength={90}
           rows={3}
-          className="mt-2 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+          className="mt-3 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
         />
-        <div className="mt-1 flex items-center justify-between">
+        <div className="mt-2 flex items-center justify-between">
           <button
             onClick={generateShareDescription}
             disabled={generatingDesc}
-            className="rounded-full orbi-gradient px-4 py-1.5 text-[12px] font-medium text-on-background disabled:opacity-60"
+            className="rounded-full orbi-gradient px-4 py-1.5 text-[13px] font-medium text-on-background disabled:opacity-60"
           >
             {generatingDesc ? "Gerando…" : "✦ Gerar com IA"}
           </button>
-          <p className="text-[11px] text-text-tertiary">{(b.share_description ?? "").length}/90</p>
+          <p className="text-[12px] text-text-tertiary">{(b.share_description ?? "").length}/90</p>
         </div>
       </div>
 
       {b.site_type && (
-        <div className="rounded-[22px] bg-surface-soft p-4">
-          <p className="text-[13px] text-text-secondary">
+        <div className="mt-4 rounded-[22px] bg-surface-soft p-5">
+          <p className="text-[14px] text-text-secondary">
             A Orbi classificou seu site como{" "}
             <span className="font-medium text-on-background">{TIPO_LABEL[b.site_type] ?? b.site_type}</span>.
           </p>
         </div>
       )}
 
-      <p className="mt-6 font-[family-name:var(--font-manrope)] text-[20px] font-medium">Contatos do box</p>
-      <p className="mt-1 text-[13px] text-text-secondary">
-        Aparecem como botões para o visitante. Deixe vazio o que não quiser mostrar.
-      </p>
+      <p className="mt-8 font-[family-name:var(--font-manrope)] text-[20px] font-medium">Contatos do box</p>
+      <HelperText>Aparecem como botões para o visitante. Deixe vazio o que não quiser mostrar.</HelperText>
 
       <p className={rotulo}>WhatsApp</p>
       <input
@@ -285,17 +284,15 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
         className={campo}
       />
 
-      <p className="mt-8 font-[family-name:var(--font-manrope)] text-[20px] font-medium">O que a Orbi sabe</p>
-      <p className="mt-1 text-[13px] text-text-secondary">
-        Quanto mais preenchido, menos ela precisa dizer que não sabe.
-      </p>
+      <p className="mt-10 font-[family-name:var(--font-manrope)] text-[20px] font-medium">O que a Orbi sabe</p>
+      <HelperText>Quanto mais preenchido, menos ela precisa dizer que não sabe.</HelperText>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2.5">
         {conhecimento.map((k) => (
           <span
             key={k.nome}
             title={k.obs}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] ${
               k.cheio ? "bg-orbi-gradient-start/30 text-on-background" : "bg-surface-soft text-text-tertiary"
             }`}
           >
@@ -305,26 +302,26 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
         ))}
       </div>
 
-      <div className="mt-5 rounded-[20px] bg-surface-soft p-4">
-        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Deixa a Orbi preencher a partir do seu site</p>
-        <p className="mt-1 text-[12px] text-text-secondary">Cola o link e ela lê a página e já preenche Sobre o negócio, Diferenciais e Políticas abaixo.</p>
-        <div className="mt-2 flex gap-2">
+      <div className="mt-6 rounded-[20px] bg-surface-soft p-5">
+        <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Deixa a Orbi preencher a partir do seu site</p>
+        <HelperText>Cola o link e ela lê a página e já preenche Sobre o negócio, Diferenciais e Políticas abaixo.</HelperText>
+        <div className="mt-3 flex gap-2">
           <input
             value={importUrl}
             onChange={(e) => setImportUrl(e.target.value)}
             placeholder="https://seusite.com.br"
-            className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+            className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
           <button
             onClick={importFromSite}
             disabled={importing || !importUrl.trim()}
-            className={`shrink-0 rounded-full px-4 py-2.5 text-[13px] font-medium ${importing ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background"} ${!importUrl.trim() && !importing ? "opacity-50" : ""}`}
+            className={`shrink-0 rounded-full px-4 py-2.5 text-[14px] font-medium ${importing ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background"} ${!importUrl.trim() && !importing ? "opacity-50" : ""}`}
           >
             {importing ? <OrbiWorking label="Lendo…" variant="inline" /> : "✦ Importar"}
           </button>
         </div>
         {importMsg && (
-          <p className={`mt-2 text-[12px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>
+          <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>
         )}
       </div>
 

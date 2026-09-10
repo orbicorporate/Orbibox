@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { youtubeId, instagramReelId, isVideoUrl } from "@/lib/showcase";
+import { HelperText } from "@/components/ui/HelperText";
 
 /** Campo pra adicionar vídeos (YouTube ou Reels do Instagram) a um carrossel
  * (produto ou história da marca) — reaproveitado em mais de um lugar do
@@ -46,15 +47,13 @@ export function YoutubeAdder({
   }
 
   return (
-    <div className="mt-3">
-      <p className="text-[12px] uppercase tracking-wide text-text-tertiary">{label} (opcional, até {max})</p>
-      <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
-        {hint} Pode adicionar até {max}.
-      </p>
+    <div className="mt-4">
+      <p className="text-[13px] uppercase tracking-wide text-text-tertiary">{label} (opcional, até {max})</p>
+      <HelperText>{`${hint} Pode adicionar até ${max}.`}</HelperText>
       {cheio ? (
-        <p className="mt-2 text-[12px] text-text-tertiary">Você já adicionou o máximo de {max} vídeos. Remova um pra trocar.</p>
+        <p className="mt-2 text-[13px] text-text-tertiary">Você já adicionou o máximo de {max} vídeos. Remova um pra trocar.</p>
       ) : (
-        <div className="mt-2 flex gap-2">
+        <div className="mt-3 flex gap-2">
           <input
             value={url}
             onChange={(e) => { setUrl(e.target.value); setErro(false); }}
@@ -66,9 +65,9 @@ export function YoutubeAdder({
           </button>
         </div>
       )}
-      {erro && <p className="mt-1.5 text-[12px] text-red-600">Esse link não parece ser do YouTube nem do Instagram. Confere e tenta de novo.</p>}
+      {erro && <p className="mt-1.5 text-[13px] text-red-600">Esse link não parece ser do YouTube nem do Instagram. Confere e tenta de novo.</p>}
       {showList && videos.length > 0 && (
-        <div className="mt-2 flex flex-col gap-2">
+        <div className="mt-3 flex flex-col gap-2">
           {videos.map((v) => {
             const ytId = youtubeId(v);
             const igId = instagramReelId(v);
@@ -81,7 +80,7 @@ export function YoutubeAdder({
                 {igId && (
                   <span className="flex h-12 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-soft text-[16px]">▶</span>
                 )}
-                <span className="min-w-0 flex-1 truncate text-[12px] text-text-secondary">
+                <span className="min-w-0 flex-1 truncate text-[13px] text-text-secondary">
                   {ytId ? "▶ YouTube · " : igId ? "▶ Reels · " : "▶ "}{v}
                 </span>
                 <button onClick={() => onRemove(v)} className="shrink-0 text-[13px] font-medium text-red-600">Remover</button>

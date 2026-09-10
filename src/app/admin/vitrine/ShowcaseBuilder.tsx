@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
+import { HelperText } from "@/components/ui/HelperText";
 import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
@@ -624,11 +625,9 @@ export function ShowcaseBuilder({
       {/* Título e subtítulo que aparecem no topo da página de catálogo pro
           visitante. Em branco, usa o padrão: "[Nome] — Catálogo" / "Explore
           nossas soluções." */}
-      <div className="mt-5 rounded-[24px] bg-surface-soft p-5">
-        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Título da página de catálogo</p>
-        <p className="mt-1 text-[13px] text-text-secondary">
-          O que o visitante vê no topo, ao abrir “O que fazemos”. Deixe em branco pra usar o padrão.
-        </p>
+      <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
+        <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Título da página de catálogo</p>
+        <HelperText>O que o visitante vê no topo, ao abrir “O que fazemos”. Deixe em branco pra usar o padrão.</HelperText>
         <input
           value={catalogTitle}
           onChange={(e) => setCatalogTitle(e.target.value)}
@@ -646,17 +645,17 @@ export function ShowcaseBuilder({
       </div>
 
       {/* Capa da Vitrine — opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
-      <div className="mt-5 rounded-[24px] bg-surface-soft p-5">
+      <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Capa da Vitrine (opcional)</p>
-          <button onClick={() => setShowCoverExample(true)} className="shrink-0 rounded-full border border-divider bg-surface-white px-3 py-1 text-[11px] font-medium text-text-secondary">
+          <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Capa da Vitrine (opcional)</p>
+          <button onClick={() => setShowCoverExample(true)} className="shrink-0 rounded-full border border-divider bg-surface-white px-3 py-1 text-[12px] font-medium text-text-secondary">
             👁 Ver exemplo
           </button>
         </div>
-        <p className="mt-1 text-[13px] text-text-secondary">
+        <HelperText>
           Uma ou mais fotos grandes no topo da sua Vitrine, antes dos itens — com mais de uma, vira um carrossel (até 6). Pode usar fotos da empresa, da equipe, do espaço ou dos bastidores, por exemplo.
-        </p>
-        <div className="mt-3">
+        </HelperText>
+        <div className="mt-4">
           <GalleryUpload
             value={coverUrls}
             businessId={businessId}
@@ -717,15 +716,15 @@ export function ShowcaseBuilder({
         </div>
       )}
 
-      <p className="mt-3 text-[13px] text-text-secondary">
+      <p className="mt-4 text-[14px] text-text-secondary">
         {publishedCount === 0 ? "Nenhum item ativo ainda." : `${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"} na sua vitrine.`}
         {" "}Toque num item pra editar.
       </p>
 
       {items.length === 0 && (
-        <div className="mt-5 rounded-[28px] border border-divider bg-surface-white p-6">
+        <div className="mt-6 rounded-[28px] border border-divider bg-surface-white p-6">
           <p className="text-[15px] font-medium">✦ Comece importando seu catálogo</p>
-          <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
+          <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
             Cole o link do seu site e a Orbi organiza seus produtos ou serviços na Vitrine automaticamente — muito
             mais rápido do que criar item por item.
           </p>
@@ -1304,18 +1303,18 @@ function ItemCard({
             </div>
 
             {(item.link_kind ?? "produto") === "produto" && (
-              <div className="rounded-[22px] border border-orbi-gradient-start/30 bg-orbi-gradient-start/[0.06] p-4">
-                <p className="inline-flex items-center gap-1.5 rounded-full bg-surface-white px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+              <div className="rounded-[22px] border border-orbi-gradient-start/30 bg-orbi-gradient-start/[0.06] p-5">
+                <p className="inline-flex items-center gap-1.5 rounded-full bg-surface-white px-2.5 py-1 text-[12px] font-medium uppercase tracking-wide text-text-secondary">
                   📄 Conteúdo da página própria
                 </p>
-                <p className="mt-2.5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Fotos e vídeos (até 6)</p>
-                <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
+                <p className="mt-3 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Fotos e vídeos (até 6)</p>
+                <HelperText>
                   Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos/vídeos que viram um carrossel dentro dela — pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
-                </p>
-                <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
-                  <span className="font-medium text-text-secondary">Repara:</span> esse carrossel é sempre em formato retrato — diferente da foto de capa lá em cima, que segue o formato do card ({SIZE_LABEL[sizeOf(item.layout_size)]}). São duas coisas independentes.
-                </p>
-                <div className="mt-2">
+                </HelperText>
+                <HelperText>
+                  {`Repara: esse carrossel é sempre em formato retrato — diferente da foto de capa lá em cima, que segue o formato do card (${SIZE_LABEL[sizeOf(item.layout_size)]}). São duas coisas independentes.`}
+                </HelperText>
+                <div className="mt-3">
                   <GalleryUpload
                     value={item.gallery_urls}
                     businessId={businessId}
@@ -1455,13 +1454,11 @@ function ItemCard({
             </div>
 
             <div>
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Agendar (opcional)</p>
-              <p className="mt-1 text-[12px] text-text-secondary">
-                Publica e some da Vitrine sozinho nas datas escolhidas — bom pra promoção por tempo limitado.
-              </p>
-              <div className="mt-2 flex gap-2">
+              <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Agendar (opcional)</p>
+              <HelperText>Publica e some da Vitrine sozinho nas datas escolhidas — bom pra promoção por tempo limitado.</HelperText>
+              <div className="mt-3 flex gap-2">
                 <div className="flex-1">
-                  <p className="text-[11px] text-text-tertiary">Começa em</p>
+                  <p className="text-[12px] text-text-tertiary">Começa em</p>
                   <input
                     type="datetime-local"
                     defaultValue={isoToDatetimeLocal(item.starts_at)}
@@ -1470,7 +1467,7 @@ function ItemCard({
                   />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[11px] text-text-tertiary">Termina em</p>
+                  <p className="text-[12px] text-text-tertiary">Termina em</p>
                   <input
                     type="datetime-local"
                     defaultValue={isoToDatetimeLocal(item.ends_at)}
@@ -1480,14 +1477,14 @@ function ItemCard({
                 </div>
               </div>
               {(item.starts_at || item.ends_at) && (
-                <button onClick={() => save(item.id, { starts_at: null, ends_at: null })} className="mt-2 text-[11px] text-red-600">
+                <button onClick={() => save(item.id, { starts_at: null, ends_at: null })} className="mt-2 text-[12px] text-red-600">
                   Remover agendamento
                 </button>
               )}
             </div>
 
             <div>
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Categoria (vira seção)</p>
+              <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Categoria (vira seção)</p>
               <select
                 value={item.brand_label ?? ""}
                 onChange={async (e) => {
@@ -1511,21 +1508,19 @@ function ItemCard({
             </div>
 
             <div data-tour="item-destino">
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Ao tocar no card…</p>
-              <p className="mt-1 text-[12px] leading-relaxed text-text-tertiary">
-                Escolha o que acontece quando o cliente toca neste item na sua vitrine.
-              </p>
-              <div className="mt-3 flex flex-col gap-2">
+              <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Ao tocar no card…</p>
+              <HelperText>Escolha o que acontece quando o cliente toca neste item na sua vitrine.</HelperText>
+              <div className="mt-4 flex flex-col gap-2.5">
                 {/* Página própria */}
                 <button
                   onClick={() => save(item.id, { link_kind: "produto", target_url: null })}
-                  className={`flex flex-col items-start gap-0.5 rounded-2xl border-2 px-4 py-3 text-left ${(item.link_kind ?? "produto") === "produto" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
+                  className={`flex flex-col items-start gap-1 rounded-2xl border-2 px-4 py-3.5 text-left ${(item.link_kind ?? "produto") === "produto" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                 >
-                  <span className="flex items-center gap-1.5 text-[13px] font-semibold">
+                  <span className="flex items-center gap-1.5 text-[14px] font-semibold">
                     {(item.link_kind ?? "produto") === "produto" && <span>✓</span>}
                     Abrir uma página exclusiva do produto
                   </span>
-                  <span className="text-[12px] leading-relaxed text-text-secondary">
+                  <span className="text-[13px] leading-relaxed text-text-secondary">
                     O Orbibox monta uma página só desse item — com a capa, as fotos do carrossel, a descrição e o preço. Ideal pra apresentar bem antes do cliente decidir.
                   </span>
                 </button>
@@ -1533,13 +1528,13 @@ function ItemCard({
                 {/* Link externo */}
                 <button
                   onClick={() => save(item.id, { link_kind: "externo", target_url: item.target_url ?? "" })}
-                  className={`flex flex-col items-start gap-0.5 rounded-2xl border-2 px-4 py-3 text-left ${item.link_kind === "externo" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
+                  className={`flex flex-col items-start gap-1 rounded-2xl border-2 px-4 py-3.5 text-left ${item.link_kind === "externo" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                 >
-                  <span className="flex items-center gap-1.5 text-[13px] font-semibold">
+                  <span className="flex items-center gap-1.5 text-[14px] font-semibold">
                     {item.link_kind === "externo" && <span>✓</span>}
                     Levar para um link externo
                   </span>
-                  <span className="text-[12px] leading-relaxed text-text-secondary">
+                  <span className="text-[13px] leading-relaxed text-text-secondary">
                     Manda o cliente direto pra outro lugar — seu site, uma loja, o WhatsApp. Não abre página no Orbibox.
                   </span>
                 </button>
@@ -1547,20 +1542,20 @@ function ItemCard({
                 {/* Sem página */}
                 <button
                   onClick={() => save(item.id, { link_kind: "nenhum", target_url: null })}
-                  className={`flex flex-col items-start gap-0.5 rounded-2xl border-2 px-4 py-3 text-left ${item.link_kind === "nenhum" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
+                  className={`flex flex-col items-start gap-1 rounded-2xl border-2 px-4 py-3.5 text-left ${item.link_kind === "nenhum" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                 >
-                  <span className="flex items-center gap-1.5 text-[13px] font-semibold">
+                  <span className="flex items-center gap-1.5 text-[14px] font-semibold">
                     {item.link_kind === "nenhum" && <span>✓</span>}
                     Não abrir nada (só mostrar)
                   </span>
-                  <span className="text-[12px] leading-relaxed text-text-secondary">
+                  <span className="text-[13px] leading-relaxed text-text-secondary">
                     O card fica só como vitrine, sem ser clicável. Bom pra destacar algo que não precisa de página nem link.
                   </span>
                 </button>
               </div>
 
               {item.link_kind === "externo" && (
-                <div className="mt-3 flex flex-col gap-2">
+                <div className="mt-4 flex flex-col gap-2">
                   <input
                     value={item.target_url ?? ""}
                     onChange={(e) => patch(item.id, { target_url: e.target.value })}
@@ -1571,7 +1566,7 @@ function ItemCard({
                   {whatsapp && (
                     <button
                       onClick={() => save(item.id, { target_url: whatsappLink(whatsapp, `Olá! Vim pelo seu link, quero saber mais sobre "${item.title}".`) })}
-                      className="self-start rounded-full border border-[#25D366] px-3 py-1.5 text-[12px] font-medium text-on-background"
+                      className="self-start rounded-full border border-[#25D366] px-3 py-1.5 text-[13px] font-medium text-on-background"
                     >
                       ☎ Usar o WhatsApp da empresa
                     </button>

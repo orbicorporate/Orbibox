@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
+import { HelperText } from "@/components/ui/HelperText";
 import type { Database } from "@/lib/supabase/types";
 
 type Admin = Database["public"]["Tables"]["business_admins"]["Row"];
@@ -73,15 +74,14 @@ export function AdminsManager({
   }
 
   return (
-    <div className="mt-4 rounded-2xl border border-divider bg-surface-white p-4">
+    <div className="mt-4 rounded-2xl border border-divider bg-surface-white p-5">
       <DialogRenderer />
-      <p className="text-[14px] font-medium">Equipe · quem pode acessar</p>
-      <p className="mt-1 text-[12px] leading-relaxed text-text-secondary">
-        Convide alguém pelo e-mail pra ajudar a gerenciar esse Orbibox. A pessoa cria uma conta com esse mesmo e-mail
-        (ou faz login) e o acesso aparece automaticamente. Ela pode editar tudo, menos gerenciar a equipe e a cobrança.
-      </p>
+      <p className="text-[15px] font-medium">Equipe · quem pode acessar</p>
+      <HelperText>
+        Convide alguém pelo e-mail pra ajudar a gerenciar esse Orbibox. A pessoa cria uma conta com esse mesmo e-mail (ou faz login) e o acesso aparece automaticamente. Ela pode editar tudo, menos gerenciar a equipe e a cobrança.
+      </HelperText>
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-4 flex gap-2">
         <input
           value={email}
           onChange={(e) => { setEmail(e.target.value); setError(null); }}
