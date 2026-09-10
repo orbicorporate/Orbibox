@@ -109,6 +109,10 @@ export type Database = {
     }
     Views: { [_ in never]: never }
     Functions: {
+      owner_has_feature: {
+        Args: { p_owner_id: string; p_feature: string }
+        Returns: boolean
+      }
       claim_voucher: {
         Args: { p_voucher_id: string; p_visitor_name: string | null; p_visitor_whatsapp: string | null }
         Returns: { code: string; expires_at: string | null; title: string; discount_type: string; discount_value: number }[]

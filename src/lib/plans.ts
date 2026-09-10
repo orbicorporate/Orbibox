@@ -70,25 +70,16 @@ export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
 // estiver) não é o dono, então a leitura via RLS normal não enxergaria a
 // assinatura do dono. Precisa da service role.
 async function getOwnerFeatureAccess(ownerId: string, feature: "has_ai_chat" | "has_vouchers"): Promise<boolean> {
-  const { createServiceClient } = await import("@/lib/supabase/service");
-  const supabase = createServiceClient();
-
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("status, plan_id")
-    .eq("owner_id", ownerId)
-    .maybeSingle();
-
-  if (!subscription || !ACTIVE_STATUSES.has(subscription.status)) return false;
-  if (subscription.status === "trialing") return true; // teste dá acesso completo
-
-  const { data: plan } = await supabase
-    .from("plans")
-    .select("has_ai_chat, has_vouchers")
-    .eq("id", subscription.plan_id)
-    .maybeSingle();
-
-  return (plan?.[feature] as boolean | undefined) ?? false;
+  // Usa uma função no banco (security definer) via cliente normal — não
+  // depende mais da service role key, que estava fazendo o chat sumir na
+  // página pública quando a env não carregava direito.
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("owner_has_feature", { p_owner_id: ownerId, p_feature: feature });
+  if (error) {
+    console.error("owner_has_feature error:", error.message);
+    return false;
+  }
+  return data === true;
 }
 
 export function getOwnerHasAiChat(ownerId: string): Promise<boolean> {

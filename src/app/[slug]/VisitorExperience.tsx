@@ -400,9 +400,7 @@ export function VisitorExperience({
 
       {/* Orbi flutuante — sempre à mão, exceto quando o chat já está aberto ou
           o dono está visualizando a própria página. Só pra quem tem chat. */}
-      {/* DEBUG: sem condições, só pra testar renderização */}
-      <OrbiFloatingButton onOpen={() => chooseIntent("duvida")} orbiColors={orbiColors} agentName={agentName} />
-      {false && hasAiChat && intent !== "duvida" && sessionId && (
+      {hasAiChat && intent !== "duvida" && sessionId && (
         <OrbiFloatingButton onOpen={() => chooseIntent("duvida")} orbiColors={orbiColors} agentName={agentName} />
       )}
     </main>
