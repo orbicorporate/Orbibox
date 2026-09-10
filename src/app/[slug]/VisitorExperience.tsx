@@ -101,6 +101,12 @@ export function VisitorExperience({
   const searchParams = useSearchParams();
   const [intent, setIntent] = useState<Intent | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  // Cópia local editável dos boxes — o dono pode reordenar e renomear direto
+  // na Home (sem precisar ir pro painel), e isso atualiza tanto a tela na
+  // hora quanto o banco.
+  const [boxList, setBoxList] = useState<BoxRow[]>(boxes);
+  const [editingBoxId, setEditingBoxId] = useState<string | null>(null);
+  const [titleDraft, setTitleDraft] = useState("");
   // Pergunta digitada na tela cheia da CuradoriaOrbi — passa pro campo do
   // chat real já preenchida, pronta pra mandar, em vez de perder o que a
   // pessoa escreveu.
@@ -167,7 +173,7 @@ export function VisitorExperience({
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
   type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; address?: string; layoutOverride?: "largo" | "medio"; onClick: () => void };
-  const options: Option[] = boxes
+  const options: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
       if (hasAiChat) return true;
@@ -227,6 +233,39 @@ export function VisitorExperience({
     if (sessionId) {
       await supabase.from("visitor_sessions").update({ intent: value }).eq("id", sessionId);
     }
+  }
+
+  // Reordenar direto na Home — troca a posição desse box com o vizinho na
+  // direção pedida (dentre os que aparecem na tela agora).
+  async function moveOption(key: string, dir: -1 | 1) {
+    const idx = options.findIndex((o) => o.key === key);
+    const swapIdx = idx + dir;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= options.length) return;
+    const boxA = boxList.find((b) => b.id === options[idx].key);
+    const boxB = boxList.find((b) => b.id === options[swapIdx].key);
+    if (!boxA || !boxB) return;
+    setBoxList((prev) => prev.map((b) => (b.id === boxA.id ? { ...b, position: boxB.position } : b.id === boxB.id ? { ...b, position: boxA.position } : b)));
+    await Promise.all([
+      supabase.from("smart_boxes").update({ position: boxB.position }).eq("id", boxA.id),
+      supabase.from("smart_boxes").update({ position: boxA.position }).eq("id", boxB.id),
+    ]);
+  }
+
+  function startEditTitle(key: string, current: string) {
+    setEditingBoxId(key);
+    setTitleDraft(current);
+  }
+
+  async function saveTitle(key: string) {
+    setEditingBoxId(null);
+    const trimmed = titleDraft.trim();
+    const box = boxList.find((b) => b.id === key);
+    if (!box || !trimmed) return;
+    const cfg = (box.config ?? {}) as CustomConfig;
+    if (cfg.label === trimmed) return;
+    const nextCfg: CustomConfig = { ...cfg, label: trimmed };
+    setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, title: trimmed, config: nextCfg } : b)));
+    await supabase.from("smart_boxes").update({ title: trimmed, config: nextCfg }).eq("id", key);
   }
 
   const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
@@ -315,33 +354,98 @@ export function VisitorExperience({
                     withLayout.push({ o, largo: true });
                   }
                 }
-                return withLayout.map(({ o, largo }) => (
-                  <div key={o.key} className={largo ? "col-span-2" : "col-span-1"}>
+                return withLayout.map(({ o, largo }) => {
+                  const isEditingThis = editingBoxId === o.key;
+                  const titleNode = isEditingThis ? (
+                    <input
+                      value={titleDraft}
+                      onChange={(e) => setTitleDraft(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      onBlur={() => saveTitle(o.key)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                        if (e.key === "Escape") setEditingBoxId(null);
+                      }}
+                      autoFocus
+                      className="w-full rounded-lg border border-on-background/20 bg-white px-2 py-1 text-[15px] font-semibold outline-none"
+                    />
+                  ) : (
+                    <>
+                      {o.t}{o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}
+                      {isOwner && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); startEditTitle(o.key, o.t); }}
+                          className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface-soft text-[10px] align-middle text-text-tertiary"
+                          aria-label="Editar título"
+                        >
+                          ✎
+                        </span>
+                      )}
+                    </>
+                  );
+                  return (
+                  <div key={o.key} className={`relative ${largo ? "col-span-2" : "col-span-1"}`}>
+                    {isOwner && (
+                      <div className="absolute right-2.5 top-2.5 z-10 flex gap-1">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); moveOption(o.key, -1); }}
+                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
+                          aria-label="Mover pra cima"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6" /></svg>
+                        </span>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); moveOption(o.key, 1); }}
+                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
+                          aria-label="Mover pra baixo"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                        </span>
+                      </div>
+                    )}
                     {largo ? (
                       // Card LARGO — horizontal (ícone + texto na linha)
-                      <button onClick={o.onClick} className={`flex w-full items-center gap-4 rounded-[24px] bg-surface-white p-5 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => !isEditingThis && o.onClick()}
+                        onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
+                        className={`flex w-full items-center gap-4 rounded-[24px] bg-surface-white p-5 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
+                      >
                         <HomeIcon o={o} orbiColors={orbiColors} businessLogo={business.logo_url} />
                         <span className="min-w-0 flex-1">
-                          <span className="block text-[17px] font-semibold">{o.t}{o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}</span>
+                          <span className="block text-[17px] font-semibold">{titleNode}</span>
                           {o.stars && <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
                           <span className="mt-0.5 block text-[13px] text-text-tertiary">{o.ai ? `Fale com a ${agentName}, nossa IA.` : o.d}</span>
                         </span>
                         <span className="shrink-0 text-text-tertiary">{o.address ? (expandedBox === o.key ? "▾" : "▸") : "→"}</span>
-                      </button>
+                      </div>
                     ) : (
                       // Card MÉDIO — vertical (ícone em cima, texto embaixo).
                       // O título tem altura mínima de 2 linhas sempre — assim
                       // a descrição começa na mesma altura nos dois cards da
                       // dupla, mesmo quando um título quebra em 2 linhas e o
                       // outro cabe numa só.
-                      <button onClick={o.onClick} className={`flex h-full min-h-[168px] w-full flex-col justify-between rounded-[24px] bg-surface-white p-5 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => !isEditingThis && o.onClick()}
+                        onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
+                        className={`flex h-full min-h-[168px] w-full flex-col justify-between rounded-[24px] bg-surface-white p-5 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
+                      >
                         <HomeIcon o={o} orbiColors={orbiColors} businessLogo={business.logo_url} />
                         <span>
-                          <span className="flex min-h-[48px] items-end text-[19px] font-semibold leading-tight">{o.t}{o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}</span>
+                          <span className="flex min-h-[48px] items-end text-[19px] font-semibold leading-tight">{titleNode}</span>
                           {o.stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
                           <span className="mt-1 block text-[13px] leading-snug text-text-tertiary">{o.ai ? `Fale com a ${agentName}.` : o.d}</span>
                         </span>
-                      </button>
+                      </div>
                     )}
                     {/* Endereço expande embaixo */}
                     {o.address && expandedBox === o.key && (
@@ -356,7 +460,8 @@ export function VisitorExperience({
                       </div>
                     )}
                   </div>
-                ));
+                  );
+                });
               })()}
               {options.length === 0 && (
                 <div className="col-span-2 rounded-[24px] bg-surface-white p-5 text-center shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
