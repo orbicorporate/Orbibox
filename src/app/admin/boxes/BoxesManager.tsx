@@ -12,6 +12,7 @@ import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon, isVideoUrl } from "@/lib/showcase";
+import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery } from "@/lib/logoGallery";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
@@ -470,28 +471,24 @@ export function BoxesManager({
 
               {!isHero && (
                 <>
-                  <div className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-soft p-3">
-                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: fg }}>
-                      {icon === "__orb__" ? (
-                        <OrbiParticleSphere size={36} colors={orbiColors ?? undefined} />
-                      ) : icon === "__orbcheck__" ? (
-                        <OrbiParticleSphere size={36} variant="check" colors={orbiColors ?? undefined} />
-                      ) : icon === "__orbwa__" || icon === "__wadisc__" ? (
-                        <OrbiContactDisc size={36} />
-                      ) : icon === "__google__" ? (
-                        <OrbiGoogleIcon size={36} />
-                      ) : icon === "__pin__" ? (
-                        <OrbiMapPin size={26} />
-                      ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
-                        <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={33} />
-                      ) : (
-                        icon
-                      )}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-[13px] font-medium">{label || suggestedName}</p>
-                      <p className="text-[11px] text-text-tertiary">assim aparece pro visitante</p>
-                    </div>
+                  <div className="mt-3">
+                    <p className="mb-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">Assim aparece pro visitante</p>
+                    <HomeOptionCardPreview
+                      layout={cfg?.layout && cfg.layout !== "auto" ? cfg.layout : "medio"}
+                      icon={icon}
+                      boxLogo={cfg?.logo_url}
+                      color={color}
+                      orbiColors={orbiColors}
+                      businessLogo={logoUrl}
+                      title={label || suggestedName}
+                      ai={m.assinatura}
+                      stars={cfg?.action === "avaliar"}
+                      description={cfg?.subtitle || m.explica}
+                      className={(!cfg?.layout || cfg.layout === "auto") ? "max-w-[190px]" : cfg.layout === "medio" ? "max-w-[190px]" : ""}
+                    />
+                    {(!cfg?.layout || cfg.layout === "auto") && (
+                      <p className="mt-1.5 text-[11px] text-text-tertiary">No automático o formato real pode variar — aqui é uma prévia representativa.</p>
+                    )}
                   </div>
 
                   {!m.assinatura && (

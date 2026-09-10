@@ -11,13 +11,12 @@ import { CuradoriaOrbi } from "./CuradoriaOrbi";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
-import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
-import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
-import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, isAnimatedIcon, youtubeId, instagramReelId } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, youtubeId, instagramReelId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
+import { homeCardShellClass, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
 
 type Business = {
   id: string;
@@ -416,15 +415,21 @@ export function VisitorExperience({
                         tabIndex={0}
                         onClick={() => !isEditingThis && o.onClick()}
                         onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
-                        className={`flex w-full items-center gap-4 rounded-[24px] bg-surface-white p-5 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
+                        className={homeCardShellClass("largo", o.ai)}
                       >
-                        <HomeIcon o={o} orbiColors={orbiColors} businessLogo={business.logo_url} />
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-[17px] font-semibold">{titleNode}</span>
-                          {o.stars && <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
-                          <span className="mt-0.5 block text-[13px] text-text-tertiary">{o.ai ? `Fale com a ${agentName}, nossa IA.` : o.d}</span>
-                        </span>
-                        <span className="shrink-0 text-text-tertiary">{o.address ? (expandedBox === o.key ? "▾" : "▸") : "→"}</span>
+                        <HomeOptionCardContent
+                          layout="largo"
+                          icon={o.icon}
+                          boxLogo={o.boxLogo}
+                          color={o.color}
+                          orbiColors={orbiColors}
+                          businessLogo={business.logo_url}
+                          titleNode={titleNode}
+                          ai={o.ai}
+                          stars={o.stars}
+                          description={o.ai ? `Fale com a ${agentName}, nossa IA.` : o.d}
+                          addressIndicator={o.address ? (expandedBox === o.key ? "▾" : "▸") : undefined}
+                        />
                       </div>
                     ) : (
                       // Card MÉDIO — vertical (ícone em cima, texto embaixo).
@@ -437,14 +442,20 @@ export function VisitorExperience({
                         tabIndex={0}
                         onClick={() => !isEditingThis && o.onClick()}
                         onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
-                        className={`flex h-full min-h-[168px] w-full flex-col justify-between rounded-[24px] bg-surface-white p-5 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
+                        className={homeCardShellClass("medio", o.ai)}
                       >
-                        <HomeIcon o={o} orbiColors={orbiColors} businessLogo={business.logo_url} />
-                        <span>
-                          <span className="flex min-h-[48px] items-end text-[19px] font-semibold leading-tight">{titleNode}</span>
-                          {o.stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
-                          <span className="mt-1 block text-[13px] leading-snug text-text-tertiary">{o.ai ? `Fale com a ${agentName}.` : o.d}</span>
-                        </span>
+                        <HomeOptionCardContent
+                          layout="medio"
+                          icon={o.icon}
+                          boxLogo={o.boxLogo}
+                          color={o.color}
+                          orbiColors={orbiColors}
+                          businessLogo={business.logo_url}
+                          titleNode={titleNode}
+                          ai={o.ai}
+                          stars={o.stars}
+                          description={o.ai ? `Fale com a ${agentName}.` : o.d}
+                        />
                       </div>
                     )}
                     {/* Endereço expande embaixo */}
@@ -825,31 +836,6 @@ function StoryView({
  */
 // Ícone das opções da tela inicial — cobre os tipos especiais (esfera, google,
 // pin, logo) e os emojis/letras comuns.
-function HomeIcon({ o, orbiColors, businessLogo }: { o: { icon: string; boxLogo?: string | null; color?: string }; orbiColors: string[] | null; businessLogo?: string | null }) {
-  return (
-    <span
-      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[16px] ${o.icon === "__logo__" ? "" : "overflow-hidden"} ${isAnimatedIcon(o.icon) ? "" : o.color && o.color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
-      style={isAnimatedIcon(o.icon) ? { background: "transparent" } : o.color && o.color !== "transparent" ? { backgroundColor: o.color } : o.color === "transparent" ? { background: "transparent" } : undefined}
-    >
-      {o.icon === "__orb__" ? (
-        <OrbiParticleSphere size={48} colors={orbiColors ?? undefined} className="rounded-full" />
-      ) : o.icon === "__orbcheck__" ? (
-        <OrbiParticleSphere size={48} variant="check" colors={orbiColors ?? undefined} className="rounded-full" />
-      ) : o.icon === "__orbwa__" || o.icon === "__wadisc__" ? (
-        <OrbiContactDisc size={48} className="rounded-full" />
-      ) : o.icon === "__google__" ? (
-        <OrbiGoogleIcon size={48} className="rounded-full" />
-      ) : o.icon === "__pin__" ? (
-        <OrbiMapPin size={32} />
-      ) : o.icon === "__logo__" && (o.boxLogo || businessLogo) ? (
-        <OrbiLogoBadge logoUrl={o.boxLogo || businessLogo!} size={44} />
-      ) : (
-        o.icon
-      )}
-    </span>
-  );
-}
-
 function formatMessage(text: string, products?: ContentItem[], slug?: string, businessId?: string, sessionId?: string | null, address?: string | null) {
   // Extrai marcações [[produto:ID]] e [[endereco]] e as troca por cards.
   const productIds: string[] = [];
