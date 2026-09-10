@@ -758,23 +758,27 @@ export function BoxesManager({
           {hasVouchers ? (
             <button
               onClick={novoBoxCupom}
-              className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
+              className="orbi-gradient flex items-center gap-3 rounded-[22px] p-[1.5px] text-left"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]">🎟️</span>
-              <span>
-                <span className="block text-[14px] font-medium">Box de cupons</span>
-                <span className="block text-[12.5px] text-text-tertiary">Desconto com código único por resgate.</span>
+              <span className="flex flex-1 items-center gap-3 rounded-[21px] bg-surface-white p-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[20px]">🎟️</span>
+                <span>
+                  <span className="block text-[14px] font-semibold">✦ Box de cupons · atrai clientes</span>
+                  <span className="block text-[12.5px] text-text-tertiary">Coloca suas ofertas na página. Código único, estoque controlado, captura contato.</span>
+                </span>
               </span>
             </button>
           ) : (
             <Link
-              href="/admin/planos"
-              className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left opacity-70"
+              href="/admin/vouchers"
+              className="orbi-gradient flex items-center gap-3 rounded-[22px] p-[1.5px] text-left"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]">🎟️</span>
-              <span>
-                <span className="block text-[14px] font-medium">Box de cupons 💎 Nióbio</span>
-                <span className="block text-[12.5px] text-text-tertiary">Exclusivo do plano Nióbio — toque pra ver.</span>
+              <span className="flex flex-1 items-center gap-3 rounded-[21px] bg-surface-white p-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[20px]">🎟️</span>
+                <span>
+                  <span className="block text-[14px] font-semibold">✦ Box de cupons · atrai clientes <span className="orbi-gradient-text">novidade</span></span>
+                  <span className="block text-[12.5px] text-text-tertiary">Ofertas com código único que trazem gente nova. Toque pra ver como funciona.</span>
+                </span>
               </span>
             </Link>
           )}
