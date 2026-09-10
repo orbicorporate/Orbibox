@@ -109,6 +109,22 @@ export type Database = {
     }
     Views: { [_ in never]: never }
     Functions: {
+      is_super_admin: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
+      master_list_businesses: {
+        Args: Record<string, never>
+        Returns: { business_id: string; name: string; slug: string; owner_id: string; owner_email: string; created_at: string; plan_id: string | null; sub_status: string | null; billing_cycle: string | null; trial_ends_at: string | null; active_boxes: number; content_items: number; total_visits: number; total_clicks: number; total_conversations: number; tour_completed: boolean }[]
+      }
+      master_metrics: {
+        Args: Record<string, never>
+        Returns: Record<string, number>
+      }
+      master_set_subscription: {
+        Args: { p_owner_id: string; p_plan_id: string; p_status: string }
+        Returns: undefined
+      }
       owner_has_feature: {
         Args: { p_owner_id: string; p_feature: string }
         Returns: boolean
