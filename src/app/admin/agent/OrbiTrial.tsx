@@ -71,7 +71,7 @@ function renderMsg(text: string, products: Product[], address: string | null) {
   );
 }
 
-export function OrbiTrial({ businessId, address, products, agentName, orbiColors }: { businessId: string; address: string | null; products: Product[]; agentName: string; orbiColors: string[] | null }) {
+export function OrbiTrial({ businessId, address, products, agentName, orbiColors, floating = false }: { businessId: string; address: string | null; products: Product[]; agentName: string; orbiColors: string[] | null; floating?: boolean }) {
   const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -129,6 +129,18 @@ export function OrbiTrial({ businessId, address, products, agentName, orbiColors
   const SUGGESTIONS = ["O que vocês fazem?", "Me mostra o que tem", "Onde vocês ficam?"];
 
   if (!open) {
+    if (floating) {
+      return (
+        <button
+          onClick={abrirTeste}
+          aria-label={`Experimentar a ${agentName}`}
+          className="flex h-14 w-14 items-center justify-center transition-transform active:scale-95"
+          style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.22))" }}
+        >
+          <OrbiParticleSphere size={56} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+        </button>
+      );
+    }
     return (
       <button onClick={abrirTeste} className="orbi-gradient mt-4 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[14px] font-semibold text-on-background transition-transform active:scale-[0.98]">
         <OrbiParticleSphere size={24} colors={orbiColors ?? undefined} vivid className="rounded-full" />

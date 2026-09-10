@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { BottomNav } from "@/components/mobile/BottomNav";
+import { AdminOrbiFloating } from "./AdminOrbiFloating";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { TourOverlay } from "@/components/tour/TourOverlay";
 
@@ -64,11 +65,28 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("business_id", business.id)
     .eq("seen_by_owner", false);
 
+  // Dados pra Orbi flutuante do painel: plano (define o comportamento) + o que
+  // ela precisa pra o teste (nome, cores, produtos, endereço).
+  const { getAccessInfoForBusiness } = await import("@/lib/plans");
+  const adminAccess = await getAccessInfoForBusiness(business.id);
+  const { data: adminAgentCfg } = await supabase.from("agent_configs").select("agent_name, orbi_colors").eq("business_id", business.id).maybeSingle();
+  const adminOrbiColors = Array.isArray(adminAgentCfg?.orbi_colors) && adminAgentCfg.orbi_colors.length >= 2 ? (adminAgentCfg.orbi_colors as string[]) : null;
+  const { data: adminBiz } = await supabase.from("businesses").select("address").eq("id", business.id).maybeSingle();
+  const { data: adminProducts } = await supabase.from("content_items").select("id, title, price, price_type, price_max, image_url, link_kind, target_url").eq("business_id", business.id).eq("status", "published").limit(20);
+
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background-main">
       <AppHeader unseenConversas={unseenConversas ?? 0} />
       <main className="flex-1 px-6 pb-28 pt-2">{children}</main>
       <BottomNav />
+      <AdminOrbiFloating
+        businessId={business.id}
+        hasAiChat={adminAccess.hasAiChat}
+        agentName={adminAgentCfg?.agent_name ?? "Orbi"}
+        orbiColors={adminOrbiColors}
+        address={adminBiz?.address ?? null}
+        products={adminProducts ?? []}
+      />
       <Suspense fallback={null}>
         <TourOverlay businessId={business.id} />
       </Suspense>
