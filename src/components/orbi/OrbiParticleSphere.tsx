@@ -292,19 +292,22 @@ export function OrbiParticleSphere({
           g += (morphColor[1] - g) * kMorph;
           b0 += (morphColor[2] - b0) * kMorph;
         }
-        const b = vivid ? 0.8 + depth * 0.4 : 0.65 + depth * 0.35;
-        const alpha = (0.95 + depth * 0.05) * (isMicro[i] ? microAlpha : 1);
+        const b = vivid ? Math.min(1, 1.05 + depth * 0.25) : 0.65 + depth * 0.35;
+        // No vivid, partículas quase opacas pra aparecerem forte sobre fundo
+        // claro (sem o círculo escuro atrás).
+        const alpha = vivid
+          ? (0.85 + depth * 0.15) * (isMicro[i] ? 0.7 : 1)
+          : (0.95 + depth * 0.05) * (isMicro[i] ? microAlpha : 1);
         ctx.beginPath();
-        // No modo vivid, os pontos da frente (depth alto) ganham um brilho
-        // (glow) que os deixa mais "de luz".
-        if (vivid && depth > 0.6) {
-          ctx.shadowBlur = 4 * depth;
-          ctx.shadowColor = `rgba(${Math.min(255, (r * b) | 0)},${Math.min(255, (g * b) | 0)},${Math.min(255, (b0 * b) | 0)},0.9)`;
+        // Pontos da frente ganham um brilho (glow) que os deixa mais "de luz".
+        if (vivid && depth > 0.45) {
+          ctx.shadowBlur = 7 * depth;
+          ctx.shadowColor = `rgba(${Math.min(255, (r * b) | 0)},${Math.min(255, (g * b) | 0)},${Math.min(255, (b0 * b) | 0)},1)`;
         } else {
           ctx.shadowBlur = 0;
         }
         ctx.fillStyle = `rgba(${Math.min(255, (r * b) | 0)},${Math.min(255, (g * b) | 0)},${Math.min(255, (b0 * b) | 0)},${alpha})`;
-        ctx.arc(px, py, rad, 0, 6.283185307179586);
+        ctx.arc(px, py, rad * (vivid ? 1.25 : 1), 0, 6.283185307179586);
         ctx.fill();
       }
       ctx.shadowBlur = 0;
