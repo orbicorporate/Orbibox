@@ -52,7 +52,7 @@ export function OrbiFloatingButton({ onOpen, orbiColors, agentName }: { onOpen: 
         style={{ filter: "drop-shadow(0 4px 14px rgba(0,0,0,0.3))" }}
       >
         {/* Halo branco leve e contido atrás, só pra destacar do fundo */}
-        <span className="absolute inset-2 rounded-full bg-white/70 blur-md" />
+        <span className="absolute inset-2 rounded-full bg-white/40 blur-md" />
         <OrbiParticleSphere size={64} colors={orbiColors ?? undefined} vivid className="relative rounded-full" />
       </button>
     </div>,
