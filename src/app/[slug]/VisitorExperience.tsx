@@ -1069,7 +1069,10 @@ function OrbiChat({
       {/* Campo fixo */}
       {/* Faixa de fundo sólida da base até acima do campo — impede que as
           mensagens que rolam por trás apareçam no vão abaixo do campo. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-background-main" />
+      {/* Degradê que esmaece de baixo (fundo sólido) pra transparente em cima,
+          escondendo o conteúdo que rola atrás do campo sem criar um retângulo
+          visível de cor diferente. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background-main via-background-main to-transparent" />
 
       <form
         onSubmit={(e) => { e.preventDefault(); sendText(input); }}
