@@ -399,9 +399,23 @@ export function BoxesManager({
             <div key={box.id} className={`rounded-[22px] border border-divider bg-surface-white p-4 ${off ? "opacity-55" : ""}`}>
               <div className="flex items-start gap-3">
                 {!isHero && (
-                  <div className="flex flex-col pt-1 text-[11px] text-text-tertiary">
-                    <button onClick={() => move(box, -1)} disabled={idx === 0} className="disabled:opacity-30" aria-label="Subir">▲</button>
-                    <button onClick={() => move(box, 1)} disabled={idx === visibleBoxes.length - 1} className="disabled:opacity-30" aria-label="Descer">▼</button>
+                  <div className="flex shrink-0 flex-col gap-1 pt-0.5">
+                    <button
+                      onClick={() => move(box, -1)}
+                      disabled={idx === 0}
+                      aria-label="Mover pra cima"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6" /></svg>
+                    </button>
+                    <button
+                      onClick={() => move(box, 1)}
+                      disabled={idx === visibleBoxes.length - 1}
+                      aria-label="Mover pra baixo"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                    </button>
                   </div>
                 )}
                 <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: isHero ? "#fff" : fg }}>

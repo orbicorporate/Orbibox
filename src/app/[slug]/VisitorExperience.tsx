@@ -289,16 +289,31 @@ export function VisitorExperience({
             </h1>
             <div className="mt-10 grid w-full grid-cols-2 gap-3">
               {(() => {
-                // Distribuição mista: cada opção recebe "largo" (ocupa a linha
-                // toda, card horizontal) ou "medio" (metade, card vertical).
-                // Padrão que cria ritmo visual: 2 médios, 1 largo, 2 médios…
-                // Endereço (que expande) e itens com estrela sempre largos.
-                const withLayout = options.map((o, i) => {
+                // Distribuição mista: cada opção recebe "largo" (linha toda,
+                // card horizontal e compacto) ou "medio" (metade, card
+                // vertical). Só forma par de médios quando o próximo item
+                // também pode ser médio — nunca deixa um médio sozinho na
+                // linha (isso é que deixava espaço vazio do lado). Endereço
+                // e itens com estrela são sempre largos.
+                const withLayout: { o: (typeof options)[number]; largo: boolean }[] = [];
+                for (let i = 0; i < options.length; i++) {
+                  const o = options[i];
                   const forcaLargo = !!o.address || !!o.stars;
-                  // A cada 3 posições, uma vira larga (índice 2, 5, 8…).
-                  const ritmoLargo = i % 3 === 2;
-                  return { o, largo: forcaLargo || ritmoLargo };
-                });
+                  if (forcaLargo) {
+                    withLayout.push({ o, largo: true });
+                    continue;
+                  }
+                  const proximo = options[i + 1];
+                  const proximoForcaLargo = proximo ? (!!proximo.address || !!proximo.stars) : true;
+                  if (proximo && !proximoForcaLargo) {
+                    withLayout.push({ o, largo: false }, { o: proximo, largo: false });
+                    i++;
+                  } else {
+                    // Sozinho (sem par pra formar médio+médio) — vira largo
+                    // em vez de ficar isolado ocupando só metade da linha.
+                    withLayout.push({ o, largo: true });
+                  }
+                }
                 return withLayout.map(({ o, largo }) => (
                   <div key={o.key} className={largo ? "col-span-2" : "col-span-1"}>
                     {largo ? (
@@ -313,11 +328,15 @@ export function VisitorExperience({
                         <span className="shrink-0 text-text-tertiary">{o.address ? (expandedBox === o.key ? "▾" : "▸") : "→"}</span>
                       </button>
                     ) : (
-                      // Card MÉDIO — vertical (ícone em cima, texto embaixo)
+                      // Card MÉDIO — vertical (ícone em cima, texto embaixo).
+                      // O título tem altura mínima de 2 linhas sempre — assim
+                      // a descrição começa na mesma altura nos dois cards da
+                      // dupla, mesmo quando um título quebra em 2 linhas e o
+                      // outro cabe numa só.
                       <button onClick={o.onClick} className={`flex h-full min-h-[168px] w-full flex-col justify-between rounded-[24px] bg-surface-white p-5 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}>
                         <HomeIcon o={o} orbiColors={orbiColors} businessLogo={business.logo_url} />
                         <span>
-                          <span className="block text-[19px] font-semibold leading-tight">{o.t}{o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}</span>
+                          <span className="flex min-h-[48px] items-end text-[19px] font-semibold leading-tight">{o.t}{o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}</span>
                           {o.stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
                           <span className="mt-1 block text-[13px] leading-snug text-text-tertiary">{o.ai ? `Fale com a ${agentName}.` : o.d}</span>
                         </span>
