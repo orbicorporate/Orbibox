@@ -52,11 +52,9 @@ export function OrbiFloatingButton({ onOpen, orbiColors, agentName }: { onOpen: 
         style={{ filter: "drop-shadow(0 4px 14px rgba(0,0,0,0.3))" }}
       >
         {/* Halo branco leve e contido atrás, só pra destacar do fundo */}
-        {/* Fundo escuro sólido e contido atrás — dá contraste real pras
-            partículas, sem ficar translúcido. Um pouco menor que a esfera
-            pra não virar "moldura". */}
-        <span className="absolute inset-[7px] rounded-full bg-[#1a1c20]" />
-        <span className="absolute inset-[5px] rounded-full bg-[#1a1c20] opacity-60 blur-[3px]" />
+        {/* Miolo bem preto e concentrado no centro, esmaecendo pras bordas —
+            dá profundidade e faz as partículas saltarem no meio. */}
+        <span className="absolute inset-[6px] rounded-full bg-[radial-gradient(circle,#000_0%,#000_30%,rgba(0,0,0,0.4)_60%,transparent_80%)]" />
         <OrbiParticleSphere size={64} colors={orbiColors ?? undefined} vivid className="relative rounded-full" />
         <OrbiParticleSphere size={64} colors={orbiColors ?? undefined} vivid className="relative rounded-full" />
       </button>
