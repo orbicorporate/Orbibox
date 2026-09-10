@@ -1091,11 +1091,14 @@ function ItemCard({
             }}
           />
           {item.title_placement === "sobre" && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent p-4 pt-10">
-              <span className="font-[family-name:var(--font-open-sans)] font-bold leading-snug text-white" style={{ fontSize: titleFontSize(item.title, sizeOf(item.layout_size)) }}>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-5 pt-12">
+              <span className="block font-[family-name:var(--font-manrope)] font-semibold leading-[1.05] text-white" style={{ fontSize: titleFontSize(item.title, sizeOf(item.layout_size)) }}>
                 {item.title}
               </span>
-              {priceLabel && <span className="mt-0.5 block text-[13px] text-white/85">{priceLabel}</span>}
+              {item.description?.trim() && (
+                <span className="mt-1 line-clamp-2 block text-[14px] leading-snug text-white/80">{item.description}</span>
+              )}
+              {priceLabel && <span className="mt-1.5 block text-[14px] font-medium text-white/90">{priceLabel}</span>}
             </div>
           )}
           </>

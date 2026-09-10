@@ -1341,11 +1341,14 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                           />
                           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
                           {item.title_placement === "sobre" && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent p-4 pt-10">
-                              <p className="font-[family-name:var(--font-manrope)] font-semibold leading-tight text-white" style={{ fontSize: titleFontSize(item.title, size) }}>
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-5 pt-12">
+                              <p className="font-[family-name:var(--font-manrope)] font-semibold leading-[1.05] text-white" style={{ fontSize: titleFontSize(item.title, size) }}>
                                 {item.title}
                               </p>
-                              {priceLabel && <p className="mt-0.5 text-[14px] text-white/85">{priceLabel}</p>}
+                              {item.description?.trim() && (
+                                <p className="mt-1 line-clamp-2 text-[14px] leading-snug text-white/80">{item.description}</p>
+                              )}
+                              {priceLabel && <p className="mt-1.5 text-[14px] font-medium text-white/90">{priceLabel}</p>}
                             </div>
                           )}
                         </>
