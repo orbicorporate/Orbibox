@@ -118,6 +118,7 @@ export function ShowcaseBuilder({
   const [improving, setImproving] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [showInspire, setShowInspire] = useState(false);
+  const [showCoverExample, setShowCoverExample] = useState(false);
   const [applyingPalette, setApplyingPalette] = useState<string | null>(null);
   const [currentBrandColors, setCurrentBrandColors] = useState<BrandColor[]>(brandColors);
 
@@ -646,15 +647,21 @@ export function ShowcaseBuilder({
 
       {/* Capa da Vitrine — opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
       <div className="mt-5 rounded-[24px] bg-surface-soft p-5">
-        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Capa da Vitrine (opcional)</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Capa da Vitrine (opcional)</p>
+          <button onClick={() => setShowCoverExample(true)} className="shrink-0 rounded-full border border-divider bg-surface-white px-3 py-1 text-[11px] font-medium text-text-secondary">
+            👁 Ver exemplo
+          </button>
+        </div>
         <p className="mt-1 text-[13px] text-text-secondary">
-          Uma ou mais fotos grandes no topo da sua Vitrine, antes dos itens — com mais de uma, vira um carrossel. Pode usar fotos da empresa, da equipe, do espaço ou dos bastidores, por exemplo.
+          Uma ou mais fotos grandes no topo da sua Vitrine, antes dos itens — com mais de uma, vira um carrossel (até 6). Pode usar fotos da empresa, da equipe, do espaço ou dos bastidores, por exemplo.
         </p>
         <div className="mt-3">
           <GalleryUpload
             value={coverUrls}
             businessId={businessId}
             max={6}
+            emptySlots={1}
             lockedRatio="banner"
             onChange={async (urls) => {
               snapshot();
@@ -664,6 +671,8 @@ export function ShowcaseBuilder({
           />
         </div>
       </div>
+
+      {showCoverExample && <CoverExampleModal onClose={() => setShowCoverExample(false)} />}
 
       {proposta && (
         <div className="mt-4 rounded-[24px] orbi-gradient p-[1.5px]">
@@ -861,6 +870,54 @@ export function ShowcaseBuilder({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+const COVER_EXAMPLE_PHOTOS = [
+  "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-01.jpg",
+  "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-02.jpg",
+  "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-03.jpg",
+];
+
+function CoverExampleModal({ onClose }: { onClose: () => void }) {
+  const [idx, setIdx] = useState(0);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6" onClick={onClose}>
+      <div className="w-full max-w-[360px] overflow-hidden rounded-[24px] bg-background-main" onClick={(e) => e.stopPropagation()}>
+        {/* Mini prévia de uma vitrine com capa em carrossel */}
+        <div className="bg-surface-soft p-4">
+          <div className="relative overflow-hidden rounded-[16px]" style={{ aspectRatio: 1920 / 830 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={COVER_EXAMPLE_PHOTOS[idx]} alt="Exemplo de capa" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+              {COVER_EXAMPLE_PHOTOS.map((_, i) => (
+                <span key={i} className={`h-1.5 rounded-full transition-all ${i === idx ? "w-4 bg-white" : "w-1.5 bg-white/60"}`} />
+              ))}
+            </div>
+          </div>
+          {/* Uns cards de vitrine embaixo, só pra dar contexto */}
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="aspect-square rounded-[12px] bg-surface-white" />
+            <div className="aspect-square rounded-[12px] bg-surface-white" />
+          </div>
+        </div>
+        <div className="p-4">
+          <p className="text-[14px] font-medium">Assim fica a capa</p>
+          <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+            As fotos grandes aparecem no topo da sua Vitrine, antes dos produtos. Com mais de uma, viram um carrossel
+            que desliza sozinho — ótimo pra mostrar o espaço, a equipe ou o clima do seu negócio.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button onClick={() => setIdx((i) => (i + 1) % COVER_EXAMPLE_PHOTOS.length)} className="flex-1 rounded-full bg-surface-soft py-2.5 text-[13px] font-medium">
+              Ver próxima foto
+            </button>
+            <button onClick={onClose} className="flex-1 rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
+              Entendi
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -28,6 +28,7 @@ export function GalleryUpload({
   lockedRatio,
   lockedReason,
   onFormatChosen,
+  emptySlots,
 }: {
   value: string[];
   onChange: (urls: string[]) => void;
@@ -36,6 +37,7 @@ export function GalleryUpload({
   lockedRatio?: Ratio | null;
   lockedReason?: string;
   onFormatChosen?: (ratio: Ratio) => void;
+  emptySlots?: number;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -88,7 +90,11 @@ export function GalleryUpload({
     onChange(next);
   }
 
-  const slots = Array.from({ length: max }, (_, i) => value[i] ?? null);
+  // Quantos slots mostrar: todas as fotos + N slots vazios (mas nunca mais
+  // que o máximo). Por padrão mostra tudo até o máximo (comportamento antigo).
+  const vazivosVisiveis = emptySlots ?? max;
+  const totalSlots = Math.min(max, value.length + vazivosVisiveis);
+  const slots = Array.from({ length: totalSlots }, (_, i) => value[i] ?? null);
 
   return (
     <div className="flex flex-col gap-2">
