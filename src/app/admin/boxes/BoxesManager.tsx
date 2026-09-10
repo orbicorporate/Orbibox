@@ -781,6 +781,80 @@ function BoxEditor({
         />
       )}
 
+      {isCustom && (
+        <>
+          <p className="text-[13px] font-medium text-text-secondary">Ao tocar, o botão…</p>
+          <div className="flex flex-wrap gap-2">
+            {(Object.keys(ACTION_LABEL) as (keyof typeof ACTION_LABEL)[]).map((a) => (
+              <button
+                key={a}
+                onClick={() => { update({ action: a }); if (!liveOnly) onSave({ ...cfg, action: a }); }}
+                className={`rounded-full px-3.5 py-2 text-[13px] font-medium ${cfg.action === a ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+              >
+                {ACTION_LABEL[a]}
+              </button>
+            ))}
+          </div>
+
+          {(cfg.action === "link" || cfg.action === "whatsapp") && (
+            <input
+              value={cfg.url ?? ""}
+              onChange={(e) => update({ url: e.target.value })}
+              onBlur={() => !liveOnly && onSave(cfg)}
+              placeholder={cfg.action === "whatsapp" ? "https://wa.me/55... (vazio usa o WhatsApp de Configurações)" : "https://..."}
+              className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+            />
+          )}
+
+          {cfg.action === "avaliar" && (
+            <div className="flex flex-col gap-2">
+              <input
+                value={cfg.url ?? ""}
+                onChange={(e) => update({ url: e.target.value })}
+                onBlur={() => !liveOnly && onSave(cfg)}
+                placeholder="Cole aqui o link de avaliação ou do perfil no Google"
+                className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+              />
+              <details className="rounded-2xl bg-surface-soft p-3">
+                <summary className="cursor-pointer list-none text-[12px] font-medium text-on-background">
+                  ✦ Como pegar o link do Google (toque pra ver)
+                </summary>
+                <div className="mt-2 flex flex-col gap-2 text-[12px] leading-relaxed text-text-secondary">
+                  <p className="font-medium text-on-background">Jeito mais rápido (leva direto pra dar a nota):</p>
+                  <ol className="ml-1 flex flex-col gap-1.5">
+                    <li>1. No computador, faça login no Google com o e-mail do seu perfil do <span className="font-medium">Google Meu Negócio</span> (o que gerencia a empresa).</li>
+                    <li>2. Pesquise o nome do seu negócio no Google. No painel da empresa (à direita), clique em <span className="font-medium">“Peça avaliações”</span>.</li>
+                    <li>3. O Google gera um link curto (ex: <span className="font-medium">g.page/r/…</span>). Copie e cole aqui.</li>
+                  </ol>
+                  <p className="mt-1 font-medium text-on-background">Não achou essa opção? Use o link do perfil:</p>
+                  <ol className="ml-1 flex flex-col gap-1.5">
+                    <li>1. Pesquise o nome do seu negócio no Google.</li>
+                    <li>2. No painel da empresa, toque em <span className="font-medium">Compartilhar</span> e copie o link do perfil.</li>
+                    <li>3. Cole aqui — o cliente cai no seu perfil do Google e avalia por lá.</li>
+                  </ol>
+                  <p className="mt-1">Ainda não tem o negócio no Google? Cadastre grátis em <span className="font-medium">google.com/business</span> — leva 5 minutos e é essencial pra aparecer nas buscas.</p>
+                </div>
+              </details>
+            </div>
+          )}
+
+          {cfg.action === "endereco" && (
+            <div className="flex flex-col gap-2">
+              <input
+                value={cfg.url ?? ""}
+                onChange={(e) => update({ url: e.target.value })}
+                onBlur={() => !liveOnly && onSave(cfg)}
+                placeholder="Rua, número — bairro, cidade"
+                className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+              />
+              <p className="text-[12px] leading-relaxed text-text-tertiary">
+                O visitante vê esse endereço com um botão pra abrir no Waze e outro no Google Maps.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
       {/* Ícone animado roda sempre com fundo transparente (regra do app) —
           então nem mostramos seletor de cor, só avisamos. */}
       {animated ? (
@@ -891,79 +965,6 @@ function BoxEditor({
         )}
       </div>
 
-      {isCustom && (
-        <>
-          <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ao tocar</p>
-          <div className="flex flex-wrap gap-1.5">
-            {(Object.keys(ACTION_LABEL) as (keyof typeof ACTION_LABEL)[]).map((a) => (
-              <button
-                key={a}
-                onClick={() => { update({ action: a }); if (!liveOnly) onSave({ ...cfg, action: a }); }}
-                className={`rounded-full px-3 py-1.5 text-[12px] ${cfg.action === a ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
-              >
-                {ACTION_LABEL[a]}
-              </button>
-            ))}
-          </div>
-
-          {(cfg.action === "link" || cfg.action === "whatsapp") && (
-            <input
-              value={cfg.url ?? ""}
-              onChange={(e) => update({ url: e.target.value })}
-              onBlur={() => !liveOnly && onSave(cfg)}
-              placeholder={cfg.action === "whatsapp" ? "https://wa.me/55... (vazio usa o WhatsApp de Configurações)" : "https://..."}
-              className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
-            />
-          )}
-
-          {cfg.action === "avaliar" && (
-            <div className="flex flex-col gap-2">
-              <input
-                value={cfg.url ?? ""}
-                onChange={(e) => update({ url: e.target.value })}
-                onBlur={() => !liveOnly && onSave(cfg)}
-                placeholder="Cole aqui o link de avaliação ou do perfil no Google"
-                className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
-              />
-              <details className="rounded-2xl bg-surface-soft p-3">
-                <summary className="cursor-pointer list-none text-[12px] font-medium text-on-background">
-                  ✦ Como pegar o link do Google (toque pra ver)
-                </summary>
-                <div className="mt-2 flex flex-col gap-2 text-[12px] leading-relaxed text-text-secondary">
-                  <p className="font-medium text-on-background">Jeito mais rápido (leva direto pra dar a nota):</p>
-                  <ol className="ml-1 flex flex-col gap-1.5">
-                    <li>1. No computador, faça login no Google com o e-mail do seu perfil do <span className="font-medium">Google Meu Negócio</span> (o que gerencia a empresa).</li>
-                    <li>2. Pesquise o nome do seu negócio no Google. No painel da empresa (à direita), clique em <span className="font-medium">“Peça avaliações”</span>.</li>
-                    <li>3. O Google gera um link curto (ex: <span className="font-medium">g.page/r/…</span>). Copie e cole aqui.</li>
-                  </ol>
-                  <p className="mt-1 font-medium text-on-background">Não achou essa opção? Use o link do perfil:</p>
-                  <ol className="ml-1 flex flex-col gap-1.5">
-                    <li>1. Pesquise o nome do seu negócio no Google.</li>
-                    <li>2. No painel da empresa, toque em <span className="font-medium">Compartilhar</span> e copie o link do perfil.</li>
-                    <li>3. Cole aqui — o cliente cai no seu perfil do Google e avalia por lá.</li>
-                  </ol>
-                  <p className="mt-1">Ainda não tem o negócio no Google? Cadastre grátis em <span className="font-medium">google.com/business</span> — leva 5 minutos e é essencial pra aparecer nas buscas.</p>
-                </div>
-              </details>
-            </div>
-          )}
-
-          {cfg.action === "endereco" && (
-            <div className="flex flex-col gap-2">
-              <input
-                value={cfg.url ?? ""}
-                onChange={(e) => update({ url: e.target.value })}
-                onBlur={() => !liveOnly && onSave(cfg)}
-                placeholder="Rua, número — bairro, cidade"
-                className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
-              />
-              <p className="text-[12px] leading-relaxed text-text-tertiary">
-                O visitante vê esse endereço com um botão pra abrir no Waze e outro no Google Maps.
-              </p>
-            </div>
-          )}
-        </>
-      )}
 
       {onDelete && (
         <button onClick={onDelete} className="mt-1 self-start text-[12px] text-red-600">
