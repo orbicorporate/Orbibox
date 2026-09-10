@@ -42,7 +42,7 @@ export default async function PulsePage({
   // aparecerem duplicados nas barras.
   const normalizaOrigem = (raw: string | null): string => {
     const s = (raw || "").toLowerCase().trim();
-    if (!s || s === "direct" || s === "direto") return "Direto";
+    if (!s || s === "direct" || s === "direto") return "Link direto";
     if (s.includes("instagram")) return "Instagram";
     if (s.includes("google")) return "Google";
     if (s.includes("facebook") || s === "fb") return "Facebook";

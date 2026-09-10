@@ -1,7 +1,7 @@
 "use client";
 
 const EMOJI_ORIGEM: Record<string, string> = {
-  Direto: "🔗",
+  "Link direto": "🔗",
   Instagram: "📷",
   Google: "🔍",
   Facebook: "👍",
@@ -25,12 +25,14 @@ function BarList({
   rows,
   total,
   emojiMap,
+  footer,
 }: {
   title: string;
   subtitle: string;
   rows: { nome: string; count: number }[];
   total: number;
   emojiMap: Record<string, string>;
+  footer?: string;
 }) {
   const max = Math.max(1, ...rows.map((r) => r.count));
   return (
@@ -58,6 +60,7 @@ function BarList({
           );
         })}
       </div>
+      {footer && <p className="mt-3 text-[11.5px] leading-relaxed text-text-tertiary">{footer}</p>}
     </div>
   );
 }
@@ -77,14 +80,15 @@ export function PulseAudience({
     <div className="mt-8 flex flex-col gap-4">
       <BarList
         title="De onde vêm suas visitas"
-        subtitle="Origem do tráfego, pelo link de onde a pessoa clicou"
+        subtitle="Por onde a pessoa chegou até você"
         rows={origens}
         total={totalSessoes}
         emojiMap={EMOJI_ORIGEM}
+        footer={origens.some((o) => o.nome === "Link direto") ? "“Link direto” são as pessoas que abriram seu link sem passar por uma rede social — digitando o endereço, por um link salvo, pelo WhatsApp, ou por um QR code. Pra medir uma campanha específica, coloque ?utm_source=instagram (ou o nome que quiser) no fim do link do anúncio." : undefined}
       />
       <BarList
         title="Em qual aparelho"
-        subtitle="Dispositivo usado pra abrir seu Orbibox"
+        subtitle="O tipo de dispositivo que a pessoa usou"
         rows={dispositivos}
         total={totalSessoes}
         emojiMap={EMOJI_DISPOSITIVO}
