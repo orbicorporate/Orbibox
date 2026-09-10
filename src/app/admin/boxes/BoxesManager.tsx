@@ -442,12 +442,28 @@ export function BoxesManager({
                   {isHero ? (
                     <p className="text-[15px] font-medium">{m.name}</p>
                   ) : (
-                    <input
-                      defaultValue={label}
-                      onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || suggestedName })}
-                      placeholder={suggestedName}
-                      className="w-full border-b border-transparent bg-transparent pb-0.5 text-[15px] font-medium outline-none focus:border-divider"
-                    />
+                    <>
+                      <div className="relative">
+                        <input
+                          defaultValue={label}
+                          onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || suggestedName })}
+                          placeholder={suggestedName}
+                          aria-label="Título do box"
+                          className="w-full border-b border-divider bg-transparent py-0.5 pr-5 text-[15px] font-medium outline-none focus:border-on-background"
+                        />
+                        <span className="pointer-events-none absolute right-0 top-1.5 text-[12px] text-text-tertiary">✎</span>
+                      </div>
+                      <div className="relative mt-2">
+                        <input
+                          defaultValue={cfg?.subtitle ?? ""}
+                          onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), subtitle: e.target.value })}
+                          placeholder={isCustom ? "Texto de apoio (opcional)" : "Texto de apoio — em branco usa o padrão"}
+                          aria-label="Texto de apoio do box"
+                          className="w-full border-b border-divider bg-transparent py-0.5 pr-5 text-[13px] text-text-secondary outline-none focus:border-on-background"
+                        />
+                        <span className="pointer-events-none absolute right-0 top-1.5 text-[11px] text-text-tertiary">✎</span>
+                      </div>
+                    </>
                   )}
                   {m.fixo && <span className="mt-1 inline-block rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">sempre ativo</span>}
                   {m.assinatura && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary"><span className="orbi-gradient-text">✦</span> assinatura da IA</span>}
@@ -854,20 +870,6 @@ function BoxEditor({
 
   return (
     <div className="mt-3 flex flex-col gap-2.5">
-      <div>
-        <p className="text-[13px] font-medium text-text-secondary">Texto de apoio</p>
-        <p className="mt-0.5 text-[12px] leading-relaxed text-text-tertiary">
-          {isCustom ? "Aparece embaixo do título, no card." : "Aparece embaixo do título, no card. Deixe em branco pra usar o texto padrão."}
-        </p>
-        <input
-          value={cfg.subtitle ?? ""}
-          onChange={(e) => update({ subtitle: e.target.value })}
-          onBlur={() => !liveOnly && onSave(cfg)}
-          placeholder="Texto curto — cabe até 2 linhas no card"
-          className="mt-2 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-        />
-      </div>
-
       <p className="text-[13px] font-medium text-text-secondary">Formato na tela inicial</p>
       <div className="flex flex-wrap gap-2">
         {([
