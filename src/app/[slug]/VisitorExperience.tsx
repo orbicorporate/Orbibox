@@ -281,78 +281,59 @@ export function VisitorExperience({
                 </>
               )}
             </h1>
-            <div className="mt-10 flex w-full flex-col gap-3.5">
-              {options.map((o) => (
-                <div key={o.key}>
-                <button
-                  onClick={o.onClick}
-                  className={`flex w-full items-center gap-4 rounded-[24px] bg-surface-white p-4 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}
-                >
-                  <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[15px] ${o.icon === "__logo__" ? "" : "overflow-hidden"} ${isAnimatedIcon(o.icon) ? "" : o.color && o.color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
-                    style={isAnimatedIcon(o.icon) ? { background: "transparent" } : o.color && o.color !== "transparent" ? { backgroundColor: o.color } : o.color === "transparent" ? { background: "transparent" } : undefined}
-                  >
-                    {o.icon === "__orb__" ? (
-                      <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} className="rounded-full" />
-                    ) : o.icon === "__orbcheck__" ? (
-                      <OrbiParticleSphere size={44} variant="check" colors={orbiColors ?? undefined} className="rounded-full" />
-                    ) : o.icon === "__orbwa__" || o.icon === "__wadisc__" ? (
-                      <OrbiContactDisc size={44} className="rounded-full" />
-                    ) : o.icon === "__google__" ? (
-                      <OrbiGoogleIcon size={44} className="rounded-full" />
-                    ) : o.icon === "__pin__" ? (
-                      <OrbiMapPin size={30} />
-                    ) : o.icon === "__logo__" && (o.boxLogo || business.logo_url) ? (
-                      <OrbiLogoBadge logoUrl={o.boxLogo || business.logo_url!} size={40} />
+            <div className="mt-10 grid w-full grid-cols-2 gap-3">
+              {(() => {
+                // Distribuição mista: cada opção recebe "largo" (ocupa a linha
+                // toda, card horizontal) ou "medio" (metade, card vertical).
+                // Padrão que cria ritmo visual: 2 médios, 1 largo, 2 médios…
+                // Endereço (que expande) e itens com estrela sempre largos.
+                const withLayout = options.map((o, i) => {
+                  const forcaLargo = !!o.address || !!o.stars;
+                  // A cada 3 posições, uma vira larga (índice 2, 5, 8…).
+                  const ritmoLargo = i % 3 === 2;
+                  return { o, largo: forcaLargo || ritmoLargo };
+                });
+                return withLayout.map(({ o, largo }) => (
+                  <div key={o.key} className={largo ? "col-span-2" : "col-span-1"}>
+                    {largo ? (
+                      // Card LARGO — horizontal (ícone + texto na linha)
+                      <button onClick={o.onClick} className={`flex w-full items-center gap-4 rounded-[24px] bg-surface-white p-5 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}>
+                        <HomeIcon o={o} orbiColors={orbiColors} businessLogo={business.logo_url} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[17px] font-semibold">{o.t}{o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}</span>
+                          {o.stars && <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
+                          <span className="mt-0.5 block text-[13px] text-text-tertiary">{o.ai ? `Fale com a ${agentName}, nossa IA.` : o.d}</span>
+                        </span>
+                        <span className="shrink-0 text-text-tertiary">{o.address ? (expandedBox === o.key ? "▾" : "▸") : "→"}</span>
+                      </button>
                     ) : (
-                      o.icon
+                      // Card MÉDIO — vertical (ícone em cima, texto embaixo)
+                      <button onClick={o.onClick} className={`flex h-full min-h-[168px] w-full flex-col justify-between rounded-[24px] bg-surface-white p-5 text-left shadow-[0_2px_12px_rgba(17,19,24,0.05)] ${o.ai ? "ring-1 ring-orbi-gradient-start/60" : ""}`}>
+                        <HomeIcon o={o} orbiColors={orbiColors} businessLogo={business.logo_url} />
+                        <span>
+                          <span className="block text-[19px] font-semibold leading-tight">{o.t}{o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}</span>
+                          {o.stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
+                          <span className="mt-1 block text-[13px] leading-snug text-text-tertiary">{o.ai ? `Fale com a ${agentName}.` : o.d}</span>
+                        </span>
+                      </button>
                     )}
-                  </span>
-                  <span className="flex-1">
-                    <span className="block text-[15px] font-medium">
-                      {o.t}
-                      {o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}
-                    </span>
-                    {o.stars && (
-                      <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>
-                    )}
-                    <span className="block text-[13px] text-text-tertiary">
-                      {o.ai ? `Fale com a ${agentName}, nossa IA.` : o.d}
-                    </span>
-                  </span>
-                  <span className="text-text-tertiary">{o.address ? (expandedBox === o.key ? "▾" : "▸") : "→"}</span>
-                </button>
-                {/* Box de endereço expande aqui embaixo, na hora — sem
-                    navegar pra outra tela só pra mostrar 2 botões. */}
-                {o.address && expandedBox === o.key && (
-                  <div className="-mt-1 rounded-b-[24px] bg-surface-white px-4 pb-4 pt-1 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
-                    <div className="border-t border-divider pt-3">
-                      <p className="text-[14px] leading-relaxed text-text-secondary">{o.address}</p>
-                      <div className="mt-3 flex gap-2">
-                        <a
-                          href={`https://waze.com/ul?q=${encodeURIComponent(o.address)}&navigate=yes`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium"
-                        >
-                          Abrir no Waze
-                        </a>
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium"
-                        >
-                          Abrir no Google
-                        </a>
+                    {/* Endereço expande embaixo */}
+                    {o.address && expandedBox === o.key && (
+                      <div className="-mt-1 rounded-b-[24px] bg-surface-white px-5 pb-5 pt-1 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
+                        <div className="border-t border-divider pt-3">
+                          <p className="text-[14px] leading-relaxed text-text-secondary">{o.address}</p>
+                          <div className="mt-3 flex gap-2">
+                            <a href={`https://waze.com/ul?q=${encodeURIComponent(o.address)}&navigate=yes`} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Abrir no Waze</a>
+                            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address)}`} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Abrir no Google</a>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
-                )}
-                </div>
-              ))}
+                ));
+              })()}
               {options.length === 0 && (
-                <div className="rounded-[24px] bg-surface-white p-5 text-center shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
+                <div className="col-span-2 rounded-[24px] bg-surface-white p-5 text-center shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
                   <p className="text-[14px] font-medium">Ainda não tem nada por aqui</p>
                   <p className="mt-1 text-[14px] leading-relaxed text-text-tertiary">
                     Essa página está sendo montada. Volta mais tarde pra conferir.
@@ -711,6 +692,33 @@ function StoryView({
  * Transforma o texto puro da IA em parágrafos, listas com marcador e
  * **negrito** de verdade — em vez de um bloco só, apertado e sem cor.
  */
+// Ícone das opções da tela inicial — cobre os tipos especiais (esfera, google,
+// pin, logo) e os emojis/letras comuns.
+function HomeIcon({ o, orbiColors, businessLogo }: { o: { icon: string; boxLogo?: string | null; color?: string }; orbiColors: string[] | null; businessLogo?: string | null }) {
+  return (
+    <span
+      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[16px] ${o.icon === "__logo__" ? "" : "overflow-hidden"} ${isAnimatedIcon(o.icon) ? "" : o.color && o.color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
+      style={isAnimatedIcon(o.icon) ? { background: "transparent" } : o.color && o.color !== "transparent" ? { backgroundColor: o.color } : o.color === "transparent" ? { background: "transparent" } : undefined}
+    >
+      {o.icon === "__orb__" ? (
+        <OrbiParticleSphere size={48} colors={orbiColors ?? undefined} className="rounded-full" />
+      ) : o.icon === "__orbcheck__" ? (
+        <OrbiParticleSphere size={48} variant="check" colors={orbiColors ?? undefined} className="rounded-full" />
+      ) : o.icon === "__orbwa__" || o.icon === "__wadisc__" ? (
+        <OrbiContactDisc size={48} className="rounded-full" />
+      ) : o.icon === "__google__" ? (
+        <OrbiGoogleIcon size={48} className="rounded-full" />
+      ) : o.icon === "__pin__" ? (
+        <OrbiMapPin size={32} />
+      ) : o.icon === "__logo__" && (o.boxLogo || businessLogo) ? (
+        <OrbiLogoBadge logoUrl={o.boxLogo || businessLogo!} size={44} />
+      ) : (
+        o.icon
+      )}
+    </span>
+  );
+}
+
 function formatMessage(text: string, products?: ContentItem[], slug?: string, businessId?: string, sessionId?: string | null, address?: string | null) {
   // Extrai marcações [[produto:ID]] e [[endereco]] e as troca por cards.
   const productIds: string[] = [];
