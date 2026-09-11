@@ -68,7 +68,7 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-export function VoucherShareButton({ title, code, message }: { title: string; code: string; message: string }) {
+export function VoucherShareButton({ title, code, message, className }: { title: string; code: string; message: string; className?: string }) {
   const [busy, setBusy] = useState(false);
 
   async function handleShare() {
@@ -104,9 +104,9 @@ export function VoucherShareButton({ title, code, message }: { title: string; co
     <button
       onClick={handleShare}
       disabled={busy}
-      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/20 py-3 text-[14px] font-semibold text-white backdrop-blur-sm disabled:opacity-60"
+      className={className ?? "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/20 py-3 text-[14px] font-semibold text-white backdrop-blur-sm disabled:opacity-60"}
     >
-      {busy ? "Preparando…" : "↗ Compartilhar ou salvar cupom"}
+      {busy ? "Preparando…" : "↗ Compartilhar"}
     </button>
   );
 }

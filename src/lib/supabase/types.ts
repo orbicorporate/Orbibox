@@ -77,8 +77,8 @@ export type Database = {
         Relationships: []
       }
       vouchers: {
-        Row: { id: string; business_id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; expires_hours: number | null; is_active: boolean; created_at: string; updated_at: string }
-        Insert: { id?: string; business_id: string; title: string; description?: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed?: number; expires_hours?: number | null; is_active?: boolean; created_at?: string; updated_at?: string }
+        Row: { id: string; business_id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; expires_hours: number | null; is_active: boolean; image_url: string | null; badge: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; business_id: string; title: string; description?: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed?: number; expires_hours?: number | null; is_active?: boolean; image_url?: string | null; badge?: string | null; created_at?: string; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["vouchers"]["Insert"]>
         Relationships: []
       }

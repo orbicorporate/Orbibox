@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import type { Database } from "@/lib/supabase/types";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
@@ -28,6 +29,8 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const [discountValue, setDiscountValue] = useState("");
   const [quantityTotal, setQuantityTotal] = useState("");
   const [expiresHours, setExpiresHours] = useState("48");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [badge, setBadge] = useState("");
 
   async function createVoucher(e: React.FormEvent) {
     e.preventDefault();
@@ -49,6 +52,8 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           discount_value: Number(discountValue),
           quantity_total: Number(quantityTotal),
           expires_hours: expiresHours.trim() ? Number(expiresHours) : null,
+          image_url: imageUrl,
+          badge: badge.trim() || null,
         })
         .select()
         .single();
@@ -60,6 +65,8 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         setDiscountValue("");
         setQuantityTotal("");
         setExpiresHours("48");
+        setImageUrl(null);
+        setBadge("");
       }
     } finally {
       setSaving(false);
@@ -110,10 +117,18 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           return (
             <div key={v.id} className="rounded-[24px] border border-divider bg-surface-white p-5">
               <div className="flex items-start gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface-soft text-[20px]">🎟️</span>
+                {v.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={v.image_url} alt={v.title} className="h-14 w-14 shrink-0 rounded-2xl object-cover" />
+                ) : (
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#FFE1E7] text-[22px]">🎟️</span>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-semibold">{v.title}</p>
                   <p className="mt-0.5 text-[14px] text-text-secondary">{discountLabel(v)}</p>
+                  {v.badge?.trim() && (
+                    <span className="mt-1.5 inline-block rounded-full bg-[#FFE1E7] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#E0395F]">{v.badge}</span>
+                  )}
                 </div>
                 <button
                   onClick={() => toggleActive(v)}
@@ -173,7 +188,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
 
       {creating ? (
         <form onSubmit={createVoucher} className="flex flex-col gap-3 rounded-[24px] border border-divider bg-surface-white p-5">
-          <p className="text-[14px] font-medium">Novo cupom</p>
+          <p className="text-[15px] font-semibold">Novo cupom</p>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -187,6 +202,24 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             rows={2}
             className="resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
+
+          <div>
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Etiqueta de destaque (opcional)</p>
+            <input
+              value={badge}
+              onChange={(e) => setBadge(e.target.value)}
+              placeholder="Ex: Mais usado, Cliente VIP, Aniversário"
+              maxLength={24}
+              className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+            />
+            <p className="mt-1 text-[12px] text-text-tertiary">Aparece como um selinho no cupom, na página do visitante.</p>
+          </div>
+
+          <div>
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Foto do cupom (opcional)</p>
+            <p className="mb-2 mt-1 text-[12px] text-text-tertiary">Fica do lado do desconto, na galeria de cupons. Uma foto do produto ou do ambiente funciona bem.</p>
+            <ImageUpload value={imageUrl} businessId={businessId} lockedRatio="quadrado" promptKind="capa" promptSubject={title || undefined} onChange={setImageUrl} />
+          </div>
           <div className="flex gap-2">
             <select
               value={discountType}

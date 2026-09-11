@@ -56,7 +56,7 @@ export default async function VouchersPage() {
           painel de ninguém pra ver ainda. */}
       {canSave && vouchers && vouchers.length > 0 && (
         <Link
-          href={`/admin/vouchers/${vouchers[0].id}`}
+          href="/admin/vouchers/painel"
           className="relative mt-4 flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] py-3.5 text-[15px] font-semibold text-white shadow-[0_10px_28px_rgba(255,46,126,0.35)]"
         >
           📊 Ver painel de controle

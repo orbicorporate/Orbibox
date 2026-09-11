@@ -612,14 +612,47 @@ export function VisitorExperience({
   );
 }
 
-type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number };
+type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null };
 
 function voucherDiscountLabel(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
   return v.discount_type === "percent" ? `${v.discount_value}% de desconto` : `R$ ${v.discount_value} de desconto`;
 }
 
-/** Tela de cupons — lista os ativos, deixa a pessoa resgatar (nome +
- * WhatsApp) e mostra o código único que ela leva até o negócio. */
+// Só o número grande do desconto, pra ficar em destaque no card ("10% OFF" / "R$ 10 OFF").
+function voucherDiscountBig(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
+  return v.discount_type === "percent" ? `${v.discount_value}% OFF` : `R$ ${v.discount_value} OFF`;
+}
+
+// Cada cupom da galeria ganha um tom próprio, girando entre uma paleta suave
+// — igual referências de apps de cupom, onde a variedade de cor é o que dá
+// a sensação de "vários benefícios diferentes". O vermelho vivo fica só pro
+// código resgatado.
+const VOUCHER_PALETTE = [
+  { from: "#FFE1E7", to: "#FFD0DA", accent: "#E0395F" },
+  { from: "#E3F5DF", to: "#D2EFD0", accent: "#2E8B4A" },
+  { from: "#F6EBDA", to: "#F0E0C8", accent: "#A96A1F" },
+  { from: "#E9E3FB", to: "#DDD4F5", accent: "#6C4FCB" },
+  { from: "#E0F2F5", to: "#CDE9EE", accent: "#1F7F8F" },
+];
+
+type MeuCupom = { code: string; title: string; expiresAt: string | null; claimedAt: string };
+
+function meusCuponsKey(businessId: string) {
+  return `orbi_meus_cupons_${businessId}`;
+}
+
+function lerMeusCupons(businessId: string): MeuCupom[] {
+  try {
+    const raw = localStorage.getItem(meusCuponsKey(businessId));
+    return raw ? (JSON.parse(raw) as MeuCupom[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Tela de cupons — galeria dos ativos, resgate (nome + WhatsApp) e o
+ * código único que a pessoa leva até o negócio. Os cupons já resgatados
+ * neste aparelho ficam guardados no próprio celular, pra ela reencontrar. */
 function resultMessage(businessName: string, expiresAt: string | null) {
   const base = `Mostre esse código pro ${businessName} — no balcão ou pelo WhatsApp — pra usar o desconto.`;
   if (!expiresAt) return base;
@@ -635,16 +668,35 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
   const [whatsapp, setWhatsapp] = useState("");
   const [result, setResult] = useState<{ code: string; title: string; expiresAt: string | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [meusCupons, setMeusCupons] = useState<MeuCupom[]>([]);
+  const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
       .from("vouchers")
-      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed")
+      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge")
       .eq("business_id", business.id)
       .eq("is_active", true)
+      .order("created_at", { ascending: false })
       .then(({ data }) => setVouchers((data as VoucherPublic[]) ?? []));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMeusCupons(lerMeusCupons(business.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [business.id]);
+
+  function guardarMeuCupom(c: MeuCupom) {
+    const next = [c, ...lerMeusCupons(business.id).filter((x) => x.code !== c.code)].slice(0, 20);
+    try { localStorage.setItem(meusCuponsKey(business.id), JSON.stringify(next)); } catch { /* ignora */ }
+    setMeusCupons(next);
+  }
+
+  async function copiar(code: string) {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(code);
+      setTimeout(() => setCopied(null), 1500);
+    } catch { /* sem clipboard */ }
+  }
 
   async function resgatar(voucherId: string) {
     setError(null);
@@ -661,6 +713,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
       }
       trackClick({ businessId: business.id, kind: "cupom", sessionId });
       setResult({ code: data.code, title: data.title, expiresAt: data.expires_at });
+      guardarMeuCupom({ code: data.code, title: data.title, expiresAt: data.expires_at ?? null, claimedAt: new Date().toISOString() });
       setClaiming(null);
     } catch {
       setError("Erro de conexão ao resgatar o cupom.");
@@ -670,7 +723,8 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
   return (
     <div className="w-full">
       <button onClick={onBack} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
-      <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">Cupons</h2>
+      <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">Cupons</h2>
+      <p className="mt-1 text-[14px] text-text-secondary">Vantagens exclusivas pra você.</p>
 
       {result ? (
         <div className="relative mt-6">
@@ -682,22 +736,37 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
             <p className="mt-3 text-[13.5px] leading-relaxed opacity-90">
               {resultMessage(business.name, result.expiresAt)}
             </p>
-            <VoucherShareButton title={result.title} code={result.code} message={resultMessage(business.name, result.expiresAt)} />
-            <p className="mt-2.5 text-[11.5px] opacity-70">Ou só tira um print da tela pra guardar.</p>
+            <div className="mt-5 flex gap-2">
+              <button
+                onClick={() => copiar(result.code)}
+                className="flex-1 rounded-full bg-white/20 py-3 text-[14px] font-semibold text-white backdrop-blur-sm"
+              >
+                {copied === result.code ? "Copiado ✓" : "Copiar código"}
+              </button>
+              <VoucherShareButton
+                title={result.title}
+                code={result.code}
+                message={resultMessage(business.name, result.expiresAt)}
+                className="flex-1 rounded-full bg-white/20 py-3 text-[14px] font-semibold text-white backdrop-blur-sm disabled:opacity-60"
+              />
+            </div>
+            <button onClick={() => setResult(null)} className="mt-4 text-[12.5px] underline opacity-80">Ver outros cupons</button>
           </div>
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-4">
           {vouchers === null && <p className="text-[14px] text-text-tertiary">Carregando…</p>}
           {vouchers?.length === 0 && <p className="text-[14px] text-text-tertiary">Nenhum cupom disponível no momento.</p>}
-          {vouchers?.map((v) => {
+          {vouchers?.map((v, idx) => {
             const restam = v.quantity_total - v.quantity_claimed;
             const isClaiming = claiming === v.id;
+            const cor = VOUCHER_PALETTE[idx % VOUCHER_PALETTE.length];
 
             if (isClaiming) {
               return (
-                <div key={v.id} className="rounded-[22px] border border-divider bg-surface-white p-5">
-                  <p className="text-[15px] font-semibold">{v.title}</p>
+                <div key={v.id} className="rounded-[24px] border border-divider bg-surface-white p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Pegando seu cupom</p>
+                  <p className="mt-1 text-[16px] font-semibold">{v.title}</p>
                   <p className="mt-0.5 text-[14px] text-text-secondary">{voucherDiscountLabel(v)}</p>
                   <div className="mt-4 flex flex-col gap-2.5">
                     <div>
@@ -731,25 +800,64 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
             }
 
             return (
-              <div key={v.id} className="relative">
-                <div aria-hidden className="absolute inset-0 -z-10 rounded-[22px] bg-[#FF3B6E] opacity-30 blur-2xl" />
-                <div className="rounded-[22px] bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] p-5 text-white shadow-[0_10px_30px_rgba(255,46,126,0.35)]">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide opacity-90">🎟️ Oferta especial</p>
-                  <p className="mt-1.5 text-[16px] font-semibold leading-tight">{v.title}</p>
-                  <p className="mt-0.5 font-[family-name:var(--font-manrope)] text-[22px] font-bold leading-none">{voucherDiscountLabel(v)}</p>
-                  {v.description?.trim() && <p className="mt-1.5 text-[13px] leading-relaxed opacity-90">{v.description}</p>}
-                  <p className="mt-2 text-[12px] opacity-80">{restam > 0 ? `${restam} restantes` : "Esgotado"}</p>
-                  <button
-                    onClick={() => { setClaiming(v.id); setError(null); }}
-                    disabled={restam <= 0}
-                    className="mt-4 w-full rounded-full bg-white py-3 text-[14px] font-semibold text-on-background disabled:opacity-50"
-                  >
-                    {restam > 0 ? "Pegar meu cupom" : "Esgotado"}
-                  </button>
+              <div
+                key={v.id}
+                className="relative overflow-hidden rounded-[24px] shadow-[0_6px_22px_rgba(17,19,24,0.08)]"
+                style={{ backgroundImage: `linear-gradient(135deg, ${cor.from}, ${cor.to})` }}
+              >
+                <div className={`flex items-stretch ${v.image_url ? "" : ""}`}>
+                  <div className="min-w-0 flex-1 p-5">
+                    {v.badge?.trim() && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide" style={{ color: cor.accent }}>
+                        {v.badge}
+                      </span>
+                    )}
+                    <p className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-none text-on-background">{voucherDiscountBig(v)}</p>
+                    <p className="mt-1.5 text-[14px] font-medium leading-snug text-on-background">{v.title}</p>
+                    {v.description?.trim() && <p className="mt-0.5 line-clamp-2 text-[12.5px] leading-relaxed text-on-background/70">{v.description}</p>}
+                    <button
+                      onClick={() => { setClaiming(v.id); setError(null); }}
+                      disabled={restam <= 0}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-[13px] font-semibold text-on-background shadow-sm disabled:opacity-50"
+                    >
+                      {restam > 0 ? <>Pegar meu cupom <span aria-hidden>→</span></> : "Esgotado"}
+                    </button>
+                    <p className="mt-2.5 text-[11px] text-on-background/60">{restam > 0 ? `${restam} restantes` : "Acabou"}</p>
+                  </div>
+                  {v.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={v.image_url} alt={v.title} className="w-[38%] shrink-0 object-cover" />
+                  )}
                 </div>
               </div>
             );
           })}
+
+          {/* Cupons já resgatados neste aparelho — pra pessoa reencontrar o código */}
+          {meusCupons.length > 0 && (
+            <div className="mt-2">
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Meus cupons resgatados</p>
+              <div className="mt-2.5 flex flex-col gap-2">
+                {meusCupons.map((c) => {
+                  const vencido = !!c.expiresAt && new Date(c.expiresAt) < new Date();
+                  return (
+                    <div key={c.code} className="flex items-center justify-between gap-3 rounded-2xl bg-surface-white p-3.5 shadow-[0_2px_10px_rgba(17,19,24,0.05)]">
+                      <div className="min-w-0">
+                        <p className="truncate text-[14px] font-medium">{c.title}</p>
+                        <p className="mt-0.5 font-[family-name:var(--font-manrope)] text-[17px] font-bold tracking-[2px]">{c.code}</p>
+                        <p className={`mt-0.5 text-[11.5px] ${vencido ? "text-red-600" : "text-text-tertiary"}`}>
+                          {vencido ? "Venceu" : c.expiresAt ? `Vale até ${new Date(c.expiresAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}` : "Sem validade"}
+                        </p>
+                      </div>
+                      <button onClick={() => copiar(c.code)} className="shrink-0 rounded-full bg-surface-soft px-3 py-2 text-[12.5px] font-medium text-text-secondary">
+                        {copied === c.code ? "Copiado ✓" : "Copiar"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
