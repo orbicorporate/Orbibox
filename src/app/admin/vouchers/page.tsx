@@ -3,6 +3,8 @@ import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { VouchersManager } from "./VouchersManager";
 import { CupomBoxToggle } from "./CupomBoxToggle";
+import { VoucherExplainer } from "./VoucherExplainer";
+import Link from "next/link";
 
 type BoxConfigShape = { action?: string };
 
@@ -50,8 +52,20 @@ export default async function VouchersPage() {
         Crie cupons com estoque limitado. Cada resgate gera um código único, sem risco de uso duplicado.
       </p>
 
+      {/* Ativa assim que existe pelo menos um cupom — antes disso não tem
+          painel de ninguém pra ver ainda. */}
+      {canSave && vouchers && vouchers.length > 0 && (
+        <Link
+          href={`/admin/vouchers/${vouchers[0].id}`}
+          className="relative mt-4 flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] py-3.5 text-[15px] font-semibold text-white shadow-[0_10px_28px_rgba(255,46,126,0.35)]"
+        >
+          📊 Ver painel de controle
+        </Link>
+      )}
+
       {canSave && (
         <div className="mt-6 flex flex-col gap-4">
+          <VoucherExplainer>
           {/* Explicação curta — só o essencial, separado do resto */}
           <div className="rounded-[24px] bg-surface-soft p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-secondary">Como funciona</p>
@@ -105,6 +119,7 @@ export default async function VouchersPage() {
               ))}
             </div>
           </div>
+          </VoucherExplainer>
 
           {/* O elo que faltava: colocar (ou confirmar que já tem) o box na Home */}
           <CupomBoxToggle businessId={business!.id} initialHasBox={!!cupomBox} nextPosition={nextPosition} />

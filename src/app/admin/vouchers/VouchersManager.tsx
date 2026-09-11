@@ -184,7 +184,10 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               </div>
 
               {v.description?.trim() && (
-                <p className="mt-3 rounded-2xl bg-surface-soft px-3.5 py-2.5 text-[13px] leading-relaxed text-text-secondary">{v.description}</p>
+                <div className="mt-3 rounded-2xl bg-surface-soft px-3.5 py-2.5">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-text-tertiary">Observação</p>
+                  <p className="mt-0.5 text-[13px] leading-relaxed text-text-secondary">{v.description}</p>
+                </div>
               )}
 
               <div className="mt-4">
@@ -201,12 +204,13 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                 {v.expires_hours ? `Código expira em ${v.expires_hours}h se não for usado` : "Código sem validade"}
               </p>
 
-              {/* Quem resgatou — abre o painel completo, com nome, WhatsApp e filtros */}
-              <div className="mt-3 border-t border-divider pt-3">
-                <Link href={`/admin/vouchers/${v.id}`} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-text-secondary underline">
-                  Ver painel completo{meusResgates.length > 0 ? ` (${meusResgates.length} resgatou/resgataram)` : ""}
-                </Link>
-              </div>
+              {/* Quem resgatou — botão bem visível pro painel completo, com nome, WhatsApp e filtros */}
+              <Link
+                href={`/admin/vouchers/${v.id}`}
+                className="relative mt-4 flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] py-3 text-[14px] font-semibold text-white shadow-[0_8px_22px_rgba(255,46,126,0.35)]"
+              >
+                📊 Ver painel completo{meusResgates.length > 0 ? ` (${meusResgates.length})` : ""}
+              </Link>
 
               <button onClick={() => deleteVoucher(v)} className="mt-3 text-[13px] text-red-600">
                 Excluir
