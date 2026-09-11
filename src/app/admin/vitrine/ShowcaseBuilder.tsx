@@ -1090,7 +1090,7 @@ function ItemCard({
                 {item.title}
               </span>
               {item.description?.trim() && (
-                <span className="mt-1 line-clamp-1 block text-[14px] leading-snug text-white/80">{item.description}</span>
+                <span className="mt-1 line-clamp-1 text-[14px] leading-snug text-white/80">{item.description}</span>
               )}
               {priceLabel && <span className="mt-1.5 block text-[14px] font-medium text-white/90">{priceLabel}</span>}
             </div>
