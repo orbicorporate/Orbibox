@@ -134,10 +134,12 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100 }: { unseenCo
                     ★ Super ferramenta comercial
                   </span>
                   <span className="mt-2 block text-[13px] leading-relaxed text-on-background/75">
-                    Cupons que fazem o visitante decidir na hora — a forma mais direta de vender mais com o Orbibox.
+                    Crie cupons personalizados com controle de estoque — isso traz cliente na mesma hora.
+                  </span>
+                  <span className="mt-2.5 inline-flex items-center gap-1 text-[13px] font-semibold text-on-background">
+                    Experimente <span aria-hidden>→</span>
                   </span>
                 </span>
-                <span className="mt-1 shrink-0 text-[18px] text-on-background/60">→</span>
               </Link>
             </div>
           </>
