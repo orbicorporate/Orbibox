@@ -345,19 +345,20 @@ export function VisitorExperience({
                 // card horizontal e compacto) ou "medio" (metade, card
                 // vertical). Só forma par de médios quando o próximo item
                 // também pode ser médio — nunca deixa um médio sozinho na
-                // linha (isso é que deixava espaço vazio do lado). Endereço,
-                // itens com estrela, e boxes com formato "Largo" escolhido
-                // manualmente no admin são sempre largos.
+                // linha (isso é que deixava espaço vazio do lado). Endereço
+                // e itens com estrela são largos por padrão, mas o dono pode
+                // forçar "Metade" nesses também — a escolha manual sempre
+                // vence a regra automática.
                 const withLayout: { o: (typeof options)[number]; largo: boolean }[] = [];
                 for (let i = 0; i < options.length; i++) {
                   const o = options[i];
-                  const forcaLargo = !!o.address || !!o.stars || o.layoutOverride === "largo";
+                  const forcaLargo = o.layoutOverride === "largo" || (o.layoutOverride !== "medio" && (!!o.address || !!o.stars));
                   if (forcaLargo) {
                     withLayout.push({ o, largo: true });
                     continue;
                   }
                   const proximo = options[i + 1];
-                  const proximoForcaLargo = proximo ? (!!proximo.address || !!proximo.stars || proximo.layoutOverride === "largo") : true;
+                  const proximoForcaLargo = proximo ? (proximo.layoutOverride === "largo" || (proximo.layoutOverride !== "medio" && (!!proximo.address || !!proximo.stars))) : true;
                   if (proximo && !proximoForcaLargo) {
                     withLayout.push({ o, largo: false }, { o: proximo, largo: false });
                     i++;
@@ -402,22 +403,20 @@ export function VisitorExperience({
                   <div key={o.key} className={`relative ${largo ? "col-span-2" : "col-span-1"}`}>
                     {isOwner && (
                       <div className="absolute right-2.5 top-2.5 z-10 flex gap-1">
-                        {!o.address && !o.stars && (
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={(e) => { e.stopPropagation(); toggleLayout(o.key, largo); }}
-                            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
-                            aria-label={largo ? "Deixar quadrado (metade)" : "Deixar retângulo (linha toda)"}
-                            title={largo ? "Deixar quadrado" : "Deixar retângulo"}
-                          >
-                            {largo ? (
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="5" y="5" width="14" height="14" rx="2.5" /></svg>
-                            ) : (
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2.5" y="7" width="19" height="10" rx="2.5" /></svg>
-                            )}
-                          </span>
-                        )}
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); toggleLayout(o.key, largo); }}
+                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
+                          aria-label={largo ? "Deixar quadrado (metade)" : "Deixar retângulo (linha toda)"}
+                          title={largo ? "Deixar quadrado" : "Deixar retângulo"}
+                        >
+                          {largo ? (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="5" y="5" width="14" height="14" rx="2.5" /></svg>
+                          ) : (
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2.5" y="7" width="19" height="10" rx="2.5" /></svg>
+                          )}
+                        </span>
                         <span
                           role="button"
                           tabIndex={0}

@@ -3,6 +3,7 @@ import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { BoxesManager } from "./BoxesManager";
 import { parseLogoGallery } from "@/lib/logoGallery";
+import Link from "next/link";
 
 export default async function BoxesPage() {
   const supabase = await createClient();
@@ -34,9 +35,18 @@ export default async function BoxesPage() {
 
   return (
     <div className="flex flex-col">
-      <h1 data-tour="boxes" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
-        Smart Boxes
-      </h1>
+      <div className="flex items-start justify-between gap-3">
+        <h1 data-tour="boxes" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
+          Smart Boxes
+        </h1>
+        <Link
+          href={`/${business!.slug}`}
+          target="_blank"
+          className="mt-2 flex shrink-0 items-center gap-1.5 rounded-full border border-divider bg-surface-white px-3.5 py-2 text-[13px] font-medium text-text-secondary"
+        >
+          Ver como visitante ↗
+        </Link>
+      </div>
       <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
         Cada box é um caminho que o visitante pode seguir quando abre seu link. Ligue os que fazem
         sentido para o seu negócio e escolha a ordem em que aparecem.
