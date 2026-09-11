@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import QRCode from "qrcode";
 
 function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number, align: "center" | "left" = "center") {
   const words = text.split(" ");
@@ -25,7 +26,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 async function buildVoucherImage(title: string, code: string, message: string): Promise<Blob | null> {
-  const W = 640, H = 820;
+  const W = 640, H = 1040;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d");
@@ -50,9 +51,24 @@ async function buildVoucherImage(title: string, code: string, message: string): 
   ctx.font = "800 92px system-ui, -apple-system, sans-serif";
   ctx.fillText(code, W / 2, 360);
 
+  // QR do código — a loja escaneia direto da foto salva, sem digitar.
+  try {
+    const qr = document.createElement("canvas");
+    await QRCode.toCanvas(qr, code, { width: 260, margin: 1, color: { dark: "#111318", light: "#FFFFFF" } });
+    const box = 300;
+    const bx = (W - box) / 2, by = 400;
+    ctx.fillStyle = "#ffffff";
+    roundRect(ctx, bx, by, box, box, 28);
+    ctx.fill();
+    ctx.drawImage(qr, bx + 20, by + 20, 260, 260);
+    ctx.fillStyle = "#ffffff";
+  } catch {
+    // sem QR, segue só com o código em texto
+  }
+
   ctx.font = "400 24px system-ui, -apple-system, sans-serif";
   ctx.globalAlpha = 0.92;
-  wrapText(ctx, message, W / 2, 440, W - 140, 34);
+  wrapText(ctx, message, W / 2, 760, W - 140, 34);
   ctx.globalAlpha = 1;
 
   return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/png", 0.95));

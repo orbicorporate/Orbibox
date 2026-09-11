@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
 import { whatsappLink } from "@/lib/track";
+import { QRScanner } from "@/components/mobile/QRScanner";
 import type { Database } from "@/lib/supabase/types";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
@@ -38,17 +39,24 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
   const [code, setCode] = useState("");
   const [redeeming, setRedeeming] = useState(false);
   const [redeemResult, setRedeemResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [scanning, setScanning] = useState(false);
 
   async function handleRedeem(e: FormEvent) {
     e.preventDefault();
-    if (!code.trim() || redeeming) return;
+    await redeemCode(code);
+  }
+
+  // Lido do QR do cliente ou digitado — mesma validação nos dois casos.
+  async function redeemCode(raw: string) {
+    const value = raw.trim();
+    if (!value || redeeming) return;
     setRedeeming(true);
     setRedeemResult(null);
     try {
       const res = await fetch("/api/vouchers/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId: v.business_id, code: code.trim() }),
+        body: JSON.stringify({ businessId: v.business_id, code: value }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -178,6 +186,25 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
             {redeeming ? "…" : "Confirmar"}
           </button>
         </form>
+        <div className="mt-3 flex items-center gap-3">
+          <span className="h-px flex-1 bg-divider" />
+          <span className="text-[12px] text-text-tertiary">ou</span>
+          <span className="h-px flex-1 bg-divider" />
+        </div>
+        <button
+          type="button"
+          onClick={() => { setRedeemResult(null); setScanning(true); }}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#FFC9D6] bg-[#FFF1F4] py-3.5 text-[14px] font-semibold text-[#E0395F]"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10" /></svg>
+          Escanear QR do cliente
+        </button>
+        {scanning && (
+          <QRScanner
+            onClose={() => setScanning(false)}
+            onDetect={(text) => { setScanning(false); setCode(text.toUpperCase()); redeemCode(text); }}
+          />
+        )}
         {redeemResult && (
           <div className={`mt-3 rounded-2xl px-4 py-3 text-[13.5px] font-medium leading-relaxed ${redeemResult.ok ? "bg-[#DEF3E3] text-[#1F9E4C]" : "bg-red-50 text-red-600"}`}>
             {redeemResult.message}

@@ -19,6 +19,7 @@ import { trackClick, whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
 import { homeCardShellClass, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
 import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
+import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 
 type Business = {
   id: string;
@@ -733,7 +734,10 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
             <span className="text-[26px]">🎉</span>
             <p className="mt-2 text-[14px] font-medium opacity-90">{result.title}</p>
             <p className="mt-3 font-[family-name:var(--font-manrope)] text-[40px] font-bold tracking-[0.08em]">{result.code}</p>
-            <p className="mt-3 text-[13.5px] leading-relaxed opacity-90">
+            <div className="mt-4 flex justify-center">
+              <VoucherQRCode code={result.code} />
+            </div>
+            <p className="mt-4 text-[13.5px] leading-relaxed opacity-90">
               {resultMessage(business.name, result.expiresAt)}
             </p>
             <div className="mt-5 flex gap-2">
