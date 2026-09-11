@@ -251,6 +251,19 @@ export function VisitorExperience({
     ]);
   }
 
+  // Troca o formato direto na Home — o dono vê o card mudar de tamanho na
+  // hora, em vez de escolher às cegas lá no editor de Boxes. Define um valor
+  // explícito (não mais "automático") pra esse box.
+  async function toggleLayout(key: string, currentlyLargo: boolean) {
+    const box = boxList.find((b) => b.id === key);
+    if (!box) return;
+    const cfg = (box.config ?? {}) as CustomConfig;
+    const nextLayout: "largo" | "medio" = currentlyLargo ? "medio" : "largo";
+    const nextCfg: CustomConfig = { ...cfg, layout: nextLayout };
+    setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: nextCfg } : b)));
+    await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key);
+  }
+
   function startEditTitle(key: string, current: string) {
     setEditingBoxId(key);
     setTitleDraft(current);
@@ -389,6 +402,22 @@ export function VisitorExperience({
                   <div key={o.key} className={`relative ${largo ? "col-span-2" : "col-span-1"}`}>
                     {isOwner && (
                       <div className="absolute right-2.5 top-2.5 z-10 flex gap-1">
+                        {!o.address && !o.stars && (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={(e) => { e.stopPropagation(); toggleLayout(o.key, largo); }}
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
+                            aria-label={largo ? "Deixar quadrado (metade)" : "Deixar retângulo (linha toda)"}
+                            title={largo ? "Deixar quadrado" : "Deixar retângulo"}
+                          >
+                            {largo ? (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="5" y="5" width="14" height="14" rx="2.5" /></svg>
+                            ) : (
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2.5" y="7" width="19" height="10" rx="2.5" /></svg>
+                            )}
+                          </span>
+                        )}
                         <span
                           role="button"
                           tabIndex={0}
