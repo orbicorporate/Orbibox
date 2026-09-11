@@ -344,25 +344,39 @@ export function VisitorExperience({
               {(() => {
                 // Distribuição mista: cada opção recebe "largo" (linha toda,
                 // card horizontal e compacto) ou "medio" (metade, card
-                // vertical). Só forma par de médios quando o próximo item
-                // também pode ser médio — nunca deixa um médio sozinho na
-                // linha (isso é que deixava espaço vazio do lado). Endereço
-                // e itens com estrela são largos por padrão, mas o dono pode
-                // forçar "Metade" nesses também — a escolha manual sempre
-                // vence a regra automática.
+                // vertical). Uma escolha manual (setinha de formato) sempre
+                // vale exatamente como escolhida — nunca é desfeita sozinha.
+                // Só os boxes automáticos (sem escolha manual) formam par
+                // entre si pra nunca sobrar espaço vazio; endereço e estrela
+                // são largos por padrão nesse caso. Quando a escolha manual
+                // não encontra um vizinho compatível, pode sobrar um espaço
+                // vazio do lado — é o preço de ter controle de verdade.
+                function resolvedLargo(opt: (typeof options)[number]): boolean {
+                  if (opt.layoutOverride === "largo") return true;
+                  if (opt.layoutOverride === "medio") return false;
+                  return !!opt.address || !!opt.stars;
+                }
                 const withLayout: { o: (typeof options)[number]; largo: boolean }[] = [];
                 for (let i = 0; i < options.length; i++) {
                   const o = options[i];
-                  const forcaLargo = o.layoutOverride === "largo" || (o.layoutOverride !== "medio" && (!!o.address || !!o.stars));
-                  if (forcaLargo) {
-                    withLayout.push({ o, largo: true });
-                    continue;
-                  }
+                  if (o.layoutOverride === "largo") { withLayout.push({ o, largo: true }); continue; }
+                  if (o.layoutOverride === "medio") { withLayout.push({ o, largo: false }); continue; }
+                  if (!!o.address || !!o.stars) { withLayout.push({ o, largo: true }); continue; }
+
+                  // Automático: só vira médio se o próximo puder ficar do
+                  // lado (seja porque também é automático elegível, seja
+                  // porque já escolheu "Metade" manualmente).
                   const proximo = options[i + 1];
-                  const proximoForcaLargo = proximo ? (proximo.layoutOverride === "largo" || (proximo.layoutOverride !== "medio" && (!!proximo.address || !!proximo.stars))) : true;
-                  if (proximo && !proximoForcaLargo) {
-                    withLayout.push({ o, largo: false }, { o: proximo, largo: false });
-                    i++;
+                  const proximoCabeAoLado = !!proximo && !resolvedLargo(proximo);
+                  if (proximoCabeAoLado) {
+                    withLayout.push({ o, largo: false });
+                    // Só "consome" o próximo aqui se ele também for
+                    // automático — se a escolha dele for manual, ele resolve
+                    // sozinho no próprio turno do loop, sem duplicar.
+                    if (!proximo!.layoutOverride) {
+                      withLayout.push({ o: proximo!, largo: false });
+                      i++;
+                    }
                   } else {
                     // Sozinho (sem par pra formar médio+médio) — vira largo
                     // em vez de ficar isolado ocupando só metade da linha.
