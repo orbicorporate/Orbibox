@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -29,9 +29,45 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
   const router = { push: (href: string) => { window.location.href = href; } };
   const { confirm, DialogRenderer } = useDialogs();
   const [v, setV] = useState(voucher);
-  const [redemptions] = useState(initialRedemptions);
+  const [redemptions, setRedemptions] = useState(initialRedemptions);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"todos" | "redeemed" | "claimed">("todos");
+
+  // Resgate rápido no balcão — validado pro negócio inteiro (o código pode
+  // ser de qualquer cupom), mas mora aqui pra ficar tudo num lugar só.
+  const [code, setCode] = useState("");
+  const [redeeming, setRedeeming] = useState(false);
+  const [redeemResult, setRedeemResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  async function handleRedeem(e: FormEvent) {
+    e.preventDefault();
+    if (!code.trim() || redeeming) return;
+    setRedeeming(true);
+    setRedeemResult(null);
+    try {
+      const res = await fetch("/api/vouchers/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId: v.business_id, code: code.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setRedeemResult({ ok: false, message: data.error ?? "Código inválido." });
+      } else {
+        setRedeemResult({ ok: true, message: `✓ Confirmado: ${data.voucher?.title ?? "cupom"} (${discountLabel(data.voucher)})` });
+        setCode("");
+        // Atualiza esse cupom e a lista de resgates, caso o código fosse dele.
+        const [{ data: freshVoucher }, { data: freshRedemptions }] = await Promise.all([
+          supabase.from("vouchers").select("*").eq("id", v.id).single(),
+          supabase.from("voucher_redemptions").select("*").eq("voucher_id", v.id).order("created_at", { ascending: false }),
+        ]);
+        if (freshVoucher) setV(freshVoucher as Voucher);
+        if (freshRedemptions) setRedemptions(freshRedemptions as Redemption[]);
+      }
+    } finally {
+      setRedeeming(false);
+    }
+  }
 
   const restam = v.quantity_total - v.quantity_claimed;
   const pct = v.quantity_total > 0 ? Math.min(100, Math.round((v.quantity_claimed / v.quantity_total) * 100)) : 0;
@@ -116,6 +152,38 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
       <p className="mt-2 text-[12px] leading-relaxed text-text-tertiary">
         {v.expires_hours ? `Cada código expira em ${v.expires_hours}h se não for usado.` : "Códigos não têm validade."}
       </p>
+
+      {/* Resgate rápido no balcão — fica aqui, dentro do painel de controle,
+          pra ficar tudo num lugar só na hora do atendimento. */}
+      <div className="mt-6 rounded-[24px] border border-divider bg-surface-white p-5">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px]">🔎</span>
+          <p className="text-[15px] font-semibold">Resgatar código</p>
+        </div>
+        <p className="mt-2 text-[13.5px] leading-relaxed text-text-secondary">
+          Cliente chegou com o cupom? Digite o código abaixo e confirme — o sistema valida na hora e marca como usado.
+        </p>
+        <form onSubmit={handleRedeem} className="mt-4 flex gap-2">
+          <input
+            value={code}
+            onChange={(e) => { setCode(e.target.value.toUpperCase()); setRedeemResult(null); }}
+            placeholder="EX: A1B2C3"
+            className="flex-1 rounded-2xl border-2 border-divider bg-surface-white px-4 py-3.5 text-center text-[19px] font-semibold uppercase tracking-[3px] outline-none focus:border-on-background"
+          />
+          <button
+            type="submit"
+            disabled={redeeming || !code.trim()}
+            className="shrink-0 rounded-2xl bg-button-primary px-5 py-3.5 text-[14px] font-semibold text-white disabled:opacity-40"
+          >
+            {redeeming ? "…" : "Confirmar"}
+          </button>
+        </form>
+        {redeemResult && (
+          <div className={`mt-3 rounded-2xl px-4 py-3 text-[13.5px] font-medium leading-relaxed ${redeemResult.ok ? "bg-[#DEF3E3] text-[#1F9E4C]" : "bg-red-50 text-red-600"}`}>
+            {redeemResult.message}
+          </div>
+        )}
+      </div>
 
       {/* Lista de quem resgatou — o painel de verdade */}
       <div className="mt-6 flex items-center justify-between">

@@ -28,13 +28,13 @@ export function CupomBoxToggle({ businessId, initialHasBox, nextPosition }: { bu
 
   if (hasBox) {
     return (
-      <div className="flex items-center gap-3 rounded-[24px] border border-divider bg-surface-white p-5">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orbi-gradient-start/25 text-[16px]">✓</span>
+      <div className="flex items-center gap-3 rounded-[24px] p-5" style={{ backgroundColor: "#DEF3E3" }}>
+        <span className="orbi-gradient flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[18px] text-on-background">✓</span>
         <div className="min-w-0 flex-1">
-          <p className="text-[14px] font-medium">O box &quot;Cupons&quot; já está na sua página inicial</p>
-          <p className="mt-0.5 text-[13px] leading-relaxed text-text-tertiary">É por ele que o visitante encontra seus cupons.</p>
+          <p className="text-[14.5px] font-semibold" style={{ color: "#1F9E4C" }}>O box &quot;Cupons&quot; já está na sua página inicial</p>
+          <p className="mt-0.5 text-[13px] leading-relaxed" style={{ color: "#1F9E4C", opacity: 0.8 }}>É por ele que o visitante encontra seus cupons.</p>
         </div>
-        <Link href="/admin/boxes" className="shrink-0 text-[13px] font-medium text-text-secondary underline">
+        <Link href="/admin/boxes" className="shrink-0 rounded-full bg-white px-3.5 py-2 text-[13px] font-semibold" style={{ color: "#1F9E4C" }}>
           Editar
         </Link>
       </div>

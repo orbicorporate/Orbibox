@@ -29,37 +29,6 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const [quantityTotal, setQuantityTotal] = useState("");
   const [expiresHours, setExpiresHours] = useState("48");
 
-  // Resgate rápido no balcão
-  const [code, setCode] = useState("");
-  const [redeeming, setRedeeming] = useState(false);
-  const [redeemResult, setRedeemResult] = useState<{ ok: boolean; message: string } | null>(null);
-
-  async function handleRedeem(e: React.FormEvent) {
-    e.preventDefault();
-    if (!code.trim() || redeeming) return;
-    setRedeeming(true);
-    setRedeemResult(null);
-    try {
-      const res = await fetch("/api/vouchers/redeem", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, code: code.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setRedeemResult({ ok: false, message: data.error ?? "Código inválido." });
-      } else {
-        setRedeemResult({ ok: true, message: `✓ Confirmado: ${data.voucher?.title ?? "cupom"} (${discountLabel(data.voucher)})` });
-        setCode("");
-        // Atualiza o contador de resgatados na lista.
-        const { data: fresh } = await supabase.from("vouchers").select("*").eq("business_id", businessId).order("created_at", { ascending: false });
-        if (fresh) setVouchers(fresh);
-      }
-    } finally {
-      setRedeeming(false);
-    }
-  }
-
   async function createVoucher(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !discountValue || !quantityTotal || saving) return;
@@ -128,34 +97,6 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           </div>
         </div>
       )}
-
-      {/* Resgate rápido — pensado pra ser usado na frente do cliente, no balcão */}
-      <div className="rounded-[24px] bg-surface-soft p-5">
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-text-secondary">Resgatar código</p>
-        <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-          Cliente chegou com o cupom? Digite o código dele abaixo e confirme. O sistema valida na hora e marca como usado.
-        </p>
-        <form onSubmit={handleRedeem} className="mt-4 flex gap-2">
-          <input
-            value={code}
-            onChange={(e) => { setCode(e.target.value.toUpperCase()); setRedeemResult(null); }}
-            placeholder="Ex: A1B2C3"
-            className="flex-1 rounded-2xl border border-divider bg-white px-4 py-3 text-[18px] font-medium uppercase tracking-wider outline-none focus:border-on-background"
-          />
-          <button
-            type="submit"
-            disabled={redeeming || !code.trim()}
-            className="rounded-2xl bg-button-primary px-5 py-3 text-[14px] font-medium text-white disabled:opacity-40"
-          >
-            {redeeming ? "..." : "Confirmar"}
-          </button>
-        </form>
-        {redeemResult && (
-          <p className={`mt-3 text-[14px] font-medium ${redeemResult.ok ? "text-green-700" : "text-red-600"}`}>
-            {redeemResult.message}
-          </p>
-        )}
-      </div>
 
       {/* Lista de cupons */}
       <div className="flex flex-col gap-3">
