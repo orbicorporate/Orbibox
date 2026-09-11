@@ -13,19 +13,12 @@ function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
   return v.discount_type === "percent" ? `${v.discount_value}% off` : `R$ ${v.discount_value} off`;
 }
 
-function redemptionStatusLabel(status: string) {
-  if (status === "redeemed") return "Confirmado";
-  if (status === "expired") return "Expirado";
-  return "Aguardando";
-}
-
 export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {} }: { businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]> }) {
   const supabase = createClient();
   const { confirm, DialogRenderer } = useDialogs();
   const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [expandedRedemptions, setExpandedRedemptions] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   // Form de criação
@@ -173,7 +166,6 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           const restam = v.quantity_total - v.quantity_claimed;
           const pct = v.quantity_total > 0 ? Math.min(100, Math.round((v.quantity_claimed / v.quantity_total) * 100)) : 0;
           const meusResgates = redemptionsByVoucher[v.id] ?? [];
-          const showingRedemptions = expandedRedemptions === v.id;
           return (
             <div key={v.id} className="rounded-[24px] border border-divider bg-surface-white p-5">
               <div className="flex items-start gap-3">
@@ -209,34 +201,12 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                 {v.expires_hours ? `Código expira em ${v.expires_hours}h se não for usado` : "Código sem validade"}
               </p>
 
-              {/* Quem resgatou — nome e WhatsApp de quem já pegou o cupom */}
-              {meusResgates.length > 0 && (
-                <div className="mt-3 border-t border-divider pt-3">
-                  <button
-                    onClick={() => setExpandedRedemptions(showingRedemptions ? null : v.id)}
-                    className="text-[13px] font-medium text-text-secondary underline"
-                  >
-                    {showingRedemptions ? "Esconder" : "Ver"} quem resgatou ({meusResgates.length})
-                  </button>
-                  {showingRedemptions && (
-                    <div className="mt-2.5 flex flex-col gap-2">
-                      {meusResgates.map((r) => (
-                        <div key={r.id} className="flex items-center justify-between gap-2 rounded-2xl bg-surface-soft px-3.5 py-2.5">
-                          <div className="min-w-0">
-                            <p className="truncate text-[13.5px] font-medium">{r.visitor_name || "Sem nome"}</p>
-                            <p className="mt-0.5 text-[12px] text-text-tertiary">
-                              {r.visitor_whatsapp || "Sem WhatsApp"} · código {r.code}
-                            </p>
-                          </div>
-                          <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${r.status === "redeemed" ? "bg-orbi-gradient-start/25 text-on-background" : r.status === "expired" ? "bg-surface-white text-text-tertiary" : "bg-surface-white text-text-secondary"}`}>
-                            {redemptionStatusLabel(r.status)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Quem resgatou — abre o painel completo, com nome, WhatsApp e filtros */}
+              <div className="mt-3 border-t border-divider pt-3">
+                <Link href={`/admin/vouchers/${v.id}`} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-text-secondary underline">
+                  Ver painel completo{meusResgates.length > 0 ? ` (${meusResgates.length} resgatou/resgataram)` : ""}
+                </Link>
+              </div>
 
               <button onClick={() => deleteVoucher(v)} className="mt-3 text-[13px] text-red-600">
                 Excluir
