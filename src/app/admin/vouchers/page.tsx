@@ -47,19 +47,32 @@ export default async function VouchersPage() {
 
   return (
     <div className="flex flex-col">
-      <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Cupons</h1>
-      <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
+      {/* Selo do cupom em cima do título — dá identidade à tela logo de cara */}
+      <span className="mt-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFE1E7]">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E0395F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 9a2 2 0 0 0 0 4v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 0-4V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2z" />
+          <path d="M13 5v2M13 11v2M13 17v2" />
+        </svg>
+      </span>
+      <h1 className="mt-4 font-[family-name:var(--font-manrope)] text-[34px] font-bold tracking-[-0.02em]">Cupons</h1>
+      <p className="mt-1.5 text-[14.5px] leading-relaxed text-text-secondary">
         Crie cupons com estoque limitado. Cada resgate gera um código único, sem risco de uso duplicado.
       </p>
 
       {/* Ativa assim que existe pelo menos um cupom — antes disso não tem
-          painel de ninguém pra ver ainda. */}
+          painel de ninguém pra ver ainda. Vermelho forte com reflexo. */}
       {canSave && vouchers && vouchers.length > 0 && (
         <Link
           href="/admin/vouchers/painel"
-          className="relative mt-4 flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] py-3.5 text-[15px] font-semibold text-white shadow-[0_10px_28px_rgba(255,46,126,0.35)]"
+          className="relative mt-5 flex items-center gap-3 overflow-hidden rounded-[22px] bg-gradient-to-r from-[#E8123D] via-[#FF2E5F] to-[#FF4F7E] p-3.5 text-white shadow-[0_14px_36px_rgba(232,18,61,0.45)]"
         >
-          📊 Ver painel de controle
+          <span aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.35)_0%,rgba(255,255,255,0)_48%)]" />
+          <span aria-hidden className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
+          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/25">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="12" width="4" height="8" rx="1" /><rect x="10" y="7" width="4" height="13" rx="1" /><rect x="16" y="3" width="4" height="17" rx="1" /></svg>
+          </span>
+          <span className="relative flex-1 text-[17px] font-bold">Ver painel de controle</span>
+          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-[16px]">›</span>
         </Link>
       )}
 

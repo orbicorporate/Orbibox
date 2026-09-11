@@ -108,7 +108,10 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
       {/* Lista de cupons */}
       <div className="flex flex-col gap-3">
         {vouchers.length > 0 && (
-          <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Seus cupons</p>
+          <div className="mb-1">
+            <p className="font-[family-name:var(--font-manrope)] text-[24px] font-bold tracking-[-0.01em]">Seus cupons</p>
+            <p className="mt-1 text-[14px] text-text-secondary">Gerencie, edite e acompanhe o desempenho dos seus cupons.</p>
+          </div>
         )}
         {vouchers.map((v) => {
           const restam = v.quantity_total - v.quantity_claimed;
