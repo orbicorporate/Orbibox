@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { whatsappLink } from "@/lib/track";
-import { QRScanner } from "@/components/mobile/QRScanner";
+import { RedeemCodeCard } from "../RedeemCodeCard";
 import type { Database } from "@/lib/supabase/types";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
@@ -32,11 +32,6 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
   const [statusFilter, setStatusFilter] = useState<"todos" | "claimed" | "redeemed">("todos");
   const [query, setQuery] = useState("");
 
-  // Resgate no balcão — vale pra qualquer cupom do negócio
-  const [code, setCode] = useState("");
-  const [redeeming, setRedeeming] = useState(false);
-  const [redeemResult, setRedeemResult] = useState<{ ok: boolean; message: string } | null>(null);
-  const [scanning, setScanning] = useState(false);
 
   const voucherById = useMemo(() => new Map(vouchers.map((v) => [v.id, v])), [vouchers]);
 
@@ -62,36 +57,6 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
     ]);
     if (fv) setVouchers(fv as Voucher[]);
     if (fr) setRedemptions(fr as Redemption[]);
-  }
-
-  async function handleRedeem(e: FormEvent) {
-    e.preventDefault();
-    await redeemCode(code);
-  }
-
-  // Lido do QR do cliente ou digitado — mesma validação nos dois casos.
-  async function redeemCode(raw: string) {
-    const value = raw.trim();
-    if (!value || redeeming) return;
-    setRedeeming(true);
-    setRedeemResult(null);
-    try {
-      const res = await fetch("/api/vouchers/redeem", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, code: value }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setRedeemResult({ ok: false, message: data.error ?? "Código inválido." });
-      } else {
-        setRedeemResult({ ok: true, message: `✓ Confirmado: ${data.voucher?.title ?? "cupom"} (${discountLabel(data.voucher)})` });
-        setCode("");
-        await refresh();
-      }
-    } finally {
-      setRedeeming(false);
-    }
   }
 
   async function toggleActive(v: Voucher) {
@@ -128,50 +93,9 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
         </div>
       </div>
 
-      {/* Resgatar no balcão */}
-      <div className="mt-5 rounded-[24px] border border-divider bg-surface-white p-5">
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px]">🔎</span>
-          <p className="text-[15px] font-semibold">Resgatar código</p>
-        </div>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-text-secondary">
-          Cliente chegou com o cupom? Digite o código e confirme — vale pra qualquer cupom seu.
-        </p>
-        <form onSubmit={handleRedeem} className="mt-4 flex gap-2">
-          <input
-            value={code}
-            onChange={(e) => { setCode(e.target.value.toUpperCase()); setRedeemResult(null); }}
-            placeholder="EX: A1B2C3"
-            className="flex-1 rounded-2xl border-2 border-divider bg-surface-white px-4 py-3.5 text-center text-[19px] font-semibold uppercase tracking-[3px] outline-none focus:border-on-background"
-          />
-          <button type="submit" disabled={redeeming || !code.trim()} className="shrink-0 rounded-2xl bg-button-primary px-5 py-3.5 text-[14px] font-semibold text-white disabled:opacity-40">
-            {redeeming ? "…" : "Confirmar"}
-          </button>
-        </form>
-        <div className="mt-3 flex items-center gap-3">
-          <span className="h-px flex-1 bg-divider" />
-          <span className="text-[12px] text-text-tertiary">ou</span>
-          <span className="h-px flex-1 bg-divider" />
-        </div>
-        <button
-          type="button"
-          onClick={() => { setRedeemResult(null); setScanning(true); }}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#F5C2CD] bg-[#FCE8EC] py-3.5 text-[14px] font-semibold text-[#C4143A]"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10" /></svg>
-          Escanear QR do cliente
-        </button>
-        {scanning && (
-          <QRScanner
-            onClose={() => setScanning(false)}
-            onDetect={(text) => { setScanning(false); setCode(text.toUpperCase()); redeemCode(text); }}
-          />
-        )}
-        {redeemResult && (
-          <div className={`mt-3 rounded-2xl px-4 py-3 text-[13.5px] font-medium leading-relaxed ${redeemResult.ok ? "bg-[#DEF3E3] text-[#1F9E4C]" : "bg-red-50 text-red-600"}`}>
-            {redeemResult.message}
-          </div>
-        )}
+      {/* Resgatar no balcão — mesmo card da referência, reaproveitado */}
+      <div className="mt-5">
+        <RedeemCodeCard businessId={businessId} onRedeemed={refresh} />
       </div>
 
       {/* Cupons — ativar/pausar direto daqui, e filtrar a lista por eles */}

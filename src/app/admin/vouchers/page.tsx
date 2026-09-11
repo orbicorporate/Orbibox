@@ -4,6 +4,7 @@ import { getCurrentBusinessId } from "@/lib/business";
 import { VouchersManager } from "./VouchersManager";
 import { CupomBoxToggle } from "./CupomBoxToggle";
 import { VoucherExplainer } from "./VoucherExplainer";
+import { RedeemCodeCard } from "./RedeemCodeCard";
 import Link from "next/link";
 
 type BoxConfigShape = { action?: string };
@@ -74,6 +75,14 @@ export default async function VouchersPage() {
           <span className="relative flex-1 text-[17px] font-bold">Ver painel de controle</span>
           <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-[16px]">›</span>
         </Link>
+      )}
+
+      {/* Resgate rápido no topo, recolhível — pra loja validar o cupom do
+          cliente na hora, sem precisar entrar no painel. */}
+      {canSave && vouchers && vouchers.length > 0 && (
+        <div className="mt-4">
+          <RedeemCodeCard businessId={business!.id} collapsible />
+        </div>
       )}
 
       {canSave && (
