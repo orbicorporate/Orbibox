@@ -48,8 +48,8 @@ export default async function VouchersPage() {
   return (
     <div className="flex flex-col">
       {/* Selo do cupom em cima do título — dá identidade à tela logo de cara */}
-      <span className="mt-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFE1E7]">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E0395F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <span className="mt-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FCE8EC]">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C4143A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 9a2 2 0 0 0 0 4v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 0-4V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2z" />
           <path d="M13 5v2M13 11v2M13 17v2" />
         </svg>
@@ -64,7 +64,7 @@ export default async function VouchersPage() {
       {canSave && vouchers && vouchers.length > 0 && (
         <Link
           href="/admin/vouchers/painel"
-          className="relative mt-5 flex items-center gap-3 overflow-hidden rounded-[22px] bg-gradient-to-r from-[#E8123D] via-[#FF2E5F] to-[#FF4F7E] p-3.5 text-white shadow-[0_14px_36px_rgba(232,18,61,0.45)]"
+          className="relative mt-5 flex items-center gap-3 overflow-hidden rounded-[22px] bg-gradient-to-r from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-3.5 text-white shadow-[0_14px_36px_rgba(204,23,57,0.45)]"
         >
           <span aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.35)_0%,rgba(255,255,255,0)_48%)]" />
           <span aria-hidden className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
@@ -95,8 +95,8 @@ export default async function VouchersPage() {
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Assim o cliente vê e resgata</p>
             <div className="mt-4 flex items-center gap-3">
               <div className="relative min-w-0 flex-1">
-                <div aria-hidden className="absolute inset-0 -z-10 rounded-[22px] bg-[#FF3B6E] opacity-50 blur-2xl" />
-                <div className="rounded-[20px] bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] p-4 text-white shadow-[0_10px_34px_rgba(255,46,126,0.45)]">
+                <div aria-hidden className="absolute inset-0 -z-10 rounded-[22px] bg-[#CC1739] opacity-50 blur-2xl" />
+                <div className="rounded-[20px] bg-gradient-to-br from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-4 text-white shadow-[0_10px_34px_rgba(204,23,57,0.45)]">
                   <p className="text-[11px] font-semibold uppercase tracking-wide opacity-90">🎟️ Oferta especial</p>
                   <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-none">10% OFF</p>
                   <p className="mt-1.5 text-[12.5px] opacity-90">na primeira compra</p>
@@ -180,8 +180,8 @@ export default async function VouchersPage() {
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Como fica pro seu cliente</p>
             <div className="mt-4 flex items-center gap-3">
               <div className="relative min-w-0 flex-1">
-                <div aria-hidden className="absolute inset-0 -z-10 rounded-[20px] bg-[#FF3B6E] opacity-50 blur-2xl" />
-                <div className="rounded-[18px] bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] p-4 text-white shadow-[0_10px_34px_rgba(255,46,126,0.45)]">
+                <div aria-hidden className="absolute inset-0 -z-10 rounded-[20px] bg-[#CC1739] opacity-50 blur-2xl" />
+                <div className="rounded-[18px] bg-gradient-to-br from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-4 text-white shadow-[0_10px_34px_rgba(204,23,57,0.45)]">
                   <p className="text-[11px] font-medium uppercase tracking-wide opacity-90">🎟️ Oferta especial</p>
                   <p className="mt-1 font-[family-name:var(--font-manrope)] text-[22px] font-bold leading-none">10% OFF</p>
                   <p className="mt-1.5 text-[12px] opacity-90">na primeira compra</p>

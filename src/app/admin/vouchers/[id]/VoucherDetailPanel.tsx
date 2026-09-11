@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
 import { whatsappLink } from "@/lib/track";
 import { QRScanner } from "@/components/mobile/QRScanner";
+import { VoucherLines } from "@/components/mobile/VoucherDecor";
+import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
@@ -109,9 +111,10 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
 
       {/* Cabeçalho — mesmo vermelho vivo com brilho da oferta real */}
       <div className="relative mt-4">
-        <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] bg-[#FF3B6E] opacity-30 blur-2xl" />
-        <div className="rounded-[28px] bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] p-6 text-white shadow-[0_14px_38px_rgba(255,46,126,0.35)]">
-          <div className="flex items-start justify-between gap-3">
+        <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] opacity-35 blur-2xl" style={{ background: voucherTheme(v.color).via }} />
+        <div className="relative overflow-hidden rounded-[28px] p-6 text-white" style={{ background: voucherGradient(v.color), boxShadow: `0 14px 38px ${voucherTheme(v.color).glow}` }}>
+          <VoucherLines />
+          <div className="relative flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-wide opacity-85">🎟️ Painel do cupom</p>
               <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-tight">{v.title}</p>
@@ -194,7 +197,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
         <button
           type="button"
           onClick={() => { setRedeemResult(null); setScanning(true); }}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#FFC9D6] bg-[#FFF1F4] py-3.5 text-[14px] font-semibold text-[#E0395F]"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#F5C2CD] bg-[#FCE8EC] py-3.5 text-[14px] font-semibold text-[#C4143A]"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10" /></svg>
           Escanear QR do cliente

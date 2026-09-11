@@ -123,22 +123,29 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100 }: { unseenCo
               <Link
                 href="/admin/vouchers"
                 onClick={() => setMenuOpen(false)}
-                className="orbi-gradient relative mt-2 flex items-start gap-3.5 overflow-hidden rounded-[22px] p-4"
+                className="relative mt-2 block overflow-hidden rounded-[22px] bg-gradient-to-br from-[#E9FF8C] via-[#B9F7C8] to-[#9BEFE6] p-4"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-on-background/10 text-[22px]">
-                  🎟️
+                {/* Ilustração de cupons "%" ao fundo, só enfeite */}
+                <span aria-hidden className="pointer-events-none absolute -bottom-3 -right-2 rotate-[-12deg] select-none">
+                  <span className="flex h-20 w-24 items-center justify-center rounded-2xl bg-white/70 text-[34px] font-black text-[#2E9E5B] shadow-[0_6px_16px_rgba(0,0,0,0.08)]">%</span>
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[17px] font-semibold leading-tight text-on-background">Vouchers</span>
-                  <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-on-background/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-on-background">
-                    ★ Super ferramenta comercial
+                <span aria-hidden className="pointer-events-none absolute right-4 top-3 text-[10.5px] font-semibold uppercase tracking-wide text-[#2E9E5B]/80">
+                  mais clientes hoje ↘
+                </span>
+                <span className="relative flex items-center gap-3">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-[22px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]">🎟️</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[20px] font-bold leading-tight text-on-background">Vouchers</span>
+                    <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-white/60 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-[#1F7A45]">
+                      ★ Super ferramenta comercial
+                    </span>
                   </span>
-                  <span className="mt-2 block text-[13px] leading-relaxed text-on-background/75">
-                    Crie cupons personalizados com controle de estoque — isso traz cliente na mesma hora.
-                  </span>
-                  <span className="mt-2.5 inline-flex items-center gap-1 text-[13px] font-semibold text-on-background">
-                    Experimente <span aria-hidden>→</span>
-                  </span>
+                </span>
+                <span className="relative mt-3 block max-w-[68%] text-[13px] leading-relaxed text-on-background/80">
+                  Crie cupons personalizados com controle de estoque — isso traz cliente na mesma hora.
+                </span>
+                <span className="relative mt-3.5 inline-flex items-center gap-2 rounded-full bg-[#14301F] px-5 py-2.5 text-[14px] font-semibold text-white">
+                  Experimentar <span aria-hidden>→</span>
                 </span>
               </Link>
             </div>

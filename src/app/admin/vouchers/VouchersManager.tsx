@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { VOUCHER_THEMES, voucherGradient, CHERRY_GRADIENT, CHERRY_SHADOW, type VoucherColor } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
@@ -31,6 +32,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const [expiresHours, setExpiresHours] = useState("48");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [badge, setBadge] = useState("");
+  const [color, setColor] = useState<VoucherColor>("cherry");
 
   async function createVoucher(e: React.FormEvent) {
     e.preventDefault();
@@ -54,6 +56,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           expires_hours: expiresHours.trim() ? Number(expiresHours) : null,
           image_url: imageUrl,
           badge: badge.trim() || null,
+          color,
         })
         .select()
         .single();
@@ -67,6 +70,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         setExpiresHours("48");
         setImageUrl(null);
         setBadge("");
+        setColor("cherry");
       }
     } finally {
       setSaving(false);
@@ -124,13 +128,13 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={v.image_url} alt={v.title} className="h-14 w-14 shrink-0 rounded-2xl object-cover" />
                 ) : (
-                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#FFE1E7] text-[22px]">🎟️</span>
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-[22px]" style={{ background: voucherGradient(v.color) }}>🎟️</span>
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-semibold">{v.title}</p>
                   <p className="mt-0.5 text-[14px] text-text-secondary">{discountLabel(v)}</p>
                   {v.badge?.trim() && (
-                    <span className="mt-1.5 inline-block rounded-full bg-[#FFE1E7] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#E0395F]">{v.badge}</span>
+                    <span className="mt-1.5 inline-block rounded-full bg-[#FCE8EC] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#C4143A]">{v.badge}</span>
                   )}
                 </div>
                 <button
@@ -166,7 +170,8 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               {/* Quem resgatou — botão bem visível pro painel completo, com nome, WhatsApp e filtros */}
               <Link
                 href={`/admin/vouchers/${v.id}`}
-                className="relative mt-4 flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] py-3 text-[14px] font-semibold text-white shadow-[0_8px_22px_rgba(255,46,126,0.35)]"
+                className="relative mt-4 flex items-center justify-center gap-2 overflow-hidden rounded-full py-3 text-[14px] font-semibold text-white"
+                style={{ background: CHERRY_GRADIENT, boxShadow: CHERRY_SHADOW }}
               >
                 📊 Ver painel completo{meusResgates.length > 0 ? ` (${meusResgates.length})` : ""}
               </Link>
@@ -205,6 +210,25 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             rows={2}
             className="resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
+
+          <div>
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Cor do cupom</p>
+            <div className="mt-2 grid grid-cols-4 gap-2">
+              {(Object.keys(VOUCHER_THEMES) as VoucherColor[]).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setColor(key)}
+                  className={`relative h-16 overflow-hidden rounded-2xl text-left transition-transform ${color === key ? "ring-2 ring-on-background ring-offset-2 ring-offset-surface-white scale-[1.02]" : ""}`}
+                  style={{ background: voucherGradient(key) }}
+                  aria-label={VOUCHER_THEMES[key].label}
+                >
+                  <span className="absolute bottom-1.5 left-2 text-[11px] font-semibold text-white">{VOUCHER_THEMES[key].label}</span>
+                  {color === key && <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[11px] font-bold" style={{ color: VOUCHER_THEMES[key].ctaText }}>✓</span>}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div>
             <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Etiqueta de destaque (opcional)</p>

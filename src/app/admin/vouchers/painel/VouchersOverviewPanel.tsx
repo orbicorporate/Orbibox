@@ -104,8 +104,8 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
       <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Cupons</Link>
 
       <div className="relative mt-4">
-        <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] bg-[#FF3B6E] opacity-25 blur-2xl" />
-        <div className="rounded-[28px] bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] p-6 text-white shadow-[0_14px_38px_rgba(255,46,126,0.35)]">
+        <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] bg-[#CC1739] opacity-25 blur-2xl" />
+        <div className="rounded-[28px] bg-gradient-to-br from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-6 text-white shadow-[0_14px_38px_rgba(204,23,57,0.35)]">
           <p className="text-[11px] font-semibold uppercase tracking-wide opacity-85">📊 Painel de controle</p>
           <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-tight">Todos os seus cupons</p>
           <p className="mt-1 text-[13.5px] opacity-90">{ativos} {ativos === 1 ? "cupom ativo" : "cupons ativos"} · {totalResgatados} {totalResgatados === 1 ? "resgate" : "resgates"} no total</p>
@@ -156,7 +156,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
         <button
           type="button"
           onClick={() => { setRedeemResult(null); setScanning(true); }}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#FFC9D6] bg-[#FFF1F4] py-3.5 text-[14px] font-semibold text-[#E0395F]"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#F5C2CD] bg-[#FCE8EC] py-3.5 text-[14px] font-semibold text-[#C4143A]"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10" /></svg>
           Escanear QR do cliente
@@ -187,7 +187,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={v.image_url} alt={v.title} className="h-11 w-11 shrink-0 rounded-xl object-cover" />
                 ) : (
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FFE1E7] text-[18px]">🎟️</span>
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FCE8EC] text-[18px]">🎟️</span>
                 )}
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[14px] font-semibold">{v.title}</span>

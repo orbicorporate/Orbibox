@@ -20,6 +20,8 @@ import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini
 import { homeCardShellClass, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
 import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
+import { VoucherLines } from "@/components/mobile/VoucherDecor";
+import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 
 type Business = {
   id: string;
@@ -613,7 +615,7 @@ export function VisitorExperience({
   );
 }
 
-type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null };
+type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null; color: string | null };
 
 function voucherDiscountLabel(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
   return v.discount_type === "percent" ? `${v.discount_value}% de desconto` : `R$ ${v.discount_value} de desconto`;
@@ -623,18 +625,6 @@ function voucherDiscountLabel(v: Pick<VoucherPublic, "discount_type" | "discount
 function voucherDiscountBig(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
   return v.discount_type === "percent" ? `${v.discount_value}% OFF` : `R$ ${v.discount_value} OFF`;
 }
-
-// Cada cupom da galeria ganha um tom próprio, girando entre uma paleta suave
-// — igual referências de apps de cupom, onde a variedade de cor é o que dá
-// a sensação de "vários benefícios diferentes". O vermelho vivo fica só pro
-// código resgatado.
-const VOUCHER_PALETTE = [
-  { from: "#FFE1E7", to: "#FFD0DA", accent: "#E0395F" },
-  { from: "#E3F5DF", to: "#D2EFD0", accent: "#2E8B4A" },
-  { from: "#F6EBDA", to: "#F0E0C8", accent: "#A96A1F" },
-  { from: "#E9E3FB", to: "#DDD4F5", accent: "#6C4FCB" },
-  { from: "#E0F2F5", to: "#CDE9EE", accent: "#1F7F8F" },
-];
 
 type MeuCupom = { code: string; title: string; expiresAt: string | null; claimedAt: string };
 
@@ -667,7 +657,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
   const [claiming, setClaiming] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  const [result, setResult] = useState<{ code: string; title: string; expiresAt: string | null } | null>(null);
+  const [result, setResult] = useState<{ code: string; title: string; expiresAt: string | null; color: string | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [meusCupons, setMeusCupons] = useState<MeuCupom[]>([]);
   const [copied, setCopied] = useState<string | null>(null);
@@ -675,7 +665,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
   useEffect(() => {
     supabase
       .from("vouchers")
-      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge")
+      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge, color")
       .eq("business_id", business.id)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
@@ -701,6 +691,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
 
   async function resgatar(voucherId: string) {
     setError(null);
+    const vouchercor = vouchers?.find((x) => x.id === voucherId)?.color ?? null;
     try {
       const res = await fetch("/api/vouchers/claim", {
         method: "POST",
@@ -713,7 +704,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
         return;
       }
       trackClick({ businessId: business.id, kind: "cupom", sessionId });
-      setResult({ code: data.code, title: data.title, expiresAt: data.expires_at });
+      setResult({ code: data.code, title: data.title, expiresAt: data.expires_at, color: vouchercor });
       guardarMeuCupom({ code: data.code, title: data.title, expiresAt: data.expires_at ?? null, claimedAt: new Date().toISOString() });
       setClaiming(null);
     } catch {
@@ -729,9 +720,10 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
 
       {result ? (
         <div className="relative mt-6">
-          <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] bg-[#FF3B6E] opacity-40 blur-3xl" />
-          <div className="rounded-[28px] bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] p-7 text-center text-white shadow-[0_16px_44px_rgba(255,46,126,0.4)]">
-            <span className="text-[26px]">🎉</span>
+          <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] opacity-45 blur-3xl" style={{ background: voucherTheme(result.color).via }} />
+          <div className="relative overflow-hidden rounded-[28px] p-7 text-center text-white" style={{ background: voucherGradient(result.color), boxShadow: `0 16px 44px ${voucherTheme(result.color).glow}` }}>
+            <VoucherLines />
+            <span className="relative text-[26px]">🎉</span>
             <p className="mt-2 text-[14px] font-medium opacity-90">{result.title}</p>
             <p className="mt-3 font-[family-name:var(--font-manrope)] text-[40px] font-bold tracking-[0.08em]">{result.code}</p>
             <div className="mt-4 flex justify-center">
@@ -761,10 +753,9 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
         <div className="mt-6 flex flex-col gap-4">
           {vouchers === null && <p className="text-[14px] text-text-tertiary">Carregando…</p>}
           {vouchers?.length === 0 && <p className="text-[14px] text-text-tertiary">Nenhum cupom disponível no momento.</p>}
-          {vouchers?.map((v, idx) => {
+          {vouchers?.map((v) => {
             const restam = v.quantity_total - v.quantity_claimed;
             const isClaiming = claiming === v.id;
-            const cor = VOUCHER_PALETTE[idx % VOUCHER_PALETTE.length];
 
             if (isClaiming) {
               return (
@@ -803,34 +794,37 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
               );
             }
 
+            const tema = voucherTheme(v.color);
             return (
               <div
                 key={v.id}
-                className="relative overflow-hidden rounded-[24px] shadow-[0_6px_22px_rgba(17,19,24,0.08)]"
-                style={{ backgroundImage: `linear-gradient(135deg, ${cor.from}, ${cor.to})` }}
+                className="relative overflow-hidden rounded-[24px] text-white"
+                style={{ background: voucherGradient(v.color), boxShadow: `0 12px 30px ${tema.glow}` }}
               >
-                <div className={`flex items-stretch ${v.image_url ? "" : ""}`}>
+                <VoucherLines />
+                <div className="relative flex items-stretch">
                   <div className="min-w-0 flex-1 p-5">
                     {v.badge?.trim() && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide" style={{ color: cor.accent }}>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.12em]" style={{ color: tema.ctaText }}>
                         {v.badge}
                       </span>
                     )}
-                    <p className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-none text-on-background">{voucherDiscountBig(v)}</p>
-                    <p className="mt-1.5 text-[14px] font-medium leading-snug text-on-background">{v.title}</p>
-                    {v.description?.trim() && <p className="mt-0.5 line-clamp-2 text-[12.5px] leading-relaxed text-on-background/70">{v.description}</p>}
+                    <p className="mt-2.5 font-[family-name:var(--font-manrope)] text-[30px] font-extrabold leading-none tracking-[-0.01em]">{voucherDiscountBig(v)}</p>
+                    <p className="mt-2 text-[16px] font-semibold leading-snug">{v.title}</p>
+                    {v.description?.trim() && <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-85">{v.description}</p>}
                     <button
                       onClick={() => { setClaiming(v.id); setError(null); }}
                       disabled={restam <= 0}
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-[13px] font-semibold text-on-background shadow-sm disabled:opacity-50"
+                      className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-[14px] font-bold shadow-[0_6px_18px_rgba(0,0,0,0.18)] disabled:opacity-50"
+                      style={{ color: tema.ctaText }}
                     >
                       {restam > 0 ? <>Pegar meu cupom <span aria-hidden>→</span></> : "Esgotado"}
                     </button>
-                    <p className="mt-2.5 text-[11px] text-on-background/60">{restam > 0 ? `${restam} restantes` : "Acabou"}</p>
+                    <p className="mt-3 text-[12px] opacity-75">{restam > 0 ? `${restam} restantes` : "Acabou"}</p>
                   </div>
                   {v.image_url && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={v.image_url} alt={v.title} className="w-[38%] shrink-0 object-cover" />
+                    <img src={v.image_url} alt={v.title} className="w-[42%] shrink-0 object-cover" />
                   )}
                 </div>
               </div>

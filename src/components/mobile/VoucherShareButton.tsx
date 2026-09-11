@@ -34,8 +34,8 @@ async function buildVoucherImage(title: string, code: string, message: string): 
 
   // Fundo — mesmo degradê vivo do card na tela.
   const grad = ctx.createLinearGradient(0, 0, W, H);
-  grad.addColorStop(0, "#FF6A4D");
-  grad.addColorStop(1, "#FF2E7E");
+  grad.addColorStop(0, "#A80F2B");
+  grad.addColorStop(1, "#E4264C");
   ctx.fillStyle = grad;
   roundRect(ctx, 0, 0, W, H, 36);
   ctx.fill();
