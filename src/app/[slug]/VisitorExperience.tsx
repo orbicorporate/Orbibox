@@ -18,6 +18,7 @@ import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
 import { homeCardShellClass, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
+import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 
 type Business = {
   id: string;
@@ -582,6 +583,13 @@ function voucherDiscountLabel(v: Pick<VoucherPublic, "discount_type" | "discount
 
 /** Tela de cupons — lista os ativos, deixa a pessoa resgatar (nome +
  * WhatsApp) e mostra o código único que ela leva até o negócio. */
+function resultMessage(businessName: string, expiresAt: string | null) {
+  const base = `Mostre esse código pro ${businessName} — no balcão ou pelo WhatsApp — pra usar o desconto.`;
+  if (!expiresAt) return base;
+  const data = new Date(expiresAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  return `${base} Vale até ${data}.`;
+}
+
 function CupomFlow({ business, sessionId, onBack }: { business: Business; sessionId: string | null; onBack: () => void }) {
   const supabase = createClient();
   const [vouchers, setVouchers] = useState<VoucherPublic[] | null>(null);
@@ -635,9 +643,10 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
             <p className="mt-2 text-[14px] font-medium opacity-90">{result.title}</p>
             <p className="mt-3 font-[family-name:var(--font-manrope)] text-[40px] font-bold tracking-[0.08em]">{result.code}</p>
             <p className="mt-3 text-[13.5px] leading-relaxed opacity-90">
-              Mostre esse código pro {business.name} — no balcão ou pelo WhatsApp — pra usar o desconto.
-              {result.expiresAt && ` Vale até ${new Date(result.expiresAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}.`}
+              {resultMessage(business.name, result.expiresAt)}
             </p>
+            <VoucherShareButton title={result.title} code={result.code} message={resultMessage(business.name, result.expiresAt)} />
+            <p className="mt-2.5 text-[11.5px] opacity-70">Ou só tira um print da tela pra guardar.</p>
           </div>
         </div>
       ) : (
