@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { VouchersManager } from "./VouchersManager";
+import { CupomBoxToggle } from "./CupomBoxToggle";
+
+type BoxConfigShape = { action?: string };
 
 export default async function VouchersPage() {
   const supabase = await createClient();
@@ -21,6 +24,25 @@ export default async function VouchersPage() {
     ? await supabase.from("vouchers").select("*").eq("business_id", business!.id).order("created_at", { ascending: false })
     : { data: [] };
 
+  // Quem resgatou cada cupom (nome e WhatsApp, se a pessoa deixou) — pra
+  // mostrar dentro do card de cada cupom.
+  const voucherIds = (vouchers ?? []).map((v) => v.id);
+  const { data: redemptions } = canSave && voucherIds.length > 0
+    ? await supabase.from("voucher_redemptions").select("*").in("voucher_id", voucherIds).order("created_at", { ascending: false })
+    : { data: [] };
+  const redemptionsByVoucher: Record<string, NonNullable<typeof redemptions>[number][]> = {};
+  for (const r of redemptions ?? []) {
+    (redemptionsByVoucher[r.voucher_id] ??= []).push(r);
+  }
+
+  // Já existe um Box de Cupons na página inicial? Sem isso, os cupons criados
+  // aqui não aparecem pra ninguém — é o elo que faltava explicar.
+  const { data: boxes } = canSave
+    ? await supabase.from("smart_boxes").select("id, config").eq("business_id", business!.id)
+    : { data: [] };
+  const cupomBox = (boxes ?? []).find((b) => (b.config as BoxConfigShape | null)?.action === "cupom");
+  const nextPosition = (boxes ?? []).length;
+
   return (
     <div className="flex flex-col">
       <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Cupons</h1>
@@ -34,8 +56,8 @@ export default async function VouchersPage() {
           <div className="rounded-[24px] bg-surface-soft p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-secondary">Como funciona</p>
             <p className="mt-2 text-[14.5px] leading-relaxed text-text-secondary">
-              O cliente toca no cupom, deixa o WhatsApp e recebe um código único na hora. Ele mostra pra você no
-              atendimento — é só confirmar aqui embaixo.
+              O cliente toca no cupom na sua página, deixa o nome e o WhatsApp e recebe um código único na hora. Ele
+              mostra pra você no atendimento — é só confirmar aqui embaixo.
             </p>
           </div>
 
@@ -63,14 +85,15 @@ export default async function VouchersPage() {
             </div>
           </div>
 
-          {/* Passo a passo — card próprio, separado do exemplo visual */}
+          {/* Passo a passo — agora com o passo que faltava: colocar o box na Home */}
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Passo a passo</p>
             <div className="mt-4 flex flex-col gap-4">
               {[
-                { n: "1", t: "Você cria o cupom", d: "Desconto, quantidade disponível e validade — você decide tudo abaixo." },
-                { n: "2", t: "O cliente resgata", d: "Toca no cupom na sua página, deixa o WhatsApp e recebe um código único na hora." },
-                { n: "3", t: "Você confirma no atendimento", d: "Ele mostra o código, você digita em \"Resgatar código\" abaixo e pronto." },
+                { n: "1", t: "Você cria o cupom", d: "Desconto, quantidade disponível e validade — você decide tudo aqui embaixo." },
+                { n: "2", t: "Coloca o box \"Cupons\" na página inicial", d: "Sem isso, o cupom existe mas ninguém vê. É o botão logo abaixo." },
+                { n: "3", t: "O cliente resgata", d: "Toca no box, deixa nome e WhatsApp, e recebe um código único na hora." },
+                { n: "4", t: "Você confirma no atendimento", d: "Ele mostra o código, você digita em \"Resgatar código\" e pronto." },
               ].map((s) => (
                 <div key={s.n} className="flex items-start gap-3.5">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[13px] font-semibold text-text-secondary">{s.n}</span>
@@ -82,6 +105,9 @@ export default async function VouchersPage() {
               ))}
             </div>
           </div>
+
+          {/* O elo que faltava: colocar (ou confirmar que já tem) o box na Home */}
+          <CupomBoxToggle businessId={business!.id} initialHasBox={!!cupomBox} nextPosition={nextPosition} />
         </div>
       )}
 
@@ -153,7 +179,7 @@ export default async function VouchersPage() {
         </div>
       )}
 
-      <VouchersManager businessId={business!.id} initialVouchers={vouchers ?? []} canSave={canSave} />
+      <VouchersManager businessId={business!.id} initialVouchers={vouchers ?? []} canSave={canSave} redemptionsByVoucher={redemptionsByVoucher} />
     </div>
   );
 }

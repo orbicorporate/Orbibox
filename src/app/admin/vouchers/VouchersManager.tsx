@@ -7,17 +7,25 @@ import { useDialogs } from "@/hooks/useDialogs";
 import type { Database } from "@/lib/supabase/types";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
+type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
 
 function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
   return v.discount_type === "percent" ? `${v.discount_value}% off` : `R$ ${v.discount_value} off`;
 }
 
-export function VouchersManager({ businessId, initialVouchers, canSave = true }: { businessId: string; initialVouchers: Voucher[]; canSave?: boolean }) {
+function redemptionStatusLabel(status: string) {
+  if (status === "redeemed") return "Confirmado";
+  if (status === "expired") return "Expirado";
+  return "Aguardando";
+}
+
+export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {} }: { businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]> }) {
   const supabase = createClient();
   const { confirm, DialogRenderer } = useDialogs();
   const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [expandedRedemptions, setExpandedRedemptions] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   // Form de criação
@@ -161,31 +169,81 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
         {vouchers.length > 0 && (
           <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Seus cupons</p>
         )}
-        {vouchers.map((v) => (
-          <div key={v.id} className="rounded-[22px] border border-divider bg-surface-white p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="truncate text-[15px] font-medium">{v.title}</p>
-                <p className="mt-0.5 text-[14px] text-text-secondary">{discountLabel(v)}</p>
+        {vouchers.map((v) => {
+          const restam = v.quantity_total - v.quantity_claimed;
+          const pct = v.quantity_total > 0 ? Math.min(100, Math.round((v.quantity_claimed / v.quantity_total) * 100)) : 0;
+          const meusResgates = redemptionsByVoucher[v.id] ?? [];
+          const showingRedemptions = expandedRedemptions === v.id;
+          return (
+            <div key={v.id} className="rounded-[24px] border border-divider bg-surface-white p-5">
+              <div className="flex items-start gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface-soft text-[20px]">🎟️</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-semibold">{v.title}</p>
+                  <p className="mt-0.5 text-[14px] text-text-secondary">{discountLabel(v)}</p>
+                </div>
+                <button
+                  onClick={() => toggleActive(v)}
+                  className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium text-text-secondary"
+                >
+                  <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${v.is_active ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
+                  {v.is_active ? "Ativo" : "Pausado"}
+                </button>
               </div>
-              <button
-                onClick={() => toggleActive(v)}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${v.is_active ? "bg-surface-soft text-text-secondary" : "bg-surface-soft text-text-tertiary"}`}
-              >
-                <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${v.is_active ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
-                {v.is_active ? "Ativo" : "Pausado"}
+
+              {v.description?.trim() && (
+                <p className="mt-3 rounded-2xl bg-surface-soft px-3.5 py-2.5 text-[13px] leading-relaxed text-text-secondary">{v.description}</p>
+              )}
+
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-[12px] text-text-tertiary">
+                  <span>{v.quantity_claimed} de {v.quantity_total} resgatados</span>
+                  <span>{restam > 0 ? `${restam} restantes` : "Esgotado"}</span>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-soft">
+                  <div className="h-full rounded-full orbi-gradient" style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+
+              <p className="mt-3 text-[12px] text-text-tertiary">
+                {v.expires_hours ? `Código expira em ${v.expires_hours}h se não for usado` : "Código sem validade"}
+              </p>
+
+              {/* Quem resgatou — nome e WhatsApp de quem já pegou o cupom */}
+              {meusResgates.length > 0 && (
+                <div className="mt-3 border-t border-divider pt-3">
+                  <button
+                    onClick={() => setExpandedRedemptions(showingRedemptions ? null : v.id)}
+                    className="text-[13px] font-medium text-text-secondary underline"
+                  >
+                    {showingRedemptions ? "Esconder" : "Ver"} quem resgatou ({meusResgates.length})
+                  </button>
+                  {showingRedemptions && (
+                    <div className="mt-2.5 flex flex-col gap-2">
+                      {meusResgates.map((r) => (
+                        <div key={r.id} className="flex items-center justify-between gap-2 rounded-2xl bg-surface-soft px-3.5 py-2.5">
+                          <div className="min-w-0">
+                            <p className="truncate text-[13.5px] font-medium">{r.visitor_name || "Sem nome"}</p>
+                            <p className="mt-0.5 text-[12px] text-text-tertiary">
+                              {r.visitor_whatsapp || "Sem WhatsApp"} · código {r.code}
+                            </p>
+                          </div>
+                          <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${r.status === "redeemed" ? "bg-orbi-gradient-start/25 text-on-background" : r.status === "expired" ? "bg-surface-white text-text-tertiary" : "bg-surface-white text-text-secondary"}`}>
+                            {redemptionStatusLabel(r.status)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button onClick={() => deleteVoucher(v)} className="mt-3 text-[13px] text-red-600">
+                Excluir
               </button>
             </div>
-            <p className="mt-2 text-[13px] text-text-tertiary">
-              {v.quantity_claimed} de {v.quantity_total} resgatados
-              {v.expires_hours ? ` · código expira em ${v.expires_hours}h se não for usado` : " · sem validade"}
-            </p>
-            {v.description?.trim() && <p className="mt-1 text-[13px] text-text-tertiary">{v.description}</p>}
-            <button onClick={() => deleteVoucher(v)} className="mt-2 text-[13px] text-red-600">
-              Excluir
-            </button>
-          </div>
-        ))}
+          );
+        })}
 
         {vouchers.length === 0 && !creating && (
           <div className="flex flex-col items-center rounded-[24px] border border-dashed border-divider p-8 text-center">
