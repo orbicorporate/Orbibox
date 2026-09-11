@@ -108,6 +108,11 @@ export function VisitorExperience({
   const [boxList, setBoxList] = useState<BoxRow[]>(boxes);
   const [editingBoxId, setEditingBoxId] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState("");
+  // "Modo visitante" — o dono liga isso pra ver a Home exatamente como o
+  // visitante vê, sem os controles de edição no meio, sem precisar sair da
+  // página nem abrir uma aba anônima.
+  const [previewMode, setPreviewMode] = useState(false);
+  const showOwnerControls = isOwner && !previewMode;
   // Pergunta digitada na tela cheia da CuradoriaOrbi — passa pro campo do
   // chat real já preenchida, pronta pra mandar, em vez de perder o que a
   // pessoa escreveu.
@@ -299,16 +304,34 @@ export function VisitorExperience({
         style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
       />
 
-      {/* O dono, navegando o próprio link, ganha um atalho de volta pro painel —
+      {/* O dono, navegando o próprio link, ganha um atalho de volta pro painel
+          e um alternador pra ver a página exatamente como o visitante vê,
+          sem os controles de edição (lápis, setinhas, formato) no meio —
           só na tela inicial. Escondido nos overlays (chat, catálogo, sobre)
           porque senão fica borrado atrás do fundo semitransparente deles. */}
-      {isOwner && intent === null && (
-        <Link
-          href="/admin"
+      {isOwner && intent === null && !previewMode && (
+        <div className="fixed right-4 top-4 z-20 flex items-center gap-2">
+          <Link
+            href="/admin"
+            className="flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur"
+          >
+            ← Meu painel
+          </Link>
+          <button
+            onClick={() => setPreviewMode(true)}
+            className="flex items-center gap-1.5 rounded-full bg-surface-white/90 px-3.5 py-2 text-[13px] font-medium text-text-secondary shadow-lg backdrop-blur"
+          >
+            👁 Modo visitante
+          </button>
+        </div>
+      )}
+      {isOwner && intent === null && previewMode && (
+        <button
+          onClick={() => setPreviewMode(false)}
           className="fixed right-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur"
         >
-          ← Meu painel
-        </Link>
+          ✎ Voltar a editar
+        </button>
       )}
 
       <div className="relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center justify-center px-6 py-16">
@@ -401,7 +424,7 @@ export function VisitorExperience({
                   ) : (
                     <>
                       {o.t}{o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}
-                      {isOwner && (
+                      {showOwnerControls && (
                         <span
                           role="button"
                           tabIndex={0}
@@ -416,7 +439,7 @@ export function VisitorExperience({
                   );
                   return (
                   <div key={o.key} className={`relative ${largo ? "col-span-2" : "col-span-1"}`}>
-                    {isOwner && (
+                    {showOwnerControls && (
                       <div className="absolute right-2.5 top-2.5 z-10 flex gap-1">
                         <span
                           role="button"
