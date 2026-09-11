@@ -39,7 +39,7 @@ export default async function HojePage() {
     // "Ações" = cliques de verdade (produto, link, WhatsApp…) — mesma fonte do Pulse,
     // não a tabela de campanhas (isso não tinha nada a ver com o que o visitante faz).
     supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
-    supabase.from("content_items").select("image_url, image_is_placeholder, description").eq("business_id", business!.id),
+    supabase.from("content_items").select("image_url, image_is_placeholder, description").eq("business_id", business!.id).eq("status", "published"),
     supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", business!.id).eq("is_active", true),
   ]);
   const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
@@ -301,7 +301,7 @@ export default async function HojePage() {
       </div>
 
       {/* Insight Orbi — sempre tem um, prioriza o que ainda falta fazer */}
-      <div data-tour="insights">
+      <div data-tour="insights" className="mt-8">
         <OrbiInsightCard>
           <OrbiInsightHeader />
           <OrbiInsightMessage>{insight.description}</OrbiInsightMessage>
