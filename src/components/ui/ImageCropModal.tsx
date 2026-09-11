@@ -177,7 +177,7 @@ export function ImageCropModal({
               alt=""
               draggable={false}
               onLoad={(e) => setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
-              className="pointer-events-none absolute select-none"
+              className="pointer-events-none absolute max-w-none select-none"
               style={{
                 width: dispW || undefined,
                 height: dispH || undefined,
