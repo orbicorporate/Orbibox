@@ -600,46 +600,79 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
       <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">Cupons</h2>
 
       {result ? (
-        <div className="mt-5 rounded-[24px] bg-surface-white p-6 text-center shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
-          <p className="text-[14px] text-text-secondary">{result.title}</p>
-          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[36px] font-bold tracking-[0.05em]">{result.code}</p>
-          <p className="mt-2 text-[14px] leading-relaxed text-text-tertiary">
-            Mostre esse código pro {business.name} — no balcão ou pelo WhatsApp — pra usar o desconto.
-            {result.expiresAt && ` Vale até ${new Date(result.expiresAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}.`}
-          </p>
+        <div className="relative mt-6">
+          <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] bg-[#FF3B6E] opacity-40 blur-3xl" />
+          <div className="rounded-[28px] bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] p-7 text-center text-white shadow-[0_16px_44px_rgba(255,46,126,0.4)]">
+            <span className="text-[26px]">🎉</span>
+            <p className="mt-2 text-[14px] font-medium opacity-90">{result.title}</p>
+            <p className="mt-3 font-[family-name:var(--font-manrope)] text-[40px] font-bold tracking-[0.08em]">{result.code}</p>
+            <p className="mt-3 text-[13.5px] leading-relaxed opacity-90">
+              Mostre esse código pro {business.name} — no balcão ou pelo WhatsApp — pra usar o desconto.
+              {result.expiresAt && ` Vale até ${new Date(result.expiresAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}.`}
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="mt-5 flex flex-col gap-3">
+        <div className="mt-6 flex flex-col gap-4">
           {vouchers === null && <p className="text-[14px] text-text-tertiary">Carregando…</p>}
           {vouchers?.length === 0 && <p className="text-[14px] text-text-tertiary">Nenhum cupom disponível no momento.</p>}
           {vouchers?.map((v) => {
             const restam = v.quantity_total - v.quantity_claimed;
-            return (
-              <div key={v.id} className="rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
-                <p className="text-[15px] font-medium">{v.title}</p>
-                <p className="mt-0.5 text-[14px] text-text-secondary">{voucherDiscountLabel(v)}</p>
-                {v.description?.trim() && <p className="mt-1 text-[13px] text-text-tertiary">{v.description}</p>}
-                <p className="mt-1 text-[12px] text-text-tertiary">{restam > 0 ? `${restam} restantes` : "Esgotado"}</p>
+            const isClaiming = claiming === v.id;
 
-                {claiming === v.id ? (
-                  <div className="mt-3 flex flex-col gap-2">
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" className="rounded-xl border border-divider px-3 py-2 text-[14px] outline-none focus:border-on-background" />
-                    <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Seu WhatsApp (opcional)" className="rounded-xl border border-divider px-3 py-2 text-[14px] outline-none focus:border-on-background" />
-                    {error && <p className="text-[13px] text-red-600">{error}</p>}
-                    <div className="flex gap-2">
-                      <button onClick={() => { setClaiming(null); setError(null); }} className="flex-1 rounded-full bg-surface-soft py-2 text-[13px] font-medium">Cancelar</button>
-                      <button onClick={() => resgatar(v.id)} className="flex-1 rounded-full bg-button-primary py-2 text-[13px] font-medium text-white">Confirmar</button>
+            if (isClaiming) {
+              return (
+                <div key={v.id} className="rounded-[22px] border border-divider bg-surface-white p-5">
+                  <p className="text-[15px] font-semibold">{v.title}</p>
+                  <p className="mt-0.5 text-[14px] text-text-secondary">{voucherDiscountLabel(v)}</p>
+                  <div className="mt-4 flex flex-col gap-2.5">
+                    <div>
+                      <p className="text-[12px] text-text-tertiary">Seu nome</p>
+                      <input
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Como podemos te chamar"
+                        autoFocus
+                        className="mt-1 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-[12px] text-text-tertiary">Seu WhatsApp (opcional)</p>
+                      <input
+                        value={whatsapp}
+                        onChange={(e) => setWhatsapp(e.target.value)}
+                        placeholder="(11) 99999-9999"
+                        inputMode="tel"
+                        className="mt-1 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
+                      />
+                    </div>
+                    {error && <p className="text-[13px] font-medium text-red-600">{error}</p>}
+                    <div className="mt-1.5 flex gap-2">
+                      <button onClick={() => { setClaiming(null); setError(null); }} className="flex-1 rounded-full bg-surface-soft py-3 text-[14px] font-medium">Cancelar</button>
+                      <button onClick={() => resgatar(v.id)} className="flex-1 rounded-full bg-button-primary py-3 text-[14px] font-medium text-white">Confirmar</button>
                     </div>
                   </div>
-                ) : (
+                </div>
+              );
+            }
+
+            return (
+              <div key={v.id} className="relative">
+                <div aria-hidden className="absolute inset-0 -z-10 rounded-[22px] bg-[#FF3B6E] opacity-30 blur-2xl" />
+                <div className="rounded-[22px] bg-gradient-to-br from-[#FF6A4D] to-[#FF2E7E] p-5 text-white shadow-[0_10px_30px_rgba(255,46,126,0.35)]">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide opacity-90">🎟️ Oferta especial</p>
+                  <p className="mt-1.5 text-[16px] font-semibold leading-tight">{v.title}</p>
+                  <p className="mt-0.5 font-[family-name:var(--font-manrope)] text-[22px] font-bold leading-none">{voucherDiscountLabel(v)}</p>
+                  {v.description?.trim() && <p className="mt-1.5 text-[13px] leading-relaxed opacity-90">{v.description}</p>}
+                  <p className="mt-2 text-[12px] opacity-80">{restam > 0 ? `${restam} restantes` : "Esgotado"}</p>
                   <button
                     onClick={() => { setClaiming(v.id); setError(null); }}
                     disabled={restam <= 0}
-                    className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
+                    className="mt-4 w-full rounded-full bg-white py-3 text-[14px] font-semibold text-on-background disabled:opacity-50"
                   >
-                    {restam > 0 ? "Resgatar" : "Esgotado"}
+                    {restam > 0 ? "Pegar meu cupom" : "Esgotado"}
                   </button>
-                )}
+                </div>
               </div>
             );
           })}
