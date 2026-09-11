@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { BackButton } from "./BackButton";
-import { ProgressBadge } from "@/components/ProgressWidgets";
+import { ProgressBadge } from "@/components/ProgressBadge";
 
 const MENU_ITEMS = [
   {

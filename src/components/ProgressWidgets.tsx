@@ -144,17 +144,8 @@ export function ProgressCard({ done, pct }: { done: Record<string, boolean>; pct
   );
 }
 
-// Selo fino de progresso — vai no topo de todas as telas (no header).
-export function ProgressBadge({ pct }: { pct: number }) {
-  if (pct >= 100) return null;
-  return (
-    <Link href="/admin" className="flex items-center gap-2 rounded-full bg-surface-soft px-2.5 py-1">
-      <span className="relative flex h-3.5 w-14 overflow-hidden rounded-full bg-surface-white">
-        <span className="h-full rounded-full orbi-gradient" style={{ width: `${pct}%` }} />
-      </span>
-      <span className="text-[11px] font-semibold text-text-secondary">{pct}%</span>
-    </Link>
-  );
-}
+// Selo fino de progresso (ProgressBadge) mudou pra /components/ProgressBadge.tsx
+// — não pode ficar aqui porque esse arquivo depende de "@/lib/progress"
+// (server-only), e o badge é usado num Client Component (o AppHeader).
 
 export type { ProgressKey };
