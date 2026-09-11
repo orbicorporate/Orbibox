@@ -108,7 +108,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
   }
 
   return (
-    <div className="mt-5 flex flex-col gap-6">
+    <div className="mt-6 flex flex-col gap-7">
       <DialogRenderer />
       {showUpgrade && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6" onClick={() => setShowUpgrade(false)}>
@@ -129,17 +129,17 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
       )}
 
       {/* Resgate rápido — pensado pra ser usado na frente do cliente, no balcão */}
-      <div className="rounded-[24px] border border-divider bg-surface-white p-5">
-        <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Resgatar código</p>
-        <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
+      <div className="rounded-[24px] bg-surface-soft p-5">
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-text-secondary">Resgatar código</p>
+        <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
           Cliente chegou com o cupom? Digite o código dele abaixo e confirme. O sistema valida na hora e marca como usado.
         </p>
-        <form onSubmit={handleRedeem} className="mt-3 flex gap-2">
+        <form onSubmit={handleRedeem} className="mt-4 flex gap-2">
           <input
             value={code}
             onChange={(e) => { setCode(e.target.value.toUpperCase()); setRedeemResult(null); }}
             placeholder="Ex: A1B2C3"
-            className="flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[18px] font-medium uppercase tracking-wider outline-none focus:border-on-background"
+            className="flex-1 rounded-2xl border border-divider bg-white px-4 py-3 text-[18px] font-medium uppercase tracking-wider outline-none focus:border-on-background"
           />
           <button
             type="submit"
@@ -150,7 +150,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
           </button>
         </form>
         {redeemResult && (
-          <p className={`mt-2.5 text-[14px] font-medium ${redeemResult.ok ? "text-green-700" : "text-red-600"}`}>
+          <p className={`mt-3 text-[14px] font-medium ${redeemResult.ok ? "text-green-700" : "text-red-600"}`}>
             {redeemResult.message}
           </p>
         )}
@@ -158,6 +158,9 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
 
       {/* Lista de cupons */}
       <div className="flex flex-col gap-3">
+        {vouchers.length > 0 && (
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Seus cupons</p>
+        )}
         {vouchers.map((v) => (
           <div key={v.id} className="rounded-[22px] border border-divider bg-surface-white p-4">
             <div className="flex items-start justify-between gap-2">
@@ -185,8 +188,12 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true }:
         ))}
 
         {vouchers.length === 0 && !creating && (
-          <div className="rounded-[24px] border border-divider bg-surface-white p-6 text-center text-[14px] text-text-secondary">
-            Nenhum cupom ainda.
+          <div className="flex flex-col items-center rounded-[24px] border border-dashed border-divider p-8 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-soft text-[22px]">🎟️</span>
+            <p className="mt-3 text-[15px] font-medium">Nenhum cupom ainda</p>
+            <p className="mt-1 max-w-[240px] text-[13px] leading-relaxed text-text-tertiary">
+              Crie o primeiro cupom aí embaixo — leva menos de um minuto.
+            </p>
           </div>
         )}
       </div>

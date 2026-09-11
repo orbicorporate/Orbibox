@@ -24,9 +24,52 @@ export default async function VouchersPage() {
   return (
     <div className="flex flex-col">
       <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Cupons</h1>
-      <p className="mt-1 text-[14px] text-text-secondary">
+      <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
         Crie cupons com estoque limitado. Cada resgate gera um código único, sem risco de uso duplicado.
       </p>
+
+      {canSave && (
+        <div className="orbi-card-light mt-6 rounded-[28px] p-6">
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-text-secondary">Como funciona</p>
+          <p className="mt-3 text-[15px] leading-relaxed text-text-secondary">
+            O cliente toca no cupom na sua página, deixa o WhatsApp e recebe um código único na hora. Ele mostra esse
+            código pra você no atendimento — é só digitar aqui embaixo pra confirmar.
+          </p>
+
+          {/* Exemplo visual do cupom, ponta a ponta */}
+          <div className="mt-6 flex items-center gap-3">
+            <div className="min-w-0 flex-1 rounded-[20px] bg-white p-4 shadow-[0_4px_20px_rgba(17,19,24,0.06)]">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-text-tertiary">🎟️ Oferta especial</p>
+              <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[22px] font-semibold leading-none">10% OFF</p>
+              <p className="mt-1.5 text-[12.5px] text-text-secondary">na primeira compra</p>
+              <span className="mt-3.5 inline-block rounded-full bg-on-background px-3.5 py-2 text-[12px] font-medium text-white">Pegar meu cupom</span>
+            </div>
+            <span className="shrink-0 text-[16px] text-text-tertiary">→</span>
+            <div className="min-w-0 flex-1 rounded-[20px] bg-white p-4 text-center shadow-[0_4px_20px_rgba(17,19,24,0.06)]">
+              <p className="text-[11px] text-text-tertiary">Código do cliente</p>
+              <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[19px] font-semibold tracking-[3px]">A1B2C3</p>
+              <p className="mt-2 text-[11.5px] leading-snug text-text-secondary">Ele mostra isso pra você confirmar</p>
+            </div>
+          </div>
+
+          {/* Passo a passo */}
+          <div className="mt-6 flex flex-col gap-3.5">
+            {[
+              { n: "1", t: "Você cria o cupom", d: "Desconto, quantidade disponível e validade — você decide tudo abaixo." },
+              { n: "2", t: "O cliente resgata", d: "Toca no cupom na sua página, deixa o WhatsApp e recebe um código único na hora." },
+              { n: "3", t: "Você confirma no atendimento", d: "Ele mostra o código, você digita em \"Resgatar código\" abaixo e pronto." },
+            ].map((s) => (
+              <div key={s.n} className="flex items-start gap-3.5">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[13px] font-semibold text-text-secondary">{s.n}</span>
+                <div className="min-w-0">
+                  <p className="text-[14px] font-medium">{s.t}</p>
+                  <p className="mt-0.5 text-[13px] leading-relaxed text-text-secondary">{s.d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!canSave && (
         <div className="mt-4 flex flex-col gap-3">
