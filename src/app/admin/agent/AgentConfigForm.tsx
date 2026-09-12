@@ -7,6 +7,7 @@ import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/components/orbi/OrbiInsightCard";
+import { OrbiVisualPanel } from "@/app/admin/config/OrbiVisualPanel";
 
 type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; curation_question: string | null; curation_options: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
@@ -25,9 +26,10 @@ const KNOWLEDGE: { key: keyof Knowledge; label: string; href: string }[] = [
   { key: "diferenciais", label: "Estilo e Curadoria", href: "/admin/config" },
 ];
 
-export function AgentConfigForm({ config, businessId, businessName, slug, knowledge }: { config: Config; businessId: string; businessName: string; slug: string; knowledge: Knowledge }) {
+export function AgentConfigForm({ config, businessId, businessName, slug, heroGradient, knowledge }: { config: Config; businessId: string; businessName: string; slug: string; heroGradient: string[] | null; knowledge: Knowledge }) {
   const supabase = createClient();
   const [state, setState] = useState(config);
+  const [showCores, setShowCores] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [buildingAbout, setBuildingAbout] = useState(false);
@@ -109,10 +111,20 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
         ✦ Toque no nome acima para personalizar — dê à IA o nome da sua marca (ex.: “{businessName}”, “Nina”, “Léo”) ou deixe como <span className="font-medium text-text-secondary">Orbi</span>. É assim que ela vai se apresentar aos visitantes.
       </p>
 
-      <Link href="/admin/config#cores-orbi" className="-mt-3 flex items-center gap-3 self-start rounded-full border border-divider bg-surface-white py-1.5 pl-1.5 pr-4">
+      <button
+        onClick={() => setShowCores((v) => !v)}
+        className="-mt-3 flex items-center gap-3 self-start rounded-full border border-divider bg-surface-white py-1.5 pl-1.5 pr-4"
+      >
         <OrbiParticleSphere key={orbiColors.join("-")} size={32} colors={orbiColors} className="rounded-full" />
         <span className="text-[13px] font-medium">✦ Configurar cores da Orbi</span>
-      </Link>
+        <span className={`text-[11px] text-text-tertiary transition-transform ${showCores ? "rotate-180" : ""}`}>▾</span>
+      </button>
+
+      {showCores && (
+        <div className="-mt-1 rounded-[24px] border border-divider bg-surface-white p-4">
+          <OrbiVisualPanel businessId={businessId} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} />
+        </div>
+      )}
 
       {/* Ajuste de comportamento */}
       <div>

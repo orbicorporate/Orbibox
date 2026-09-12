@@ -49,12 +49,15 @@ export default async function AgentPage() {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug, about_business, differentials, policies")
+    .select("id, name, slug, about_business, differentials, policies, hero_gradient")
     .eq("id", businessId!)
     .single();
   const { data: config } = await supabase.from("agent_configs").select("*").eq("business_id", business!.id).maybeSingle();
   const orbiColors = Array.isArray(config?.orbi_colors) && config.orbi_colors.length >= 2
     ? (config.orbi_colors as string[])
+    : null;
+  const heroGradient = Array.isArray(business!.hero_gradient) && business!.hero_gradient.length >= 2
+    ? (business!.hero_gradient as string[])
     : null;
   const { count: catalogCount } = await supabase
     .from("content_items")
@@ -72,6 +75,7 @@ export default async function AgentPage() {
           businessId={business!.id}
           businessName={business!.name}
           slug={business!.slug}
+          heroGradient={heroGradient}
           knowledge={{
             catalogo: (catalogCount ?? 0) > 0,
             historia: !!business!.about_business?.trim(),
