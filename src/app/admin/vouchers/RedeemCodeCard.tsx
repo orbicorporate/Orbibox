@@ -81,14 +81,14 @@ export function RedeemCodeCard({ businessId, collapsible = false, onRedeemed }: 
               value={code}
               onChange={(e) => { setCode(e.target.value.toUpperCase()); setResult(null); }}
               placeholder="EX: A1B2C3"
-              className="w-full rounded-2xl border-2 px-4 py-3.5 text-center text-[19px] font-semibold uppercase tracking-[4px] outline-none transition-colors"
-              style={{ borderColor: code ? CHERRY_TEXT : "#F0D6DC" }}
+              className="w-full rounded-2xl border-2 px-4 py-3.5 text-center text-[19px] font-semibold uppercase tracking-[4px] outline-none transition-colors focus:border-[color:var(--cherry)]"
+              style={{ borderColor: code ? CHERRY_TEXT : "#E3D4D8", ["--cherry" as string]: CHERRY_TEXT }}
             />
             <button
               type="submit"
               disabled={redeeming || !code.trim()}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-bold text-white disabled:opacity-45"
-              style={{ backgroundImage: CHERRY_GRADIENT, boxShadow: code.trim() ? CHERRY_SHADOW : "none" }}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-bold text-white transition-opacity disabled:opacity-60"
+              style={{ backgroundImage: CHERRY_GRADIENT, boxShadow: CHERRY_SHADOW }}
             >
               {redeeming ? "Validando…" : <>Confirmar <span aria-hidden>→</span></>}
             </button>

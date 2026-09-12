@@ -18,9 +18,9 @@ function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
 }
 
 function statusLabel(status: string) {
-  if (status === "redeemed") return "Confirmado";
+  if (status === "redeemed") return "Já usou";
   if (status === "expired") return "Expirado";
-  return "Aguardando";
+  return "Não usou ainda";
 }
 
 function formatDate(iso: string) {
@@ -112,19 +112,19 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-[20px] p-4" style={{ backgroundColor: "#E7EAFC" }}>
           <p className="text-[26px] font-bold" style={{ color: "#4453D6" }}>{v.quantity_claimed}</p>
-          <p className="mt-0.5 text-[12.5px] font-medium" style={{ color: "#4453D6" }}>de {v.quantity_total} resgatados</p>
+          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#4453D6" }}>pegaram o cupom<br /><span className="opacity-70">de {v.quantity_total} disponíveis</span></p>
         </div>
-        <div className="rounded-[20px] p-4" style={{ backgroundColor: "#DEF3E3" }}>
-          <p className="text-[26px] font-bold" style={{ color: "#1F9E4C" }}>{restam}</p>
-          <p className="mt-0.5 text-[12.5px] font-medium" style={{ color: "#1F9E4C" }}>ainda restantes</p>
+        <div className="rounded-[20px] p-4" style={{ backgroundColor: "#F1F0EE" }}>
+          <p className="text-[26px] font-bold" style={{ color: "#6B7280" }}>{restam}</p>
+          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#6B7280" }}>ainda sobram<br /><span className="opacity-70">pra novos clientes</span></p>
         </div>
         <div className="rounded-[20px] p-4" style={{ backgroundColor: "#FDEEDF" }}>
           <p className="text-[26px] font-bold" style={{ color: "#C2650A" }}>{aguardando}</p>
-          <p className="mt-0.5 text-[12.5px] font-medium" style={{ color: "#C2650A" }}>aguardando confirmar</p>
+          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#C2650A" }}>ainda não usaram<br /><span className="opacity-70">têm o código na mão</span></p>
         </div>
-        <div className="rounded-[20px] p-4" style={{ backgroundColor: "#E7EAFC" }}>
+        <div className="rounded-[20px] p-4" style={{ backgroundColor: "#DEF3E3" }}>
           <p className="text-[26px] font-bold" style={{ color: "#1F9E4C" }}>{confirmados}</p>
-          <p className="mt-0.5 text-[12.5px] font-medium" style={{ color: "#1F9E4C" }}>já confirmados</p>
+          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#1F9E4C" }}>já usaram<br /><span className="opacity-70">você confirmou</span></p>
         </div>
       </div>
 
@@ -154,8 +154,8 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
           <div className="mt-2.5 flex gap-2">
             {([
               { v: "todos", t: "Todos" },
-              { v: "claimed", t: "Aguardando" },
-              { v: "redeemed", t: "Confirmados" },
+              { v: "claimed", t: "Não usaram" },
+              { v: "redeemed", t: "Já usaram" },
             ] as const).map((f) => (
               <button
                 key={f.v}

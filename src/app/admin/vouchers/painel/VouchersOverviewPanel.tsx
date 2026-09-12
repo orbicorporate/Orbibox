@@ -15,9 +15,9 @@ function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
 }
 
 function statusLabel(status: string) {
-  if (status === "redeemed") return "Confirmado";
+  if (status === "redeemed") return "Já usou";
   if (status === "expired") return "Expirado";
-  return "Aguardando";
+  return "Não usou ainda";
 }
 
 function formatDate(iso: string) {
@@ -77,21 +77,26 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
         </div>
       </div>
 
-      {/* Totais coloridos */}
+      {/* Totais coloridos — cada um explica o momento do resgate */}
       <div className="mt-4 grid grid-cols-3 gap-2.5">
         <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#E7EAFC" }}>
           <p className="text-[24px] font-bold" style={{ color: "#4453D6" }}>{totalResgatados}</p>
-          <p className="mt-0.5 text-[12px] font-medium" style={{ color: "#4453D6" }}>resgatados</p>
+          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#4453D6" }}>pegaram o cupom</p>
         </div>
         <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#FDEEDF" }}>
           <p className="text-[24px] font-bold" style={{ color: "#C2650A" }}>{totalAguardando}</p>
-          <p className="mt-0.5 text-[12px] font-medium" style={{ color: "#C2650A" }}>aguardando</p>
+          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#C2650A" }}>ainda não usaram</p>
         </div>
         <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#DEF3E3" }}>
           <p className="text-[24px] font-bold" style={{ color: "#1F9E4C" }}>{totalConfirmados}</p>
-          <p className="mt-0.5 text-[12px] font-medium" style={{ color: "#1F9E4C" }}>confirmados</p>
+          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#1F9E4C" }}>já usaram</p>
         </div>
       </div>
+      <p className="mt-2.5 text-[12px] leading-relaxed text-text-tertiary">
+        <span className="font-medium text-text-secondary">Pegaram</span> é quanta gente resgatou o cupom na sua página.
+        Desses, <span className="font-medium text-text-secondary">ainda não usaram</span> são os que têm o código mas não foram até você, e
+        <span className="font-medium text-text-secondary"> já usaram</span> são os que você confirmou no atendimento.
+      </p>
 
       {/* Resgatar no balcão — mesmo card da referência, reaproveitado */}
       <div className="mt-5">
@@ -157,8 +162,8 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
           <div className="mt-2.5 flex gap-2">
             {([
               { v: "todos", t: "Todos" },
-              { v: "claimed", t: "Aguardando" },
-              { v: "redeemed", t: "Confirmados" },
+              { v: "claimed", t: "Não usaram" },
+              { v: "redeemed", t: "Já usaram" },
             ] as const).map((f) => (
               <button
                 key={f.v}
