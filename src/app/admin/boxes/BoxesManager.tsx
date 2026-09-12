@@ -501,6 +501,7 @@ export function BoxesManager({
                       title={label || suggestedName}
                       ai={m.assinatura}
                       stars={cfg?.action === "avaliar"}
+                      cupom={cfg?.action === "cupom"}
                       description={cfg?.subtitle || (isCustom ? "" : (BOX_DEFAULT_DESCRIPTION[box.box_type] || ""))}
                       className={(!cfg?.layout || cfg.layout === "auto") ? "max-w-[190px]" : cfg.layout === "medio" ? "max-w-[190px]" : ""}
                     />

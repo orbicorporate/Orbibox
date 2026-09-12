@@ -181,7 +181,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; address?: string; layoutOverride?: "largo" | "medio"; onClick: () => void };
+  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; onClick: () => void };
   const options: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -226,7 +226,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, stars: cfg.action === "avaliar", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick };
+        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou — igual ao editor.
@@ -485,7 +485,7 @@ export function VisitorExperience({
                         tabIndex={0}
                         onClick={() => !isEditingThis && o.onClick()}
                         onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
-                        className={homeCardShellClass("largo", o.ai)}
+                        className={homeCardShellClass("largo", o.ai, o.cupom)}
                       >
                         <HomeOptionCardContent
                           layout="largo"
@@ -497,6 +497,7 @@ export function VisitorExperience({
                           titleNode={titleNode}
                           ai={o.ai}
                           stars={o.stars}
+                          cupom={o.cupom}
                           description={o.ai ? `Fale com a ${agentName}, nossa IA.` : o.d}
                           addressIndicator={o.address ? (expandedBox === o.key ? "▾" : "▸") : undefined}
                         />
@@ -512,7 +513,7 @@ export function VisitorExperience({
                         tabIndex={0}
                         onClick={() => !isEditingThis && o.onClick()}
                         onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
-                        className={homeCardShellClass("medio", o.ai)}
+                        className={homeCardShellClass("medio", o.ai, o.cupom)}
                       >
                         <HomeOptionCardContent
                           layout="medio"
@@ -524,6 +525,7 @@ export function VisitorExperience({
                           titleNode={titleNode}
                           ai={o.ai}
                           stars={o.stars}
+                          cupom={o.cupom}
                           description={o.ai ? `Fale com a ${agentName}.` : o.d}
                         />
                       </div>
