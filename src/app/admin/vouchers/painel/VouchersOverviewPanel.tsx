@@ -100,7 +100,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
 
       {/* Resgatar no balcão — mesmo card da referência, reaproveitado */}
       <div className="mt-5">
-        <RedeemCodeCard businessId={businessId} onRedeemed={refresh} />
+        <RedeemCodeCard businessId={businessId} onRedeemed={refresh} vouchers={vouchers.map((v) => ({ id: v.id, title: v.title }))} />
       </div>
 
       {/* Cupons — ativar/pausar direto daqui, e filtrar a lista por eles */}

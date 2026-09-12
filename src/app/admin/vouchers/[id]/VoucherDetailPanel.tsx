@@ -134,7 +134,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
 
       {/* Resgate rápido no balcão — mesmo card da referência, reaproveitado */}
       <div className="mt-6">
-        <RedeemCodeCard businessId={v.business_id} onRedeemed={refreshVoucher} />
+        <RedeemCodeCard businessId={v.business_id} onRedeemed={refreshVoucher} fixedVoucherId={v.id} fixedVoucherTitle={v.title} />
       </div>
 
       {/* Lista de quem resgatou — o painel de verdade */}

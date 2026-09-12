@@ -81,7 +81,7 @@ export default async function VouchersPage() {
           cliente na hora, sem precisar entrar no painel. */}
       {canSave && vouchers && vouchers.length > 0 && (
         <div className="mt-4">
-          <RedeemCodeCard businessId={business!.id} collapsible />
+          <RedeemCodeCard businessId={business!.id} collapsible vouchers={(vouchers ?? []).map((v) => ({ id: v.id, title: v.title }))} />
         </div>
       )}
 
