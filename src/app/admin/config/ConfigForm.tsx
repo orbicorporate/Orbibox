@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
@@ -37,8 +36,7 @@ const TIPO_LABEL: Record<string, string> = {
   links: "Página de links",
 };
 
-export function ConfigForm({ business, orbiColors, heroGradient }: { business: Business; orbiColors: string[] | null; heroGradient: string[] | null }) {
-  const router = useRouter();
+export function ConfigForm({ business, orbiColors, heroGradient, section }: { business: Business; orbiColors: string[] | null; heroGradient: string[] | null; section: "marca" | "contatos" | "orbi" }) {
   const supabase = createClient();
   const [b, setB] = useState(business);
   const [logoGallery, setLogoGallery] = useState<string[]>(parseLogoGallery(business.logo_gallery));
@@ -46,7 +44,6 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
-  const [signingOut, setSigningOut] = useState(false);
   const [generatingDesc, setGeneratingDesc] = useState(false);
 
   async function saveLogo(url: string | null) {
@@ -78,13 +75,6 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
     } finally {
       setGeneratingDesc(false);
     }
-  }
-
-  async function handleSignOut() {
-    setSigningOut(true);
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
   }
 
   function set<K extends keyof Business>(key: K, value: Business[K]) {
@@ -146,6 +136,7 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
 
   return (
     <div className="mt-6 flex flex-col pb-4">
+      {section === "marca" && (<>
       {/* Logotipo — super indicado: usado como avatar da tela inicial e vira
           sugestão de ícone em qualquer box, novo ou existente. */}
       <div className="rounded-[24px] orbi-gradient p-[1.5px]">
@@ -232,8 +223,10 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
           </p>
         </div>
       )}
+      </>)}
 
-      <p className="mt-8 font-[family-name:var(--font-manrope)] text-[20px] font-medium">Contatos do box</p>
+      {section === "contatos" && (<>
+      <p className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">Contatos do box</p>
       <HelperText>Aparecem como botões para o visitante. Deixe vazio o que não quiser mostrar.</HelperText>
 
       <p className={rotulo}>WhatsApp</p>
@@ -284,7 +277,10 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
         className={campo}
       />
 
-      <p className="mt-10 font-[family-name:var(--font-manrope)] text-[20px] font-medium">O que a Orbi sabe</p>
+      </>)}
+
+      {section === "orbi" && (<>
+      <p className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">O que a Orbi sabe</p>
       <HelperText>Quanto mais preenchido, menos ela precisa dizer que não sabe.</HelperText>
 
       <div className="mt-4 flex flex-wrap gap-2.5">
@@ -355,22 +351,15 @@ export function ConfigForm({ business, orbiColors, heroGradient }: { business: B
         className={`${campo} resize-none`}
       />
 
-      {saved && <p className="mt-3 text-[12px] text-text-tertiary">Salvo ✓</p>}
-
       <Link
         href="/admin/agent"
         className="mt-8 rounded-full border border-divider bg-surface-white px-5 py-3 text-center text-[14px] font-medium"
       >
         Personalidade da Orbi →
       </Link>
+      </>)}
 
-      <button
-        onClick={handleSignOut}
-        disabled={signingOut}
-        className="mt-3 rounded-full border border-divider bg-surface-white py-3 text-center text-[14px] text-red-600 disabled:opacity-50"
-      >
-        {signingOut ? "Saindo…" : "Sair da conta"}
-      </button>
+      {saved && <p className="mt-3 text-[12px] text-text-tertiary">Salvo ✓</p>}
     </div>
   );
 }
