@@ -106,9 +106,37 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["visitor_sessions"]["Insert"]>
         Relationships: []
       }
+      referral_codes: {
+        Row: { user_id: string; code: string; created_at: string }
+        Insert: { user_id: string; code: string; created_at?: string }
+        Update: Partial<Database["public"]["Tables"]["referral_codes"]["Insert"]>
+        Relationships: []
+      }
+      referrals: {
+        Row: { id: string; referrer_user_id: string; referred_user_id: string; code: string; status: string; subscribed_at: string | null; credit_after: string | null; credited_at: string | null; stripe_subscription_id: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; referrer_user_id: string; referred_user_id: string; code: string; status?: string; subscribed_at?: string | null; credit_after?: string | null; credited_at?: string | null; stripe_subscription_id?: string | null; created_at?: string; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["referrals"]["Insert"]>
+        Relationships: []
+      }
     }
     Views: { [_ in never]: never }
     Functions: {
+      get_or_create_referral_code: {
+        Args: Record<string, never>
+        Returns: string
+      }
+      register_referral: {
+        Args: { p_code: string }
+        Returns: undefined
+      }
+      referral_mark_subscribed: {
+        Args: { p_user_id: string; p_stripe_subscription_id: string }
+        Returns: undefined
+      }
+      process_referral_credits: {
+        Args: Record<string, never>
+        Returns: number
+      }
       business_progress: {
         Args: { p_business_id: string }
         Returns: Record<string, boolean>

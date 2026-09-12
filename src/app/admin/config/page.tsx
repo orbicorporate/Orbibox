@@ -74,6 +74,14 @@ export default async function ConfigMenuPage() {
 
       <p className="mt-8 text-[13px] uppercase tracking-wide text-text-tertiary">Conta</p>
       <div className="mt-2.5 flex flex-col gap-3">
+        <Link href="/admin/indique" className="relative flex items-center gap-3 overflow-hidden rounded-2xl orbi-gradient px-4 py-3.5">
+          <span className="text-[18px]">🎁</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14px] font-bold text-on-background">Indique e ganhe 1 mês grátis</span>
+            <span className="block text-[12px] text-on-background/70">Pra você e pro amigo, a cada indicação.</span>
+          </span>
+          <span className="text-on-background/60">→</span>
+        </Link>
         <Link href="/admin/config/equipe" className="flex items-center justify-between rounded-2xl border border-divider bg-surface-white px-4 py-3.5 text-[14px] font-medium">
           Equipe · quem pode acessar
           <span className="text-text-tertiary">→</span>

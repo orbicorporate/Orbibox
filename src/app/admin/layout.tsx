@@ -16,6 +16,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!user) redirect("/login");
 
+  // Rede de segurança pra indicação: se a pessoa entrou por um link /r/CODIGO
+  // (cookie ainda válido) e ainda não foi registrada, registra agora. A função
+  // ignora auto-indicação e duplicados, então é seguro chamar toda vez.
+  {
+    const { cookies } = await import("next/headers");
+    const jar = await cookies();
+    const ref = jar.get("orbi_ref")?.value;
+    if (ref) {
+      await supabase.rpc("register_referral", { p_code: ref });
+      jar.delete("orbi_ref");
+    }
+  }
+
   // Se o e-mail dele bate com um convite de administrador pendente, vincula
   // agora — precisa da service role porque, antes de vinculado, a política de
   // RLS ainda não deixa esse usuário enxergar a própria linha do convite.

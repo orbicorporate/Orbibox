@@ -68,6 +68,20 @@ async function upsertFromSubscription(subscription: Stripe.Subscription, ownerId
       },
       { onConflict: "owner_id" }
     );
+
+  // Indicação: quando o indicado assina o plano ANUAL e fica ativo, inicia a
+  // carência de 7 dias. Depois disso o crédito (1 mês pros dois) é liberado —
+  // se não houver reembolso nesse meio-tempo.
+  const cycle = billingCycleFromSubscription(subscription);
+  const status = mapStripeStatus(subscription.status);
+  if (cycle === "yearly" && (status === "active" || status === "trialing")) {
+    await supabase.rpc("referral_mark_subscribed", {
+      p_user_id: ownerId,
+      p_stripe_subscription_id: subscription.id,
+    });
+  }
+  // Sempre que um webhook chega, tenta liberar créditos cuja carência venceu.
+  await supabase.rpc("process_referral_credits");
 }
 
 async function notifyPaymentFailed(ownerId: string) {
@@ -133,6 +147,13 @@ export async function POST(req: NextRequest) {
             .from("subscriptions")
             .update({ status: "canceled", updated_at: new Date().toISOString() })
             .eq("owner_id", ownerId);
+          // Se esse indicado ainda estava na carência, a indicação não vira
+          // crédito — cancelou antes dos 7 dias.
+          await supabase
+            .from("referrals")
+            .update({ status: "reversed", updated_at: new Date().toISOString() })
+            .eq("referred_user_id", ownerId)
+            .eq("status", "pending");
         }
         break;
       }

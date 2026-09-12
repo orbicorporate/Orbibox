@@ -39,6 +39,8 @@ export default function SignupPage() {
       setCheckEmail(true);
       return;
     }
+    // Já logado: registra a indicação (se veio por link) antes de seguir.
+    try { await fetch("/api/referral/register", { method: "POST" }); } catch { /* silencioso */ }
     router.push("/onboarding");
     router.refresh();
   }
