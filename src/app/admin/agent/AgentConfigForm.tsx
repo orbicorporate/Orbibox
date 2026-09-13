@@ -95,7 +95,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
   return (
     <div className="mt-6 flex flex-col gap-7 pb-8">
       {/* Como a Orbi aprende: você ensina (entrevista) ou ela aprende sozinha */}
-      <ComoOrbiAprende businessId={businessId} orbiColors={orbiColors} gapsPendentes={gapsPendentes} onDone={() => router.refresh()} />
+      <ComoOrbiAprende businessId={businessId} businessName={businessName} orbiColors={orbiColors} gapsPendentes={gapsPendentes} jaImportou={knowledge.historia} onDone={() => router.refresh()} />
 
       {/* Perfil da agente */}
       <div className="flex items-center gap-4 rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
