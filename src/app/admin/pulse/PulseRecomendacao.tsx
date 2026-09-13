@@ -22,7 +22,24 @@ export function PulseRecomendacao({
   const [loading, setLoading] = useState(false);
   const [copiado, setCopiado] = useState(false);
 
-  if (!topItem) return null;
+  // Sem item clicado no período — em vez de sumir (o que parece bug), mostra
+  // um card gentil explicando e sugerindo ampliar o período.
+  if (!topItem) {
+    return (
+      <div id="insight-marketing" className="orbi-card-light mt-6 scroll-mt-4 overflow-hidden rounded-[28px] p-6">
+        <div className="relative flex items-center gap-2.5">
+          <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+          <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-text-secondary">Recomendação da Orbi</span>
+        </div>
+        <p className="relative mt-4 font-[family-name:var(--font-manrope)] text-[18px] font-medium leading-snug text-on-background">
+          Ninguém clicou num item da vitrine nesse período ainda.
+        </p>
+        <p className="relative mt-2 text-[14px] leading-relaxed text-text-secondary">
+          Assim que alguém tocar num produto ou serviço, a Orbi te mostra aqui qual foi o mais procurado e escreve textos prontos pra você divulgar. Experimente ampliar o período aí em cima, ou compartilhe seu link pra trazer as primeiras visitas.
+        </p>
+      </div>
+    );
+  }
 
   async function gerar(t: string) {
     if (!hasAiChat) return;
