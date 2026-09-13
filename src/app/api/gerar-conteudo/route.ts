@@ -53,54 +53,60 @@ export async function POST(req: NextRequest) {
         tomLinhas.push("Pode desenvolver um pouco mais a ideia, sem encher linguica.");
     }
 
-    const system = `Voce e a ${agent?.agent_name ?? "Orbi"}, a inteligencia criativa por tras da presenca digital de um pequeno negocio brasileiro. Voce conhece esse negocio de verdade e escreve como uma redatora sensivel que se importa com ele, nao como uma ferramenta que cospe texto de venda.
+    const system = `Voce e a ${agent?.agent_name ?? "Orbi"}, uma estrategista de conteudo brilhante por tras da presenca digital de um negocio brasileiro. Voce e afiada, culta, atualizada, e escreve textos que fazem a pessoa parar e pensar "que sacada boa". Nada de texto raso, generico ou de vendedor.
 
 Contexto do negocio:
-${contexto || "Poucas informacoes disponiveis. Nesse caso, seja mais atemporal e humano, sem inventar fatos."}
+${contexto || "Poucas informacoes disponiveis. Foque no universo do tema com inteligencia."}
 ${tomLinhas.length ? "\nTom desejado: " + tomLinhas.join(" ") : ""}
 
-Regras absolutas (jamais quebre nenhuma):
-1. NUNCA use travessao (— ou --) em lugar nenhum do texto. Use virgula, ponto, dois-pontos ou parenteses.
-2. Ortografia e gramatica PERFEITAS. Toda frase comeca com letra MAIUSCULA. Toda pontuacao correta. Acentuacao correta. Zero erro, sempre.
-3. NUNCA repita uma mesma palavra de destaque na mesma legenda (a nao ser artigos e preposicoes). Se ja usou "postar", nao use "postar" de novo; troque por sinonimo ou reescreva.
-4. NAO fique so vendendo. Fale do UNIVERSO daquele produto ou servico com profundidade. Traga uma dica valiosa e concreta, um dado real de mercado, uma tendencia, um numero, algo que mostre que quem escreveu pesquisa e entende do assunto. Nunca dica generica e obvia. Sempre que possivel, ancore em algo real e util pra quem le.
+MISSAO CENTRAL: antes de escrever, use a busca na web pra encontrar UM dado real e atual sobre o universo desse tema (uma estatistica de mercado, uma tendencia recente, um numero de comportamento do consumidor, uma noticia do setor). Esse dado real precisa aparecer no texto de forma natural e inteligente, como ponto de partida ou reforco da ideia. NUNCA invente numeros. Se buscou e achou, use com precisao. Um texto sem nenhum dado ou fato concreto e um texto fraco, e voce nao entrega texto fraco.
 
-Seu padrao de escrita:
-- Comeca por gente ou por uma ideia forte, nao pelo nome do produto.
-- Nao empurra venda. Um bom texto entrega valor primeiro; nao precisa pedir nada. Zero "corre que acaba", "nao perca", "fala com a gente", "vem crescer".
-- Uma linha de raciocinio clara, bem desenvolvida, sem encher com frase de efeito vazia. Cada frase acrescenta algo novo.
-- Zero clice de marketing ("qualidade e excelencia", "o melhor da regiao", "pensado em voce", "transformar", "elevar o seu negocio").
-- Ensina algo. A pessoa que le deve sair sabendo ou pensando algo que nao sabia. Esse e o padrao: util e interessante, nunca raso.
-- Escreve bem: ritmo, uma boa imagem, as vezes humor. Alma brasileira, sem forcar girias.
-- No maximo 1-2 emoji, e so se couber. Muitas vezes nenhum e melhor.
-- So usa numeros/dados que sejam plausiveis e verdadeiros sobre o setor. Nao inventa fatos sobre ESTE negocio (ex: nao crie "18 anos de experiencia" se ninguem te disse). Dados de MERCADO/tendencia do setor, esses sim, use pra enriquecer, desde que reais e conhecidos.
+Regras absolutas (jamais quebre):
+1. NUNCA use travessao (— ou --). Use virgula, ponto, dois-pontos ou parenteses.
+2. Ortografia e gramatica PERFEITAS. Toda frase comeca com MAIUSCULA. Acentuacao e pontuacao impecaveis. Zero erro.
+3. NUNCA repita uma mesma palavra de destaque na mesma legenda.
+4. Traga SEMPRE um dado real, fato ou tendencia de mercado (pesquisado agora), nao opiniao vaga. Numero, percentual, nome de estudo, movimento do setor. Isso e o que separa um texto inteligente de um texto qualquer.
+5. NAO venda. Nada de "corre", "nao perca", "fala com a gente", "garanta ja". O texto ganha autoridade pela inteligencia, nao pelo apelo.
 
-O item em destaque agora e "${productTitle}", foi o mais procurado recentemente. E so um sinal de que o assunto interessa; um bom gancho pra escrever algo valioso sobre esse tema. Nao trate como oferta.
+Seu padrao:
+- Abre com uma sacada, um dado surpreendente ou uma verdade contraintuitiva. Nunca com o nome do produto.
+- Tem uma tese, um ponto de vista. Diz algo que a maioria nao diria.
+- Cada frase acrescenta. Zero enrolacao, zero clice ("qualidade e excelencia", "pensado em voce", "transformar seu negocio").
+- Ensina ou revela algo. Quem le sai mais inteligente.
+- Escreve com estilo: ritmo, uma boa imagem, precisao. Alma brasileira sem forcar giria.
+- No maximo 1-2 emoji, e so se elevar. Quase sempre nenhum e melhor.
+
+O tema em foco e "${productTitle}", foi o mais procurado recentemente. Use como gancho pra uma reflexao valiosa sobre esse universo, ancorada no dado que voce pesquisou.
 
 Escreva: ${oQue}
 
-Antes de responder, revise: comecou com maiuscula? tem travessao (proibido)? repetiu alguma palavra de destaque? trouxe uma dica ou dado que agrega de verdade, ou ficou generico? tem frase de venda ou clice? Corrija tudo isso e so entao responda.
+Revise antes de responder: tem um dado/fato real de mercado? comecou com maiuscula? zero travessao? zero repeticao de palavra? zero frase de venda ou clice? tem uma sacada de verdade, ou ficou obvio? So responda quando estiver realmente bom.
 
-Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas, sem "aqui esta", sem explicacao.`;
+Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas, sem "aqui esta", sem explicacao, sem citar as fontes da busca.`;
 
     // Chama a IA e extrai o texto de forma robusta. Tenta até 2 vezes se vier
-    // vazio (acontece raramente). O usuário NUNCA pode ver "não consegui".
+    // vazio. O usuário NUNCA pode ver "não consegui". Habilita a busca na web
+    // pra Orbi trazer dados/noticias reais de mercado, nao inventados.
     async function pedirTexto(): Promise<string> {
       const res = await fetch(ANTHROPIC_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-api-key": key!, "anthropic-version": "2023-06-01" },
         body: JSON.stringify({
           model: MODEL,
-          max_tokens: 700,
+          max_tokens: 1200,
           temperature: 1,
           system,
-          messages: [{ role: "user", content: `Crie o texto sobre "${productTitle}".` }],
+          tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
+          messages: [{ role: "user", content: `Pesquise um dado atual e real de mercado sobre o universo de "${productTitle}" (setor, comportamento do consumidor, tendencia, numero) e escreva o texto usando esse dado de forma natural. Item: "${productTitle}".` }],
         }),
       });
-      if (!res.ok) return "";
+      if (!res.ok) {
+        console.error("gerar-conteudo IA nao ok:", res.status, await res.text().catch(() => ""));
+        return "";
+      }
       const data = await res.json();
-      // Junta TODOS os blocos de texto (não só o primeiro), cobrindo variações
-      // de formato da resposta.
+      // Junta TODOS os blocos de texto (ignora blocos de tool use/resultado
+      // de busca). Cobre respostas com ou sem web search.
       const partes = Array.isArray(data?.content)
         ? data.content.filter((b: { type?: string; text?: string }) => b?.type === "text" && b?.text).map((b: { text: string }) => b.text)
         : [];
@@ -111,11 +117,16 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
     if (!bruto) bruto = await pedirTexto(); // segunda tentativa
 
     // Rede de segurança: remove qualquer travessao que tenha escapado, trocando
-    // por virgula (regra absoluta: nada de travessao em texto nenhum).
+    // por virgula (regra absoluta: nada de travessao em texto nenhum). Tambem
+    // limpa marcacoes de citacao que a busca na web possa ter deixado.
     const limpo = bruto
       .replace(/\s*—\s*/g, ", ")
       .replace(/\s*–\s*/g, ", ")
       .replace(/\s+--\s+/g, ", ")
+      .replace(/【[^】]*】/g, "")        // citações estilo 【1】
+      .replace(/\[\d+\]/g, "")          // citações estilo [1]
+      .replace(/\(\s*fonte[^)]*\)/gi, "") // "(fonte: ...)"
+      .replace(/[ \t]{2,}/g, " ")
       .trim();
 
     // Se depois de tudo ainda estiver vazio, entrega um texto de apoio decente
