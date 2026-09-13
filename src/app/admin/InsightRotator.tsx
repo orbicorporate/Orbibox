@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
+import { OrbiInsightCard, OrbiInsightHeader, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 
 type Tip = { title: string; description: string; ctaLabel: string; href: string; share?: boolean };
@@ -43,7 +43,10 @@ export function InsightRotator({
             </button>
           )}
         </div>
-        <OrbiInsightMessage>{insight.description}</OrbiInsightMessage>
+        <div className="relative mt-4">
+          <p className="text-[19px] font-bold leading-tight text-on-background">{insight.title}</p>
+          <p className="mt-2 text-[15px] leading-relaxed text-text-secondary">{insight.description}</p>
+        </div>
         {insight.share ? (
           <ShareOrbiboxButton url={shareUrl} title={shareTitle} shareReady={shareReady} className={orbiInsightCtaClass}>
             {insight.ctaLabel} <OrbiSparkleMini />

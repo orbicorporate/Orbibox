@@ -182,29 +182,29 @@ export default async function HojePage() {
   const shareReady = !!business!.share_description?.trim() && temCapaCompartilhar;
   const growthTips: { title: string; description: string; ctaLabel: string; href: string; share?: boolean }[] = [
     {
-      title: "Compartilhe seu Orbibox",
-      description: "Já está tudo pronto, hora de divulgar. Cole o link nos stories, na bio do Instagram, ou manda no WhatsApp.",
+      title: "Divulgue seu link",
+      description: "Sua página está pronta. Agora é espalhar: cole o link nos stories, na bio do Instagram e mande nos seus contatos de WhatsApp.",
       ctaLabel: "Compartilhar Orbibox",
       href: `/${business!.slug}`,
       share: true,
     },
     {
-      title: "Poste num grupo do WhatsApp",
-      description: "Grupos de bairro, de clientes ou de parceiros são ótimos pra divulgar, manda o link com uma chamada rápida tipo \"acabei de lançar meu catálogo online\".",
+      title: "Poste em grupos de WhatsApp",
+      description: "Grupos de bairro, de clientes ou de parceiros trazem visitas rápido. Mande seu link com uma frase curta, tipo \"acabei de montar meu catálogo online, dá uma olhada\".",
       ctaLabel: "Compartilhar Orbibox",
       href: `/${business!.slug}`,
       share: true,
     },
     {
-      title: "Troque o link da bio do Instagram",
-      description: "É o lugar mais visto do seu perfil, coloca o link do seu Orbibox lá em vez de um link genérico.",
+      title: "Use o link na bio do Instagram",
+      description: "A bio é o único link clicável do seu perfil no Instagram, e o mais visto. Troque o link que está lá pelo do seu Orbibox, assim tudo o que você faz fica a um toque de distância.",
       ctaLabel: "Compartilhar Orbibox",
       href: `/${business!.slug}`,
       share: true,
     },
     {
-      title: "Confira como está indo",
-      description: "Dá uma olhada nas visitas e conversas mais recentes, o Pulse mostra tudo o que aconteceu na sua página.",
+      title: "Acompanhe seus resultados",
+      description: "O Pulse mostra quantas pessoas visitaram, o que elas mais tocaram e as conversas recentes. Vale dar uma olhada pra entender o que está funcionando.",
       ctaLabel: "Abrir Pulse",
       href: "/admin/pulse",
     },
