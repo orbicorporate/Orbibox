@@ -83,30 +83,59 @@ Antes de responder, revise: comecou com maiuscula? tem travessao (proibido)? rep
 
 Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas, sem "aqui esta", sem explicacao.`;
 
-    const res = await fetch(ANTHROPIC_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 600,
-        temperature: 1,
-        system,
-        messages: [{ role: "user", content: `Crie o texto sobre "${productTitle}".` }],
-      }),
-    });
-    if (!res.ok) return NextResponse.json({ error: "erro ia" }, { status: 500 });
-    const data = await res.json();
-    const block = data.content?.find((b: { type: string }) => b.type === "text");
+    // Chama a IA e extrai o texto de forma robusta. Tenta até 2 vezes se vier
+    // vazio (acontece raramente). O usuário NUNCA pode ver "não consegui".
+    async function pedirTexto(): Promise<string> {
+      const res = await fetch(ANTHROPIC_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": key!, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: 700,
+          temperature: 1,
+          system,
+          messages: [{ role: "user", content: `Crie o texto sobre "${productTitle}".` }],
+        }),
+      });
+      if (!res.ok) return "";
+      const data = await res.json();
+      // Junta TODOS os blocos de texto (não só o primeiro), cobrindo variações
+      // de formato da resposta.
+      const partes = Array.isArray(data?.content)
+        ? data.content.filter((b: { type?: string; text?: string }) => b?.type === "text" && b?.text).map((b: { text: string }) => b.text)
+        : [];
+      return partes.join("\n").trim();
+    }
+
+    let bruto = await pedirTexto();
+    if (!bruto) bruto = await pedirTexto(); // segunda tentativa
+
     // Rede de segurança: remove qualquer travessao que tenha escapado, trocando
     // por virgula (regra absoluta: nada de travessao em texto nenhum).
-    const limpo = (block?.text ?? "")
+    const limpo = bruto
       .replace(/\s*—\s*/g, ", ")
       .replace(/\s*–\s*/g, ", ")
       .replace(/\s+--\s+/g, ", ")
       .trim();
+
+    // Se depois de tudo ainda estiver vazio, entrega um texto de apoio decente
+    // baseado no próprio negócio, pra tela nunca mostrar erro pro usuário.
+    if (!limpo) {
+      const fallback = tipo === "story"
+        ? `Mostre nos stories um instante real do dia a dia de ${biz?.name ?? "quem está por trás disso"}, algo que normalmente fica nos bastidores. Escreva por cima uma frase curta e verdadeira sobre "${productTitle}". Feche com uma caixinha de pergunta pra abrir conversa.`
+        : tipo === "whatsapp"
+        ? `Oi! Passando só pra dizer que "${productTitle}" tem tido bastante procura por aqui. Se quiser saber como funciona ou tirar qualquer dúvida, é só me chamar. Fico à disposição.`
+        : `Tem coisas que a gente só entende de perto. "${productTitle}" é uma delas. Quem já viveu isso sabe o quanto muda a rotina, e quem ainda não, vale conhecer com calma, sem pressa.\n\n#${(biz?.name ?? "negocio").replace(/\s+/g, "")} #dicas`;
+      return NextResponse.json({ texto: fallback });
+    }
+
     return NextResponse.json({ texto: limpo });
   } catch (error) {
     console.error("Erro ao gerar conteudo:", error);
-    return NextResponse.json({ error: "erro" }, { status: 500 });
+    // Mesmo num erro inesperado, entrega um texto de apoio em vez de falhar,
+    // pra tela nunca mostrar erro pro usuário.
+    return NextResponse.json({
+      texto: `Tem coisas que a gente só entende de perto. Quem já viveu sabe o quanto faz diferença no dia a dia, e quem ainda não conhece, vale a pena com calma.\n\n#dicas #paravoce`,
+    });
   }
 }

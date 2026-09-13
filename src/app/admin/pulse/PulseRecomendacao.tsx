@@ -222,12 +222,15 @@ export function PulseRecomendacao({
             </>
           ) : (
             <div className="text-center">
-              <p className="text-[14px] text-text-secondary">Não consegui gerar o texto agora.</p>
+              <div className="mx-auto flex items-center gap-2.5">
+                <OrbiParticleSphere size={26} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+                <span className="text-[14px] text-text-secondary">A Orbi vai tentar mais uma vez…</span>
+              </div>
               <button
                 onClick={() => tipo && gerar(tipo, false)}
                 className="mt-3 rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-semibold text-white"
               >
-                Tentar de novo
+                Gerar agora
               </button>
             </div>
           )}
