@@ -24,6 +24,7 @@ export function PulseRecomendacao({
   // gerar uma nova e voltar às anteriores sem perder nada.
   const [versoes, setVersoes] = useState<string[]>([]);
   const [tagsPorVersao, setTagsPorVersao] = useState<{ tag: string; volume: string | null }[][]>([]);
+  const [emCobertura, setEmCobertura] = useState(false);
   const [idx, setIdx] = useState(0);
   const texto = versoes[idx] ?? null;
   const hashtags = tagsPorVersao[idx] ?? [];
@@ -62,21 +63,9 @@ export function PulseRecomendacao({
         body: JSON.stringify({ businessId, productTitle: topItem!.title, tipo: t }),
       });
       const data = await res.json();
-      if (data.erro) {
-        // Falha real da IA: mostra aviso honesto, nunca um texto generico.
-        const msg = data.erro === "sem_credito"
-          ? "A Orbi está temporariamente indisponível (créditos de IA esgotados). Assim que forem renovados, ela volta a escrever no capricho."
-          : "A Orbi não conseguiu escrever agora. Tente de novo em instantes, ela costuma voltar rápido.";
-        const base = novoFormato ? [] : versoes;
-        const arr = [...base, `__ERRO__${msg}`];
-        const baseTags = novoFormato ? [] : tagsPorVersao;
-        setVersoes(arr);
-        setTagsPorVersao([...baseTags, []]);
-        setIdx(arr.length - 1);
-        return;
-      }
       const novo = data.texto ?? "";
       const novasTags = Array.isArray(data.hashtags) ? data.hashtags : [];
+      setEmCobertura(!!data.cobertura);
       // Base do histórico: zera se trocou de formato, senão mantém as versões
       // anteriores. setIdx é chamado FORA do updater (dentro do updater não é
       // confiável e deixava o texto sumir).
@@ -198,23 +187,28 @@ export function PulseRecomendacao({
       {hasAiChat && tipo && (
         <div className="relative mt-4 rounded-[22px] bg-white p-5 shadow-[0_4px_20px_rgba(17,19,24,0.06)]">
           {loading ? (
-            <div className="flex items-center gap-3">
-              <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
-              <span className="text-[14px] text-text-tertiary">A Orbi está pensando com carinho…</span>
-            </div>
-          ) : texto && texto.startsWith("__ERRO__") ? (
-            <div className="text-center">
-              <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[20px]">😕</span>
-              <p className="mt-3 text-[14px] leading-relaxed text-text-secondary">{texto.replace("__ERRO__", "")}</p>
-              <button
-                onClick={() => tipo && gerar(tipo, false)}
-                className="mt-4 rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-semibold text-white"
-              >
-                Tentar de novo
-              </button>
+            <div>
+              <div className="flex items-center gap-3">
+                <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+                <span className="text-[14px] text-text-tertiary">A Orbi está pensando com carinho…</span>
+              </div>
+              {/* Barrinha fina de progresso indeterminado */}
+              <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface-soft">
+                <div className="orbi-progress-bar h-full rounded-full orbi-gradient" />
+              </div>
             </div>
           ) : texto && texto.trim() ? (
             <>
+              {/* Aviso gentil quando é texto de cobertura (Orbi super em manutenção) */}
+              {emCobertura && (
+                <div className="mb-3 flex items-start gap-2 rounded-2xl bg-surface-soft px-3.5 py-2.5">
+                  <span className="mt-0.5 text-[14px]">✨</span>
+                  <span className="text-[12.5px] leading-relaxed text-text-secondary">
+                    A Orbi super inteligente está em manutenção agora. Preparei um texto de apoio pra te cobrir. Já estamos trabalhando pra ela voltar com tudo.
+                  </span>
+                </div>
+              )}
+
               {/* Navegação entre versões geradas */}
               {versoes.length > 1 && (
                 <div className="mb-3 flex items-center justify-between">

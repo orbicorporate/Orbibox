@@ -9,6 +9,10 @@ export default async function MasterOverview() {
   const { data } = await supabase.rpc("master_metrics");
   const m = (data ?? {}) as Record<string, number>;
 
+  // Status da IA: se está sem crédito, alerta vermelho no topo (só o master vê).
+  const { data: aiStatus } = await supabase.from("ai_status").select("sem_credito_desde, ultima_falha_em").eq("id", 1).maybeSingle();
+  const semCredito = !!aiStatus?.sem_credito_desde;
+
   const cards = [
     { label: "Negócios cadastrados", value: m.total_businesses ?? 0, sub: `${m.new_this_month ?? 0} novos este mês` },
     { label: "Receita recorrente (MRR)", value: brl(m.mrr_cents ?? 0), sub: "assinaturas ativas pagantes", highlight: true },
@@ -28,6 +32,28 @@ export default async function MasterOverview() {
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold tracking-[-0.02em]">Visão geral</h1>
         <p className="mt-1 text-[14px] text-text-secondary">O retrato do Orbibox agora.</p>
       </div>
+
+      {/* Alerta de crédito da IA, só o master vê. Os clientes usam a Orbi, você paga a API. */}
+      {semCredito && (
+        <div className="rounded-[20px] border-2 border-red-300 bg-red-50 p-5">
+          <div className="flex items-start gap-3">
+            <span className="text-[22px]">🚨</span>
+            <div>
+              <p className="text-[15px] font-bold text-red-700">A Orbi super inteligente está DESATIVADA (créditos da IA esgotados)</p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-red-700/90">
+                Os clientes do Orbibox estão recebendo textos de cobertura genéricos no lugar da IA de verdade. Adicione créditos na Anthropic pra reativar na hora:
+                {" "}
+                <a href="https://console.anthropic.com/settings/billing" target="_blank" rel="noopener noreferrer" className="font-semibold underline">console.anthropic.com, Billing</a>.
+                {aiStatus?.sem_credito_desde && (
+                  <span className="mt-1 block text-[12px] text-red-600/80">
+                    Sem crédito desde {new Date(aiStatus.sem_credito_desde).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}.
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {cards.map((c) => (

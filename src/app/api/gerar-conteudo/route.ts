@@ -168,13 +168,26 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
       .replace(/[ \t]{2,}/g, " ")
       .trim();
 
-    // Se a IA nao conseguiu gerar (falha real), NAO entrega texto generico
-    // disfarçado de bom. Retorna um sinal de erro honesto pra tela mostrar um
-    // aviso claro. Melhor nao entregar nada do que baixar o padrao de qualidade.
+    // Registra o status da IA no banco (só o master vê): se faltou crédito,
+    // marca; se funcionou, limpa o alerta. Usa service role.
+    try {
+      const { createServiceClient } = await import("@/lib/supabase/service");
+      const svc = createServiceClient();
+      await svc.rpc("registrar_status_ia", { p_sem_credito: motivo === "sem_credito" });
+    } catch { /* status é best-effort, nunca bloqueia a resposta */ }
+
+    // Se a IA nao conseguiu gerar, NAO expõe nada de crédito pro usuário comum.
+    // Entrega um texto de COBERTURA curto e util, com um aviso gentil de que a
+    // Orbi super inteligente está em manutenção. O motivo real (credito) fica
+    // só no painel master.
     if (!limpo) {
-      return NextResponse.json({
-        erro: motivo === "sem_credito" ? "sem_credito" : "falha",
-      }, { status: 200 });
+      const nome = biz?.name ?? "seu negócio";
+      const cobertura = tipo === "story"
+        ? `Ideia rápida de story: mostre um momento real do dia a dia de ${nome}. Uma foto simples, sem produção, e por cima uma frase curta e verdadeira sobre "${productTitle}". Feche com uma caixinha de pergunta pra puxar conversa.`
+        : tipo === "whatsapp"
+        ? `Oi! Tudo bem?\n\nQueria te contar que "${productTitle}" tem chamado atenção por aqui ultimamente.\n\nSe fizer sentido pra você, me chama que eu te conto os detalhes com calma.`
+        : `Nem todo mundo repara, mas "${productTitle}" diz muito sobre o jeito de ${nome} fazer as coisas.\n\nÉ nos detalhes que a diferença aparece, e é isso que a gente cuida por aqui.\n\n#${(nome).replace(/[^\p{L}\p{N}]/gu, "").toLowerCase()} #dicas`;
+      return NextResponse.json({ texto: cobertura, cobertura: true, hashtags: [] });
     }
 
     // Separa o bloco [[TAGS]] (hashtags + volume) do corpo da legenda. As tags
@@ -203,6 +216,10 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
     return NextResponse.json({ texto: corpo, hashtags, pesquisou });
   } catch (error) {
     console.error("Erro ao gerar conteudo:", error);
-    return NextResponse.json({ erro: "falha" }, { status: 200 });
+    return NextResponse.json({
+      texto: `Tem detalhes que fazem diferença, mesmo quando ninguém está olhando.\n\nÉ disso que a gente cuida por aqui, todo dia.\n\n#dicas #bastidores`,
+      cobertura: true,
+      hashtags: [],
+    });
   }
 }

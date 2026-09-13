@@ -118,6 +118,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["notifications"]["Insert"]>
         Relationships: []
       }
+      ai_status: {
+        Row: { id: number; sem_credito_desde: string | null; ultima_falha_em: string | null; updated_at: string }
+        Insert: { id?: number; sem_credito_desde?: string | null; ultima_falha_em?: string | null; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["ai_status"]["Insert"]>
+        Relationships: []
+      }
       referrals: {
         Row: { id: string; referrer_user_id: string; referred_user_id: string; code: string; status: string; subscribed_at: string | null; credit_after: string | null; credited_at: string | null; stripe_subscription_id: string | null; created_at: string; updated_at: string }
         Insert: { id?: string; referrer_user_id: string; referred_user_id: string; code: string; status?: string; subscribed_at?: string | null; credit_after?: string | null; credited_at?: string | null; stripe_subscription_id?: string | null; created_at?: string; updated_at?: string }
@@ -142,6 +148,10 @@ export type Database = {
       process_referral_credits: {
         Args: Record<string, never>
         Returns: number
+      }
+      registrar_status_ia: {
+        Args: { p_sem_credito: boolean }
+        Returns: undefined
       }
       business_progress: {
         Args: { p_business_id: string }
