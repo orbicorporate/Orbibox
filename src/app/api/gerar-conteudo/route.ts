@@ -107,10 +107,9 @@ Revise antes de responder: separou em paragrafos com linha em branco (nao um blo
 
 Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas, sem "aqui esta", sem explicacao, sem citar as fontes da busca.`;
 
-    // Chama a IA e extrai o texto de forma robusta. Tenta até 2 vezes se vier
-    // vazio. O usuário NUNCA pode ver "não consegui". Habilita a busca na web
-    // pra Orbi trazer dados/noticias reais de mercado, nao inventados.
-    async function pedirTexto(comBusca: boolean): Promise<string> {
+    // Chama a IA e retorna { texto, motivo }. motivo indica por que falhou,
+    // pra tela mostrar um aviso honesto em vez de um texto generico disfarçado.
+    async function pedirTexto(comBusca: boolean): Promise<{ texto: string; motivo: "ok" | "sem_credito" | "falha" }> {
       const body: Record<string, unknown> = {
         model: AI_MODEL,
         max_tokens: 1200,
@@ -128,21 +127,31 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
         body: JSON.stringify(body),
       });
       if (!res.ok) {
-        console.error("gerar-conteudo IA nao ok:", res.status, comBusca ? "(com busca)" : "(sem busca)", await res.text().catch(() => ""));
-        return "";
+        const errTxt = await res.text().catch(() => "");
+        console.error("gerar-conteudo IA nao ok:", res.status, comBusca ? "(com busca)" : "(sem busca)", errTxt);
+        const semCredito = /credit balance is too low|Plans & Billing|insufficient/i.test(errTxt);
+        return { texto: "", motivo: semCredito ? "sem_credito" : "falha" };
       }
       const data = await res.json();
       const partes = Array.isArray(data?.content)
         ? data.content.filter((b: { type?: string; text?: string }) => b?.type === "text" && b?.text).map((b: { text: string }) => b.text)
         : [];
-      return partes.join("\n").trim();
+      return { texto: partes.join("\n").trim(), motivo: "ok" };
     }
 
     // 1) com busca na web (dado real). 2) se falhar, sem busca mas ainda
-    // inteligente. So cai no fallback fixo se as duas falharem.
-    let bruto = await pedirTexto(true);
-    let pesquisou = !!bruto; // a primeira tentativa é a que usa busca na web
-    if (!bruto) { bruto = await pedirTexto(false); pesquisou = false; }
+    // inteligente.
+    const r1 = await pedirTexto(true);
+    let bruto = r1.texto;
+    let pesquisou = !!bruto;
+    let motivo = r1.motivo;
+    if (!bruto) {
+      const r2 = await pedirTexto(false);
+      bruto = r2.texto;
+      pesquisou = false;
+      // Se a segunda também falhou, mantém o motivo mais informativo.
+      if (r2.motivo !== "ok") motivo = r2.motivo;
+    }
 
     // Rede de segurança: remove qualquer travessao que tenha escapado, trocando
     // por virgula (regra absoluta: nada de travessao em texto nenhum). Tambem
@@ -159,15 +168,13 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
       .replace(/[ \t]{2,}/g, " ")
       .trim();
 
-    // Se depois de tudo ainda estiver vazio, entrega um texto de apoio decente
-    // baseado no próprio negócio, pra tela nunca mostrar erro pro usuário.
+    // Se a IA nao conseguiu gerar (falha real), NAO entrega texto generico
+    // disfarçado de bom. Retorna um sinal de erro honesto pra tela mostrar um
+    // aviso claro. Melhor nao entregar nada do que baixar o padrao de qualidade.
     if (!limpo) {
-      const fallback = tipo === "story"
-        ? `Mostre nos stories um instante real do dia a dia de ${biz?.name ?? "quem está por trás disso"}, algo que normalmente fica nos bastidores. Escreva por cima uma frase curta e verdadeira sobre "${productTitle}". Feche com uma caixinha de pergunta pra abrir conversa.`
-        : tipo === "whatsapp"
-        ? `Oi! Passando só pra dizer que "${productTitle}" tem tido bastante procura por aqui. Se quiser saber como funciona ou tirar qualquer dúvida, é só me chamar. Fico à disposição.`
-        : `Tem coisas que a gente só entende de perto. "${productTitle}" é uma delas. Quem já viveu isso sabe o quanto muda a rotina, e quem ainda não, vale conhecer com calma, sem pressa.\n\n#${(biz?.name ?? "negocio").replace(/\s+/g, "")} #dicas`;
-      return NextResponse.json({ texto: fallback });
+      return NextResponse.json({
+        erro: motivo === "sem_credito" ? "sem_credito" : "falha",
+      }, { status: 200 });
     }
 
     // Separa o bloco [[TAGS]] (hashtags + volume) do corpo da legenda. As tags
@@ -196,10 +203,6 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
     return NextResponse.json({ texto: corpo, hashtags, pesquisou });
   } catch (error) {
     console.error("Erro ao gerar conteudo:", error);
-    // Mesmo num erro inesperado, entrega um texto de apoio em vez de falhar,
-    // pra tela nunca mostrar erro pro usuário.
-    return NextResponse.json({
-      texto: `Tem coisas que a gente só entende de perto. Quem já viveu sabe o quanto faz diferença no dia a dia, e quem ainda não conhece, vale a pena com calma.\n\n#dicas #paravoce`,
-    });
+    return NextResponse.json({ erro: "falha" }, { status: 200 });
   }
 }

@@ -62,7 +62,20 @@ export function PulseRecomendacao({
         body: JSON.stringify({ businessId, productTitle: topItem!.title, tipo: t }),
       });
       const data = await res.json();
-      const novo = data.texto ?? "Não consegui gerar agora, tente de novo.";
+      if (data.erro) {
+        // Falha real da IA: mostra aviso honesto, nunca um texto generico.
+        const msg = data.erro === "sem_credito"
+          ? "A Orbi está temporariamente indisponível (créditos de IA esgotados). Assim que forem renovados, ela volta a escrever no capricho."
+          : "A Orbi não conseguiu escrever agora. Tente de novo em instantes, ela costuma voltar rápido.";
+        const base = novoFormato ? [] : versoes;
+        const arr = [...base, `__ERRO__${msg}`];
+        const baseTags = novoFormato ? [] : tagsPorVersao;
+        setVersoes(arr);
+        setTagsPorVersao([...baseTags, []]);
+        setIdx(arr.length - 1);
+        return;
+      }
+      const novo = data.texto ?? "";
       const novasTags = Array.isArray(data.hashtags) ? data.hashtags : [];
       // Base do histórico: zera se trocou de formato, senão mantém as versões
       // anteriores. setIdx é chamado FORA do updater (dentro do updater não é
@@ -188,6 +201,17 @@ export function PulseRecomendacao({
             <div className="flex items-center gap-3">
               <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
               <span className="text-[14px] text-text-tertiary">A Orbi está pensando com carinho…</span>
+            </div>
+          ) : texto && texto.startsWith("__ERRO__") ? (
+            <div className="text-center">
+              <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[20px]">😕</span>
+              <p className="mt-3 text-[14px] leading-relaxed text-text-secondary">{texto.replace("__ERRO__", "")}</p>
+              <button
+                onClick={() => tipo && gerar(tipo, false)}
+                className="mt-4 rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-semibold text-white"
+              >
+                Tentar de novo
+              </button>
             </div>
           ) : texto && texto.trim() ? (
             <>
