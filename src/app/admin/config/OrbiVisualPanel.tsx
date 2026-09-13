@@ -120,13 +120,14 @@ export function OrbiVisualPanel({
             </div>
           </div>
 
-          {/* Prévia grande: a Orbi sobre o fundo escolhido, pra ver se combina */}
-          <div className="mt-3 flex justify-center overflow-hidden rounded-[20px] border border-divider">
-            <div className="relative flex h-44 w-full items-center justify-center" style={{ background: heroBackground(heroStyle, heroGradient[0], heroGradient[1]) }}>
-              {heroPrecisaVeu(heroStyle) && <span className="absolute inset-0 bg-surface-white/45" />}
-              <div className="relative flex flex-col items-center">
+          {/* Prévia no formato real (celular em pé): fundo cobrindo a tela e a
+              Orbi no topo, exatamente onde ela fica na página do visitante. */}
+          <div className="mt-3 flex justify-center">
+            <div className="relative h-64 w-40 overflow-hidden rounded-[26px] border-4 border-[#1a1a1a] shadow-lg" style={{ background: heroBackground(heroStyle, heroGradient[0], heroGradient[1]) }}>
+              {heroPrecisaVeu(heroStyle) && <span className="absolute inset-0" style={{ background: "rgba(247,247,244,0.18)" }} />}
+              <div className="relative flex h-full flex-col items-center pt-8">
                 <OrbiParticleSphere key={orbiColors.join("-")} size={72} colors={orbiColors} className="rounded-full" />
-                <span className="mt-2 rounded-full bg-surface-white/80 px-3 py-1 text-[11px] font-medium text-on-background backdrop-blur-sm">Prévia</span>
+                <span className="mt-2 text-[10px] font-medium text-on-background/70">Prévia da tela real</span>
               </div>
             </div>
           </div>
@@ -171,10 +172,10 @@ export function OrbiVisualPanel({
           onClose={() => setOpenPicker(null)}
           preview={
             openPicker === "hero1" || openPicker === "hero2" ? (
-              // Prévia do fundo COM a Orbi por cima, como fica de verdade.
-              <span className="relative flex h-28 w-40 items-center justify-center overflow-hidden rounded-2xl" style={{ background: heroBackground(heroStyle, heroGradient[0], heroGradient[1]) }}>
-                {heroPrecisaVeu(heroStyle) && <span className="absolute inset-0 bg-surface-white/45" />}
-                <OrbiParticleSphere key={orbiColors.join("-")} size={80} colors={orbiColors} className="relative rounded-full" />
+              // Prévia do fundo no formato real (celular), Orbi no topo.
+              <span className="relative flex h-48 w-28 flex-col items-center overflow-hidden rounded-2xl border-4 border-[#1a1a1a] pt-5" style={{ background: heroBackground(heroStyle, heroGradient[0], heroGradient[1]) }}>
+                {heroPrecisaVeu(heroStyle) && <span className="absolute inset-0" style={{ background: "rgba(247,247,244,0.18)" }} />}
+                <OrbiParticleSphere key={orbiColors.join("-")} size={56} colors={orbiColors} className="relative rounded-full" />
               </span>
             ) : (
               <OrbiParticleSphere key={orbiColors.join("-")} size={124} colors={orbiColors} className="rounded-full" />

@@ -313,7 +313,7 @@ export function VisitorExperience({
             className="pointer-events-none absolute inset-0"
             style={{ background: heroBackground(heroStyle, heroGradient[0], heroGradient[1]) }}
           />
-          {heroPrecisaVeu && <div className="pointer-events-none absolute inset-0 bg-background-main/55" />}
+          {heroPrecisaVeu && <div className="pointer-events-none absolute inset-0" style={{ background: "rgba(247,247,244,0.18)" }} />}
         </>
       )}
 
