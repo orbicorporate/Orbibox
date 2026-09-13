@@ -79,7 +79,7 @@ export function OrbiParticleSphere({
     // Todos os pontos (principais e micro) saem na metade do tamanho de base
     // (aplicado mais abaixo, no cálculo do raio de cada frame).
     const N = size < 80 ? 700 : 1400;
-    const M = Math.round(N * 2.1);
+    const M = Math.round(N * 4.2);
     const TOTAL = N + M;
 
     function fibSphere(n: number) {
@@ -210,7 +210,7 @@ export function OrbiParticleSphere({
     for (let i = 0; i < TOTAL; i++) {
       const p = i < N ? pts[i] : microPts[i - N];
       const micro = i >= N;
-      sizeMul[i] = micro ? 0.5 : 1;
+      sizeMul[i] = micro ? 0.62 : 1;
       const t = (p.y + 1) / 2;
       const seg = t * (stops.length - 1);
       const s = Math.max(0, Math.min(stops.length - 2, Math.floor(seg)));
@@ -292,11 +292,11 @@ export function OrbiParticleSphere({
           g += (morphColor[1] - g) * kMorph;
           b0 += (morphColor[2] - b0) * kMorph;
         }
-        const b = vivid ? Math.min(1, 1.05 + depth * 0.25) : 0.65 + depth * 0.35;
+        const b = vivid ? Math.min(1, 0.92 + depth * 0.2) : 0.65 + depth * 0.35;
         // No vivid, partículas quase opacas pra aparecerem forte sobre fundo
-        // claro (sem o círculo escuro atrás).
+        // claro (sem o círculo escuro atrás). Micro agora bem mais presentes.
         const alpha = vivid
-          ? (0.85 + depth * 0.15) * (isMicro[i] ? 0.7 : 1)
+          ? (0.9 + depth * 0.1) * (isMicro[i] ? 0.92 : 1)
           : (0.95 + depth * 0.05) * (isMicro[i] ? microAlpha : 1);
         ctx.beginPath();
         // Pontos da frente ganham um brilho (glow) que os deixa mais "de luz".
