@@ -3,8 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-5";
+import { AI_MODEL, ANTHROPIC_API_URL } from "@/lib/aiModel";
 
 function apiKey() {
   return process.env.ANTHROPIC_API_KEY || process.env.CHAVE_API_ANTROPICA;
@@ -16,7 +15,7 @@ async function callClaude(system: string, userText: string, maxTokens: number) {
   const res = await fetch(ANTHROPIC_API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, system, messages: [{ role: "user", content: userText }] }),
+    body: JSON.stringify({ model: AI_MODEL, max_tokens: maxTokens, system, messages: [{ role: "user", content: userText }] }),
   });
   if (!res.ok) throw new Error("erro api " + res.status);
   const data = await res.json();

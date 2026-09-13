@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-5";
+import { AI_MODEL, ANTHROPIC_API_URL } from "@/lib/aiModel";
 
 // Contexto por ramo pra a IA nomear no jargão certo do negócio.
 const CONTEXTO: Record<string, string> = {
@@ -65,7 +64,7 @@ export async function POST(req: NextRequest) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: AI_MODEL,
         max_tokens: 30,
         system,
         messages: [

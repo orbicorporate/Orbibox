@@ -3,8 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-5";
+import { AI_MODEL, ANTHROPIC_API_URL } from "@/lib/aiModel";
 
 // Cada formato descreve a FORMA, não o tom, o tom vem do system, que é o
 // mesmo pra todos: humano, delicado, com insight. Nada de "vendedão".
@@ -89,7 +88,7 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
     // pra Orbi trazer dados/noticias reais de mercado, nao inventados.
     async function pedirTexto(comBusca: boolean): Promise<string> {
       const body: Record<string, unknown> = {
-        model: MODEL,
+        model: AI_MODEL,
         max_tokens: 1200,
         temperature: 1,
         system,

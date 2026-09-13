@@ -1,8 +1,7 @@
 // Cliente mínimo server-side para a Anthropic Messages API.
 // Nunca importar este arquivo de um componente "use client".
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-5";
+import { AI_MODEL, ANTHROPIC_API_URL, ANTHROPIC_VERSION } from "@/lib/aiModel";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -25,10 +24,10 @@ export async function askClaude({
     headers: {
       "Content-Type": "application/json",
       "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
+      "anthropic-version": ANTHROPIC_VERSION,
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: AI_MODEL,
       max_tokens: maxTokens,
       system,
       messages,
