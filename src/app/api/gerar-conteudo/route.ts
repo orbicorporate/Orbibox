@@ -3,6 +3,29 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
+// Se o texto veio como um bloco corrido (poucas ou nenhuma linha em branco)
+// mas tem muitas frases, quebra em paragrafos a cada ~2 frases pra garantir
+// respiro. Se ja tem quebras de paragrafo suficientes, deixa como esta.
+function quebrarEmParagrafos(texto: string): string {
+  const t = texto.trim();
+  const jaTemParagrafos = (t.match(/\n\s*\n/g) || []).length;
+  const frases = (t.match(/[.!?…](\s|$)/g) || []).length;
+  // Se ja respira (tem paragrafos) ou e curto, nao mexe.
+  if (jaTemParagrafos >= 2 || frases <= 3) return t;
+
+  // Junta tudo numa linha e reparte por frase.
+  const plano = t.replace(/\s*\n\s*/g, " ").replace(/\s{2,}/g, " ").trim();
+  const partes = plano.match(/[^.!?…]+[.!?…]+["')\]]*\s*/g);
+  if (!partes) return t;
+
+  const paras: string[] = [];
+  for (let i = 0; i < partes.length; i += 2) {
+    paras.push(partes.slice(i, i + 2).join("").trim());
+  }
+  return paras.join("\n\n");
+}
+
+
 import { AI_MODEL, ANTHROPIC_API_URL } from "@/lib/aiModel";
 
 // Cada formato descreve a FORMA, não o tom, o tom vem do system, que é o
@@ -13,7 +36,7 @@ const FORMATO: Record<string, string> = {
   story:
     "Uma ideia de story de Instagram. Descreva em uma frase o que mostrar no visual (algo real, dos bastidores ou do dia a dia, nao banco de imagem) e escreva o texto curto de sobreposicao, intimo e bem escrito, como se fosse pra um amigo. Sugira no fim um sticker ou interacao (enquete, pergunta, caixinha) que caiba no assunto. Sem tom de propaganda.",
   whatsapp:
-    "Uma mensagem curta pra mandar num contato ou lista. Escreva como uma pessoa de verdade escreve pra outra: sem saudacao corporativa, sem 'prezado cliente', sem parecer disparo em massa. Uma ideia so, calorosa e especifica. Pode terminar sem nenhum pedido, so uma boa mensagem. Se houver convite, que seja um so, sutil e humano.",
+    "Uma mensagem curta pra mandar num contato ou lista. Escreva como uma pessoa de verdade escreve pra outra: sem saudacao corporativa, sem 'prezado cliente', sem parecer disparo em massa. Quebre em 2 ou 3 paragrafos curtos com uma linha em branco entre eles, nunca um bloco unico. Uma ideia so, calorosa e especifica. Pode terminar sem nenhum pedido, so uma boa mensagem. Se houver convite, que seja um so, sutil e humano.",
 };
 
 export async function POST(req: NextRequest) {
@@ -68,6 +91,7 @@ Regras absolutas (jamais quebre):
 5. NAO venda. Nada de "corre", "nao perca", "fala com a gente", "garanta ja". O texto ganha autoridade pela inteligencia, nao pelo apelo.
 
 Seu padrao:
+- SEMPRE separe em paragrafos curtos com uma linha em branco entre eles. NUNCA entregue um bloco unico de texto corrido. Cada ideia ou virada de raciocinio comeca um paragrafo novo. Um texto de WhatsApp ou legenda respira; um blocao ninguem le.
 - Abre com uma sacada, um dado surpreendente ou uma verdade contraintuitiva. Nunca com o nome do produto.
 - Tem uma tese, um ponto de vista. Diz algo que a maioria nao diria.
 - Cada frase acrescenta. Zero enrolacao, zero clice ("qualidade e excelencia", "pensado em voce", "transformar seu negocio").
@@ -79,7 +103,7 @@ O tema em foco e "${productTitle}", foi o mais procurado recentemente. Use como 
 
 Escreva: ${oQue}
 
-Revise antes de responder: tem um dado/fato real de mercado? comecou com maiuscula? zero travessao? zero repeticao de palavra? zero frase de venda ou clice? tem uma sacada de verdade, ou ficou obvio? So responda quando estiver realmente bom.
+Revise antes de responder: separou em paragrafos com linha em branco (nao um blocao)? tem um dado/fato real de mercado? comecou com maiuscula? zero travessao? zero repeticao de palavra? zero frase de venda ou clice? tem uma sacada de verdade, ou ficou obvio? So responda quando estiver realmente bom.
 
 Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas, sem "aqui esta", sem explicacao, sem citar as fontes da busca.`;
 
@@ -163,6 +187,11 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
       }
       hashtags = hashtags.slice(0, 8);
     }
+
+    // Garantia de respiro: se veio um bloco corrido longo (sem linhas em
+    // branco) e com muitas frases, quebra em paragrafos a cada 2 frases pra
+    // nunca entregar um "blocao".
+    corpo = quebrarEmParagrafos(corpo);
 
     return NextResponse.json({ texto: corpo, hashtags, pesquisou });
   } catch (error) {
