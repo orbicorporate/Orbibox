@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getBusinessProgress } from "@/lib/progress";
 import { ProgressCard } from "@/components/ProgressWidgets";
-import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
+import { InsightRotator } from "./InsightRotator";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 import { QRCodeButton } from "@/components/ui/QRCodeButton";
 
@@ -209,7 +209,6 @@ export default async function HojePage() {
       href: "/admin/pulse",
     },
   ];
-  const insight = insightsQueue[0] ?? growthTips[new Date().getDate() % growthTips.length];
 
   // "Conversas reais" só conta quem de fato trocou mensagem com a Orbi, não
   // toda vez que alguém abriu o chat e fechou sem digitar nada (isso inflava
@@ -311,22 +310,15 @@ export default async function HojePage() {
         ))}
       </div>
 
-      {/* Insight Orbi, sempre tem um, prioriza o que ainda falta fazer */}
-      <div data-tour="insights" className="mt-8">
-        <OrbiInsightCard>
-          <OrbiInsightHeader />
-          <OrbiInsightMessage>{insight.description}</OrbiInsightMessage>
-          {insight.share ? (
-            <ShareOrbiboxButton url={shareUrl} title={`${business!.name}, Orbibox`} shareReady={shareReady} className={orbiInsightCtaClass}>
-              {insight.ctaLabel} <OrbiSparkleMini />
-            </ShareOrbiboxButton>
-          ) : (
-            <Link href={insight.href} className={orbiInsightCtaClass}>
-              {insight.ctaLabel} <OrbiSparkleMini />
-            </Link>
-          )}
-        </OrbiInsightCard>
-      </div>
+      {/* Insight Orbi com botão "Novo insight" pra rodar outra dica. Começa
+          por uma dica ainda pendente se houver (insightsQueue), senão gira. */}
+      <InsightRotator
+        tips={insightsQueue.length > 0 ? [...insightsQueue, ...growthTips] : growthTips}
+        startIndex={insightsQueue.length > 0 ? 0 : new Date().getDate() % growthTips.length}
+        shareUrl={shareUrl}
+        shareTitle={`${business!.name}, Orbibox`}
+        shareReady={shareReady}
+      />
     </div>
   );
 }
