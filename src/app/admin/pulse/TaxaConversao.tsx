@@ -1,46 +1,77 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 
-// Contexto do número: o que significa e o que fazer. Faixas realistas pra
-// link-in-bio/catálogo (onde "agir" = tocar em algo, não só olhar).
+// Contexto do número: o que significa e PASSOS concretos do que fazer, cada
+// um apontando pra onde fazer no app. Faixas realistas pra link-in-bio.
 function contexto(taxa: number, visitas: number) {
   if (visitas < 10) {
     return {
       cor: "#8A8F98",
       titulo: "Ainda são poucas visitas",
-      dica: "Com mais gente entrando, esse número fica confiável. Divulgue seu link pra trazer as primeiras visitas.",
+      resumo: "Com pouca gente entrando, esse número ainda não é confiável. Primeiro, traga visitas:",
+      passos: [
+        "Compartilhe seu link nos stories do Instagram.",
+        "Coloque o link do Orbibox na bio do seu perfil.",
+        "Mande o link nos grupos de WhatsApp que você participa.",
+      ],
+      link: null as { label: string; href: string } | null,
     };
   }
   if (taxa >= 60) {
     return {
       cor: "#1F9E4C",
       titulo: "Excelente. Sua página convence.",
-      dica: "A maioria de quem entra faz algo. Mantenha a vitrine e os botões sempre atualizados pra continuar assim.",
+      resumo: "A maioria de quem entra faz alguma ação. Pra manter esse nível:",
+      passos: [
+        "Mantenha os produtos e preços da Vitrine sempre atualizados.",
+        "Confira de vez em quando se o WhatsApp e os contatos estão certos.",
+      ],
+      link: { label: "Revisar Vitrine", href: "/admin/vitrine" },
     };
   }
   if (taxa >= 35) {
     return {
-      cor: "#3E8E41",
+      cor: "#2E8E4A",
       titulo: "Está num bom caminho.",
-      dica: "Boa parte age ao entrar. Pra subir mais, deixe o botão principal (WhatsApp ou vitrine) bem no topo e com um texto claro.",
+      resumo: "Boa parte age ao entrar. Pra subir mais, faça isto:",
+      passos: [
+        "Em Boxes, arraste o box mais importante (WhatsApp ou Vitrine) pra ficar em primeiro.",
+        "Dê a ele um nome que convide a tocar, tipo \"Falar agora no WhatsApp\".",
+        "Tire da frente qualquer box que você não usa, pra não distrair.",
+      ],
+      link: { label: "Organizar Boxes", href: "/admin/boxes" },
     };
   }
   if (taxa >= 15) {
     return {
       cor: "#C2650A",
       titulo: "Dá pra melhorar.",
-      dica: "Muita gente entra e sai sem tocar em nada. Revise a primeira dobra: a pessoa entende em 3 segundos o que fazer? Simplifique.",
+      resumo: "Muita gente entra e sai sem tocar em nada. Deixe a primeira tela mais direta:",
+      passos: [
+        "Abra sua página e veja a primeira tela: dá pra entender o que fazer em 3 segundos?",
+        "Deixe UM botão principal bem no topo (ex: WhatsApp) e nomeie com clareza.",
+        "Reduza o número de boxes: menos opções, decisão mais fácil.",
+      ],
+      link: { label: "Ajustar Boxes", href: "/admin/boxes" },
     };
   }
   return {
     cor: "#C4143A",
     titulo: "Vale ajustar a página.",
-    dica: "Quase ninguém age ao entrar. Provável que falte um botão claro logo no topo, ou a página esteja confusa. Comece deixando uma única ação óbvia.",
+    resumo: "Quase ninguém age ao entrar. Provavelmente falta um caminho claro. Comece por aqui:",
+    passos: [
+      "Garanta que existe um box de ação no topo (WhatsApp ou Vitrine).",
+      "Preencha a Vitrine com pelo menos alguns produtos ou serviços.",
+      "Deixe só uma ação óbvia na primeira tela, sem poluição.",
+    ],
+    link: { label: "Revisar minha página", href: "/admin/boxes" },
   };
 }
 
-export function TaxaConversao({ taxa, visitas, totalCliques }: { taxa: number; visitas: number; totalCliques: number }) {
+export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { taxa: number; visitas: number; totalCliques: number; orbiColors?: string[] | null }) {
   // Anima o número e o arco de 0 até o valor real, ao montar.
   const [anim, setAnim] = useState(0);
   useEffect(() => {
@@ -84,18 +115,44 @@ export function TaxaConversao({ taxa, visitas, totalCliques }: { taxa: number; v
         </div>
       </div>
 
-      {/* Contexto + o que fazer */}
-      <div className="mt-2 w-full rounded-[20px] bg-surface-soft p-4">
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: ctx.cor }} />
-          <p className="text-[14px] font-semibold" style={{ color: ctx.cor }}>{ctx.titulo}</p>
+      {/* Contexto + passos concretos do que fazer, com a Orbi "pensando" */}
+      <div className="mt-3 w-full overflow-hidden rounded-[24px] bg-surface-white shadow-[0_6px_22px_rgba(17,19,24,0.06)]">
+        <div className="flex items-start gap-3 p-5">
+          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center">
+            <span aria-hidden className="absolute inset-0 rounded-full opacity-25 blur-md" style={{ backgroundColor: ctx.cor }} />
+            <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="relative rounded-full" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Leitura da Orbi</span>
+            </div>
+            <p className="mt-0.5 text-[16px] font-bold leading-tight" style={{ color: ctx.cor }}>{ctx.titulo}</p>
+          </div>
         </div>
-        <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">{ctx.dica}</p>
-        {visitas >= 10 && (
-          <p className="mt-2 text-[12px] text-text-tertiary">
-            {totalCliques} {totalCliques === 1 ? "ação" : "ações"} em {visitas} {visitas === 1 ? "visita" : "visitas"} no período.
-          </p>
-        )}
+
+        <div className="border-t border-divider px-5 py-4">
+          <p className="text-[13.5px] leading-relaxed text-text-secondary">{ctx.resumo}</p>
+          <ol className="mt-3 flex flex-col gap-2.5">
+            {ctx.passos.map((p, i) => (
+              <li key={i} className="flex gap-2.5 text-[13.5px] leading-relaxed">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ backgroundColor: ctx.cor }}>{i + 1}</span>
+                <span className="text-on-background">{p}</span>
+              </li>
+            ))}
+          </ol>
+
+          {ctx.link && (
+            <Link href={ctx.link.href} className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-button-primary px-5 py-2.5 text-[13.5px] font-semibold text-white">
+              {ctx.link.label} <span aria-hidden>→</span>
+            </Link>
+          )}
+
+          {visitas >= 10 && (
+            <p className="mt-3 text-[12px] text-text-tertiary">
+              Baseado em {totalCliques} {totalCliques === 1 ? "ação" : "ações"} em {visitas} {visitas === 1 ? "visita" : "visitas"} no período.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
