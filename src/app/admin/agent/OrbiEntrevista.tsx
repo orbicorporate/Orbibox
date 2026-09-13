@@ -17,7 +17,7 @@ const PERGUNTAS = [
 ];
 const TOTAL = PERGUNTAS.length;
 
-export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId: string; orbiColors?: string[] | null; onDone?: () => void }) {
+export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false }: { businessId: string; orbiColors?: string[] | null; onDone?: () => void; compact?: boolean }) {
   const [aberto, setAberto] = useState(false);
   const [historico, setHistorico] = useState<Turno[]>([]);
   const [resposta, setResposta] = useState("");
@@ -68,9 +68,15 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
 
   function iniciar() { setAberto(true); }
 
-  // Card de convite (fechado). Sem a esfera da Orbi de propósito, pra não
-  // repetir a esfera que já aparece no card do agente logo abaixo.
+  // Card de convite (fechado). No modo compact, é só um botão pequeno.
   if (!aberto) {
+    if (compact) {
+      return (
+        <button onClick={iniciar} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-semibold text-white">
+          Começar o papo →
+        </button>
+      );
+    }
     return (
       <button onClick={iniciar} className="orbi-card-light flex w-full items-center gap-3.5 rounded-[24px] p-6 text-left">
         <span className="min-w-0 flex-1">

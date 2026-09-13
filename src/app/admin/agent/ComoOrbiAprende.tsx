@@ -1,19 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { OrbiEntrevista } from "./OrbiEntrevista";
 
-export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPendentes = 0, jaImportou = false, onDone }: { businessId: string; businessName: string; orbiColors?: string[] | null; gapsPendentes?: number; jaImportou?: boolean; onDone?: () => void }) {
+export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPendentes = 0, baseFeita = false, onDone }: { businessId: string; businessName: string; orbiColors?: string[] | null; gapsPendentes?: number; baseFeita?: boolean; onDone?: () => void }) {
+  const router = useRouter();
   const [url, setUrl] = useState("");
   const [importando, setImportando] = useState(false);
-  const [resultado, setResultado] = useState<{ ok: boolean; msg: string } | null>(jaImportou ? { ok: true, msg: "A Orbi já leu seu site e aprendeu com ele." } : null);
-  const [semSite, setSemSite] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [site, setSite] = useState<"idle" | "form">("idle");
+  const [feito, setFeito] = useState(baseFeita);
 
   async function importar() {
     if (!url.trim() || importando) return;
     setImportando(true);
-    setResultado(null);
+    setErro(null);
     try {
       const res = await fetch("/api/import-about", {
         method: "POST",
@@ -21,103 +24,120 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
         body: JSON.stringify({ businessName, url: url.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setResultado({ ok: false, msg: data.error || "Não consegui ler esse site. Confira o endereço ou pule esta etapa." });
-        return;
-      }
-      setResultado({ ok: true, msg: "Pronto! A Orbi leu seu site e já preencheu o que aprendeu. Você pode revisar mais abaixo." });
+      if (!res.ok) { setErro(data.error || "Não consegui ler esse site."); return; }
+      setFeito(true);
+      setSite("idle");
       onDone?.();
+      router.refresh();
     } catch {
-      setResultado({ ok: false, msg: "Erro ao ler o site. Tente de novo ou pule esta etapa." });
+      setErro("Erro ao ler o site. Tente de novo.");
     } finally {
       setImportando(false);
     }
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#E7EAFC] text-[15px]">🧠</span>
-        <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Como a Orbi aprende sobre seu negócio</p>
+    <div className="rounded-[24px] border border-divider bg-surface-white p-5">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#E7EAFC] text-[16px]">🧠</span>
+        <div>
+          <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold leading-tight">Ensine a Orbi</p>
+          <p className="text-[12.5px] text-text-tertiary">{feito ? "Ela já conhece seu negócio. Você pode reforçar abaixo." : "Faça o passo 1 ou 2 pra ela conhecer seu negócio."}</p>
+        </div>
       </div>
-      <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
-        Pra começar, faça um destes dois: importe seu site ou responda o papo rápido. É o que dá à Orbi a base do seu negócio. Depois, ela segue aprendendo sozinha com as conversas.
-      </p>
 
-      {/* Passo 1: importar do site */}
-      <div className="mt-4 rounded-[24px] orbi-gradient p-[1.5px]">
-        <div className="rounded-[23px] bg-surface-white p-5">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#DEF3E3] text-[17px]">🌐</span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold">Comece pelo seu site</p>
-              <p className="text-[12.5px] text-text-tertiary">A Orbi lê e aprende sozinha em segundos.</p>
-            </div>
-          </div>
-
-          {resultado?.ok ? (
-            <div className="mt-3 flex items-start gap-2 rounded-2xl bg-[#DEF3E3] px-3.5 py-2.5">
-              <span className="mt-0.5 text-[13px]">✓</span>
-              <span className="text-[13px] leading-relaxed text-[#1F9E4C]">{resultado.msg}</span>
-            </div>
-          ) : !semSite ? (
-            <>
-              <div className="mt-3 flex gap-2">
+      <div className="mt-4 flex flex-col">
+        {/* PASSO 1 — site */}
+        <Passo n={1} feito={feito} titulo="Importe seu site" desc={feito ? "Base do negócio já registrada." : "O jeito mais rápido: ela lê em segundos."}>
+          {!feito && site === "form" && (
+            <div className="mt-2">
+              <div className="flex gap-2">
                 <input
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") importar(); }}
-                  placeholder="www.seusite.com.br ou seu Instagram"
-                  className="min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                  placeholder="www.seusite.com.br"
+                  autoFocus
+                  className="min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 py-2 text-[13.5px] outline-none focus:border-on-background"
                 />
-                <button
-                  onClick={importar}
-                  disabled={importando || !url.trim()}
-                  className="shrink-0 rounded-full bg-button-primary px-4 py-2.5 text-[13.5px] font-semibold text-white disabled:opacity-40"
-                >
-                  {importando ? "Lendo…" : "Importar"}
+                <button onClick={importar} disabled={importando || !url.trim()} className="shrink-0 rounded-full bg-button-primary px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-40">
+                  {importando ? "Lendo…" : "Ler"}
                 </button>
               </div>
-              {resultado && !resultado.ok && <p className="mt-2 text-[12.5px] text-red-600">{resultado.msg}</p>}
-              <button onClick={() => setSemSite(true)} className="mt-2.5 text-[12.5px] font-medium text-text-tertiary underline">
-                Não tenho site, pular pra outra forma
-              </button>
-            </>
-          ) : (
-            <p className="mt-3 text-[13px] text-text-secondary">
-              Sem problema. Use os caminhos abaixo pra ensinar a Orbi.{" "}
-              <button onClick={() => setSemSite(false)} className="font-medium underline">Tenho um site</button>
-            </p>
+              {erro && <p className="mt-1.5 text-[12px] text-red-600">{erro}</p>}
+            </div>
           )}
+          {!feito && site === "idle" && (
+            <button onClick={() => setSite("form")} className="mt-1.5 rounded-full bg-surface-soft px-3.5 py-1.5 text-[12.5px] font-semibold text-text-secondary">
+              Colar meu site
+            </button>
+          )}
+        </Passo>
+
+        <Divisor />
+
+        {/* PASSO 2 — entrevista */}
+        <Passo n={2} feito={feito} titulo="Ou responda 5 perguntas" desc={feito ? "Se quiser, refaça pra atualizar." : "Um papo rápido; ela preenche tudo sozinha."}>
+          <div className="mt-2">
+            <OrbiEntrevista businessId={businessId} orbiColors={orbiColors} onDone={() => { onDone?.(); router.refresh(); }} compact />
+          </div>
+        </Passo>
+
+        <Divisor />
+
+        {/* PASSO 3 — aprende com conversas (contínuo) */}
+        <Passo
+          n={3}
+          feito={false}
+          continuo
+          titulo="Ela aprende com as conversas"
+          desc={gapsPendentes > 0 ? `${gapsPendentes} ${gapsPendentes === 1 ? "dúvida" : "dúvidas"} que ela não soube. Ensine ela.` : "Automático, conforme os visitantes conversam."}
+          href="/admin/agent/aprendizado"
+          badge={gapsPendentes > 0 ? gapsPendentes : undefined}
+        />
+      </div>
+
+      {!feito && (
+        <p className="mt-4 rounded-2xl bg-surface-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-text-secondary">
+          💡 Faça pelo menos um dos dois primeiros pra a Orbi começar bem.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Divisor() {
+  return <div className="ml-[15px] h-3 w-px bg-divider" />;
+}
+
+function Passo({ n, feito, continuo, titulo, desc, children, href, badge }: {
+  n: number; feito: boolean; continuo?: boolean; titulo: string; desc: string; children?: React.ReactNode; href?: string; badge?: number;
+}) {
+  const bolinha = (
+    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${
+      feito ? "bg-[#1F9E4C] text-white" : continuo ? "bg-[#FDEEDF] text-[#C2650A]" : "bg-surface-soft text-text-secondary"
+    }`}>
+      {feito ? "✓" : continuo ? "∞" : n}
+    </span>
+  );
+
+  const conteudo = (
+    <div className="flex min-w-0 flex-1 items-start gap-3">
+      {bolinha}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <p className={`text-[15px] font-semibold ${feito ? "text-text-tertiary line-through" : ""}`}>{titulo}</p>
+          {badge && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1F9E4C] px-1.5 text-[11px] font-bold text-white">{badge}</span>}
+          {href && <span className="ml-auto text-text-tertiary">→</span>}
         </div>
-      </div>
-
-      {/* Passo 2: você ensina (a entrevista) */}
-      <div className="mt-5">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Ou responda um papo rápido</p>
-        <OrbiEntrevista businessId={businessId} orbiColors={orbiColors} onDone={onDone} />
-      </div>
-
-      {/* Passo 3: aprende com as conversas (complemento contínuo, não onboarding) */}
-      <div className="mt-5 border-t border-divider pt-4">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Depois, ela continua aprendendo sozinha</p>
-        <Link href="/admin/agent/aprendizado" className="flex w-full items-center gap-3.5 rounded-[24px] border border-divider bg-surface-white p-5 text-left">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FDEEDF] text-[20px]">💬</span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold">O que a Orbi aprendeu com visitantes</span>
-            <span className="mt-0.5 block text-[13px] leading-snug text-text-tertiary">
-              {gapsPendentes > 0
-                ? `Ela notou ${gapsPendentes} ${gapsPendentes === 1 ? "coisa que não soube" : "coisas que não soube"} responder. Ensine ela.`
-                : "Conforme conversam, ela percebe o que não soube responder e sugere o que ensinar."}
-            </span>
-          </span>
-          {gapsPendentes > 0 ? (
-            <span className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-[#1F9E4C] px-1.5 text-[12px] font-bold text-white">{gapsPendentes}</span>
-          ) : (
-            <span className="text-text-tertiary">→</span>
-          )}
-        </Link>
+        <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">{desc}</p>
+        {children}
       </div>
     </div>
   );
+
+  if (href) {
+    return <Link href={href} className="py-1">{conteudo}</Link>;
+  }
+  return <div className="py-1">{conteudo}</div>;
 }
