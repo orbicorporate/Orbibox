@@ -9,7 +9,7 @@ import { AI_MODEL, ANTHROPIC_API_URL } from "@/lib/aiModel";
 // mesmo pra todos: humano, delicado, com insight. Nada de "vendedão".
 const FORMATO: Record<string, string> = {
   legenda:
-    "Uma legenda de Instagram autoral. UMA unica ideia, desenvolvida com profundidade e elegancia, do inicio ao fim, sem se repetir nem dar voltas. Abra com uma frase que valha por si so: uma observacao afiada, uma imagem, uma verdade pouco dita do universo desse negocio. 3 a 6 linhas curtas que respiram. NAO venda, NAO convide pra comprar, NAO faca CTA comercial (nada de 'bora trocar uma ideia', 'fala com a gente', 'vem crescer', 'agende', 'chama no direct'). O objetivo e ser interessante e memoravel, o tipo de post que a pessoa salva ou reposta. No fim, 3 a 5 hashtags relevantes e sem exagero.",
+    "Uma legenda de Instagram autoral. UMA unica ideia, desenvolvida com profundidade e elegancia, do inicio ao fim, sem se repetir nem dar voltas. Abra com uma frase que valha por si so: uma observacao afiada, uma imagem, uma verdade pouco dita do universo desse negocio. 3 a 6 linhas curtas que respiram. NAO venda, NAO convide pra comprar, NAO faca CTA comercial (nada de 'bora trocar uma ideia', 'fala com a gente', 'vem crescer', 'agende', 'chama no direct'). O objetivo e ser interessante e memoravel, o tipo de post que a pessoa salva ou reposta. No fim, coloque de 4 a 6 hashtags: PESQUISE quais estao em alta e sao realmente usadas no nicho desse negocio agora (mistura de hashtags de alcance medio e algumas mais especificas de nicho, evite so as gigantes e obvias). TODAS as hashtags em letra MINUSCULA, sempre, sem excecao (ex: #marketingdigital, nao #MarketingDigital).",
   story:
     "Uma ideia de story de Instagram. Descreva em uma frase o que mostrar no visual (algo real, dos bastidores ou do dia a dia, nao banco de imagem) e escreva o texto curto de sobreposicao, intimo e bem escrito, como se fosse pra um amigo. Sugira no fim um sticker ou interacao (enquete, pergunta, caixinha) que caiba no assunto. Sem tom de propaganda.",
   whatsapp:
@@ -117,7 +117,8 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
     // 1) com busca na web (dado real). 2) se falhar, sem busca mas ainda
     // inteligente. So cai no fallback fixo se as duas falharem.
     let bruto = await pedirTexto(true);
-    if (!bruto) bruto = await pedirTexto(false);
+    let pesquisou = !!bruto; // a primeira tentativa é a que usa busca na web
+    if (!bruto) { bruto = await pedirTexto(false); pesquisou = false; }
 
     // Rede de segurança: remove qualquer travessao que tenha escapado, trocando
     // por virgula (regra absoluta: nada de travessao em texto nenhum). Tambem
@@ -129,6 +130,8 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
       .replace(/【[^】]*】/g, "")        // citações estilo 【1】
       .replace(/\[\d+\]/g, "")          // citações estilo [1]
       .replace(/\(\s*fonte[^)]*\)/gi, "") // "(fonte: ...)"
+      // Toda hashtag em minusculo, sempre (mantendo acentos).
+      .replace(/#([\p{L}\p{N}_]+)/gu, (_m, tag) => "#" + tag.toLowerCase())
       .replace(/[ \t]{2,}/g, " ")
       .trim();
 
@@ -143,7 +146,7 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
       return NextResponse.json({ texto: fallback });
     }
 
-    return NextResponse.json({ texto: limpo });
+    return NextResponse.json({ texto: limpo, pesquisou });
   } catch (error) {
     console.error("Erro ao gerar conteudo:", error);
     // Mesmo num erro inesperado, entrega um texto de apoio em vez de falhar,
