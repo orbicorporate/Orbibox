@@ -282,6 +282,19 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
           </p>
         </div>
       )}
+
+      {/* Próxima etapa: configurar a IA (personalidade + entrevista) */}
+      <Link href="/admin/agent" className="mt-6 flex items-center gap-3.5 rounded-[24px] orbi-gradient p-[1.5px]">
+        <span className="flex w-full items-center gap-3.5 rounded-[23px] bg-surface-white p-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface-soft text-[20px]">✦</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Próxima etapa</span>
+            <span className="mt-0.5 block text-[15px] font-semibold">Já configurou sua IA?</span>
+            <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">Deixe a Orbi conhecer seu negócio pra atender e criar melhor.</span>
+          </span>
+          <span className="text-text-tertiary">→</span>
+        </span>
+      </Link>
       </>)}
 
       {section === "contatos" && (<>
