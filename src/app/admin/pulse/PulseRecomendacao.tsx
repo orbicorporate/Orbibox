@@ -18,9 +18,13 @@ export function PulseRecomendacao({
   orbiColors: string[] | null;
 }) {
   const [tipo, setTipo] = useState<string | null>(null);
-  const [texto, setTexto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  // Histórico de versões geradas na sessão + qual está sendo vista, pra poder
+  // gerar uma nova e voltar às anteriores sem perder nada.
+  const [versoes, setVersoes] = useState<string[]>([]);
+  const [idx, setIdx] = useState(0);
+  const texto = versoes[idx] ?? null;
 
   // Sem item clicado no período — em vez de sumir (o que parece bug), mostra
   // um card gentil explicando e sugerindo ampliar o período.
@@ -41,12 +45,14 @@ export function PulseRecomendacao({
     );
   }
 
-  async function gerar(t: string) {
-    if (!hasAiChat) return;
+  // novoTipo=true zera o histórico (trocou de formato); senão, adiciona a nova
+  // versão ao histórico e mostra ela — mantendo as anteriores acessíveis.
+  async function gerar(t: string, novoFormato: boolean) {
+    if (!hasAiChat || loading) return;
     setTipo(t);
     setLoading(true);
-    setTexto(null);
     setCopiado(false);
+    if (novoFormato) { setVersoes([]); setIdx(0); }
     try {
       const res = await fetch("/api/gerar-conteudo", {
         method: "POST",
@@ -54,9 +60,19 @@ export function PulseRecomendacao({
         body: JSON.stringify({ businessId, productTitle: topItem!.title, tipo: t }),
       });
       const data = await res.json();
-      setTexto(data.texto ?? "Não consegui gerar agora, tente de novo.");
+      const novo = data.texto ?? "Não consegui gerar agora, tente de novo.";
+      setVersoes((prev) => {
+        const base = novoFormato ? [] : prev;
+        const arr = [...base, novo];
+        setIdx(arr.length - 1);
+        return arr;
+      });
     } catch {
-      setTexto("Erro de conexão. Tente de novo.");
+      setVersoes((prev) => {
+        const arr = [...(novoFormato ? [] : prev), "Erro de conexão. Tente de novo."];
+        setIdx(arr.length - 1);
+        return arr;
+      });
     } finally {
       setLoading(false);
     }
@@ -129,7 +145,7 @@ export function PulseRecomendacao({
         {acoes.map((a) => (
           <button
             key={a.id}
-            onClick={() => gerar(a.id)}
+            onClick={() => gerar(a.id, true)}
             disabled={!hasAiChat || loading}
             className={`flex items-center gap-3.5 rounded-[20px] bg-white/70 px-4 py-3.5 text-left transition-colors ${hasAiChat ? "active:bg-white" : "opacity-60"}`}
           >
@@ -164,10 +180,45 @@ export function PulseRecomendacao({
             </div>
           ) : texto ? (
             <>
+              {/* Navegação entre versões geradas */}
+              {versoes.length > 1 && (
+                <div className="mb-3 flex items-center justify-between">
+                  <button
+                    onClick={() => setIdx((i) => Math.max(0, i - 1))}
+                    disabled={idx === 0}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30"
+                    aria-label="Versão anterior"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                  </button>
+                  <span className="text-[12px] font-medium text-text-tertiary">Versão {idx + 1} de {versoes.length}</span>
+                  <button
+                    onClick={() => setIdx((i) => Math.min(versoes.length - 1, i + 1))}
+                    disabled={idx === versoes.length - 1}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30"
+                    aria-label="Próxima versão"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+                  </button>
+                </div>
+              )}
+
               <p className="whitespace-pre-line font-[family-name:var(--font-manrope)] text-[16px] leading-[1.6] text-on-background">{texto}</p>
-              <button onClick={copiar} className="mt-4 w-full rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
-                {copiado ? "✓ Copiado!" : "Copiar texto"}
-              </button>
+
+              <div className="mt-4 flex gap-2">
+                <button onClick={copiar} className="flex-1 rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
+                  {copiado ? "✓ Copiado!" : "Copiar texto"}
+                </button>
+                <button
+                  onClick={() => tipo && gerar(tipo, false)}
+                  disabled={loading}
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 py-3 text-[14px] font-medium text-text-secondary disabled:opacity-50"
+                  aria-label="Gerar nova versão"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6" /></svg>
+                  Nova
+                </button>
+              </div>
             </>
           ) : null}
         </div>

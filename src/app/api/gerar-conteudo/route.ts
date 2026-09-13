@@ -10,11 +10,11 @@ const MODEL = "claude-sonnet-5";
 // mesmo pra todos: humano, delicado, com insight. Nada de "vendedão".
 const FORMATO: Record<string, string> = {
   legenda:
-    "Uma legenda de Instagram. Comece por uma observacao, historia curta ou provocacao que faca a pessoa parar de rolar, nunca pelo nome do produto. 2 a 5 linhas, com quebras que respiram. Encerre com um convite leve (nao uma ordem de venda) e, so entao, 3 a 5 hashtags realmente relevantes.",
+    "Uma legenda de Instagram autoral. UMA unica ideia, desenvolvida com profundidade e elegancia, do inicio ao fim, sem se repetir nem dar voltas. Abra com uma frase que valha por si so: uma observacao afiada, uma imagem, uma verdade pouco dita do universo desse negocio. 3 a 6 linhas curtas que respiram. NAO venda, NAO convide pra comprar, NAO faca CTA comercial (nada de 'bora trocar uma ideia', 'fala com a gente', 'vem crescer', 'agende', 'chama no direct'). O objetivo e ser interessante e memoravel, o tipo de post que a pessoa salva ou reposta. No fim, 3 a 5 hashtags relevantes e sem exagero.",
   story:
-    "Uma ideia de story de Instagram. Descreva em uma frase o que mostrar no visual (algo real, dos bastidores ou do dia a dia, nao banco de imagem) e escreva o texto curto de sobreposicao, intimo, como se fosse pra um amigo. No fim, sugira um sticker ou interacao (enquete, pergunta, contagem) que caiba no assunto.",
+    "Uma ideia de story de Instagram. Descreva em uma frase o que mostrar no visual (algo real, dos bastidores ou do dia a dia, nao banco de imagem) e escreva o texto curto de sobreposicao, intimo e bem escrito, como se fosse pra um amigo. Sugira no fim um sticker ou interacao (enquete, pergunta, caixinha) que caiba no assunto. Sem tom de propaganda.",
   whatsapp:
-    "Uma mensagem curta pra mandar num contato ou lista de transmissao. Escreva como uma pessoa escreve pra outra: sem saudacao corporativa, sem 'prezado cliente'. Uma ideia so, calorosa, que soe como conversa e nao como panfleto. Um convite gentil no fim, se fizer sentido.",
+    "Uma mensagem curta pra mandar num contato ou lista. Escreva como uma pessoa de verdade escreve pra outra: sem saudacao corporativa, sem 'prezado cliente', sem parecer disparo em massa. Uma ideia so, calorosa e especifica. Pode terminar sem nenhum pedido, so uma boa mensagem. Se houver convite, que seja um so, sutil e humano.",
 };
 
 export async function POST(req: NextRequest) {
@@ -59,17 +59,21 @@ Contexto do negocio:
 ${contexto || "Poucas informacoes disponiveis. Nesse caso, seja mais atemporal e humano, sem inventar fatos."}
 ${tomLinhas.length ? "\nTom desejado: " + tomLinhas.join(" ") : ""}
 
-Como voce escreve, sempre:
-- Comeca por gente, nao por produto. Uma emocao, uma cena, uma verdade pequena do cotidiano de quem consome isso.
-- Prefere sugerir a mandar. Convida em vez de ordenar. Zero "corre que acaba", "nao perca", "garanta ja".
-- Evita clice de marketing e frase feita. Nada de "qualidade e excelencia", "o melhor da regiao", "pensado em voce".
-- E especifica: usa o que sabe do negocio pra dizer algo que so ELE poderia dizer.
-- Tem alma brasileira, calor e leveza. Pode ter humor, ternura, uma imagem poetica, desde que soe natural.
-- Nao exagera em emoji (no maximo 1-2, e so se combinar).
+Seu padrao de escrita (inegociavel):
+- Comeca por gente, nao por produto. Uma emocao, uma cena, uma verdade pequena do cotidiano de quem vive isso.
+- NAO vende. Nao empurra, nao convida pra comprar, nao faz chamada comercial. Um bom texto nao precisa pedir nada. Zero "corre que acaba", "nao perca", "garanta ja", "fala com a gente", "vem crescer", "bora trocar uma ideia".
+- Uma ideia so, bem desenvolvida. Sem repetir a mesma coisa com outras palavras, sem encher com frase de efeito vazia. Cada linha precisa acrescentar algo.
+- Zero clice de marketing. Nada de "qualidade e excelencia", "o melhor da regiao", "pensado em voce", "transformar", "elevar o seu negocio", "resultado de verdade".
+- Especifica ao extremo: usa o que sabe do negocio pra dizer algo que so ELE poderia dizer. Se souber pouco, prefere o universal humano a inventar.
+- Escreve bem: ritmo, uma boa imagem, as vezes humor ou ternura. Alma brasileira, sem forcar girias.
+- No maximo 1-2 emoji, e so se realmente couber. Muitas vezes, nenhum e melhor.
+- Nao usa numeros/dados que voce nao tem certeza (ex: nao invente "18 anos" se nao te disseram).
 
-O item em destaque agora e "${productTitle}", ele foi o mais procurado recentemente. Trate isso como um sinal de interesse real das pessoas, um bom momento pra falar sobre o assunto, nao como um saldao pra empurrar.
+O item em destaque agora e "${productTitle}" — ele foi o mais procurado recentemente. Isso e so um sinal de que o assunto interessa; um bom gancho pra escrever algo bom sobre esse tema. Nao trate como oferta nem como saldao.
 
 Escreva: ${oQue}
+
+Antes de responder, revise mentalmente: tem repeticao? tem frase de venda? tem clice? Se tiver, reescreva. So entao responda.
 
 Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas, sem "aqui esta", sem explicacao.`;
 
