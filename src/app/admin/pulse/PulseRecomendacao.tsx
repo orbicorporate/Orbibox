@@ -53,64 +53,72 @@ export function PulseRecomendacao({
   }
 
   const acoes = [
-    { id: "legenda", label: "✍ Legenda pro Instagram" },
-    { id: "story", label: "📸 Ideia de Story" },
-    { id: "whatsapp", label: "💬 Texto pro WhatsApp" },
+    { id: "legenda", emoji: "✍️", label: "Legenda pro Instagram", hint: "Post que para o feed" },
+    { id: "story", emoji: "📸", label: "Ideia de Story", hint: "Com sugestão de visual" },
+    { id: "whatsapp", emoji: "💬", label: "Texto pro WhatsApp", hint: "Pra mandar de perto" },
   ];
 
   return (
-    <div className="mt-6 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
-      <div className="flex items-center gap-2">
-        <OrbiParticleSphere size={26} colors={orbiColors ?? undefined} vivid className="rounded-full" />
-        <span className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Recomendação Orbi</span>
+    <div className="orbi-card-light mt-6 overflow-hidden rounded-[28px] p-6">
+      <div className="relative flex items-center gap-2.5">
+        <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+        <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-text-secondary">Recomendação da Orbi</span>
       </div>
 
-      <div className="mt-3 flex items-center gap-3.5">
+      <div className="relative mt-5 flex items-start gap-4">
         {topItem.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={topItem.image_url} alt={topItem.title} className="shrink-0 rounded-xl object-cover" style={{ height: 64, width: 64 }} />
+          <img src={topItem.image_url} alt={topItem.title} className="shrink-0 rounded-2xl object-cover shadow-[0_4px_16px_rgba(17,19,24,0.12)]" style={{ height: 76, width: 76 }} />
         ) : (
-          <span className="flex shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[20px]" style={{ height: 64, width: 64 }}>✦</span>
+          <span className="flex shrink-0 items-center justify-center rounded-2xl bg-white/70 text-[26px] shadow-sm" style={{ height: 76, width: 76 }}>✦</span>
         )}
-        <p className="text-[15px] leading-snug">
-          <span className="font-semibold">{topItem.title}</span> foi o mais clicado da semana. Que tal divulgar pra aproveitar o momento?
+        <p className="font-[family-name:var(--font-manrope)] text-[19px] font-medium leading-[1.35] tracking-[-0.01em] text-on-background">
+          <span className="font-bold">{topItem.title}</span> foi o mais procurado da semana. Bora aproveitar esse interesse?
         </p>
       </div>
 
       {/* Ações */}
-      <div className="mt-4 flex flex-col gap-2">
+      <div className="relative mt-5 flex flex-col gap-2.5">
         {acoes.map((a) => (
           <button
             key={a.id}
             onClick={() => gerar(a.id)}
             disabled={!hasAiChat || loading}
-            className={`flex items-center justify-between rounded-full px-4 py-3 text-[14px] font-medium ${tipo === a.id && !hasAiChat ? "" : ""} ${hasAiChat ? "bg-surface-soft hover:bg-divider" : "bg-surface-soft opacity-60"}`}
+            className={`flex items-center gap-3.5 rounded-[20px] bg-white/70 px-4 py-3.5 text-left transition-colors ${hasAiChat ? "active:bg-white" : "opacity-60"}`}
           >
-            <span>{a.label}</span>
-            {!hasAiChat && <span className="text-[11px] font-semibold text-text-tertiary">💎 Nióbio</span>}
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[20px] shadow-sm">{a.emoji}</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[16px] font-semibold text-on-background">{a.label}</span>
+              <span className="block text-[12.5px] text-text-tertiary">{a.hint}</span>
+            </span>
+            {!hasAiChat ? (
+              <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-text-tertiary">💎 Nióbio</span>
+            ) : (
+              <span className="shrink-0 text-text-tertiary">→</span>
+            )}
           </button>
         ))}
       </div>
 
       {/* Aviso pro Titânio */}
       {!hasAiChat && (
-        <Link href="/admin/planos" className="mt-3 block rounded-2xl bg-surface-soft p-3 text-center text-[12.5px] font-medium text-text-secondary">
-          ✦ A Orbi escreve esses textos prontos pra você no plano Nióbio. Toque pra ver.
+        <Link href="/admin/planos" className="relative mt-3.5 block rounded-[20px] bg-white/70 p-4 text-center text-[13px] font-medium leading-relaxed text-text-secondary">
+          ✦ A Orbi escreve esses textos com a alma do seu negócio no plano Nióbio. Toque pra conhecer.
         </Link>
       )}
 
       {/* Resultado */}
       {hasAiChat && tipo && (
-        <div className="mt-3 rounded-2xl bg-surface-soft p-4">
+        <div className="relative mt-4 rounded-[22px] bg-white p-5 shadow-[0_4px_20px_rgba(17,19,24,0.06)]">
           {loading ? (
-            <div className="flex items-center gap-2.5">
-              <OrbiParticleSphere size={28} colors={orbiColors ?? undefined} vivid className="rounded-full" />
-              <span className="text-[13px] text-text-tertiary">Escrevendo pra você…</span>
+            <div className="flex items-center gap-3">
+              <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+              <span className="text-[14px] text-text-tertiary">A Orbi está pensando com carinho…</span>
             </div>
           ) : texto ? (
             <>
-              <p className="whitespace-pre-line text-[14px] leading-relaxed">{texto}</p>
-              <button onClick={copiar} className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
+              <p className="whitespace-pre-line font-[family-name:var(--font-manrope)] text-[16px] leading-[1.6] text-on-background">{texto}</p>
+              <button onClick={copiar} className="mt-4 w-full rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
                 {copiado ? "✓ Copiado!" : "Copiar texto"}
               </button>
             </>
