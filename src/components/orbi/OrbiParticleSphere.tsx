@@ -292,16 +292,16 @@ export function OrbiParticleSphere({
           g += (morphColor[1] - g) * kMorph;
           b0 += (morphColor[2] - b0) * kMorph;
         }
-        const b = vivid ? Math.min(1, 0.92 + depth * 0.2) : 0.65 + depth * 0.35;
-        // No vivid, partículas quase opacas pra aparecerem forte sobre fundo
-        // claro (sem o círculo escuro atrás). Micro agora bem mais presentes.
+        // Brilho mais contido no vivid: cores ficam saturadas e opacas em vez
+        // de estouradas pro branco (menos "brilho de vidro", mais cor real).
+        const b = vivid ? Math.min(1, 0.74 + depth * 0.16) : 0.65 + depth * 0.35;
         const alpha = vivid
-          ? (0.9 + depth * 0.1) * (isMicro[i] ? 0.92 : 1)
+          ? (0.92 + depth * 0.08) * (isMicro[i] ? 0.94 : 1)
           : (0.95 + depth * 0.05) * (isMicro[i] ? microAlpha : 1);
         ctx.beginPath();
-        // Pontos da frente ganham um brilho (glow) que os deixa mais "de luz".
-        if (vivid && depth > 0.45) {
-          ctx.shadowBlur = 7 * depth;
+        // Glow suave só nos pontos bem da frente, mais discreto que antes.
+        if (vivid && depth > 0.6) {
+          ctx.shadowBlur = 4 * depth;
           ctx.shadowColor = `rgba(${Math.min(255, (r * b) | 0)},${Math.min(255, (g * b) | 0)},${Math.min(255, (b0 * b) | 0)},1)`;
         } else {
           ctx.shadowBlur = 0;
