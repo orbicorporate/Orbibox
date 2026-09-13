@@ -138,7 +138,12 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
         className="-mt-2 w-full rounded-[24px] orbi-gradient p-[1.5px]"
       >
         <span className="flex w-full items-center gap-3.5 rounded-[23px] bg-surface-white p-4">
-          <OrbiParticleSphere key={orbiColors.join("-")} size={52} colors={orbiColors} className="shrink-0 rounded-full" />
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl orbi-gradient text-on-background">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="13.5" cy="6.5" r="2.5" /><circle cx="17.5" cy="13" r="2.5" /><circle cx="8.5" cy="7.5" r="2.5" /><circle cx="6.5" cy="14" r="2.5" />
+              <path d="M12 21a9 9 0 0 1 0-18 4 4 0 0 0 0 8 3 3 0 0 1 0 6 1 1 0 0 0 0 2z" />
+            </svg>
+          </span>
           <span className="min-w-0 flex-1 text-left">
             <span className="block text-[16px] font-semibold text-on-background">✦ Configurar cores da Orbi</span>
             <span className="mt-0.5 block text-[12.5px] text-text-tertiary">Escolha as cores da esfera e do fundo da sua página.</span>

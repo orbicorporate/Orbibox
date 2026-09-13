@@ -90,7 +90,7 @@ export function OrbiVisualPanel({
     <div id="cores-orbi" className="scroll-mt-6 rounded-[24px] orbi-gradient p-[1.5px]">
       <div className="rounded-[23px] bg-surface-white p-5">
         <div className="flex items-center gap-4">
-          <OrbiParticleSphere key={orbiColors.join("-")} size={84} colors={orbiColors} className="rounded-full" />
+          <OrbiParticleSphere key={orbiColors.join("-")} size={104} colors={orbiColors} className="rounded-full" />
           <div className="flex-1">
             <p className="text-[14px] font-medium">Cores da Orbi</p>
             <p className="mt-0.5 text-[12px] leading-relaxed text-text-secondary">
