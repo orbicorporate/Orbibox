@@ -4,7 +4,7 @@ import { getCurrentBusinessId } from "@/lib/business";
 import { PulseDetails } from "./PulseDetails";
 import { PulseAudience } from "./PulseAudience";
 import { PulseRecomendacao } from "./PulseRecomendacao";
-import { InsightScrollButton } from "./InsightScrollButton";
+import { PulseTabs } from "./PulseTabs";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { PulseDateFilter } from "./PulseDateFilter";
 import { PulseMarketing } from "./PulseMarketing";
@@ -138,70 +138,73 @@ export default async function PulsePage({
     <div className="flex flex-col">
       <p data-tour="pulse" className="mt-2 text-center text-[13px] uppercase tracking-wide text-text-tertiary">Orbi Pulse</p>
 
-      <InsightScrollButton />
+      <PulseTabs
+        visitantes={
+          <div className="flex flex-col">
+            <div className="relative mx-auto mt-6 flex h-56 w-56 items-center justify-center">
+              <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full -rotate-90">
+                <circle cx="50" cy="50" r="46" fill="none" stroke="var(--divider)" strokeWidth="3" />
+                <circle cx="50" cy="50" r="46" fill="none" stroke="url(#g)" strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(taxa / 100) * 289} 289`} />
+                <defs>
+                  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="var(--orbi-gradient-start)" />
+                    <stop offset="100%" stopColor="var(--orbi-gradient-end)" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="text-center">
+                <p className="font-[family-name:var(--font-manrope)] text-[52px] font-medium leading-none">{taxa}%</p>
+                <p className="mt-1 text-[13px] text-text-secondary">de quem entra, age</p>
+              </div>
+            </div>
 
-      <div className="relative mx-auto mt-6 flex h-56 w-56 items-center justify-center">
-        <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full -rotate-90">
-          <circle cx="50" cy="50" r="46" fill="none" stroke="var(--divider)" strokeWidth="3" />
-          <circle cx="50" cy="50" r="46" fill="none" stroke="url(#g)" strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(taxa / 100) * 289} 289`} />
-          <defs>
-            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="var(--orbi-gradient-start)" />
-              <stop offset="100%" stopColor="var(--orbi-gradient-end)" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="text-center">
-          <p className="font-[family-name:var(--font-manrope)] text-[52px] font-medium leading-none">{taxa}%</p>
-          <p className="mt-1 text-[13px] text-text-secondary">de quem entra, age</p>
-        </div>
-      </div>
+            {/* Filtro de período, logo acima dos números que ele afeta. */}
+            <p className="mt-6 text-[12px] uppercase tracking-wide text-text-tertiary">Período</p>
+            <PulseDateFilter />
 
-      {/* Filtro de período, logo acima dos números que ele afeta, pra ficar
-          claro que tudo abaixo respeita o período escolhido. */}
-      <p className="mt-6 text-[12px] uppercase tracking-wide text-text-tertiary">Período</p>
-      <PulseDateFilter />
+            <div className="mt-4 flex items-center justify-between rounded-[22px] bg-surface-soft px-5 py-4">
+              <span className="text-[14px] text-text-secondary">Visitas</span>
+              <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{visitas.toLocaleString("pt-BR")}</span>
+            </div>
 
-      <div className="mt-4 flex items-center justify-between rounded-[22px] bg-surface-soft px-5 py-4">
-        <span className="text-[14px] text-text-secondary">Visitas</span>
-        <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{visitas.toLocaleString("pt-BR")}</span>
-      </div>
+            <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} paginas={paginas} slug={business!.slug} />
 
-      <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} paginas={paginas} slug={business!.slug} />
+            <PulseAudience origens={origens} dispositivos={dispositivos} totalSessoes={totalSessoes} />
 
-      <PulseAudience origens={origens} dispositivos={dispositivos} totalSessoes={totalSessoes} />
-
-      {totalCliques === 0 ? (
-        <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
-          <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Ainda sem cliques</p>
-          <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-            Assim que alguém abrir seu link e tocar num box ou num contato, os números aparecem aqui , 
-            separados por tipo de ação.
-          </p>
-          <Link href="/admin/vitrine" className="mt-5 inline-flex rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white">
-            Revisar vitrine →
-          </Link>
-        </div>
-      ) : (
-        <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
-          <p className="text-[14px] text-text-secondary">{sp.label ?? "Últimos 7 dias"}</p>
-          <svg viewBox={`0 0 ${w} ${h}`} className="mt-4 w-full">
-            <path d={path} fill="none" stroke="var(--on-background)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <div className="mt-3 flex justify-between text-[11px] text-text-tertiary">
-            {labelsDia.map((l, i) => {
-              const step = Math.ceil(labelsDia.length / 8);
-              return <span key={i}>{i % step === 0 || i === labelsDia.length - 1 ? l : ""}</span>;
-            })}
+            {totalCliques === 0 ? (
+              <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
+                <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Ainda sem cliques</p>
+                <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
+                  Assim que alguém abrir seu link e tocar num box ou num contato, os números aparecem aqui,
+                  separados por tipo de ação.
+                </p>
+                <Link href="/admin/vitrine" className="mt-5 inline-flex rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white">
+                  Revisar vitrine →
+                </Link>
+              </div>
+            ) : (
+              <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
+                <p className="text-[14px] text-text-secondary">{sp.label ?? "Últimos 7 dias"}</p>
+                <svg viewBox={`0 0 ${w} ${h}`} className="mt-4 w-full">
+                  <path d={path} fill="none" stroke="var(--on-background)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <div className="mt-3 flex justify-between text-[11px] text-text-tertiary">
+                  {labelsDia.map((l, i) => {
+                    const step = Math.ceil(labelsDia.length / 8);
+                    return <span key={i}>{i % step === 0 || i === labelsDia.length - 1 ? l : ""}</span>;
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-
-      {/* Recomendação da Orbi vem logo antes do "atraia gente", a leitura
-          fica lógica: aqui está o insight → e aqui está como agir sobre ele. */}
-      <PulseRecomendacao businessId={business!.id} topItem={topItemRec} hasAiChat={pulseAccess.hasAiChat} orbiColors={pulseOrbiColors} />
-
-      <PulseMarketing businessId={business!.id} slug={business!.slug} />
+        }
+        marketing={
+          <div className="flex flex-col">
+            <PulseRecomendacao businessId={business!.id} topItem={topItemRec} hasAiChat={pulseAccess.hasAiChat} orbiColors={pulseOrbiColors} />
+            <PulseMarketing businessId={business!.id} slug={business!.slug} />
+          </div>
+        }
+      />
     </div>
   );
 }
