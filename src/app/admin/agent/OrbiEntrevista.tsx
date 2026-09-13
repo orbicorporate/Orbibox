@@ -85,52 +85,58 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
   const passo = Math.min(historico.length + 1, TOTAL);
 
   return (
-    <div className="rounded-[24px] border border-divider bg-surface-white p-5">
-      <div className="flex items-center gap-2.5">
-        <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+    <div className="flex flex-col rounded-[24px] border border-divider bg-surface-white">
+      {/* Cabeçalho fixo do chat */}
+      <div className="flex items-center gap-2.5 border-b border-divider p-4">
+        <OrbiParticleSphere size={34} colors={orbiColors ?? undefined} vivid className="rounded-full" />
         <div className="flex-1">
-          <p className="text-[13px] font-semibold">Conversa com a Orbi</p>
-          {!concluido && <p className="text-[11.5px] text-text-tertiary">Pergunta {passo} de {TOTAL}</p>}
+          <p className="text-[14px] font-semibold">Orbi</p>
+          <p className="text-[11.5px] text-text-tertiary">{concluido ? "Conversa concluída" : `conhecendo seu negócio · ${passo} de ${TOTAL}`}</p>
         </div>
       </div>
-
-      {/* barra de progresso */}
       {!concluido && (
-        <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-surface-soft">
-          <div className="h-full rounded-full orbi-gradient transition-all" style={{ width: `${((historico.length) / TOTAL) * 100}%` }} />
+        <div className="h-0.5 w-full overflow-hidden bg-surface-soft">
+          <div className="h-full orbi-gradient transition-all" style={{ width: `${(historico.length / TOTAL) * 100}%` }} />
         </div>
       )}
 
-      <div className="mt-4 flex flex-col gap-3">
-        {/* histórico */}
+      {/* Mensagens */}
+      <div className="flex flex-col gap-3 p-4">
         {historico.map((t, i) => (
-          <div key={i} className="flex flex-col gap-1.5">
-            <p className="text-[13.5px] leading-relaxed text-text-secondary">{t.pergunta}</p>
-            <p className="self-end rounded-2xl rounded-br-sm bg-surface-soft px-3.5 py-2 text-[13.5px] leading-relaxed">{t.resposta}</p>
+          <div key={i} className="flex flex-col gap-3">
+            {/* balão da Orbi */}
+            <div className="flex items-end gap-2">
+              <OrbiParticleSphere size={26} colors={orbiColors ?? undefined} vivid className="mb-0.5 shrink-0 rounded-full" />
+              <p className="max-w-[82%] rounded-2xl rounded-bl-md bg-surface-soft px-3.5 py-2.5 text-[14px] leading-relaxed">{t.pergunta}</p>
+            </div>
+            {/* balão do usuário */}
+            <p className="max-w-[82%] self-end rounded-2xl rounded-br-md bg-button-primary px-3.5 py-2.5 text-[14px] leading-relaxed text-white">{t.resposta}</p>
           </div>
         ))}
 
-        {/* pergunta atual */}
-        {carregando && (
-          <div className="flex items-center gap-2 text-[13px] text-text-tertiary">
-            <OrbiParticleSphere size={22} colors={orbiColors ?? undefined} vivid className="rounded-full" />
-            A Orbi está pensando…
+        {/* pergunta atual da Orbi */}
+        {perguntaAtual && !carregando && !concluido && (
+          <div className="flex items-end gap-2">
+            <OrbiParticleSphere size={26} colors={orbiColors ?? undefined} vivid className="mb-0.5 shrink-0 rounded-full" />
+            <p className="max-w-[82%] rounded-2xl rounded-bl-md bg-surface-soft px-3.5 py-2.5 text-[14px] leading-relaxed">{perguntaAtual}</p>
           </div>
         )}
-        {perguntaAtual && !carregando && (
-          <p className="text-[15px] font-medium leading-relaxed text-on-background">{perguntaAtual}</p>
-        )}
 
-        {finalizando && (
-          <div className="flex items-center gap-2 text-[13px] text-text-tertiary">
-            <OrbiParticleSphere size={22} colors={orbiColors ?? undefined} vivid className="rounded-full" />
-            Montando o perfil do seu negócio…
+        {/* Orbi digitando */}
+        {(carregando || finalizando) && (
+          <div className="flex items-end gap-2">
+            <OrbiParticleSphere size={26} colors={orbiColors ?? undefined} vivid className="mb-0.5 shrink-0 rounded-full" />
+            <span className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-surface-soft px-4 py-3">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-text-tertiary [animation-delay:-0.3s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-text-tertiary [animation-delay:-0.15s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-text-tertiary" />
+            </span>
           </div>
         )}
 
         {concluido && (
           <div className="rounded-2xl bg-[#DEF3E3] p-4">
-            <p className="text-[14px] font-semibold text-[#1F9E4C]">✓ Prontinho! Agora a Orbi conhece seu negócio.</p>
+            <p className="text-[14px] font-semibold text-[#1F9E4C]">✓ Prontinho! Agora eu conheço seu negócio.</p>
             <p className="mt-1.5 text-[13px] leading-relaxed text-[#1F9E4C]/90">
               Preenchi o que você me contou nos campos abaixo. Dá uma olhada e ajuste se quiser, mas já está tudo pronto pra eu trabalhar melhor por você.
             </p>
@@ -140,23 +146,27 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
         <div ref={fimRef} />
       </div>
 
-      {/* campo de resposta */}
+      {/* Campo de resposta */}
       {perguntaAtual && !carregando && !concluido && (
-        <div className="mt-4">
-          <textarea
-            value={resposta}
-            onChange={(e) => setResposta(e.target.value)}
-            placeholder="Escreva sua resposta…"
-            rows={2}
-            className="w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] outline-none focus:border-on-background"
-          />
-          <button
-            onClick={responder}
-            disabled={!resposta.trim()}
-            className="mt-2 w-full rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white disabled:opacity-40"
-          >
-            {historico.length + 1 >= TOTAL ? "Finalizar" : "Responder"}
-          </button>
+        <div className="border-t border-divider p-3">
+          <div className="flex items-end gap-2">
+            <textarea
+              value={resposta}
+              onChange={(e) => setResposta(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); responder(); } }}
+              placeholder="Escreva sua resposta…"
+              rows={1}
+              className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] outline-none focus:border-on-background"
+            />
+            <button
+              onClick={responder}
+              disabled={!resposta.trim()}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-button-primary text-white disabled:opacity-40"
+              aria-label={historico.length + 1 >= TOTAL ? "Finalizar" : "Enviar"}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>
+            </button>
+          </div>
         </div>
       )}
     </div>

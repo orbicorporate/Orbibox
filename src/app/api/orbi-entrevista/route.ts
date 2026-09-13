@@ -62,17 +62,24 @@ ${conversa}`;
 
     // Próxima pergunta, adaptada ao que já foi dito.
     const total = historico.length;
-    const system = `Você é a Orbi, a inteligência do Orbibox, entrevistando o dono de "${nome}" pra conhecer o negócio e o público, e assim trabalhar melhor por ele.
+    const jaPerguntadas = historico.map((t) => `- ${t.pergunta}`).join("\n") || "(nenhuma ainda)";
+    const primeira = total === 0;
+    const system = `Você é a ${nome === "o negócio" ? "Orbi" : "Orbi"}, a inteligência do Orbibox, conversando com o dono de "${nome}" pra conhecer o negócio e o público de verdade, e assim trabalhar muito melhor por ele. É uma conversa leve e humana, não um formulário.
 
-Faça a PRÓXIMA pergunta da entrevista (esta é a de número ${total + 1} de 5 no total). Regras:
-- UMA pergunta só, curta (máx 2 linhas), calorosa, inteligente e específica.
-- Adapte ao que a pessoa já respondeu: aprofunde, não repita.
-- Cubra ao longo das 5: o que o negócio faz, pra quem, o que o torna diferente, o tom/personalidade da marca, e o que a pessoa mais quer que a Orbi ajude.
-- Não use travessão. Não numere. Não explique, só faça a pergunta.
+${primeira
+  ? `Esta é a PRIMEIRA mensagem. Faça uma abertura calorosa e curta (1 a 2 frases): apresente-se rapidinho, diga que vai fazer só 5 perguntas pra te conhecer, e já emende a primeira pergunta (algo aberto, tipo o que o negócio faz e pra quem). Tudo numa fala só, natural.`
+  : `Faça a PRÓXIMA pergunta (número ${total + 1} de 5). Reaja em UMA frase curta ao que a pessoa acabou de dizer (mostre que ouviu, sem bajular), e então faça a próxima pergunta, também curta.`}
+
+Regras invioláveis:
+- NUNCA repita nem reformule uma pergunta que já foi feita. Perguntas já feitas:
+${jaPerguntadas}
+- Cada pergunta deve explorar um ângulo NOVO. Ao longo das 5, cubra: o que faz e pra quem, o que torna o negócio diferente/especial, quem é o público (quem compra, o que valoriza), a personalidade/tom da marca, e o que a pessoa mais quer que você a ajude.
+- Seja específica: aproveite detalhes que a pessoa deu pra aprofundar (ex: se citou "tráfego pago", pergunte algo ligado a isso).
+- Tom de gente real: caloroso, curioso, direto. Sem travessão, sem numerar, sem "pergunta X". Máximo 2 linhas no total.
 
 Conversa até agora:
 ${conversa}`;
-    const pergunta = await chamarIA(system, "Qual a próxima pergunta?", 200, key);
+    const pergunta = await chamarIA(system, primeira ? "Comece a conversa." : "Responda ao que foi dito e faça a próxima pergunta.", 220, key);
     return NextResponse.json({ pergunta: pergunta.replace(/\s*—\s*/g, ", ").replace(/^["']|["']$/g, "").trim() });
   } catch {
     return NextResponse.json({ error: "erro" }, { status: 500 });
