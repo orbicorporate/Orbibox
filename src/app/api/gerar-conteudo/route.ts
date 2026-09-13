@@ -37,17 +37,51 @@ const FORMATO: Record<string, string> = {
     "Uma ideia de story de Instagram. Descreva em uma frase o que mostrar no visual (algo real, dos bastidores ou do dia a dia, nao banco de imagem) e escreva o texto curto de sobreposicao, intimo e bem escrito, como se fosse pra um amigo. Sugira no fim um sticker ou interacao (enquete, pergunta, caixinha) que caiba no assunto. Sem tom de propaganda.",
   whatsapp:
     "Uma mensagem curta pra mandar num contato ou lista. Escreva como uma pessoa de verdade escreve pra outra: sem saudacao corporativa, sem 'prezado cliente', sem parecer disparo em massa. Quebre em 2 ou 3 paragrafos curtos com uma linha em branco entre eles, nunca um bloco unico. Uma ideia so, calorosa e especifica. Pode terminar sem nenhum pedido, so uma boa mensagem. Se houver convite, que seja um so, sutil e humano.",
+  arte:
+    "Um PROMPT de geracao de imagem (pra colar em ChatGPT, Midjourney, etc), em portugues, pronto pra usar. Descreva uma cena/composicao SOFISTICADA e MINIMALISTA, com CORES CLARAS e claras areas de respiro, luz natural suave, estetica editorial e elegante, coerente com o universo do negocio. Especifique: o objeto/cena principal, o estilo visual (ex: fotografia editorial, still life minimalista), a paleta clara, a iluminacao, o enquadramento e o clima. Nada de poluicao visual, nada de texto na imagem, nada de excesso de elementos. Escreva o prompt em um paragrafo unico e fluido, detalhado mas sem listar como topicos. Nao explique nada fora do prompt, entregue so o prompt.",
 };
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessId, productTitle, tipo } = await req.json();
-    if (!businessId || !tipo) return NextResponse.json({ error: "faltam dados" }, { status: 400 });
+    const { businessId, productTitle, tipo, tema, acao } = await req.json();
+    if (!businessId) return NextResponse.json({ error: "faltam dados" }, { status: 400 });
 
     const key = process.env.ANTHROPIC_API_KEY || process.env.CHAVE_API_ANTROPICA;
     if (!key) return NextResponse.json({ error: "sem chave" }, { status: 500 });
 
     const supabase = await createClient();
+
+    // Ação "sugerirTemas": a Orbi devolve 3-4 temas de post relevantes pro
+    // negócio (não consome crédito de conteúdo, é leve e sem busca).
+    if (acao === "sugerirTemas") {
+      try {
+        const { data: bizT } = await supabase.from("businesses").select("name, about_business, differentials").eq("id", businessId).maybeSingle();
+        const ctx = [bizT?.name && `Negocio: ${bizT.name}.`, bizT?.about_business && `Sobre: ${bizT.about_business}`, bizT?.differentials && `Diferenciais: ${bizT.differentials}`].filter(Boolean).join("\n");
+        const res = await fetch(ANTHROPIC_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+          body: JSON.stringify({
+            model: AI_MODEL,
+            max_tokens: 300,
+            temperature: 1,
+            system: `Voce sugere temas de post pra redes sociais de um negocio brasileiro. Temas interessantes, especificos e uteis, que fujam do obvio. ${ctx}\nResponda APENAS um JSON array de 4 strings curtas (cada tema em ate 5 palavras), sem markdown, sem nada alem do array. Ex: ["Bastidores de como fazemos X", "O erro que todo mundo comete com Y"]`,
+            messages: [{ role: "user", content: "Sugira 4 temas de post." }],
+          }),
+        });
+        const data = await res.json();
+        const bloco = data.content?.find((b: { type: string }) => b.type === "text");
+        const raw = (bloco?.text ?? "[]").replace(/```json|```/g, "").trim();
+        const temas = JSON.parse(raw);
+        return NextResponse.json({ temas: Array.isArray(temas) ? temas.slice(0, 4) : [] });
+      } catch {
+        return NextResponse.json({ temas: [] });
+      }
+    }
+
+    if (!tipo) return NextResponse.json({ error: "faltam dados" }, { status: 400 });
+
+    // O foco do texto: o tema escolhido pelo dono, ou o item mais procurado.
+    const foco = (typeof tema === "string" && tema.trim()) ? tema.trim() : productTitle;
 
     // Consome 1 crédito de "conteúdo" do plano. Se estourou o limite do mês,
     // avisa de forma gentil (não é erro, é o limite mensal do plano).
@@ -120,7 +154,7 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
 ${contexto || "Poucas informacoes disponiveis. Foque no universo do tema com inteligencia."}
 ${tomLinhas.length ? "\nTom desejado: " + tomLinhas.join(" ") : ""}
 
-O tema em foco e "${productTitle}", foi o mais procurado recentemente. Use como gancho pra uma reflexao valiosa sobre esse universo, ancorada no dado que voce pesquisou.
+O tema em foco e "${foco}". Use como gancho pra uma reflexao valiosa sobre esse universo, ancorada no dado que voce pesquisou.
 
 Escreva: ${oQue}`;
 
@@ -139,8 +173,8 @@ Escreva: ${oQue}`;
           { type: "text", text: systemVariavel },
         ],
         messages: [{ role: "user", content: comBusca
-          ? `Faca UMA busca certeira e direcionada pra encontrar um dado atual e concreto sobre o universo de "${productTitle}" (uma estatistica, tendencia recente, numero de comportamento do consumidor ou do setor). Escolha bem a query pra achar de primeira. Depois escreva o texto usando esse dado de forma natural. Item: "${productTitle}".`
-          : `Escreva o texto sobre "${productTitle}", com uma sacada inteligente e, se souber com seguranca, um dado ou tendencia real do setor.` }],
+          ? `Faca UMA busca certeira e direcionada pra encontrar um dado atual e concreto sobre o universo de "${foco}" (uma estatistica, tendencia recente, numero de comportamento do consumidor ou do setor). Escolha bem a query pra achar de primeira. Depois escreva o texto usando esse dado de forma natural. Tema: "${foco}".`
+          : `Escreva o texto sobre "${foco}", com uma sacada inteligente e, se souber com seguranca, um dado ou tendencia real do setor.` }],
       };
       // 1 busca só: mantém o dado real de mercado (a "sacada") e corta a parte
       // mais cara do custo. Uma busca bem direcionada basta pra ancorar o texto.
@@ -164,13 +198,14 @@ Escreva: ${oQue}`;
       return { texto: partes.join("\n").trim(), motivo: "ok" };
     }
 
-    // 1) com busca na web (dado real). 2) se falhar, sem busca mas ainda
-    // inteligente.
-    const r1 = await pedirTexto(true);
+    // Arte não usa busca web (é prompt visual, não precisa de dado de mercado).
+    // Texto usa busca pra trazer o dado real.
+    const usaBusca = tipo !== "arte";
+    const r1 = await pedirTexto(usaBusca);
     let bruto = r1.texto;
-    let pesquisou = !!bruto;
+    let pesquisou = usaBusca && !!bruto;
     let motivo = r1.motivo;
-    if (!bruto) {
+    if (!bruto && usaBusca) {
       const r2 = await pedirTexto(false);
       bruto = r2.texto;
       pesquisou = false;
@@ -208,10 +243,10 @@ Escreva: ${oQue}`;
     if (!limpo) {
       const nome = biz?.name ?? "seu negócio";
       const cobertura = tipo === "story"
-        ? `Ideia rápida de story: mostre um momento real do dia a dia de ${nome}. Uma foto simples, sem produção, e por cima uma frase curta e verdadeira sobre "${productTitle}". Feche com uma caixinha de pergunta pra puxar conversa.`
+        ? `Ideia rápida de story: mostre um momento real do dia a dia de ${nome}. Uma foto simples, sem produção, e por cima uma frase curta e verdadeira sobre "${foco}". Feche com uma caixinha de pergunta pra puxar conversa.`
         : tipo === "whatsapp"
-        ? `Oi! Tudo bem?\n\nQueria te contar que "${productTitle}" tem chamado atenção por aqui ultimamente.\n\nSe fizer sentido pra você, me chama que eu te conto os detalhes com calma.`
-        : `Nem todo mundo repara, mas "${productTitle}" diz muito sobre o jeito de ${nome} fazer as coisas.\n\nÉ nos detalhes que a diferença aparece, e é isso que a gente cuida por aqui.\n\n#${(nome).replace(/[^\p{L}\p{N}]/gu, "").toLowerCase()} #dicas`;
+        ? `Oi! Tudo bem?\n\nQueria te contar que "${foco}" tem chamado atenção por aqui ultimamente.\n\nSe fizer sentido pra você, me chama que eu te conto os detalhes com calma.`
+        : `Nem todo mundo repara, mas "${foco}" diz muito sobre o jeito de ${nome} fazer as coisas.\n\nÉ nos detalhes que a diferença aparece, e é isso que a gente cuida por aqui.\n\n#${(nome).replace(/[^\p{L}\p{N}]/gu, "").toLowerCase()} #dicas`;
       return NextResponse.json({ texto: cobertura, cobertura: true, hashtags: [] });
     }
 

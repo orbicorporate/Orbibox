@@ -28,6 +28,33 @@ export function PulseRecomendacao({
   const [idx, setIdx] = useState(0);
   const texto = versoes[idx] ?? null;
   const hashtags = tagsPorVersao[idx] ?? [];
+  // Tema do post: por padrão o item mais procurado, mas o dono pode trocar.
+  const [temaEscolhido, setTemaEscolhido] = useState<string | null>(null);
+  const [sugestoes, setSugestoes] = useState<string[]>([]);
+  const [carregandoTemas, setCarregandoTemas] = useState(false);
+  const [temaCustom, setTemaCustom] = useState("");
+  const [trocandoTema, setTrocandoTema] = useState(false);
+
+  async function pedirSugestoes() {
+    if (carregandoTemas) return;
+    setCarregandoTemas(true);
+    try {
+      const res = await fetch("/api/gerar-conteudo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId, acao: "sugerirTemas" }),
+      });
+      const data = await res.json();
+      setSugestoes(Array.isArray(data.temas) ? data.temas : []);
+    } finally {
+      setCarregandoTemas(false);
+    }
+  }
+
+  function abrirTrocaTema() {
+    setTrocandoTema(true);
+    if (sugestoes.length === 0) pedirSugestoes();
+  }
 
   // Sem item clicado no período, em vez de sumir (o que parece bug), mostra
   // um card gentil explicando e sugerindo ampliar o período.
@@ -60,7 +87,7 @@ export function PulseRecomendacao({
       const res = await fetch("/api/gerar-conteudo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, productTitle: topItem!.title, tipo: t }),
+        body: JSON.stringify({ businessId, productTitle: topItem!.title, tipo: t, tema: temaEscolhido ?? undefined }),
       });
       const data = await res.json();
       if (data.limiteAtingido) {
@@ -142,6 +169,18 @@ export function PulseRecomendacao({
         </svg>
       ),
     },
+    {
+      id: "arte",
+      label: "Ideia para arte",
+      hint: "Prompt pronto pra gerar imagem",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="3" />
+          <circle cx="8.5" cy="8.5" r="1.6" />
+          <path d="m21 15-5-5L5 21" />
+        </svg>
+      ),
+    },
   ];
 
   return (
@@ -159,8 +198,57 @@ export function PulseRecomendacao({
           <span className="flex shrink-0 items-center justify-center rounded-2xl bg-white/70 text-[26px] shadow-sm" style={{ height: 76, width: 76 }}>✦</span>
         )}
         <p className="font-[family-name:var(--font-manrope)] text-[19px] font-medium leading-[1.35] tracking-[-0.01em] text-on-background">
-          <span className="font-bold">{topItem.title}</span> foi o mais procurado da semana. Bora aproveitar esse interesse?
+          {temaEscolhido
+            ? <>Vamos criar sobre <span className="font-bold">{temaEscolhido}</span>.</>
+            : <><span className="font-bold">{topItem.title}</span> foi o mais procurado da semana. Bora aproveitar esse interesse?</>}
         </p>
+      </div>
+
+      {/* Trocar o tema do post */}
+      <div className="relative mt-4">
+        {!trocandoTema ? (
+          <button onClick={abrirTrocaTema} className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3.5 py-2 text-[13px] font-medium text-text-secondary">
+            <span aria-hidden>✦</span> Escrever sobre outro tema
+          </button>
+        ) : (
+          <div className="rounded-2xl bg-white/70 p-3.5">
+            <p className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Sobre o que a Orbi escreve?</p>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              <button
+                onClick={() => { setTemaEscolhido(null); setTrocandoTema(false); }}
+                className={`rounded-full px-3 py-1.5 text-[12.5px] font-medium ${!temaEscolhido ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
+              >
+                {topItem.title} (mais procurado)
+              </button>
+              {carregandoTemas && <span className="px-2 py-1.5 text-[12.5px] text-text-tertiary">Pensando em temas…</span>}
+              {sugestoes.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => { setTemaEscolhido(s); setTrocandoTema(false); }}
+                  className="rounded-full bg-surface-soft px-3 py-1.5 text-[12.5px] font-medium text-text-secondary"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 flex gap-2">
+              <input
+                value={temaCustom}
+                onChange={(e) => setTemaCustom(e.target.value)}
+                placeholder="Ou digite seu próprio tema"
+                className="min-w-0 flex-1 rounded-full border border-divider bg-white px-4 py-2 text-[13px] outline-none focus:border-on-background"
+              />
+              <button
+                onClick={() => { if (temaCustom.trim()) { setTemaEscolhido(temaCustom.trim()); setTrocandoTema(false); } }}
+                disabled={!temaCustom.trim()}
+                className="shrink-0 rounded-full bg-button-primary px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-40"
+              >
+                Usar
+              </button>
+            </div>
+            <button onClick={() => setTrocandoTema(false)} className="mt-2 text-[12px] text-text-tertiary underline">Cancelar</button>
+          </div>
+        )}
       </div>
 
       {/* Ações */}
@@ -253,6 +341,15 @@ export function PulseRecomendacao({
 
               <p className="whitespace-pre-line font-[family-name:var(--font-manrope)] text-[16px] leading-[1.6] text-on-background">{texto}</p>
 
+              {tipo === "arte" && (
+                <div className="mt-4 flex items-start gap-2 rounded-2xl bg-[#E7EAFC] px-3.5 py-2.5">
+                  <span className="mt-0.5 text-[14px]">🎨</span>
+                  <span className="text-[12.5px] leading-relaxed text-[#4453D6]">
+                    Cole esse prompt no ChatGPT, Midjourney ou outro gerador de imagem. Pode editar à vontade antes de gerar.
+                  </span>
+                </div>
+              )}
+
               {tipo === "legenda" && hashtags.length > 0 && (
                 <div className="mt-4 rounded-2xl bg-surface-soft p-3.5">
                   <div className="flex items-center gap-1.5">
@@ -277,7 +374,7 @@ export function PulseRecomendacao({
 
               <div className="mt-4 flex gap-2">
                 <button onClick={copiar} className="flex-1 rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
-                  {copiado ? "✓ Copiado!" : "Copiar texto"}
+                  {copiado ? "✓ Copiado!" : tipo === "arte" ? "Copiar prompt" : "Copiar texto"}
                 </button>
                 <button
                   onClick={() => tipo && gerar(tipo, false)}
