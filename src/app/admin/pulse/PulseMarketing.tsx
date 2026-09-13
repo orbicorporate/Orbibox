@@ -131,37 +131,47 @@ export function PulseMarketing({ businessId, slug }: { businessId: string; slug:
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-2.5">
-        {CANAIS.map((canal) => {
+      <div className="mt-4 flex flex-col gap-3">
+        {CANAIS.map((canal, ci) => {
           const open = aberto === canal.key;
+          // Cor de acento girando por card, dá vida sem poluir.
+          const cores = [
+            { bg: "#E7EAFC", fg: "#4453D6" },
+            { bg: "#FCE8EC", fg: "#C4143A" },
+            { bg: "#FDEEDF", fg: "#C2650A" },
+            { bg: "#DEF3E3", fg: "#1F9E4C" },
+          ];
+          const cor = cores[ci % cores.length];
           return (
-            <div key={canal.key} className="overflow-hidden rounded-[22px] border border-divider bg-surface-white">
-              <button onClick={() => setAberto(open ? null : canal.key)} className="flex w-full items-center gap-3 p-4 text-left">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px]">{canal.icone}</span>
+            <div key={canal.key} className={`overflow-hidden rounded-[24px] border bg-surface-white transition-shadow ${open ? "border-transparent shadow-[0_10px_30px_rgba(17,19,24,0.10)]" : "border-divider"}`}>
+              <button onClick={() => setAberto(open ? null : canal.key)} className="flex w-full items-center gap-3.5 p-4 text-left">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-[20px]" style={{ backgroundColor: cor.bg }}>{canal.icone}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] font-medium">{canal.titulo}</span>
-                  <span className="block truncate text-[12px] text-text-tertiary">{canal.resumo}</span>
+                  <span className="block text-[15.5px] font-semibold">{canal.titulo}</span>
+                  <span className={`mt-0.5 block text-[12.5px] leading-snug text-text-tertiary ${open ? "" : "truncate"}`}>{canal.resumo}</span>
                 </span>
-                <span className="shrink-0 text-[13px] text-text-tertiary">{open ? "−" : "+"}</span>
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary transition-transform ${open ? "rotate-180" : ""}`}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                </span>
               </button>
               {open && (
-                <div className="border-t border-divider p-4">
-                  <p className="text-[13px] leading-relaxed text-text-secondary">{canal.resumo}</p>
-                  <ol className="mt-3 flex flex-col gap-2">
+                <div className="px-4 pb-4">
+                  <ol className="flex flex-col gap-3 border-t border-divider pt-4">
                     {canal.passos.map((p, i) => (
-                      <li key={i} className="flex gap-2.5 text-[13px] leading-relaxed">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[11px] font-medium">{i + 1}</span>
-                        <span>{p}</span>
+                      <li key={i} className="flex gap-3 text-[13.5px] leading-relaxed">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px] font-bold" style={{ backgroundColor: cor.bg, color: cor.fg }}>{i + 1}</span>
+                        <span className="text-text-secondary">{p}</span>
                       </li>
                     ))}
                   </ol>
 
                   {saida[canal.key] && (
-                    <div className="mt-4 rounded-2xl bg-surface-soft p-4">
-                      <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{saida[canal.key]}</p>
+                    <div className="mt-4 rounded-[18px] bg-surface-soft p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Pronto pra usar</p>
+                      <p className="mt-2 whitespace-pre-wrap text-[14px] leading-relaxed text-on-background">{saida[canal.key]}</p>
                       <button
                         onClick={() => navigator.clipboard?.writeText(saida[canal.key])}
-                        className="mt-3 rounded-full bg-surface-white px-4 py-1.5 text-[12px] font-medium"
+                        className="mt-3 rounded-full bg-on-background px-4 py-2 text-[12.5px] font-semibold text-white"
                       >
                         Copiar
                       </button>
@@ -172,11 +182,13 @@ export function PulseMarketing({ businessId, slug }: { businessId: string; slug:
 
                   <div className="mt-4">
                     {gerando === canal.key ? (
-                      <OrbiWorking label="A Orbi está criando…" variant="inline" />
+                      <div className="rounded-full bg-surface-soft px-4 py-3 text-center">
+                        <OrbiWorking label="A Orbi está criando…" variant="inline" />
+                      </div>
                     ) : (
                       <button
                         onClick={() => gerar(canal)}
-                        className="rounded-full orbi-gradient px-4 py-2.5 text-[13px] font-medium text-on-background"
+                        className="orbi-gradient flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[14px] font-bold text-on-background"
                       >
                         {saida[canal.key] ? "Gerar outra versão" : canal.geraLabel}
                       </button>
