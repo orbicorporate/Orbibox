@@ -45,6 +45,9 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
   const [generatingDesc, setGeneratingDesc] = useState(false);
+  // Logotipo começa recolhido (já tem logo) ou aberto (ainda não tem, pra
+  // incentivar a subir). Recolhível pra economizar espaço.
+  const [logoOpen, setLogoOpen] = useState(!business.logo_url);
 
   async function saveLogo(url: string | null) {
     setB((p) => ({ ...p, logo_url: url }));
@@ -138,24 +141,44 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
     <div className="mt-6 flex flex-col pb-4">
       {section === "marca" && (<>
       {/* Logotipo, super indicado: usado como avatar da tela inicial e vira
-          sugestão de ícone em qualquer box, novo ou existente. */}
+          sugestão de ícone em qualquer box. Recolhível pra economizar espaço. */}
       <div className="rounded-[24px] orbi-gradient p-[1.5px]">
-        <div className="rounded-[23px] bg-surface-white p-6">
-          <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">
-            Logotipo da empresa <span className="orbi-gradient-text">★ super indicado</span>
-          </p>
-          <HelperText>
-            Fica disponível como avatar da tela inicial e, a partir de agora, também vira sugestão pronta na biblioteca de ícones de qualquer box, inclusive os que você criar depois.
-          </HelperText>
-          <div className="mt-4">
-            <ImageUpload
-              value={b.logo_url}
-              businessId={b.id}
-              lockedRatio="quadrado"
-              promptKind="avatar"
-              onChange={saveLogo}
-            />
-          </div>
+        <div className="rounded-[23px] bg-surface-white">
+          <button onClick={() => setLogoOpen((v) => !v)} className="flex w-full items-center gap-3 p-5 text-left">
+            {b.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={b.logo_url} alt="Logotipo" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+            ) : (
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[18px]">🏷️</span>
+            )}
+            <span className="min-w-0 flex-1">
+              <span className="block font-[family-name:var(--font-manrope)] text-[16px] font-medium">
+                Logotipo <span className="orbi-gradient-text">★ recomendado</span>
+              </span>
+              <span className="mt-0.5 block text-[12.5px] text-text-tertiary">
+                {b.logo_url ? "Toque pra trocar" : "Toque pra subir seu logotipo"}
+              </span>
+            </span>
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary transition-transform ${logoOpen ? "rotate-180" : ""}`}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+            </span>
+          </button>
+          {logoOpen && (
+            <div className="px-5 pb-5">
+              <HelperText>
+                Fica disponível como avatar da tela inicial e, a partir de agora, também vira sugestão pronta na biblioteca de ícones de qualquer box, inclusive os que você criar depois.
+              </HelperText>
+              <div className="mt-4">
+                <ImageUpload
+                  value={b.logo_url}
+                  businessId={b.id}
+                  lockedRatio="quadrado"
+                  promptKind="avatar"
+                  onChange={saveLogo}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
