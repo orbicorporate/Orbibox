@@ -38,12 +38,9 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
 
   return (
     <div className="rounded-[24px] border border-divider bg-surface-white p-5">
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#E7EAFC] text-[16px]">🧠</span>
-        <div>
-          <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold leading-tight">Ensine a Orbi</p>
-          <p className="text-[12.5px] text-text-tertiary">{feito ? "Ela já conhece seu negócio. Você pode reforçar abaixo." : "Faça o passo 1 ou 2 pra ela conhecer seu negócio."}</p>
-        </div>
+      <div>
+        <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold leading-tight">Ensine a Orbi</p>
+        <p className="text-[12.5px] text-text-tertiary">{feito ? "Ela já conhece seu negócio. Você pode reforçar abaixo." : "Faça o passo 1 ou 2 pra ela conhecer seu negócio."}</p>
       </div>
 
       <div className="mt-4 flex flex-col">
@@ -107,17 +104,19 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
 }
 
 function Divisor() {
-  return <div className="ml-[15px] h-3 w-px bg-divider" />;
+  return <div className="ml-[11px] h-3 w-px bg-divider" />;
 }
 
 function Passo({ n, feito, continuo, titulo, desc, children, href, badge }: {
   n: number; feito: boolean; continuo?: boolean; titulo: string; desc: string; children?: React.ReactNode; href?: string; badge?: number;
 }) {
   const bolinha = (
-    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${
+    <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold transition-colors duration-150 ${
       feito ? "bg-[#1F9E4C] text-white" : continuo ? "bg-[#FDEEDF] text-[#C2650A]" : "bg-surface-soft text-text-secondary"
     }`}>
-      {feito ? "✓" : continuo ? "∞" : n}
+      <span className={feito ? "orbi-check-pop" : ""} key={feito ? "check" : "pending"}>
+        {feito ? "✓" : continuo ? "∞" : n}
+      </span>
     </span>
   );
 

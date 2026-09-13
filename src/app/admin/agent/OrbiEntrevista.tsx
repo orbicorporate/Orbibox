@@ -72,7 +72,7 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
   if (!aberto) {
     if (compact) {
       return (
-        <button onClick={iniciar} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-semibold text-white">
+        <button onClick={iniciar} className="orbi-shake-cta rounded-full bg-button-primary px-4 py-2 text-[13px] font-semibold text-white">
           Começar o papo →
         </button>
       );
