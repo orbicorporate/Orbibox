@@ -53,9 +53,39 @@ export function PulseRecomendacao({
   }
 
   const acoes = [
-    { id: "legenda", emoji: "✍️", label: "Legenda pro Instagram", hint: "Post que para o feed" },
-    { id: "story", emoji: "📸", label: "Ideia de Story", hint: "Com sugestão de visual" },
-    { id: "whatsapp", emoji: "💬", label: "Texto pro WhatsApp", hint: "Pra mandar de perto" },
+    {
+      id: "legenda",
+      label: "Legenda pro Instagram",
+      hint: "Post que para o feed",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+        </svg>
+      ),
+    },
+    {
+      id: "story",
+      label: "Ideia de Story",
+      hint: "Com sugestão de visual",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="3" />
+          <circle cx="12" cy="12" r="3.2" />
+          <path d="M17 8.5h.01" />
+        </svg>
+      ),
+    },
+    {
+      id: "whatsapp",
+      label: "Texto pro WhatsApp",
+      hint: "Pra mandar de perto",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.6-5.4A8.5 8.5 0 1 1 21 11.5z" />
+        </svg>
+      ),
+    },
   ];
 
   return (
@@ -86,7 +116,7 @@ export function PulseRecomendacao({
             disabled={!hasAiChat || loading}
             className={`flex items-center gap-3.5 rounded-[20px] bg-white/70 px-4 py-3.5 text-left transition-colors ${hasAiChat ? "active:bg-white" : "opacity-60"}`}
           >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[20px] shadow-sm">{a.emoji}</span>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-on-background shadow-sm">{a.icon}</span>
             <span className="min-w-0 flex-1">
               <span className="block text-[16px] font-semibold text-on-background">{a.label}</span>
               <span className="block text-[12.5px] text-text-tertiary">{a.hint}</span>

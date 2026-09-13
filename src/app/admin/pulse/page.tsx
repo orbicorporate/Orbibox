@@ -169,8 +169,6 @@ export default async function PulsePage({
 
       <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} paginas={paginas} slug={business!.slug} />
 
-      <PulseRecomendacao businessId={business!.id} topItem={topItemRec} hasAiChat={pulseAccess.hasAiChat} orbiColors={pulseOrbiColors} />
-
       <PulseAudience origens={origens} dispositivos={dispositivos} totalSessoes={totalSessoes} />
 
       {totalCliques === 0 ? (
@@ -198,6 +196,10 @@ export default async function PulsePage({
           </div>
         </div>
       )}
+
+      {/* Recomendação da Orbi vem logo antes do "atraia gente" — a leitura
+          fica lógica: aqui está o insight → e aqui está como agir sobre ele. */}
+      <PulseRecomendacao businessId={business!.id} topItem={topItemRec} hasAiChat={pulseAccess.hasAiChat} orbiColors={pulseOrbiColors} />
 
       <PulseMarketing businessId={business!.id} slug={business!.slug} />
     </div>
