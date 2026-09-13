@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/components/orbi/OrbiInsightCard";
@@ -32,6 +31,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
   const supabase = createClient();
   const router = useRouter();
   const [state, setState] = useState(config);
+  const [editandoNome, setEditandoNome] = useState(false);
   const [showCores, setShowCores] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -99,15 +99,30 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
 
       {/* Perfil da agente */}
       <div className="flex items-center gap-4 rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
-        <OrbiOrb size={64} />
-        <div className="flex-1">
-          <input
-            value={state.agent_name}
-            onChange={(e) => { setState((s) => ({ ...s, agent_name: e.target.value })); setSaved(false); }}
-            placeholder="Orbi"
-            className="w-full bg-transparent font-[family-name:var(--font-manrope)] text-[18px] font-medium outline-none"
-          />
-          <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">
+        <OrbiParticleSphere size={68} colors={orbiColors} vivid className="shrink-0 rounded-full" />
+        <div className="min-w-0 flex-1">
+          {editandoNome ? (
+            <div className="flex items-center gap-2">
+              <input
+                value={state.agent_name}
+                onChange={(e) => { setState((s) => ({ ...s, agent_name: e.target.value })); setSaved(false); }}
+                placeholder="Orbi"
+                autoFocus
+                onBlur={() => setEditandoNome(false)}
+                onKeyDown={(e) => { if (e.key === "Enter") setEditandoNome(false); }}
+                className="min-w-0 flex-1 rounded-xl border border-divider bg-surface-white px-3 py-1.5 font-[family-name:var(--font-manrope)] text-[18px] font-medium outline-none focus:border-on-background"
+              />
+              <button onClick={() => setEditandoNome(false)} className="shrink-0 rounded-full bg-button-primary px-3 py-1.5 text-[12px] font-semibold text-white">OK</button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <p className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">{state.agent_name?.trim() || "Orbi"}</p>
+              <button onClick={() => setEditandoNome(true)} className="rounded-full bg-surface-soft px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
+                ✎ Renomear
+              </button>
+            </div>
+          )}
+          <p className="mt-1 flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">
             <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" /> Ativa
           </p>
           <p className="mt-1 text-[12px] text-text-secondary">Agente Especialista de Conversão e Curadoria</p>
