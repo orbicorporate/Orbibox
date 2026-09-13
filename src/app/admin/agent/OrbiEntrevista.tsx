@@ -5,20 +5,31 @@ import { createPortal } from "react-dom";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 
 type Turno = { pergunta: string; resposta: string };
-const TOTAL = 5;
+
+// 5 perguntas fixas e estratégicas. Ordem pensada pra a Orbi entender o
+// essencial do negócio. Fixas = impossível repetir.
+const PERGUNTAS = [
+  "Pra começar, me conta: o que o seu negócio faz e pra quem?",
+  "O que faz o seu negócio ser diferente ou especial, na sua visão?",
+  "Quem é o seu cliente ideal? (quem compra, o que valoriza, como é)",
+  "Como você quer que a sua marca soe? (ex: próxima e descontraída, ou elegante e sóbria)",
+  "E onde você mais quer que a Orbi te ajude no dia a dia?",
+];
+const TOTAL = PERGUNTAS.length;
 
 export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId: string; orbiColors?: string[] | null; onDone?: () => void }) {
   const [aberto, setAberto] = useState(false);
   const [historico, setHistorico] = useState<Turno[]>([]);
-  const [perguntaAtual, setPerguntaAtual] = useState<string | null>(null);
   const [resposta, setResposta] = useState("");
-  const [carregando, setCarregando] = useState(false);
   const [finalizando, setFinalizando] = useState(false);
   const [concluido, setConcluido] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
-  const buscando = useRef(false); // trava anti-chamada-dupla
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [perguntaAtual, historico, concluido, carregando, finalizando]);
+  // Índice da pergunta atual = quantas já foram respondidas.
+  const idx = historico.length;
+  const perguntaAtual = idx < TOTAL ? PERGUNTAS[idx] : null;
+
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [historico, concluido, finalizando]);
 
   useEffect(() => {
     if (aberto) {
@@ -27,45 +38,11 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
     }
   }, [aberto]);
 
-  async function proximaPergunta(hist: Turno[]) {
-    if (buscando.current) return; // já tem uma busca em andamento
-    buscando.current = true;
-    setCarregando(true);
-    try {
-      const res = await fetch("/api/orbi-entrevista", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, historico: hist, acao: "proxima" }),
-      });
-      const data = await res.json();
-      let p = (data.pergunta || "").trim();
-      // Rede de segurança extra: se a IA repetir uma pergunta já feita, não mostra.
-      const jaFeitas = hist.map((t) => t.pergunta.toLowerCase().replace(/[?.!]/g, "").trim());
-      if (!p || jaFeitas.includes(p.toLowerCase().replace(/[?.!]/g, "").trim())) {
-        p = hist.length === 0
-          ? "Pra começar, me conta: o que o seu negócio faz e pra quem?"
-          : "E o que faz o seu negócio ser diferente dos outros?";
-      }
-      setPerguntaAtual(p);
-    } catch {
-      setPerguntaAtual(hist.length === 0 ? "Pra começar, o que o seu negócio faz e pra quem?" : "O que mais você gostaria que eu soubesse?");
-    } finally {
-      setCarregando(false);
-      buscando.current = false;
-    }
-  }
-
-  function iniciar() {
-    setAberto(true);
-    if (historico.length === 0 && !perguntaAtual && !carregando) proximaPergunta([]);
-  }
-
   async function avancar(respostaTexto: string) {
-    if (!perguntaAtual || carregando || finalizando) return;
+    if (!perguntaAtual || finalizando) return;
     const novoHist = [...historico, { pergunta: perguntaAtual, resposta: respostaTexto }];
     setHistorico(novoHist);
     setResposta("");
-    setPerguntaAtual(null);
 
     if (novoHist.length >= TOTAL) {
       setFinalizando(true);
@@ -82,13 +59,13 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
       } finally {
         setFinalizando(false);
       }
-    } else {
-      proximaPergunta(novoHist);
     }
   }
 
   function responder() { if (resposta.trim()) avancar(resposta.trim()); }
-  function pular() { if (!carregando && !finalizando) avancar("(prefiro não responder essa)"); }
+  function pular() { if (!finalizando) avancar("(prefiro não responder essa)"); }
+
+  function iniciar() { setAberto(true); }
 
   // Card de convite (fechado)
   if (!aberto) {
@@ -117,7 +94,7 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
         <div className="min-w-0 flex-1">
           <p className="text-[15px] font-semibold leading-tight">Orbi</p>
           <p className="text-[12px] text-text-tertiary">
-            {concluido ? "conversa concluída" : finalizando ? "montando seu perfil…" : carregando ? "digitando…" : `pergunta ${passo} de ${TOTAL}`}
+            {concluido ? "conversa concluída" : finalizando ? "montando seu perfil…" : `pergunta ${passo} de ${TOTAL}`}
           </p>
         </div>
         <button onClick={() => setAberto(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary" aria-label="Fechar">
@@ -139,13 +116,13 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
             </div>
           ))}
 
-          {perguntaAtual && !carregando && !concluido && (
+          {perguntaAtual && !concluido && (
             <div className="max-w-[85%] self-start rounded-2xl rounded-bl-md bg-surface-white px-4 py-3 text-[15px] leading-[1.5] shadow-[0_1px_6px_rgba(17,19,24,0.08)]">
               {perguntaAtual}
             </div>
           )}
 
-          {(carregando || finalizando) && (
+          {finalizando && (
             <div className="flex w-fit items-center gap-1.5 self-start rounded-2xl rounded-bl-md bg-surface-white px-4 py-3.5 shadow-[0_1px_6px_rgba(17,19,24,0.08)]">
               <span className="h-2 w-2 animate-bounce rounded-full bg-text-tertiary [animation-delay:-0.3s]" />
               <span className="h-2 w-2 animate-bounce rounded-full bg-text-tertiary [animation-delay:-0.15s]" />
@@ -178,20 +155,20 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
               onChange={(e) => setResposta(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); responder(); } }}
               placeholder={perguntaAtual ? "Escreva sua resposta…" : "Aguarde a Orbi…"}
-              disabled={!perguntaAtual || carregando}
+              disabled={!perguntaAtual || finalizando}
               rows={1}
               className="max-h-32 min-h-[46px] flex-1 resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background disabled:opacity-60"
             />
             <button
               onClick={responder}
-              disabled={!resposta.trim() || !perguntaAtual || carregando}
+              disabled={!resposta.trim() || !perguntaAtual || finalizando}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-button-primary text-white disabled:opacity-40"
               aria-label="Enviar"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
             </button>
           </div>
-          {perguntaAtual && !carregando && (
+          {perguntaAtual && !finalizando && (
             <button onClick={pular} className="mt-2 w-full text-center text-[13px] font-medium text-text-tertiary">
               Pular esta pergunta
             </button>
