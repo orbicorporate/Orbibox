@@ -49,6 +49,18 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createClient();
 
+    // Consome 1 crédito de "conteúdo" do plano. Se estourou o limite do mês,
+    // avisa de forma gentil (não é erro, é o limite mensal do plano).
+    try {
+      const { createServiceClient } = await import("@/lib/supabase/service");
+      const svc = createServiceClient();
+      const { data: limite } = await svc.rpc("consumir_ia", { p_business_id: businessId, p_kind: "conteudo" });
+      const info = limite as { permitido?: boolean; usado?: number; limite?: number } | null;
+      if (info && info.permitido === false) {
+        return NextResponse.json({ limiteAtingido: true, usado: info.usado ?? 0, limite: info.limite ?? 0 });
+      }
+    } catch { /* se a checagem falhar, deixa passar (nunca bloqueia por bug de infra) */ }
+
     const [{ data: biz }, { data: agent }, { data: outros }] = await Promise.all([
       supabase.from("businesses").select("name, about_business, differentials, policies, site_type").eq("id", businessId).maybeSingle(),
       supabase.from("agent_configs").select("agent_name, tone_formal_informal, tone_concise_detailed").eq("business_id", businessId).maybeSingle(),

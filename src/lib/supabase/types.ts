@@ -153,6 +153,14 @@ export type Database = {
         Args: { p_sem_credito: boolean }
         Returns: undefined
       }
+      consumir_ia: {
+        Args: { p_business_id: string; p_kind: string }
+        Returns: { permitido: boolean; usado: number; limite: number; restante: number }
+      }
+      uso_ia: {
+        Args: { p_business_id: string }
+        Returns: { conteudo_usado: number; conteudo_limite: number; chat_usado: number; chat_limite: number }
+      }
       business_progress: {
         Args: { p_business_id: string }
         Returns: Record<string, boolean>

@@ -10,6 +10,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "businessId e message são obrigatórios." }, { status: 400 });
     }
 
+    // Consome 1 crédito de "chat" do plano (exceto no modo teste do dono). Se
+    // estourou o limite do mês, responde de forma gentil, sem parecer erro.
+    if (!trialMode) {
+      try {
+        const { createServiceClient } = await import("@/lib/supabase/service");
+        const svc = createServiceClient();
+        const { data: limite } = await svc.rpc("consumir_ia", { p_business_id: businessId, p_kind: "chat" });
+        const info = limite as { permitido?: boolean } | null;
+        if (info && info.permitido === false) {
+          return NextResponse.json({
+            reply: "Adorei sua mensagem! No momento não consigo continuar por aqui, mas você pode falar direto com a equipe pelo WhatsApp ou pelos contatos da página. Vão te atender com todo carinho.",
+          });
+        }
+      } catch { /* nunca bloqueia por bug de infra */ }
+    }
+
     const supabase = await createClient();
 
     const { data: business } = await supabase

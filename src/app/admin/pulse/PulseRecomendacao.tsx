@@ -63,6 +63,16 @@ export function PulseRecomendacao({
         body: JSON.stringify({ businessId, productTitle: topItem!.title, tipo: t }),
       });
       const data = await res.json();
+      if (data.limiteAtingido) {
+        // Atingiu o limite mensal de conteúdos do plano. Aviso gentil.
+        const base = novoFormato ? [] : versoes;
+        const arr = [...base, `__LIMITE__Você já usou seus ${data.limite} conteúdos deste mês. O contador zera no dia 1º. Precisando de mais, dá pra ampliar o plano.`];
+        const baseTags = novoFormato ? [] : tagsPorVersao;
+        setVersoes(arr);
+        setTagsPorVersao([...baseTags, []]);
+        setIdx(arr.length - 1);
+        return;
+      }
       const novo = data.texto ?? "";
       const novasTags = Array.isArray(data.hashtags) ? data.hashtags : [];
       setEmCobertura(!!data.cobertura);
@@ -196,6 +206,15 @@ export function PulseRecomendacao({
               <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface-soft">
                 <div className="orbi-progress-bar h-full rounded-full orbi-gradient" />
               </div>
+            </div>
+          ) : texto && texto.startsWith("__LIMITE__") ? (
+            <div className="text-center">
+              <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#FDEEDF] text-[20px]">📅</span>
+              <p className="mt-3 text-[14px] font-semibold">Limite do mês atingido</p>
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">{texto.replace("__LIMITE__", "")}</p>
+              <Link href="/admin/planos" className="mt-4 inline-flex rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-semibold text-white">
+                Ver planos
+              </Link>
             </div>
           ) : texto && texto.trim() ? (
             <>
