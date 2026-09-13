@@ -13,18 +13,21 @@ type PickerKey = "primaria" | "secundaria" | "detalhe" | "hero1" | "hero2";
 
 // Cada botão mostra só a cor atual (uma bolinha) + o nome, a paleta inteira
 // só aparece quando toca, numa folha que sobe de baixo.
-function ColorRow({ label, hex, onOpen, extra }: { label: string; hex: string | null; onOpen: () => void; extra?: React.ReactNode }) {
+/** Versão compacta pra enfileirar na horizontal: bolinha grande em cima,
+ * rótulo curto embaixo. Ocupa bem menos espaço vertical. */
+function ColorChip({ label, hex, onOpen, onRemove }: { label: string; hex: string | null; onOpen: () => void; onRemove?: () => void }) {
   return (
-    <div className="mt-3 flex items-center justify-between">
-      <button onClick={onOpen} className="flex flex-1 items-center gap-3 rounded-2xl bg-surface-soft px-3 py-2.5 text-left">
+    <div className="relative flex flex-1 flex-col items-center rounded-2xl bg-surface-soft p-3">
+      <button onClick={onOpen} className="flex w-full flex-col items-center">
         <span
-          className="h-7 w-7 shrink-0 rounded-full border border-divider"
+          className="h-9 w-9 rounded-full border border-divider shadow-sm"
           style={hex ? { backgroundColor: hex } : { background: "repeating-linear-gradient(45deg, #ddd, #ddd 3px, transparent 3px, transparent 6px)" }}
         />
-        <span className="flex-1 text-[13px] font-medium">{label}</span>
-        <span className="text-text-tertiary">›</span>
+        <span className="mt-2 text-center text-[11.5px] font-medium leading-tight">{label}</span>
       </button>
-      {extra}
+      {onRemove && (
+        <button onClick={onRemove} className="mt-1 text-[10px] text-text-tertiary underline">remover</button>
+      )}
     </div>
   );
 }
@@ -82,16 +85,16 @@ export function OrbiVisualPanel({
           </div>
         </div>
 
-        <ColorRow label="Cor primária" hex={orbiColors[0]} onOpen={() => setOpenPicker("primaria")} />
-        <ColorRow label="Cor secundária" hex={orbiColors[1]} onOpen={() => setOpenPicker("secundaria")} />
-        <ColorRow
-          label="Cor de detalhe (opcional)"
-          hex={orbiDetail}
-          onOpen={() => setOpenPicker("detalhe")}
-          extra={orbiDetail && (
-            <button onClick={clearOrbiDetail} className="ml-2 shrink-0 text-[11px] text-text-tertiary underline">remover</button>
-          )}
-        />
+        <div className="mt-3 flex gap-2.5">
+          <ColorChip label="Primária" hex={orbiColors[0]} onOpen={() => setOpenPicker("primaria")} />
+          <ColorChip label="Secundária" hex={orbiColors[1]} onOpen={() => setOpenPicker("secundaria")} />
+          <ColorChip
+            label="Detalhe (opcional)"
+            hex={orbiDetail}
+            onOpen={() => setOpenPicker("detalhe")}
+            onRemove={orbiDetail ? clearOrbiDetail : undefined}
+          />
+        </div>
 
         <div className="mt-5 border-t border-divider pt-4">
           <div className="flex items-center gap-4">
@@ -114,8 +117,10 @@ export function OrbiVisualPanel({
               </p>
             </div>
           </div>
-          <ColorRow label="Cor 1" hex={heroGradient[0]} onOpen={() => setOpenPicker("hero1")} />
-          <ColorRow label="Cor 2" hex={heroGradient[1]} onOpen={() => setOpenPicker("hero2")} />
+          <div className="mt-3 flex gap-2.5">
+            <ColorChip label="Cor 1" hex={heroGradient[0]} onOpen={() => setOpenPicker("hero1")} />
+            <ColorChip label="Cor 2" hex={heroGradient[1]} onOpen={() => setOpenPicker("hero2")} />
+          </div>
         </div>
       </div>
 
