@@ -87,34 +87,38 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
     // Chama a IA e extrai o texto de forma robusta. Tenta até 2 vezes se vier
     // vazio. O usuário NUNCA pode ver "não consegui". Habilita a busca na web
     // pra Orbi trazer dados/noticias reais de mercado, nao inventados.
-    async function pedirTexto(): Promise<string> {
+    async function pedirTexto(comBusca: boolean): Promise<string> {
+      const body: Record<string, unknown> = {
+        model: MODEL,
+        max_tokens: 1200,
+        temperature: 1,
+        system,
+        messages: [{ role: "user", content: comBusca
+          ? `Pesquise um dado atual e real de mercado sobre o universo de "${productTitle}" (setor, comportamento do consumidor, tendencia, numero) e escreva o texto usando esse dado de forma natural. Item: "${productTitle}".`
+          : `Escreva o texto sobre "${productTitle}", com uma sacada inteligente e, se souber com seguranca, um dado ou tendencia real do setor.` }],
+      };
+      if (comBusca) body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }];
+
       const res = await fetch(ANTHROPIC_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-api-key": key!, "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({
-          model: MODEL,
-          max_tokens: 1200,
-          temperature: 1,
-          system,
-          tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
-          messages: [{ role: "user", content: `Pesquise um dado atual e real de mercado sobre o universo de "${productTitle}" (setor, comportamento do consumidor, tendencia, numero) e escreva o texto usando esse dado de forma natural. Item: "${productTitle}".` }],
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
-        console.error("gerar-conteudo IA nao ok:", res.status, await res.text().catch(() => ""));
+        console.error("gerar-conteudo IA nao ok:", res.status, comBusca ? "(com busca)" : "(sem busca)", await res.text().catch(() => ""));
         return "";
       }
       const data = await res.json();
-      // Junta TODOS os blocos de texto (ignora blocos de tool use/resultado
-      // de busca). Cobre respostas com ou sem web search.
       const partes = Array.isArray(data?.content)
         ? data.content.filter((b: { type?: string; text?: string }) => b?.type === "text" && b?.text).map((b: { text: string }) => b.text)
         : [];
       return partes.join("\n").trim();
     }
 
-    let bruto = await pedirTexto();
-    if (!bruto) bruto = await pedirTexto(); // segunda tentativa
+    // 1) com busca na web (dado real). 2) se falhar, sem busca mas ainda
+    // inteligente. So cai no fallback fixo se as duas falharem.
+    let bruto = await pedirTexto(true);
+    if (!bruto) bruto = await pedirTexto(false);
 
     // Rede de segurança: remove qualquer travessao que tenha escapado, trocando
     // por virgula (regra absoluta: nada de travessao em texto nenhum). Tambem
