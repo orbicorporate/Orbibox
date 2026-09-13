@@ -1,10 +1,10 @@
 export type ThemeColor = { hex: string; role: string };
 
-// Uma foto do tema já traz o próprio nome/preço, definidos no upload —
+// Uma foto do tema já traz o próprio nome/preço, definidos no upload , 
 // assim a foto e o texto sempre combinam, independente da ordem.
 export type ThemePhoto = { url: string; title?: string; price?: string };
 
-// Só o tamanho e o índice da foto — o conteúdo (nome/preço) vem da foto.
+// Só o tamanho e o índice da foto, o conteúdo (nome/preço) vem da foto.
 export type ThemeBox = {
   title?: string;
   price?: string;

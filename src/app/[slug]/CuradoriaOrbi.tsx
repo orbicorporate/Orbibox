@@ -33,7 +33,7 @@ export function CuradoriaOrbi({
   const [curados, setCurados] = useState<Product[]>([]);
   const [curating, setCurating] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  // Tela cheia com a frase em destaque — abre ao tocar no resultado pronto.
+  // Tela cheia com a frase em destaque, abre ao tocar no resultado pronto.
   // Renderizada via portal (direto no body) porque, dentro da árvore normal,
   // um ancestral com transform/overflow quebra o "fixed" e a tela cheia
   // aparecia duplicada, empurrada pra baixo do card em vez de cobrir tudo.
@@ -90,7 +90,7 @@ export function CuradoriaOrbi({
     onAskOrbi?.(q || undefined);
   }
 
-  // Sem pergunta gerada (catálogo vazio ou falha) — não mostra nada.
+  // Sem pergunta gerada (catálogo vazio ou falha), não mostra nada.
   if (!loadingQ && !pergunta) return null;
 
   const pronto = !!escolhida && !curating && !!frase;
@@ -113,7 +113,7 @@ export function CuradoriaOrbi({
         {showHelp && (
           <p className="mt-2 rounded-2xl bg-white/40 p-3 text-[13px] leading-relaxed text-text-secondary">
             A Orbi é a inteligência artificial daqui. Ela entende o que você procura e separa, do catálogo, as opções que
-            mais combinam com você — como um atendente que já te conhece.
+            mais combinam com você, como um atendente que já te conhece.
           </p>
         )}
 
@@ -148,7 +148,7 @@ export function CuradoriaOrbi({
               </div>
             ) : (
               <>
-                {/* Prévia curta — a fonte grande só entra quando abre a tela cheia. */}
+                {/* Prévia curta, a fonte grande só entra quando abre a tela cheia. */}
                 {frase && (
                   <button onClick={() => setExpanded(true)} className="mt-3 flex w-full items-start gap-2 text-left">
                     <span className="flex-1 text-[14px] leading-relaxed text-text-secondary">{frase}</span>
@@ -184,7 +184,7 @@ export function CuradoriaOrbi({
         )}
       </OrbiInsightCard>
 
-      {/* Tela cheia — mesma referência que a Orbi usava como "Zara IA":
+      {/* Tela cheia, mesma referência que a Orbi usava como "Zara IA":
           seta de voltar, frase em destaque, e campo pra continuar perguntando.
           Portal pro body: garante "fixed" cobrindo a tela de verdade, sem
           depender de nenhum ancestral não-transformado. */}

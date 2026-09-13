@@ -70,7 +70,7 @@ async function upsertFromSubscription(subscription: Stripe.Subscription, ownerId
     );
 
   // Indicação: quando o indicado assina o plano ANUAL e fica ativo, inicia a
-  // carência de 7 dias. Depois disso o crédito (1 mês pros dois) é liberado —
+  // carência de 7 dias. Depois disso o crédito (1 mês pros dois) é liberado , 
   // se não houver reembolso nesse meio-tempo.
   const cycle = billingCycleFromSubscription(subscription);
   const status = mapStripeStatus(subscription.status);
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
             .update({ status: "canceled", updated_at: new Date().toISOString() })
             .eq("owner_id", ownerId);
           // Se esse indicado ainda estava na carência, a indicação não vira
-          // crédito — cancelou antes dos 7 dias.
+          // crédito, cancelou antes dos 7 dias.
           await supabase
             .from("referrals")
             .update({ status: "reversed", updated_at: new Date().toISOString() })

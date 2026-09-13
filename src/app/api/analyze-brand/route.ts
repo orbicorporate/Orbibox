@@ -43,7 +43,7 @@ Responda SOMENTE em JSON válido, sem markdown, sem texto antes ou depois, no fo
 
     const userMsg = `Nome do negócio: ${name || "(não informado)"}
 Instagram: ${instagram || "(não informado)"}
-${siteText ? `Texto extraído do site:\n${siteText}` : "Site não informado ou não acessível — infira a partir do nome e segmento provável."}`;
+${siteText ? `Texto extraído do site:\n${siteText}` : "Site não informado ou não acessível, infira a partir do nome e segmento provável."}`;
 
     let personality = { energetica: 0.6, proxima: 0.6, visual: 0.6, direta: 0.6 };
     let voiceSummary = "Tom próximo e direto, pronto para conversar com quem chega.";

@@ -115,7 +115,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
         await supabase.from("businesses").update({ differentials_cards: data.differentials }).eq("id", b.id);
       }
       if (data.policies) { set("policies", data.policies); await save("policies", data.policies); }
-      setImportMsg({ kind: "ok", text: "Pronto — confira os campos abaixo e ajuste se quiser." });
+      setImportMsg({ kind: "ok", text: "Pronto, confira os campos abaixo e ajuste se quiser." });
     } catch {
       setImportMsg({ kind: "erro", text: "Não consegui ler esse site agora." });
     } finally {
@@ -126,7 +126,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
   const campo = "mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background";
   const rotulo = "mt-7 text-[13px] uppercase tracking-wide text-text-tertiary";
 
-  // Sinaliza o que a Orbi realmente sabe — sem chip decorativo.
+  // Sinaliza o que a Orbi realmente sabe, sem chip decorativo.
   const conhecimento = [
     { nome: "Catálogo", cheio: true, obs: "itens publicados na Vitrine" },
     { nome: "Sobre o negócio", cheio: !!b.about_business, obs: "usado para responder quem você é" },
@@ -137,7 +137,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
   return (
     <div className="mt-6 flex flex-col pb-4">
       {section === "marca" && (<>
-      {/* Logotipo — super indicado: usado como avatar da tela inicial e vira
+      {/* Logotipo, super indicado: usado como avatar da tela inicial e vira
           sugestão de ícone em qualquer box, novo ou existente. */}
       <div className="rounded-[24px] orbi-gradient p-[1.5px]">
         <div className="rounded-[23px] bg-surface-white p-6">
@@ -145,7 +145,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
             Logotipo da empresa <span className="orbi-gradient-text">★ super indicado</span>
           </p>
           <HelperText>
-            Fica disponível como avatar da tela inicial e, a partir de agora, também vira sugestão pronta na biblioteca de ícones de qualquer box — inclusive os que você criar depois.
+            Fica disponível como avatar da tela inicial e, a partir de agora, também vira sugestão pronta na biblioteca de ícones de qualquer box, inclusive os que você criar depois.
           </HelperText>
           <div className="mt-4">
             <ImageUpload
@@ -163,7 +163,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
         <OrbiVisualPanel businessId={b.id} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} />
       </div>
 
-      {/* Capa do link — a imagem estática que aparece quando alguém cola o
+      {/* Capa do link, a imagem estática que aparece quando alguém cola o
           link no WhatsApp, Instagram etc. Sem escolher uma, usa a capa da
           Vitrine ou o logotipo, nessa ordem (a mesma cascata de sempre). */}
       <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
@@ -186,13 +186,13 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
               ? "Hoje está usando a capa da Vitrine."
               : b.logo_url
               ? "Hoje está usando o logotipo."
-              : "Ainda não tem nenhuma imagem — o link fica sem capa."}
+              : "Ainda não tem nenhuma imagem, o link fica sem capa."}
           </p>
         )}
 
         <p className="mt-6 text-[14px] font-medium">Descrição do link</p>
         <HelperText>
-          O texto que aparece embaixo do nome — que já mostra o nome do negócio, então não precisa repetir aqui. Curto é melhor: até 3 linhas cabem no preview do WhatsApp.
+          O texto que aparece embaixo do nome, que já mostra o nome do negócio, então não precisa repetir aqui. Curto é melhor: até 3 linhas cabem no preview do WhatsApp.
         </HelperText>
         <textarea
           value={b.share_description ?? ""}
@@ -273,7 +273,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
         value={b.address ?? ""}
         onChange={(e) => set("address", e.target.value)}
         onBlur={(e) => save("address", e.target.value)}
-        placeholder="Rua, número, bairro, cidade — aparece na página Sobre e abre no mapa"
+        placeholder="Rua, número, bairro, cidade, aparece na página Sobre e abre no mapa"
         className={campo}
       />
 

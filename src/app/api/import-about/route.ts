@@ -23,7 +23,7 @@ async function fetchSiteText(url: string): Promise<string | null> {
 
 /**
  * Lê o site do negócio e monta sozinha o texto "Sobre nós" e os cards de
- * diferenciais — a pessoa só cola o link, a Orbi faz o resto.
+ * diferenciais, a pessoa só cola o link, a Orbi faz o resto.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -43,10 +43,10 @@ Responda SOMENTE em JSON válido, sem markdown, sem texto antes ou depois, no fo
 {"about":"...", "differentials":[{"title":"...","description":"..."},{"title":"...","description":"..."},{"title":"...","description":"..."}], "policies":"..."}
 
 Regras:
-- "about": 2 a 4 frases contando quem são, o que fazem e há quanto tempo/o que os diferencia — tom próximo, em português do Brasil, na terceira pessoa (fala sobre o negócio, não como se fosse ele falando).
+- "about": 2 a 4 frases contando quem são, o que fazem e há quanto tempo/o que os diferencia, tom próximo, em português do Brasil, na terceira pessoa (fala sobre o negócio, não como se fosse ele falando).
 - "differentials": 3 a 4 diferenciais reais encontrados no site (não invente). Cada um com "title" curto (2-5 palavras) e "description" em uma frase curta (até 12 palavras).
 - "policies": se o site mencionar prazos de entrega, frete, trocas, devoluções, horários de atendimento ou formas de pagamento, resuma em até 3 frases curtas. Se não encontrar nada disso, devolva uma string vazia "".
-- Nunca invente informação que não esteja no texto — se não achar diferenciais claros, foque no que existe (atendimento, experiência, produtos, localização).`;
+- Nunca invente informação que não esteja no texto, se não achar diferenciais claros, foque no que existe (atendimento, experiência, produtos, localização).`;
 
     const raw = await askClaude({ system, messages: [{ role: "user", content: siteText }], maxTokens: 800 });
 

@@ -1,5 +1,5 @@
 /**
- * Avatar redondo com o logotipo do negócio, no lugar da esfera da Orbi —
+ * Avatar redondo com o logotipo do negócio, no lugar da esfera da Orbi , 
  * pra quem prefere a própria marca na tela inicial. Ganha um pontinho de luz
  * girando ao redor e um brilho reflexivo que varre a imagem, pra não ficar
  * um círculo estático e sem vida.

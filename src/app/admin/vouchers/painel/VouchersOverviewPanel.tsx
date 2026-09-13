@@ -77,7 +77,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
         </div>
       </div>
 
-      {/* Totais coloridos — cada um explica o momento do resgate */}
+      {/* Totais coloridos, cada um explica o momento do resgate */}
       <div className="mt-4 grid grid-cols-3 gap-2.5">
         <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#E7EAFC" }}>
           <p className="text-[24px] font-bold" style={{ color: "#4453D6" }}>{totalResgatados}</p>
@@ -98,12 +98,12 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
         <span className="font-medium text-text-secondary"> já usaram</span> são os que você confirmou no atendimento.
       </p>
 
-      {/* Resgatar no balcão — mesmo card da referência, reaproveitado */}
+      {/* Resgatar no balcão, mesmo card da referência, reaproveitado */}
       <div className="mt-5">
         <RedeemCodeCard businessId={businessId} onRedeemed={refresh} vouchers={vouchers.map((v) => ({ id: v.id, title: v.title }))} />
       </div>
 
-      {/* Cupons — ativar/pausar direto daqui, e filtrar a lista por eles */}
+      {/* Cupons, ativar/pausar direto daqui, e filtrar a lista por eles */}
       <p className="mt-6 text-[15px] font-semibold">Seus cupons</p>
       <div className="mt-2.5 flex flex-col gap-2">
         {vouchers.map((v) => {
@@ -143,7 +143,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
         </button>
       )}
 
-      {/* Lista de resgates — com filtro por cupom, status e busca */}
+      {/* Lista de resgates, com filtro por cupom, status e busca */}
       <div className="mt-6 flex items-center justify-between">
         <p className="text-[15px] font-semibold">
           {voucherFilter === "todos" ? "Todos os resgates" : `Resgates: ${voucherById.get(voucherFilter)?.title ?? "cupom"}`}

@@ -20,7 +20,7 @@ export default async function VitrinePage() {
     .eq("business_id", business!.id)
     .order("position", { ascending: true });
 
-  // As cores que a Orbi definiu no DNA da marca — mesma paleta do onboarding.
+  // As cores que a Orbi definiu no DNA da marca, mesma paleta do onboarding.
   const raw = business?.brand_colors;
   const brandColors: BrandColor[] = Array.isArray(raw)
     ? raw.filter((c): c is BrandColor => !!c && typeof c === "object" && typeof (c as BrandColor).hex === "string")
@@ -34,7 +34,7 @@ export default async function VitrinePage() {
         Vitrine
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">
-        Toque num item pra editar — nome, foto, formato, cor e mais. Crie como rascunho e publique quando estiver pronto.
+        Toque num item pra editar, nome, foto, formato, cor e mais. Crie como rascunho e publique quando estiver pronto.
       </p>
       <ShowcaseBuilder
         items={items ?? []}

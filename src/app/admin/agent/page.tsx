@@ -31,7 +31,7 @@ export default async function AgentPage() {
         <div className="mt-6 rounded-2xl border border-divider bg-surface-white p-6">
           <p className="text-[15px] font-medium">✦ A Orbi é uma IA que conversa com seus clientes</p>
           <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-            Ela atende 24h na sua página, tira dúvidas, recomenda produtos e captura contatos automaticamente — como
+            Ela atende 24h na sua página, tira dúvidas, recomenda produtos e captura contatos automaticamente, como
             uma vendedora que nunca dorme. É o recurso mais avançado do Orbibox, exclusivo do plano Nióbio.
           </p>
           <p className="mt-3 text-[13px] font-medium text-text-secondary">Experimente agora, de graça:</p>

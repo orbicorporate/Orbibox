@@ -105,27 +105,27 @@ export function VisitorExperience({
   const searchParams = useSearchParams();
   const [intent, setIntent] = useState<Intent | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  // Cópia local editável dos boxes — o dono pode reordenar e renomear direto
+  // Cópia local editável dos boxes, o dono pode reordenar e renomear direto
   // na Home (sem precisar ir pro painel), e isso atualiza tanto a tela na
   // hora quanto o banco.
   const [boxList, setBoxList] = useState<BoxRow[]>(boxes);
   const [editingBoxId, setEditingBoxId] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState("");
-  // "Modo visitante" — o dono liga isso pra ver a Home exatamente como o
+  // "Modo visitante", o dono liga isso pra ver a Home exatamente como o
   // visitante vê, sem os controles de edição no meio, sem precisar sair da
   // página nem abrir uma aba anônima.
   const [previewMode, setPreviewMode] = useState(false);
   const showOwnerControls = isOwner && !previewMode;
-  // Pergunta digitada na tela cheia da CuradoriaOrbi — passa pro campo do
+  // Pergunta digitada na tela cheia da CuradoriaOrbi, passa pro campo do
   // chat real já preenchida, pronta pra mandar, em vez de perder o que a
   // pessoa escreveu.
   const [orbiPrefill, setOrbiPrefill] = useState<string | undefined>(undefined);
-  // Box de endereço expande direto na Home (sem navegar pra outra tela) —
+  // Box de endereço expande direto na Home (sem navegar pra outra tela) , 
   // guarda qual box está expandido agora (ou null se nenhum).
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
 
   useEffect(() => {
-    // Detecta origem e dispositivo do visitante — antes era fixo "direct/web",
+    // Detecta origem e dispositivo do visitante, antes era fixo "direct/web",
     // o que não dizia nada. Origem vem do referrer (de onde a pessoa clicou)
     // ou de um ?utm_source= no link; dispositivo, do user agent.
     const detectarOrigem = (): string => {
@@ -168,7 +168,7 @@ export function VisitorExperience({
   }, []);
 
   // Vem de um link "Falar com a Orbi" de outra página (ex: página de produto)
-  // com ?chat=1 — abre o chat direto, sem passar pela tela de escolha.
+  // com ?chat=1, abre o chat direto, sem passar pela tela de escolha.
   // ?tab=conhecer faz o mesmo pra página "Sobre" (ex: link do painel, depois
   // de montar a página Sobre completa com a Orbi).
   useEffect(() => {
@@ -179,7 +179,7 @@ export function VisitorExperience({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes —
+  // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
   type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; onClick: () => void };
   const options: Option[] = boxList
@@ -229,7 +229,7 @@ export function VisitorExperience({
         return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
-      // "Sobre" sugere o nome da marca quando o dono não personalizou — igual ao editor.
+      // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
       const fallbackLabel = b.box_type === "content" ? `Sobre a ${business.name}` : base.t;
       return { key: b.id, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || base.d, color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick: () => chooseIntent(base.k) };
     })
@@ -244,7 +244,7 @@ export function VisitorExperience({
     }
   }
 
-  // Reordenar direto na Home — troca a posição desse box com o vizinho na
+  // Reordenar direto na Home, troca a posição desse box com o vizinho na
   // direção pedida (dentre os que aparecem na tela agora).
   async function moveOption(key: string, dir: -1 | 1) {
     const idx = options.findIndex((o) => o.key === key);
@@ -260,7 +260,7 @@ export function VisitorExperience({
     ]);
   }
 
-  // Troca o formato direto na Home — o dono vê o card mudar de tamanho na
+  // Troca o formato direto na Home, o dono vê o card mudar de tamanho na
   // hora, em vez de escolher às cegas lá no editor de Boxes. Define um valor
   // explícito (não mais "automático") pra esse box.
   async function toggleLayout(key: string, currentlyLargo: boolean) {
@@ -296,11 +296,11 @@ export function VisitorExperience({
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background-main">
-      {/* Nada de cor no topo — qualquer toque, mesmo bem sutil, cria uma forma
+      {/* Nada de cor no topo, qualquer toque, mesmo bem sutil, cria uma forma
           redonda que destoa do fundo plano atrás da esfera. Fica só o cinza
           claro puro aqui em cima, sempre, independente da paleta escolhida. */}
 
-      {/* Halo suave — atmosfera "líquida". Fica na parte de baixo da tela,
+      {/* Halo suave, atmosfera "líquida". Fica na parte de baixo da tela,
           longe do avatar, pra não brigar de contraste com ele. */}
       <div
         className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[80px]"
@@ -309,7 +309,7 @@ export function VisitorExperience({
 
       {/* O dono, navegando o próprio link, ganha um atalho de volta pro painel
           e um alternador pra ver a página exatamente como o visitante vê,
-          sem os controles de edição (lápis, setinhas, formato) no meio —
+          sem os controles de edição (lápis, setinhas, formato) no meio , 
           só na tela inicial. Escondido nos overlays (chat, catálogo, sobre)
           porque senão fica borrado atrás do fundo semitransparente deles. */}
       {isOwner && intent === null && !previewMode && (
@@ -347,7 +347,7 @@ export function VisitorExperience({
             ) : business.hero_avatar === "sphere" ? (
               <OrbiOrb size={96} className="mb-8" />
             ) : business.logo_url ? (
-              // "auto" (padrão): mantém o comportamento de sempre — logo se tiver, senão a esfera.
+              // "auto" (padrão): mantém o comportamento de sempre, logo se tiver, senão a esfera.
               <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
             ) : (
               <OrbiOrb size={96} className="mb-8" />
@@ -371,12 +371,12 @@ export function VisitorExperience({
                 // Distribuição mista: cada opção recebe "largo" (linha toda,
                 // card horizontal e compacto) ou "medio" (metade, card
                 // vertical). Uma escolha manual (setinha de formato) sempre
-                // vale exatamente como escolhida — nunca é desfeita sozinha.
+                // vale exatamente como escolhida, nunca é desfeita sozinha.
                 // Só os boxes automáticos (sem escolha manual) formam par
                 // entre si pra nunca sobrar espaço vazio; endereço e estrela
                 // são largos por padrão nesse caso. Quando a escolha manual
                 // não encontra um vizinho compatível, pode sobrar um espaço
-                // vazio do lado — é o preço de ter controle de verdade.
+                // vazio do lado, é o preço de ter controle de verdade.
                 function resolvedLargo(opt: (typeof options)[number]): boolean {
                   if (opt.layoutOverride === "largo") return true;
                   if (opt.layoutOverride === "medio") return false;
@@ -397,14 +397,14 @@ export function VisitorExperience({
                   if (proximoCabeAoLado) {
                     withLayout.push({ o, largo: false });
                     // Só "consome" o próximo aqui se ele também for
-                    // automático — se a escolha dele for manual, ele resolve
+                    // automático, se a escolha dele for manual, ele resolve
                     // sozinho no próprio turno do loop, sem duplicar.
                     if (!proximo!.layoutOverride) {
                       withLayout.push({ o: proximo!, largo: false });
                       i++;
                     }
                   } else {
-                    // Sozinho (sem par pra formar médio+médio) — vira largo
+                    // Sozinho (sem par pra formar médio+médio), vira largo
                     // em vez de ficar isolado ocupando só metade da linha.
                     withLayout.push({ o, largo: true });
                   }
@@ -479,7 +479,7 @@ export function VisitorExperience({
                       </div>
                     )}
                     {largo ? (
-                      // Card LARGO — horizontal (ícone + texto na linha)
+                      // Card LARGO, horizontal (ícone + texto na linha)
                       <div
                         role="button"
                         tabIndex={0}
@@ -503,8 +503,8 @@ export function VisitorExperience({
                         />
                       </div>
                     ) : (
-                      // Card MÉDIO — vertical (ícone em cima, texto embaixo).
-                      // O título tem altura mínima de 2 linhas sempre — assim
+                      // Card MÉDIO, vertical (ícone em cima, texto embaixo).
+                      // O título tem altura mínima de 2 linhas sempre, assim
                       // a descrição começa na mesma altura nos dois cards da
                       // dupla, mesmo quando um título quebra em 2 linhas e o
                       // outro cabe numa só.
@@ -569,7 +569,7 @@ export function VisitorExperience({
             <VitrineCoverBleed business={business} />
             <button onClick={() => setIntent(null)} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
             <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">
-              {intent === "presentear" ? "Para presentear" : (business.catalog_title || `${business.name} — Catálogo`)}
+              {intent === "presentear" ? "Para presentear" : (business.catalog_title || `${business.name}, Catálogo`)}
             </h2>
             <p className="mt-1 text-[15px] text-text-secondary">
               {intent === "presentear" ? "Seleções que fazem sentido para dar de presente" : (business.catalog_subtitle || "Explore nossas soluções.")}
@@ -608,7 +608,7 @@ export function VisitorExperience({
         )}
       </div>
 
-      {/* Orbi flutuante — sempre à mão, exceto quando o chat já está aberto ou
+      {/* Orbi flutuante, sempre à mão, exceto quando o chat já está aberto ou
           o dono está visualizando a própria página. Só pra quem tem chat. */}
       {hasAiChat && intent !== null && intent !== "duvida" && sessionId && (
         <OrbiFloatingButton onOpen={() => chooseIntent("duvida")} orbiColors={orbiColors} agentName={agentName} />
@@ -643,11 +643,11 @@ function lerMeusCupons(businessId: string): MeuCupom[] {
   }
 }
 
-/** Tela de cupons — galeria dos ativos, resgate (nome + WhatsApp) e o
+/** Tela de cupons, galeria dos ativos, resgate (nome + WhatsApp) e o
  * código único que a pessoa leva até o negócio. Os cupons já resgatados
  * neste aparelho ficam guardados no próprio celular, pra ela reencontrar. */
 function resultMessage(businessName: string, expiresAt: string | null) {
-  const base = `Mostre esse código pro ${businessName} — no balcão ou pelo WhatsApp — pra usar o desconto.`;
+  const base = `Mostre esse código pro ${businessName}, no balcão ou pelo WhatsApp, pra usar o desconto.`;
   if (!expiresAt) return base;
   const data = new Date(expiresAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
   return `${base} Vale até ${data}.`;
@@ -833,7 +833,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
             );
           })}
 
-          {/* Cupons já resgatados neste aparelho — pra pessoa reencontrar o código */}
+          {/* Cupons já resgatados neste aparelho, pra pessoa reencontrar o código */}
           {meusCupons.length > 0 && (
             <div className="mt-2">
               <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Meus cupons resgatados</p>
@@ -864,7 +864,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
   );
 }
 
-/** Card de endereço — pin animado, texto, e botões pra abrir no Waze ou
+/** Card de endereço, pin animado, texto, e botões pra abrir no Waze ou
  * Google Maps. Usado na página "Sobre" e no box de endereço avulso. */
 function AddressCard({ address }: { address: string }) {
   return (
@@ -950,7 +950,7 @@ function StoryView({
                   {ytId ? (
                     <iframe
                       src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`}
-                      title={`${business.name} — vídeo ${i + 1}`}
+                      title={`${business.name}, vídeo ${i + 1}`}
                       className="h-full w-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
@@ -958,7 +958,7 @@ function StoryView({
                   ) : igId ? (
                     <iframe
                       src={`https://www.instagram.com/reel/${igId}/embed`}
-                      title={`${business.name} — reels ${i + 1}`}
+                      title={`${business.name}, reels ${i + 1}`}
                       className="h-full w-full"
                       allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                       allowFullScreen
@@ -1048,9 +1048,9 @@ function StoryView({
 
 /**
  * Transforma o texto puro da IA em parágrafos, listas com marcador e
- * **negrito** de verdade — em vez de um bloco só, apertado e sem cor.
+ * **negrito** de verdade, em vez de um bloco só, apertado e sem cor.
  */
-// Ícone das opções da tela inicial — cobre os tipos especiais (esfera, google,
+// Ícone das opções da tela inicial, cobre os tipos especiais (esfera, google,
 // pin, logo) e os emojis/letras comuns.
 function formatMessage(text: string, products?: ContentItem[], slug?: string, businessId?: string, sessionId?: string | null, address?: string | null) {
   // Extrai marcações [[produto:ID]] e [[endereco]] e as troca por cards.
@@ -1176,7 +1176,7 @@ function OrbiChat({
   const [typedPlaceholder, setTypedPlaceholder] = useState("");
 
   // Trava o scroll da página por trás enquanto o chat (overlay fixed) está
-  // aberto — sem isso, no iOS o dedo "vaza" pro fundo e a página de trás
+  // aberto, sem isso, no iOS o dedo "vaza" pro fundo e a página de trás
   // rola junto, mesmo com o chat cobrindo a tela inteira. Restaura a posição
   // exata de onde a pessoa estava ao fechar.
   useEffect(() => {
@@ -1196,16 +1196,16 @@ function OrbiChat({
     };
   }, []);
 
-  // Sugestões puxadas do que existe de verdade no negócio — nunca genéricas.
+  // Sugestões puxadas do que existe de verdade no negócio, nunca genéricas.
   // Prioriza itens variados (categorias diferentes) pra cobrir mais opções.
-  // Só 5 — o suficiente pra caber na tela sem precisar rolar, com a barra de
+  // Só 5, o suficiente pra caber na tela sem precisar rolar, com a barra de
   // digitar sempre visível.
   const QUICK = (() => {
     // Se o dono configurou perguntas no painel, usa elas (até 4).
     if (suggestedQuestions && suggestedQuestions.length > 0) {
       return suggestedQuestions.slice(0, 4);
     }
-    // Senão, a Orbi gera automaticamente a partir do catálogo — itens de
+    // Senão, a Orbi gera automaticamente a partir do catálogo, itens de
     // categorias variadas pra cobrir mais opções. Só 4.
     const published = [...content].sort((a, b) => a.position - b.position);
     const seen = new Set<string>();
@@ -1231,7 +1231,7 @@ function OrbiChat({
 
   useEffect(() => {
     // Retoma a conversa anterior desse visitante (guardada no localStorage),
-    // carregando o histórico — assim, ao reabrir o chat em qualquer página, a
+    // carregando o histórico, assim, ao reabrir o chat em qualquer página, a
     // pessoa continua de onde parou em vez de começar do zero.
     let cancelled = false;
     async function initConversa() {
@@ -1271,7 +1271,7 @@ function OrbiChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Efeito de "alguém digitando" no placeholder do campo — só decorativo,
+  // Efeito de "alguém digitando" no placeholder do campo, só decorativo,
   // some assim que a pessoa toca pra escrever de verdade.
   useEffect(() => {
     const FULL_TEXT = "Comece a digitar aqui, vamos conversar.";
@@ -1317,7 +1317,7 @@ function OrbiChat({
         body: JSON.stringify({ businessId, conversationId, message: text, history: historyForApi }),
       });
       const data = await res.json();
-      const reply = res.ok && data.reply ? data.reply : "Desculpa, tive um problema aqui — pode tentar de novo?";
+      const reply = res.ok && data.reply ? data.reply : "Desculpa, tive um problema aqui, pode tentar de novo?";
       // Ao terminar: mostra o check por um instante ("pronto") antes de exibir a resposta.
       setJustDone(true);
       setMessages((prev) => [...prev, { role: "agent", content: reply }]);
@@ -1329,7 +1329,7 @@ function OrbiChat({
 
   const started = messages.length > 0;
 
-  // Auto-scroll só DEPOIS que a conversa começou — enquanto está nas sugestões,
+  // Auto-scroll só DEPOIS que a conversa começou, enquanto está nas sugestões,
   // o visitante rola livremente. Rolar pro fim só quando chega mensagem/pensa.
   useEffect(() => {
     if (!started && !sending) return;
@@ -1338,16 +1338,16 @@ function OrbiChat({
 
   return (
     <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main">
-      {/* Nada de cor no topo aqui também — mesmo motivo da tela inicial. */}
+      {/* Nada de cor no topo aqui também, mesmo motivo da tela inicial. */}
 
-      {/* Mesmo halo da tela inicial, pra não ficar um fundo parado/liso aqui —
+      {/* Mesmo halo da tela inicial, pra não ficar um fundo parado/liso aqui , 
           a marca continua presente mesmo depois de abrir o chat. */}
       <div
         className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[80px]"
         style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
       />
 
-      {/* Fechar — z-index acima do conteúdo pra o toque nunca ser bloqueado */}
+      {/* Fechar, z-index acima do conteúdo pra o toque nunca ser bloqueado */}
       <button
         onClick={onBack}
         className="absolute left-5 top-5 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white text-[16px] shadow"
@@ -1357,7 +1357,7 @@ function OrbiChat({
       </button>
 
       <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-40 pt-20" style={{ WebkitOverflowScrolling: "touch" }}>
-        {/* Avatar — a esfera configurada da Orbi, não mais a esfera de vidro genérica. */}
+        {/* Avatar, a esfera configurada da Orbi, não mais a esfera de vidro genérica. */}
         <div className="mx-auto relative">
           <OrbiParticleSphere size={112} colors={orbiColors ?? undefined} className="rounded-full" />
           <span className="absolute bottom-3 right-3 h-4 w-4 rounded-full border-2 border-surface-white bg-orbi-gradient-start" />
@@ -1423,7 +1423,7 @@ function OrbiChat({
       </div>
 
       {/* Campo fixo */}
-      {/* Faixa de fundo sólida da base até acima do campo — impede que as
+      {/* Faixa de fundo sólida da base até acima do campo, impede que as
           mensagens que rolam por trás apareçam no vão abaixo do campo. */}
       {/* Degradê que esmaece de baixo (fundo sólido) pra transparente em cima,
           escondendo o conteúdo que rola atrás do campo sem criar um retângulo
@@ -1551,7 +1551,7 @@ function VitrineCoverBleed({ business }: { business: Business }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Passa sozinha a cada 2s — a pessoa também pode arrastar quando quiser.
+  // Passa sozinha a cada 2s, a pessoa também pode arrastar quando quiser.
   useEffect(() => {
     if (covers.length < 2) return;
     const t = setInterval(() => setIdx((i) => (i + 1) % covers.length), 2000);
@@ -1572,7 +1572,7 @@ function VitrineCoverBleed({ business }: { business: Business }) {
         ref={trackRef}
         className="flex snap-x snap-mandatory gap-0 overflow-x-auto no-scrollbar rounded-b-[28px]"
         onScroll={(e) => {
-          // Só recalcula o índice depois que o scroll assenta — senão o
+          // Só recalcula o índice depois que o scroll assenta, senão o
           // próprio scroll automático (suave, leva ~300ms) dispara vários
           // eventos no meio do caminho e a leitura prematura "cancela" o
           // avanço, fazendo o carrossel parecer travado.
@@ -1636,7 +1636,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
             {sections.length > 1 && (
               <h3 className="mb-3 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h3>
             )}
-            {/* Mesmo cartão grande da edição — o que você vê ao editar é o que o
+            {/* Mesmo cartão grande da edição, o que você vê ao editar é o que o
                 visitante vê aqui, sem surpresa. */}
             <div className="flex flex-wrap gap-5">
               {sec.items.map((item) => {
@@ -1647,7 +1647,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 // Mesma correção de sempre: "tem foto" é só ter uma URL.
                 const photo = !!item.image_url;
                 // Categoria de loja vai direto pro site do dono (decisão já tomada).
-                // Produto e serviço abrem a página interna — com carrossel, descrição e CTAs.
+                // Produto e serviço abrem a página interna, com carrossel, descrição e CTAs.
                 // "nenhum" = card só de vitrine, não clicável.
                 const destino = item.link_kind === "nenhum"
                   ? null
@@ -1699,7 +1699,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                           )}
                         </>
                       ) : (
-                        // Sem foto: o nome vira o conteúdo do box, centralizado — sem
+                        // Sem foto: o nome vira o conteúdo do box, centralizado, sem
                         // rodapé branco repetindo a mesma informação embaixo. A fonte
                         // se ajusta ao formato do card e ao tamanho do título, pra
                         // título longo em card pequeno não estourar nem ficar apertado.
@@ -1726,7 +1726,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                           )}
                         </div>
                       )}
-                      {/* Sem foto já mostra a tag/o destino dentro do próprio box — a setinha
+                      {/* Sem foto já mostra a tag/o destino dentro do próprio box, a setinha
                           no canto só faz sentido quando tem foto por cima e nada mais avisa. */}
                       {destino && photo && (
                         <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/25 text-[13px] text-white backdrop-blur-sm">

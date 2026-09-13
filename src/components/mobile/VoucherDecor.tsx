@@ -1,4 +1,4 @@
-/** Linhas finas decorativas — traços brancos bem sutis por cima do degradê
+/** Linhas finas decorativas, traços brancos bem sutis por cima do degradê
  * do cupom. É só enfeite: fica atrás do conteúdo e não captura toque. */
 export function VoucherLines({ className = "" }: { className?: string }) {
   return (

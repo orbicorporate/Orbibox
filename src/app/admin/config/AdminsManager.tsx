@@ -24,7 +24,7 @@ export function AdminsManager({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Só o dono pode gerenciar — administradores convidados apenas veem a lista.
+  // Só o dono pode gerenciar, administradores convidados apenas veem a lista.
   if (!isOwner) {
     return (
       <div className="mt-4 rounded-2xl border border-divider bg-surface-white p-4">

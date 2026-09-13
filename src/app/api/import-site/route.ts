@@ -21,7 +21,7 @@ async function fetchSite(url: string): Promise<{ text: string; images: { id: str
     const base = new URL(normalized).origin;
 
     // Coleta imagens com contexto: alt (diz o que É a imagem) e um pedaço de
-    // texto ao redor (diz DE QUE PARTE da página ela veio) — sem isso, a Orbi
+    // texto ao redor (diz DE QUE PARTE da página ela veio), sem isso, a Orbi
     // só vê uma URL solta e não tem como saber se é o produto, uma logo de
     // parceiro, um ícone decorativo, etc.
     const images: { id: string; url: string; alt: string; context: string }[] = [];
@@ -64,7 +64,7 @@ async function fetchSite(url: string): Promise<{ text: string; images: { id: str
       images.push({ id: `img${images.length}`, url: ogMatch[1], alt: "(imagem de compartilhamento da página, não de um item específico)", context: "" });
     }
 
-    // Links internos — viram destino dos boxes de categoria/produto
+    // Links internos, viram destino dos boxes de categoria/produto
     const links = new Set<string>();
     const linkRegex = /<a[^>]+href=["']([^"'#]+)["'][^>]*>([\s\S]{0,80}?)<\/a>/gi;
     let lm: RegExpExecArray | null;
@@ -151,20 +151,20 @@ export async function POST(req: NextRequest) {
 
     const system = `Você é a Orbi, o motor de leitura de sites do Orbibox. Você recebe o conteúdo de um site e precisa (a) entender que TIPO de negócio é e (b) propor a melhor estrutura de vitrine.
 
-PASSO 1 — Classifique o site em um destes tipos:
+PASSO 1, Classifique o site em um destes tipos:
 - "ecommerce": tem carrinho, checkout, grade de produtos com preço, plataforma de loja (Shopify, Nuvemshop, WooCommerce, VTEX), ou caminhos como /produtos /loja /carrinho.
 - "institucional": apresenta serviços ou produtos mas NÃO vende online (sem carrinho). Ex: agências, clínicas, restaurantes, consultorias.
 - "links": página muito magra, quase sem conteúdo próprio, basicamente um cartão de visita ou agregador de links.
 
-PASSO 2 — Monte os itens conforme o tipo:
+PASSO 2, Monte os itens conforme o tipo:
 - Se "ecommerce": extraia as CATEGORIAS de produto (não produto a produto). Cada item recebe link_kind "categoria" e target_url apontando para a página daquela categoria no site. Máximo 8. Se houver produtos em destaque muito claros, pode incluir até 3 com link_kind "produto" e target_url da página do produto.
-- Se "institucional": extraia os SERVIÇOS ou PRODUTOS oferecidos, com descrição. link_kind null e target_url null (ficam dentro do Orbibox), a menos que exista página própria daquele serviço — aí link_kind "produto" e o target_url dela.
+- Se "institucional": extraia os SERVIÇOS ou PRODUTOS oferecidos, com descrição. link_kind null e target_url null (ficam dentro do Orbibox), a menos que exista página própria daquele serviço, aí link_kind "produto" e o target_url dela.
 - Se "links": monte poucos itens de navegação (ex: "Nosso site", "Sobre", "Contato") com link_kind "externo" e target_url.
 
-PASSO 3 — Extraia o conhecimento do negócio (alimenta a assistente de IA):
+PASSO 3, Extraia o conhecimento do negócio (alimenta a assistente de IA):
 - about_business: 2 a 4 frases sobre o que o negócio é e para quem.
 - differentials: os diferenciais reais citados no site, em uma frase ou lista curta.
-- policies: prazos, entrega, frete, trocas, horários, formas de pagamento — só o que estiver no site. null se não houver.
+- policies: prazos, entrega, frete, trocas, horários, formas de pagamento, só o que estiver no site. null se não houver.
 - contact_whatsapp / contact_phone / contact_email: se aparecerem no site. Só dígitos no whatsapp/telefone (com DDD).
 
 REGRAS GERAIS:
@@ -173,13 +173,13 @@ REGRAS GERAIS:
 - brand_label: a categoria do item, poucas e repetidas entre itens semelhantes.
 - description: 1 frase curta baseada no site.
 
-REGRA DE IMAGEM (a mais importante — leia com atenção):
+REGRA DE IMAGEM (a mais importante, leia com atenção):
 Cada imagem candidata vem com [imgN], o "alt" (o que ela É, quando o site informou) e o texto que aparecia logo ANTES dela na página (em que seção/produto ela estava encaixada). Use isso pra decidir, não o nome do arquivo.
 - Só escolha image_hint quando o alt OU o contexto deixam CLARO que aquela imagem é uma FOTO DESSE item específico (do produto, do prato, do ambiente do serviço).
 - NUNCA escolha uma imagem que seja: logo de marca/parceiro/fornecedor (ex: "Harley-Davidson", "Visa", "Mastercard", bandeiras de cartão, selos de certificação), ícone decorativo, foto de equipe/fundador, banner genérico de topo de página, ou imagem de compartilhamento social (og:image) que não seja do item em si.
-- Se o alt ou contexto mencionam uma marca/empresa DIFERENTE do negócio "${business.name}" sendo importado, é quase certo que é logo de parceiro — não use.
+- Se o alt ou contexto mencionam uma marca/empresa DIFERENTE do negócio "${business.name}" sendo importado, é quase certo que é logo de parceiro, não use.
 - Na dúvida, ou se não achar nada com sinal forte o suficiente, use null. Um item sem foto (fundo colorido, nome em destaque) fica com aparência muito melhor e mais profissional do que um item com a foto errada. Prefira sempre null a arriscar.
-- Cada imagem só pode ser usada em UM item — não repita a mesma imagem pra itens diferentes.
+- Cada imagem só pode ser usada em UM item, não repita a mesma imagem pra itens diferentes.
 
 Responda SOMENTE JSON válido:
 {"site_type":"ecommerce","motivo":"uma frase explicando como você reconheceu","about_business":"","differentials":"","policies":null,"contact_whatsapp":null,"contact_phone":null,"contact_email":null,"items":[{"title":"","description":"","price":null,"type":"product","brand_label":null,"image_hint":"img0","target_url":null,"link_kind":"categoria"}]}`;
@@ -225,7 +225,7 @@ ${site.text}`;
       }
       // Sem foto no site (ou a Orbi preferiu não arriscar): o box fica em
       // cor sólida, como combinado. Não inventamos imagem de banco de
-      // imagens — o dono coloca a dele se/quando quiser.
+      // imagens, o dono coloca a dele se/quando quiser.
       return { url: null, placeholder: false };
     }
 
@@ -236,7 +236,7 @@ ${site.text}`;
       .eq("business_id", businessId);
     const startPos = count ?? 0;
 
-    // Paleta pra vestir os cards que vierem SEM foto — assim a vitrine
+    // Paleta pra vestir os cards que vierem SEM foto, assim a vitrine
     // importada já nasce colorida e bonita, em vez de um monte de quadrado
     // cinza. Usa as cores do DNA da marca (definidas pela Orbi); se não houver,
     // cai numa curadoria fixa de tons suaves. As cores entram intercaladas.
@@ -246,7 +246,7 @@ ${site.text}`;
         ? (raw as { hex?: string }[]).map((c) => c?.hex).filter((h): h is string => typeof h === "string" && /^#[0-9a-fA-F]{6}$/.test(h))
         : [];
       if (hexes.length >= 2) return hexes;
-      // Curadoria fixa (chaves de BOX_COLORS) — mistura de tons vivos e
+      // Curadoria fixa (chaves de BOX_COLORS), mistura de tons vivos e
       // pastéis pra vitrine importada já sair colorida e com bom contraste.
       return ["prim-azul", "bril-lima", "pastel-lavanda", "prim-verde", "energy-amarelo", "bril-pink", "pastel-ceu", "prim-roxo"];
     }
@@ -259,7 +259,7 @@ ${site.text}`;
     const rows = picked.map((it, i) => {
       const img = resolveImage(it);
       // Trava de segurança: se por algum motivo a Orbi repetiu a mesma
-      // imagem em dois itens, só o primeiro fica com ela — o resto vira cor.
+      // imagem em dois itens, só o primeiro fica com ela, o resto vira cor.
       if (img.url) {
         if (usedImages.has(img.url)) img.url = null;
         else usedImages.add(img.url);
@@ -300,7 +300,7 @@ ${site.text}`;
     }
 
     // Guarda o que a Orbi entendeu: tipo do site, conhecimento e contatos.
-    // Só preenche contato que ainda estiver vazio — não sobrescreve o que o dono digitou.
+    // Só preenche contato que ainda estiver vazio, não sobrescreve o que o dono digitou.
     const { data: atual } = await supabase
       .from("businesses")
       .select("contact_whatsapp, contact_phone, contact_email")

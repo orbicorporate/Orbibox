@@ -19,7 +19,7 @@ const CANAIS: Canal[] = [
     key: "bio",
     icone: "◎",
     titulo: "Link na bio do Instagram",
-    resumo: "O lugar nº 1 pra colocar seu Orbibox. É o único link clicável do perfil — use ele.",
+    resumo: "O lugar nº 1 pra colocar seu Orbibox. É o único link clicável do perfil, use ele.",
     passos: [
       "Vá em Editar perfil → Site e cole o seu link do Orbibox.",
       "Na descrição da bio, escreva uma linha chamando pra tocar no link (ex: “👇 Toque e conheça tudo”).",
@@ -34,7 +34,7 @@ const CANAIS: Canal[] = [
     titulo: "Stories e Direct",
     resumo: "Stories dão alcance diário; o Direct transforma conversa em cliente. Leve os dois pro seu link.",
     passos: [
-      "Poste Stories com a figurinha de link apontando pro Orbibox — mostre um produto e diga “tá tudo no link”.",
+      "Poste Stories com a figurinha de link apontando pro Orbibox, mostre um produto e diga “tá tudo no link”.",
       "Quem responde Story ou chama no Direct: mande o link direto, em vez de explicar tudo por lá.",
       "Use enquetes e caixinhas pra puxar assunto e, na sequência, mandar o link.",
     ],
@@ -58,7 +58,7 @@ const CANAIS: Canal[] = [
     key: "grupo",
     icone: "⚉",
     titulo: "Grupos e comunidades",
-    resumo: "Grupos de bairro, nicho e parceiros são vitrine grátis — desde que você divulgue com jeito.",
+    resumo: "Grupos de bairro, nicho e parceiros são vitrine grátis, desde que você divulgue com jeito.",
     passos: [
       "Participe de grupos do seu público (bairro, profissão, interesse) e contribua antes de divulgar.",
       "Quando fizer sentido, compartilhe o link com uma frase de valor, não só “segue meu link”.",
@@ -118,7 +118,7 @@ export function PulseMarketing({ businessId, slug }: { businessId: string; slug:
             Como atrair gente pro seu Orbibox
           </h2>
           <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-            Seu link só trabalha se as pessoas chegam nele. A Orbi te mostra, canal por canal, como divulgar do jeito certo — e ainda cria os textos prontos pra você postar.
+            Seu link só trabalha se as pessoas chegam nele. A Orbi te mostra, canal por canal, como divulgar do jeito certo, e ainda cria os textos prontos pra você postar.
           </p>
 
           <button

@@ -36,7 +36,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"todos" | "redeemed" | "claimed">("todos");
 
-  // Resgate rápido no balcão — validado pro negócio inteiro (o código pode
+  // Resgate rápido no balcão, validado pro negócio inteiro (o código pode
   // Recarrega esse cupom e seus resgates depois de um resgate no balcão.
   async function refreshVoucher() {
     const [{ data: freshVoucher }, { data: freshRedemptions }] = await Promise.all([
@@ -67,7 +67,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
   }
 
   async function deleteVoucher() {
-    if (!(await confirm({ title: "Excluir cupom", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates — mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
+    if (!(await confirm({ title: "Excluir cupom", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
     await supabase.from("vouchers").delete().eq("id", v.id);
     router.push("/admin/vouchers");
   }
@@ -77,7 +77,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
       <DialogRenderer />
       <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Todos os cupons</Link>
 
-      {/* Cabeçalho — mesmo vermelho vivo com brilho da oferta real */}
+      {/* Cabeçalho, mesmo vermelho vivo com brilho da oferta real */}
       <div className="relative mt-4">
         <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] opacity-35 blur-2xl" style={{ background: voucherTheme(v.color).via }} />
         <div className="relative overflow-hidden rounded-[28px] p-6 text-white" style={{ background: voucherGradient(v.color), boxShadow: `0 14px 38px ${voucherTheme(v.color).glow}` }}>
@@ -108,7 +108,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
         </div>
       </div>
 
-      {/* Estatísticas — coloridas, cada uma com seu próprio tom */}
+      {/* Estatísticas, coloridas, cada uma com seu próprio tom */}
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-[20px] p-4" style={{ backgroundColor: "#E7EAFC" }}>
           <p className="text-[26px] font-bold" style={{ color: "#4453D6" }}>{v.quantity_claimed}</p>
@@ -132,12 +132,12 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
         {v.expires_hours ? `Cada código expira em ${v.expires_hours}h se não for usado.` : "Códigos não têm validade."}
       </p>
 
-      {/* Resgate rápido no balcão — mesmo card da referência, reaproveitado */}
+      {/* Resgate rápido no balcão, mesmo card da referência, reaproveitado */}
       <div className="mt-6">
         <RedeemCodeCard businessId={v.business_id} onRedeemed={refreshVoucher} fixedVoucherId={v.id} fixedVoucherTitle={v.title} />
       </div>
 
-      {/* Lista de quem resgatou — o painel de verdade */}
+      {/* Lista de quem resgatou, o painel de verdade */}
       <div className="mt-6 flex items-center justify-between">
         <p className="text-[15px] font-semibold">Quem resgatou</p>
         <span className="text-[13px] text-text-tertiary">{redemptions.length} {redemptions.length === 1 ? "pessoa" : "pessoas"}</span>

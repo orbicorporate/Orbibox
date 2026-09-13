@@ -1,5 +1,5 @@
 /**
- * Pin de mapa animado — quica suavemente com uma sombra pulsando embaixo,
+ * Pin de mapa animado, quica suavemente com uma sombra pulsando embaixo,
  * como um marcador "pousando" no lugar. CSS puro (leve), sem canvas.
  */
 export function OrbiMapPin({ size = 28, className = "" }: { size?: number; className?: string }) {

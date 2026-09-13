@@ -3,7 +3,7 @@ import { askClaude } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 
 const INSTRUCOES: Record<string, string> = {
-  bio: `Escreva uma bio de Instagram curtíssima (até 4 linhas), com 1 a 3 emojis no máximo, que diga o que a marca faz e chame a pessoa pra tocar no link. Termine com uma seta apontando pro link (ex: "👇"). Dê 2 opções separadas por "———".`,
+  bio: `Escreva uma bio de Instagram curtíssima (até 4 linhas), com 1 a 3 emojis no máximo, que diga o que a marca faz e chame a pessoa pra tocar no link. Termine com uma seta apontando pro link (ex: "👇"). Dê 2 opções separadas por "|||".`,
   story: `Escreva 3 ideias curtas de Story pra divulgar o link: cada uma com uma frase de chamada e a orientação do que mostrar na tela. Depois, escreva 1 resposta pronta pra mandar no Direct de quem demonstrar interesse, incluindo o convite pra abrir o link. Seja direto e caloroso.`,
   whatsapp: `Escreva 3 mensagens curtas e naturais de WhatsApp pra divulgar o link: (1) uma pra mandar num contato que perguntou "quanto custa / o que você faz", (2) uma pra postar no Status, (3) uma pra reativar um cliente antigo. Sem parecer robô, sem exagero de emoji.`,
   grupo: `Escreva 2 mensagens pra compartilhar o link em grupos (WhatsApp/Facebook) sem soar como spam: comece entregando valor ou contexto e só depois convide pro link. Tom de gente real, não de propaganda.`,
@@ -49,7 +49,7 @@ Regras: escreva em português do Brasil, direto ao ponto, pronto pra copiar e co
       maxTokens: 600,
     });
 
-    return NextResponse.json({ text: text.trim() });
+    return NextResponse.json({ text: text.replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, ", ").trim() });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Não consegui gerar agora. Tenta de novo." }, { status: 500 });

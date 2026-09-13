@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Plano sem preço configurado." }, { status: 500 });
     }
 
-    // Já existe assinatura? Se já teve trial antes, não damos um novo —
+    // Já existe assinatura? Se já teve trial antes, não damos um novo , 
     // evita abuso de gente cancelando e reassinando pra testar de novo.
     const { data: existing } = await supabase
       .from("subscriptions")

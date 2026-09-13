@@ -64,7 +64,7 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
         return;
       }
     } catch {
-      // ignora — fica sem sugestão, usuário digita
+      // ignora, fica sem sugestão, usuário digita
     }
     setItems((prev) => prev.map((it) => (it.url === url ? { ...it, suggesting: false } : it)));
   }

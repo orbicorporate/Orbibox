@@ -21,12 +21,12 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
 
   const title = photo.title?.trim();
   const price = photo.price?.trim();
-  // Posição do recorte — fotos com texto (ex: investimentos) usam "top" pra
+  // Posição do recorte, fotos com texto (ex: investimentos) usam "top" pra
   // não cortar o lettering, que costuma estar no topo. Padrão: center.
   const objPos = theme.objectPosition ?? "center";
 
   // "faixa": foto no aspect ratio do formato + faixa BRANCA embaixo (igual à
-  // vitrine real — o card é branco e cresce pra caber o rodapé).
+  // vitrine real, o card é branco e cresce pra caber o rodapé).
   if (titleStyle === "faixa") {
     const spanCols = box.size === "destaque" || box.size === "largo" ? "col-span-2" : "col-span-1";
     const ratioClass = { destaque: "aspect-[16/9]", largo: "aspect-[1920/830]", medio: "aspect-square", alto: "aspect-[4/5]" }[box.size];
@@ -65,13 +65,13 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
   );
 }
 
-// Ritmo de tamanhos que se repete conforme entram mais fotos — dá variação
+// Ritmo de tamanhos que se repete conforme entram mais fotos, dá variação
 // visual (uma foto grande, uma alta, duas médias, uma larga…) sem depender de
 // um número fixo de boxes. Assim a grade cresce junto com as fotos.
 const SIZE_RHYTHM: ThemeBox["size"][] = ["destaque", "alto", "medio", "medio", "largo", "medio", "alto", "medio", "medio", "largo", "medio", "medio"];
 
 function ThemePreview({ theme, photos, titleStyle }: { theme: VitrineTheme; photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }) {
-  // Um box por foto enviada — usa o nome/preço da própria foto.
+  // Um box por foto enviada, usa o nome/preço da própria foto.
   const boxes: ThemeBox[] = photos.map((_, i) => ({
     title: "",
     size: SIZE_RHYTHM[i % SIZE_RHYTHM.length],
@@ -102,7 +102,7 @@ export function InspireModal({ businessId, inspirePhotos, onClose }: { businessI
   const [applying, setApplying] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
 
-  // Só mostra temas que já têm fotos cadastradas — os que ainda não foram
+  // Só mostra temas que já têm fotos cadastradas, os que ainda não foram
   // preenchidos pelo painel de upload ficam ocultos até terem imagem.
   const temasComFoto = VITRINE_THEMES.filter((t) => (inspirePhotos[t.id]?.photos.length ?? 0) > 0);
 
@@ -128,7 +128,7 @@ export function InspireModal({ businessId, inspirePhotos, onClose }: { businessI
         </div>
         <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
           Veja vitrines completas de exemplo por tipo de negócio. Ao escolher um estilo, a Orbi aplica a paleta de
-          cores na sua conta — as fotos aqui são só pra você se inspirar.
+          cores na sua conta, as fotos aqui são só pra você se inspirar.
         </p>
 
         <div className="mt-5 flex flex-col gap-4">

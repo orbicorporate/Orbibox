@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-// Selo fino de progresso — vai no topo de todas as telas (no header).
+// Selo fino de progresso, vai no topo de todas as telas (no header).
 // Fica num arquivo separado de ProgressWidgets.tsx de propósito: esse
 // aqui não pode depender de nada que puxe "@/lib/progress" (que usa
 // next/headers, só roda no servidor), porque o AppHeader que o usa é

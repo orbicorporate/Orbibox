@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import QRCode from "qrcode";
 
-/** QR do cupom resgatado — a loja escaneia isso na hora do atendimento em
+/** QR do cupom resgatado, a loja escaneia isso na hora do atendimento em
  * vez de digitar o código. O conteúdo é só o código, simples de validar. */
 export function VoucherQRCode({ code, size = 168 }: { code: string; size?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -11,7 +11,7 @@ export function VoucherQRCode({ code, size = 168 }: { code: string; size?: numbe
   useEffect(() => {
     if (!canvasRef.current) return;
     QRCode.toCanvas(canvasRef.current, code, { width: size, margin: 1, color: { dark: "#111318", light: "#FFFFFF" } }).catch(() => {
-      // Se falhar, fica sem QR — o código em texto continua ali.
+      // Se falhar, fica sem QR, o código em texto continua ali.
     });
   }, [code, size]);
 

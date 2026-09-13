@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const maxDuration = 20;
 
-// Extensões que já são imagem direta — não precisa buscar nada.
+// Extensões que já são imagem direta, não precisa buscar nada.
 const IMAGE_EXT = /\.(jpe?g|png|webp|gif|avif)(\?.*)?$/i;
 
 /**
  * Recebe uma URL colada pelo dono. Se já for uma imagem direta, devolve como
  * está. Se for uma página (ex: link de produto de uma loja), busca o HTML e
- * tenta achar a foto principal via og:image — assim colar o link do produto
+ * tenta achar a foto principal via og:image, assim colar o link do produto
  * também funciona, sem o dono precisar caçar a URL exata da imagem.
  */
 export async function POST(req: NextRequest) {

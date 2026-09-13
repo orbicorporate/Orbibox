@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-sonnet-5";
 
-// Cada formato descreve a FORMA, não o tom — o tom vem do system, que é o
+// Cada formato descreve a FORMA, não o tom, o tom vem do system, que é o
 // mesmo pra todos: humano, delicado, com insight. Nada de "vendedão".
 const FORMATO: Record<string, string> = {
   legenda:
@@ -59,21 +59,27 @@ Contexto do negocio:
 ${contexto || "Poucas informacoes disponiveis. Nesse caso, seja mais atemporal e humano, sem inventar fatos."}
 ${tomLinhas.length ? "\nTom desejado: " + tomLinhas.join(" ") : ""}
 
-Seu padrao de escrita (inegociavel):
-- Comeca por gente, nao por produto. Uma emocao, uma cena, uma verdade pequena do cotidiano de quem vive isso.
-- NAO vende. Nao empurra, nao convida pra comprar, nao faz chamada comercial. Um bom texto nao precisa pedir nada. Zero "corre que acaba", "nao perca", "garanta ja", "fala com a gente", "vem crescer", "bora trocar uma ideia".
-- Uma ideia so, bem desenvolvida. Sem repetir a mesma coisa com outras palavras, sem encher com frase de efeito vazia. Cada linha precisa acrescentar algo.
-- Zero clice de marketing. Nada de "qualidade e excelencia", "o melhor da regiao", "pensado em voce", "transformar", "elevar o seu negocio", "resultado de verdade".
-- Especifica ao extremo: usa o que sabe do negocio pra dizer algo que so ELE poderia dizer. Se souber pouco, prefere o universal humano a inventar.
-- Escreve bem: ritmo, uma boa imagem, as vezes humor ou ternura. Alma brasileira, sem forcar girias.
-- No maximo 1-2 emoji, e so se realmente couber. Muitas vezes, nenhum e melhor.
-- Nao usa numeros/dados que voce nao tem certeza (ex: nao invente "18 anos" se nao te disseram).
+Regras absolutas (jamais quebre nenhuma):
+1. NUNCA use travessao (— ou --) em lugar nenhum do texto. Use virgula, ponto, dois-pontos ou parenteses.
+2. Ortografia e gramatica PERFEITAS. Toda frase comeca com letra MAIUSCULA. Toda pontuacao correta. Acentuacao correta. Zero erro, sempre.
+3. NUNCA repita uma mesma palavra de destaque na mesma legenda (a nao ser artigos e preposicoes). Se ja usou "postar", nao use "postar" de novo; troque por sinonimo ou reescreva.
+4. NAO fique so vendendo. Fale do UNIVERSO daquele produto ou servico com profundidade. Traga uma dica valiosa e concreta, um dado real de mercado, uma tendencia, um numero, algo que mostre que quem escreveu pesquisa e entende do assunto. Nunca dica generica e obvia. Sempre que possivel, ancore em algo real e util pra quem le.
 
-O item em destaque agora e "${productTitle}" — ele foi o mais procurado recentemente. Isso e so um sinal de que o assunto interessa; um bom gancho pra escrever algo bom sobre esse tema. Nao trate como oferta nem como saldao.
+Seu padrao de escrita:
+- Comeca por gente ou por uma ideia forte, nao pelo nome do produto.
+- Nao empurra venda. Um bom texto entrega valor primeiro; nao precisa pedir nada. Zero "corre que acaba", "nao perca", "fala com a gente", "vem crescer".
+- Uma linha de raciocinio clara, bem desenvolvida, sem encher com frase de efeito vazia. Cada frase acrescenta algo novo.
+- Zero clice de marketing ("qualidade e excelencia", "o melhor da regiao", "pensado em voce", "transformar", "elevar o seu negocio").
+- Ensina algo. A pessoa que le deve sair sabendo ou pensando algo que nao sabia. Esse e o padrao: util e interessante, nunca raso.
+- Escreve bem: ritmo, uma boa imagem, as vezes humor. Alma brasileira, sem forcar girias.
+- No maximo 1-2 emoji, e so se couber. Muitas vezes nenhum e melhor.
+- So usa numeros/dados que sejam plausiveis e verdadeiros sobre o setor. Nao inventa fatos sobre ESTE negocio (ex: nao crie "18 anos de experiencia" se ninguem te disse). Dados de MERCADO/tendencia do setor, esses sim, use pra enriquecer, desde que reais e conhecidos.
+
+O item em destaque agora e "${productTitle}", foi o mais procurado recentemente. E so um sinal de que o assunto interessa; um bom gancho pra escrever algo valioso sobre esse tema. Nao trate como oferta.
 
 Escreva: ${oQue}
 
-Antes de responder, revise mentalmente: tem repeticao? tem frase de venda? tem clice? Se tiver, reescreva. So entao responda.
+Antes de responder, revise: comecou com maiuscula? tem travessao (proibido)? repetiu alguma palavra de destaque? trouxe uma dica ou dado que agrega de verdade, ou ficou generico? tem frase de venda ou clice? Corrija tudo isso e so entao responda.
 
 Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas, sem "aqui esta", sem explicacao.`;
 
@@ -91,7 +97,14 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
     if (!res.ok) return NextResponse.json({ error: "erro ia" }, { status: 500 });
     const data = await res.json();
     const block = data.content?.find((b: { type: string }) => b.type === "text");
-    return NextResponse.json({ texto: (block?.text ?? "").trim() });
+    // Rede de segurança: remove qualquer travessao que tenha escapado, trocando
+    // por virgula (regra absoluta: nada de travessao em texto nenhum).
+    const limpo = (block?.text ?? "")
+      .replace(/\s*—\s*/g, ", ")
+      .replace(/\s*–\s*/g, ", ")
+      .replace(/\s+--\s+/g, ", ")
+      .trim();
+    return NextResponse.json({ texto: limpo });
   } catch (error) {
     console.error("Erro ao gerar conteudo:", error);
     return NextResponse.json({ error: "erro" }, { status: 500 });

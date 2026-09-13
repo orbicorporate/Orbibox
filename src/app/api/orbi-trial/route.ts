@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Se o dono voltou depois de um tempo (mais de 6h desde o último teste),
-    // ganha uma nova rodada de testes grátis — incentiva ele a voltar e
+    // ganha uma nova rodada de testes grátis, incentiva ele a voltar e
     // experimentar de novo antes de decidir assinar.
     let used = biz.orbi_trial_count ?? 0;
     const lastAt = biz.orbi_trial_last_at ? new Date(biz.orbi_trial_last_at).getTime() : 0;

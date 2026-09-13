@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 /**
- * A Orbi — esfera em vídeo (render 3D real, hospedado em /public). O contorno
+ * A Orbi, esfera em vídeo (render 3D real, hospedado em /public). O contorno
  * orgânico e o brilho de vidro continuam em CSS, recortando e realçando o
  * vídeo por cima. Ajustes de reprodução minimizam as travadas do loop.
  */

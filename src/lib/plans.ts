@@ -5,7 +5,7 @@ export type PlanId = "titanio" | "niobio";
 export type Plan = Database["public"]["Tables"]["plans"]["Row"];
 export type Subscription = Database["public"]["Tables"]["subscriptions"]["Row"];
 
-// Status que contam como "acesso liberado" — trial ativo, pago em dia, ou concedido manualmente.
+// Status que contam como "acesso liberado", trial ativo, pago em dia, ou concedido manualmente.
 const ACTIVE_STATUSES = new Set(["trialing", "active", "comped"]);
 
 export interface AccessInfo {
@@ -66,11 +66,11 @@ export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
   };
 }
 
-// Usado na página pública do visitante — ali quem está logado (se alguém
+// Usado na página pública do visitante, ali quem está logado (se alguém
 // estiver) não é o dono, então a leitura via RLS normal não enxergaria a
 // assinatura do dono. Precisa da service role.
 async function getOwnerFeatureAccess(ownerId: string, feature: "has_ai_chat" | "has_vouchers"): Promise<boolean> {
-  // Usa uma função no banco (security definer) via cliente normal — não
+  // Usa uma função no banco (security definer) via cliente normal, não
   // depende mais da service role key, que estava fazendo o chat sumir na
   // página pública quando a env não carregava direito.
   const supabase = await createClient();
@@ -91,7 +91,7 @@ export function getOwnerHasVouchers(ownerId: string): Promise<boolean> {
 }
 
 // Um administrador convidado está logado com o próprio user_id, não o do
-// dono — então checar plano por user_id direto sempre daria "sem acesso"
+// dono, então checar plano por user_id direto sempre daria "sem acesso"
 // pra ele. Resolve pelo dono de verdade do negócio antes de checar.
 export async function getAccessInfoForBusiness(businessId: string): Promise<AccessInfo> {
   const supabase = await createClient();

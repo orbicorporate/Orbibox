@@ -37,7 +37,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   async function createVoucher(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !discountValue || !quantityTotal || saving) return;
-    // Titânio montou o cupom pra ver como é — na hora de salvar, pede o upgrade.
+    // Titânio montou o cupom pra ver como é, na hora de salvar, pede o upgrade.
     if (!canSave) {
       setShowUpgrade(true);
       return;
@@ -83,7 +83,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   }
 
   async function deleteVoucher(v: Voucher) {
-    if (!(await confirm({ title: "Excluir cupom", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates — mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
+    if (!(await confirm({ title: "Excluir cupom", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
     await supabase.from("vouchers").delete().eq("id", v.id);
     setVouchers((p) => p.filter((x) => x.id !== v.id));
   }
@@ -96,7 +96,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           <div className="w-full max-w-[340px] rounded-[24px] bg-surface-white p-6 text-center" onClick={(e) => e.stopPropagation()}>
             <p className="text-[16px] font-semibold">Cupons são do plano Nióbio 💎</p>
             <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-              Você montou seu cupom — pra ele valer de verdade na sua página, com código único e controle de estoque,
+              Você montou seu cupom, pra ele valer de verdade na sua página, com código único e controle de estoque,
               é só ativar o Nióbio. Seu cupom fica salvo assim que assinar.
             </p>
             <Link href="/admin/planos" className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-button-primary py-3 text-[14px] font-medium text-white">
@@ -167,7 +167,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                 {v.expires_hours ? `Código expira em ${v.expires_hours}h se não for usado` : "Código sem validade"}
               </p>
 
-              {/* Quem resgatou — botão bem visível pro painel completo, com nome, WhatsApp e filtros */}
+              {/* Quem resgatou, botão bem visível pro painel completo, com nome, WhatsApp e filtros */}
               <Link
                 href={`/admin/vouchers/${v.id}`}
                 className="relative mt-4 flex items-center justify-center gap-2 overflow-hidden rounded-full py-3 text-[14px] font-semibold text-white"
@@ -188,7 +188,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-soft text-[22px]">🎟️</span>
             <p className="mt-3 text-[15px] font-medium">Nenhum cupom ainda</p>
             <p className="mt-1 max-w-[240px] text-[13px] leading-relaxed text-text-tertiary">
-              Crie o primeiro cupom aí embaixo — leva menos de um minuto.
+              Crie o primeiro cupom aí embaixo, leva menos de um minuto.
             </p>
           </div>
         )}

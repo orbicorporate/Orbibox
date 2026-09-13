@@ -8,7 +8,7 @@ import { isAnimatedIcon } from "@/lib/showcase";
 
 export type HomeCardLayout = "largo" | "medio";
 
-/** Ícone de um box da Home — igual nos dois lugares (site real e preview do admin). */
+/** Ícone de um box da Home, igual nos dois lugares (site real e preview do admin). */
 export function HomeIcon({
   icon,
   boxLogo,
@@ -46,7 +46,7 @@ export function HomeIcon({
   );
 }
 
-/** Classes do "casco" do card — únicas pros dois formatos, fonte única de
+/** Classes do "casco" do card, únicas pros dois formatos, fonte única de
  * verdade pra não desalinhar visual entre a Home real e o preview do admin.
  * `cupom` troca o fundo branco pelo degradê cereja com reflexo animado. */
 export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?: boolean) {
@@ -58,7 +58,7 @@ export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?:
   return `flex h-full min-h-[168px] w-full flex-col justify-between rounded-[24px] p-5 text-left ${bg}${ring}`;
 }
 
-/** Miolo do card (ícone + título + descrição + indicador) — igual nos dois
+/** Miolo do card (ícone + título + descrição + indicador), igual nos dois
  * formatos e nos dois lugares que usam. `titleNode` deixa a Home trocar o
  * título por um campo de edição inline sem duplicar o resto do card. */
 export function HomeOptionCardContent({
@@ -132,7 +132,7 @@ export function HomeOptionCardContent({
   );
 }
 
-/** Card completo, sem interação — pro preview do admin. Na Home real, a
+/** Card completo, sem interação, pro preview do admin. Na Home real, a
  * interatividade (clique, edição, setinhas) é montada em volta desse mesmo
  * conteúdo, então os dois nunca desalinham visualmente. */
 export function HomeOptionCardPreview({

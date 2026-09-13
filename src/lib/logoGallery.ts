@@ -1,8 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Toda vez que um logotipo é enviado — em Configurações ou dentro de
- * qualquer box — ele entra nessa galeria compartilhada. É o que faz o logo
+ * Toda vez que um logotipo é enviado, em Configurações ou dentro de
+ * qualquer box, ele entra nessa galeria compartilhada. É o que faz o logo
  * aparecer como sugestão de ícone em TODOS os boxes, inclusive os novos
  * criados depois. Um logo nunca se perde, mesmo que só tenha sido usado uma
  * vez num box específico.

@@ -11,7 +11,7 @@ const DEFAULT_HERO = ["#B7F34A", "#6EE7D8"];
 
 type PickerKey = "primaria" | "secundaria" | "detalhe" | "hero1" | "hero2";
 
-// Cada botão mostra só a cor atual (uma bolinha) + o nome — a paleta inteira
+// Cada botão mostra só a cor atual (uma bolinha) + o nome, a paleta inteira
 // só aparece quando toca, numa folha que sobe de baixo.
 function ColorRow({ label, hex, onOpen, extra }: { label: string; hex: string | null; onOpen: () => void; extra?: React.ReactNode }) {
   return (
@@ -46,10 +46,10 @@ export function OrbiVisualPanel({
     initialHeroGradient && initialHeroGradient.length >= 2 ? initialHeroGradient : DEFAULT_HERO
   );
   const orbiDetail = orbiColors[2] ?? null;
-  // Só uma folha de cor aberta por vez — toca no botão, escolhe, fecha.
+  // Só uma folha de cor aberta por vez, toca no botão, escolhe, fecha.
   const [openPicker, setOpenPicker] = useState<PickerKey | null>(null);
 
-  // upsert por business_id — funciona mesmo se a linha em agent_configs ainda
+  // upsert por business_id, funciona mesmo se a linha em agent_configs ainda
   // não existir (evita depender de outra tela ter criado ela primeiro).
   async function pickOrbiColor(slot: 0 | 1 | 2, hex: string) {
     const next = [...orbiColors];
@@ -97,7 +97,7 @@ export function OrbiVisualPanel({
           <div className="flex items-center gap-4">
             {/* Mini réplica da tela real: fundo claro da página + o brilho na
                 parte de baixo. Usa gradiente radial com transparência (em vez
-                de blur, que em caixa pequena corta feio) — fica limpo em
+                de blur, que em caixa pequena corta feio), fica limpo em
                 qualquer tamanho e ainda representa o efeito de verdade. */}
             <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background-main">
               <span
@@ -142,7 +142,7 @@ export function OrbiVisualPanel({
   );
 }
 
-/** Folha que sobe de baixo com a paleta inteira — só aparece quando a
+/** Folha que sobe de baixo com a paleta inteira, só aparece quando a
  * pessoa toca num dos botões de cor, em vez de ficar sempre visível. */
 function ColorPickerSheet({
   current,

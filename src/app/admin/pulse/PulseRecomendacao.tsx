@@ -26,7 +26,7 @@ export function PulseRecomendacao({
   const [idx, setIdx] = useState(0);
   const texto = versoes[idx] ?? null;
 
-  // Sem item clicado no período — em vez de sumir (o que parece bug), mostra
+  // Sem item clicado no período, em vez de sumir (o que parece bug), mostra
   // um card gentil explicando e sugerindo ampliar o período.
   if (!topItem) {
     return (
@@ -46,7 +46,7 @@ export function PulseRecomendacao({
   }
 
   // novoTipo=true zera o histórico (trocou de formato); senão, adiciona a nova
-  // versão ao histórico e mostra ela — mantendo as anteriores acessíveis.
+  // versão ao histórico e mostra ela, mantendo as anteriores acessíveis.
   async function gerar(t: string, novoFormato: boolean) {
     if (!hasAiChat || loading) return;
     setTipo(t);

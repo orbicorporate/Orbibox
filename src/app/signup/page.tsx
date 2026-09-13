@@ -35,7 +35,7 @@ export default function SignupPage() {
       return;
     }
     if (!data.session) {
-      // Confirmação de e-mail está ativa no projeto — sem sessão ainda.
+      // Confirmação de e-mail está ativa no projeto, sem sessão ainda.
       setCheckEmail(true);
       return;
     }

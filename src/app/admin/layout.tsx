@@ -31,7 +31,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   // Se o e-mail dele bate com um convite de administrador pendente, vincula
-  // agora — precisa da service role porque, antes de vinculado, a política de
+  // agora, precisa da service role porque, antes de vinculado, a política de
   // RLS ainda não deixa esse usuário enxergar a própria linha do convite.
   if (user.email) {
     const service = createServiceClient();
@@ -51,7 +51,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .maybeSingle();
 
   // Não é dono de nenhum negócio, mas pode ter sido convidado como
-  // administrador de um — busca pelo vínculo em vez do owner_id.
+  // administrador de um, busca pelo vínculo em vez do owner_id.
   if (!business) {
     const { data: membership } = await supabase
       .from("business_admins")
@@ -72,7 +72,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!business) redirect("/onboarding");
 
-  // Contagem de conversas não vistas — mostrada como bolinha no sino, ao lado
+  // Contagem de conversas não vistas, mostrada como bolinha no sino, ao lado
   // do ícone de configurações, em todas as telas do painel (não só no Today).
   const { count: unseenConversas } = await supabase
     .from("conversations")
@@ -80,7 +80,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("business_id", business.id)
     .eq("seen_by_owner", false);
 
-  // Notificações não lidas do usuário (ex: prêmio de indicação) — somam no sino.
+  // Notificações não lidas do usuário (ex: prêmio de indicação), somam no sino.
   const { count: unseenNotifs } = await supabase
     .from("notifications")
     .select("id", { count: "exact", head: true })

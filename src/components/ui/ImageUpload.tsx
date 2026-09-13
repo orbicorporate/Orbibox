@@ -7,11 +7,11 @@ import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropMod
 /**
  * Envia a foto para o armazenamento do Supabase e devolve a URL pública.
  * Antes de subir, abre um passo de recorte (arrastar, dar zoom, escolher
- * formato) — a foto que sobe já sai enquadrada do jeito certo.
+ * formato), a foto que sobe já sai enquadrada do jeito certo.
  * Aceita também colar um link, para quem já tem a imagem hospedada.
  *
  * `lockedRatio`, quando vem preenchido, trava o formato do recorte no que a
- * primeira foto do item já definiu — capa e galeria nunca ficam misturando
+ * primeira foto do item já definiu, capa e galeria nunca ficam misturando
  * proporção. `onFormatChosen` avisa o formato escolhido na primeira vez.
  * `promptSubject`, quando vem preenchido, habilita o botão de gerar um
  * prompt pronto pra criar a imagem num gerador (GPT, etc.).
@@ -82,7 +82,7 @@ export function ImageUpload({
         onChange(data.imageUrl);
         setUrlDraft(data.imageUrl);
       } else {
-        setError(data.error ?? "Não consegui usar esse link — cole o link direto de uma imagem.");
+        setError(data.error ?? "Não consegui usar esse link, cole o link direto de uma imagem.");
       }
     } catch {
       setError("Não consegui buscar esse link. Tente de novo.");
@@ -98,7 +98,7 @@ export function ImageUpload({
       return;
     }
     if (file.size > 20 * 1024 * 1024) {
-      setError("Imagem muito grande — o limite é 20 MB.");
+      setError("Imagem muito grande, o limite é 20 MB.");
       return;
     }
     // Abre o passo de recorte em vez de subir direto.
@@ -127,7 +127,7 @@ export function ImageUpload({
     <div className="flex flex-col gap-2">
       <p className="text-[12px] text-text-tertiary">Medida recomendada: <span className="font-medium text-text-secondary">{medida}</span></p>
       <div className="flex items-center gap-3">
-        {/* Miniatura do que já está escolhido — na mesma proporção do formato do box,
+        {/* Miniatura do que já está escolhido, na mesma proporção do formato do box,
             pra já mostrar como a foto vai ficar recortada. */}
         <div
           className="w-24 shrink-0 overflow-hidden rounded-2xl border border-divider bg-surface-soft"

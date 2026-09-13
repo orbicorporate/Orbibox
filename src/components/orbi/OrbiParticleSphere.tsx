@@ -3,14 +3,14 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Esfera de partículas animada — 100% em canvas, nossa, sem depender de
+ * Esfera de partículas animada, 100% em canvas, nossa, sem depender de
  * vídeo/arquivo externo. Pontos numa esfera 3D que gira devagar, com uma onda
  * viajando por eles e o degradê verde→azul→roxo da marca.
  *
  * `variant`:
  *   - "sphere" (padrão): a esfera girando pra sempre.
  *   - "check": a esfera gira, as partículas se reorganizam formando um ✓ verde,
- *     seguram um instante, e voltam pra esfera — em loop. Mais verde.
+ *     seguram um instante, e voltam pra esfera, em loop. Mais verde.
  *
  * `bg` é o fundo do quadradinho (preto por padrão, que deixa as partículas
  * vibrantes).
@@ -22,7 +22,7 @@ function hexToRgb(hex: string): [number, number, number] {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 }
 
-/** Monta 4 pontos de degradê interpolando suavemente entre duas cores —
+/** Monta 4 pontos de degradê interpolando suavemente entre duas cores , 
  * mantém o mesmo efeito visual de "matiz variando conforme a altura", só que
  * com as cores que a pessoa escolheu em vez do verde/roxo padrão. */
 function buildGradientStops(colorA: string, colorB: string): number[][] {
@@ -72,10 +72,10 @@ export function OrbiParticleSphere({
     canvas.height = size * dpr;
     ctx.scale(dpr, dpr);
 
-    // Malha de pontos sobre a esfera (Fibonacci sphere — distribuição uniforme).
+    // Malha de pontos sobre a esfera (Fibonacci sphere, distribuição uniforme).
     // N são as partículas "principais" (também usadas nas formas de check/
     // balão); MICRO é uma segunda leva, bem numerosa (o dobro do que seria só
-    // "um extra"), só decorativa — dá aquele efeito de areia fina bem cheia.
+    // "um extra"), só decorativa, dá aquele efeito de areia fina bem cheia.
     // Todos os pontos (principais e micro) saem na metade do tamanho de base
     // (aplicado mais abaixo, no cálculo do raio de cada frame).
     const N = size < 80 ? 700 : 1400;
@@ -101,7 +101,7 @@ export function OrbiParticleSphere({
 
     // Alvos formando um "check" no plano frontal: perna curta (esquerda-baixo)
     // e perna longa (direita-cima). y positivo = pra baixo na tela.
-    // Só as partículas principais (0..N) participam do morph — as micro
+    // Só as partículas principais (0..N) participam do morph, as micro
     // continuam de fundo, sempre em esfera, e vão sumindo conforme ele avança.
     const A = [-0.45, -0.05], B = [-0.15, 0.30], C = [0.5, -0.4];
     const l1 = Math.hypot(B[0] - A[0], B[1] - A[1]);
@@ -124,7 +124,7 @@ export function OrbiParticleSphere({
     }
 
     // Alvos formando um balão de conversa (bolha arredondada com cauda) e três
-    // pontinhos dentro — evoca "conversa/WhatsApp" sem copiar o logo da Meta.
+    // pontinhos dentro, evoca "conversa/WhatsApp" sem copiar o logo da Meta.
     const bubbleTarget: { x: number; y: number; z: number }[] = (() => {
       const seg: number[][] = [];
       const w = 0.6, h = 0.46, r = 0.2;
@@ -192,7 +192,7 @@ export function OrbiParticleSphere({
     // Se a pessoa escolheu cores próprias (Configurações da Orbi), o degradê
     // de 4 tons vira uma interpolação suave entre a primária e a secundária;
     // senão usa o padrão verde→turquesa→azul→roxo. A cor de detalhe (se
-    // houver) se mistura suavemente na parte de baixo — um degradê de verdade
+    // houver) se mistura suavemente na parte de baixo, um degradê de verdade
     // (smoothstep), não uma troca abrupta de cor num grupo de partículas.
     const stops = colorA && colorB ? buildGradientStops(colorA, colorB) : [
       [120, 220, 90], [40, 190, 180], [70, 120, 245], [150, 90, 240],
@@ -229,7 +229,7 @@ export function OrbiParticleSphere({
       baseRGB[i * 3 + 2] = b;
     }
 
-    // Buffers reutilizados a cada frame — nada é alocado dentro do loop, então
+    // Buffers reutilizados a cada frame, nada é alocado dentro do loop, então
     // o coletor de lixo não interrompe a animação (principal causa de travadas).
     const sxA = new Float32Array(TOTAL);
     const syA = new Float32Array(TOTAL);
@@ -256,7 +256,7 @@ export function OrbiParticleSphere({
       const sinA = Math.sin(ay);
 
       // Posiciona cada partícula nos buffers (sem alocar objetos). As micro
-      // (i >= N) não têm alvo de morph — continuam sempre em esfera.
+      // (i >= N) não têm alvo de morph, continuam sempre em esfera.
       for (let i = 0; i < TOTAL; i++) {
         const p = i < N ? pts[i] : microPts[i - N];
         const x = p.x * cosA - p.z * sinA;

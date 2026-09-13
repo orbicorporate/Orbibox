@@ -30,7 +30,7 @@ export function QRCodeModal({ url, businessName, onClose }: { url: string; busin
         onClick={(e) => e.stopPropagation()}
       >
         <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">QR Code do seu Orbibox</p>
-        <p className="mt-1 text-[13px] text-text-secondary">Cola no balcão, no cardápio impresso, na embalagem — qualquer lugar físico.</p>
+        <p className="mt-1 text-[13px] text-text-secondary">Cola no balcão, no cardápio impresso, na embalagem, qualquer lugar físico.</p>
         <div className="mt-4 flex justify-center">
           <canvas ref={canvasRef} className="rounded-2xl" />
         </div>

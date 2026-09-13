@@ -3,12 +3,12 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Emblema 3D de contato — um disco verde girando (de frente → perfil → de
+ * Emblema 3D de contato, um disco verde girando (de frente → perfil → de
  * frente) com um balão de conversa branco no centro, profundidade lateral,
  * sombra, brilho no topo e um reflexo de luz que atravessa a face. Feito em
  * canvas (leve, sem vídeo). Evoca "WhatsApp/contato" sem copiar o logo da Meta.
  *
- * `bg` transparente por padrão — herda o fundo do box.
+ * `bg` transparente por padrão, herda o fundo do box.
  */
 export function OrbiContactDisc({
   size = 44,

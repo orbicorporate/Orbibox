@@ -15,7 +15,7 @@ type Msg = { role: string; content: string };
 
 /**
  * Procura um número de telefone/WhatsApp nas mensagens do visitante. A Orbi
- * pede o contato durante a conversa, então ele fica no texto — não numa coluna
+ * pede o contato durante a conversa, então ele fica no texto, não numa coluna
  * separada. Aceita formatos comuns brasileiros (com/sem DDD, com/sem +55).
  * Retorna só os dígitos, ou null se não achar.
  */

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { PROGRESS_STEPS, type ProgressKey } from "@/lib/progress";
 
-// Ícone + cor de cada passo — pastel de fundo com o traço numa cor mais forte,
+// Ícone + cor de cada passo, pastel de fundo com o traço numa cor mais forte,
 // no mesmo espírito de referências como Wix/Shopify onboarding.
 const STEP_ICONS: Record<ProgressKey, { bg: string; fg: string; icon: ReactNode }> = {
   marca: {
@@ -72,11 +72,11 @@ const STEP_ICONS: Record<ProgressKey, { bg: string; fg: string; icon: ReactNode 
   },
 };
 
-// Card completo do checklist — vai na Today. Some quando estiver 100%.
+// Card completo do checklist, vai na Today. Some quando estiver 100%.
 export function ProgressCard({ done, pct }: { done: Record<string, boolean>; pct: number }) {
   if (pct >= 100) return null;
 
-  // Primeiro passo ainda não feito ganha o selo "Recomendado" — sempre
+  // Primeiro passo ainda não feito ganha o selo "Recomendado", sempre
   // aponta pro próximo passo lógico, igual referências de onboarding
   // (Wix, Shopify) que destacam uma única ação por vez.
   const nextKey = PROGRESS_STEPS.find((s) => !done[s.key])?.key;
@@ -145,7 +145,7 @@ export function ProgressCard({ done, pct }: { done: Record<string, boolean>; pct
 }
 
 // Selo fino de progresso (ProgressBadge) mudou pra /components/ProgressBadge.tsx
-// — não pode ficar aqui porque esse arquivo depende de "@/lib/progress"
+//, não pode ficar aqui porque esse arquivo depende de "@/lib/progress"
 // (server-only), e o badge é usado num Client Component (o AppHeader).
 
 export type { ProgressKey };

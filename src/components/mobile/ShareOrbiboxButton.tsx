@@ -5,12 +5,12 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 
 /**
- * Botão de compartilhar de verdade — abre a folha nativa do celular
+ * Botão de compartilhar de verdade, abre a folha nativa do celular
  * (WhatsApp, Instagram, Mensagens, Copiar…) quando disponível. Em
  * desktop/navegadores sem suporte, copia o link e avisa.
  *
  * Quando `shareReady` é `false`, antes de compartilhar abre um aviso
- * perguntando se a pessoa quer configurar a capa e a descrição — pra o link
+ * perguntando se a pessoa quer configurar a capa e a descrição, pra o link
  * aparecer bonito no WhatsApp/Instagram em vez de "cru".
  */
 export function ShareOrbiboxButton({

@@ -23,12 +23,12 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Orbibox — A web que se adapta a quem entra",
+  title: "Orbibox, A web que se adapta a quem entra",
   description:
     "One link. Infinite experiences. Soft Intelligence para transformar seu catálogo em uma experiência adaptativa.",
 };
 
-// Impede o zoom por toque/foco no mobile — comportamento de app nativo.
+// Impede o zoom por toque/foco no mobile, comportamento de app nativo.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,

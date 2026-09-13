@@ -33,10 +33,10 @@ export function ConversasList({ conversations, businessId }: { conversations: Co
   const [excluidas, setExcluidas] = useState<Set<string>>(new Set());
   const [excluindo, setExcluindo] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
-  // Momento em que a tela abriu — base estável pros filtros de período.
+  // Momento em que a tela abriu, base estável pros filtros de período.
   const [agora] = useState(() => Date.now());
 
-  // Abrir essa tela já conta como "vi as conversas" — zera o sininho do Today.
+  // Abrir essa tela já conta como "vi as conversas", zera o sininho do Today.
   useEffect(() => {
     if (conversations.length === 0) return;
     const supabase = createClient();
@@ -90,7 +90,7 @@ export function ConversasList({ conversations, businessId }: { conversations: Co
         linhas.push({
           nome: v.visitor_name ?? "",
           whatsapp: v.visitor_whatsapp ?? "",
-          origem: `Cupom: ${tituloPorId.get(v.voucher_id) ?? "—"}`,
+          origem: `Cupom: ${tituloPorId.get(v.voucher_id) ?? ", "}`,
           data: v.claimed_at,
         });
       }

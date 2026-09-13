@@ -6,7 +6,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 /**
- * Capa padrão do link — só entra em ação quando o negócio não tem capa da
+ * Capa padrão do link, só entra em ação quando o negócio não tem capa da
  * Vitrine nem logotipo nem uma capa própria escolhida em Configurações (o
  * Next só usa esse arquivo quando generateMetadata não define uma imagem
  * explícita). Sem isso, o preview no WhatsApp ficava sem nenhuma imagem.

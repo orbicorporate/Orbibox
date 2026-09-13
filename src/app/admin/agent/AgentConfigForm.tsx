@@ -62,7 +62,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
 
   function set(key: (typeof SLIDERS)[number]["key"], v: number) { setState((s) => ({ ...s, [key]: v })); setSaved(false); }
 
-  // Cores da esfera da Orbi — a edição agora fica em Configurações, junto do
+  // Cores da esfera da Orbi, a edição agora fica em Configurações, junto do
   // logotipo. Aqui só lemos o valor (pra usar na esfera de "IA trabalhando").
   const orbiColors: string[] = state.orbi_colors && state.orbi_colors.length >= 2
     ? state.orbi_colors
@@ -87,7 +87,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
   const casual = state.tone_formal_informal > 50;
   const preview = casual
     ? `Olá! Notei que você gosta de tons neutros. Que tal conhecer nossa nova coleção? É perfeita para manter a elegância fresca nos dias quentes ✦`
-    : `Boa tarde. Com base no seu interesse, recomendo conhecer nossa nova coleção — ideal para a estação.`;
+    : `Boa tarde. Com base no seu interesse, recomendo conhecer nossa nova coleção, ideal para a estação.`;
 
   return (
     <div className="mt-6 flex flex-col gap-7 pb-8">
@@ -108,7 +108,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
         </div>
       </div>
       <p className="-mt-3 px-1 text-[12px] leading-relaxed text-text-tertiary">
-        ✦ Toque no nome acima para personalizar — dê à IA o nome da sua marca (ex.: “{businessName}”, “Nina”, “Léo”) ou deixe como <span className="font-medium text-text-secondary">Orbi</span>. É assim que ela vai se apresentar aos visitantes.
+        ✦ Toque no nome acima para personalizar, dê à IA o nome da sua marca (ex.: “{businessName}”, “Nina”, “Léo”) ou deixe como <span className="font-medium text-text-secondary">Orbi</span>. É assim que ela vai se apresentar aos visitantes.
       </p>
 
       <button
@@ -174,15 +174,15 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
       </div>
 
       {/* Quando tudo estiver preenchido, a Orbi já pode costurar a página
-          Sobre inteira com esse material — sem precisar escrever do zero. */}
+          Sobre inteira com esse material, sem precisar escrever do zero. */}
       {knowledgeComplete && (
         <div className="rounded-[28px] orbi-gradient p-[1.5px]">
           <div className="rounded-[27px] bg-surface-white p-5">
             <p className="text-[14px] font-medium"><span className="orbi-gradient-text">✦</span> Base de conhecimento completa</p>
             <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
               {aboutBuilt
-                ? `Pronto — a página Sobre de ${businessName} já está montada com essas informações.`
-                : `A Orbi já pode montar a página Sobre completa de ${businessName} juntando tudo isso — história, diferenciais e o que o catálogo mostra.`}
+                ? `Pronto, a página Sobre de ${businessName} já está montada com essas informações.`
+                : `A Orbi já pode montar a página Sobre completa de ${businessName} juntando tudo isso, história, diferenciais e o que o catálogo mostra.`}
             </p>
             {buildError && <p className="mt-2 text-[13px] text-red-600">{buildError}</p>}
             {buildingAbout ? (

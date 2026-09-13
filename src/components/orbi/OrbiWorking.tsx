@@ -3,12 +3,12 @@
 import { OrbiParticleSphere } from "./OrbiParticleSphere";
 
 /**
- * Selo de "IA trabalhando" — a esfera de partículas (assinatura da Orbi) com
+ * Selo de "IA trabalhando", a esfera de partículas (assinatura da Orbi) com
  * um texto ao lado. Aparece em qualquer espera de IA: lendo o site,
  * organizando a vitrine, montando a página Sobre, etc. Deixa claro que tem
  * uma IA pensando, não só um spinner qualquer.
  *
- * `variant="bar"` (padrão) ocupa a largura toda, com fundo em degradê suave —
+ * `variant="bar"` (padrão) ocupa a largura toda, com fundo em degradê suave , 
  * bom pra blocos (importação). `variant="inline"` é compacto, pra caber ao
  * lado de um botão.
  */

@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && (isOnboarding || isAuthPage)) {
-    // Já tem Orbibox? Onboarding e telas de auth não fazem sentido — vai pro painel.
+    // Já tem Orbibox? Onboarding e telas de auth não fazem sentido, vai pro painel.
     const { data: biz } = await supabase
       .from("businesses")
       .select("id")
@@ -61,7 +61,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Assinatura que já existiu mas está com problema (pagamento falhou,
-  // cancelada, etc) — manda pra tela de planos pra reativar. Quem nunca
+  // cancelada, etc), manda pra tela de planos pra reativar. Quem nunca
   // teve assinatura (ainda não passou pelo checkout) não é bloqueado aqui;
   // fica no limite padrão de 1 negócio / sem chat até assinar.
   if (user && isAdmin && path !== "/admin/planos") {

@@ -10,7 +10,7 @@ import type { ReactNode } from "react";
  * (fundo menta clara, sparkle teal, texto 19-20px, CTA preto).
  */
 
-// Sparkle duplo — vai no cabeçalho de todo card (dois tamanhos, cor
+// Sparkle duplo, vai no cabeçalho de todo card (dois tamanhos, cor
 // de fechamento do degradê da marca).
 export function OrbiSparkle({ size = 24 }: { size?: number }) {
   return (
@@ -21,7 +21,7 @@ export function OrbiSparkle({ size = 24 }: { size?: number }) {
   );
 }
 
-// Sparkle simples — vai dentro do botão de ação (cor de início do
+// Sparkle simples, vai dentro do botão de ação (cor de início do
 // degradê, o verde-limão da marca).
 export function OrbiSparkleMini({ size = 15 }: { size?: number }) {
   return (
@@ -48,7 +48,7 @@ export function OrbiInsightMessage({ children }: { children: ReactNode }) {
   return <p className="relative mt-4 text-[19px] leading-relaxed text-on-background">{children}</p>;
 }
 
-// className pronta pro botão de ação — usar em <Link>, <a> ou <button>
+// className pronta pro botão de ação, usar em <Link>, <a> ou <button>
 // pra manter a mesma pílula preta com sparkle em todo lugar.
 export const orbiInsightCtaClass =
   "relative mt-5 inline-flex items-center gap-2 rounded-full bg-on-background px-6 py-3.5 text-[14px] font-medium text-white";

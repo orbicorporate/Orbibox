@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 
 /**
- * Botão de voltar pra tela anterior — some só na home ("Today"), onde não
+ * Botão de voltar pra tela anterior, some só na home ("Today"), onde não
  * faz sentido voltar. Usa o histórico do navegador, então funciona em
  * qualquer fluxo (voltar de dentro de um item da Vitrine, de uma conversa
  * aberta, etc.), não só entre as abas principais.

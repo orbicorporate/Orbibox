@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       .join("\n");
 
     // O que essa pessoa clicou de verdade nessa sessão (categoria ou produto)
-    // — sem isso, a recomendação era só um chute em cima do catálogo inteiro
+    //, sem isso, a recomendação era só um chute em cima do catálogo inteiro
     // e ignorava o interesse que o visitante já tinha sinalizado.
     let interesseDetectado = "";
     if (sessionId) {
@@ -49,14 +49,14 @@ export async function POST(req: NextRequest) {
           .map((id) => content.find((c) => c.id === id)?.title)
           .filter(Boolean);
         if (clickedTitles.length > 0) {
-          interesseDetectado = `O visitante clicou especificamente em: ${clickedTitles.join(", ")}. A recomendação PRECISA partir disso — não sugira outra categoria.`;
+          interesseDetectado = `O visitante clicou especificamente em: ${clickedTitles.join(", ")}. A recomendação PRECISA partir disso, não sugira outra categoria.`;
         }
       }
     }
 
     const system = `Você é a Orbi, a inteligência do Orbibox do negócio "${business?.name ?? ""}".
 ${business?.brand_voice_summary ? `Tom de voz: ${business.brand_voice_summary}` : ""}
-${interesseDetectado || "Olhando o catálogo, escreva uma recomendação contextual curta e calorosa para o visitante — como um vendedor atencioso notaria um padrão e sugeriria algo."}
+${interesseDetectado || "Olhando o catálogo, escreva uma recomendação contextual curta e calorosa para o visitante, como um vendedor atencioso notaria um padrão e sugeriria algo."}
 Ex: "Notei seu interesse em X. Que tal conhecer Y, que combina com isso?".
 Responda SOMENTE JSON válido, sem markdown:
 {"message":"uma a duas frases, no máximo 30 palavras","cta":"texto curto do botão, máx 3 palavras"}
@@ -71,7 +71,7 @@ Baseie-se apenas nos itens reais abaixo. Não invente produtos.`;
     try {
       const match = raw.match(/\{[\s\S]*\}/);
       const parsed = JSON.parse(match ? match[0] : raw);
-      return NextResponse.json({ message: parsed.message ?? null, cta: parsed.cta ?? "Explorar" });
+      return NextResponse.json({ message: parsed.message ? String(parsed.message).replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, ", ") : null, cta: parsed.cta ?? "Explorar" });
     } catch {
       return NextResponse.json({ message: null });
     }

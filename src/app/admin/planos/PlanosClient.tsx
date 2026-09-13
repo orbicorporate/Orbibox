@@ -21,7 +21,7 @@ const STATUS_LABEL: Record<string, string> = {
   incomplete: "Pendente",
 };
 
-// Features detalhadas por plano — mais rico que só o banco, pra vender melhor.
+// Features detalhadas por plano, mais rico que só o banco, pra vender melhor.
 const FEATURES: Record<string, { label: string; highlight?: boolean }[]> = {
   titanio: [
     { label: "1 Vitrine + 1 página de negócio" },
@@ -218,7 +218,7 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
           🎁 3 dias de teste grátis com acesso completo
         </p>
         <p className="text-[11px] text-text-tertiary">
-          Pede cartão no cadastro. A cobrança só acontece depois do período de teste — cancele quando quiser.
+          Pede cartão no cadastro. A cobrança só acontece depois do período de teste, cancele quando quiser.
         </p>
       </div>
     </div>

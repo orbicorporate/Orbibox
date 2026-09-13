@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Quando o operador filtrou por um cupom específico, um código de OUTRO
-    // cupom é recusado com aviso claro — evita confirmar o cupom errado.
+    // cupom é recusado com aviso claro, evita confirmar o cupom errado.
     if (expectedVoucherId && redemption.voucher_id !== expectedVoucherId) {
       const wrong = Array.isArray(redemption.vouchers) ? redemption.vouchers[0] : redemption.vouchers;
       return NextResponse.json(

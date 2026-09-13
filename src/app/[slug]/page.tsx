@@ -6,7 +6,7 @@ import { filterLive } from "@/lib/scheduling";
 import { VisitorExperience } from "./VisitorExperience";
 
 /**
- * Preview do link (Open Graph) — o que aparece quando alguém cola o link do
+ * Preview do link (Open Graph), o que aparece quando alguém cola o link do
  * Orbibox no WhatsApp, Instagram, etc. WhatsApp só mostra imagem estática
  * (nada de animação), então usamos, nesta ordem: a capa da Vitrine, depois o
  * logotipo do negócio. A esfera animada da Orbi fica só dentro do app.
@@ -27,13 +27,13 @@ export async function generateMetadata({
   if (!b) return { title: "Orbibox" };
 
   const capa = b.share_image_url || b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls[0]) || b.logo_url || `/${slug}/opengraph-image`;
-  // Curto de propósito — WhatsApp e afins cortam a descrição em poucas linhas
+  // Curto de propósito, WhatsApp e afins cortam a descrição em poucas linhas
   // (~3), então um texto longo só fica truncado no meio de uma palavra.
-  const fonteDescricao = b.share_description?.trim() || b.about_business?.trim() || `Conheça ${b.name} — produtos, serviços e contato num só link.`;
+  const fonteDescricao = b.share_description?.trim() || b.about_business?.trim() || `Conheça ${b.name}, produtos, serviços e contato num só link.`;
   const descricao = fonteDescricao.length > 90
     ? `${fonteDescricao.slice(0, 90).replace(/\s+\S*$/, "")}…`
     : fonteDescricao;
-  // Título do preview do link — o convite vem antes do nome, não só o nome cru.
+  // Título do preview do link, o convite vem antes do nome, não só o nome cru.
   const tituloPreview = `Visite nosso Orbibox - ${b.name}`;
 
   return {
@@ -70,14 +70,14 @@ export default async function VisitorPage({
 
   if (!business) notFound();
 
-  // O dono pode estar logado navegando o próprio link — se for, mostramos
+  // O dono pode estar logado navegando o próprio link, se for, mostramos
   // um atalho de volta pro painel em vez de forçar sair e digitar /admin.
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const isOwner = !!user && user.id === business.owner_id;
 
-  // As quatro dependem só do business — vão juntas em vez de em fila.
+  // As quatro dependem só do business, vão juntas em vez de em fila.
   const [contentRes, boxesRes, agentRes, hasAiChat, hasVouchers] = await Promise.all([
     supabase
       .from("content_items")
@@ -95,7 +95,7 @@ export default async function VisitorPage({
     getOwnerHasVouchers(business.owner_id),
   ]);
   // Fora da janela de data agendada = como se não existisse pro visitante,
-  // mesmo estando "publicado"/"ativo" — assim não precisa lembrar de
+  // mesmo estando "publicado"/"ativo", assim não precisa lembrar de
   // desligar manualmente uma promoção que já venceu.
   const content = filterLive(contentRes.data ?? []);
   const boxes = filterLive(boxesRes.data ?? []);

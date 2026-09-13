@@ -1,4 +1,4 @@
-// Vocabulário compartilhado da vitrine — usado no construtor (admin) e na vitrine pública.
+// Vocabulário compartilhado da vitrine, usado no construtor (admin) e na vitrine pública.
 
 export type BoxSize = "destaque" | "largo" | "medio" | "alto";
 export type BoxStyle = "cor" | "foto" | "foto_mat";
@@ -18,7 +18,7 @@ export const SIZE_CLASS: Record<BoxSize, string> = {
   alto: "col-span-1 row-span-2 min-h-[240px]",
 };
 
-// A foto de capa preenche o box — então ela segue o formato do box, não uma
+// A foto de capa preenche o box, então ela segue o formato do box, não uma
 // escolha própria. Largo e Destaque são baixinhos (paisagem), Alto é bem
 // vertical (retrato), Médio fica perto de quadrado. Compartilhado entre o
 // editor (admin) e a página pública, pra capa nunca ficar diferente dos dois lados.
@@ -84,7 +84,7 @@ export const PALETTE_GROUPS: { name: string; colors: Record<string, Swatch> }[] 
     },
   },
   {
-    // Cores cheias, saturadas — o clássico "primária/secundária" bem forte,
+    // Cores cheias, saturadas, o clássico "primária/secundária" bem forte,
     // com texto claro por cima. Pra quem quer o box gritando cor.
     name: "Primárias",
     colors: {
@@ -97,7 +97,7 @@ export const PALETTE_GROUPS: { name: string; colors: Record<string, Swatch> }[] 
     },
   },
   {
-    // Tons suaves e leitosos, texto escuro — delicado sem ser sem graça.
+    // Tons suaves e leitosos, texto escuro, delicado sem ser sem graça.
     name: "Pastel",
     colors: {
       "pastel-rosa": { bg: "#F8C8D4", fg: "#7A2438", label: "Rosa" },
@@ -122,7 +122,7 @@ export const PALETTE_GROUPS: { name: string; colors: Record<string, Swatch> }[] 
   },
 ];
 
-// Todas as cores das paletas fixas, achatadas — usado pra resolver por chave.
+// Todas as cores das paletas fixas, achatadas, usado pra resolver por chave.
 export const BOX_COLORS: Record<string, Swatch> = Object.assign(
   {},
   ...PALETTE_GROUPS.map((g) => g.colors)
@@ -139,7 +139,7 @@ export function contrastFg(hex: string): string {
 
 /**
  * Resolve a cor de um box. Aceita tanto uma chave de paleta fixa ("verde",
- * "premium-onix"...) quanto um hex literal ("#1C1B1C") — é assim que a
+ * "premium-onix"...) quanto um hex literal ("#1C1B1C"), é assim que a
  * "Paleta da marca" funciona: ao escolher, salvamos o hex direto, já que
  * essas cores são únicas de cada negócio e não existem como chave fixa.
  */
@@ -159,7 +159,7 @@ export function sizeOf(key: string | null | undefined): BoxSize {
 }
 
 /**
- * Tamanho de fonte do título num card sem foto — se adapta ao formato do
+ * Tamanho de fonte do título num card sem foto, se adapta ao formato do
  * card e ao comprimento do título. Card grande (destaque/largo) comporta
  * fonte maior; título longo puxa pra baixo pra não estourar. Retorna string
  * com "px" pronta pro style inline.
@@ -203,11 +203,11 @@ function brl(v: number) {
   return `R$ ${v.toFixed(2).replace(".", ",")}`;
 }
 
-/** Formata o preço de um item conforme o tipo escolhido — mesma regra usada
+/** Formata o preço de um item conforme o tipo escolhido, mesma regra usada
  * na Vitrine, na grade pública e na página do item, pra nunca ficar diferente. */
 export function formatPrice(item: { price: number | null; price_type?: string | null; price_max?: number | null }): string | null {
   const tipo = (item.price_type as PriceType) || "exato";
-  // "Sob consulta" não depende de valor — mostra o rótulo direto.
+  // "Sob consulta" não depende de valor, mostra o rótulo direto.
   if (tipo === "consulta") return "Sob consulta";
   if (item.price == null) return null;
   switch (tipo) {
@@ -222,9 +222,9 @@ export function formatPrice(item: { price: number | null; price_type?: string | 
   }
 }
 
-/** Biblioteca de ícones minimalistas — mesmo estilo geométrico simples usado
+/** Biblioteca de ícones minimalistas, mesmo estilo geométrico simples usado
  * em todo o Orbibox, sem emoji colorido, pra combinar com qualquer paleta. */
-/** Biblioteca de ícones minimalistas — mesmo estilo geométrico simples usado
+/** Biblioteca de ícones minimalistas, mesmo estilo geométrico simples usado
  * em todo o Orbibox, sem emoji colorido, pra combinar com qualquer paleta.
  * "\uFE0E" força a versão em texto (preto e branco) de símbolos que alguns
  * sistemas tentam renderizar como emoji colorido (telefone, aviso, etc.). */
@@ -253,12 +253,12 @@ export const ICON_LIBRARY = [
   "⚠\uFE0E", "‼",
 ];
 
-/** Primeiros ícones mostrados antes de tocar em "Ver mais" — os mais comuns. */
+/** Primeiros ícones mostrados antes de tocar em "Ver mais", os mais comuns. */
 export const ICON_LIBRARY_PREVIEW_COUNT = 24;
 
 /** Valores de ícone que são animações em canvas (esfera, check, disco de
  * contato, logo). Regra do app: ícone animado sempre roda com FUNDO
- * TRANSPARENTE — herda o fundo do box, sem quadradinho de cor por trás. */
+ * TRANSPARENTE, herda o fundo do box, sem quadradinho de cor por trás. */
 export const ANIMATED_ICONS = ["__orb__", "__orbcheck__", "__orbwa__", "__wadisc__", "__google__", "__pin__"] as const;
 
 export function isAnimatedIcon(icon: string | null | undefined): boolean {
@@ -303,12 +303,12 @@ export function isInstagramReel(url: string): boolean {
 }
 
 /** Diz se uma entrada da galeria é um vídeo de qualquer tipo suportado
- * (YouTube ou Instagram) — útil pra filtrar fotos de vídeos de forma genérica. */
+ * (YouTube ou Instagram), útil pra filtrar fotos de vídeos de forma genérica. */
 export function isVideoUrl(url: string): boolean {
   return isYoutube(url) || isInstagramReel(url);
 }
 
-/** Curadoria de cores vibrantes pra Orbi (esfera de partículas) — sempre
+/** Curadoria de cores vibrantes pra Orbi (esfera de partículas), sempre
  * saturadas o bastante pra ficarem bonitas na animação, evitando tons
  * apagados demais. A pessoa escolhe duas; qualquer combinação funciona bem
  * porque o degradê interpola suavemente entre elas. */
@@ -329,7 +329,7 @@ export const ORBI_SPHERE_COLORS: { hex: string; label: string }[] = [
   { hex: "#111318", label: "Preto" },
   { hex: "#FFFFFF", label: "Branco" },
   { hex: "#4A4A4A", label: "Grafite" },
-  // Tons nobres — mais sóbrios e sofisticados, pra marcas com uma
+  // Tons nobres, mais sóbrios e sofisticados, pra marcas com uma
   // identidade mais elegante em vez de vibrante/lúdica.
   { hex: "#7A1F3D", label: "Vinho" },
   { hex: "#046A38", label: "Esmeralda" },

@@ -50,7 +50,7 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100 }: { unseenCo
       </div>
       <div className="relative flex items-center gap-2">
         <ProgressBadge pct={progressPct} />
-        {/* Sino de notificação — pisca quando tem conversa que ainda não foi
+        {/* Sino de notificação, pisca quando tem conversa que ainda não foi
             vista. Ao lado do ícone de configurações, sempre alinhado. */}
         <Link href="/admin/conversas" className="relative flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft" aria-label="Conversas">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -79,7 +79,7 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100 }: { unseenCo
 
         {menuOpen && (
           <>
-            {/* Backdrop — clique fora fecha o menu. */}
+            {/* Backdrop, clique fora fecha o menu. */}
             <button
               aria-label="Fechar menu"
               onClick={() => setMenuOpen(false)}
@@ -116,7 +116,7 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100 }: { unseenCo
                 ))}
               </div>
 
-              {/* Vouchers ganha destaque de propósito — é a ferramenta com
+              {/* Vouchers ganha destaque de propósito, é a ferramenta com
                   maior impacto comercial direto (fecha venda na hora), então
                   precisa parecer maior e mais chamativa que as configurações
                   comuns acima, não só uma cor diferente. */}
@@ -142,7 +142,7 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100 }: { unseenCo
                   </span>
                 </span>
                 <span className="relative mt-3 block max-w-[68%] text-[13px] leading-relaxed text-on-background/80">
-                  Crie cupons personalizados com controle de estoque — isso traz cliente na mesma hora.
+                  Crie cupons personalizados com controle de estoque, isso traz cliente na mesma hora.
                 </span>
                 <span className="relative mt-3.5 inline-flex items-center gap-2 rounded-full bg-[#14301F] px-5 py-2.5 text-[14px] font-semibold text-white">
                   Experimentar <span aria-hidden>→</span>

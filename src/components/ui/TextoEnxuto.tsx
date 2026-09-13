@@ -4,7 +4,7 @@ import { useState } from "react";
 
 /**
  * Texto que aparece enxuto (cortado em N linhas) com um "ler mais" pra
- * expandir. Deixa as telas mais leves sem esconder a informação — ela
+ * expandir. Deixa as telas mais leves sem esconder a informação, ela
  * continua disponível a um toque.
  */
 export function TextoEnxuto({

@@ -28,7 +28,7 @@ const ITEMS = [
   {
     href: "/admin/config/orbi",
     label: "O que a Orbi sabe",
-    desc: "Sobre o negócio, diferenciais e políticas — o que a IA usa pra responder.",
+    desc: "Sobre o negócio, diferenciais e políticas, o que a IA usa pra responder.",
     bg: "orbi-gradient", fg: "#111318",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

@@ -27,7 +27,7 @@ export default async function VouchersPage() {
     ? await supabase.from("vouchers").select("*").eq("business_id", business!.id).order("created_at", { ascending: false })
     : { data: [] };
 
-  // Quem resgatou cada cupom (nome e WhatsApp, se a pessoa deixou) — pra
+  // Quem resgatou cada cupom (nome e WhatsApp, se a pessoa deixou), pra
   // mostrar dentro do card de cada cupom.
   const voucherIds = (vouchers ?? []).map((v) => v.id);
   const { data: redemptions } = canSave && voucherIds.length > 0
@@ -39,7 +39,7 @@ export default async function VouchersPage() {
   }
 
   // Já existe um Box de Cupons na página inicial? Sem isso, os cupons criados
-  // aqui não aparecem pra ninguém — é o elo que faltava explicar.
+  // aqui não aparecem pra ninguém, é o elo que faltava explicar.
   const { data: boxes } = canSave
     ? await supabase.from("smart_boxes").select("id, config").eq("business_id", business!.id)
     : { data: [] };
@@ -48,7 +48,7 @@ export default async function VouchersPage() {
 
   return (
     <div className="flex flex-col">
-      {/* Selo do cupom em cima do título — dá identidade à tela logo de cara */}
+      {/* Selo do cupom em cima do título, dá identidade à tela logo de cara */}
       <span className="mt-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FCE8EC]">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C4143A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 9a2 2 0 0 0 0 4v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 0-4V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2z" />
@@ -60,7 +60,7 @@ export default async function VouchersPage() {
         Crie cupons com estoque limitado. Cada resgate gera um código único, sem risco de uso duplicado.
       </p>
 
-      {/* Ativa assim que existe pelo menos um cupom — antes disso não tem
+      {/* Ativa assim que existe pelo menos um cupom, antes disso não tem
           painel de ninguém pra ver ainda. Vermelho forte com reflexo. */}
       {canSave && vouchers && vouchers.length > 0 && (
         <Link
@@ -77,7 +77,7 @@ export default async function VouchersPage() {
         </Link>
       )}
 
-      {/* Resgate rápido no topo, recolhível — pra loja validar o cupom do
+      {/* Resgate rápido no topo, recolhível, pra loja validar o cupom do
           cliente na hora, sem precisar entrar no painel. */}
       {canSave && vouchers && vouchers.length > 0 && (
         <div className="mt-4">
@@ -88,16 +88,16 @@ export default async function VouchersPage() {
       {canSave && (
         <div className="mt-6 flex flex-col gap-4">
           <VoucherExplainer>
-          {/* Explicação curta — só o essencial, separado do resto */}
+          {/* Explicação curta, só o essencial, separado do resto */}
           <div className="rounded-[24px] bg-surface-soft p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-secondary">Como funciona</p>
             <p className="mt-2 text-[14.5px] leading-relaxed text-text-secondary">
               O cliente toca no cupom na sua página, deixa o nome e o WhatsApp e recebe um código único na hora. Ele
-              mostra pra você no atendimento — é só confirmar aqui embaixo.
+              mostra pra você no atendimento, é só confirmar aqui embaixo.
             </p>
           </div>
 
-          {/* Exemplo visual — o cupom em si ganha destaque de propósito: é o
+          {/* Exemplo visual, o cupom em si ganha destaque de propósito: é o
               que o cliente realmente vê, então precisa parecer uma oferta de
               verdade (vermelho vivo, brilho), não um card de configuração. */}
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
@@ -121,12 +121,12 @@ export default async function VouchersPage() {
             </div>
           </div>
 
-          {/* Passo a passo — agora com o passo que faltava: colocar o box na Home */}
+          {/* Passo a passo, agora com o passo que faltava: colocar o box na Home */}
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Passo a passo</p>
             <div className="mt-4 flex flex-col gap-4">
               {[
-                { n: "1", t: "Você cria o cupom", d: "Desconto, quantidade disponível e validade — você decide tudo aqui embaixo." },
+                { n: "1", t: "Você cria o cupom", d: "Desconto, quantidade disponível e validade, você decide tudo aqui embaixo." },
                 { n: "2", t: "Coloca o box \"Cupons\" na página inicial", d: "Sem isso, o cupom existe mas ninguém vê. É o botão logo abaixo." },
                 { n: "3", t: "O cliente resgata", d: "Toca no box, deixa nome e WhatsApp, e recebe um código único na hora." },
                 { n: "4", t: "Você confirma no atendimento", d: "Ele mostra o código, você digita em \"Resgatar código\" e pronto." },

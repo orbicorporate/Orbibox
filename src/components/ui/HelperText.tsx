@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 /**
- * Texto de apoio (explicações, instruções) — fica numa linha só, com uma
+ * Texto de apoio (explicações, instruções), fica numa linha só, com uma
  * tag preta "Ler mais" do lado pra quem quiser o texto inteiro. Evita
  * blocos de texto miúdo tomando conta da tela em formulários densos.
  */

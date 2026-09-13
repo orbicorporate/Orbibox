@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Chave da API não configurada." }, { status: 500 });
     }
 
-    // Aceita a imagem em base64 (foto nova) OU uma URL (foto já salva) — nesse
+    // Aceita a imagem em base64 (foto nova) OU uma URL (foto já salva), nesse
     // caso baixa a imagem no servidor e converte pra base64.
     let base64 = imageBase64 as string | undefined;
     let mt = mediaType as string | undefined;
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     }
 
     const ramo = CONTEXTO[theme] ?? "um negócio";
-    const system = `Você nomeia fotos para a vitrine de ${ramo}. Olhe a imagem e devolva um nome curto e comercial (2 a 4 palavras) para o item mostrado, como apareceria num cardápio ou catálogo. Português do Brasil. Sem aspas, sem ponto final, sem explicação — responda APENAS o nome.`;
+    const system = `Você nomeia fotos para a vitrine de ${ramo}. Olhe a imagem e devolva um nome curto e comercial (2 a 4 palavras) para o item mostrado, como apareceria num cardápio ou catálogo. Português do Brasil. Sem aspas, sem ponto final, sem explicação, responda APENAS o nome.`;
 
     const res = await fetch(ANTHROPIC_API_URL, {
       method: "POST",

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Resolve o negócio do usuário logado — seja porque ele é dono, seja porque
+ * Resolve o negócio do usuário logado, seja porque ele é dono, seja porque
  * foi convidado como administrador de um negócio de outra pessoa. Usado no
  * lugar de `.eq("owner_id", user.id)` em toda página do admin, pra
  * administradores convidados também conseguirem acessar.

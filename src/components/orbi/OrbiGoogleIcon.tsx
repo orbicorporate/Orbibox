@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Emblema animado estilo Google — um "G" branco sobre um quadrado arredondado
+ * Emblema animado estilo Google, um "G" branco sobre um quadrado arredondado
  * com gradiente colorido (vermelho/amarelo/verde/azul) que gira, com um leve
  * balanço "dançando" e um reflexo de luz atravessando. Canvas puro (leve).
  * Inspirado no visual do Google sem reproduzir o logotipo oficial.

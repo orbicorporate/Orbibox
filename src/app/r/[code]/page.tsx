@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
-// Link de indicação: /r/CODIGO — guarda o código num cookie (30 dias) e manda
+// Link de indicação: /r/CODIGO, guarda o código num cookie (30 dias) e manda
 // pro cadastro. Depois que a pessoa cria a conta, o código é usado uma vez
 // pra registrar a indicação.
 export default async function ReferralLinkPage({ params }: { params: Promise<{ code: string }> }) {

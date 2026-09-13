@@ -56,7 +56,7 @@ const FORMA: Record<BoxSize, string> = {
   alto: "h-9 w-5",
 };
 
-// A foto de capa preenche o box na grade — então ela segue o formato do box,
+// A foto de capa preenche o box na grade, então ela segue o formato do box,
 // não uma escolha própria. Largo e Destaque são baixinhos (paisagem), Alto é
 // bem vertical (retrato), Médio fica perto de quadrado.
 
@@ -112,7 +112,7 @@ export function ShowcaseBuilder({
     }).eq("id", businessId);
   }
   // Aba de paleta ativa no editor de cor. "Marca" só existe se a Orbi já
-  // extraiu cores no DNA da marca (onboarding) — senão começa no Padrão.
+  // extraiu cores no DNA da marca (onboarding), senão começa no Padrão.
   const [paletteTab, setPaletteTab] = useState<string>(brandColors.length > 0 ? "Marca" : "Padrão");
   const [arranging, setArranging] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -170,7 +170,7 @@ export function ShowcaseBuilder({
   const [insightIdx, setInsightIdx] = useState(0);
   const [generatingInsight, setGeneratingInsight] = useState(false);
 
-  // Histórico de estados anteriores da vitrine — permite desfazer a última
+  // Histórico de estados anteriores da vitrine, permite desfazer a última
   // ação (edição, exclusão, criação, reorganização, importação, etc.) e
   // também dá segurança pra "Renovar vitrine", que apaga tudo de uma vez.
   type Snapshot = { items: Item[]; categories: string[]; coverUrls: string[] };
@@ -394,7 +394,7 @@ export function ShowcaseBuilder({
   async function createItem(brandLabel: string | null = null) {
     setCreating(true);
     snapshot();
-    // Nasce no topo — position mais baixo que tudo que já existe, não no fim da lista.
+    // Nasce no topo, position mais baixo que tudo que já existe, não no fim da lista.
     const minPos = items.length > 0 ? Math.min(...items.map((i) => i.position)) : 0;
     const { data, error } = await supabase
       .from("content_items")
@@ -423,7 +423,7 @@ export function ShowcaseBuilder({
     await saveCategories([...categories, trimmed]);
   }
 
-  // Nome de todas as categorias já conhecidas — usado pra evitar duplicata
+  // Nome de todas as categorias já conhecidas, usado pra evitar duplicata
   // com erro de digitação, tanto ao criar quanto ao escolher no seletor.
   function allCategoryNamesRef() {
     return Array.from(new Set([...categories, ...items.map((i) => i.brand_label?.trim()).filter((v): v is string => !!v)]));
@@ -431,10 +431,10 @@ export function ShowcaseBuilder({
 
   async function togglePublish(item: Item) {
     const s = item.status === "published" ? "draft" : "published";
-    // Só deixa publicar se o dono escolheu uma foto ou uma cor de propósito —
+    // Só deixa publicar se o dono escolheu uma foto ou uma cor de propósito , 
     // "neutro" é o padrão de quem nunca mexeu, não uma escolha de verdade.
     if (s === "published" && !item.image_url && item.box_color === "neutro") {
-      await alertDialog("Escolha uma foto ou uma cor pra esse item antes de publicar — assim ele fica com cara de coisa pensada, não em branco.");
+      await alertDialog("Escolha uma foto ou uma cor pra esse item antes de publicar, assim ele fica com cara de coisa pensada, não em branco.");
       setEditingId(item.id);
       return;
     }
@@ -623,7 +623,7 @@ export function ShowcaseBuilder({
       {importMsg && <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>}
 
       {/* Título e subtítulo que aparecem no topo da página de catálogo pro
-          visitante. Em branco, usa o padrão: "[Nome] — Catálogo" / "Explore
+          visitante. Em branco, usa o padrão: "[Nome], Catálogo" / "Explore
           nossas soluções." */}
       <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
         <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Título da página de catálogo</p>
@@ -632,7 +632,7 @@ export function ShowcaseBuilder({
           value={catalogTitle}
           onChange={(e) => setCatalogTitle(e.target.value)}
           onBlur={saveCatalogTexts}
-          placeholder={`${businessName} — Catálogo`}
+          placeholder={`${businessName}, Catálogo`}
           className="mt-3 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
         />
         <input
@@ -644,7 +644,7 @@ export function ShowcaseBuilder({
         />
       </div>
 
-      {/* Capa da Vitrine — opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
+      {/* Capa da Vitrine, opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
       <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Capa da Vitrine (opcional)</p>
@@ -653,7 +653,7 @@ export function ShowcaseBuilder({
           </button>
         </div>
         <HelperText>
-          Uma ou mais fotos grandes no topo da sua Vitrine, antes dos itens — com mais de uma, vira um carrossel (até 6). Pode usar fotos da empresa, da equipe, do espaço ou dos bastidores, por exemplo.
+          Uma ou mais fotos grandes no topo da sua Vitrine, antes dos itens, com mais de uma, vira um carrossel (até 6). Pode usar fotos da empresa, da equipe, do espaço ou dos bastidores, por exemplo.
         </HelperText>
         <div className="mt-4">
           <GalleryUpload
@@ -705,7 +705,7 @@ export function ShowcaseBuilder({
                 </div>
                 <p className="text-[12px] leading-relaxed text-text-secondary">
                   É assim que fica: o nome vira o destaque, com fundo colorido no lugar da foto. Dá pra trocar a cor ou
-                  adicionar uma foto depois, quando quiser — não precisa ser agora.
+                  adicionar uma foto depois, quando quiser, não precisa ser agora.
                 </p>
               </div>
             )}
@@ -725,7 +725,7 @@ export function ShowcaseBuilder({
         <div className="mt-6 rounded-[28px] border border-divider bg-surface-white p-6">
           <p className="text-[15px] font-medium">✦ Comece importando seu catálogo</p>
           <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-            Cole o link do seu site e a Orbi organiza seus produtos ou serviços na Vitrine automaticamente — muito
+            Cole o link do seu site e a Orbi organiza seus produtos ou serviços na Vitrine automaticamente, muito
             mais rápido do que criar item por item.
           </p>
           <button
@@ -825,7 +825,7 @@ export function ShowcaseBuilder({
         })}
       </div>
 
-      {/* Orbi Insight — um lote de 7 ângulos diferentes pra navegar sem repetir. */}
+      {/* Orbi Insight, um lote de 7 ângulos diferentes pra navegar sem repetir. */}
       {items.length > 0 && (
         <OrbiInsightCard className="mt-6">
           <div className="flex items-start justify-between gap-3">
@@ -839,7 +839,7 @@ export function ShowcaseBuilder({
           <OrbiInsightMessage>
             {insights?.[insightIdx] ??
               (publishedCount === 0
-                ? "Nenhum item está ativo — os visitantes ainda não veem nada na sua vitrine. Publique pelo menos um."
+                ? "Nenhum item está ativo, os visitantes ainda não veem nada na sua vitrine. Publique pelo menos um."
                 : `Você tem ${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}. Toque abaixo pra Orbi analisar sua vitrine de verdade.`)}
           </OrbiInsightMessage>
           <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -910,7 +910,7 @@ function CoverExampleModal({ onClose }: { onClose: () => void }) {
 
         {/* Vitrine de exemplo, rolável. Capa iluminada em cima; itens esmaecidos. */}
         <div className="mt-3 max-h-[62vh] overflow-y-auto px-4 pb-4">
-          {/* CAPA — destacada (anel + sombra), o foco da tela */}
+          {/* CAPA, destacada (anel + sombra), o foco da tela */}
           <div className="relative">
             <div className="absolute -inset-2 rounded-[22px] bg-[#8FC7B5]/40 blur-md" />
             <div className="relative overflow-hidden rounded-[18px] shadow-[0_10px_30px_rgba(0,0,0,0.18)] ring-2 ring-[#8FC7B5]" style={{ aspectRatio: 1920 / 830 }}>
@@ -928,7 +928,7 @@ function CoverExampleModal({ onClose }: { onClose: () => void }) {
           {/* Nome do negócio de exemplo */}
           <p className="mt-4 px-1 font-[family-name:var(--font-manrope)] text-[18px] font-semibold text-[#3A4A44] opacity-40">Gelato Bello</p>
 
-          {/* Itens da vitrine — esmaecidos, só pra dar contexto de "tela cheia" */}
+          {/* Itens da vitrine, esmaecidos, só pra dar contexto de "tela cheia" */}
           <div className="mt-2 grid grid-cols-2 gap-2 opacity-40 [grid-auto-flow:dense]">
             {COVER_EXAMPLE_ITEMS.map((item, i) => (
               <div key={i} className={`relative overflow-hidden rounded-[14px] bg-surface-white ${EX_SPAN[item.size]}`}>
@@ -944,7 +944,7 @@ function CoverExampleModal({ onClose }: { onClose: () => void }) {
 
         <div className="border-t border-divider bg-background-main p-4">
           <p className="text-[12.5px] leading-relaxed text-text-secondary">
-            A capa fica no topo, antes dos produtos. Com mais de uma foto, vira um carrossel que desliza sozinho — ótimo
+            A capa fica no topo, antes dos produtos. Com mais de uma foto, vira um carrossel que desliza sozinho, ótimo
             pra mostrar o espaço, a equipe ou o clima do seu negócio.
           </p>
           <button onClick={onClose} className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
@@ -1040,15 +1040,15 @@ function ItemCard({
   // foto). Sem escolha, o rodapé fica branco puro, como sempre foi.
   const fc = item.footer_color ? colorOf(item.footer_color) : null;
   const hasPhoto = !!item.image_url && !imgFailed;
-  // Tinha foto, mas o link quebrou — diferente de "nunca teve foto".
+  // Tinha foto, mas o link quebrou, diferente de "nunca teve foto".
   const broken = !!item.image_url && imgFailed;
   const ratio = COVER_RATIO_BY_SIZE[size];
   const priceLabel = formatPrice(item);
-  // "Médio" fica lado a lado (dois por linha) quando fechado — os outros
+  // "Médio" fica lado a lado (dois por linha) quando fechado, os outros
   // formatos e o modo de edição sempre ocupam a linha inteira.
   const widthClass = !editing && size === "medio" ? "w-[calc(50%-10px)]" : "w-full";
 
-  // Foto quebrada não pode continuar visível pro público — pausa sozinho e
+  // Foto quebrada não pode continuar visível pro público, pausa sozinho e
   // avisa o dono, em vez de deixar um box com aparência de erro no ar.
   useEffect(() => {
     if (broken && item.status === "published") {
@@ -1078,7 +1078,7 @@ function ItemCard({
             className="h-full w-full object-cover"
             onError={() => setImgFailed(true)}
             onLoad={(e) => {
-              // Alguns links "carregam" mas devolvem um arquivo vazio/corrompido —
+              // Alguns links "carregam" mas devolvem um arquivo vazio/corrompido , 
               // o navegador não dispara onError nesse caso, então checamos o tamanho real.
               const img = e.currentTarget;
               if (img.naturalWidth === 0 || img.naturalHeight === 0) setImgFailed(true);
@@ -1099,7 +1099,7 @@ function ItemCard({
         ) : editing ? (
           <div className="h-full w-full" style={{ backgroundColor: broken ? "#FBEAEA" : c.bg }} />
         ) : broken ? (
-          // Link da foto quebrou — item já foi pausado sozinho (useEffect acima).
+          // Link da foto quebrou, item já foi pausado sozinho (useEffect acima).
           // Clique é tratado pelo container pai, então isso é só uma div visual.
           <div
             className="flex h-full w-full flex-col items-center justify-center gap-2 px-12 text-center"
@@ -1110,11 +1110,11 @@ function ItemCard({
               Foto não carregou
             </span>
             <span className="text-[12px] leading-snug text-red-700/80">
-              Pausado até você trocar a foto — o público não vê mais este item.
+              Pausado até você trocar a foto, o público não vê mais este item.
             </span>
           </div>
         ) : (
-          // Sem foto: o próprio nome vira o conteúdo do box — centralizado, sem
+          // Sem foto: o próprio nome vira o conteúdo do box, centralizado, sem
           // rodapé branco separado. O card inteiro (tratado pelo container pai) continua clicável pra editar.
           <div
             className="flex h-full w-full flex-col items-center justify-center gap-2 px-6 text-center"
@@ -1128,7 +1128,7 @@ function ItemCard({
                 {priceLabel}
               </span>
             )}
-            {/* No editor, o card sem foto convida o dono a agir — não é o
+            {/* No editor, o card sem foto convida o dono a agir, não é o
                 CTA do visitante ("Quero saber mais"), que só faz sentido na
                 página pública. */}
             <span
@@ -1161,7 +1161,7 @@ function ItemCard({
           </button>
         )}
 
-        {/* Selos no canto — só o que precisa da foto pra fazer sentido fica aqui.
+        {/* Selos no canto, só o que precisa da foto pra fazer sentido fica aqui.
             O status (Ativo/Rascunho) agora mora no rodapé branco, junto do título,
             exceto quando não tem rodapé (sem foto ou foto quebrada). */}
         <div className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
@@ -1192,7 +1192,7 @@ function ItemCard({
         <div className="p-5">
           {!editing ? (
             hasPhoto && item.title_placement === "sobre" ? (
-              // Nome já aparece sobre a foto — aqui embaixo fica só o status,
+              // Nome já aparece sobre a foto, aqui embaixo fica só o status,
               // sem repetir título/descrição/preço.
               <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
                 <span
@@ -1235,9 +1235,9 @@ function ItemCard({
               active={showIntroTour}
               onDone={() => onIntroDone?.()}
               steps={[
-                { id: "item-formato", title: "Formato do card", body: "Escolha como esse item aparece na grade da Vitrine — de destaque, largo, médio ou alto. Dá pra mudar quando quiser." },
+                { id: "item-formato", title: "Formato do card", body: "Escolha como esse item aparece na grade da Vitrine, de destaque, largo, médio ou alto. Dá pra mudar quando quiser." },
                 { id: "item-capa", title: "Foto de capa", body: "É a imagem que aparece no card, dentro da Vitrine. Segue o formato escolhido acima." },
-                { id: "item-destino", title: "Página própria do produto", body: "Ative \"Abrir uma página exclusiva\" pra esse item ganhar sua própria página, com carrossel de fotos, descrição e preço — ótimo pra apresentar bem antes da venda." },
+                { id: "item-destino", title: "Página própria do produto", body: "Ative \"Abrir uma página exclusiva\" pra esse item ganhar sua própria página, com carrossel de fotos, descrição e preço, ótimo pra apresentar bem antes da venda." },
               ]}
             />
             <div className="flex items-start justify-between gap-3">
@@ -1295,7 +1295,7 @@ function ItemCard({
                   value={item.image_url}
                   businessId={businessId}
                   lockedRatio={COVER_RATIO_BY_SIZE[size]}
-                  lockedReason="Segue o formato do box escolhido acima — pra mudar, troque o formato."
+                  lockedReason="Segue o formato do box escolhido acima, pra mudar, troque o formato."
                   promptSubject={item.title}
                   onChange={(url) => save(item.id, { image_url: url, image_is_placeholder: false, box_style: url ? "foto" : "cor" })}
                 />
@@ -1309,10 +1309,10 @@ function ItemCard({
                 </p>
                 <p className="mt-3 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Fotos e vídeos (até 6)</p>
                 <HelperText>
-                  Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos/vídeos que viram um carrossel dentro dela — pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
+                  Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos/vídeos que viram um carrossel dentro dela, pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
                 </HelperText>
                 <HelperText>
-                  {`Repara: esse carrossel é sempre em formato retrato — diferente da foto de capa lá em cima, que segue o formato do card (${SIZE_LABEL[sizeOf(item.layout_size)]}). São duas coisas independentes.`}
+                  {`Repara: esse carrossel é sempre em formato retrato, diferente da foto de capa lá em cima, que segue o formato do card (${SIZE_LABEL[sizeOf(item.layout_size)]}). São duas coisas independentes.`}
                 </HelperText>
                 <div className="mt-3">
                   <GalleryUpload
@@ -1326,7 +1326,7 @@ function ItemCard({
 
                 <YoutubeAdder
                   videos={item.gallery_urls.filter((u) => isVideoUrl(u))}
-                  hint="Cole o link — ele entra na grade acima, no fim da fila. Depois é só usar as setinhas pra mover pra posição que quiser."
+                  hint="Cole o link, ele entra na grade acima, no fim da fila. Depois é só usar as setinhas pra mover pra posição que quiser."
                   showList={false}
                   onAdd={(url) => {
                     if (item.gallery_urls.includes(url)) return;
@@ -1404,7 +1404,7 @@ function ItemCard({
                   </button>
                 </div>
                 <p className="mt-1 text-[11px] text-text-tertiary">
-                  &quot;Sobre a imagem&quot; deixa o nome dentro da foto, com um degradê pra ficar legível — visual mais editorial.
+                  &quot;Sobre a imagem&quot; deixa o nome dentro da foto, com um degradê pra ficar legível, visual mais editorial.
                 </p>
               </div>
             )}
@@ -1427,7 +1427,7 @@ function ItemCard({
               </div>
               {item.price_type === "consulta" ? (
                 <p className="mt-2 text-[12px] text-text-tertiary">
-                  Sem valor — o card mostra só &quot;Sob consulta&quot;. Ideal quando o preço depende do projeto ou é combinado no contato.
+                  Sem valor, o card mostra só &quot;Sob consulta&quot;. Ideal quando o preço depende do projeto ou é combinado no contato.
                 </p>
               ) : (
                 <div className="mt-2 flex gap-2">
@@ -1455,7 +1455,7 @@ function ItemCard({
 
             <div>
               <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Agendar (opcional)</p>
-              <HelperText>Publica e some da Vitrine sozinho nas datas escolhidas — bom pra promoção por tempo limitado.</HelperText>
+              <HelperText>Publica e some da Vitrine sozinho nas datas escolhidas, bom pra promoção por tempo limitado.</HelperText>
               <div className="mt-3 flex gap-2">
                 <div className="flex-1">
                   <p className="text-[12px] text-text-tertiary">Começa em</p>
@@ -1521,7 +1521,7 @@ function ItemCard({
                     Abrir uma página exclusiva do produto
                   </span>
                   <span className="text-[13px] leading-relaxed text-text-secondary">
-                    O Orbibox monta uma página só desse item — com a capa, as fotos do carrossel, a descrição e o preço. Ideal pra apresentar bem antes do cliente decidir.
+                    O Orbibox monta uma página só desse item, com a capa, as fotos do carrossel, a descrição e o preço. Ideal pra apresentar bem antes do cliente decidir.
                   </span>
                 </button>
 
@@ -1535,7 +1535,7 @@ function ItemCard({
                     Levar para um link externo
                   </span>
                   <span className="text-[13px] leading-relaxed text-text-secondary">
-                    Manda o cliente direto pra outro lugar — seu site, uma loja, o WhatsApp. Não abre página no Orbibox.
+                    Manda o cliente direto pra outro lugar, seu site, uma loja, o WhatsApp. Não abre página no Orbibox.
                   </span>
                 </button>
 
@@ -1560,7 +1560,7 @@ function ItemCard({
                     value={item.target_url ?? ""}
                     onChange={(e) => patch(item.id, { target_url: e.target.value })}
                     onBlur={(e) => save(item.id, { target_url: e.target.value || null })}
-                    placeholder="Cole o link aqui — https://…"
+                    placeholder="Cole o link aqui, https://…"
                     className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
                   />
                   {whatsapp && (

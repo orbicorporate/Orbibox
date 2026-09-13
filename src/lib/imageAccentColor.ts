@@ -3,10 +3,10 @@ import { BOX_COLORS } from "@/lib/showcase";
 
 /**
  * Olha pra uma foto de produto e devolve a chave de uma cor curada (de
- * BOX_COLORS) que combina com ela — baseada na cor predominante do PRODUTO
+ * BOX_COLORS) que combina com ela, baseada na cor predominante do PRODUTO
  * em si, ignorando fundo branco/cinza de estúdio (muito comum em foto de
  * catálogo). Se a foto não tiver uma cor clara de sobra (preto e branco,
- * cinza, etc.), devolve null — o item fica "neutro" mesmo, sem forçar cor.
+ * cinza, etc.), devolve null, o item fica "neutro" mesmo, sem forçar cor.
  *
  * Só roda no servidor (usa `sharp`, processamento nativo de imagem).
  */
@@ -16,7 +16,7 @@ export async function extractAccentBoxColor(imageUrl: string): Promise<string | 
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
 
-    // Reduz bem pequeno — só precisamos de uma amostra representativa, não
+    // Reduz bem pequeno, só precisamos de uma amostra representativa, não
     // qualidade. Mais rápido e mais barato.
     const { data, info } = await sharp(buf)
       .resize(48, 48, { fit: "inside" })
@@ -34,13 +34,13 @@ export async function extractAccentBoxColor(imageUrl: string): Promise<string | 
       const lightness = (max + min) / 2;
       const sat = max === min ? 0 : (max - min) / (255 - Math.abs(2 * lightness - 255));
       // Pula fundo de estúdio: quase branco, quase preto, ou baixa saturação
-      // (cinza) — sobra só o que tem "cor de verdade", que costuma ser o produto.
+      // (cinza), sobra só o que tem "cor de verdade", que costuma ser o produto.
       if (lightness > 235 || lightness < 20 || sat < 0.12) continue;
       r += pr; g += pg; b += pb; count++;
     }
 
     // Sem cor de sobra o bastante (produto em preto/branco/cinza, ou foto
-    // quase toda fundo) — não força nada, deixa neutro.
+    // quase toda fundo), não força nada, deixa neutro.
     if (count < totalPixels * 0.06) return null;
 
     r /= count; g /= count; b /= count;
@@ -60,7 +60,7 @@ export async function extractAccentBoxColor(imageUrl: string): Promise<string | 
     }
     return bestKey;
   } catch {
-    // Falha de rede, formato não suportado, timeout — sem problema, o item
+    // Falha de rede, formato não suportado, timeout, sem problema, o item
     // só fica sem cor de destaque (comportamento de hoje).
     return null;
   }

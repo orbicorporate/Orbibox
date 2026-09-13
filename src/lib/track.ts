@@ -26,7 +26,7 @@ export async function trackClick(params: {
       target_url: params.targetUrl ?? null,
     });
   } catch {
-    // silencioso de propósito — medir não pode atrapalhar o visitante
+    // silencioso de propósito, medir não pode atrapalhar o visitante
   }
 }
 

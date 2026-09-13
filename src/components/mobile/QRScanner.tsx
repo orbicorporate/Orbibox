@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import jsQR from "jsqr";
 
-/** Leitor de QR pela câmera — abre a câmera traseira, procura um QR em cada
+/** Leitor de QR pela câmera, abre a câmera traseira, procura um QR em cada
  * quadro e devolve o texto lido. Usa jsQR (JavaScript puro) porque a API
  * nativa de leitura do navegador não existe no Safari do iPhone. */
 export function QRScanner({ onDetect, onClose }: { onDetect: (text: string) => void; onClose: () => void }) {
@@ -78,7 +78,7 @@ export function QRScanner({ onDetect, onClose }: { onDetect: (text: string) => v
       <div className="relative flex-1 overflow-hidden">
         <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
         <canvas ref={canvasRef} className="hidden" />
-        {/* Moldura de mira — só visual, ajuda a pessoa a apontar */}
+        {/* Moldura de mira, só visual, ajuda a pessoa a apontar */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="h-60 w-60 rounded-[28px] border-[3px] border-white/85 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]" />
         </div>

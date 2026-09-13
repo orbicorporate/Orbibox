@@ -34,7 +34,7 @@ export function ReferralPanel({ code, assinaram, mesesGanhos, naCarencia }: { co
         <span className="relative text-[30px]">🎁</span>
         <p className="relative mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-tight">Indique e ganhe 1 mês grátis</p>
         <p className="relative mt-2 text-[14px] leading-relaxed text-on-background/80">
-          Cada amigo que assinar o plano anual pelo seu link dá <span className="font-semibold">1 mês grátis pra você</span> — e pra ele também. Sem limite de indicações.
+          Cada amigo que assinar o plano anual pelo seu link dá <span className="font-semibold">1 mês grátis pra você</span>, e pra ele também. Sem limite de indicações.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export function ReferralPanel({ code, assinaram, mesesGanhos, naCarencia }: { co
         <p className="text-[13px] font-semibold">Como funciona</p>
         <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
           Você compartilha seu link. Quando um amigo cria a conta por ele e assina o plano anual, o mês grátis entra
-          pros dois 7 dias depois — o tempo de garantir que a assinatura ficou de pé. O mês é somado à sua próxima
+          pros dois 7 dias depois, o tempo de garantir que a assinatura ficou de pé. O mês é somado à sua próxima
           renovação, automaticamente.
         </p>
       </div>

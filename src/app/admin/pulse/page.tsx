@@ -40,7 +40,7 @@ export default async function PulsePage({
     sessoesQuery,
   ]);
 
-  // Origem do tráfego e dispositivo — de onde vêm os visitantes e em que
+  // Origem do tráfego e dispositivo, de onde vêm os visitantes e em que
   // aparelho. Normaliza variações (valores antigos em inglês + novos) pra não
   // aparecerem duplicados nas barras.
   const normalizaOrigem = (raw: string | null): string => {
@@ -82,7 +82,7 @@ export default async function PulsePage({
   for (const it of itemsRes.data ?? []) itemMap[it.id] = { title: it.title, image_url: it.image_url, brand_label: it.brand_label };
 
   const porTipo: Record<string, number> = {};
-  // Quais itens específicos foram clicados dentro de cada tipo de ação —
+  // Quais itens específicos foram clicados dentro de cada tipo de ação , 
   // é isso que abre o detalhe ao expandir uma linha.
   const porTipoItem: Record<string, Record<string, number>> = {};
   const porItemGeral: Record<string, number> = {};
@@ -114,7 +114,7 @@ export default async function PulsePage({
   // Quantos por cento das visitas resultaram em alguma ação.
   const taxa = visitas > 0 ? Math.min(100, Math.round((totalCliques / visitas) * 100)) : 0;
 
-  // Série ao longo do tempo — dias ou meses, dependendo do período filtrado.
+  // Série ao longo do tempo, dias ou meses, dependendo do período filtrado.
   const { valores: porDia, labels: labelsDia } = buildSeries(cliques, since, until);
   const maxDia = Math.max(1, ...porDia);
   const w = 320, h = 90;
@@ -157,7 +157,7 @@ export default async function PulsePage({
         </div>
       </div>
 
-      {/* Filtro de período — logo acima dos números que ele afeta, pra ficar
+      {/* Filtro de período, logo acima dos números que ele afeta, pra ficar
           claro que tudo abaixo respeita o período escolhido. */}
       <p className="mt-6 text-[12px] uppercase tracking-wide text-text-tertiary">Período</p>
       <PulseDateFilter />
@@ -175,7 +175,7 @@ export default async function PulsePage({
         <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
           <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Ainda sem cliques</p>
           <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-            Assim que alguém abrir seu link e tocar num box ou num contato, os números aparecem aqui —
+            Assim que alguém abrir seu link e tocar num box ou num contato, os números aparecem aqui , 
             separados por tipo de ação.
           </p>
           <Link href="/admin/vitrine" className="mt-5 inline-flex rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white">
@@ -197,7 +197,7 @@ export default async function PulsePage({
         </div>
       )}
 
-      {/* Recomendação da Orbi vem logo antes do "atraia gente" — a leitura
+      {/* Recomendação da Orbi vem logo antes do "atraia gente", a leitura
           fica lógica: aqui está o insight → e aqui está como agir sobre ele. */}
       <PulseRecomendacao businessId={business!.id} topItem={topItemRec} hasAiChat={pulseAccess.hasAiChat} orbiColors={pulseOrbiColors} />
 

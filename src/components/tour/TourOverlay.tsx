@@ -87,7 +87,7 @@ export function TourOverlay({ businessId }: { businessId: string }) {
   }
 
   // Posição do cartão: perto do alvo quando ele foi encontrado, senão
-  // centralizado na tela — nunca deixa o usuário sem explicação nenhuma.
+  // centralizado na tela, nunca deixa o usuário sem explicação nenhuma.
   const cardTop = rect
     ? Math.min(Math.max(rect.top + rect.height + 16, 16), window.innerHeight - 220)
     : undefined;

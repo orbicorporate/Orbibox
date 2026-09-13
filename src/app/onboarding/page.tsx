@@ -49,7 +49,7 @@ export default function OnboardingPage() {
   const [colors, setColors] = useState<Color[]>([]);
   const [newColor, setNewColor] = useState("#111318");
 
-  // O que a Orbi entendeu do site — mostrado na tela de resultado, com o
+  // O que a Orbi entendeu do site, mostrado na tela de resultado, com o
   // porquê explicado, pra nunca ser uma caixa preta.
   const [importSummary, setImportSummary] = useState<{
     imported: number;
@@ -147,7 +147,7 @@ export default function OnboardingPage() {
 
     await supabase.from("agent_configs").insert({ business_id: business.id, agent_name: "Orbi", objectives: ["vender", "informar"] });
     await supabase.from("pulse_metrics").insert({ business_id: business.id, discovery_score: 62, interest_score: 58, conversion_score: 41, relationship_score: 70, overall_score: 58 });
-    // O link do site já foi informado no DNA da Marca — a Orbi importa o catálogo agora,
+    // O link do site já foi informado no DNA da Marca, a Orbi importa o catálogo agora,
     // sem pedir a mesma informação duas vezes. O tipo de site que ela descobre aqui
     // decide quais botões da tela inicial fazem sentido pra esse negócio.
     let importados = 0;
@@ -176,7 +176,7 @@ export default function OnboardingPage() {
     }
 
     // Loja vende, então Comprar e Presentear na frente. Serviço não tem o que
-    // "comprar" direto — Conhecer e tirar dúvida importam mais. Sem site, deixa
+    // "comprar" direto, Conhecer e tirar dúvida importam mais. Sem site, deixa
     // tudo ligado e o dono decide depois em Boxes.
     const ativos =
       siteType === "ecommerce"
@@ -193,7 +193,7 @@ export default function OnboardingPage() {
       { business_id: business.id, box_type: "campaign", title: "Seleção de Presentes", position: 4, is_active: ativos.campaign },
     ]);
 
-    // Se a Orbi achou um WhatsApp no site, já cria o botão pronto — o dono só confirma.
+    // Se a Orbi achou um WhatsApp no site, já cria o botão pronto, o dono só confirma.
     if (siteType) {
       const { data: atualizado } = await supabase.from("businesses").select("contact_whatsapp").eq("id", business.id).maybeSingle();
       if (atualizado?.contact_whatsapp) {
@@ -223,7 +223,7 @@ export default function OnboardingPage() {
       oportunidades.unshift({
         business_id: business.id,
         title: "Importe seu catálogo",
-        description: "Cole o link do seu site na Vitrine — a Orbi transforma seus produtos em boxes automaticamente.",
+        description: "Cole o link do seu site na Vitrine, a Orbi transforma seus produtos em boxes automaticamente.",
         category: "descoberta",
         impact_score: 92,
       });
@@ -261,7 +261,7 @@ export default function OnboardingPage() {
             <form onSubmit={startAnalysis} className="mt-8 flex flex-col gap-4">
               <input required placeholder="Nome do negócio" value={name} onChange={(e) => setName(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <input placeholder="@seuinstagram" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
-              <input placeholder="seusite.com.br — de onde vêm seus produtos" value={website} onChange={(e) => setWebsite(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <input placeholder="seusite.com.br, de onde vêm seus produtos" value={website} onChange={(e) => setWebsite(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <textarea
                 placeholder="Em poucas palavras, o que vocês fazem? (a Orbi usa isso pra conversar com seus clientes, mesmo sem site)"
                 value={description}
@@ -277,7 +277,7 @@ export default function OnboardingPage() {
         {step === "analisando" && (
           <div className="flex flex-col items-center gap-4 py-12 text-center">
             <OrbiOrb size={120} />
-            <p className="mt-2 text-[15px] text-text-secondary">A Orbi está lendo sua marca — extraindo personalidade, paleta, tom de voz e tipografia…</p>
+            <p className="mt-2 text-[15px] text-text-secondary">A Orbi está lendo sua marca, extraindo personalidade, paleta, tom de voz e tipografia…</p>
           </div>
         )}
 
@@ -285,7 +285,7 @@ export default function OnboardingPage() {
           <div className="flex flex-col items-center gap-4 py-12 text-center">
             <OrbiOrb size={120} />
             <p className="mt-2 text-[15px] text-text-secondary">
-              A Orbi está lendo {website || "seu site"} e montando sua vitrine — isso leva alguns segundos…
+              A Orbi está lendo {website || "seu site"} e montando sua vitrine, isso leva alguns segundos…
             </p>
           </div>
         )}
@@ -300,7 +300,7 @@ export default function OnboardingPage() {
                   Não consegui ler seu site sozinha
                 </h1>
                 <p className="text-center text-[14px] text-text-secondary">
-                  {importSummary.fetchError} Isso costuma acontecer quando o site bloqueia acesso automático — sem problema,
+                  {importSummary.fetchError} Isso costuma acontecer quando o site bloqueia acesso automático, sem problema,
                   você monta a vitrine na mão em poucos minutos, ou tenta importar de novo depois em Configurações.
                 </p>
               </>
@@ -319,7 +319,7 @@ export default function OnboardingPage() {
                 </div>
                 <p className="text-[14px] leading-relaxed text-text-secondary">
                   {importSummary.siteType === "ecommerce" ? (
-                    <>Organizei sua vitrine em <b>{importSummary.imported} categorias</b> — não em produto por produto, pra não ficar longo demais. Cada uma leva o visitante direto pra página certa no seu site.</>
+                    <>Organizei sua vitrine em <b>{importSummary.imported} categorias</b>, não em produto por produto, pra não ficar longo demais. Cada uma leva o visitante direto pra página certa no seu site.</>
                   ) : (
                     <>Criei <b>{importSummary.imported} {importSummary.imported === 1 ? "box" : "boxes"}</b> na sua vitrine, um pra cada serviço ou produto que encontrei.</>
                   )}
@@ -329,14 +329,14 @@ export default function OnboardingPage() {
               <>
                 <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">Tudo pronto</h1>
                 <p className="text-center text-[14px] text-text-secondary">
-                  Você não passou um site, então a vitrine começa vazia — monta ela do seu jeito quando quiser.
+                  Você não passou um site, então a vitrine começa vazia, monta ela do seu jeito quando quiser.
                 </p>
               </>
             ) : (
               <>
                 <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">Tudo pronto</h1>
                 <p className="text-center text-[14px] text-text-secondary">
-                  Não encontrei itens claros pra importar — sem problema, você adiciona na Vitrine quando quiser.
+                  Não encontrei itens claros pra importar, sem problema, você adiciona na Vitrine quando quiser.
                 </p>
               </>
             )}
@@ -355,7 +355,7 @@ export default function OnboardingPage() {
                   <p className="text-[13px] font-medium">✦ A Orbi ainda não conhece seu negócio</p>
                   <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
                     Sem site nem descrição, ela não sabe o que responder pros seus clientes ainda. Leva 30 segundos pra
-                    resolver — vale a pena antes de compartilhar seu link.
+                    resolver, vale a pena antes de compartilhar seu link.
                   </p>
                   <Link href="/admin/boxes" className="mt-3 inline-block text-[13px] font-medium underline">
                     Contar sobre o negócio →
@@ -372,7 +372,7 @@ export default function OnboardingPage() {
           <>
             <div className="flex items-center gap-2"><OrbBadge state="done" label="Mini manual da marca" /></div>
             <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[24px] font-medium">{name || "Sua marca"}</h1>
-            <p className="mt-1 text-[13px] text-text-tertiary">A Orbi sugeriu isto — ajuste tudo como quiser antes de confirmar.</p>
+            <p className="mt-1 text-[13px] text-text-tertiary">A Orbi sugeriu isto, ajuste tudo como quiser antes de confirmar.</p>
 
             {/* Personalidade */}
             <p className="mt-6 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Personalidade</p>
@@ -385,7 +385,7 @@ export default function OnboardingPage() {
               ))}
             </div>
 
-            {/* Paleta editável — toque na cor pra trocar, × pra remover */}
+            {/* Paleta editável, toque na cor pra trocar, × pra remover */}
             <p className="mt-7 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Paleta de cores</p>
             <p className="mt-1 text-[12px] text-text-tertiary">Toque numa cor para trocar. Use × para remover.</p>
             <div className="mt-3 flex flex-wrap items-start gap-4">

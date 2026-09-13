@@ -23,7 +23,7 @@ export default function LoginPage() {
     setLoading(false);
     if (error) {
       if (error.message.toLowerCase().includes("email not confirmed")) {
-        setError("Confirme seu e-mail antes de entrar — verifique sua caixa de entrada.");
+        setError("Confirme seu e-mail antes de entrar, verifique sua caixa de entrada.");
       } else {
         setError("E-mail ou senha inválidos.");
       }

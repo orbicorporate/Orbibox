@@ -97,14 +97,14 @@ export function RedeemCodeCard({
 
       {open && (
         <>
-          {/* Cupom fixo (painel individual) — deixa explícito qual está sendo resgatado */}
+          {/* Cupom fixo (painel individual), deixa explícito qual está sendo resgatado */}
           {fixedVoucherId && selectedTitle && (
             <p className="mt-4 rounded-2xl px-3.5 py-2.5 text-[13px] font-medium" style={{ backgroundColor: CHERRY_SOFT_BG, color: CHERRY_TEXT }}>
               Validando o cupom: {selectedTitle}
             </p>
           )}
 
-          {/* Seletor de cupom — deixa explícito qual cupom está sendo
+          {/* Seletor de cupom, deixa explícito qual cupom está sendo
               resgatado. Só aparece quando há mais de um e o card não é de
               um cupom fixo. */}
           {!fixedVoucherId && vouchers && vouchers.length > 1 && (

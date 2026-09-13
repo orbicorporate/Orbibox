@@ -10,7 +10,7 @@ export const RATIOS: Record<Ratio, { value: number; label: string }> = {
   banner: { value: 1920 / 830, label: "Banner (bem largo)" },
 };
 
-/** Medida em pixels recomendada pra cada formato — o que a pessoa cola no
+/** Medida em pixels recomendada pra cada formato, o que a pessoa cola no
  * gerador de imagem (GPT, Midjourney etc.) pra já sair no tamanho certo. */
 export const RATIO_PIXELS: Record<Ratio, string> = {
   quadrado: "1080 x 1080 px",
@@ -22,10 +22,10 @@ export const RATIO_PIXELS: Record<Ratio, string> = {
 const FRAME_W = 300;
 
 /**
- * O que você vê dentro da moldura é exatamente o que vira a foto — arrasta
+ * O que você vê dentro da moldura é exatamente o que vira a foto, arrasta
  * pra posicionar, usa o controle pra aproximar. Sem matemática pro dono ver.
  * Se `lockedRatio` vier preenchido, o formato já foi decidido pela primeira
- * foto desse item — as outras opções ficam travadas, com o motivo explicado,
+ * foto desse item, as outras opções ficam travadas, com o motivo explicado,
  * pra capa e galeria nunca ficarem misturando proporção.
  */
 export function ImageCropModal({
@@ -47,7 +47,7 @@ export function ImageCropModal({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ startX: number; startY: number; origin: { x: number; y: number } } | null>(null);
 
-  // Uma URL de objeto por arquivo — sem efeito, sem setState fora de handler.
+  // Uma URL de objeto por arquivo, sem efeito, sem setState fora de handler.
   const imgUrl = useMemo(() => URL.createObjectURL(file), [file]);
   const [lastUrl, setLastUrl] = useState<string | null>(null);
   if (lastUrl !== imgUrl) {
@@ -66,7 +66,7 @@ export function ImageCropModal({
   const dispW = natural ? natural.w * scale : 0;
   const dispH = natural ? natural.h * scale : 0;
 
-  // Sempre que troca de formato ou imagem, recentraliza — ajustado durante o
+  // Sempre que troca de formato ou imagem, recentraliza, ajustado durante o
   // render (comparando com a última combinação vista), sem efeito.
   const resetKey = `${ratio}:${imgUrl}`;
   const [lastResetKey, setLastResetKey] = useState(resetKey);
@@ -159,7 +159,7 @@ export function ImageCropModal({
         </div>
         {lockedRatio && (
           <p className="mt-2 text-center text-[11px] text-text-tertiary">
-            {lockedReason ?? `A primeira foto deste item já definiu ${RATIOS[lockedRatio].label.toLowerCase()} — as próximas seguem o mesmo formato, pra capa e galeria combinarem.`}
+            {lockedReason ?? `A primeira foto deste item já definiu ${RATIOS[lockedRatio].label.toLowerCase()}, as próximas seguem o mesmo formato, pra capa e galeria combinarem.`}
           </p>
         )}
 

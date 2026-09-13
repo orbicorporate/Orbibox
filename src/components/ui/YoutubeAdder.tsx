@@ -5,12 +5,12 @@ import { youtubeId, instagramReelId, isVideoUrl } from "@/lib/showcase";
 import { HelperText } from "@/components/ui/HelperText";
 
 /** Campo pra adicionar vídeos (YouTube ou Reels do Instagram) a um carrossel
- * (produto ou história da marca) — reaproveitado em mais de um lugar do
- * painel. YouTube entra sempre em paisagem; Reels sempre em vertical — cada
+ * (produto ou história da marca), reaproveitado em mais de um lugar do
+ * painel. YouTube entra sempre em paisagem; Reels sempre em vertical, cada
  * um no formato que o vídeo realmente tem.
  *
  * `showList` (padrão true) mostra a lista dos já adicionados com botão de
- * remover — desligue quando o vídeo já aparece em outro lugar (ex: dentro da
+ * remover, desligue quando o vídeo já aparece em outro lugar (ex: dentro da
  * grade de fotos, que também reordena), pra não duplicar o controle. */
 export function YoutubeAdder({
   videos,
@@ -18,7 +18,7 @@ export function YoutubeAdder({
   onRemove,
   max = 3,
   label = "Vídeos (YouTube ou Reels)",
-  hint = "Cole o link de um vídeo do YouTube ou de um Reels do Instagram — ele entra no mesmo carrossel, junto das fotos, sempre no formato certo (paisagem ou vertical).",
+  hint = "Cole o link de um vídeo do YouTube ou de um Reels do Instagram, ele entra no mesmo carrossel, junto das fotos, sempre no formato certo (paisagem ou vertical).",
   showList = true,
 }: {
   videos: string[];

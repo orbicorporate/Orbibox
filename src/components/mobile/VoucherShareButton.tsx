@@ -32,7 +32,7 @@ async function buildVoucherImage(title: string, code: string, message: string): 
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
-  // Fundo — mesmo degradê vivo do card na tela.
+  // Fundo, mesmo degradê vivo do card na tela.
   const grad = ctx.createLinearGradient(0, 0, W, H);
   grad.addColorStop(0, "#A80F2B");
   grad.addColorStop(1, "#E4264C");
@@ -51,7 +51,7 @@ async function buildVoucherImage(title: string, code: string, message: string): 
   ctx.font = "800 92px system-ui, -apple-system, sans-serif";
   ctx.fillText(code, W / 2, 360);
 
-  // QR do código — a loja escaneia direto da foto salva, sem digitar.
+  // QR do código, a loja escaneia direto da foto salva, sem digitar.
   try {
     const qr = document.createElement("canvas");
     await QRCode.toCanvas(qr, code, { width: 260, margin: 1, color: { dark: "#111318", light: "#FFFFFF" } });
@@ -99,12 +99,12 @@ export function VoucherShareButton({ title, code, message, className }: { title:
           await navigator.share({ files: [file], title: `Cupom ${code}` });
           return;
         } catch {
-          // Pessoa cancelou a folha — não faz nada.
+          // Pessoa cancelou a folha, não faz nada.
           return;
         }
       }
 
-      // Sem share nativo (ex: desktop) — baixa a imagem direto.
+      // Sem share nativo (ex: desktop), baixa a imagem direto.
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

@@ -32,27 +32,27 @@ type Item = {
 
 export function ProductView({ business, item }: { business: Business; item: Item }) {
   const [active, setActive] = useState(0);
-  // A capa (image_url) só aparece sozinha quando não há carrossel próprio —
+  // A capa (image_url) só aparece sozinha quando não há carrossel próprio , 
   // se já existem outras fotos (gallery_urls), elas bastam e a capa não se repete.
   const images = item.gallery_urls.length > 0 ? item.gallery_urls : [item.image_url].filter((u): u is string => !!u);
-  // Mesmo formato escolhido no box — retrato ou paisagem, nunca mais o
+  // Mesmo formato escolhido no box, retrato ou paisagem, nunca mais o
   // quadrado fixo de antes. Consistente com a Vitrine e a grade pública.
   const ratio = COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
   const aspectRatio = RATIOS[ratio].value;
 
-  // Abrir a página do item já conta como interesse — mesmo tipo de clique de sempre.
+  // Abrir a página do item já conta como interesse, mesmo tipo de clique de sempre.
   useEffect(() => {
     trackClick({ businessId: business.id, kind: "produto", contentItemId: item.id });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Conta rolagem de carrossel uma única vez por visita à página (evita
-  // registrar um evento por pixel arrastado — só a intenção de folhear).
+  // registrar um evento por pixel arrastado, só a intenção de folhear).
   const scrolledRef = useRef(false);
 
   return (
     <main className="mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
-      {/* Botão de voltar, fora da imagem — igual qualquer app, não sobrepõe a foto */}
+      {/* Botão de voltar, fora da imagem, igual qualquer app, não sobrepõe a foto */}
       <div className="flex items-center px-4 pt-4">
         <Link
           href={`/${business.slug}`}
@@ -64,7 +64,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
       </div>
 
       {/* Carrossel estilo post: quadrado, cantos arredondados, com respiro nas laterais.
-          A altura acompanha o slide atual — foto (retrato) e vídeo (paisagem)
+          A altura acompanha o slide atual, foto (retrato) e vídeo (paisagem)
           raramente têm a mesma proporção, então em vez de deixar sobrar um
           vazio embaixo do mais baixo, o carrossel inteiro muda de altura
           conforme a pessoa folheia. */}
@@ -96,7 +96,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
                   {ytId ? (
                     <iframe
                       src={`https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`}
-                      title={`${item.title} — vídeo ${i + 1}`}
+                      title={`${item.title}, vídeo ${i + 1}`}
                       className="h-full w-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
@@ -104,7 +104,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
                   ) : igId ? (
                     <iframe
                       src={`https://www.instagram.com/reel/${igId}/embed`}
-                      title={`${item.title} — reels ${i + 1}`}
+                      title={`${item.title}, reels ${i + 1}`}
                       className="h-full w-full"
                       allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                       allowFullScreen

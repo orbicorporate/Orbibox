@@ -27,14 +27,14 @@ type DifferentialCard = { icon?: string; title: string; description?: string };
 const META: Record<string, { name: string; explica: string; icon: string; fixo?: boolean; assinatura?: boolean }> = {
   hero: {
     name: "Tela inicial",
-    explica: "A pergunta “O que trouxe você aqui hoje?”. É a tela em si, não um botão — por isso não tem nome nem cor pra editar.",
+    explica: "A pergunta “O que trouxe você aqui hoje?”. É a tela em si, não um botão, por isso não tem nome nem cor pra editar.",
     icon: "◈",
     fixo: true,
   },
   product: { name: "O que fazemos", explica: "Mostra seus produtos e serviços na vitrine que você montou.", icon: "▤" },
-  content: { name: "Conhecer", explica: "Conta sobre a marca — texto e fotos, usando o tom de voz do seu DNA.", icon: "◫" },
+  content: { name: "Conhecer", explica: "Conta sobre a marca, texto e fotos, usando o tom de voz do seu DNA.", icon: "◫" },
   campaign: { name: "Presentear", explica: "Uma seleção pensada para quem vai comprar para outra pessoa.", icon: "◇" },
-  // O box da IA usa as partículas como assinatura fixa — é o "wow" do produto.
+  // O box da IA usa as partículas como assinatura fixa, é o "wow" do produto.
   // Sempre existe (não dá pra excluir), mas o dono pode ativar/desativar.
   agent: { name: "Pergunte o que quiser", explica: "Abre a conversa com a Orbi, sua IA. As partículas mostram que ali é inteligência artificial de verdade.", icon: "__orb__", assinatura: true },
 };
@@ -52,7 +52,7 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
 const ICON_CHOICES = ICON_LIBRARY;
 const DIFF_ICONS = ICON_LIBRARY;
 
-/** Preto ou branco, o que der mais contraste — pra ícone ficar legível em
+/** Preto ou branco, o que der mais contraste, pra ícone ficar legível em
  * qualquer cor da paleta, mesmo as claras. */
 function contrastFg(hex: string): string {
   if (!hex || hex === "transparent" || hex[0] !== "#") return "#111318";
@@ -199,7 +199,7 @@ export function BoxesManager({
       if (Array.isArray(data.differentials) && data.differentials.length > 0) {
         await saveDifferentialsCards(data.differentials);
       }
-      setAboutImportMsg({ kind: "ok", text: "Pronto — texto e diferenciais atualizados. Dá uma conferida abaixo e ajusta se quiser." });
+      setAboutImportMsg({ kind: "ok", text: "Pronto, texto e diferenciais atualizados. Dá uma conferida abaixo e ajusta se quiser." });
     } catch {
       setAboutImportMsg({ kind: "erro", text: "Não consegui ler esse site agora." });
     } finally {
@@ -238,20 +238,20 @@ export function BoxesManager({
   }
 
   // Atalho: já abre o criador com um box de avaliação do Google pré-montado
-  // (nome, ícone de estrela e ação "avaliar") — é só a pessoa colar o link.
+  // (nome, ícone de estrela e ação "avaliar"), é só a pessoa colar o link.
   function novoBoxAvaliacao() {
     setDraftLabel("Avalie no Google"); setDraft({ label: "Avalie no Google", subtitle: "Deixe sua nota, leva 10 segundos", icon: "__google__", action: "avaliar", url: "", color: "transparent" });
     setCreating(true);
   }
 
-  // Atalho: box de endereço pré-montado — a pessoa só cola o endereço e o
+  // Atalho: box de endereço pré-montado, a pessoa só cola o endereço e o
   // box já sai pronto com os botões de Waze e Google Maps.
   function novoBoxEndereco() {
     setDraftLabel("Como chegar"); setDraft({ label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", action: "endereco", url: initialAddress ?? "", color: "transparent" });
     setCreating(true);
   }
 
-  // Atalho: box de cupom — abre o gerenciador de vouchers (criação e resgate
+  // Atalho: box de cupom, abre o gerenciador de vouchers (criação e resgate
   // ficam numa página própria, não dá pra configurar direto por aqui).
   function novoBoxCupom() {
     setDraftLabel("Vouchers"); setDraft({ label: "Vouchers", subtitle: "Resgate agora e aproveite", icon: "🎟️", action: "cupom", url: "", color: "transparent" });
@@ -294,10 +294,10 @@ export function BoxesManager({
       </div>
 
       <p className="text-[12px] text-text-secondary">
-        A tela inicial (“O que trouxe você aqui hoje?”) sempre aparece primeiro — os caminhos abaixo são as opções que ela oferece.
+        A tela inicial (“O que trouxe você aqui hoje?”) sempre aparece primeiro, os caminhos abaixo são as opções que ela oferece.
         <br />
         {ativos === 0
-          ? "Nenhum caminho ativo — o visitante só verá a tela inicial."
+          ? "Nenhum caminho ativo, o visitante só verá a tela inicial."
           : `${ativos} ${ativos === 1 ? "caminho ativo" : "caminhos ativos"} na sua tela inicial.`}
       </p>
 
@@ -319,7 +319,7 @@ export function BoxesManager({
           Escolha o que aparece no topo da tela inicial: a esfera clássica da Orbi, seu logotipo, ou a esfera já com as cores que você configurou em Personalidade da Marca.
         </p>
         {(() => {
-          // Qualquer logo já enviado — em Configurações ou em qualquer box —
+          // Qualquer logo já enviado, em Configurações ou em qualquer box , 
           // conta aqui. Se o logo "oficial" (logo_url) ainda não foi definido,
           // usa o mais recente da galeria como avatar.
           const availableLogo = logoUrl ?? logoGallery[logoGallery.length - 1] ?? null;
@@ -389,8 +389,8 @@ export function BoxesManager({
           const isHero = false;
           const isCustom = box.box_type === "custom";
           const cfg = box.config as BoxConfig | null;
-          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Box livre", explica: "Um caminho extra que você define — WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
-          // O box "Sobre" já sugere o nome da marca — o dono usa, ajusta ou desativa.
+          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Box livre", explica: "Um caminho extra que você define, WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
+          // O box "Sobre" já sugere o nome da marca, o dono usa, ajusta ou desativa.
           const suggestedName = box.box_type === "content" ? `Sobre a ${businessName}` : m.name;
           const label = cfg?.label ?? (isCustom ? box.title ?? "" : suggestedName);
           const color = cfg?.color || "#111318";
@@ -463,7 +463,7 @@ export function BoxesManager({
                         <input
                           defaultValue={cfg?.subtitle ?? ""}
                           onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), subtitle: e.target.value })}
-                          placeholder={isCustom ? "Texto de apoio (opcional)" : "Texto de apoio — em branco usa o padrão"}
+                          placeholder={isCustom ? "Texto de apoio (opcional)" : "Texto de apoio, em branco usa o padrão"}
                           aria-label="Texto de apoio do box"
                           className="w-full border-b border-divider bg-transparent py-0.5 pr-5 text-[13px] text-text-secondary outline-none focus:border-on-background"
                         />
@@ -512,7 +512,7 @@ export function BoxesManager({
                       className={(!cfg?.layout || cfg.layout === "auto") ? "max-w-[190px]" : cfg.layout === "medio" ? "max-w-[190px]" : ""}
                     />
                     {(!cfg?.layout || cfg.layout === "auto") && (
-                      <p className="mt-1.5 text-[11px] text-text-tertiary">No automático o formato real pode variar — aqui é uma prévia representativa.</p>
+                      <p className="mt-1.5 text-[11px] text-text-tertiary">No automático o formato real pode variar, aqui é uma prévia representativa.</p>
                     )}
                   </div>
 
@@ -543,7 +543,7 @@ export function BoxesManager({
                 <div className="mt-5 rounded-2xl bg-surface-soft p-4">
                   <p className="text-[13px] font-medium text-text-secondary">Agendar (opcional)</p>
                   <HelperText>
-                    Ativa e desativa sozinho nas datas escolhidas — bom pra promoção por tempo limitado, sem precisar lembrar de desligar.
+                    Ativa e desativa sozinho nas datas escolhidas, bom pra promoção por tempo limitado, sem precisar lembrar de desligar.
                   </HelperText>
                   <div className="mt-3 flex gap-2">
                     <div className="flex-1">
@@ -614,7 +614,7 @@ export function BoxesManager({
                   </div>
                   <div>
                     <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
-                    <p className="mt-1 text-[12px] text-text-secondary">Viram um carrossel de cards na tela “Sobre” — ícone, título e uma frase curta.</p>
+                    <p className="mt-1 text-[12px] text-text-secondary">Viram um carrossel de cards na tela “Sobre”, ícone, título e uma frase curta.</p>
                     <div className="mt-2 flex flex-col gap-2.5">
                       {cards.map((c, i) => (
                         <div key={i} className="rounded-2xl border border-divider p-3">
@@ -658,7 +658,7 @@ export function BoxesManager({
                   <div>
                     <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos e vídeos da história (carrossel)</p>
                     <p className="mt-1 text-[12px] text-text-secondary">
-                      Aparecem em carrossel, acima do texto — nessa mesma ordem. Vídeo entra direto na grade abaixo, junto das fotos; use as setinhas ‹ › pra escolher a posição dele.
+                      Aparecem em carrossel, acima do texto, nessa mesma ordem. Vídeo entra direto na grade abaixo, junto das fotos; use as setinhas ‹ › pra escolher a posição dele.
                     </p>
                     <div className="mt-2">
                       <GalleryUpload
@@ -672,7 +672,7 @@ export function BoxesManager({
                     <YoutubeAdder
                       videos={storyPhotos.filter((u) => isVideoUrl(u))}
                       label="Adicionar vídeo (YouTube ou Reels)"
-                      hint="Cole o link — ele entra na grade acima, no fim da fila. Depois é só usar as setinhas pra mover pra posição que quiser."
+                      hint="Cole o link, ele entra na grade acima, no fim da fila. Depois é só usar as setinhas pra mover pra posição que quiser."
                       showList={false}
                       onAdd={(url) => {
                         if (storyPhotos.includes(url)) return;
@@ -719,7 +719,7 @@ export function BoxesManager({
 
           <p className="mt-2 px-1 text-[13px] font-medium text-text-secondary">Ou use uma pronta:</p>
 
-          {/* Box da Orbi — sempre visível como destaque de super tecnologia.
+          {/* Box da Orbi, sempre visível como destaque de super tecnologia.
               Nióbio: reativa se estiver off. Titânio: leva pro teste (2 grátis). */}
           {hasAiChat ? (
             orbiDesativada ? (
@@ -897,7 +897,7 @@ function BoxEditor({
         ))}
       </div>
       <p className="text-[12px] leading-relaxed text-text-tertiary">
-        No automático, a Orbi decide o melhor formato pra não deixar espaço vazio na tela. Em &quot;Metade&quot;, se não houver outro box pra formar par ao lado, ele vira linha toda de qualquer forma — pra nunca sobrar espaço.
+        No automático, a Orbi decide o melhor formato pra não deixar espaço vazio na tela. Em &quot;Metade&quot;, se não houver outro box pra formar par ao lado, ele vira linha toda de qualquer forma, pra nunca sobrar espaço.
       </p>
 
       {isCustom && (
@@ -949,9 +949,9 @@ function BoxEditor({
                   <ol className="ml-1 flex flex-col gap-1.5">
                     <li>1. Pesquise o nome do seu negócio no Google.</li>
                     <li>2. No painel da empresa, toque em <span className="font-medium">Compartilhar</span> e copie o link do perfil.</li>
-                    <li>3. Cole aqui — o cliente cai no seu perfil do Google e avalia por lá.</li>
+                    <li>3. Cole aqui, o cliente cai no seu perfil do Google e avalia por lá.</li>
                   </ol>
-                  <p className="mt-1">Ainda não tem o negócio no Google? Cadastre grátis em <span className="font-medium">google.com/business</span> — leva 5 minutos e é essencial pra aparecer nas buscas.</p>
+                  <p className="mt-1">Ainda não tem o negócio no Google? Cadastre grátis em <span className="font-medium">google.com/business</span>, leva 5 minutos e é essencial pra aparecer nas buscas.</p>
                 </div>
               </details>
             </div>
@@ -963,7 +963,7 @@ function BoxEditor({
                 value={cfg.url ?? ""}
                 onChange={(e) => update({ url: e.target.value })}
                 onBlur={() => !liveOnly && onSave(cfg)}
-                placeholder="Rua, número — bairro, cidade"
+                placeholder="Rua, número, bairro, cidade"
                 className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
               />
               <p className="text-[12px] leading-relaxed text-text-tertiary">
@@ -974,7 +974,7 @@ function BoxEditor({
         </>
       )}
 
-      {/* Ícone animado roda sempre com fundo transparente (regra do app) —
+      {/* Ícone animado roda sempre com fundo transparente (regra do app) , 
           então nem mostramos seletor de cor, só a prévia real do ícone. */}
       {animated ? (
         <div className="flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3">
@@ -991,7 +991,7 @@ function BoxEditor({
               <OrbiMapPin size={26} />
             ) : null}
           </span>
-          <span className="text-[13px] leading-relaxed text-text-secondary">Esse ícone já vem com cor e movimento próprios — por isso não dá pra escolher um fundo atrás dele, ele aparece sozinho.</span>
+          <span className="text-[13px] leading-relaxed text-text-secondary">Esse ícone já vem com cor e movimento próprios, por isso não dá pra escolher um fundo atrás dele, ele aparece sozinho.</span>
         </div>
       ) : (
         <>
@@ -1008,7 +1008,7 @@ function BoxEditor({
 
       <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
 
-      {/* Emblema 3D animado de contato — ótimo pro box de WhatsApp. */}
+      {/* Emblema 3D animado de contato, ótimo pro box de WhatsApp. */}
       <button
         onClick={() => pickIcon("__wadisc__")}
         className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__wadisc__" || cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
@@ -1033,7 +1033,7 @@ function BoxEditor({
       </button>
 
       {/* Logotipo: mostra todos os que já foram enviados (em Configurações ou
-          em qualquer outro box) como sugestão pronta — sempre a biblioteca
+          em qualquer outro box) como sugestão pronta, sempre a biblioteca
           inteira, em todo box, novo ou existente. */}
       {(() => {
         const gallery = Array.from(new Set([...(logoUrl ? [logoUrl] : []), ...(logoGallery ?? [])]));
@@ -1110,7 +1110,7 @@ function BoxEditor({
   );
 }
 
-/** Paleta completa — as mesmas 5 da Vitrine, mais a Marca quando existe.
+/** Paleta completa, as mesmas 5 da Vitrine, mais a Marca quando existe.
  * Abre de baixo pra cima, com abas, igual o seletor de cor de box na Vitrine. */
 function ColorPickerModal({
   current,

@@ -10,7 +10,7 @@ function wrapper(title: string, bodyHtml: string, ctaUrl: string, ctaLabel: stri
 
 export function paymentFailedEmail(params: { businessName: string; manageUrl: string }) {
   return {
-    subject: "Não conseguimos processar seu pagamento — Orbibox",
+    subject: "Não conseguimos processar seu pagamento, Orbibox",
     html: wrapper(
       "Seu pagamento não passou",
       `<p>Tentamos cobrar a assinatura do <strong>${params.businessName}</strong> e o cartão foi recusado.</p>

@@ -1,4 +1,4 @@
-// Aparece no instante do toque, enquanto o servidor responde — o app deixa de parecer travado.
+// Aparece no instante do toque, enquanto o servidor responde, o app deixa de parecer travado.
 export default function Loading() {
   return (
     <div className="flex flex-col gap-4 pt-6">

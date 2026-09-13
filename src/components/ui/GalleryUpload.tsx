@@ -6,18 +6,18 @@ import { ImageCropModal, RATIOS, type Ratio } from "./ImageCropModal";
 import { isVideoUrl, youtubeId, instagramReelId } from "@/lib/showcase";
 
 /**
- * Fileira compacta de miniaturas — cada uma abre o seletor de arquivo e,
+ * Fileira compacta de miniaturas, cada uma abre o seletor de arquivo e,
  * depois, o recorte (onde dá pra escolher quadrado, retrato ou paisagem).
  * Dá pra reordenar com as setinhas, sem precisar de arrastar.
  *
  * Vídeos (YouTube/Reels) que entrarem no mesmo array aparecem aqui também,
- * com uma miniatura própria — as mesmas setinhas de reordenar servem pra
+ * com uma miniatura própria, as mesmas setinhas de reordenar servem pra
  * escolher a posição deles no carrossel junto das fotos. Clicar num slot de
  * vídeo não abre o seletor de arquivo (vídeo se adiciona colando o link, em
- * outro campo) — só os slots vazios e os de foto abrem o seletor.
+ * outro campo), só os slots vazios e os de foto abrem o seletor.
  *
  * `lockedRatio` trava o formato do recorte no que já foi definido pela
- * primeira foto do item (capa ou galeria) — evita misturar proporção.
+ * primeira foto do item (capa ou galeria), evita misturar proporção.
  * `onFormatChosen` avisa qual formato foi escolhido na primeira vez.
  */
 export function GalleryUpload({
@@ -47,7 +47,7 @@ export function GalleryUpload({
   const targetIndexRef = useRef<number>(0);
 
   function openPicker(index: number) {
-    // Slot de vídeo não abre seletor de arquivo — vídeo se adiciona colando
+    // Slot de vídeo não abre seletor de arquivo, vídeo se adiciona colando
     // o link, em outro campo. Só slots vazios ou com foto abrem o seletor.
     if (value[index] && isVideoUrl(value[index])) return;
     targetIndexRef.current = index;
@@ -57,7 +57,7 @@ export function GalleryUpload({
   function handlePick(file: File) {
     setError(null);
     if (!file.type.startsWith("image/")) { setError("Escolha um arquivo de imagem."); return; }
-    if (file.size > 20 * 1024 * 1024) { setError("Imagem muito grande — o limite é 20 MB."); return; }
+    if (file.size > 20 * 1024 * 1024) { setError("Imagem muito grande, o limite é 20 MB."); return; }
     setPendingFile(file);
   }
 
@@ -108,7 +108,7 @@ export function GalleryUpload({
           const igId = video && !ytId ? instagramReelId(url) : null;
           const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null;
           // Vídeo mostra no formato real dele (paisagem pro YouTube, vertical
-          // pro Reels) — não espremido no formato retrato das fotos. É assim
+          // pro Reels), não espremido no formato retrato das fotos. É assim
           // que ele vai aparecer de verdade na página.
           const videoRatio = ytId ? 16 / 9 : igId ? 9 / 16 : null;
           return (

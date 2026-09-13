@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     ]);
 
     const catalog = (items ?? [])
-      .map((c) => `[id:${c.id}] ${c.title}${c.brand_label ? ` (${c.brand_label})` : ""}${c.price != null ? ` R$${Number(c.price).toFixed(2)}` : ""}${c.description ? ` — ${c.description}` : ""}`)
+      .map((c) => `[id:${c.id}] ${c.title}${c.brand_label ? ` (${c.brand_label})` : ""}${c.price != null ? ` R$${Number(c.price).toFixed(2)}` : ""}${c.description ? `, ${c.description}` : ""}`)
       .join("\n");
 
     if (!catalog) return NextResponse.json({ questions: [], products: [] });
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ pergunta: custom, opcoes: customOpts.slice(0, 4) });
       }
 
-      const system = `Você é a inteligência de curadoria de uma vitrine. Olhando o catálogo de um negócio específico, crie UMA pergunta curta e envolvente pra fazer ao visitante (como "O que bateu vontade hoje?" numa sorveteria, ou "Qual seu momento?" numa loja), e de 3 a 4 respostas possíveis, curtas (1-3 palavras cada), que dividam o catálogo de formas úteis e reais pra ESSE negócio. As respostas devem refletir o que o catálogo realmente oferece — nada genérico. Português do Brasil, tom leve.
+      const system = `Você é a inteligência de curadoria de uma vitrine. Olhando o catálogo de um negócio específico, crie UMA pergunta curta e envolvente pra fazer ao visitante (como "O que bateu vontade hoje?" numa sorveteria, ou "Qual seu momento?" numa loja), e de 3 a 4 respostas possíveis, curtas (1-3 palavras cada), que dividam o catálogo de formas úteis e reais pra ESSE negócio. As respostas devem refletir o que o catálogo realmente oferece, nada genérico. Português do Brasil, tom leve.
 
 Responda APENAS um JSON válido, sem texto antes ou depois, no formato:
 {"pergunta":"...","opcoes":["...","...","..."]}`;
@@ -83,7 +83,7 @@ Use só ids que existem no catálogo. Se nada combinar bem, retorne poucos ou ne
         const parsed = JSON.parse(clean);
         const validIds = new Set((items ?? []).map((i) => i.id));
         const ids = (parsed.ids ?? []).filter((id: string) => validIds.has(id)).slice(0, 4);
-        return NextResponse.json({ frase: parsed.frase ?? "Separei estas opções pra você:", ids });
+        return NextResponse.json({ frase: (parsed.frase ?? "Separei estas opções pra você:").replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, ", "), ids });
       } catch {
         return NextResponse.json({ frase: "Separei estas opções pra você:", ids: [] });
       }
