@@ -17,16 +17,19 @@ type PickerKey = "primaria" | "secundaria" | "detalhe" | "hero1" | "hero2";
  * rótulo curto embaixo. Ocupa bem menos espaço vertical. */
 function ColorChip({ label, hex, onOpen, onRemove }: { label: string; hex: string | null; onOpen: () => void; onRemove?: () => void }) {
   return (
-    <div className="relative flex flex-1 flex-col items-center rounded-2xl bg-surface-soft p-3">
+    <div className="flex flex-1 flex-col items-center rounded-2xl bg-surface-soft p-3">
       <button onClick={onOpen} className="flex w-full flex-col items-center">
         <span
           className="h-9 w-9 rounded-full border border-divider shadow-sm"
           style={hex ? { backgroundColor: hex } : { background: "repeating-linear-gradient(45deg, #ddd, #ddd 3px, transparent 3px, transparent 6px)" }}
         />
-        <span className="mt-2 text-center text-[11.5px] font-medium leading-tight">{label}</span>
+        <span className="mt-2 mb-2 text-center text-[11.5px] font-medium leading-tight">{label}</span>
+      </button>
+      <button onClick={onOpen} className="mt-auto rounded-full bg-surface-white px-3 py-1 text-[11px] font-semibold text-text-secondary shadow-sm">
+        Alterar
       </button>
       {onRemove && (
-        <button onClick={onRemove} className="mt-1 text-[10px] text-text-tertiary underline">remover</button>
+        <button onClick={onRemove} className="mt-1.5 text-[10px] text-text-tertiary underline">remover</button>
       )}
     </div>
   );
@@ -85,7 +88,7 @@ export function OrbiVisualPanel({
           </div>
         </div>
 
-        <div className="mt-3 flex gap-2.5">
+        <div className="mt-3 flex items-stretch gap-2.5">
           <ColorChip label="Primária" hex={orbiColors[0]} onOpen={() => setOpenPicker("primaria")} />
           <ColorChip label="Secundária" hex={orbiColors[1]} onOpen={() => setOpenPicker("secundaria")} />
           <ColorChip
@@ -117,7 +120,7 @@ export function OrbiVisualPanel({
               </p>
             </div>
           </div>
-          <div className="mt-3 flex gap-2.5">
+          <div className="mt-3 flex items-stretch gap-2.5">
             <ColorChip label="Cor 1" hex={heroGradient[0]} onOpen={() => setOpenPicker("hero1")} />
             <ColorChip label="Cor 2" hex={heroGradient[1]} onOpen={() => setOpenPicker("hero2")} />
           </div>
