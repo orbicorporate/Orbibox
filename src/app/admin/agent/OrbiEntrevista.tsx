@@ -123,36 +123,37 @@ export function OrbiEntrevista({ businessId, orbiColors, heroGradient, onDone }:
         </div>
       )}
 
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-40 pt-20" style={{ WebkitOverflowScrolling: "touch" }}>
-        {/* Avatar grande da Orbi */}
-        <div className="mx-auto relative">
-          <OrbiParticleSphere size={112} colors={orbiColors ?? undefined} className="rounded-full" />
-          <span className="absolute bottom-3 right-3 h-4 w-4 rounded-full border-2 border-surface-white bg-orbi-gradient-start" />
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-44 pt-24" style={{ WebkitOverflowScrolling: "touch" }}>
+        {/* Cabeçalho da conversa: avatar + nome, sempre visível */}
+        <div className="flex flex-col items-center">
+          <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
+          <p className="mt-3 text-[16px] font-semibold">Orbi</p>
+          <p className="text-[13px] text-text-tertiary">{concluido ? "conversa concluída" : "quer te conhecer melhor"}</p>
         </div>
-        <p className="mt-2 text-center text-[14px] text-text-tertiary">Orbi · conhecendo seu negócio</p>
 
-        <div className="mt-6 flex flex-col gap-4">
+        <div className="mt-8 flex flex-col gap-4">
           {historico.map((t, i) => (
             <div key={i} className="flex flex-col gap-4">
-              <div className="max-w-[85%] rounded-2xl bg-gradient-to-br from-orbi-gradient-start/15 via-surface-white to-orbi-gradient-end/10 px-5 py-4 text-[16px] leading-[1.6] shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
+              <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-surface-white px-4 py-3 text-[15.5px] leading-[1.55] shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
                 {t.pergunta}
               </div>
-              <div className="ml-auto max-w-[85%] rounded-2xl bg-on-background px-5 py-4 text-[16px] leading-[1.6] text-white">
+              <div className="ml-auto max-w-[85%] rounded-2xl rounded-br-md bg-on-background px-4 py-3 text-[15.5px] leading-[1.55] text-white">
                 {t.resposta}
               </div>
             </div>
           ))}
 
           {perguntaAtual && !carregando && !concluido && (
-            <div className="max-w-[85%] rounded-2xl bg-gradient-to-br from-orbi-gradient-start/15 via-surface-white to-orbi-gradient-end/10 px-5 py-4 text-[16px] leading-[1.6] shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
+            <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-surface-white px-4 py-3 text-[15.5px] leading-[1.55] shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
               {perguntaAtual}
             </div>
           )}
 
           {(carregando || finalizando) && (
-            <div className="flex items-center gap-2.5 self-start rounded-2xl bg-surface-white px-3 py-2 shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
-              <OrbiParticleSphere size={36} colors={orbiColors ?? undefined} className="rounded-full" />
-              <span className="text-[14px] text-text-tertiary">{finalizando ? "Montando seu perfil…" : "Orbi está pensando…"}</span>
+            <div className="flex w-fit items-center gap-1.5 rounded-2xl rounded-bl-md bg-surface-white px-4 py-3.5 shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
+              <span className="h-2 w-2 animate-bounce rounded-full bg-text-tertiary [animation-delay:-0.3s]" />
+              <span className="h-2 w-2 animate-bounce rounded-full bg-text-tertiary [animation-delay:-0.15s]" />
+              <span className="h-2 w-2 animate-bounce rounded-full bg-text-tertiary" />
             </div>
           )}
 
