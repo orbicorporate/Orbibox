@@ -9,7 +9,8 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 function contexto(taxa: number, visitas: number) {
   if (visitas < 10) {
     return {
-      cor: "#8A8F98",
+      cor: "#9AA0AA",
+      grad: "linear-gradient(135deg, #C7CCD4, #9AA0AA)",
       titulo: "Ainda são poucas visitas",
       resumo: "Com pouca gente entrando, esse número ainda não é confiável. Primeiro, traga visitas:",
       passos: [
@@ -22,7 +23,8 @@ function contexto(taxa: number, visitas: number) {
   }
   if (taxa >= 60) {
     return {
-      cor: "#1F9E4C",
+      cor: "#3BC471",
+      grad: "linear-gradient(135deg, #86E6A8, #3BC471)",
       titulo: "Excelente. Sua página convence.",
       resumo: "A maioria de quem entra faz alguma ação. Pra manter esse nível:",
       passos: [
@@ -34,7 +36,8 @@ function contexto(taxa: number, visitas: number) {
   }
   if (taxa >= 35) {
     return {
-      cor: "#2E8E4A",
+      cor: "#43BA71",
+      grad: "linear-gradient(135deg, #9DEAB6, #43BA71)",
       titulo: "Está num bom caminho.",
       resumo: "Boa parte age ao entrar. Pra subir mais, faça isto:",
       passos: [
@@ -47,7 +50,8 @@ function contexto(taxa: number, visitas: number) {
   }
   if (taxa >= 15) {
     return {
-      cor: "#C2650A",
+      cor: "#E0912F",
+      grad: "linear-gradient(135deg, #F5C97E, #E0912F)",
       titulo: "Dá pra melhorar.",
       resumo: "Muita gente entra e sai sem tocar em nada. Deixe a primeira tela mais direta:",
       passos: [
@@ -59,7 +63,8 @@ function contexto(taxa: number, visitas: number) {
     };
   }
   return {
-    cor: "#C4143A",
+    cor: "#E24B6B",
+    grad: "linear-gradient(135deg, #F5A3B5, #E24B6B)",
     titulo: "Vale ajustar a página.",
     resumo: "Quase ninguém age ao entrar. Provavelmente falta um caminho claro. Comece por aqui:",
     passos: [
@@ -118,15 +123,14 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
       {/* Contexto + passos concretos do que fazer, com a Orbi "pensando" */}
       <div className="mt-3 w-full overflow-hidden rounded-[24px] bg-surface-white shadow-[0_6px_22px_rgba(17,19,24,0.06)]">
         <div className="flex items-start gap-3 p-5">
-          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center">
-            <span aria-hidden className="absolute inset-0 rounded-full opacity-25 blur-md" style={{ backgroundColor: ctx.cor }} />
-            <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="relative rounded-full" />
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center">
+            <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="rounded-full" />
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Leitura da Orbi</span>
             </div>
-            <p className="mt-0.5 text-[16px] font-bold leading-tight" style={{ color: ctx.cor }}>{ctx.titulo}</p>
+            <p className="mt-0.5 text-[16px] font-semibold leading-tight" style={{ color: ctx.cor }}>{ctx.titulo}</p>
           </div>
         </div>
 
@@ -135,7 +139,7 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
           <ol className="mt-3 flex flex-col gap-2.5">
             {ctx.passos.map((p, i) => (
               <li key={i} className="flex gap-2.5 text-[13.5px] leading-relaxed">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ backgroundColor: ctx.cor }}>{i + 1}</span>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ backgroundImage: ctx.grad }}>{i + 1}</span>
                 <span className="text-on-background">{p}</span>
               </li>
             ))}
