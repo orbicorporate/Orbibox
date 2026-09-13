@@ -23,9 +23,10 @@ export function PulseRecomendacao({
   // Histórico de versões geradas na sessão + qual está sendo vista, pra poder
   // gerar uma nova e voltar às anteriores sem perder nada.
   const [versoes, setVersoes] = useState<string[]>([]);
-  const [pesquisou, setPesquisou] = useState(false);
+  const [tagsPorVersao, setTagsPorVersao] = useState<{ tag: string; volume: string | null }[][]>([]);
   const [idx, setIdx] = useState(0);
   const texto = versoes[idx] ?? null;
+  const hashtags = tagsPorVersao[idx] ?? [];
 
   // Sem item clicado no período, em vez de sumir (o que parece bug), mostra
   // um card gentil explicando e sugerindo ampliar o período.
@@ -53,7 +54,7 @@ export function PulseRecomendacao({
     setTipo(t);
     setLoading(true);
     setCopiado(false);
-    if (novoFormato) { setVersoes([]); setIdx(0); }
+    if (novoFormato) { setVersoes([]); setTagsPorVersao([]); setIdx(0); }
     try {
       const res = await fetch("/api/gerar-conteudo", {
         method: "POST",
@@ -62,18 +63,23 @@ export function PulseRecomendacao({
       });
       const data = await res.json();
       const novo = data.texto ?? "Não consegui gerar agora, tente de novo.";
-      setPesquisou(!!data.pesquisou);
+      const novasTags = Array.isArray(data.hashtags) ? data.hashtags : [];
       // Base do histórico: zera se trocou de formato, senão mantém as versões
       // anteriores. setIdx é chamado FORA do updater (dentro do updater não é
       // confiável e deixava o texto sumir).
       const base = novoFormato ? [] : versoes;
       const arr = [...base, novo];
+      const baseTags = novoFormato ? [] : tagsPorVersao;
+      const arrTags = [...baseTags, novasTags];
       setVersoes(arr);
+      setTagsPorVersao(arrTags);
       setIdx(arr.length - 1);
     } catch {
       const base = novoFormato ? [] : versoes;
       const arr = [...base, "Erro de conexão. Tente de novo."];
+      const baseTags = novoFormato ? [] : tagsPorVersao;
       setVersoes(arr);
+      setTagsPorVersao([...baseTags, []]);
       setIdx(arr.length - 1);
     } finally {
       setLoading(false);
@@ -82,7 +88,10 @@ export function PulseRecomendacao({
 
   function copiar() {
     if (!texto) return;
-    navigator.clipboard?.writeText(texto);
+    // Copia a legenda + as hashtags (só as tags, sem os volumes que são só
+    // informativos na tela).
+    const tagsLinha = hashtags.length ? "\n\n" + hashtags.map((h) => h.tag).join(" ") : "";
+    navigator.clipboard?.writeText(texto + tagsLinha);
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2000);
   }
@@ -207,14 +216,25 @@ export function PulseRecomendacao({
 
               <p className="whitespace-pre-line font-[family-name:var(--font-manrope)] text-[16px] leading-[1.6] text-on-background">{texto}</p>
 
-              {tipo === "legenda" && pesquisou && (
-                <div className="mt-3 flex items-start gap-2 rounded-2xl bg-[#DEF3E3] px-3.5 py-2.5">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F9E4C" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0">
-                    <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
-                  </svg>
-                  <span className="text-[12.5px] leading-relaxed text-[#1F9E4C]">
-                    A Orbi pesquisou hashtags em alta e relevantes pro seu nicho agora, pra dar mais alcance ao post.
-                  </span>
+              {tipo === "legenda" && hashtags.length > 0 && (
+                <div className="mt-4 rounded-2xl bg-surface-soft p-3.5">
+                  <div className="flex items-center gap-1.5">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1F9E4C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
+                    </svg>
+                    <span className="text-[12px] font-semibold text-[#1F9E4C]">Hashtags pesquisadas pra você</span>
+                  </div>
+                  <p className="mt-1 text-[11.5px] leading-relaxed text-text-tertiary">
+                    Em alta no seu nicho, com o volume estimado de posts. O número é só informativo, ao copiar vão só as hashtags.
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {hashtags.map((h) => (
+                      <span key={h.tag} className="inline-flex items-center gap-1.5 rounded-full bg-surface-white px-2.5 py-1.5 text-[12.5px] font-medium">
+                        {h.tag}
+                        {h.volume && <span className="text-[11px] font-semibold text-[#1F9E4C]">{h.volume}</span>}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
 

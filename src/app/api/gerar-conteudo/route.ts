@@ -9,7 +9,7 @@ import { AI_MODEL, ANTHROPIC_API_URL } from "@/lib/aiModel";
 // mesmo pra todos: humano, delicado, com insight. Nada de "vendedão".
 const FORMATO: Record<string, string> = {
   legenda:
-    "Uma legenda de Instagram autoral. UMA unica ideia, desenvolvida com profundidade e elegancia, do inicio ao fim, sem se repetir nem dar voltas. Abra com uma frase que valha por si so: uma observacao afiada, uma imagem, uma verdade pouco dita do universo desse negocio. 3 a 6 linhas curtas que respiram. NAO venda, NAO convide pra comprar, NAO faca CTA comercial (nada de 'bora trocar uma ideia', 'fala com a gente', 'vem crescer', 'agende', 'chama no direct'). O objetivo e ser interessante e memoravel, o tipo de post que a pessoa salva ou reposta. No fim, coloque de 4 a 6 hashtags: PESQUISE quais estao em alta e sao realmente usadas no nicho desse negocio agora (mistura de hashtags de alcance medio e algumas mais especificas de nicho, evite so as gigantes e obvias). TODAS as hashtags em letra MINUSCULA, sempre, sem excecao (ex: #marketingdigital, nao #MarketingDigital).",
+    "Uma legenda de Instagram autoral. UMA unica ideia, desenvolvida com profundidade e elegancia, do inicio ao fim, sem se repetir nem dar voltas. Abra com uma frase que valha por si so: uma observacao afiada, uma imagem, uma verdade pouco dita do universo desse negocio. 3 a 6 linhas curtas que respiram. NAO venda, NAO convide pra comprar, NAO faca CTA comercial. O objetivo e ser interessante e memoravel. A legenda em si NAO deve conter hashtags no corpo. Em vez disso, DEPOIS da legenda, adicione uma linha exatamente assim: [[TAGS]] seguida de 4 a 6 hashtags que voce pesquisou como em alta e relevantes no nicho, cada uma com uma estimativa realista do volume de posts/uso no Instagram entre parenteses, no formato: #hashtag (1.2M) | #outra (340k) | #maisuma (58k). TODAS as hashtags em MINUSCULA. Estime os volumes com base no que voce sabe/pesquisou; use M pra milhoes, k pra milhares. Nao escreva mais nada depois da linha [[TAGS]].",
   story:
     "Uma ideia de story de Instagram. Descreva em uma frase o que mostrar no visual (algo real, dos bastidores ou do dia a dia, nao banco de imagem) e escreva o texto curto de sobreposicao, intimo e bem escrito, como se fosse pra um amigo. Sugira no fim um sticker ou interacao (enquete, pergunta, caixinha) que caiba no assunto. Sem tom de propaganda.",
   whatsapp:
@@ -146,7 +146,25 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
       return NextResponse.json({ texto: fallback });
     }
 
-    return NextResponse.json({ texto: limpo, pesquisou });
+    // Separa o bloco [[TAGS]] (hashtags + volume) do corpo da legenda. As tags
+    // ficam num campo à parte, pra o usuário ver o volume mas copiar só o texto.
+    type Tag = { tag: string; volume: string | null };
+    let hashtags: Tag[] = [];
+    let corpo = limpo;
+    const tagsMatch = limpo.match(/\[\[TAGS\]\]([\s\S]*)$/i);
+    if (tagsMatch) {
+      corpo = limpo.slice(0, tagsMatch.index).trim();
+      const raw = tagsMatch[1];
+      // Extrai cada "#tag (volume)"; volume é opcional.
+      const re = /#([\p{L}\p{N}_]+)\s*(?:\(([^)]+)\))?/gu;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(raw)) !== null) {
+        hashtags.push({ tag: "#" + m[1].toLowerCase(), volume: m[2]?.trim() ?? null });
+      }
+      hashtags = hashtags.slice(0, 8);
+    }
+
+    return NextResponse.json({ texto: corpo, hashtags, pesquisou });
   } catch (error) {
     console.error("Erro ao gerar conteudo:", error);
     // Mesmo num erro inesperado, entrega um texto de apoio em vez de falhar,
