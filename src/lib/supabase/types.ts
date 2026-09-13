@@ -112,6 +112,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["referral_codes"]["Insert"]>
         Relationships: []
       }
+      notifications: {
+        Row: { id: string; user_id: string; kind: string; title: string; body: string | null; celebrate: boolean; seen_at: string | null; created_at: string }
+        Insert: { id?: string; user_id: string; kind: string; title: string; body?: string | null; celebrate?: boolean; seen_at?: string | null; created_at?: string }
+        Update: Partial<Database["public"]["Tables"]["notifications"]["Insert"]>
+        Relationships: []
+      }
       referrals: {
         Row: { id: string; referrer_user_id: string; referred_user_id: string; code: string; status: string; subscribed_at: string | null; credit_after: string | null; credited_at: string | null; stripe_subscription_id: string | null; created_at: string; updated_at: string }
         Insert: { id?: string; referrer_user_id: string; referred_user_id: string; code: string; status?: string; subscribed_at?: string | null; credit_after?: string | null; credited_at?: string | null; stripe_subscription_id?: string | null; created_at?: string; updated_at?: string }

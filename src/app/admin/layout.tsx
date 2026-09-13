@@ -7,6 +7,7 @@ import { AdminOrbiFloating } from "./AdminOrbiFloating";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { getBusinessProgress } from "@/lib/progress";
 import { TourOverlay } from "@/components/tour/TourOverlay";
+import { ReferralCelebration } from "./ReferralCelebration";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -79,6 +80,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("business_id", business.id)
     .eq("seen_by_owner", false);
 
+  // Notificações não lidas do usuário (ex: prêmio de indicação) — somam no sino.
+  const { count: unseenNotifs } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .is("seen_at", null);
+
+  // Comemoração pendente: a primeira notificação `celebrate` ainda não vista.
+  // Vira uma tela cheia de festa quando a pessoa entra no painel.
+  const { data: celebrateNotif } = await supabase
+    .from("notifications")
+    .select("id, title, body")
+    .eq("user_id", user.id)
+    .eq("celebrate", true)
+    .is("seen_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   const headerProgress = await getBusinessProgress(business.id);
 
   // Dados pra Orbi flutuante do painel: plano (define o comportamento) + o que
@@ -92,7 +112,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background-main">
-      <AppHeader unseenConversas={unseenConversas ?? 0} progressPct={headerProgress.pct} />
+      <AppHeader unseenConversas={(unseenConversas ?? 0) + (unseenNotifs ?? 0)} progressPct={headerProgress.pct} />
+      {celebrateNotif && (
+        <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />
+      )}
       <main className="flex-1 px-6 pb-32 pt-5">{children}</main>
       <BottomNav />
       <AdminOrbiFloating

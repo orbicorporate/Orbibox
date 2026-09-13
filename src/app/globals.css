@@ -204,6 +204,15 @@ body {
 .notif-badge {
   animation: notifPulse 1.4s ease-in-out infinite;
 }
+
+/* Confete da tela de comemoração (prêmio de indicação). */
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(115vh) rotate(540deg); opacity: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="confettiFall"] { animation: none !important; opacity: 0 !important; }
+}
 @keyframes notifPulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.15); opacity: 0.75; }
