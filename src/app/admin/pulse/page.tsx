@@ -138,8 +138,6 @@ export default async function PulsePage({
     <div className="flex flex-col">
       <p data-tour="pulse" className="mt-2 text-center text-[13px] uppercase tracking-wide text-text-tertiary">Orbi Pulse</p>
 
-      <PulseDateFilter />
-
       {topItemRec && <InsightScrollButton />}
 
       <div className="relative mx-auto mt-6 flex h-56 w-56 items-center justify-center">
@@ -159,7 +157,12 @@ export default async function PulsePage({
         </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-between rounded-[22px] bg-surface-soft px-5 py-4">
+      {/* Filtro de período — logo acima dos números que ele afeta, pra ficar
+          claro que tudo abaixo respeita o período escolhido. */}
+      <p className="mt-6 text-[12px] uppercase tracking-wide text-text-tertiary">Período</p>
+      <PulseDateFilter />
+
+      <div className="mt-4 flex items-center justify-between rounded-[22px] bg-surface-soft px-5 py-4">
         <span className="text-[14px] text-text-secondary">Visitas</span>
         <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{visitas.toLocaleString("pt-BR")}</span>
       </div>
