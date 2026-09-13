@@ -4,6 +4,7 @@ import { getCurrentBusinessId } from "@/lib/business";
 import { PulseDetails } from "./PulseDetails";
 import { PulseAudience } from "./PulseAudience";
 import { PulseRecomendacao } from "./PulseRecomendacao";
+import { InsightScrollButton } from "./InsightScrollButton";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { PulseDateFilter } from "./PulseDateFilter";
 import { PulseMarketing } from "./PulseMarketing";
@@ -138,6 +139,8 @@ export default async function PulsePage({
       <p data-tour="pulse" className="mt-2 text-center text-[13px] uppercase tracking-wide text-text-tertiary">Orbi Pulse</p>
 
       <PulseDateFilter />
+
+      {topItemRec && <InsightScrollButton />}
 
       <div className="relative mx-auto mt-6 flex h-56 w-56 items-center justify-center">
         <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full -rotate-90">

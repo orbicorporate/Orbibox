@@ -59,7 +59,7 @@ export function PulseRecomendacao({
   ];
 
   return (
-    <div className="orbi-card-light mt-6 overflow-hidden rounded-[28px] p-6">
+    <div id="insight-marketing" className="orbi-card-light mt-6 scroll-mt-4 overflow-hidden rounded-[28px] p-6">
       <div className="relative flex items-center gap-2.5">
         <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
         <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-text-secondary">Recomendação da Orbi</span>
