@@ -67,16 +67,16 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
 
   function iniciar() { setAberto(true); }
 
-  // Card de convite (fechado)
+  // Card de convite (fechado). Sem a esfera da Orbi de propósito, pra não
+  // repetir a esfera que já aparece no card do agente logo abaixo.
   if (!aberto) {
     return (
-      <button onClick={iniciar} className="orbi-card-light flex w-full items-center gap-3.5 rounded-[24px] p-5 text-left">
-        <OrbiParticleSphere size={48} colors={orbiColors ?? undefined} className="shrink-0 rounded-full" />
+      <button onClick={iniciar} className="orbi-card-light flex w-full items-center gap-3.5 rounded-[24px] p-6 text-left">
         <span className="min-w-0 flex-1">
-          <span className="block text-[16px] font-semibold text-on-background">Deixe a Orbi te conhecer</span>
-          <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">Responda 5 perguntas rápidas num papo com a Orbi. Ela entende seu negócio e seu público pra trabalhar muito melhor por você.</span>
+          <span className="block font-[family-name:var(--font-manrope)] text-[20px] font-semibold leading-tight text-on-background">Comece clicando aqui</span>
+          <span className="mt-1.5 block text-[14px] leading-relaxed text-text-secondary">Deixa a Orbi conhecer seu negócio. São só 5 perguntas rápidas, e ela passa a trabalhar muito melhor por você.</span>
         </span>
-        <span className="text-text-tertiary">→</span>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-on-background text-white">→</span>
       </button>
     );
   }
