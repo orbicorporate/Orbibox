@@ -134,15 +134,22 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
 
       <button
         onClick={() => setShowCores((v) => !v)}
-        className="-mt-3 flex items-center gap-3 self-start rounded-full border border-divider bg-surface-white py-1.5 pl-1.5 pr-4"
+        className="-mt-2 w-full rounded-[24px] orbi-gradient p-[1.5px]"
       >
-        <OrbiParticleSphere key={orbiColors.join("-")} size={32} colors={orbiColors} className="rounded-full" />
-        <span className="text-[13px] font-medium">✦ Configurar cores da Orbi</span>
-        <span className={`text-[11px] text-text-tertiary transition-transform ${showCores ? "rotate-180" : ""}`}>▾</span>
+        <span className="flex w-full items-center gap-3.5 rounded-[23px] bg-surface-white p-4">
+          <OrbiParticleSphere key={orbiColors.join("-")} size={52} colors={orbiColors} className="shrink-0 rounded-full" />
+          <span className="min-w-0 flex-1 text-left">
+            <span className="block text-[16px] font-semibold text-on-background">✦ Configurar cores da Orbi</span>
+            <span className="mt-0.5 block text-[12.5px] text-text-tertiary">Escolha as cores da esfera e do fundo da sua página.</span>
+          </span>
+          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary transition-transform ${showCores ? "rotate-180" : ""}`}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </span>
+        </span>
       </button>
 
       {showCores && (
-        <div className="-mt-1 rounded-[24px] border border-divider bg-surface-white p-4">
+        <div className="-mt-2 rounded-[24px] border border-divider bg-surface-white p-4">
           <OrbiVisualPanel businessId={businessId} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} />
         </div>
       )}
