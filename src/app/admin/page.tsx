@@ -170,6 +170,16 @@ export default async function HojePage() {
   const host = process.env.VERCEL_PROJECT_PRODUCTION_URL || (await headers()).get("host") || "orbibox-orbi-app.vercel.app";
   const proto = host.includes("localhost") ? "http" : "https";
   const shareUrl = `${proto}://${host}/${business!.slug}`;
+
+  // "Pronto pra compartilhar" = tem uma descrição de link E uma imagem que vai
+  // servir de capa (a própria de compartilhamento, ou a capa da Vitrine, ou o
+  // logo como último recurso). Sem isso, o botão pergunta antes de compartilhar.
+  const temCapaCompartilhar =
+    !!business!.share_image_url ||
+    !!business!.vitrine_cover_url ||
+    (Array.isArray(business!.vitrine_cover_urls) && (business!.vitrine_cover_urls as string[]).length > 0) ||
+    !!business!.logo_url;
+  const shareReady = !!business!.share_description?.trim() && temCapaCompartilhar;
   const growthTips: { title: string; description: string; ctaLabel: string; href: string; share?: boolean }[] = [
     {
       title: "Compartilhe seu Orbibox",
@@ -238,6 +248,7 @@ export default async function HojePage() {
         <ShareOrbiboxButton
           url={shareUrl}
           title={`${business!.name} — Orbibox`}
+          shareReady={shareReady}
           className="flex items-center gap-1.5 rounded-full bg-on-background px-4 py-2 text-[13px] font-medium text-white"
         >
           ↗ Compartilhar Orbibox
@@ -306,7 +317,7 @@ export default async function HojePage() {
           <OrbiInsightHeader />
           <OrbiInsightMessage>{insight.description}</OrbiInsightMessage>
           {insight.share ? (
-            <ShareOrbiboxButton url={shareUrl} title={`${business!.name} — Orbibox`} className={orbiInsightCtaClass}>
+            <ShareOrbiboxButton url={shareUrl} title={`${business!.name} — Orbibox`} shareReady={shareReady} className={orbiInsightCtaClass}>
               {insight.ctaLabel} <OrbiSparkleMini />
             </ShareOrbiboxButton>
           ) : (
