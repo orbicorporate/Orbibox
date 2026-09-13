@@ -108,8 +108,9 @@ Regras:
     const reply = await askClaude({
       system: systemFinal,
       messages,
-      maxTokens: 500,
+      maxTokens: 350,
       model: trialMode ? undefined : AI_MODEL_RAPIDO,
+      cacheSystem: true,
     });
 
     if (conversationId) {
