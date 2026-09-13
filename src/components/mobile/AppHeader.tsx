@@ -36,7 +36,7 @@ const MENU_ITEMS = [
   },
 ] as const;
 
-export function AppHeader({ unseenConversas = 0, progressPct = 100 }: { unseenConversas?: number; progressPct?: number }) {
+export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = false }: { unseenConversas?: number; progressPct?: number; isMaster?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -148,6 +148,22 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100 }: { unseenCo
                   Experimentar <span aria-hidden>→</span>
                 </span>
               </Link>
+
+              {/* Atalho pro painel de gestão, só pros masters */}
+              {isMaster && (
+                <Link
+                  href="/master"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-2 flex items-center gap-3 rounded-2xl border border-[#E7D3A0] bg-[#FBF6E9] px-4 py-3.5"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#C9962E] to-[#F0CB6A] text-[15px] text-white">★</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[14px] font-bold text-[#8A6A1E]">Painel Master</span>
+                    <span className="block text-[12px] text-[#8A6A1E]/70">Gestão, financeiro e negócios do Orbibox.</span>
+                  </span>
+                  <span className="text-[#8A6A1E]/60">→</span>
+                </Link>
+              )}
             </div>
           </>
         )}

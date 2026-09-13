@@ -87,6 +87,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("user_id", user.id)
     .is("seen_at", null);
 
+  // É master? Se for, mostra um atalho pro painel de gestão no menu.
+  const { data: isSuper } = await supabase.rpc("is_super_admin");
+
   // Comemoração pendente: a primeira notificação `celebrate` ainda não vista.
   // Vira uma tela cheia de festa quando a pessoa entra no painel.
   const { data: celebrateNotif } = await supabase
@@ -112,7 +115,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background-main">
-      <AppHeader unseenConversas={(unseenConversas ?? 0) + (unseenNotifs ?? 0)} progressPct={headerProgress.pct} />
+      <AppHeader unseenConversas={(unseenConversas ?? 0) + (unseenNotifs ?? 0)} progressPct={headerProgress.pct} isMaster={!!isSuper} />
       {celebrateNotif && (
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />
       )}

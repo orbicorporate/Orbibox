@@ -57,8 +57,8 @@ export default async function MasterOverview() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {cards.map((c) => (
-          <div key={c.label} className={`rounded-[20px] border p-5 ${c.highlight ? "orbi-gradient border-transparent" : c.warn ? "border-red-200 bg-red-50" : "border-divider bg-surface-white"}`}>
-            <div className={c.highlight ? "rounded-[16px] bg-surface-white p-4" : ""}>
+          <div key={c.label} className={`rounded-[20px] p-5 ${c.highlight ? "orbi-gradient p-[2px]" : c.warn ? "border border-red-200 bg-red-50" : "border border-divider bg-surface-white"}`}>
+            <div className={c.highlight ? "h-full rounded-[18px] bg-surface-white p-5" : ""}>
               <p className="text-[12px] font-medium text-text-tertiary">{c.label}</p>
               <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[26px] font-bold tracking-tight">{c.value}</p>
               <p className="mt-1 text-[11.5px] text-text-secondary">{c.sub}</p>
