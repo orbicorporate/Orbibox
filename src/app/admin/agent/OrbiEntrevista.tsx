@@ -22,7 +22,7 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
   const [historico, setHistorico] = useState<Turno[]>([]);
   const [resposta, setResposta] = useState("");
   const [finalizando, setFinalizando] = useState(false);
-  const [concluido, setConcluido] = useState(false);
+  const [concluido, setConcluido] = useState<null | { sobre?: string; diferenciais?: string; publico?: string }>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   // Índice da pergunta atual = quantas já foram respondidas.
@@ -47,15 +47,16 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
     if (novoHist.length >= TOTAL) {
       setFinalizando(true);
       try {
-        await fetch("/api/orbi-entrevista", {
+        const res = await fetch("/api/orbi-entrevista", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ businessId, historico: novoHist, acao: "finalizar" }),
         });
-        setConcluido(true);
+        const data = await res.json();
+        setConcluido({ sobre: data.sobre, diferenciais: data.diferenciais, publico: data.publico });
         onDone?.();
       } catch {
-        setConcluido(true);
+        setConcluido({});
       } finally {
         setFinalizando(false);
       }
@@ -132,12 +133,32 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone }: { businessId:
 
           {concluido && (
             <div className="rounded-2xl bg-[#DEF3E3] p-5">
-              <p className="text-[15px] font-semibold text-[#1F9E4C]">✓ Prontinho! Agora eu conheço seu negócio.</p>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-[#1F9E4C]/90">
-                Preenchi tudo o que você me contou nos campos da sua configuração. Dá uma olhada e ajuste se quiser.
+              <p className="text-[15px] font-semibold text-[#1F9E4C]">✓ Prontinho! Aqui está o que eu entendi:</p>
+
+              {concluido.sobre && (
+                <div className="mt-3 rounded-xl bg-white/70 p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#1F9E4C]">Sobre o negócio</p>
+                  <p className="mt-1 text-[13.5px] leading-relaxed text-on-background">{concluido.sobre}</p>
+                </div>
+              )}
+              {concluido.diferenciais && (
+                <div className="mt-2.5 rounded-xl bg-white/70 p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#1F9E4C]">Diferenciais</p>
+                  <p className="mt-1 text-[13.5px] leading-relaxed text-on-background">{concluido.diferenciais}</p>
+                </div>
+              )}
+              {concluido.publico && (
+                <div className="mt-2.5 rounded-xl bg-white/70 p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#1F9E4C]">Público</p>
+                  <p className="mt-1 text-[13.5px] leading-relaxed text-on-background">{concluido.publico}</p>
+                </div>
+              )}
+
+              <p className="mt-3 text-[12.5px] leading-relaxed text-[#1F9E4C]/90">
+                Já salvei tudo isso na sua configuração. Você pode revisar e ajustar quando quiser.
               </p>
-              <button onClick={() => setAberto(false)} className="mt-4 w-full rounded-full bg-[#1F9E4C] py-3 text-[14px] font-semibold text-white">
-                Ver o que a Orbi preencheu
+              <button onClick={() => setAberto(false)} className="mt-3 w-full rounded-full bg-[#1F9E4C] py-3 text-[14px] font-semibold text-white">
+                Ótimo, fechar
               </button>
             </div>
           )}

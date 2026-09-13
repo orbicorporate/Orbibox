@@ -41,7 +41,7 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
         <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Como a Orbi aprende sobre seu negócio</p>
       </div>
       <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
-        Quanto mais ela sabe, melhor atende e cria. Comece pelo seu site (o jeito mais rápido), depois complete o que quiser.
+        Pra começar, faça um destes dois: importe seu site ou responda o papo rápido. É o que dá à Orbi a base do seu negócio. Depois, ela segue aprendendo sozinha com as conversas.
       </p>
 
       {/* Passo 1: importar do site */}
@@ -98,9 +98,9 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
         <OrbiEntrevista businessId={businessId} orbiColors={orbiColors} onDone={onDone} />
       </div>
 
-      {/* Passo 3: aprende com as conversas */}
-      <div className="mt-4">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">E aprende com as conversas reais</p>
+      {/* Passo 3: aprende com as conversas (complemento contínuo, não onboarding) */}
+      <div className="mt-5 border-t border-divider pt-4">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Depois, ela continua aprendendo sozinha</p>
         <Link href="/admin/agent/aprendizado" className="flex w-full items-center gap-3.5 rounded-[24px] border border-divider bg-surface-white p-5 text-left">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FDEEDF] text-[20px]">💬</span>
           <span className="min-w-0 flex-1">
