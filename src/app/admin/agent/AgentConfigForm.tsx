@@ -98,39 +98,40 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
       <ComoOrbiAprende businessId={businessId} businessName={businessName} orbiColors={orbiColors} gapsPendentes={gapsPendentes} baseFeita={knowledge.historia} onDone={() => router.refresh()} />
 
       {/* Perfil da agente */}
-      <div className="flex items-center gap-4 rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
-        <OrbiParticleSphere size={68} colors={orbiColors} vivid className="shrink-0 rounded-full" />
+      <div className="flex items-center gap-4 rounded-[28px] bg-surface-white p-5 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
+        <OrbiParticleSphere size={64} colors={orbiColors} vivid className="shrink-0 rounded-full" />
         <div className="min-w-0 flex-1">
           {editandoNome ? (
-            <div className="flex items-center gap-2">
-              <input
-                value={state.agent_name}
-                onChange={(e) => { setState((s) => ({ ...s, agent_name: e.target.value })); setSaved(false); }}
-                placeholder="Orbi"
-                autoFocus
-                onBlur={() => setEditandoNome(false)}
-                onKeyDown={(e) => { if (e.key === "Enter") setEditandoNome(false); }}
-                className="min-w-0 flex-1 rounded-xl border border-divider bg-surface-white px-3 py-1.5 font-[family-name:var(--font-manrope)] text-[18px] font-medium outline-none focus:border-on-background"
-              />
-              <button onClick={() => setEditandoNome(false)} className="shrink-0 rounded-full bg-button-primary px-3 py-1.5 text-[12px] font-semibold text-white">OK</button>
-            </div>
+            <>
+              <div className="flex items-center gap-2">
+                <input
+                  value={state.agent_name}
+                  onChange={(e) => { setState((s) => ({ ...s, agent_name: e.target.value })); setSaved(false); }}
+                  placeholder="Orbi"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === "Enter") setEditandoNome(false); }}
+                  className="min-w-0 flex-1 rounded-xl border border-divider bg-surface-white px-3 py-1.5 font-[family-name:var(--font-manrope)] text-[18px] font-medium outline-none focus:border-on-background"
+                />
+                <button onClick={() => setEditandoNome(false)} className="shrink-0 rounded-full bg-button-primary px-3.5 py-1.5 text-[12px] font-semibold text-white">OK</button>
+              </div>
+              <p className="mt-1.5 text-[11.5px] leading-snug text-text-tertiary">Use o nome da sua marca (ex: {businessName}, Nina, Léo) ou deixe Orbi. É como ela se apresenta.</p>
+            </>
           ) : (
-            <div className="flex items-center gap-2">
-              <p className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">{state.agent_name?.trim() || "Orbi"}</p>
-              <button onClick={() => setEditandoNome(true)} className="rounded-full bg-surface-soft px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
-                ✎ Renomear
-              </button>
-            </div>
+            <>
+              <div className="flex items-center gap-2">
+                <p className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">{state.agent_name?.trim() || "Orbi"}</p>
+                <button onClick={() => setEditandoNome(true)} className="rounded-full bg-surface-soft px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
+                  ✎ Renomear
+                </button>
+              </div>
+              <p className="mt-1 flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">
+                <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" /> Ativa
+              </p>
+              <p className="mt-1 text-[12px] text-text-secondary">Agente Especialista de Conversão e Curadoria</p>
+            </>
           )}
-          <p className="mt-1 flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">
-            <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" /> Ativa
-          </p>
-          <p className="mt-1 text-[12px] text-text-secondary">Agente Especialista de Conversão e Curadoria</p>
         </div>
       </div>
-      <p className="-mt-3 px-1 text-[12px] leading-relaxed text-text-tertiary">
-        ✦ Toque no nome acima para personalizar, dê à IA o nome da sua marca (ex.: “{businessName}”, “Nina”, “Léo”) ou deixe como <span className="font-medium text-text-secondary">Orbi</span>. É assim que ela vai se apresentar aos visitantes.
-      </p>
 
       <button
         onClick={() => setShowCores((v) => !v)}
