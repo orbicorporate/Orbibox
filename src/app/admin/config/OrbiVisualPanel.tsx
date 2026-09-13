@@ -174,10 +174,10 @@ export function OrbiVisualPanel({
               // Prévia do fundo COM a Orbi por cima, como fica de verdade.
               <span className="relative flex h-28 w-40 items-center justify-center overflow-hidden rounded-2xl" style={{ background: heroBackground(heroStyle, heroGradient[0], heroGradient[1]) }}>
                 {heroPrecisaVeu(heroStyle) && <span className="absolute inset-0 bg-surface-white/45" />}
-                <OrbiParticleSphere key={orbiColors.join("-")} size={64} colors={orbiColors} className="relative rounded-full" />
+                <OrbiParticleSphere key={orbiColors.join("-")} size={80} colors={orbiColors} className="relative rounded-full" />
               </span>
             ) : (
-              <OrbiParticleSphere key={orbiColors.join("-")} size={96} colors={orbiColors} className="rounded-full" />
+              <OrbiParticleSphere key={orbiColors.join("-")} size={124} colors={orbiColors} className="rounded-full" />
             )
           }
         />
@@ -213,7 +213,7 @@ function ColorPickerSheet({
         )}
 
         <p className="text-center text-[13px] font-medium text-text-secondary">Toque numa cor pra ver na hora</p>
-        <div className="mt-3 grid grid-cols-9 gap-2 pb-2">
+        <div className="mt-3 grid grid-cols-10 gap-1.5 pb-2">
           {ORBI_SPHERE_COLORS.map((c) => (
             <button
               key={c.hex}
