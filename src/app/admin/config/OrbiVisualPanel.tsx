@@ -146,40 +146,67 @@ export function OrbiVisualPanel({
             else pickHeroColor(1, hex);
           }}
           onClose={() => setOpenPicker(null)}
+          preview={
+            openPicker === "hero1" || openPicker === "hero2" ? (
+              <span className="relative h-20 w-20 overflow-hidden rounded-3xl bg-background-main">
+                <span
+                  className="absolute inset-0"
+                  style={{ background: `radial-gradient(circle at 50% 115%, ${heroGradient[0]}CC, ${heroGradient[1]}66 45%, transparent 72%)` }}
+                />
+              </span>
+            ) : (
+              <OrbiParticleSphere key={orbiColors.join("-")} size={88} colors={orbiColors} className="rounded-full" />
+            )
+          }
         />
       )}
     </div>
   );
 }
 
-/** Folha que sobe de baixo com a paleta inteira, só aparece quando a
- * pessoa toca num dos botões de cor, em vez de ficar sempre visível. */
+/** Folha que sobe de baixo com a paleta inteira. Mostra uma prévia ao vivo
+ * (a Orbi ou o fundo) que atualiza a cada toque, sem precisar fechar. */
 function ColorPickerSheet({
   current,
   onSelect,
   onClose,
+  preview,
 }: {
   current: string | null;
   onSelect: (hex: string) => void;
   onClose: () => void;
+  preview?: React.ReactNode;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50" onClick={onClose}>
-      <div className="max-h-[70vh] overflow-y-auto rounded-t-[28px] bg-surface-white p-5" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[80vh] overflow-y-auto rounded-t-[28px] bg-surface-white p-5" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" aria-label="Fechar" />
-        <p className="text-center text-[14px] font-medium">Escolher cor</p>
-        <div className="mt-4 grid grid-cols-6 gap-3 pb-2">
+
+        {/* Prévia ao vivo: muda na hora conforme a pessoa toca nas cores */}
+        {preview && (
+          <div className="mb-4 flex flex-col items-center">
+            {preview}
+            <p className="mt-1.5 text-[11.5px] text-text-tertiary">Prévia ao vivo</p>
+          </div>
+        )}
+
+        <p className="text-center text-[13px] font-medium text-text-secondary">Toque numa cor pra ver na hora</p>
+        <div className="mt-3 grid grid-cols-8 gap-2.5 pb-2">
           {ORBI_SPHERE_COLORS.map((c) => (
             <button
               key={c.hex}
-              onClick={() => { onSelect(c.hex); onClose(); }}
+              onClick={() => onSelect(c.hex)}
               aria-label={c.label}
               title={c.label}
-              className={`aspect-square rounded-full border-2 ${current?.toLowerCase() === c.hex.toLowerCase() ? "border-on-background" : "border-transparent"}`}
+              className={`aspect-square rounded-full border-2 transition-transform ${current?.toLowerCase() === c.hex.toLowerCase() ? "scale-110 border-on-background" : "border-transparent"}`}
               style={{ backgroundColor: c.hex }}
             />
           ))}
         </div>
+
+        <button onClick={onClose} className="mt-4 w-full rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
+          Concluir
+        </button>
       </div>
     </div>
   );
