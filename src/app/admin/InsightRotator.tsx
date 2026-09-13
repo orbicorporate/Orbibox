@@ -44,7 +44,7 @@ export function InsightRotator({
           )}
         </div>
         <div className="relative mt-4">
-          <p className="text-[19px] font-bold leading-tight text-on-background">{insight.title}</p>
+          <p className="text-[19px] font-medium leading-tight text-on-background">{insight.title}</p>
           <p className="mt-2 text-[15px] leading-relaxed text-text-secondary">{insight.description}</p>
         </div>
         {insight.share ? (

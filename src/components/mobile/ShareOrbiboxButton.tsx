@@ -49,11 +49,9 @@ export function ShareOrbiboxButton({
 
   function handleClick() {
     // Se ainda não configurou a capa/descrição, pergunta antes.
-    if (!shareReady) {
-      setAsking(true);
-      return;
-    }
-    doShare();
+    // Sempre abre o modal antes de compartilhar: se já configurou, pergunta se
+    // quer revisar a capa/descrição; se não, leva pra configurar.
+    setAsking(true);
   }
 
   return (
@@ -66,27 +64,51 @@ export function ShareOrbiboxButton({
         <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-on-background/50 p-4 backdrop-blur-sm sm:items-center" onClick={() => setAsking(false)}>
           <div className="w-full max-w-[400px] rounded-[28px] bg-surface-white p-6 shadow-[0_24px_70px_rgba(17,19,24,0.3)]" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E7EAFC] text-[26px]">🖼️</div>
-            <p className="mt-4 text-center font-[family-name:var(--font-manrope)] text-[20px] font-bold leading-tight">
-              Deixa seu link bonito antes?
-            </p>
-            <p className="mt-2 text-center text-[14px] leading-relaxed text-text-secondary">
-              Você ainda não escolheu a capa e a descrição que aparecem quando alguém abre seu link no WhatsApp ou
-              Instagram. Configurar leva 1 minuto e faz toda a diferença na primeira impressão.
-            </p>
-
-            <Link
-              href="/admin/config/marca"
-              onClick={() => setAsking(false)}
-              className="mt-5 block rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
-            >
-              Configurar antes
-            </Link>
-            <button
-              onClick={() => { setAsking(false); doShare(); }}
-              className="mt-2.5 w-full rounded-full py-3 text-center text-[14px] font-medium text-text-secondary"
-            >
-              Compartilhar assim mesmo
-            </button>
+            {shareReady ? (
+              <>
+                <p className="mt-4 text-center font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight">
+                  Quer revisar antes de compartilhar?
+                </p>
+                <p className="mt-2 text-center text-[14px] leading-relaxed text-text-secondary">
+                  Vale conferir a capa e a descrição que aparecem quando alguém abre seu link no WhatsApp ou Instagram. Elas são a primeira impressão.
+                </p>
+                <Link
+                  href="/admin/config/marca"
+                  onClick={() => setAsking(false)}
+                  className="mt-5 block rounded-full border border-divider bg-surface-white py-3.5 text-center text-[15px] font-semibold"
+                >
+                  Revisar capa e descrição
+                </Link>
+                <button
+                  onClick={() => { setAsking(false); doShare(); }}
+                  className="mt-2.5 w-full rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
+                >
+                  Está ótimo, compartilhar
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="mt-4 text-center font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight">
+                  Deixa seu link bonito antes?
+                </p>
+                <p className="mt-2 text-center text-[14px] leading-relaxed text-text-secondary">
+                  Você ainda não escolheu a capa e a descrição que aparecem quando alguém abre seu link no WhatsApp ou Instagram. Configurar leva 1 minuto e faz toda a diferença na primeira impressão.
+                </p>
+                <Link
+                  href="/admin/config/marca"
+                  onClick={() => setAsking(false)}
+                  className="mt-5 block rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
+                >
+                  Configurar agora
+                </Link>
+                <button
+                  onClick={() => { setAsking(false); doShare(); }}
+                  className="mt-2.5 w-full rounded-full py-3 text-center text-[14px] font-medium text-text-secondary"
+                >
+                  Compartilhar assim mesmo
+                </button>
+              </>
+            )}
           </div>
         </div>,
         document.body
