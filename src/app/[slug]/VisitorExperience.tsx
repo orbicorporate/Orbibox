@@ -226,7 +226,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: label, d: cfg.subtitle || "", color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick };
+        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou — igual ao editor.

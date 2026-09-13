@@ -18,7 +18,7 @@ export function CupomBoxToggle({ businessId, initialHasBox, nextPosition }: { bu
         title: "Cupons",
         position: nextPosition,
         is_active: true,
-        config: { label: "Cupons", subtitle: "Descontos por tempo limitado", icon: "🎟️", action: "cupom", color: "transparent" },
+        config: { label: "Vouchers", subtitle: "Resgate agora e aproveite", icon: "🎟️", action: "cupom", color: "transparent" },
       });
       if (!error) setHasBox(true);
     } finally {

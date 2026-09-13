@@ -254,7 +254,7 @@ export function BoxesManager({
   // Atalho: box de cupom — abre o gerenciador de vouchers (criação e resgate
   // ficam numa página própria, não dá pra configurar direto por aqui).
   function novoBoxCupom() {
-    setDraftLabel("Cupons"); setDraft({ label: "Cupons", subtitle: "Descontos por tempo limitado", icon: "🎟️", action: "cupom", url: "", color: "transparent" });
+    setDraftLabel("Vouchers"); setDraft({ label: "Vouchers", subtitle: "Resgate agora e aproveite", icon: "🎟️", action: "cupom", url: "", color: "transparent" });
     setCreating(true);
   }
 
@@ -441,6 +441,12 @@ export function BoxesManager({
                 <div className="min-w-0 flex-1">
                   {isHero ? (
                     <p className="text-[15px] font-medium">{m.name}</p>
+                  ) : cfg?.action === "cupom" ? (
+                    <>
+                      <p className="text-[15px] font-medium">Vouchers</p>
+                      <p className="mt-1 text-[13px] text-text-secondary">Resgate agora e aproveite</p>
+                      <p className="mt-1 text-[11px] text-text-tertiary">Nome e texto fixos do box de cupons.</p>
+                    </>
                   ) : (
                     <>
                       <div className="relative">
@@ -498,11 +504,11 @@ export function BoxesManager({
                       color={color}
                       orbiColors={orbiColors}
                       businessLogo={logoUrl}
-                      title={label || suggestedName}
+                      title={cfg?.action === "cupom" ? "Vouchers" : (label || suggestedName)}
                       ai={m.assinatura}
                       stars={cfg?.action === "avaliar"}
                       cupom={cfg?.action === "cupom"}
-                      description={cfg?.subtitle || (isCustom ? "" : (BOX_DEFAULT_DESCRIPTION[box.box_type] || ""))}
+                      description={cfg?.action === "cupom" ? "Resgate agora e aproveite" : (cfg?.subtitle || (isCustom ? "" : (BOX_DEFAULT_DESCRIPTION[box.box_type] || "")))}
                       className={(!cfg?.layout || cfg.layout === "auto") ? "max-w-[190px]" : cfg.layout === "medio" ? "max-w-[190px]" : ""}
                     />
                     {(!cfg?.layout || cfg.layout === "auto") && (
