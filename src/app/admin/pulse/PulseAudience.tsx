@@ -1,5 +1,7 @@
 "use client";
 
+import { HelperText } from "@/components/ui/HelperText";
+
 const EMOJI_ORIGEM: Record<string, string> = {
   "Link direto": "🔗",
   Instagram: "📷",
@@ -60,7 +62,7 @@ function BarList({
           );
         })}
       </div>
-      {footer && <p className="mt-3 text-[12.5px] leading-relaxed text-text-tertiary">{footer}</p>}
+      {footer && <HelperText>{footer}</HelperText>}
     </div>
   );
 }

@@ -48,6 +48,18 @@
 }
 
 html { -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+
+/* Zoom tipográfico do painel — aumenta tudo (fontes, ícones, espaçamentos)
+   proporcionalmente de uma vez, preservando a hierarquia. Fica só no conteúdo
+   do admin; header, navbar e overlays não são afetados. Usamos apenas `zoom`
+   (não `transform: scale`) de propósito: `zoom` não cria containing block, então
+   os modais `position: fixed` continuam cobrindo a tela certinho. Navegador que
+   não suportar zoom simplesmente mostra em tamanho normal — nada quebra.
+   Reversível: é só ajustar o fator ou remover a classe. */
+.admin-zoom {
+  zoom: 1.07;
+}
+
 body {
   background: var(--background-main);
   color: var(--on-background);

@@ -116,7 +116,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {celebrateNotif && (
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />
       )}
-      <main className="flex-1 px-6 pb-32 pt-5">{children}</main>
+      <main className="admin-zoom flex-1 px-6 pb-32 pt-5">{children}</main>
       <BottomNav />
       <AdminOrbiFloating
         businessId={business.id}
