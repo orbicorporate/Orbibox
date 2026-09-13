@@ -128,10 +128,12 @@ Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas,
         temperature: 1,
         system,
         messages: [{ role: "user", content: comBusca
-          ? `Pesquise um dado atual e real de mercado sobre o universo de "${productTitle}" (setor, comportamento do consumidor, tendencia, numero) e escreva o texto usando esse dado de forma natural. Item: "${productTitle}".`
+          ? `Faca UMA busca certeira e direcionada pra encontrar um dado atual e concreto sobre o universo de "${productTitle}" (uma estatistica, tendencia recente, numero de comportamento do consumidor ou do setor). Escolha bem a query pra achar de primeira. Depois escreva o texto usando esse dado de forma natural. Item: "${productTitle}".`
           : `Escreva o texto sobre "${productTitle}", com uma sacada inteligente e, se souber com seguranca, um dado ou tendencia real do setor.` }],
       };
-      if (comBusca) body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }];
+      // 1 busca só: mantém o dado real de mercado (a "sacada") e corta a parte
+      // mais cara do custo. Uma busca bem direcionada basta pra ancorar o texto.
+      if (comBusca) body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 1 }];
 
       const res = await fetch(ANTHROPIC_API_URL, {
         method: "POST",
