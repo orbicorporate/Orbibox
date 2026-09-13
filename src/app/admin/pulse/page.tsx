@@ -5,6 +5,7 @@ import { PulseDetails } from "./PulseDetails";
 import { PulseAudience } from "./PulseAudience";
 import { PulseRecomendacao } from "./PulseRecomendacao";
 import { PulseTabs } from "./PulseTabs";
+import { TaxaConversao } from "./TaxaConversao";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { PulseDateFilter } from "./PulseDateFilter";
 import { PulseMarketing } from "./PulseMarketing";
@@ -141,22 +142,7 @@ export default async function PulsePage({
       <PulseTabs
         visitantes={
           <div className="flex flex-col">
-            <div className="relative mx-auto mt-6 flex h-56 w-56 items-center justify-center">
-              <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full -rotate-90">
-                <circle cx="50" cy="50" r="46" fill="none" stroke="var(--divider)" strokeWidth="3" />
-                <circle cx="50" cy="50" r="46" fill="none" stroke="url(#g)" strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(taxa / 100) * 289} 289`} />
-                <defs>
-                  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="var(--orbi-gradient-start)" />
-                    <stop offset="100%" stopColor="var(--orbi-gradient-end)" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="text-center">
-                <p className="font-[family-name:var(--font-manrope)] text-[52px] font-medium leading-none">{taxa}%</p>
-                <p className="mt-1 text-[13px] text-text-secondary">de quem entra, age</p>
-              </div>
-            </div>
+            <TaxaConversao taxa={taxa} visitas={visitas} totalCliques={totalCliques} />
 
             {/* Filtro de período, logo acima dos números que ele afeta. */}
             <p className="mt-6 text-[12px] uppercase tracking-wide text-text-tertiary">Período</p>
