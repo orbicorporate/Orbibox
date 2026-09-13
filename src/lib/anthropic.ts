@@ -9,10 +9,12 @@ export async function askClaude({
   system,
   messages,
   maxTokens = 500,
+  model = AI_MODEL,
 }: {
   system: string;
   messages: Message[];
   maxTokens?: number;
+  model?: string;
 }): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -27,7 +29,7 @@ export async function askClaude({
       "anthropic-version": ANTHROPIC_VERSION,
     },
     body: JSON.stringify({
-      model: AI_MODEL,
+      model,
       max_tokens: maxTokens,
       system,
       messages,

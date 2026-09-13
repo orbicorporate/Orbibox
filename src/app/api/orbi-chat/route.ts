@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { askClaude } from "@/lib/anthropic";
+import { AI_MODEL_RAPIDO } from "@/lib/aiModel";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
@@ -101,7 +102,15 @@ Regras:
       { role: "user" as const, content: message },
     ];
 
-    const reply = await askClaude({ system: systemFinal, messages, maxTokens: 500 });
+    // Atendimento ao visitante usa o modelo rápido/econômico (Haiku): pra
+    // responder dúvidas do dia a dia ele dá conta perfeitamente e custa metade.
+    // No modo teste (dono avaliando pra assinar), usa o Sonnet pra impressionar.
+    const reply = await askClaude({
+      system: systemFinal,
+      messages,
+      maxTokens: 500,
+      model: trialMode ? undefined : AI_MODEL_RAPIDO,
+    });
 
     if (conversationId) {
       await supabase.from("messages").insert({ conversation_id: conversationId, role: "agent", content: reply });
