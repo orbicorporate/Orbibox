@@ -61,18 +61,18 @@ export function PulseRecomendacao({
       });
       const data = await res.json();
       const novo = data.texto ?? "Não consegui gerar agora, tente de novo.";
-      setVersoes((prev) => {
-        const base = novoFormato ? [] : prev;
-        const arr = [...base, novo];
-        setIdx(arr.length - 1);
-        return arr;
-      });
+      // Base do histórico: zera se trocou de formato, senão mantém as versões
+      // anteriores. setIdx é chamado FORA do updater (dentro do updater não é
+      // confiável e deixava o texto sumir).
+      const base = novoFormato ? [] : versoes;
+      const arr = [...base, novo];
+      setVersoes(arr);
+      setIdx(arr.length - 1);
     } catch {
-      setVersoes((prev) => {
-        const arr = [...(novoFormato ? [] : prev), "Erro de conexão. Tente de novo."];
-        setIdx(arr.length - 1);
-        return arr;
-      });
+      const base = novoFormato ? [] : versoes;
+      const arr = [...base, "Erro de conexão. Tente de novo."];
+      setVersoes(arr);
+      setIdx(arr.length - 1);
     } finally {
       setLoading(false);
     }
@@ -178,7 +178,7 @@ export function PulseRecomendacao({
               <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
               <span className="text-[14px] text-text-tertiary">A Orbi está pensando com carinho…</span>
             </div>
-          ) : texto ? (
+          ) : texto && texto.trim() ? (
             <>
               {/* Navegação entre versões geradas */}
               {versoes.length > 1 && (
@@ -220,7 +220,17 @@ export function PulseRecomendacao({
                 </button>
               </div>
             </>
-          ) : null}
+          ) : (
+            <div className="text-center">
+              <p className="text-[14px] text-text-secondary">Não consegui gerar o texto agora.</p>
+              <button
+                onClick={() => tipo && gerar(tipo, false)}
+                className="mt-3 rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-semibold text-white"
+              >
+                Tentar de novo
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
