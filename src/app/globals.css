@@ -163,6 +163,11 @@ body {
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, #F4FBE9, #EAFBF3 55%, #E7F8F4 100%);
+  /* Sombra dupla: uma esverdeada difusa (dá o "flutuar" leve e combina com o
+     card) e uma neutra sutil embaixo (ancoragem 3D). */
+  box-shadow:
+    0 10px 30px -8px rgba(110, 200, 150, 0.28),
+    0 4px 12px -4px rgba(17, 19, 24, 0.06);
 }
 .orbi-card-light::before {
   content: "";
