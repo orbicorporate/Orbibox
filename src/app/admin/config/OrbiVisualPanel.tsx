@@ -17,21 +17,23 @@ type PickerKey = "primaria" | "secundaria" | "detalhe" | "hero1" | "hero2";
  * rótulo curto embaixo. Ocupa bem menos espaço vertical. */
 function ColorChip({ label, hex, onOpen, onRemove }: { label: string; hex: string | null; onOpen: () => void; onRemove?: () => void }) {
   return (
-    <div className="flex flex-1 flex-col items-center rounded-2xl bg-surface-soft p-3">
-      <button onClick={onOpen} className="flex w-full flex-col items-center">
-        <span
-          className="h-9 w-9 rounded-full border border-divider shadow-sm"
-          style={hex ? { backgroundColor: hex } : { background: "repeating-linear-gradient(45deg, #ddd, #ddd 3px, transparent 3px, transparent 6px)" }}
-        />
-        <span className="mt-2 mb-2 text-center text-[11.5px] font-medium leading-tight">{label}</span>
-      </button>
-      <button onClick={onOpen} className="mt-auto rounded-full bg-surface-white px-3 py-1 text-[11px] font-semibold text-text-secondary shadow-sm">
-        Alterar
-      </button>
+    <button onClick={onOpen} className="flex flex-1 flex-col items-center rounded-2xl bg-surface-soft px-2 py-2.5">
+      <span
+        className="h-8 w-8 rounded-full border border-divider shadow-sm"
+        style={hex ? { backgroundColor: hex } : { background: "repeating-linear-gradient(45deg, #ddd, #ddd 3px, transparent 3px, transparent 6px)" }}
+      />
+      <span className="mt-1.5 text-center text-[11px] font-medium leading-tight">{label}</span>
+      <span className="mt-1.5 rounded-full bg-surface-white px-2.5 py-0.5 text-[10.5px] font-semibold text-text-secondary shadow-sm">Alterar</span>
       {onRemove && (
-        <button onClick={onRemove} className="mt-1.5 text-[10px] text-text-tertiary underline">remover</button>
+        <span
+          role="button"
+          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          className="mt-1 text-[10px] text-text-tertiary underline"
+        >
+          remover
+        </span>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -79,7 +81,7 @@ export function OrbiVisualPanel({
     <div id="cores-orbi" className="scroll-mt-6 rounded-[24px] orbi-gradient p-[1.5px]">
       <div className="rounded-[23px] bg-surface-white p-5">
         <div className="flex items-center gap-4">
-          <OrbiParticleSphere key={orbiColors.join("-")} size={64} colors={orbiColors} className="rounded-full" />
+          <OrbiParticleSphere key={orbiColors.join("-")} size={84} colors={orbiColors} className="rounded-full" />
           <div className="flex-1">
             <p className="text-[14px] font-medium">Cores da Orbi</p>
             <p className="mt-0.5 text-[12px] leading-relaxed text-text-secondary">
