@@ -19,12 +19,14 @@ export function ShareOrbiboxButton({
   className,
   children,
   shareReady = true,
+  configHref = "/admin/config/marca",
 }: {
   url: string;
   title: string;
   className?: string;
   children: React.ReactNode;
   shareReady?: boolean;
+  configHref?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const [asking, setAsking] = useState(false);
@@ -73,7 +75,7 @@ export function ShareOrbiboxButton({
                   Vale conferir a capa e a descrição que aparecem quando alguém abre seu link no WhatsApp ou Instagram. Elas são a primeira impressão.
                 </p>
                 <Link
-                  href="/admin/config/marca"
+                  href={configHref}
                   onClick={() => setAsking(false)}
                   className="mt-5 block rounded-full border border-divider bg-surface-white py-3.5 text-center text-[15px] font-semibold"
                 >
@@ -95,7 +97,7 @@ export function ShareOrbiboxButton({
                   Você ainda não escolheu a capa e a descrição que aparecem quando alguém abre seu link no WhatsApp ou Instagram. Configurar leva 1 minuto e faz toda a diferença na primeira impressão.
                 </p>
                 <Link
-                  href="/admin/config/marca"
+                  href={configHref}
                   onClick={() => setAsking(false)}
                   className="mt-5 block rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
                 >

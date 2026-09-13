@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
+import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 
 type Canal = {
   key: string;
@@ -82,7 +84,7 @@ const CANAIS: Canal[] = [
   },
 ];
 
-export function PulseMarketing({ businessId, slug }: { businessId: string; slug: string }) {
+export function PulseMarketing({ businessId, slug, shareReady = true, sobreFeito = true }: { businessId: string; slug: string; shareReady?: boolean; sobreFeito?: boolean }) {
   const [aberto, setAberto] = useState<string | null>(null);
   const [gerando, setGerando] = useState<string | null>(null);
   const [saida, setSaida] = useState<Record<string, string>>({});
@@ -121,13 +123,15 @@ export function PulseMarketing({ businessId, slug }: { businessId: string; slug:
             Seu link só trabalha se as pessoas chegam nele. A Orbi te mostra, canal por canal, como divulgar do jeito certo, e ainda cria os textos prontos pra você postar.
           </p>
 
-          <button
-            onClick={() => navigator.clipboard?.writeText(linkPublico)}
-            className="mt-4 flex w-full items-center justify-between gap-2 rounded-2xl bg-surface-soft px-4 py-3 text-left"
+          <ShareOrbiboxButton
+            url={linkPublico}
+            title="Orbibox"
+            shareReady={shareReady}
+            configHref="/admin/config/marca#compartilhamento"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-on-background py-3.5 text-[15px] font-semibold text-white"
           >
-            <span className="min-w-0 truncate text-[13px] text-text-secondary">{linkPublico.replace(/^https?:\/\//, "")}</span>
-            <span className="shrink-0 text-[12px] font-medium text-on-background">Copiar link</span>
-          </button>
+            ↗ Compartilhar Orbibox
+          </ShareOrbiboxButton>
         </div>
       </div>
 
@@ -200,6 +204,20 @@ export function PulseMarketing({ businessId, slug }: { businessId: string; slug:
           );
         })}
       </div>
+
+      {/* Próxima etapa: se ainda não contou sobre o negócio, convida a fazer,
+          pra a Orbi ficar mais inteligente e os textos mais certeiros. */}
+      {!sobreFeito && (
+        <Link href="/admin/config/orbi" className="mt-5 flex items-center gap-3.5 rounded-[22px] border border-divider bg-surface-white p-4 shadow-[0_4px_16px_rgba(17,19,24,0.05)]">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E7EAFC] text-[20px]">💡</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Próxima etapa</span>
+            <span className="mt-0.5 block text-[15px] font-semibold">Conte sobre o seu negócio</span>
+            <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">Quanto mais a Orbi souber, melhores ficam os textos e o atendimento.</span>
+          </span>
+          <span className="text-text-tertiary">→</span>
+        </Link>
+      )}
     </div>
   );
 }

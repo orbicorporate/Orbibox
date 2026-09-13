@@ -24,7 +24,7 @@ export default async function PulsePage({
   const businessId = await getCurrentBusinessId(user!.id);
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, slug")
+    .select("id, slug, share_image_url, share_description, vitrine_cover_url, vitrine_cover_urls, logo_url, about_business, differentials")
     .eq("id", businessId!)
     .single();
 
@@ -112,6 +112,13 @@ export default async function PulsePage({
   ]);
   const pulseOrbiColors = Array.isArray(agentCfgRes.data?.orbi_colors) && agentCfgRes.data.orbi_colors.length >= 2 ? (agentCfgRes.data.orbi_colors as string[]) : null;
 
+  // "Pronto pra compartilhar" = tem descrição do link E uma imagem de capa.
+  const bAny = business as unknown as { share_image_url?: string | null; share_description?: string | null; vitrine_cover_url?: string | null; vitrine_cover_urls?: string[] | null; logo_url?: string | null; about_business?: string | null; differentials?: string | null };
+  const temCapa = !!bAny.share_image_url || !!bAny.vitrine_cover_url || (Array.isArray(bAny.vitrine_cover_urls) && bAny.vitrine_cover_urls.length > 0) || !!bAny.logo_url;
+  const pulseShareReady = !!bAny.share_description?.trim() && temCapa;
+  // Já contou sobre o negócio? (pra sugerir a próxima etapa)
+  const sobreFeito = !!bAny.about_business?.trim() || !!bAny.differentials?.trim();
+
   // Quantos por cento das visitas resultaram em alguma ação.
   const taxa = visitas > 0 ? Math.min(100, Math.round((totalCliques / visitas) * 100)) : 0;
 
@@ -187,7 +194,7 @@ export default async function PulsePage({
         marketing={
           <div className="flex flex-col">
             <PulseRecomendacao businessId={business!.id} topItem={topItemRec} hasAiChat={pulseAccess.hasAiChat} orbiColors={pulseOrbiColors} />
-            <PulseMarketing businessId={business!.id} slug={business!.slug} />
+            <PulseMarketing businessId={business!.id} slug={business!.slug} shareReady={pulseShareReady} sobreFeito={sobreFeito} />
           </div>
         }
       />

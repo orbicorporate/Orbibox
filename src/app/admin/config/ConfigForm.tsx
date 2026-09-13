@@ -163,11 +163,44 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
         <OrbiVisualPanel businessId={b.id} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} />
       </div>
 
-      {/* Capa do link, a imagem estática que aparece quando alguém cola o
-          link no WhatsApp, Instagram etc. Sem escolher uma, usa a capa da
-          Vitrine ou o logotipo, nessa ordem (a mesma cascata de sempre). */}
-      <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
-        <p className="text-[15px] font-medium">Capa do link</p>
+      {/* Capa e descrição do link, revitalizado: preview de como aparece no
+          WhatsApp + os dois campos em cards separados. Âncora pra o botão de
+          compartilhar levar direto aqui. */}
+      <div id="compartilhamento" className="mt-6 scroll-mt-20">
+        <div className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#DEF3E3] text-[15px]">🔗</span>
+          <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Como seu link aparece quando compartilhado</p>
+        </div>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
+          É a primeira impressão de quem recebe seu link no WhatsApp ou Instagram. Capriche na capa e na descrição.
+        </p>
+
+        {/* Preview estilo card de link do WhatsApp */}
+        <div className="mt-4 overflow-hidden rounded-[18px] border border-divider bg-surface-white">
+          <div className="aspect-[1200/630] w-full bg-surface-soft">
+            {(() => {
+              const capa = b.share_image_url || b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && (b.vitrine_cover_urls as string[])[0]) || b.logo_url;
+              return capa ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={capa as string} alt="Prévia da capa" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-[13px] text-text-tertiary">Sem capa ainda</div>
+              );
+            })()}
+          </div>
+          <div className="p-3.5">
+            <p className="text-[14px] font-semibold leading-tight">{b.name}</p>
+            <p className="mt-0.5 line-clamp-2 text-[12.5px] leading-snug text-text-secondary">
+              {b.share_description?.trim() || "Adicione uma descrição pra aparecer aqui."}
+            </p>
+            <p className="mt-1 text-[11px] text-text-tertiary">orbibox-one.vercel.app</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Card da CAPA */}
+      <div className="mt-4 rounded-[24px] border border-divider bg-surface-white p-5">
+        <p className="text-[15px] font-semibold">Capa do link</p>
         <HelperText>
           A imagem que aparece quando alguém cola seu link no WhatsApp, Instagram ou qualquer outro app. Sem escolher uma aqui, usa automaticamente a capa da Vitrine ou o logotipo.
         </HelperText>
@@ -181,16 +214,19 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
           />
         </div>
         {!b.share_image_url && (
-          <p className="mt-3 text-[13px] text-text-tertiary">
+          <p className="mt-3 rounded-xl bg-surface-soft px-3 py-2 text-[12.5px] text-text-tertiary">
             {(b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && (b.vitrine_cover_urls as string[])[0]))
-              ? "Hoje está usando a capa da Vitrine."
+              ? "Por enquanto está usando a capa da Vitrine. Envie uma própria pra caprichar."
               : b.logo_url
-              ? "Hoje está usando o logotipo."
+              ? "Por enquanto está usando o logotipo. Envie uma capa pra ficar mais bonito."
               : "Ainda não tem nenhuma imagem, o link fica sem capa."}
           </p>
         )}
+      </div>
 
-        <p className="mt-6 text-[14px] font-medium">Descrição do link</p>
+      {/* Card da DESCRIÇÃO */}
+      <div className="mt-4 rounded-[24px] border border-divider bg-surface-white p-5">
+        <p className="text-[15px] font-semibold">Descrição do link</p>
         <HelperText>
           O texto que aparece embaixo do nome, que já mostra o nome do negócio, então não precisa repetir aqui. Curto é melhor: até 3 linhas cabem no preview do WhatsApp.
         </HelperText>
