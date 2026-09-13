@@ -14,6 +14,7 @@ import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
 import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, titleFontSize, youtubeId, instagramReelId } from "@/lib/showcase";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
+import { heroBackground } from "@/lib/heroStyle";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
@@ -293,19 +294,28 @@ export function VisitorExperience({
   const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
     ? (business.hero_gradient as string[])
     : ["#B7F34A", "#6EE7D8"];
+  const heroStyle = (business as { hero_style?: string }).hero_style || "brilho";
+  const heroPrecisaVeu = heroStyle === "cheio" || heroStyle === "meio" || heroStyle === "degrade";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background-main">
-      {/* Nada de cor no topo, qualquer toque, mesmo bem sutil, cria uma forma
-          redonda que destoa do fundo plano atrás da esfera. Fica só o cinza
-          claro puro aqui em cima, sempre, independente da paleta escolhida. */}
-
-      {/* Halo suave, atmosfera "líquida". Fica na parte de baixo da tela,
-          longe do avatar, pra não brigar de contraste com ele. */}
-      <div
-        className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[80px]"
-        style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
-      />
+      {/* Fundo conforme o estilo escolhido pelo dono. "brilho" é o halo suave
+          (padrão); os demais preenchem a tela com cor forte + um véu claro por
+          cima pra a Orbi e os textos continuarem legíveis. */}
+      {heroStyle === "brilho" ? (
+        <div
+          className="pointer-events-none absolute -bottom-56 left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-full opacity-25 blur-[80px]"
+          style={{ backgroundImage: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})` }}
+        />
+      ) : (
+        <>
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: heroBackground(heroStyle, heroGradient[0], heroGradient[1]) }}
+          />
+          {heroPrecisaVeu && <div className="pointer-events-none absolute inset-0 bg-background-main/55" />}
+        </>
+      )}
 
       {/* O dono, navegando o próprio link, ganha um atalho de volta pro painel
           e um alternador pra ver a página exatamente como o visitante vê,

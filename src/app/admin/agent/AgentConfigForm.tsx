@@ -27,7 +27,7 @@ const KNOWLEDGE: { key: keyof Knowledge; label: string; href: string }[] = [
   { key: "diferenciais", label: "Estilo e Curadoria", href: "/admin/config" },
 ];
 
-export function AgentConfigForm({ config, businessId, businessName, slug, heroGradient, knowledge, gapsPendentes = 0 }: { config: Config; businessId: string; businessName: string; slug: string; heroGradient: string[] | null; knowledge: Knowledge; gapsPendentes?: number }) {
+export function AgentConfigForm({ config, businessId, businessName, slug, heroGradient, heroStyle, knowledge, gapsPendentes = 0 }: { config: Config; businessId: string; businessName: string; slug: string; heroGradient: string[] | null; heroStyle?: string | null; knowledge: Knowledge; gapsPendentes?: number }) {
   const supabase = createClient();
   const router = useRouter();
   const [state, setState] = useState(config);
@@ -151,7 +151,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
 
       {showCores && (
         <div className="-mt-2 rounded-[24px] border border-divider bg-surface-white p-4">
-          <OrbiVisualPanel businessId={businessId} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} />
+          <OrbiVisualPanel businessId={businessId} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={heroStyle} />
         </div>
       )}
 

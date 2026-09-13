@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { ORBI_SPHERE_COLORS } from "@/lib/showcase";
+import { HERO_STYLES, heroBackground, heroPrecisaVeu } from "@/lib/heroStyle";
 
 const DEFAULT_ORBI = ["#7FE84A", "#8B2BFF"];
 // Mesmas cores que o degradê padrão da tela inicial sempre usou.
@@ -41,10 +42,12 @@ export function OrbiVisualPanel({
   businessId,
   initialOrbiColors,
   initialHeroGradient,
+  initialHeroStyle,
 }: {
   businessId: string;
   initialOrbiColors: string[] | null;
   initialHeroGradient: string[] | null;
+  initialHeroStyle?: string | null;
 }) {
   const supabase = createClient();
   const [orbiColors, setOrbiColors] = useState<string[]>(
@@ -53,9 +56,15 @@ export function OrbiVisualPanel({
   const [heroGradient, setHeroGradient] = useState<string[]>(
     initialHeroGradient && initialHeroGradient.length >= 2 ? initialHeroGradient : DEFAULT_HERO
   );
+  const [heroStyle, setHeroStyle] = useState<string>(initialHeroStyle || "brilho");
   const orbiDetail = orbiColors[2] ?? null;
   // Só uma folha de cor aberta por vez, toca no botão, escolhe, fecha.
   const [openPicker, setOpenPicker] = useState<PickerKey | null>(null);
+
+  async function pickHeroStyle(style: string) {
+    setHeroStyle(style);
+    await supabase.from("businesses").update({ hero_style: style }).eq("id", businessId);
+  }
 
   // upsert por business_id, funciona mesmo se a linha em agent_configs ainda
   // não existir (evita depender de outra tela ter criado ela primeiro).
@@ -103,25 +112,39 @@ export function OrbiVisualPanel({
 
         <div className="mt-5 border-t border-divider pt-4">
           <div className="flex items-center gap-4">
-            {/* Mini réplica da tela real: fundo claro da página + o brilho na
-                parte de baixo. Usa gradiente radial com transparência (em vez
-                de blur, que em caixa pequena corta feio), fica limpo em
-                qualquer tamanho e ainda representa o efeito de verdade. */}
-            <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background-main">
-              <span
-                className="absolute inset-0"
-                style={{
-                  background: `radial-gradient(circle at 50% 115%, ${heroGradient[0]}CC, ${heroGradient[1]}66 45%, transparent 72%)`,
-                }}
-              />
-            </span>
             <div className="flex-1">
               <p className="text-[14px] font-medium">Fundo da tela inicial</p>
               <p className="mt-0.5 text-[12px] leading-relaxed text-text-secondary">
-                O brilho suave atrás do avatar, na primeira tela que o visitante vê.
+                A primeira tela que o visitante vê, com a Orbi por cima. Veja como fica na prévia.
               </p>
             </div>
           </div>
+
+          {/* Prévia grande: a Orbi sobre o fundo escolhido, pra ver se combina */}
+          <div className="mt-3 flex justify-center overflow-hidden rounded-[20px] border border-divider">
+            <div className="relative flex h-44 w-full items-center justify-center" style={{ background: heroBackground(heroStyle, heroGradient[0], heroGradient[1]) }}>
+              {heroPrecisaVeu(heroStyle) && <span className="absolute inset-0 bg-surface-white/45" />}
+              <div className="relative flex flex-col items-center">
+                <OrbiParticleSphere key={orbiColors.join("-")} size={72} colors={orbiColors} className="rounded-full" />
+                <span className="mt-2 rounded-full bg-surface-white/80 px-3 py-1 text-[11px] font-medium text-on-background backdrop-blur-sm">Prévia</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Estilo do fundo */}
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {HERO_STYLES.map((e) => (
+              <button
+                key={e.id}
+                onClick={() => pickHeroStyle(e.id)}
+                className={`flex flex-col items-center rounded-2xl border-2 p-2 transition-colors ${heroStyle === e.id ? "border-on-background" : "border-transparent bg-surface-soft"}`}
+              >
+                <span className="h-9 w-full overflow-hidden rounded-lg" style={{ background: heroBackground(e.id, heroGradient[0], heroGradient[1]) }} />
+                <span className="mt-1.5 text-[11px] font-medium leading-tight">{e.label}</span>
+              </button>
+            ))}
+          </div>
+
           <div className="mt-3 flex items-stretch gap-2.5">
             <ColorChip label="Cor 1" hex={heroGradient[0]} onOpen={() => setOpenPicker("hero1")} />
             <ColorChip label="Cor 2" hex={heroGradient[1]} onOpen={() => setOpenPicker("hero2")} />

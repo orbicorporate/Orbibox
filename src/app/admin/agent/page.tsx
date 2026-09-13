@@ -49,7 +49,7 @@ export default async function AgentPage() {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug, about_business, differentials, policies, hero_gradient")
+    .select("id, name, slug, about_business, differentials, policies, hero_gradient, hero_style")
     .eq("id", businessId!)
     .single();
   const { data: config } = await supabase.from("agent_configs").select("*").eq("business_id", business!.id).maybeSingle();
@@ -83,6 +83,7 @@ export default async function AgentPage() {
           businessName={business!.name}
           slug={business!.slug}
           heroGradient={heroGradient}
+          heroStyle={(business as { hero_style?: string }).hero_style ?? null}
           knowledge={{
             catalogo: (catalogCount ?? 0) > 0,
             historia: !!business!.about_business?.trim(),

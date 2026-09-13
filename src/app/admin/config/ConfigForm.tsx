@@ -183,7 +183,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
       </div>
 
       <div className="mt-6">
-        <OrbiVisualPanel businessId={b.id} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} />
+        <OrbiVisualPanel businessId={b.id} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={(b as { hero_style?: string }).hero_style} />
       </div>
 
       {/* Capa e descrição do link, revitalizado: preview de como aparece no
