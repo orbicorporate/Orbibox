@@ -32,14 +32,16 @@ export async function POST(req: NextRequest) {
     const conversa = historico.map((t, i) => `P${i + 1}: ${t.pergunta}\nR${i + 1}: ${t.resposta}`).join("\n\n") || "(ainda não começou)";
 
     if (acao === "finalizar") {
-      // Transforma as respostas em campos prontos.
-      const system = `Você é a Orbi, a inteligência do Orbibox. Entrevistou o dono de "${nome}" pra conhecer o negócio. Com base nas respostas, escreva de forma natural e em primeira pessoa da marca (nós/a gente), sem inventar nada além do que foi dito.
+      // Transforma as respostas em campos prontos. Ignora perguntas puladas.
+      const usaveis = historico.filter((t) => t.resposta && t.resposta !== "(prefiro não responder essa)");
+      const conversaUtil = usaveis.map((t, i) => `P${i + 1}: ${t.pergunta}\nR${i + 1}: ${t.resposta}`).join("\n\n") || "(pouca informação)";
+      const system = `Você é a Orbi, a inteligência do Orbibox. Conversou com o dono de "${nome}" pra conhecer o negócio. Com base no que ele contou, escreva de forma natural e em primeira pessoa da marca (nós/a gente), sem inventar nada além do que foi dito. Se a informação for pouca, escreva o que der com honestidade, sem encher.
 
 Responda APENAS um JSON válido, sem markdown, com estas chaves:
 {"sobre": "2-3 frases sobre o que o negócio faz e pra quem, tom humano", "diferenciais": "1-2 frases sobre o que torna esse negócio diferente/especial", "tom_formal_informal": número de 0 a 100 (0=muito formal, 100=muito descontraído), "resumo_publico": "1 frase curta sobre quem é o público"}
 
-Entrevista:
-${conversa}`;
+Conversa:
+${conversaUtil}`;
       const raw = await chamarIA(system, "Gere o JSON.", 700, key);
       try {
         const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
