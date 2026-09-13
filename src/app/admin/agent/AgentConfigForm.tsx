@@ -8,7 +8,7 @@ import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/components/orbi/OrbiInsightCard";
 import { OrbiVisualPanel } from "@/app/admin/config/OrbiVisualPanel";
-import { OrbiEntrevista } from "./OrbiEntrevista";
+import { ComoOrbiAprende } from "./ComoOrbiAprende";
 
 type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; curation_question: string | null; curation_options: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
@@ -27,7 +27,7 @@ const KNOWLEDGE: { key: keyof Knowledge; label: string; href: string }[] = [
   { key: "diferenciais", label: "Estilo e Curadoria", href: "/admin/config" },
 ];
 
-export function AgentConfigForm({ config, businessId, businessName, slug, heroGradient, knowledge }: { config: Config; businessId: string; businessName: string; slug: string; heroGradient: string[] | null; knowledge: Knowledge }) {
+export function AgentConfigForm({ config, businessId, businessName, slug, heroGradient, knowledge, gapsPendentes = 0 }: { config: Config; businessId: string; businessName: string; slug: string; heroGradient: string[] | null; knowledge: Knowledge; gapsPendentes?: number }) {
   const supabase = createClient();
   const router = useRouter();
   const [state, setState] = useState(config);
@@ -94,8 +94,8 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
 
   return (
     <div className="mt-6 flex flex-col gap-7 pb-8">
-      {/* Entrevista da Orbi: conhece o negócio em 5 perguntas e preenche os campos */}
-      <OrbiEntrevista businessId={businessId} orbiColors={orbiColors} onDone={() => router.refresh()} />
+      {/* Como a Orbi aprende: você ensina (entrevista) ou ela aprende sozinha */}
+      <ComoOrbiAprende businessId={businessId} orbiColors={orbiColors} gapsPendentes={gapsPendentes} onDone={() => router.refresh()} />
 
       {/* Perfil da agente */}
       <div className="flex items-center gap-4 rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">

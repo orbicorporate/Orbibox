@@ -124,6 +124,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["ai_status"]["Insert"]>
         Relationships: []
       }
+      orbi_learnings: {
+        Row: { id: string; business_id: string; pergunta: string; sugestao: string | null; status: string; vezes: number; created_at: string; updated_at: string }
+        Insert: { id?: string; business_id: string; pergunta: string; sugestao?: string | null; status?: string; vezes?: number; created_at?: string; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["orbi_learnings"]["Insert"]>
+        Relationships: []
+      }
       referrals: {
         Row: { id: string; referrer_user_id: string; referred_user_id: string; code: string; status: string; subscribed_at: string | null; credit_after: string | null; credited_at: string | null; stripe_subscription_id: string | null; created_at: string; updated_at: string }
         Insert: { id?: string; referrer_user_id: string; referred_user_id: string; code: string; status?: string; subscribed_at?: string | null; credit_after?: string | null; credited_at?: string | null; stripe_subscription_id?: string | null; created_at?: string; updated_at?: string }

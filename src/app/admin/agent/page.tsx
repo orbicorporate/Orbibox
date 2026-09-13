@@ -65,6 +65,13 @@ export default async function AgentPage() {
     .eq("business_id", business!.id)
     .eq("status", "published");
 
+  // Quantas coisas a Orbi ainda não soube responder (gaps pendentes).
+  const { count: gapsPendentes } = await supabase
+    .from("orbi_learnings")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", business!.id)
+    .eq("status", "pendente");
+
   return (
     <div className="flex flex-col">
       <h1 data-tour="orbi-ai" className="mt-2 font-[family-name:var(--font-manrope)] text-[27px] font-semibold leading-tight tracking-[-0.02em]">Personalidade da Marca</h1>
@@ -82,6 +89,7 @@ export default async function AgentPage() {
             politicas: !!business!.policies?.trim(),
             diferenciais: !!business!.differentials?.trim(),
           }}
+          gapsPendentes={gapsPendentes ?? 0}
         />
       )}
     </div>

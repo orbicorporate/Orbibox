@@ -117,6 +117,39 @@ Regras:
       await supabase.from("messages").insert({ conversation_id: conversationId, role: "agent", content: reply });
     }
 
+    // Aprendizado: se a Orbi sinalizou que não soube responder, registra a
+    // dúvida do visitante como um "gap" pro dono ensinar. Detecção barata (sem
+    // IA extra): procura sinais na própria resposta. Só no atendimento real.
+    if (!trialMode && message && typeof message === "string") {
+      const r = reply.toLowerCase();
+      const naoSoube = /não (tenho|sei|possuo|consigo)|nao (tenho|sei|possuo|consigo)|não encontrei|nao encontrei|não tenho essa inforda|infelizmente não|não disponho|recomendo (falar|entrar em contato).*(equipe|whatsapp)/.test(r)
+        && !/whatsapp (dela|logo abaixo)/.test(r); // ignora quando é só o fluxo de captar contato
+      if (naoSoube) {
+        try {
+          const { createServiceClient } = await import("@/lib/supabase/service");
+          const svc = createServiceClient();
+          // Evita duplicar: se já existe um gap muito parecido pendente, só incrementa.
+          const perguntaLimpa = message.trim().slice(0, 200);
+          const { data: existente } = await svc
+            .from("orbi_learnings")
+            .select("id, vezes")
+            .eq("business_id", businessId)
+            .eq("status", "pendente")
+            .ilike("pergunta", perguntaLimpa)
+            .maybeSingle();
+          if (existente) {
+            await svc.from("orbi_learnings").update({ vezes: (existente.vezes ?? 1) + 1, updated_at: new Date().toISOString() }).eq("id", existente.id);
+          } else {
+            await svc.from("orbi_learnings").insert({
+              business_id: businessId,
+              pergunta: perguntaLimpa,
+              sugestao: "Adicione essa informação no 'sobre o negócio' ou nas políticas pra a Orbi responder da próxima vez.",
+            });
+          }
+        } catch { /* aprendizado é best-effort, nunca quebra a resposta */ }
+      }
+    }
+
     return NextResponse.json({ reply });
   } catch (err) {
     console.error(err);
