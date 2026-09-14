@@ -152,7 +152,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
           sugestão de ícone em qualquer box. Recolhível pra economizar espaço. */}
       <div className="rounded-[24px] orbi-gradient p-[1.5px]">
         <div className="rounded-[23px] bg-surface-white">
-          <button onClick={() => setLogoOpen((v) => !v)} className="flex w-full items-center gap-3 p-5 text-left">
+          <button type="button" onClick={() => setLogoOpen((v) => !v)} className="flex w-full cursor-pointer items-center gap-3 p-5 text-left">
             {b.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={b.logo_url} alt="Logotipo" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
@@ -201,8 +201,10 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
         {/* Botão grande que abre a configuração inteira. Recolhido por padrão:
             são dois cards longos que empurravam o resto da página pra baixo. */}
         <button
+          type="button"
+          aria-expanded={shareAberto}
           onClick={() => setShareAberto((v) => !v)}
-          className="w-full rounded-[24px] orbi-gradient p-[1.5px] text-left"
+          className="block w-full cursor-pointer rounded-[24px] orbi-gradient p-[1.5px] text-left"
         >
           <span className="flex w-full items-center gap-3.5 rounded-[23px] bg-surface-white p-5">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#DEF3E3] text-[20px]">🔗</span>
