@@ -14,6 +14,7 @@ type ResultadoImport = {
   about?: string;
   differentials?: Diferencial[];
   policies?: string;
+  strengths?: Topico[];
   challenges?: Topico[];
   opportunities?: Topico[];
 };
@@ -61,6 +62,7 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
       const analise: ResultadoImport = {
         about: data.about,
         differentials: data.differentials,
+        strengths: data.strengths,
         policies: data.policies,
         challenges: data.challenges,
         opportunities: data.opportunities,
@@ -241,12 +243,14 @@ function Passo({ n, feito, continuo, titulo, desc, children, href, badge, onClic
   return <div className="py-1">{conteudo}</div>;
 }
 
-/** Tela cheia com a análise completa do site: o que a Orbi entendeu do
- * negócio, mais uma leitura de mercado (desafios e oportunidades), num
- * tom de consultoria. Cada bloco vive no seu próprio card, com ícone
- * colorido, pra ficar parecido com a página pública do negócio. */
+/** Tela cheia com a análise completa do site. Cada bloco vive no seu
+ * próprio card, com ícone colorido e numeração, no mesmo espírito da
+ * página pública do negócio. */
 function AnaliseSiteModal({ aberto, onFechar, resultado, orbiColors }: { aberto: boolean; onFechar: () => void; resultado: ResultadoImport; orbiColors?: string[] | null }) {
   if (typeof document === "undefined" || !aberto) return null;
+
+  // O texto vem com quebras duplas, um parágrafo por bloco.
+  const paragrafos = (resultado.about ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] mx-auto flex max-w-[440px] flex-col bg-background-main">
@@ -257,66 +261,88 @@ function AnaliseSiteModal({ aberto, onFechar, resultado, orbiColors }: { aberto:
         <p className="min-w-0 flex-1 text-[15px] font-semibold leading-tight">Análise do site</p>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-4" style={{ WebkitOverflowScrolling: "touch" }}>
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-10 pt-4" style={{ WebkitOverflowScrolling: "touch" }}>
         {/* Capa: a Orbi assinando a análise */}
-        <div className="orbi-card-light relative overflow-hidden rounded-[28px] px-6 py-7">
-          <span className="relative mx-auto block h-16 w-16 overflow-hidden rounded-full">
-            <OrbiParticleSphere size={64} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+        <div className="orbi-card-light relative overflow-hidden rounded-[30px] px-6 py-8">
+          <span className="relative mx-auto block h-[72px] w-[72px] overflow-hidden rounded-full">
+            <OrbiParticleSphere size={72} colors={orbiColors ?? undefined} vivid className="rounded-full" />
           </span>
-          <p className="relative mt-4 text-center font-[family-name:var(--font-manrope)] text-[26px] font-semibold leading-[1.15] tracking-[-0.01em] text-on-background">
+          <p className="relative mt-5 text-center font-[family-name:var(--font-manrope)] text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] text-on-background">
             Li seu site inteiro
           </p>
-          <p className="relative mt-2 text-center text-[14.5px] leading-relaxed text-text-secondary">
+          <p className="relative mt-3 text-center text-[15.5px] leading-relaxed text-text-secondary">
             Aqui está o que entendi do seu negócio e como vejo o seu mercado hoje.
           </p>
         </div>
 
-        {resultado.about && (
+        {paragrafos.length > 0 && (
           <Bloco titulo="Sobre o negócio" icone="◆" corIcone="#111318" fundoIcone="#ECEDE9">
-            <p className="text-[15.5px] leading-[1.65] text-on-background">{resultado.about}</p>
+            <div className="flex flex-col gap-4">
+              {paragrafos.map((p, i) => (
+                <p key={i} className="text-[16px] leading-[1.7] text-on-background">{p}</p>
+              ))}
+            </div>
           </Bloco>
         )}
 
         {resultado.differentials && resultado.differentials.length > 0 && (
           <Bloco titulo="Diferenciais" icone="✦" corIcone="#1F9E4C" fundoIcone="#DEF3E3">
-            <ListaTopicos
-              itens={resultado.differentials}
-              corIcone="#1F9E4C"
-              fundoIcone="#DEF3E3"
-              usarIconeDoItem
-            />
+            <ListaTopicos itens={resultado.differentials} corIcone="#1F9E4C" fundoIcone="#DEF3E3" usarIconeDoItem />
+          </Bloco>
+        )}
+
+        {resultado.strengths && resultado.strengths.length > 0 && (
+          <Bloco
+            titulo="Pontos fortes"
+            icone="◆"
+            corIcone="#6D28D9"
+            fundoIcone="#EDE6FC"
+            legenda="A capacidade instalada que sustenta o negócio."
+          >
+            <ListaTopicos itens={resultado.strengths} corIcone="#6D28D9" fundoIcone="#EDE6FC" numerado />
           </Bloco>
         )}
 
         {resultado.challenges && resultado.challenges.length > 0 && (
-          <Bloco titulo="Desafios do mercado" icone="▲" corIcone="#C2650A" fundoIcone="#FDEEDF">
-            <ListaTopicos itens={resultado.challenges} corIcone="#C2650A" fundoIcone="#FDEEDF" iconePadrao="▲" />
+          <Bloco
+            titulo="Desafios do mercado"
+            icone="▲"
+            corIcone="#C2650A"
+            fundoIcone="#FDEEDF"
+            legenda="O que pressiona quem atua nesse segmento hoje."
+          >
+            <ListaTopicos itens={resultado.challenges} corIcone="#C2650A" fundoIcone="#FDEEDF" numerado />
           </Bloco>
         )}
 
         {resultado.opportunities && resultado.opportunities.length > 0 && (
-          <Bloco titulo="Oportunidades" icone="↗" corIcone="#1D4ED8" fundoIcone="#E2EAFE">
-            <ListaTopicos itens={resultado.opportunities} corIcone="#1D4ED8" fundoIcone="#E2EAFE" iconePadrao="↗" />
+          <Bloco
+            titulo="Oportunidades"
+            icone="↗"
+            corIcone="#1D4ED8"
+            fundoIcone="#E2EAFE"
+            legenda="Por onde dá pra crescer a partir do que já existe."
+          >
+            <ListaTopicos itens={resultado.opportunities} corIcone="#1D4ED8" fundoIcone="#E2EAFE" numerado />
           </Bloco>
         )}
 
         {resultado.policies && (
           <Bloco titulo="Políticas identificadas" icone="◫" corIcone="#555960" fundoIcone="#ECEDE9">
-            <p className="text-[15px] leading-[1.65] text-text-secondary">{resultado.policies}</p>
+            <p className="text-[15.5px] leading-[1.7] text-text-secondary">{resultado.policies}</p>
           </Bloco>
         )}
 
-        {/* Aviso de uso, no fim: já viu tudo, agora sabe o que acontece com isso */}
-        <div className="mt-4 rounded-[24px] border border-divider bg-surface-white px-5 py-5">
-          <p className="text-[14.5px] font-semibold text-on-background">O que acontece agora</p>
-          <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
+        <div className="mt-4 rounded-[26px] border border-divider bg-surface-white px-6 py-6">
+          <p className="font-[family-name:var(--font-manrope)] text-[16.5px] font-semibold text-on-background">O que acontece agora</p>
+          <p className="mt-2.5 text-[15px] leading-[1.65] text-text-secondary">
             Essas informações vão montar a página do seu negócio dentro do Orbibox. Você pode editar tudo depois, quando quiser, nas Configurações.
           </p>
         </div>
 
         <button
           onClick={onFechar}
-          className="mt-5 w-full rounded-full bg-on-background py-4 text-[15px] font-semibold text-white"
+          className="mt-5 w-full rounded-full bg-on-background py-4 text-[15.5px] font-semibold text-white"
         >
           Voltar à configuração da IA
         </button>
@@ -326,47 +352,50 @@ function AnaliseSiteModal({ aberto, onFechar, resultado, orbiColors }: { aberto:
   );
 }
 
-/** Card branco de uma seção da análise, com título e ícone colorido. */
-function Bloco({ titulo, icone, corIcone, fundoIcone, children }: {
-  titulo: string; icone: string; corIcone: string; fundoIcone: string; children: React.ReactNode;
+/** Card branco de uma seção da análise, com título, ícone colorido e uma
+ * legenda opcional explicando o que aquele bloco significa. */
+function Bloco({ titulo, icone, corIcone, fundoIcone, legenda, children }: {
+  titulo: string; icone: string; corIcone: string; fundoIcone: string; legenda?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="mt-4 rounded-[24px] border border-divider bg-surface-white px-5 py-5">
-      <div className="flex items-center gap-2.5">
+    <div className="mt-4 rounded-[26px] border border-divider bg-surface-white px-6 py-6">
+      <div className="flex items-center gap-3">
         <span
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[14px]"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[15px]"
           style={{ backgroundColor: fundoIcone, color: corIcone }}
         >
           {icone}
         </span>
-        <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold leading-tight">{titulo}</p>
+        <p className="font-[family-name:var(--font-manrope)] text-[19px] font-semibold leading-tight tracking-[-0.01em]">{titulo}</p>
       </div>
-      <div className="mt-4">{children}</div>
+      {legenda && <p className="mt-2 text-[13.5px] leading-snug text-text-tertiary">{legenda}</p>}
+      <div className="mt-5">{children}</div>
     </div>
   );
 }
 
-/** Lista de tópicos (diferencial, desafio, oportunidade) com bolinha colorida. */
-function ListaTopicos({ itens, corIcone, fundoIcone, iconePadrao, usarIconeDoItem }: {
+/** Lista de tópicos (diferencial, ponto forte, desafio, oportunidade).
+ * Cada item tem sua bolinha colorida, numerada ou com glifo. */
+function ListaTopicos({ itens, corIcone, fundoIcone, numerado, usarIconeDoItem }: {
   itens: { title: string; description: string; icon?: string }[];
   corIcone: string;
   fundoIcone: string;
-  iconePadrao?: string;
+  numerado?: boolean;
   usarIconeDoItem?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {itens.map((t, i) => (
-        <div key={i} className="flex items-start gap-3">
+        <div key={i} className="flex items-start gap-3.5">
           <span
-            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px]"
+            className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[14px] font-semibold"
             style={{ backgroundColor: fundoIcone, color: corIcone }}
           >
-            {usarIconeDoItem ? t.icon ?? "✦" : iconePadrao ?? "✦"}
+            {numerado ? i + 1 : usarIconeDoItem ? t.icon ?? "✦" : "✦"}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-[15.5px] font-semibold leading-snug text-on-background">{t.title}</p>
-            {t.description && <p className="mt-1 text-[14.5px] leading-[1.6] text-text-secondary">{t.description}</p>}
+            <p className="text-[17px] font-semibold leading-snug tracking-[-0.01em] text-on-background">{t.title}</p>
+            {t.description && <p className="mt-1.5 text-[15.5px] leading-[1.6] text-text-secondary">{t.description}</p>}
           </div>
         </div>
       ))}
