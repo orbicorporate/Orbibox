@@ -569,36 +569,44 @@ export function ShowcaseBuilder({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <button onClick={() => setShowImport((v) => !v)} className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background">
-          ✦ Importar do site
-        </button>
-        <button onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50">
-          + Novo item
-        </button>
-        <button onClick={createCategory} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary">
-          + Categoria
-        </button>
-        <button
-          onClick={autoArrange}
-          disabled={arranging || items.length === 0}
-          className={`rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary ${items.length === 0 ? "opacity-50" : ""}`}
-        >
-          {arranging ? <OrbiWorking label="Organizando…" variant="inline" /> : "✦ Organizar com Orbi"}
-        </button>
-        <button
-          onClick={undo}
-          disabled={history.length === 0 || undoing}
-          className="flex items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary disabled:opacity-40"
-        >
-          {undoing ? "Desfazendo…" : "↺ Desfazer"}
-        </button>
-        <button
-          onClick={renovarVitrine}
-          className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-red-600"
-        >
-          Renovar vitrine
-        </button>
+      {/* Botões agrupados por intenção: primeiro o que traz conteúdo pra
+          vitrine, depois o que mexe no que já existe. "Renovar vitrine"
+          apaga tudo, então saiu daqui e foi pro fim da página. */}
+      <div className="flex flex-col gap-3">
+        <div>
+          <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Adicionar</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => setShowImport((v) => !v)} className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background">
+              ✦ Importar do site
+            </button>
+            <button onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50">
+              + Novo item
+            </button>
+            <button onClick={createCategory} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary">
+              + Categoria
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Organizar</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={autoArrange}
+              disabled={arranging || items.length === 0}
+              className={`rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary ${items.length === 0 ? "opacity-50" : ""}`}
+            >
+              {arranging ? <OrbiWorking label="Organizando…" variant="inline" /> : "✦ Organizar com Orbi"}
+            </button>
+            <button
+              onClick={undo}
+              disabled={history.length === 0 || undoing}
+              className="flex items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary disabled:opacity-40"
+            >
+              {undoing ? "Desfazendo…" : "↺ Desfazer"}
+            </button>
+          </div>
+        </div>
       </div>
 
       {showImport && (
@@ -866,6 +874,23 @@ export function ShowcaseBuilder({
             )}
           </div>
         </OrbiInsightCard>
+      )}
+
+      {/* Ação destrutiva, longe dos botões do dia a dia: apaga itens,
+          categorias e capa de uma vez. */}
+      {(items.length > 0 || categories.length > 0 || coverUrls.length > 0) && (
+        <div className="mt-10 border-t border-divider pt-5">
+          <p className="text-[12.5px] text-text-tertiary">
+            Quer recomeçar do zero? Isso apaga todos os itens, categorias e a capa.
+          </p>
+          <button
+            type="button"
+            onClick={renovarVitrine}
+            className="mt-2 cursor-pointer rounded-full border border-red-200 bg-surface-white px-4 py-2 text-[13px] font-medium text-red-600"
+          >
+            Renovar vitrine
+          </button>
+        </div>
       )}
     </div>
   );
