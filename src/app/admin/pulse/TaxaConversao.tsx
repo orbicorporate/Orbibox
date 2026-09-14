@@ -96,21 +96,44 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
 
   const ctx = contexto(taxa, visitas);
   const circ = 289;
+  // Sem visitas suficientes o número não significa nada, então o anel fica
+  // cinza apagado em vez de brilhar como se fosse um bom resultado.
+  const semDados = visitas < 10;
 
   return (
     <div className="flex flex-col items-center">
       <div className="relative mt-6 flex h-56 w-56 items-center justify-center">
         <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full -rotate-90">
+          <defs>
+            {/* Degradê padrão da Orbi no anel, com um reflexo claro que
+                percorre o traço de ponta a ponta, dando o brilho vivo. */}
+            <linearGradient id="anelOrbi" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="var(--orbi-gradient-start)" />
+              <stop offset="50%" stopColor="var(--orbi-gradient-end)" />
+              <stop offset="100%" stopColor="var(--orbi-gradient-start)" />
+              <animate attributeName="x1" values="-1;1;-1" dur="4s" repeatCount="indefinite" />
+              <animate attributeName="x2" values="0;2;0" dur="4s" repeatCount="indefinite" />
+            </linearGradient>
+            <filter id="anelGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="2.2" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
           <circle cx="50" cy="50" r="46" fill="none" stroke="var(--divider)" strokeWidth="3" />
           <circle
             cx="50"
             cy="50"
             r="46"
             fill="none"
-            stroke={ctx.cor}
+            stroke={semDados ? ctx.cor : "url(#anelOrbi)"}
             strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={`${(anim / 100) * circ} ${circ}`}
+            filter={semDados ? undefined : "url(#anelGlow)"}
             style={{ transition: "stroke 0.4s ease" }}
           />
         </svg>
