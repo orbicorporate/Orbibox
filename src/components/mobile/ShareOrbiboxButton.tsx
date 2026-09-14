@@ -65,47 +65,57 @@ export function ShareOrbiboxButton({
       {asking && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-on-background/50 p-4 backdrop-blur-sm sm:items-center" onClick={() => setAsking(false)}>
           <div className="w-full max-w-[400px] rounded-[28px] bg-surface-white p-6 shadow-[0_24px_70px_rgba(17,19,24,0.3)]" onClick={(e) => e.stopPropagation()}>
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E7EAFC] text-[26px]">🖼️</div>
+            {/* Ícone de linha, desenhado: o emoji 🖼️ anterior virava um quadro
+                dourado colorido no iOS e destoava do resto do painel. */}
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-surface-soft text-text-secondary">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <rect x="3" y="4" width="18" height="13" rx="2.5" />
+                <circle cx="8.5" cy="9" r="1.4" />
+                <path d="M3 14.5l4.2-3.4a1.6 1.6 0 0 1 2 0L14 15" />
+                <path d="M8 21h8" />
+              </svg>
+            </div>
+
             {shareReady ? (
               <>
-                <p className="mt-4 text-center font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight">
-                  Quer revisar antes de compartilhar?
+                <p className="mt-5 text-center font-[family-name:var(--font-manrope)] text-[22px] font-semibold leading-tight tracking-[-0.01em]">
+                  Confira como seu link aparece
                 </p>
-                <p className="mt-2 text-center text-[14px] leading-relaxed text-text-secondary">
-                  Vale conferir a capa e a descrição que aparecem quando alguém abre seu link no WhatsApp ou Instagram. Elas são a primeira impressão.
+                <p className="mt-2.5 text-center text-[15px] leading-relaxed text-text-secondary">
+                  No WhatsApp e no Instagram, quem recebe vê primeiro a capa e a descrição, antes de abrir a página.
                 </p>
                 <Link
                   href={configHref}
                   onClick={() => setAsking(false)}
-                  className="mt-5 block rounded-full border border-divider bg-surface-white py-3.5 text-center text-[15px] font-semibold"
+                  className="mt-6 block rounded-full border border-divider bg-surface-white py-3.5 text-center text-[15px] font-semibold"
                 >
-                  Revisar capa e descrição
+                  Ver capa e descrição
                 </Link>
                 <button
                   onClick={() => { setAsking(false); doShare(); }}
                   className="mt-2.5 w-full rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
                 >
-                  Está ótimo, compartilhar
+                  Compartilhar agora
                 </button>
               </>
             ) : (
               <>
-                <p className="mt-4 text-center font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight">
-                  Deixa seu link bonito antes?
+                <p className="mt-5 text-center font-[family-name:var(--font-manrope)] text-[22px] font-semibold leading-tight tracking-[-0.01em]">
+                  Seu link ainda não tem capa
                 </p>
-                <p className="mt-2 text-center text-[14px] leading-relaxed text-text-secondary">
-                  Você ainda não escolheu a capa e a descrição que aparecem quando alguém abre seu link no WhatsApp ou Instagram. Configurar leva 1 minuto e faz toda a diferença na primeira impressão.
+                <p className="mt-2.5 text-center text-[15px] leading-relaxed text-text-secondary">
+                  Sem capa e descrição, o WhatsApp mostra só o endereço cru. Definir leva um minuto e muda a primeira impressão.
                 </p>
                 <Link
                   href={configHref}
                   onClick={() => setAsking(false)}
-                  className="mt-5 block rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
+                  className="mt-6 block rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
                 >
-                  Configurar agora
+                  Definir capa e descrição
                 </Link>
                 <button
                   onClick={() => { setAsking(false); doShare(); }}
-                  className="mt-2.5 w-full rounded-full py-3 text-center text-[14px] font-medium text-text-secondary"
+                  className="mt-2 w-full rounded-full py-3 text-center text-[14.5px] font-medium text-text-tertiary"
                 >
                   Compartilhar assim mesmo
                 </button>
