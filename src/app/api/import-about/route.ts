@@ -37,18 +37,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Não consegui acessar esse link. Confere se está certo e tenta de novo." }, { status: 422 });
     }
 
-    const system = `Você é a Orbi, a IA do Orbibox. Leia o texto extraído do site de "${businessName || "o negócio"}" e monte o conteúdo da página "Sobre" dele.
+    const system = `Você é a Orbi, a IA do Orbibox, e está fazendo uma leitura estratégica e aprofundada do site de "${businessName || "o negócio"}". O objetivo é duplo: (1) montar o conteúdo da página "Sobre" do negócio, e (2) entregar uma análise de mercado curta e profissional, como um analista sênior faria, pra ajudar o dono a entender onde está e pra onde pode ir.
 
 Responda SOMENTE em JSON válido, sem markdown, sem texto antes ou depois, no formato exato:
-{"about":"...", "differentials":[{"title":"...","description":"..."},{"title":"...","description":"..."},{"title":"...","description":"..."}], "policies":"..."}
+{"about":"...", "differentials":[{"title":"...","description":"..."}], "policies":"...", "challenges":[{"title":"...","description":"..."}], "opportunities":[{"title":"...","description":"..."}]}
 
 Regras:
 - "about": 2 a 4 frases contando quem são, o que fazem e há quanto tempo/o que os diferencia, tom próximo, em português do Brasil, na terceira pessoa (fala sobre o negócio, não como se fosse ele falando).
 - "differentials": 3 a 4 diferenciais reais encontrados no site (não invente). Cada um com "title" curto (2-5 palavras) e "description" em uma frase curta (até 12 palavras).
 - "policies": se o site mencionar prazos de entrega, frete, trocas, devoluções, horários de atendimento ou formas de pagamento, resuma em até 3 frases curtas. Se não encontrar nada disso, devolva uma string vazia "".
-- Nunca invente informação que não esteja no texto, se não achar diferenciais claros, foque no que existe (atendimento, experiência, produtos, localização).`;
+- "challenges": 2 a 3 desafios reais que negócios desse segmento enfrentam hoje no mercado brasileiro (concorrência, saturação, mudança de comportamento do consumidor, custo de aquisição, etc). "title" curto (3-6 palavras) e "description" numa frase objetiva (até 18 palavras), tom analítico e direto, sem clichê de LinkedIn.
+- "opportunities": 2 a 3 oportunidades concretas de diferenciação ou de gerar mais valor nesse mercado agora, considerando o que já foi visto no site (não genéricas, conectadas ao que o negócio já tem). "title" curto e "description" numa frase objetiva.
+- Escreva como um consultor de negócios experiente: direto, específico, sem frases feitas ("inovação", "excelência", "compromisso com a qualidade").
+- Nunca invente informação factual sobre o negócio (nome, serviços, localização) que não esteja no texto. Nos campos de análise (challenges/opportunities) você pode usar seu conhecimento de mercado, mas sempre ancorado no que o site mostra sobre o negócio.`;
 
-    const raw = await askClaude({ system, messages: [{ role: "user", content: siteText }], maxTokens: 800 });
+    const raw = await askClaude({ system, messages: [{ role: "user", content: siteText }], maxTokens: 1400 });
 
     const match = raw.match(/\{[\s\S]*\}/);
     const parsed = JSON.parse(match ? match[0] : raw);
@@ -65,12 +68,21 @@ Regras:
             description: d.description ?? "",
           }))
       : [];
+    const parseTopicList = (list: unknown, max: number) =>
+      Array.isArray(list)
+        ? list
+            .filter((d: unknown): d is { title: string; description?: string } => !!d && typeof d === "object" && typeof (d as { title?: unknown }).title === "string")
+            .slice(0, max)
+            .map((d: { title: string; description?: string }) => ({ title: d.title, description: d.description ?? "" }))
+        : [];
+    const challenges = parseTopicList(parsed.challenges, 3);
+    const opportunities = parseTopicList(parsed.opportunities, 3);
 
     if (!about && differentials.length === 0) {
       return NextResponse.json({ error: "Não consegui identificar conteúdo suficiente nesse site." }, { status: 422 });
     }
 
-    return NextResponse.json({ about, differentials, policies });
+    return NextResponse.json({ about, differentials, policies, challenges, opportunities });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Não consegui ler esse site agora. Tenta de novo." }, { status: 500 });
