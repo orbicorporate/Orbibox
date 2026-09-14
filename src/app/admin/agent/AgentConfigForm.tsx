@@ -187,7 +187,13 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
 
       {/* Base de conhecimento */}
       <div>
-        <p className="text-[14px] font-medium">Base de Conhecimento Ativa</p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[14px] font-medium">Base de Conhecimento Ativa</p>
+          {/* O texto em si mora em Configurações; aqui é só o status. */}
+          <Link href="/admin/config/orbi" className="text-[12.5px] font-medium text-text-secondary underline">
+            Ler e ajustar o texto
+          </Link>
+        </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {KNOWLEDGE.map((k) => {
             const cheio = knowledge[k.key];

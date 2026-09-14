@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { HelperText } from "@/components/ui/HelperText";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
@@ -42,9 +41,6 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
   const [b, setB] = useState(business);
   const [logoGallery, setLogoGallery] = useState<string[]>(parseLogoGallery(business.logo_gallery));
   const [saved, setSaved] = useState(false);
-  const [importUrl, setImportUrl] = useState("");
-  const [importing, setImporting] = useState(false);
-  const [importMsg, setImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
   const [generatingDesc, setGeneratingDesc] = useState(false);
   // A capa e a descrição do compartilhamento ficam recolhidas: são dois
   // cards longos e, uma vez configurados, quase nunca mudam.
@@ -115,47 +111,8 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
     setSaved(true);
   }
 
-  async function importFromSite() {
-    if (!importUrl.trim()) return;
-    setImporting(true);
-    setImportMsg(null);
-    try {
-      const res = await fetch("/api/import-about", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessName: b.name, url: importUrl.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setImportMsg({ kind: "erro", text: data.error || "Não consegui ler esse site." });
-        return;
-      }
-      if (data.about) { set("about_business", data.about); await save("about_business", data.about); }
-      if (Array.isArray(data.differentials) && data.differentials.length > 0) {
-        const plain = data.differentials.map((d: { title: string; description?: string }) => (d.description ? `${d.title}: ${d.description}` : d.title)).join("\n");
-        set("differentials", plain);
-        await save("differentials", plain);
-        await supabase.from("businesses").update({ differentials_cards: data.differentials }).eq("id", b.id);
-      }
-      if (data.policies) { set("policies", data.policies); await save("policies", data.policies); }
-      setImportMsg({ kind: "ok", text: "Pronto, confira os campos abaixo e ajuste se quiser." });
-    } catch {
-      setImportMsg({ kind: "erro", text: "Não consegui ler esse site agora." });
-    } finally {
-      setImporting(false);
-    }
-  }
-
   const campo = "mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background";
   const rotulo = "mt-7 text-[13px] uppercase tracking-wide text-text-tertiary";
-
-  // Sinaliza o que a Orbi realmente sabe, sem chip decorativo.
-  const conhecimento = [
-    { nome: "Catálogo", cheio: true, obs: "itens publicados na Vitrine" },
-    { nome: "Sobre o negócio", cheio: !!b.about_business, obs: "usado para responder quem você é" },
-    { nome: "Diferenciais", cheio: !!b.differentials, obs: "o que te separa dos outros" },
-    { nome: "Políticas", cheio: !!b.policies, obs: "prazos, entrega, trocas" },
-  ];
 
   return (
     <div className="mt-6 flex flex-col pb-4">
@@ -395,45 +352,24 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
 
       {section === "orbi" && (<>
       <p className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">O que a Orbi sabe</p>
-      <HelperText>Quanto mais preenchido, menos ela precisa dizer que não sabe.</HelperText>
+      <HelperText>O texto que ela usa pra responder seus visitantes. Escreva do seu jeito ou corrija o que ela já escreveu.</HelperText>
 
-      <div className="mt-4 flex flex-wrap gap-2.5">
-        {conhecimento.map((k) => (
-          <span
-            key={k.nome}
-            title={k.obs}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] ${
-              k.cheio ? "bg-orbi-gradient-start/30 text-on-background" : "bg-surface-soft text-text-tertiary"
-            }`}
-          >
-            <span className={`h-1.5 w-1.5 rounded-full ${k.cheio ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
-            {k.nome}
+      {/* Ensinar a Orbi acontece em Personalidade da Marca, que tem o fluxo
+          guiado (ler o site, entrevista de 5 perguntas). Aqui é só o texto
+          final, pra revisar e ajustar. Este atalho liga as duas pontas. */}
+      <Link
+        href="/admin/agent"
+        className="mt-5 flex items-center gap-3.5 rounded-[22px] border border-divider bg-surface-white p-4"
+      >
+        <span className="orbi-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-[16px] text-on-background">✦</span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[14.5px] font-semibold leading-tight">Deixa a Orbi preencher sozinha</span>
+          <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">
+            Ela lê seu site ou faz 5 perguntas e escreve tudo isso pra você.
           </span>
-        ))}
-      </div>
-
-      <div className="mt-6 rounded-[20px] bg-surface-soft p-5">
-        <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Deixa a Orbi preencher a partir do seu site</p>
-        <HelperText>Cola o link e ela lê a página e já preenche Sobre o negócio, Diferenciais e Políticas abaixo.</HelperText>
-        <div className="mt-3 flex gap-2">
-          <input
-            value={importUrl}
-            onChange={(e) => setImportUrl(e.target.value)}
-            placeholder="https://seusite.com.br"
-            className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-          />
-          <button
-            onClick={importFromSite}
-            disabled={importing || !importUrl.trim()}
-            className={`shrink-0 rounded-full px-4 py-2.5 text-[14px] font-medium ${importing ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background"} ${!importUrl.trim() && !importing ? "opacity-50" : ""}`}
-          >
-            {importing ? <OrbiWorking label="Lendo…" variant="inline" /> : "✦ Importar"}
-          </button>
-        </div>
-        {importMsg && (
-          <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>
-        )}
-      </div>
+        </span>
+        <span className="shrink-0 text-text-tertiary">→</span>
+      </Link>
 
       <p className={rotulo}>Sobre o negócio</p>
       <textarea
