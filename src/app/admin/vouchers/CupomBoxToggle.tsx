@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export function CupomBoxToggle({ businessId, initialHasBox, nextPosition }: { businessId: string; initialHasBox: boolean; nextPosition: number }) {
+export function CupomBoxToggle({ businessId, initialHasBox, boxId, nextPosition }: { businessId: string; initialHasBox: boolean; boxId?: string | null; nextPosition: number }) {
   const supabase = createClient();
   const [hasBox, setHasBox] = useState(initialHasBox);
   const [adding, setAdding] = useState(false);
@@ -39,7 +39,9 @@ export function CupomBoxToggle({ businessId, initialHasBox, nextPosition }: { bu
           <p className="text-[15px] font-bold leading-snug" style={{ color: "#15803D" }}>O box &quot;Cupons&quot; já está na sua página inicial</p>
           <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">É por ele que o visitante encontra seus cupons.</p>
         </div>
-        <Link href="/admin/boxes" className="shrink-0 rounded-full border border-[#BBF7D0] bg-white px-4 py-2 text-[14px] font-semibold" style={{ color: "#15803D" }}>
+        {/* Leva direto pro box certo, já aberto pra editar, em vez de
+            largar a pessoa no topo da lista pra procurar. */}
+        <Link href={boxId ? `/admin/boxes?box=${boxId}` : "/admin/boxes"} className="shrink-0 rounded-full border border-[#BBF7D0] bg-white px-4 py-2 text-[14px] font-semibold" style={{ color: "#15803D" }}>
           Editar
         </Link>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -116,7 +116,19 @@ export function BoxesManager({
   const [importingAbout, setImportingAbout] = useState(false);
   const [aboutImportMsg, setAboutImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
   const [arranging, setArranging] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // ?box=<id> (vindo de outra tela, ex: painel de cupons) já abre esse box
+  // em modo de edição e rola até ele.
+  const [editingId, setEditingId] = useState<string | null>(
+    () => (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("box") : null),
+  );
+
+  useEffect(() => {
+    if (!editingId) return;
+    const el = document.getElementById(`box-${editingId}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    // só na montagem: depois disso quem abre é o toque da pessoa
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [creating, setCreating] = useState(false);
   const [draft, setDraft] = useState<BoxConfig>({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
   const [draftLabel, setDraftLabel] = useState("");
@@ -399,7 +411,7 @@ export function BoxesManager({
           const off = !box.is_active && !m.fixo;
           const editing = editingId === box.id;
           return (
-            <div key={box.id} className={`rounded-[22px] border border-divider bg-surface-white p-4 ${off ? "opacity-55" : ""}`}>
+            <div key={box.id} id={`box-${box.id}`} className={`scroll-mt-24 rounded-[22px] border border-divider bg-surface-white p-4 ${off ? "opacity-55" : ""}`}>
               <div className="flex items-start gap-3">
                 {!isHero && (
                   <div className="flex shrink-0 flex-col gap-1 pt-0.5">

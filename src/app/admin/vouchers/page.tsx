@@ -144,7 +144,7 @@ export default async function VouchersPage() {
           </VoucherExplainer>
 
           {/* O elo que faltava: colocar (ou confirmar que já tem) o box na Home */}
-          <CupomBoxToggle businessId={business!.id} initialHasBox={!!cupomBox} nextPosition={nextPosition} />
+          <CupomBoxToggle businessId={business!.id} initialHasBox={!!cupomBox} boxId={cupomBox?.id ?? null} nextPosition={nextPosition} />
         </div>
       )}
 
