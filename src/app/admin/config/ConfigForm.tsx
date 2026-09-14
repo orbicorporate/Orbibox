@@ -340,7 +340,6 @@ export function ConfigForm({ business, section }: { business: Business; section:
       </>)}
 
       {section === "contatos" && (<>
-      <p className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">Contatos do box</p>
       <HelperText>Aparecem como botões para o visitante. Deixe vazio o que não quiser mostrar.</HelperText>
 
       <p className={rotulo}>WhatsApp</p>
@@ -394,7 +393,6 @@ export function ConfigForm({ business, section }: { business: Business; section:
       </>)}
 
       {section === "orbi" && (<>
-      <p className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">O que a Orbi sabe</p>
       <HelperText>O texto que ela usa pra responder seus visitantes. Escreva do seu jeito ou corrija o que ela já escreveu.</HelperText>
 
       {/* Ensinar a Orbi acontece na página Sua IA, que tem o fluxo
