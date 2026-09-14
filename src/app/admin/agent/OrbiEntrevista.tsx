@@ -156,9 +156,13 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
             </div>
           )}
 
-          {concluido && (
+          {concluido && (() => {
+            const temResumo = !!(concluido.sobre || concluido.diferenciais || concluido.publico || concluido.duvidas);
+            return (
             <div className="rounded-2xl bg-[#DEF3E3] p-5">
-              <p className="text-[15px] font-semibold text-[#1F9E4C]">✓ Prontinho! Aqui está o que eu entendi:</p>
+              <p className="text-[15px] font-semibold text-[#1F9E4C]">
+                {temResumo ? "✓ Vou guardar o que aprendi na sua página:" : "✓ Conversa concluída"}
+              </p>
 
               {concluido.sobre && (
                 <div className="mt-3 rounded-xl bg-white/70 p-3.5">
@@ -186,13 +190,16 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
               )}
 
               <p className="mt-3 text-[12.5px] leading-relaxed text-[#1F9E4C]/90">
-                Já salvei tudo isso na sua configuração. Você pode revisar e ajustar quando quiser.
+                {temResumo
+                  ? "Isso já está salvo na sua página. Você pode revisar e ajustar quando quiser."
+                  : "Não consegui montar o resumo agora, mas suas respostas não se perderam. Tente de novo pra eu organizar tudo."}
               </p>
               <button onClick={() => setAberto(false)} className="orbi-green-gradient mt-3 w-full rounded-full py-3 text-[14px] font-semibold text-white">
-                Ótimo, fechar
+                {temResumo ? "Ótimo, fechar" : "Fechar"}
               </button>
             </div>
-          )}
+            );
+          })()}
 
           <div ref={endRef} />
         </div>

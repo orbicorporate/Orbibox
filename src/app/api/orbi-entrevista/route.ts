@@ -40,7 +40,7 @@ Responda APENAS um JSON válido, sem markdown, com estas chaves:
 
 Conversa:
 ${conversaUtil}`;
-      const raw = await chamarIA(system, "Gere o JSON.", 700, key);
+      const raw = await chamarIA(system, "Gere o JSON.", 1400, key);
       try {
         const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
         // Salva sobre e diferenciais no negócio; tom no agent_config.
@@ -60,7 +60,9 @@ ${conversaUtil}`;
         }
         return NextResponse.json({ ok: true, sobre: parsed.sobre, diferenciais: parsed.diferenciais, publico: parsed.resumo_publico, duvidas });
       } catch {
-        return NextResponse.json({ ok: false });
+        // JSON inválido ou cortado: o front precisa saber que falhou, senão
+        // mostra um card de sucesso sem conteúdo nenhum.
+        return NextResponse.json({ ok: false, error: "parse" });
       }
     }
 
