@@ -39,7 +39,7 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
   return (
     <div className="rounded-[24px] border border-divider bg-surface-white p-5">
       <div>
-        <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold leading-tight">Ensine a Orbi</p>
+        <p className="font-[family-name:var(--font-manrope)] text-[19px] font-semibold leading-tight">Ensine a Orbi</p>
         <p className="text-[12.5px] text-text-tertiary">{feito ? "Ela já conhece seu negócio. Você pode reforçar abaixo." : "Faça o passo 1 ou 2 pra ela conhecer seu negócio."}</p>
       </div>
 
