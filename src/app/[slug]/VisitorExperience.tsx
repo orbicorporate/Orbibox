@@ -825,34 +825,51 @@ function VoucherFlow({ business, sessionId, onBack }: { business: Business; sess
                 style={{ background: voucherGradient(v.color), boxShadow: `0 12px 30px ${tema.glow}` }}
               >
                 <VoucherLines />
-                <div className="relative flex items-stretch">
-                  <div className="min-w-0 flex-1 p-5">
-                    {v.badge?.trim() && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.12em]" style={{ color: tema.ctaText }}>
-                        {v.badge}
-                      </span>
+                <div className="relative p-5">
+                  {/* Cabeçalho: o desconto manda, a foto vira selo quadrado
+                      ao lado. Antes ela ocupava 42% da largura e espremia o
+                      texto a ponto do botão quebrar em duas linhas. */}
+                  <div className="flex items-start gap-4">
+                    <div className="min-w-0 flex-1">
+                      {v.badge?.trim() && (
+                        <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                          {v.badge}
+                        </span>
+                      )}
+                      <p className={`font-[family-name:var(--font-manrope)] text-[32px] font-extrabold leading-none tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}`}>
+                        {voucherDiscountBig(v)}
+                      </p>
+                      <p className="mt-2 text-[16px] font-semibold leading-snug">{v.title}</p>
+                      {v.description?.trim() && (
+                        <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-80">{v.description}</p>
+                      )}
+                    </div>
+
+                    {v.image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={v.image_url}
+                        alt={v.title}
+                        className="h-[88px] w-[88px] shrink-0 rounded-[18px] object-cover ring-1 ring-white/25"
+                      />
                     )}
-                    <p className="mt-2.5 font-[family-name:var(--font-manrope)] text-[30px] font-extrabold leading-none tracking-[-0.01em]">{voucherDiscountBig(v)}</p>
-                    <p className="mt-2 text-[16px] font-semibold leading-snug">{v.title}</p>
-                    {v.description?.trim() && <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-85">{v.description}</p>}
+                  </div>
+
+                  {/* Ação e estoque na mesma linha: o botão cabe inteiro e o
+                      "restantes" deixa de gastar uma linha só pra ele. */}
+                  <div className="mt-5 flex items-center gap-3">
                     <button
                       onClick={() => { setClaiming(v.id); setError(null); }}
                       disabled={restam <= 0}
-                      className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-[14px] font-bold shadow-[0_6px_18px_rgba(0,0,0,0.18)] disabled:opacity-50"
+                      className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-[14px] font-bold disabled:opacity-50"
                       style={{ color: tema.ctaText }}
                     >
                       {restam > 0 ? <>Pegar meu voucher <span aria-hidden>→</span></> : "Esgotado"}
                     </button>
-                    <p className="mt-3 text-[12px] opacity-75">{restam > 0 ? `${restam} restantes` : "Acabou"}</p>
+                    <p className="min-w-0 flex-1 truncate text-[12.5px] opacity-75">
+                      {restam > 0 ? `${restam} restantes` : "Acabou"}
+                    </p>
                   </div>
-                  {v.image_url && (
-                    // Foto com respiro e cantos arredondados: colada na borda
-                    // ela brigava com o raio do card e parecia recorte.
-                    <div className="w-[42%] shrink-0 py-4 pr-4">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={v.image_url} alt={v.title} className="h-full w-full rounded-[18px] object-cover" />
-                    </div>
-                  )}
                 </div>
               </div>
             );
