@@ -39,8 +39,15 @@ export default function SignupPage() {
       setCheckEmail(true);
       return;
     }
-    // Já logado: registra a indicação (se veio por link) antes de seguir.
-    try { await fetch("/api/referral/register", { method: "POST" }); } catch { /* silencioso */ }
+    // Já logado: registra indicação/afiliado e resgata o bônus (se veio por
+    // algum desses links) antes de seguir pro onboarding.
+    try {
+      await Promise.all([
+        fetch("/api/referral/register", { method: "POST" }),
+        fetch("/api/affiliate/register", { method: "POST" }),
+        fetch("/api/bonus/redeem", { method: "POST" }),
+      ]);
+    } catch { /* silencioso */ }
     router.push("/onboarding");
     router.refresh();
   }

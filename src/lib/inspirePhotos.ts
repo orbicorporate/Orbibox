@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { ThemePhoto } from "@/lib/vitrineThemes";
 
-export type InspireThemeData = { photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" };
+export type InspireThemeData = { photos: ThemePhoto[]; titleStyle: "faixa" | "sobre"; label?: string; custom?: boolean };
 
 // Aceita os dois formatos salvos: lista de strings (URLs, antigo) ou lista de
 // objetos { url, title, price } (novo). Normaliza sempre pra ThemePhoto.
@@ -21,12 +21,14 @@ function normalize(raw: unknown): ThemePhoto[] {
 
 export async function getInspirePhotos(): Promise<Record<string, InspireThemeData>> {
   const supabase = await createClient();
-  const { data } = await supabase.from("inspire_theme_photos").select("theme_id, photos, title_style");
+  const { data } = await supabase.from("inspire_theme_photos").select("theme_id, photos, title_style, label, custom");
   const map: Record<string, InspireThemeData> = {};
   for (const row of data ?? []) {
     map[row.theme_id] = {
       photos: normalize(row.photos),
       titleStyle: row.title_style === "faixa" ? "faixa" : "sobre",
+      label: row.label ?? undefined,
+      custom: row.custom ?? false,
     };
   }
   return map;

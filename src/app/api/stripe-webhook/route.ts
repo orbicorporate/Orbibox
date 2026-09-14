@@ -102,6 +102,73 @@ async function notifyPaymentFailed(ownerId: string) {
   await sendEmail({ to: profile.email, subject, html });
 }
 
+
+/**
+ * Gera a comissão do afiliado a cada cobrança paga.
+ *
+ * Regras combinadas: 30% do valor recebido, pelos primeiros 12 meses de cada
+ * indicado, e só depois dos 7 dias de garantia (mesma carência da indicação
+ * entre usuários). A janela de 12 meses começa a contar no momento em que a
+ * assinatura vira paga, e fica gravada em commission_until.
+ */
+async function registrarComissaoAfiliado(invoice: Stripe.Invoice, ownerId: string) {
+  const supabase = createServiceClient();
+
+  const { data: indicacao } = await supabase
+    .from("affiliate_referrals")
+    .select("id, affiliate_id, status, subscribed_at, commission_until")
+    .eq("referred_user_id", ownerId)
+    .maybeSingle();
+
+  if (!indicacao) return;
+
+  const agora = new Date();
+
+  // Primeira cobrança paga: marca como assinante e abre a janela de 12 meses.
+  if (!indicacao.subscribed_at) {
+    const fim = new Date(agora);
+    fim.setMonth(fim.getMonth() + 12);
+    await supabase
+      .from("affiliate_referrals")
+      .update({
+        status: "subscribed",
+        subscribed_at: agora.toISOString(),
+        commission_until: fim.toISOString(),
+        stripe_subscription_id:
+          typeof invoice.parent?.subscription_details?.subscription === "string"
+            ? invoice.parent.subscription_details.subscription
+            : null,
+      })
+      .eq("id", indicacao.id);
+    indicacao.commission_until = fim.toISOString();
+  }
+
+  // Passou dos 12 meses, não comissiona mais.
+  if (indicacao.commission_until && new Date(indicacao.commission_until) < agora) return;
+
+  const { data: afiliado } = await supabase
+    .from("affiliates")
+    .select("commission_rate, active")
+    .eq("id", indicacao.affiliate_id)
+    .maybeSingle();
+
+  if (!afiliado?.active) return;
+
+  const base = invoice.amount_paid ?? 0;
+  if (base <= 0) return;
+
+  // Carência de 7 dias: a comissão nasce pendente e só fica liberada depois.
+  // stripe_invoice_id é unique, então reentrega de webhook não duplica.
+  await supabase.from("affiliate_commissions").insert({
+    affiliate_id: indicacao.affiliate_id,
+    affiliate_referral_id: indicacao.id,
+    amount_cents: Math.round(base * Number(afiliado.commission_rate ?? 0.3)),
+    base_amount_cents: base,
+    stripe_invoice_id: invoice.id ?? null,
+    status: "pending",
+  });
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
@@ -154,6 +221,23 @@ export async function POST(req: NextRequest) {
             .update({ status: "reversed", updated_at: new Date().toISOString() })
             .eq("referred_user_id", ownerId)
             .eq("status", "pending");
+          // Mesma lógica pro afiliado: cancelou, para de comissionar daqui pra frente.
+          await supabase
+            .from("affiliate_referrals")
+            .update({ status: "canceled", commission_until: new Date().toISOString() })
+            .eq("referred_user_id", ownerId);
+        }
+        break;
+      }
+
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subscriptionId = invoice.parent?.subscription_details?.subscription;
+        if (subscriptionId) {
+          const id = typeof subscriptionId === "string" ? subscriptionId : subscriptionId.id;
+          const subscription = await stripe.subscriptions.retrieve(id);
+          const ownerId = subscription.metadata?.owner_id;
+          if (ownerId) await registrarComissaoAfiliado(invoice, ownerId);
         }
         break;
       }

@@ -32,8 +32,28 @@ function fileToBase64(file: File): Promise<{ data: string; mediaType: string }> 
   });
 }
 
+// Slug a partir do nome digitado: "Loja de Pet" -> "loja-de-pet".
+function slugify(nome: string): string {
+  return nome
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+}
+
 export function InspireUploader({ existing }: { existing: Record<string, InspireThemeData> }) {
   const supabase = createClient();
+  // Temas fixos do código + os criados pelo master (que vivem no banco).
+  const [temasExtras, setTemasExtras] = useState<[string, string][]>(() =>
+    Object.entries(existing)
+      .filter(([id, d]) => d.custom && !TEMAS.some(([fixo]) => fixo === id))
+      .map(([id, d]) => [id, d.label ?? id] as [string, string])
+  );
+  const listaTemas: [string, string][] = [...(TEMAS as [string, string][]), ...temasExtras];
+  const [criando, setCriando] = useState(false);
+  const [novoNome, setNovoNome] = useState("");
   const [theme, setTheme] = useState("moda");
   const [busy, setBusy] = useState(false);
   const [titleStyle, setTitleStyle] = useState<"faixa" | "sobre">(existing["moda"]?.titleStyle ?? "sobre");
@@ -138,23 +158,82 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
     setSaving(true);
     setSaveMsg(null);
     const photos = items.map((r) => ({ url: r.url, title: r.title.trim(), price: r.price.trim() }));
+    const extra = temasExtras.find(([id]) => id === theme);
     const { error } = await supabase
       .from("inspire_theme_photos")
-      .upsert({ theme_id: theme, photos, title_style: titleStyle, updated_at: new Date().toISOString() }, { onConflict: "theme_id" });
+      .upsert(
+        {
+          theme_id: theme,
+          photos,
+          title_style: titleStyle,
+          updated_at: new Date().toISOString(),
+          // Tema criado aqui guarda o nome próprio; os fixos ficam sem label.
+          ...(extra ? { label: extra[1], custom: true } : {}),
+        },
+        { onConflict: "theme_id" },
+      );
     setSaving(false);
     setSaveMsg(error ? `Erro ao salvar: ${error.message}` : "✓ Tema salvo! Já aparece no Inspire-se.");
+  }
+
+  function criarTema() {
+    const nome = novoNome.trim();
+    if (!nome) return;
+    const id = slugify(nome);
+    if (!id) return;
+    if (listaTemas.some(([existenteId]) => existenteId === id)) {
+      setSaveMsg("Já existe um tema com esse nome.");
+      return;
+    }
+    setTemasExtras((atuais) => [...atuais, [id, nome]]);
+    setNovoNome("");
+    setCriando(false);
+    // Entra no tema novo, vazio, pronto pra subir as fotos.
+    setTheme(id);
+    setTitleStyle("sobre");
+    setItems([]);
+    setSaveMsg(null);
   }
 
   return (
     <div className="mt-5 flex flex-col gap-4">
       <div className="rounded-2xl border border-divider bg-surface-white p-4">
-        <label className="text-[13px] font-medium">Tema</label>
+        <div className="flex items-center justify-between">
+          <label className="text-[13px] font-medium">Tema</label>
+          <button
+            onClick={() => { setCriando((v) => !v); setNovoNome(""); }}
+            className="rounded-full bg-surface-soft px-3 py-1 text-[12.5px] font-semibold text-text-secondary"
+          >
+            {criando ? "Cancelar" : "+ Novo tema"}
+          </button>
+        </div>
+
+        {criando && (
+          <div className="mt-2 flex gap-2">
+            <input
+              value={novoNome}
+              onChange={(e) => setNovoNome(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") criarTema(); }}
+              placeholder="Nome do tema, ex: Pet Shop"
+              autoFocus
+              className="min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+            />
+            <button
+              onClick={criarTema}
+              disabled={!novoNome.trim()}
+              className="shrink-0 rounded-full bg-button-primary px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-40"
+            >
+              Criar
+            </button>
+          </div>
+        )}
+
         <select
           value={theme}
           onChange={(e) => trocarTema(e.target.value)}
           className="mt-1.5 w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none"
         >
-          {TEMAS.map(([id, label]) => (
+          {listaTemas.map(([id, label]) => (
             <option key={id} value={id}>{label}</option>
           ))}
         </select>

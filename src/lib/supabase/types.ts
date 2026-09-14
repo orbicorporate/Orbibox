@@ -94,9 +94,39 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["business_admins"]["Insert"]>
         Relationships: []
       }
+      affiliates: {
+        Row: { id: string; name: string; email: string | null; phone: string | null; pix_key: string | null; code: string; commission_rate: number; commission_months: number; active: boolean; notes: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; name: string; email?: string | null; phone?: string | null; pix_key?: string | null; code: string; commission_rate?: number; commission_months?: number; active?: boolean; notes?: string | null; created_at?: string; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["affiliates"]["Insert"]>
+        Relationships: []
+      }
+      affiliate_referrals: {
+        Row: { id: string; affiliate_id: string; referred_user_id: string | null; status: string; subscribed_at: string | null; commission_until: string | null; stripe_subscription_id: string | null; created_at: string }
+        Insert: { id?: string; affiliate_id: string; referred_user_id?: string | null; status?: string; subscribed_at?: string | null; commission_until?: string | null; stripe_subscription_id?: string | null; created_at?: string }
+        Update: Partial<Database["public"]["Tables"]["affiliate_referrals"]["Insert"]>
+        Relationships: []
+      }
+      affiliate_commissions: {
+        Row: { id: string; affiliate_id: string; affiliate_referral_id: string | null; amount_cents: number; base_amount_cents: number; stripe_invoice_id: string | null; status: string; paid_at: string | null; created_at: string }
+        Insert: { id?: string; affiliate_id: string; affiliate_referral_id?: string | null; amount_cents: number; base_amount_cents: number; stripe_invoice_id?: string | null; status?: string; paid_at?: string | null; created_at?: string }
+        Update: Partial<Database["public"]["Tables"]["affiliate_commissions"]["Insert"]>
+        Relationships: []
+      }
+      bonus_links: {
+        Row: { id: string; code: string; label: string | null; kind: string; plan_id: string; max_uses: number | null; uses: number; expires_at: string | null; active: boolean; created_at: string }
+        Insert: { id?: string; code: string; label?: string | null; kind: string; plan_id?: string; max_uses?: number | null; uses?: number; expires_at?: string | null; active?: boolean; created_at?: string }
+        Update: Partial<Database["public"]["Tables"]["bonus_links"]["Insert"]>
+        Relationships: []
+      }
+      bonus_redemptions: {
+        Row: { id: string; bonus_link_id: string; user_id: string; granted_until: string | null; created_at: string }
+        Insert: { id?: string; bonus_link_id: string; user_id: string; granted_until?: string | null; created_at?: string }
+        Update: Partial<Database["public"]["Tables"]["bonus_redemptions"]["Insert"]>
+        Relationships: []
+      }
       inspire_theme_photos: {
-        Row: { theme_id: string; photos: Json; title_style: string; updated_at: string }
-        Insert: { theme_id: string; photos?: Json; title_style?: string; updated_at?: string }
+        Row: { theme_id: string; photos: Json; title_style: string; updated_at: string; label: string | null; custom: boolean }
+        Insert: { theme_id: string; photos?: Json; title_style?: string; updated_at?: string; label?: string | null; custom?: boolean }
         Update: Partial<Database["public"]["Tables"]["inspire_theme_photos"]["Insert"]>
         Relationships: []
       }
@@ -190,6 +220,18 @@ export type Database = {
       owner_has_feature: {
         Args: { p_owner_id: string; p_feature: string }
         Returns: boolean
+      }
+      register_affiliate_referral: {
+        Args: { p_code: string }
+        Returns: boolean
+      }
+      redeem_bonus_link: {
+        Args: { p_code: string }
+        Returns: Json
+      }
+      master_list_affiliates: {
+        Args: Record<string, never>
+        Returns: { id: string; name: string; email: string | null; phone: string | null; pix_key: string | null; code: string; commission_rate: number; commission_months: number; active: boolean; indicados: number; assinantes: number; comissao_pendente_cents: number; comissao_paga_cents: number; created_at: string }[]
       }
       claim_voucher: {
         Args: { p_voucher_id: string; p_visitor_name: string | null; p_visitor_whatsapp: string | null }
