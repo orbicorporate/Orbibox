@@ -720,7 +720,7 @@ export function ShowcaseBuilder({
         </p>
         {/* Espiada rápida sem trocar de aba: abre a página real num quadro
             de celular e fecha de volta aqui. */}
-        <PreviewVisitante slug={slug} />
+        <PreviewVisitante slug={slug} tab="vitrine" />
       </div>
 
       {items.length === 0 && (

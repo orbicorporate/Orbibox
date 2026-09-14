@@ -115,7 +115,11 @@ export function VisitorExperience({
   // "Modo visitante", o dono liga isso pra ver a Home exatamente como o
   // visitante vê, sem os controles de edição no meio, sem precisar sair da
   // página nem abrir uma aba anônima.
-  const [previewMode, setPreviewMode] = useState(false);
+  // ?preview=1 já entra em modo visitante. É a prévia embutida no painel:
+  // além de esconder os controles de edição, esconde o "voltar a editar",
+  // porque quem controla a saída é o modal que abriu a prévia.
+  const previewTravado = searchParams.get("preview") === "1";
+  const [previewMode, setPreviewMode] = useState(previewTravado);
   const showOwnerControls = isOwner && !previewMode;
   // Pergunta digitada na tela cheia da CuradoriaOrbi, passa pro campo do
   // chat real já preenchida, pronta pra mandar, em vez de perder o que a
@@ -170,13 +174,15 @@ export function VisitorExperience({
 
   // Vem de um link "Falar com a Orbi" de outra página (ex: página de produto)
   // com ?chat=1, abre o chat direto, sem passar pela tela de escolha.
-  // ?tab=conhecer faz o mesmo pra página "Sobre" (ex: link do painel, depois
-  // de montar a página Sobre completa com a Orbi).
+  // ?tab=conhecer abre a página "Sobre", ?tab=vitrine abre o catálogo.
+  // ?preview=1 esconde os controles de edição mesmo pro dono: é a prévia
+  // "ver como visitante", que precisa mostrar a página crua.
   useEffect(() => {
     const chat = searchParams.get("chat");
     const tab = searchParams.get("tab");
     if (chat === "1" && hasAiChat) chooseIntent("duvida");
     else if (tab === "conhecer") chooseIntent("conhecer");
+    else if (tab === "vitrine") chooseIntent("comprar");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
@@ -338,7 +344,7 @@ export function VisitorExperience({
           </button>
         </div>
       )}
-      {isOwner && intent === null && previewMode && (
+      {isOwner && intent === null && previewMode && !previewTravado && (
         <button
           onClick={() => setPreviewMode(false)}
           className="fixed right-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur"

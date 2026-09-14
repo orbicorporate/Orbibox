@@ -8,11 +8,20 @@ import { createPortal } from "react-dom";
  * página de verdade num quadro de celular, então o que aparece aqui é
  * exatamente o que o visitante vê. Fecha e você continua onde estava.
  */
-export function PreviewVisitante({ slug, className = "" }: { slug: string; className?: string }) {
+export function PreviewVisitante({ slug, tab, className = "" }: {
+  slug: string;
+  /** Abre direto numa parte da página, em vez da tela inicial. */
+  tab?: "vitrine" | "conhecer";
+  className?: string;
+}) {
   const [aberto, setAberto] = useState(false);
   // Muda a cada abertura pra forçar o iframe a recarregar, senão a prévia
   // fica com o conteúdo de antes das últimas edições.
   const [versao, setVersao] = useState(0);
+
+  // preview=1 esconde os controles de edição, então o dono vê a página
+  // exatamente como um visitante qualquer veria.
+  const destino = `/${slug}?preview=1${tab ? `&tab=${tab}` : ""}`;
 
   function abrir() {
     setVersao((v) => v + 1);
@@ -42,7 +51,7 @@ export function PreviewVisitante({ slug, className = "" }: { slug: string; class
             <p className="text-[13px] font-medium text-white/90">Assim o visitante vê</p>
             <div className="flex items-center gap-2">
               <a
-                href={`/${slug}`}
+                href={destino}
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
@@ -67,7 +76,7 @@ export function PreviewVisitante({ slug, className = "" }: { slug: string; class
           >
             <iframe
               key={versao}
-              src={`/${slug}`}
+              src={destino}
               title="Prévia da sua página"
               className="h-full w-full border-0"
             />
