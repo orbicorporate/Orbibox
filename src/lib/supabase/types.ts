@@ -95,7 +95,7 @@ export type Database = {
         Relationships: []
       }
       affiliates: {
-        Row: { id: string; name: string; email: string | null; phone: string | null; pix_key: string | null; code: string; commission_rate: number; commission_months: number; active: boolean; notes: string | null; created_at: string; updated_at: string }
+        Row: { id: string; name: string; email: string | null; phone: string | null; pix_key: string | null; code: string; panel_token: string; commission_rate: number; commission_months: number; active: boolean; notes: string | null; created_at: string; updated_at: string }
         Insert: { id?: string; name: string; email?: string | null; phone?: string | null; pix_key?: string | null; code: string; commission_rate?: number; commission_months?: number; active?: boolean; notes?: string | null; created_at?: string; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["affiliates"]["Insert"]>
         Relationships: []
@@ -221,6 +221,22 @@ export type Database = {
         Args: { p_owner_id: string; p_feature: string }
         Returns: boolean
       }
+      affiliate_panel_summary: {
+        Args: { p_token: string }
+        Returns: Json
+      }
+      affiliate_panel_sales: {
+        Args: { p_token: string }
+        Returns: { referral_id: string; plano: string; ciclo: string; status: string; comprou_em: string | null; comissao_ate: string | null; comissao_total_cents: number; cobrancas: number }[]
+      }
+      affiliate_panel_monthly: {
+        Args: { p_token: string }
+        Returns: { mes: string; total_cents: number; lancamentos: number }[]
+      }
+      register_affiliate_click: {
+        Args: { p_code: string }
+        Returns: undefined
+      }
       register_affiliate_referral: {
         Args: { p_code: string }
         Returns: boolean
@@ -231,7 +247,7 @@ export type Database = {
       }
       master_list_affiliates: {
         Args: Record<string, never>
-        Returns: { id: string; name: string; email: string | null; phone: string | null; pix_key: string | null; code: string; commission_rate: number; commission_months: number; active: boolean; indicados: number; assinantes: number; comissao_pendente_cents: number; comissao_paga_cents: number; created_at: string }[]
+        Returns: { id: string; name: string; email: string | null; phone: string | null; pix_key: string | null; code: string; panel_token: string; commission_rate: number; commission_months: number; active: boolean; indicados: number; assinantes: number; comissao_pendente_cents: number; comissao_paga_cents: number; created_at: string }[]
       }
       claim_voucher: {
         Args: { p_voucher_id: string; p_visitor_name: string | null; p_visitor_whatsapp: string | null }

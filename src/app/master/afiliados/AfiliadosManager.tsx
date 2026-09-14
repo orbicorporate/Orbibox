@@ -10,6 +10,7 @@ type Afiliado = {
   phone: string | null;
   pix_key: string | null;
   code: string;
+  panel_token: string;
   commission_rate: number;
   commission_months: number;
   active: boolean;
@@ -94,7 +95,7 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
         pix_key: novoPix.trim() || null,
         code: gerarCodigo(nome),
       })
-      .select("id, name, email, phone, pix_key, code, commission_rate, commission_months, active")
+      .select("id, name, email, phone, pix_key, code, panel_token, commission_rate, commission_months, active")
       .single();
     setSalvando(false);
     if (error || !data) { setErro(error?.message ?? "Não consegui criar."); return; }
@@ -214,6 +215,13 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
                     <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{link}</span>
                     <button onClick={() => copiar(link, af.id)} className="shrink-0 rounded-full bg-on-background px-3 py-1 text-[12px] font-semibold text-white">
                       {copiado === af.id ? "Copiado ✓" : "Copiar"}
+                    </button>
+                  </div>
+
+                  <div className="mt-2 flex items-center gap-2 rounded-2xl bg-surface-soft px-4 py-2.5">
+                    <span className="min-w-0 flex-1 truncate text-[12.5px] text-text-secondary">Painel do parceiro</span>
+                    <button onClick={() => copiar(`${base}/parceiro/${af.panel_token}`, `${af.id}-painel`)} className="shrink-0 rounded-full bg-surface-white px-3 py-1 text-[12px] font-semibold">
+                      {copiado === `${af.id}-painel` ? "Copiado ✓" : "Copiar link"}
                     </button>
                   </div>
 
