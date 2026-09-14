@@ -60,6 +60,13 @@ export function OrbiVisualPanel({
   const orbiDetail = orbiColors[2] ?? null;
   // Só uma folha de cor aberta por vez, toca no botão, escolhe, fecha.
   const [openPicker, setOpenPicker] = useState<PickerKey | null>(null);
+  // Cores já vêm com um padrão bonito, então o painel começa recolhido:
+  // é ajuste fino, não algo que precise ser feito pra a página funcionar.
+  // Quem chega por "#cores-orbi" veio justamente pra mexer nas cores,
+  // então nesse caso já abre expandido.
+  const [aberto, setAberto] = useState(
+    () => typeof window !== "undefined" && window.location.hash === "#cores-orbi",
+  );
 
   async function pickHeroStyle(style: string) {
     setHeroStyle(style);
@@ -88,18 +95,30 @@ export function OrbiVisualPanel({
 
   return (
     <div id="cores-orbi" className="scroll-mt-6 rounded-[24px] orbi-gradient p-[1.5px]">
-      <div className="rounded-[23px] bg-surface-white p-5">
-        <div className="flex items-center gap-4">
-          <OrbiParticleSphere key={orbiColors.join("-")} size={104} colors={orbiColors} className="rounded-full" />
-          <div className="flex-1">
-            <p className="text-[14px] font-medium">Cores da Orbi</p>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-text-secondary">
-              Cor primária e secundária se misturam por toda a esfera; a cor de detalhe forma um degradê suave na parte de baixo.
-            </p>
-          </div>
-        </div>
+      <div className="rounded-[23px] bg-surface-white">
+        {/* Cabeçalho clicável: a esfera continua à vista como prévia viva,
+            mas os seletores de cor e o fundo da tela ficam recolhidos. */}
+        <button
+          type="button"
+          aria-expanded={aberto}
+          onClick={() => setAberto((v) => !v)}
+          className="flex w-full cursor-pointer items-center gap-4 p-5 text-left"
+        >
+          <OrbiParticleSphere key={orbiColors.join("-")} size={72} colors={orbiColors} className="shrink-0 rounded-full" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold">Cores da Orbi</span>
+            <span className="mt-0.5 block text-[12.5px] leading-relaxed text-text-secondary">
+              {aberto
+                ? "Cor primária e secundária se misturam por toda a esfera; a de detalhe faz um degradê na parte de baixo."
+                : "Toque pra escolher as cores da esfera e o fundo da tela inicial."}
+            </span>
+          </span>
+          <span className={`shrink-0 text-text-tertiary transition-transform ${aberto ? "rotate-90" : ""}`}>→</span>
+        </button>
 
-        <div className="mt-3 flex items-stretch gap-2.5">
+        {aberto && (
+        <div className="border-t border-divider px-5 pb-5 pt-4">
+        <div className="flex items-stretch gap-2.5">
           <ColorChip label="Primária" hex={orbiColors[0]} onOpen={() => setOpenPicker("primaria")} />
           <ColorChip label="Secundária" hex={orbiColors[1]} onOpen={() => setOpenPicker("secundaria")} />
           <ColorChip
@@ -151,6 +170,8 @@ export function OrbiVisualPanel({
             <ColorChip label="Cor 2" hex={heroGradient[1]} onOpen={() => setOpenPicker("hero2")} />
           </div>
         </div>
+        </div>
+        )}
       </div>
 
       {openPicker && (
