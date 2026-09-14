@@ -192,8 +192,11 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
           {KNOWLEDGE.map((k) => {
             const cheio = knowledge[k.key];
             return cheio ? (
-              <span key={k.key} className="inline-flex items-center gap-1.5 rounded-full bg-orbi-gradient-start/25 px-3 py-1.5 text-[12px] font-medium text-on-background">
-                <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" /> {k.label}
+              <span key={k.key} className="inline-flex items-center gap-1.5 rounded-full bg-[#DEF3E3] px-3 py-1.5 text-[12px] font-medium text-[#1F7A3D]">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+                {k.label}
               </span>
             ) : (
               <Link

@@ -10,8 +10,11 @@ import { useState } from "react";
 export function StatusTag({ preenchido, opcional = false }: { preenchido: boolean; opcional?: boolean }) {
   if (preenchido) {
     return (
-      <span className="shrink-0 rounded-full bg-[#DEF3E3] px-2.5 py-1 text-[11px] font-semibold text-[#1F7A3D]">
-        Configurado
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#DEF3E3] px-2.5 py-1 text-[11px] font-semibold text-[#1F7A3D]">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+        Já configurado
       </span>
     );
   }
