@@ -357,7 +357,7 @@ export function BoxesManager({
                   <span className="text-[11px] font-medium">Logotipo</span>
                 </button>
               </div>
-              <Link href="/admin/config#cores-orbi" className="mt-2 inline-block text-[11px] font-medium text-text-secondary underline">
+              <Link href="/admin/config/marca#cores-orbi" className="mt-2 inline-block text-[11px] font-medium text-text-secondary underline">
                 ✦ Configurar cor
               </Link>
               {!availableLogo && (

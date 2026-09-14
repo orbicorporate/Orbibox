@@ -106,7 +106,7 @@ export default async function HojePage() {
       title: "Personalize a cor da sua Orbi",
       description: "Escolha as cores da esfera de acordo com a paleta da sua marca, deixa tudo mais consistente com sua identidade.",
       ctaLabel: "Configurar cores",
-      href: "/admin/config#cores-orbi",
+      href: "/admin/config/marca#cores-orbi",
     });
   }
   if (!business!.logo_url) {

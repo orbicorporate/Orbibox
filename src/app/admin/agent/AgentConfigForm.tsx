@@ -7,7 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/components/orbi/OrbiInsightCard";
-import { OrbiVisualPanel } from "@/app/admin/config/OrbiVisualPanel";
 import { ComoOrbiAprende } from "./ComoOrbiAprende";
 import { SecaoRecolhivel } from "@/components/ui/SecaoRecolhivel";
 
@@ -28,12 +27,11 @@ const KNOWLEDGE: { key: keyof Knowledge; label: string; href: string }[] = [
   { key: "diferenciais", label: "Estilo e Curadoria", href: "/admin/config" },
 ];
 
-export function AgentConfigForm({ config, businessId, businessName, slug, heroGradient, heroStyle, knowledge, gapsPendentes = 0 }: { config: Config; businessId: string; businessName: string; slug: string; heroGradient: string[] | null; heroStyle?: string | null; knowledge: Knowledge; gapsPendentes?: number }) {
+export function AgentConfigForm({ config, businessId, businessName, slug, knowledge, gapsPendentes = 0 }: { config: Config; businessId: string; businessName: string; slug: string; knowledge: Knowledge; gapsPendentes?: number }) {
   const supabase = createClient();
   const router = useRouter();
   const [state, setState] = useState(config);
   const [editandoNome, setEditandoNome] = useState(false);
-  const [showCores, setShowCores] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [buildingAbout, setBuildingAbout] = useState(false);
@@ -134,9 +132,12 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
         </div>
       </div>
 
-      <button
-        onClick={() => setShowCores((v) => !v)}
-        className="-mt-2 w-full rounded-[24px] orbi-gradient p-[1.5px]"
+      {/* As cores vivem em Identidade e marca, junto do logotipo e da capa,
+          porque o mesmo painel também define o fundo da tela inicial, que é
+          da página e não da Orbi. Aqui fica só o caminho pra lá. */}
+      <Link
+        href="/admin/config/marca#cores-orbi"
+        className="-mt-2 block w-full rounded-[24px] orbi-gradient p-[1.5px]"
       >
         <span className="flex w-full items-center gap-3.5 rounded-[23px] bg-surface-white p-4">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl orbi-gradient text-on-background">
@@ -146,20 +147,12 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
             </svg>
           </span>
           <span className="min-w-0 flex-1 text-left">
-            <span className="block text-[16px] font-semibold text-on-background">✦ Configurar cores da Orbi</span>
-            <span className="mt-0.5 block text-[12.5px] text-text-tertiary">Escolha as cores da esfera e do fundo da sua página.</span>
+            <span className="block text-[16px] font-semibold text-on-background">✦ Cores da Orbi</span>
+            <span className="mt-0.5 block text-[12.5px] text-text-tertiary">Escolha as cores da esfera e o fundo da sua página.</span>
           </span>
-          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary transition-transform ${showCores ? "rotate-180" : ""}`}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
-          </span>
+          <span className="shrink-0 text-text-tertiary">→</span>
         </span>
-      </button>
-
-      {showCores && (
-        <div className="-mt-2 rounded-[24px] border border-divider bg-surface-white p-4">
-          <OrbiVisualPanel businessId={businessId} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={heroStyle} />
-        </div>
-      )}
+      </Link>
 
       {/* Ajuste de comportamento */}
       <div>
