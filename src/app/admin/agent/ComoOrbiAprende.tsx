@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { OrbiEntrevista } from "./OrbiEntrevista";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { createClient } from "@/lib/supabase/client";
 
 type Diferencial = { icon: string; title: string; description: string };
 type Topico = { title: string; description: string };
@@ -27,6 +28,23 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
   const [resultado, setResultado] = useState<ResultadoImport | null>(null);
   const [analiseAberta, setAnaliseAberta] = useState(false);
 
+  // Recupera a análise já salva, pra quem volta depois: o botão de ver
+  // análise continua aparecendo em vez de sumir no refresh.
+  useEffect(() => {
+    let cancel = false;
+    const supabase = createClient();
+    supabase
+      .from("businesses")
+      .select("site_analysis")
+      .eq("id", businessId)
+      .single()
+      .then(({ data }) => {
+        if (cancel || !data?.site_analysis) return;
+        setResultado(data.site_analysis as ResultadoImport);
+      });
+    return () => { cancel = true; };
+  }, [businessId]);
+
   async function importar() {
     if (!url.trim() || importando) return;
     setImportando(true);
@@ -39,8 +57,37 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
       });
       const data = await res.json();
       if (!res.ok) { setErro(data.error || "Não consegui ler esse site."); return; }
+
+      const analise: ResultadoImport = {
+        about: data.about,
+        differentials: data.differentials,
+        policies: data.policies,
+        challenges: data.challenges,
+        opportunities: data.opportunities,
+      };
+
+      // Grava de fato no negócio: é isso que alimenta a página pública e
+      // faz o passo continuar marcado como concluído depois do refresh.
+      const supabase = createClient();
+      const update: {
+        site_analysis: ResultadoImport;
+        about_business?: string;
+        differentials_cards?: Diferencial[];
+        differentials?: string;
+        policies?: string;
+      } = { site_analysis: analise };
+      if (data.about) update.about_business = data.about;
+      if (Array.isArray(data.differentials) && data.differentials.length > 0) {
+        update.differentials_cards = data.differentials;
+        update.differentials = data.differentials
+          .map((d: Diferencial) => (d.description ? `${d.title}: ${d.description}` : d.title))
+          .join("\n");
+      }
+      if (data.policies) update.policies = data.policies;
+      await supabase.from("businesses").update(update).eq("id", businessId);
+
       setFeito(true);
-      setResultado({ about: data.about, differentials: data.differentials, policies: data.policies, challenges: data.challenges, opportunities: data.opportunities });
+      setResultado(analise);
       setSite("idle");
       onDone?.();
       router.refresh();
@@ -50,6 +97,8 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
       setImportando(false);
     }
   }
+
+  const temAnalise = !!resultado && (!!resultado.about || (resultado.differentials?.length ?? 0) > 0);
 
   return (
     <div className="rounded-[24px] border border-divider bg-surface-white p-5">
@@ -67,8 +116,17 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
           desc={feito ? "Base do negócio já registrada. Toque pra reforçar." : "O jeito mais rápido: ela lê em segundos."}
           onClick={() => setSite((s) => (s === "form" ? "idle" : "form"))}
         >
+          {temAnalise && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setAnaliseAberta(true); }}
+              className="orbi-green-gradient mt-2.5 inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-semibold text-white"
+            >
+              ✓ Ver análise do site →
+            </button>
+          )}
+
           {site === "form" ? (
-            <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+            <div className="mt-2.5" onClick={(e) => e.stopPropagation()}>
               <div className="flex gap-2">
                 <input
                   value={url}
@@ -96,12 +154,12 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
                 </div>
               )}
             </div>
-          ) : resultado && (resultado.about || (resultado.differentials?.length ?? 0) > 0) ? (
+          ) : temAnalise ? (
             <button
-              onClick={(e) => { e.stopPropagation(); setAnaliseAberta(true); }}
-              className="mt-2.5 inline-flex items-center gap-2 rounded-full bg-[#1F9E4C] px-4 py-2.5 text-[13px] font-semibold text-white"
+              onClick={(e) => { e.stopPropagation(); setSite("form"); }}
+              className="ml-2 mt-2.5 inline-flex items-center rounded-full bg-surface-soft px-4 py-2.5 text-[13px] font-semibold text-text-secondary"
             >
-              ✓ Ver análise do site →
+              Enviar outro site
             </button>
           ) : null}
         </Passo>
@@ -151,7 +209,7 @@ function Passo({ n, feito, continuo, titulo, desc, children, href, badge, onClic
 }) {
   const bolinha = (
     <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold transition-colors duration-150 ${
-      feito ? "bg-[#1F9E4C] text-white" : continuo ? "bg-[#FDEEDF] text-[#C2650A]" : "bg-surface-soft text-text-secondary"
+      feito ? "orbi-green-gradient text-white" : continuo ? "bg-[#FDEEDF] text-[#C2650A]" : "bg-surface-soft text-text-secondary"
     }`}>
       <span className={feito ? "orbi-check-pop" : ""} key={feito ? "check" : "pending"}>
         {feito ? "✓" : continuo ? "∞" : n}
@@ -165,7 +223,7 @@ function Passo({ n, feito, continuo, titulo, desc, children, href, badge, onClic
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className={`text-[15px] font-semibold ${feito ? "text-text-tertiary line-through" : ""}`}>{titulo}</p>
-          {badge && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1F9E4C] px-1.5 text-[11px] font-bold text-white">{badge}</span>}
+          {badge && <span className="orbi-green-gradient flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold text-white">{badge}</span>}
           {(href || onClick) && <span className="ml-auto text-text-tertiary">→</span>}
         </div>
         <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">{desc}</p>

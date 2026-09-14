@@ -180,7 +180,7 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
               <p className="mt-3 text-[12.5px] leading-relaxed text-[#1F9E4C]/90">
                 Já salvei tudo isso na sua configuração. Você pode revisar e ajustar quando quiser.
               </p>
-              <button onClick={() => setAberto(false)} className="mt-3 w-full rounded-full bg-[#1F9E4C] py-3 text-[14px] font-semibold text-white">
+              <button onClick={() => setAberto(false)} className="orbi-green-gradient mt-3 w-full rounded-full py-3 text-[14px] font-semibold text-white">
                 Ótimo, fechar
               </button>
             </div>
