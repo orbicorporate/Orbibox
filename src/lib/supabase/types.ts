@@ -243,6 +243,10 @@ export type Database = {
         Args: { p_code: string }
         Returns: undefined
       }
+      lead_segments: {
+        Args: { p_business_id: string }
+        Returns: Json
+      }
       upsert_lead: {
         Args: { p_business_id: string; p_whatsapp: string; p_name?: string | null; p_source?: string; p_session_id?: string | null; p_interest?: string | null }
         Returns: string | null

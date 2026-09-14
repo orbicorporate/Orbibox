@@ -320,6 +320,7 @@ export function ShowcaseBuilder({
 
   const ordered = [...items].sort((a, b) => a.position - b.position);
   const publishedCount = items.filter((i) => i.status === "published").length;
+  const [avisarNovidade, setAvisarNovidade] = useState<{ titulo: string; quantos: number } | null>(null);
 
   // Categorias que já existem em algum item, mesmo que ainda não estejam na
   // lista persistida (compatibilidade com categorias criadas do jeito antigo).
@@ -440,6 +441,15 @@ export function ShowcaseBuilder({
       return;
     }
     await save(item.id, { status: s });
+
+    // Publicou algo novo: quem pediu pra ser avisado deveria saber. Mostra
+    // um convite pra mandar pra essa lista, com o item como gancho.
+    if (s === "published") {
+      const supabase = createClient();
+      const { data } = await supabase.rpc("lead_segments", { p_business_id: businessId });
+      const quantos = ((data as Record<string, unknown[]> | null)?.querem_novidades ?? []).length;
+      if (quantos > 0) setAvisarNovidade({ titulo: item.title, quantos });
+    }
   }
 
   async function improveWithOrbi(item: Item) {
@@ -566,6 +576,25 @@ export function ShowcaseBuilder({
               />
             ))}
           </div>
+        </div>
+      )}
+
+      {avisarNovidade && (
+        <div className="orbi-card-light relative mb-4 flex items-center gap-3 overflow-hidden rounded-[22px] p-4">
+          <span className="relative text-[20px]">✦</span>
+          <div className="relative min-w-0 flex-1">
+            <p className="text-[14px] font-semibold leading-tight">
+              {avisarNovidade.quantos} {avisarNovidade.quantos === 1 ? "pessoa pediu" : "pessoas pediram"} pra ser avisada de novidade
+            </p>
+            <p className="mt-0.5 text-[12.5px] text-text-secondary">Quer avisar sobre &quot;{avisarNovidade.titulo}&quot;? A Orbi escreve a mensagem.</p>
+          </div>
+          <Link
+            href={`/admin/conversas?lista=querem_novidades&gancho=${encodeURIComponent(`chegou ${avisarNovidade.titulo}`)}`}
+            className="shrink-0 rounded-full bg-on-background px-3.5 py-2 text-[12.5px] font-semibold text-white"
+          >
+            Avisar
+          </Link>
+          <button type="button" onClick={() => setAvisarNovidade(null)} aria-label="Fechar" className="relative shrink-0 cursor-pointer text-text-tertiary">✕</button>
         </div>
       )}
 

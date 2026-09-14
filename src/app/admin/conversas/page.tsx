@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
-import { ConversasList } from "./ConversasList";
+import { ConversasTabs } from "./ConversasTabs";
 
 export default async function ConversasPage() {
   const supabase = await createClient();
@@ -71,7 +71,7 @@ export default async function ConversasPage() {
       <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
         A Orbi lê cada conversa, resume o que a pessoa quis e te diz quem está quente e o que mandar.
       </p>
-      <ConversasList conversations={list} businessId={business!.id} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />
+      <ConversasTabs conversations={list} businessId={business!.id} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />
     </div>
   );
 }
