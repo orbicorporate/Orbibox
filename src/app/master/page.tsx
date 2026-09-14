@@ -18,7 +18,7 @@ export default async function MasterOverview() {
     { label: "Receita recorrente (MRR)", value: brl(m.mrr_cents ?? 0), sub: "assinaturas ativas pagantes", highlight: true },
     { label: "Pagantes ativos", value: m.active_paying ?? 0, sub: `${m.trialing ?? 0} em teste · ${m.comped ?? 0} cortesia` },
     { label: "Pagamento pendente", value: m.past_due ?? 0, sub: "precisam de atenção", warn: (m.past_due ?? 0) > 0 },
-    { label: "Plano Nióbio", value: m.total_niobio ?? 0, sub: "com IA e cupons" },
+    { label: "Plano Nióbio", value: m.total_niobio ?? 0, sub: "com IA e vouchers" },
     { label: "Plano Titânio", value: m.total_titanio ?? 0, sub: "plano de entrada" },
     { label: "Usando a Vitrine", value: m.using_vitrine ?? 0, sub: "têm itens publicados" },
   ];

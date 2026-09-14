@@ -15,7 +15,7 @@ export function CupomBoxToggle({ businessId, initialHasBox, boxId, nextPosition 
       const { error } = await supabase.from("smart_boxes").insert({
         business_id: businessId,
         box_type: "custom",
-        title: "Cupons",
+        title: "Vouchers",
         position: nextPosition,
         is_active: true,
         config: { label: "Vouchers", subtitle: "Resgate agora e aproveite", icon: "🎟️", action: "cupom", color: "transparent" },
@@ -35,7 +35,7 @@ export function CupomBoxToggle({ businessId, initialHasBox, boxId, nextPosition 
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
         </span>
         <p className="min-w-0 flex-1 truncate text-[13px] font-semibold" style={{ color: "#15803D" }}>
-          Box &quot;Cupons&quot; na sua página
+          Box &quot;Vouchers&quot; na sua página
         </p>
         {/* Leva direto pro box certo, já aberto pra editar, em vez de
             largar a pessoa no topo da lista pra procurar. */}
@@ -50,7 +50,7 @@ export function CupomBoxToggle({ businessId, initialHasBox, boxId, nextPosition 
     <div className="rounded-[24px] border border-dashed border-divider p-5 text-center">
       <p className="text-[14px] font-medium">Falta o box na sua página inicial</p>
       <p className="mt-1 text-[13px] leading-relaxed text-text-tertiary">
-        Sem ele, os cupons ficam prontos aqui, mas ninguém vê na sua página. Leva um toque pra adicionar.
+        Sem ele, os vouchers ficam prontos aqui, mas ninguém vê na sua página. Leva um toque pra adicionar.
       </p>
       <button
         onClick={adicionar}

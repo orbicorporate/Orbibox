@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       .select("id, business_id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, expires_hours, badge")
       .eq("id", voucherId)
       .maybeSingle();
-    if (!voucher) return NextResponse.json({ error: "Cupom não encontrado." }, { status: 404 });
+    if (!voucher) return NextResponse.json({ error: "Voucher não encontrado." }, { status: 404 });
 
     const { data: business } = await supabase
       .from("businesses")
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       ? `quem pega tem ${voucher.expires_hours}h pra usar`
       : "sem prazo pra usar depois de pego";
 
-    const system = `Você é a Orbi, consultora de marketing do Orbibox. Ajuda donos de pequenos negócios brasileiros a divulgar um cupom e fazer ele render de verdade.
+    const system = `Você é a Orbi, consultora de marketing do Orbibox. Ajuda donos de pequenos negócios brasileiros a divulgar um voucher e fazer ele render de verdade.
 
 Contexto do negócio:
 - Nome: ${business.name}
@@ -69,19 +69,19 @@ Responda SOMENTE em JSON válido, sem markdown, sem texto antes ou depois:
 {"estrategia":"...", "canais":[{"canal":"...","quando":"...","texto":"...","dica":"..."}], "no_balcao":["...","...","..."], "evite":["...","..."]}
 
 Regras:
-- "estrategia": 2 frases dizendo qual o objetivo real desse cupom pra esse negócio (atrair cliente novo, reativar antigo, girar estoque, encher dia fraco) e por quê. Específico, não genérico.
+- "estrategia": 2 frases dizendo qual o objetivo real desse voucher pra esse negócio (atrair cliente novo, reativar antigo, girar estoque, encher dia fraco) e por quê. Específico, não genérico.
 - "canais": exatamente 4 itens, nesta ordem: Status do WhatsApp, Story do Instagram, Mensagem direta pra cliente antigo, Grupo ou comunidade local. Cada um com:
   - "canal": o nome do canal
   - "quando": melhor momento pra postar, concreto (ex: "terça de manhã, quando o movimento cai")
   - "texto": a mensagem pronta pra copiar e colar, no tom da marca, em português do Brasil. Curta, natural, como uma pessoa real escreveria. Pode usar 1 ou 2 emojis, nunca mais. Não use travessão.
   - "dica": uma frase de como aumentar o resultado nesse canal específico
-- "no_balcao": 3 orientações práticas de como usar o cupom no atendimento (como validar, o que falar quando o cliente chegar com ele, como aproveitar pra vender mais).
+- "no_balcao": 3 orientações práticas de como usar o voucher no atendimento (como validar, o que falar quando o cliente chegar com ele, como aproveitar pra vender mais).
 - "evite": 2 erros comuns que estragam uma campanha de cupom, ditos de forma direta.
 - Escreva como quem entende de comércio pequeno: direto, concreto, sem clichê de marketing ("alavancar", "potencializar", "solução ideal"). Nunca use travessão em nenhum texto.`;
 
     const raw = await askClaude({
       system,
-      messages: [{ role: "user", content: "Monte o plano de divulgação desse cupom." }],
+      messages: [{ role: "user", content: "Monte o plano de divulgação desse voucher." }],
       maxTokens: 2000,
     });
 

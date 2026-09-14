@@ -1,4 +1,4 @@
-// Temas de cor dos cupons, 4 opções, todas com degradê profundo e texto
+// Temas de cor dos vouchers, 4 opções, todas com degradê profundo e texto
 // branco. O vermelho "cereja" é a cor-assinatura da ferramenta de vouchers
 // e também é usado nos botões do admin (CHERRY abaixo).
 export type VoucherColor = "cherry" | "black" | "navy" | "green";

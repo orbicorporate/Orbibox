@@ -90,7 +90,7 @@ export function ConversasList({ conversations, businessId }: { conversations: Co
         linhas.push({
           nome: v.visitor_name ?? "",
           whatsapp: v.visitor_whatsapp ?? "",
-          origem: `Cupom: ${tituloPorId.get(v.voucher_id) ?? ", "}`,
+          origem: `Voucher: ${tituloPorId.get(v.voucher_id) ?? ", "}`,
           data: v.claimed_at,
         });
       }

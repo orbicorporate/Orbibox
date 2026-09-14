@@ -46,7 +46,7 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   avaliar: "Avaliar no Google",
   endereco: "Mostra o endereço",
   link: "Abre um link",
-  cupom: "Abre os cupons",
+  cupom: "Abre os vouchers",
 };
 
 const ICON_CHOICES = ICON_LIBRARY;
@@ -116,7 +116,7 @@ export function BoxesManager({
   const [importingAbout, setImportingAbout] = useState(false);
   const [aboutImportMsg, setAboutImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
   const [arranging, setArranging] = useState(false);
-  // ?box=<id> (vindo de outra tela, ex: painel de cupons) já abre esse box
+  // ?box=<id> (vindo de outra tela, ex: painel de vouchers) já abre esse box
   // em modo de edição e rola até ele.
   const [editingId, setEditingId] = useState<string | null>(
     () => (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("box") : null),
@@ -265,7 +265,7 @@ export function BoxesManager({
 
   // Atalho: box de cupom, abre o gerenciador de vouchers (criação e resgate
   // ficam numa página própria, não dá pra configurar direto por aqui).
-  function novoBoxCupom() {
+  function novoBoxVoucher() {
     setDraftLabel("Vouchers"); setDraft({ label: "Vouchers", subtitle: "Resgate agora e aproveite", icon: "🎟️", action: "cupom", url: "", color: "transparent" });
     setCreating(true);
   }
@@ -457,7 +457,7 @@ export function BoxesManager({
                     <>
                       <p className="text-[15px] font-medium">Vouchers</p>
                       <p className="mt-1 text-[13px] text-text-secondary">Resgate agora e aproveite</p>
-                      <p className="mt-1 text-[11px] text-text-tertiary">Nome e texto fixos do box de cupons.</p>
+                      <p className="mt-1 text-[11px] text-text-tertiary">Nome e texto fixos do box de vouchers.</p>
                     </>
                   ) : (
                     <>
@@ -811,13 +811,13 @@ export function BoxesManager({
           </button>
           {hasVouchers ? (
             <button
-              onClick={novoBoxCupom}
+              onClick={novoBoxVoucher}
               className="flex items-center gap-3 rounded-[22px] bg-gradient-to-r from-[#FF5A4D] to-[#FF3B6E] p-[2px] text-left shadow-[0_4px_20px_rgba(255,59,110,0.25)]"
             >
               <span className="flex flex-1 items-center gap-3 rounded-[20px] bg-surface-white p-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF5A4D] to-[#FF3B6E] text-[20px]">🎟️</span>
                 <span>
-                  <span className="block text-[14px] font-semibold">🎟️ Box de cupons · atrai clientes</span>
+                  <span className="block text-[14px] font-semibold">🎟️ Box de vouchers · atrai clientes</span>
                   <span className="block text-[12.5px] text-text-tertiary">Coloca suas ofertas na página. Código único, estoque controlado, captura contato.</span>
                 </span>
               </span>
@@ -830,7 +830,7 @@ export function BoxesManager({
               <span className="flex flex-1 items-center gap-3 rounded-[20px] bg-surface-white p-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF5A4D] to-[#FF3B6E] text-[20px]">🎟️</span>
                 <span>
-                  <span className="block text-[14px] font-semibold">🎟️ Box de cupons <span className="rounded-full bg-gradient-to-r from-[#FF5A4D] to-[#FF3B6E] bg-clip-text text-transparent">novidade</span></span>
+                  <span className="block text-[14px] font-semibold">🎟️ Box de vouchers <span className="rounded-full bg-gradient-to-r from-[#FF5A4D] to-[#FF3B6E] bg-clip-text text-transparent">novidade</span></span>
                   <span className="block text-[12.5px] text-text-tertiary">Ofertas com código único que trazem gente nova. Toque pra ver como funciona.</span>
                 </span>
               </span>

@@ -31,12 +31,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Código não encontrado." }, { status: 404 });
     }
 
-    // Quando o operador filtrou por um cupom específico, um código de OUTRO
-    // cupom é recusado com aviso claro, evita confirmar o cupom errado.
+    // Quando o operador filtrou por um voucher específico, um código de OUTRO
+    // voucher é recusado com aviso claro, evita confirmar o voucher errado.
     if (expectedVoucherId && redemption.voucher_id !== expectedVoucherId) {
       const wrong = Array.isArray(redemption.vouchers) ? redemption.vouchers[0] : redemption.vouchers;
       return NextResponse.json(
-        { error: `Esse código é de outro cupom${wrong?.title ? ` ("${wrong.title}")` : ""}, não do que você selecionou.` },
+        { error: `Esse código é de outro voucher${wrong?.title ? ` ("${wrong.title}")` : ""}, não do que você selecionou.` },
         { status: 409 },
       );
     }
@@ -64,6 +64,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, voucher });
   } catch (error) {
     console.error("Erro ao confirmar cupom:", error);
-    return NextResponse.json({ error: "Erro ao confirmar cupom." }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao confirmar voucher." }, { status: 500 });
   }
 }

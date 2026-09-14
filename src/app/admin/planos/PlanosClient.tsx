@@ -36,7 +36,7 @@ const FEATURES: Record<string, { label: string; highlight?: boolean }[]> = {
     { label: "Orbi · IA que conversa 24h", highlight: true },
     { label: "Recomenda produtos no chat", highlight: true },
     { label: "Captura contatos automaticamente", highlight: true },
-    { label: "Cupons com código único", highlight: true },
+    { label: "Vouchers com código único", highlight: true },
     { label: "Múltiplos negócios numa conta", highlight: true },
     { label: "Vários administradores" },
   ],

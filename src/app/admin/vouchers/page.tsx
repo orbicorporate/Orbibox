@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { VouchersManager } from "./VouchersManager";
+import { DivulgarVoucherButton } from "./DivulgarVoucherButton";
 import { CupomBoxToggle } from "./CupomBoxToggle";
 import { VoucherExplainer } from "./VoucherExplainer";
 import { RedeemCodeCard } from "./RedeemCodeCard";
@@ -22,13 +23,13 @@ export default async function VouchersPage() {
     .eq("id", businessId!)
     .single();
 
-  // Titânio pode montar o cupom pra ver como é, mas não tem cupons salvos.
+  // Titânio pode montar o voucher pra ver como é, mas não tem vouchers salvos.
   const { data: vouchers } = canSave
     ? await supabase.from("vouchers").select("*").eq("business_id", business!.id).order("created_at", { ascending: false })
     : { data: [] };
 
-  // Quem resgatou cada cupom (nome e WhatsApp, se a pessoa deixou), pra
-  // mostrar dentro do card de cada cupom.
+  // Quem resgatou cada voucher (nome e WhatsApp, se a pessoa deixou), pra
+  // mostrar dentro do card de cada voucher.
   const voucherIds = (vouchers ?? []).map((v) => v.id);
   const { data: redemptions } = canSave && voucherIds.length > 0
     ? await supabase.from("voucher_redemptions").select("*").in("voucher_id", voucherIds).order("created_at", { ascending: false })
@@ -38,7 +39,7 @@ export default async function VouchersPage() {
     (redemptionsByVoucher[r.voucher_id] ??= []).push(r);
   }
 
-  // Já existe um Box de Cupons na página inicial? Sem isso, os cupons criados
+  // Já existe um Box de Vouchers na página inicial? Sem isso, os vouchers criados
   // aqui não aparecem pra ninguém, é o elo que faltava explicar.
   const { data: boxes } = canSave
     ? await supabase.from("smart_boxes").select("id, config").eq("business_id", business!.id)
@@ -48,7 +49,7 @@ export default async function VouchersPage() {
 
   return (
     <div className="flex flex-col">
-      {/* Selo do cupom em cima do título, dá identidade à tela logo de cara */}
+      {/* Selo do voucher em cima do título, dá identidade à tela logo de cara */}
       <span className="mt-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FCE8EC]">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C4143A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 9a2 2 0 0 0 0 4v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 0-4V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2z" />
@@ -56,7 +57,7 @@ export default async function VouchersPage() {
         </svg>
       </span>
       <div className="mt-4 flex items-start justify-between gap-3">
-        <h1 className="min-w-0 font-[family-name:var(--font-manrope)] text-[34px] font-bold tracking-[-0.02em]">Cupons</h1>
+        <h1 className="min-w-0 font-[family-name:var(--font-manrope)] text-[34px] font-bold tracking-[-0.02em]">Vouchers</h1>
         {/* A explicação vive aqui em cima agora, num botão pequeno: quem já
             sabe não perde meia tela com um card que não vai ler. */}
         {canSave && (
@@ -66,12 +67,12 @@ export default async function VouchersPage() {
           <div className="rounded-[24px] bg-surface-soft p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-secondary">Como funciona</p>
             <p className="mt-2 text-[14.5px] leading-relaxed text-text-secondary">
-              O cliente toca no cupom na sua página, deixa o nome e o WhatsApp e recebe um código único na hora. Ele
+              O cliente toca no voucher na sua página, deixa o nome e o WhatsApp e recebe um código único na hora. Ele
               mostra pra você no atendimento, é só confirmar aqui embaixo.
             </p>
           </div>
 
-          {/* Exemplo visual, o cupom em si ganha destaque de propósito: é o
+          {/* Exemplo visual, o voucher em si ganha destaque de propósito: é o
               que o cliente realmente vê, então precisa parecer uma oferta de
               verdade (vermelho vivo, brilho), não um card de configuração. */}
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
@@ -83,7 +84,7 @@ export default async function VouchersPage() {
                   <p className="text-[11px] font-semibold uppercase tracking-wide opacity-90">🎟️ Oferta especial</p>
                   <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-none">10% OFF</p>
                   <p className="mt-1.5 text-[12.5px] opacity-90">na primeira compra</p>
-                  <span className="mt-3.5 inline-block rounded-full bg-white/25 px-3.5 py-2 text-[12px] font-semibold backdrop-blur-sm">Pegar meu cupom</span>
+                  <span className="mt-3.5 inline-block rounded-full bg-white/25 px-3.5 py-2 text-[12px] font-semibold backdrop-blur-sm">Pegar meu voucher</span>
                 </div>
               </div>
               <span className="shrink-0 text-[18px] text-text-tertiary">→</span>
@@ -100,8 +101,8 @@ export default async function VouchersPage() {
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Passo a passo</p>
             <div className="mt-4 flex flex-col gap-4">
               {[
-                { n: "1", t: "Você cria o cupom", d: "Desconto, quantidade disponível e validade, você decide tudo aqui embaixo." },
-                { n: "2", t: "Coloca o box \"Cupons\" na página inicial", d: "Sem isso, o cupom existe mas ninguém vê. É o botão logo abaixo." },
+                { n: "1", t: "Você cria o voucher", d: "Desconto, quantidade disponível e validade, você decide tudo aqui embaixo." },
+                { n: "2", t: "Coloca o box \"Vouchers\" na página inicial", d: "Sem isso, o voucher existe mas ninguém vê. É o botão logo abaixo." },
                 { n: "3", t: "O cliente resgata", d: "Toca no box, deixa nome e WhatsApp, e recebe um código único na hora." },
                 { n: "4", t: "Você confirma no atendimento", d: "Ele mostra o código, você digita em \"Resgatar código\" e pronto." },
               ].map((s) => (
@@ -120,7 +121,7 @@ export default async function VouchersPage() {
         )}
       </div>
       <p className="mt-1.5 text-[14.5px] leading-relaxed text-text-secondary">
-        Crie cupons com estoque limitado. Cada resgate gera um código único, sem risco de uso duplicado.
+        Crie vouchers com estoque limitado. Cada resgate gera um código único, sem risco de uso duplicado.
       </p>
 
       {/* Ativa assim que existe pelo menos um cupom, antes disso não tem
@@ -140,7 +141,7 @@ export default async function VouchersPage() {
         </Link>
       )}
 
-      {/* Resgate rápido no topo, recolhível, pra loja validar o cupom do
+      {/* Resgate rápido no topo, recolhível, pra loja validar o voucher do
           cliente na hora, sem precisar entrar no painel. */}
       {canSave && vouchers && vouchers.length > 0 && (
         <div className="mt-4">
@@ -164,17 +165,17 @@ export default async function VouchersPage() {
                 🎟️ Recurso Nióbio
               </span>
               <p className="mt-3 font-[family-name:var(--font-manrope)] text-[19px] font-semibold leading-tight">
-                Transforme visitantes em clientes com cupons inteligentes
+                Transforme visitantes em clientes com vouchers inteligentes
               </p>
               <p className="mt-2 text-[14.5px] leading-relaxed text-text-secondary">
-                Não é um cupomzinho comum. É um sistema completo de promoção com controle total, que atrai gente nova e
+                Não é um voucherzinho comum. É um sistema completo de promoção com controle total, que atrai gente nova e
                 faz ela vir até você.
               </p>
 
               <div className="mt-4 flex flex-col gap-3">
                 {[
                   { icon: "🧲", t: "Atrai cliente novo", d: "A oferta aparece na página e no chat da Orbi." },
-                  { icon: "🔐", t: "Código único por pessoa", d: "Ninguém repete nem usa o cupom de outro." },
+                  { icon: "🔐", t: "Código único por pessoa", d: "Ninguém repete nem usa o voucher de outro." },
                   { icon: "📦", t: "Estoque sob controle", d: "Você define quantos são. Acabou, fecha sozinho." },
                   { icon: "📱", t: "Valida no seu celular", d: "Digita o código do cliente e confirma na hora." },
                   { icon: "📇", t: "Cada resgate vira contato", d: "Monta uma lista de clientes pra vender de novo." },
@@ -191,7 +192,7 @@ export default async function VouchersPage() {
             </div>
           </div>
 
-          {/* Preview: como o cliente vê e resgata o cupom */}
+          {/* Preview: como o cliente vê e resgata o voucher */}
           <div className="rounded-[24px] border border-divider bg-surface-soft p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Como fica pro seu cliente</p>
             <div className="mt-4 flex items-center gap-3">
@@ -201,7 +202,7 @@ export default async function VouchersPage() {
                   <p className="text-[11px] font-medium uppercase tracking-wide opacity-90">🎟️ Oferta especial</p>
                   <p className="mt-1 font-[family-name:var(--font-manrope)] text-[22px] font-bold leading-none">10% OFF</p>
                   <p className="mt-1.5 text-[12px] opacity-90">na primeira compra</p>
-                  <span className="mt-3 inline-block rounded-full bg-white/25 px-3 py-1.5 text-[12px] font-semibold">Pegar meu cupom →</span>
+                  <span className="mt-3 inline-block rounded-full bg-white/25 px-3 py-1.5 text-[12px] font-semibold">Pegar meu voucher →</span>
                 </div>
               </div>
               <span className="text-[20px] text-text-tertiary">→</span>
@@ -212,15 +213,21 @@ export default async function VouchersPage() {
               </div>
             </div>
             <p className="mt-3 text-[12px] leading-relaxed text-text-tertiary">
-              O cliente toca no cupom na sua página, deixa o WhatsApp e recebe esse código único. Aí é só levar até você.
+              O cliente toca no voucher na sua página, deixa o WhatsApp e recebe esse código único. Aí é só levar até você.
             </p>
           </div>
 
           <div className="rounded-2xl bg-surface-soft p-4 text-center">
-            <p className="text-[14px] font-medium">✨ Monte seu primeiro cupom abaixo pra ver como é fácil</p>
+            <p className="text-[14px] font-medium">✨ Monte seu primeiro voucher abaixo pra ver como é fácil</p>
             <p className="mt-0.5 text-[13px] text-text-tertiary">Você configura tudo agora. Na hora de salvar e ativar, é só assinar o Nióbio.</p>
           </div>
         </div>
+      )}
+
+      {/* Atalho pro plano de divulgação: antes ele só existia dentro de um
+          voucher específico, então ninguém descobria que existia. */}
+      {canSave && (vouchers?.length ?? 0) > 0 && (
+        <DivulgarVoucherButton vouchers={(vouchers ?? []).map((v) => ({ id: v.id, title: v.title }))} />
       )}
 
       <VouchersManager businessId={business!.id} initialVouchers={vouchers ?? []} canSave={canSave} redemptionsByVoucher={redemptionsByVoucher} />

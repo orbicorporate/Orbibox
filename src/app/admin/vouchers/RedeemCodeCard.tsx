@@ -9,9 +9,9 @@ function discountLabel(v: { discount_type?: string; discount_value?: number }) {
 }
 
 /** Card "Resgatar código" no design da referência. Usado no topo da tela de
- * Cupons (recolhível) e dentro dos painéis. Valida qualquer cupom ativo do
+ * Vouchers (recolhível) e dentro dos painéis. Valida qualquer voucher ativo do
  * negócio, por texto digitado ou pelo QR escaneado. Quando recebe a lista
- * de cupons, mostra um seletor pra deixar explícito qual está sendo
+ * de vouchers, mostra um seletor pra deixar explícito qual está sendo
  * resgatado (e recusa código de outro cupom). */
 export function RedeemCodeCard({
   businessId,
@@ -33,8 +33,8 @@ export function RedeemCodeCard({
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [scanning, setScanning] = useState(false);
   const [open, setOpen] = useState(!collapsible);
-  // Cupom escolhido no seletor. "todos" = valida qualquer um. Quando o card
-  // é de um cupom fixo (painel individual), sempre trava nele.
+  // Voucher escolhido no seletor. "todos" = valida qualquer um. Quando o card
+  // é de um voucher fixo (painel individual), sempre trava nele.
   const [selected, setSelected] = useState<string>(fixedVoucherId ?? "todos");
   const activeVoucherId = fixedVoucherId ?? (selected === "todos" ? undefined : selected);
   const selectedTitle = fixedVoucherTitle ?? vouchers?.find((v) => v.id === selected)?.title;
@@ -54,7 +54,7 @@ export function RedeemCodeCard({
       if (!res.ok) {
         setResult({ ok: false, message: data.error ?? "Código inválido." });
       } else {
-        setResult({ ok: true, message: `Confirmado: ${data.voucher?.title ?? "cupom"} (${discountLabel(data.voucher ?? {})})` });
+        setResult({ ok: true, message: `Confirmado: ${data.voucher?.title ?? "voucher"} (${discountLabel(data.voucher ?? {})})` });
         setCode("");
         onRedeemed?.();
       }
@@ -83,9 +83,9 @@ export function RedeemCodeCard({
         <span className="min-w-0 flex-1">
           <span className="block text-[16px] font-bold">Resgatar código</span>
           {(!collapsible || open) ? (
-            <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">Cliente chegou com o cupom? Digite ou escaneie pra validar.</span>
+            <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">Cliente chegou com o voucher? Digite ou escaneie pra validar.</span>
           ) : (
-            <span className="mt-0.5 block text-[13px] leading-snug text-text-tertiary">Toque pra validar um cupom na hora.</span>
+            <span className="mt-0.5 block text-[13px] leading-snug text-text-tertiary">Toque pra validar um voucher na hora.</span>
           )}
         </span>
         {collapsible && (
@@ -97,19 +97,19 @@ export function RedeemCodeCard({
 
       {open && (
         <>
-          {/* Cupom fixo (painel individual), deixa explícito qual está sendo resgatado */}
+          {/* Voucher fixo (painel individual), deixa explícito qual está sendo resgatado */}
           {fixedVoucherId && selectedTitle && (
             <p className="mt-4 rounded-2xl px-3.5 py-2.5 text-[13px] font-medium" style={{ backgroundColor: CHERRY_SOFT_BG, color: CHERRY_TEXT }}>
-              Validando o cupom: {selectedTitle}
+              Validando o voucher: {selectedTitle}
             </p>
           )}
 
-          {/* Seletor de cupom, deixa explícito qual cupom está sendo
+          {/* Seletor de cupom, deixa explícito qual voucher está sendo
               resgatado. Só aparece quando há mais de um e o card não é de
-              um cupom fixo. */}
+              um voucher fixo. */}
           {!fixedVoucherId && vouchers && vouchers.length > 1 && (
             <div className="mt-4">
-              <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Qual cupom?</p>
+              <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Qual voucher?</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={() => { setSelected("todos"); setResult(null); }}
@@ -131,7 +131,7 @@ export function RedeemCodeCard({
               </div>
               {selectedTitle && (
                 <p className="mt-2.5 rounded-2xl px-3.5 py-2.5 text-[13px] font-medium" style={{ backgroundColor: CHERRY_SOFT_BG, color: CHERRY_TEXT }}>
-                  Validando o cupom: {selectedTitle}
+                  Validando o voucher: {selectedTitle}
                 </p>
               )}
             </div>
@@ -179,7 +179,7 @@ export function RedeemCodeCard({
           <div className="mt-4 flex items-center gap-2 border-t border-divider pt-3.5">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA0AA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" /></svg>
             <span className="text-[12.5px] text-text-tertiary">
-              {activeVoucherId ? "Só aceita código deste cupom." : "Válido para qualquer cupom ativo da sua loja."}
+              {activeVoucherId ? "Só aceita código deste voucher." : "Válido para qualquer voucher ativo da sua loja."}
             </span>
           </div>
         </>

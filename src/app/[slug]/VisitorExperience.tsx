@@ -620,7 +620,7 @@ export function VisitorExperience({
         )}
 
         {intent === "cupom" && (
-          <CupomFlow business={business} sessionId={sessionId} onBack={() => setIntent(null)} />
+          <VoucherFlow business={business} sessionId={sessionId} onBack={() => setIntent(null)} />
         )}
       </div>
 
@@ -644,23 +644,25 @@ function voucherDiscountBig(v: Pick<VoucherPublic, "discount_type" | "discount_v
   return v.discount_type === "percent" ? `${v.discount_value}% OFF` : `R$ ${v.discount_value} OFF`;
 }
 
-type MeuCupom = { code: string; title: string; expiresAt: string | null; claimedAt: string };
+type MeuVoucher = { code: string; title: string; expiresAt: string | null; claimedAt: string };
 
-function meusCuponsKey(businessId: string) {
+function meusVouchersKey(businessId: string) {
+  // A chave NÃO acompanha o rename: ela já existe no celular de quem
+  // resgatou antes, e mudar faria essas pessoas perderem os códigos.
   return `orbi_meus_cupons_${businessId}`;
 }
 
-function lerMeusCupons(businessId: string): MeuCupom[] {
+function lerMeusVouchers(businessId: string): MeuVoucher[] {
   try {
-    const raw = localStorage.getItem(meusCuponsKey(businessId));
-    return raw ? (JSON.parse(raw) as MeuCupom[]) : [];
+    const raw = localStorage.getItem(meusVouchersKey(businessId));
+    return raw ? (JSON.parse(raw) as MeuVoucher[]) : [];
   } catch {
     return [];
   }
 }
 
-/** Tela de cupons, galeria dos ativos, resgate (nome + WhatsApp) e o
- * código único que a pessoa leva até o negócio. Os cupons já resgatados
+/** Tela de vouchers, galeria dos ativos, resgate (nome + WhatsApp) e o
+ * código único que a pessoa leva até o negócio. Os vouchers já resgatados
  * neste aparelho ficam guardados no próprio celular, pra ela reencontrar. */
 function resultMessage(businessName: string, expiresAt: string | null) {
   const base = `Mostre esse código pro ${businessName}, no balcão ou pelo WhatsApp, pra usar o desconto.`;
@@ -669,7 +671,7 @@ function resultMessage(businessName: string, expiresAt: string | null) {
   return `${base} Vale até ${data}.`;
 }
 
-function CupomFlow({ business, sessionId, onBack }: { business: Business; sessionId: string | null; onBack: () => void }) {
+function VoucherFlow({ business, sessionId, onBack }: { business: Business; sessionId: string | null; onBack: () => void }) {
   const supabase = createClient();
   const [vouchers, setVouchers] = useState<VoucherPublic[] | null>(null);
   const [claiming, setClaiming] = useState<string | null>(null);
@@ -677,7 +679,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
   const [whatsapp, setWhatsapp] = useState("");
   const [result, setResult] = useState<{ code: string; title: string; expiresAt: string | null; color: string | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [meusCupons, setMeusCupons] = useState<MeuCupom[]>([]);
+  const [meusVouchers, setMeusVouchers] = useState<MeuVoucher[]>([]);
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
@@ -689,14 +691,14 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
       .order("created_at", { ascending: false })
       .then(({ data }) => setVouchers((data as VoucherPublic[]) ?? []));
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMeusCupons(lerMeusCupons(business.id));
+    setMeusVouchers(lerMeusVouchers(business.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [business.id]);
 
-  function guardarMeuCupom(c: MeuCupom) {
-    const next = [c, ...lerMeusCupons(business.id).filter((x) => x.code !== c.code)].slice(0, 20);
-    try { localStorage.setItem(meusCuponsKey(business.id), JSON.stringify(next)); } catch { /* ignora */ }
-    setMeusCupons(next);
+  function guardarMeuVoucher(c: MeuVoucher) {
+    const next = [c, ...lerMeusVouchers(business.id).filter((x) => x.code !== c.code)].slice(0, 20);
+    try { localStorage.setItem(meusVouchersKey(business.id), JSON.stringify(next)); } catch { /* ignora */ }
+    setMeusVouchers(next);
   }
 
   async function copiar(code: string) {
@@ -718,22 +720,22 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Não foi possível resgatar esse cupom.");
+        setError(data.error ?? "Não foi possível resgatar esse voucher.");
         return;
       }
       trackClick({ businessId: business.id, kind: "cupom", sessionId });
       setResult({ code: data.code, title: data.title, expiresAt: data.expires_at, color: vouchercor });
-      guardarMeuCupom({ code: data.code, title: data.title, expiresAt: data.expires_at ?? null, claimedAt: new Date().toISOString() });
+      guardarMeuVoucher({ code: data.code, title: data.title, expiresAt: data.expires_at ?? null, claimedAt: new Date().toISOString() });
       setClaiming(null);
     } catch {
-      setError("Erro de conexão ao resgatar o cupom.");
+      setError("Erro de conexão ao resgatar o voucher.");
     }
   }
 
   return (
     <div className="w-full">
       <button onClick={onBack} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
-      <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">Cupons</h2>
+      <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">Vouchers</h2>
       <p className="mt-1 text-[14px] text-text-secondary">Vantagens exclusivas pra você.</p>
 
       {result ? (
@@ -764,13 +766,13 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
                 className="flex-1 rounded-full bg-white/20 py-3 text-[14px] font-semibold text-white backdrop-blur-sm disabled:opacity-60"
               />
             </div>
-            <button onClick={() => setResult(null)} className="mt-4 text-[12.5px] underline opacity-80">Ver outros cupons</button>
+            <button onClick={() => setResult(null)} className="mt-4 text-[12.5px] underline opacity-80">Ver outros vouchers</button>
           </div>
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-4">
           {vouchers === null && <p className="text-[14px] text-text-tertiary">Carregando…</p>}
-          {vouchers?.length === 0 && <p className="text-[14px] text-text-tertiary">Nenhum cupom disponível no momento.</p>}
+          {vouchers?.length === 0 && <p className="text-[14px] text-text-tertiary">Nenhum voucher disponível no momento.</p>}
           {vouchers?.map((v) => {
             const restam = v.quantity_total - v.quantity_claimed;
             const isClaiming = claiming === v.id;
@@ -778,7 +780,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
             if (isClaiming) {
               return (
                 <div key={v.id} className="rounded-[24px] border border-divider bg-surface-white p-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Pegando seu cupom</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Pegando seu voucher</p>
                   <p className="mt-1 text-[16px] font-semibold">{v.title}</p>
                   <p className="mt-0.5 text-[14px] text-text-secondary">{voucherDiscountLabel(v)}</p>
                   <div className="mt-4 flex flex-col gap-2.5">
@@ -836,7 +838,7 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
                       className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-[14px] font-bold shadow-[0_6px_18px_rgba(0,0,0,0.18)] disabled:opacity-50"
                       style={{ color: tema.ctaText }}
                     >
-                      {restam > 0 ? <>Pegar meu cupom <span aria-hidden>→</span></> : "Esgotado"}
+                      {restam > 0 ? <>Pegar meu voucher <span aria-hidden>→</span></> : "Esgotado"}
                     </button>
                     <p className="mt-3 text-[12px] opacity-75">{restam > 0 ? `${restam} restantes` : "Acabou"}</p>
                   </div>
@@ -849,12 +851,12 @@ function CupomFlow({ business, sessionId, onBack }: { business: Business; sessio
             );
           })}
 
-          {/* Cupons já resgatados neste aparelho, pra pessoa reencontrar o código */}
-          {meusCupons.length > 0 && (
+          {/* Vouchers já resgatados neste aparelho, pra pessoa reencontrar o código */}
+          {meusVouchers.length > 0 && (
             <div className="mt-2">
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Meus cupons resgatados</p>
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Meus vouchers resgatados</p>
               <div className="mt-2.5 flex flex-col gap-2">
-                {meusCupons.map((c) => {
+                {meusVouchers.map((c) => {
                   const vencido = !!c.expiresAt && new Date(c.expiresAt) < new Date();
                   return (
                     <div key={c.code} className="flex items-center justify-between gap-3 rounded-2xl bg-surface-white p-3.5 shadow-[0_2px_10px_rgba(17,19,24,0.05)]">

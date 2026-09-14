@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 /**
- * "Como funciona" dos cupons. Antes era um card grande no meio da página,
+ * "Como funciona" dos vouchers. Antes era um card grande no meio da página,
  * que empurrava tudo pra baixo mesmo pra quem já sabia. Agora é um botão
  * pequeno no topo (que treme pra ser notado) e o conteúdo abre em folha.
  */
@@ -42,7 +42,7 @@ export function VoucherExplainer({ children }: { children: ReactNode }) {
               className="mx-auto mb-4 block h-1.5 w-12 cursor-pointer rounded-full bg-divider"
             />
             <p className="font-[family-name:var(--font-manrope)] text-[22px] font-semibold tracking-[-0.01em]">
-              Como funcionam os cupons
+              Como funcionam os vouchers
             </p>
             <div className="mt-4 flex flex-col gap-4">{children}</div>
             <button

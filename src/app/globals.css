@@ -366,6 +366,20 @@ body {
   animation: orbiCheckPop 0.3s ease-out;
 }
 
+/* Entrada em cascata das seções do plano de divulgação: cada bloco sobe
+ * e aparece um pouquinho depois do anterior. */
+@keyframes orbiRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.orbi-rise {
+  opacity: 0;
+  animation: orbiRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-rise { animation: none; opacity: 1; }
+}
+
 /* Verde da Orbi em degradê (escuro para claro) — usar em checks de passo
  * concluído e em botões de confirmação, no lugar do verde chapado. */
 .orbi-green-gradient {

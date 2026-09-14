@@ -66,14 +66,14 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
 
   return (
     <div className="flex flex-col pb-4">
-      <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Cupons</Link>
+      <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Vouchers</Link>
 
       <div className="relative mt-4">
         <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] bg-[#CC1739] opacity-25 blur-2xl" />
         <div className="rounded-[28px] bg-gradient-to-br from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-6 text-white shadow-[0_14px_38px_rgba(204,23,57,0.35)]">
           <p className="text-[11px] font-semibold uppercase tracking-wide opacity-85">📊 Painel de controle</p>
-          <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-tight">Todos os seus cupons</p>
-          <p className="mt-1 text-[13.5px] opacity-90">{ativos} {ativos === 1 ? "cupom ativo" : "cupons ativos"} · {totalResgatados} {totalResgatados === 1 ? "resgate" : "resgates"} no total</p>
+          <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-tight">Todos os seus vouchers</p>
+          <p className="mt-1 text-[13.5px] opacity-90">{ativos} {ativos === 1 ? "voucher ativo" : "vouchers ativos"} · {totalResgatados} {totalResgatados === 1 ? "resgate" : "resgates"} no total</p>
         </div>
       </div>
 
@@ -81,7 +81,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
       <div className="mt-4 grid grid-cols-3 gap-2.5">
         <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#E7EAFC" }}>
           <p className="text-[24px] font-bold" style={{ color: "#4453D6" }}>{totalResgatados}</p>
-          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#4453D6" }}>resgataram o cupom</p>
+          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#4453D6" }}>resgataram o voucher</p>
         </div>
         <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#FDEEDF" }}>
           <p className="text-[24px] font-bold" style={{ color: "#C2650A" }}>{totalAguardando}</p>
@@ -97,8 +97,8 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
         <RedeemCodeCard businessId={businessId} onRedeemed={refresh} vouchers={vouchers.map((v) => ({ id: v.id, title: v.title }))} />
       </div>
 
-      {/* Cupons, ativar/pausar direto daqui, e filtrar a lista por eles */}
-      <p className="mt-6 text-[15px] font-semibold">Seus cupons</p>
+      {/* Vouchers, ativar/pausar direto daqui, e filtrar a lista por eles */}
+      <p className="mt-6 text-[15px] font-semibold">Seus vouchers</p>
       <div className="mt-2.5 flex flex-col gap-2">
         {vouchers.map((v) => {
           const qtd = redemptions.filter((r) => r.voucher_id === v.id).length;
@@ -123,24 +123,24 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
               >
                 {v.is_active ? "Ativo" : "Pausado"}
               </button>
-              <Link href={`/admin/vouchers/${v.id}`} className="shrink-0 text-[16px] text-text-tertiary" aria-label="Abrir painel do cupom">›</Link>
+              <Link href={`/admin/vouchers/${v.id}`} className="shrink-0 text-[16px] text-text-tertiary" aria-label="Abrir painel do voucher">›</Link>
             </div>
           );
         })}
         {vouchers.length === 0 && (
-          <p className="text-[13px] text-text-tertiary">Nenhum cupom criado ainda.</p>
+          <p className="text-[13px] text-text-tertiary">Nenhum voucher criado ainda.</p>
         )}
       </div>
       {voucherFilter !== "todos" && (
         <button onClick={() => setVoucherFilter("todos")} className="mt-2 self-start text-[12.5px] font-medium text-text-secondary underline">
-          Mostrar resgates de todos os cupons
+          Mostrar resgates de todos os vouchers
         </button>
       )}
 
       {/* Lista de resgates, com filtro por cupom, status e busca */}
       <div className="mt-6 flex items-center justify-between">
         <p className="text-[15px] font-semibold">
-          {voucherFilter === "todos" ? "Todos os resgates" : `Resgates: ${voucherById.get(voucherFilter)?.title ?? "cupom"}`}
+          {voucherFilter === "todos" ? "Todos os resgates" : `Resgates: ${voucherById.get(voucherFilter)?.title ?? "voucher"}`}
         </p>
         <span className="text-[13px] text-text-tertiary">{filtered.length}</span>
       </div>
@@ -175,7 +175,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
         {redemptions.length === 0 && (
           <div className="rounded-[22px] border border-dashed border-divider p-6 text-center">
             <p className="text-[14px] font-medium">Ninguém resgatou ainda</p>
-            <p className="mt-1 text-[13px] text-text-tertiary">Assim que alguém pegar um cupom na sua página, aparece aqui com nome e WhatsApp.</p>
+            <p className="mt-1 text-[13px] text-text-tertiary">Assim que alguém pegar um voucher na sua página, aparece aqui com nome e WhatsApp.</p>
           </div>
         )}
         {filtered.map((r) => {
@@ -185,7 +185,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-[14.5px] font-semibold">{r.visitor_name || "Sem nome"}</p>
-                  <p className="mt-0.5 truncate text-[12.5px] text-text-secondary">{v?.title ?? "Cupom"} · código {r.code}</p>
+                  <p className="mt-0.5 truncate text-[12.5px] text-text-secondary">{v?.title ?? "Voucher"} · código {r.code}</p>
                   <p className="mt-0.5 text-[12px] text-text-tertiary">{formatDate(r.created_at)}</p>
                 </div>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${r.status === "redeemed" ? "bg-[#DEF3E3] text-[#1F9E4C]" : r.status === "expired" ? "bg-surface-soft text-text-tertiary" : "bg-[#FDEEDF] text-[#C2650A]"}`}>
@@ -194,7 +194,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
               </div>
               {r.visitor_whatsapp && (
                 <a
-                  href={whatsappLink(r.visitor_whatsapp, `Olá ${r.visitor_name || ""}! Sobre o cupom ${r.code}...`)}
+                  href={whatsappLink(r.visitor_whatsapp, `Olá ${r.visitor_name || ""}! Sobre o voucher ${r.code}...`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-[#DEF3E3] px-3 py-1.5 text-[12.5px] font-medium text-[#1F9E4C]"

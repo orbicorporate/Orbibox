@@ -38,7 +38,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
   const [filter, setFilter] = useState<"todos" | "redeemed" | "claimed">("todos");
 
   // Resgate rápido no balcão, validado pro negócio inteiro (o código pode
-  // Recarrega esse cupom e seus resgates depois de um resgate no balcão.
+  // Recarrega esse voucher e seus resgates depois de um resgate no balcão.
   async function refreshVoucher() {
     const [{ data: freshVoucher }, { data: freshRedemptions }] = await Promise.all([
       supabase.from("vouchers").select("*").eq("id", v.id).single(),
@@ -68,7 +68,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
   }
 
   async function deleteVoucher() {
-    if (!(await confirm({ title: "Excluir cupom", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
+    if (!(await confirm({ title: "Excluir voucher", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
     await supabase.from("vouchers").delete().eq("id", v.id);
     router.push("/admin/vouchers");
   }
@@ -76,7 +76,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
   return (
     <div className="flex flex-col pb-4">
       <DialogRenderer />
-      <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Todos os cupons</Link>
+      <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Todos os vouchers</Link>
 
       {/* Cabeçalho, mesmo vermelho vivo com brilho da oferta real */}
       <div className="relative mt-4">
@@ -85,7 +85,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
           <VoucherLines />
           <div className="relative flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wide opacity-85">🎟️ Painel do cupom</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide opacity-85">🎟️ Painel do voucher</p>
               <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-tight">{v.title}</p>
               <p className="mt-0.5 text-[15px] opacity-90">{discountLabel(v)}</p>
             </div>
@@ -113,7 +113,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-[20px] p-4" style={{ backgroundColor: "#E7EAFC" }}>
           <p className="text-[26px] font-bold" style={{ color: "#4453D6" }}>{v.quantity_claimed}</p>
-          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#4453D6" }}>resgataram o cupom<br /><span className="opacity-70">de {v.quantity_total} disponíveis</span></p>
+          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#4453D6" }}>resgataram o voucher<br /><span className="opacity-70">de {v.quantity_total} disponíveis</span></p>
         </div>
         <div className="rounded-[20px] p-4" style={{ backgroundColor: "#F1F0EE" }}>
           <p className="text-[26px] font-bold" style={{ color: "#6B7280" }}>{restam}</p>
@@ -133,7 +133,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
         {v.expires_hours ? `Cada código expira em ${v.expires_hours}h se não for usado.` : "Códigos não têm validade."}
       </p>
 
-      {/* Plano de divulgação da Orbi: o cupom só rende se for divulgado,
+      {/* Plano de divulgação da Orbi: o voucher só rende se for divulgado,
           então isso vem antes da operação do balcão. */}
       <VoucherPlanoOrbi voucherId={v.id} voucherTitulo={v.title} orbiColors={orbiColors} />
 
@@ -178,7 +178,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
         {redemptions.length === 0 && (
           <div className="rounded-[22px] border border-dashed border-divider p-6 text-center">
             <p className="text-[14px] font-medium">Ninguém resgatou ainda</p>
-            <p className="mt-1 text-[13px] text-text-tertiary">Assim que alguém pegar esse cupom na sua página, aparece aqui com nome e WhatsApp.</p>
+            <p className="mt-1 text-[13px] text-text-tertiary">Assim que alguém pegar esse voucher na sua página, aparece aqui com nome e WhatsApp.</p>
           </div>
         )}
         {filtered.map((r) => (
@@ -194,7 +194,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
             </div>
             {r.visitor_whatsapp && (
               <a
-                href={whatsappLink(r.visitor_whatsapp, `Olá ${r.visitor_name || ""}! Sobre o cupom ${r.code}...`)}
+                href={whatsappLink(r.visitor_whatsapp, `Olá ${r.visitor_name || ""}! Sobre o voucher ${r.code}...`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-[#DEF3E3] px-3 py-1.5 text-[12.5px] font-medium text-[#1F9E4C]"
@@ -207,7 +207,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
       </div>
 
       <button onClick={deleteVoucher} className="mt-8 text-[13px] font-medium text-red-600">
-        Excluir este cupom
+        Excluir este voucher
       </button>
     </div>
   );

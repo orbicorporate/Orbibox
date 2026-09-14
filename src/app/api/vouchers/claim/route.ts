@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (!voucher) {
-      return NextResponse.json({ error: "Cupom não encontrado." }, { status: 404 });
+      return NextResponse.json({ error: "Voucher não encontrado." }, { status: 404 });
     }
 
     const { data: business } = await supabase
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (!business || !(await getOwnerHasVouchers(business.owner_id))) {
-      return NextResponse.json({ error: "Cupons não disponíveis pra esse negócio." }, { status: 403 });
+      return NextResponse.json({ error: "Vouchers não disponíveis pra esse negócio." }, { status: 403 });
     }
 
     const { data, error } = await supabase.rpc("claim_voucher", {
@@ -44,12 +44,12 @@ export async function POST(req: NextRequest) {
 
     const result = data?.[0];
     if (!result) {
-      return NextResponse.json({ error: "Não foi possível resgatar o cupom." }, { status: 400 });
+      return NextResponse.json({ error: "Não foi possível resgatar o voucher." }, { status: 400 });
     }
 
     return NextResponse.json(result);
   } catch (error) {
     console.error("Erro ao resgatar cupom:", error);
-    return NextResponse.json({ error: "Erro ao resgatar cupom." }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao resgatar voucher." }, { status: 500 });
   }
 }

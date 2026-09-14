@@ -20,7 +20,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const { confirm, DialogRenderer } = useDialogs();
   const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
   const [creating, setCreating] = useState(false);
-  // Fechada por padrão: quem entra normalmente quer criar um cupom novo ou
+  // Fechada por padrão: quem entra normalmente quer criar um voucher novo ou
   // ver o painel, não rolar a lista inteira.
   const [listaAberta, setListaAberta] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -40,7 +40,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   async function createVoucher(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !discountValue || !quantityTotal || saving) return;
-    // Titânio montou o cupom pra ver como é, na hora de salvar, pede o upgrade.
+    // Titânio montou o voucher pra ver como é, na hora de salvar, pede o upgrade.
     if (!canSave) {
       setShowUpgrade(true);
       return;
@@ -86,7 +86,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   }
 
   async function deleteVoucher(v: Voucher) {
-    if (!(await confirm({ title: "Excluir cupom", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
+    if (!(await confirm({ title: "Excluir voucher", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
     await supabase.from("vouchers").delete().eq("id", v.id);
     setVouchers((p) => p.filter((x) => x.id !== v.id));
   }
@@ -97,10 +97,10 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
       {showUpgrade && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6" onClick={() => setShowUpgrade(false)}>
           <div className="w-full max-w-[340px] rounded-[24px] bg-surface-white p-6 text-center" onClick={(e) => e.stopPropagation()}>
-            <p className="text-[16px] font-semibold">Cupons são do plano Nióbio 💎</p>
+            <p className="text-[16px] font-semibold">Vouchers são do plano Nióbio 💎</p>
             <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-              Você montou seu cupom, pra ele valer de verdade na sua página, com código único e controle de estoque,
-              é só ativar o Nióbio. Seu cupom fica salvo assim que assinar.
+              Você montou seu voucher, pra ele valer de verdade na sua página, com código único e controle de estoque,
+              é só ativar o Nióbio. Seu voucher fica salvo assim que assinar.
             </p>
             <Link href="/admin/planos" className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-button-primary py-3 text-[14px] font-medium text-white">
               Assinar Nióbio
@@ -112,7 +112,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         </div>
       )}
 
-      {/* Lista de cupons, atrás de um botão que expande: com vários cupons
+      {/* Lista de vouchers, atrás de um botão que expande: com vários vouchers
           a página ficava enorme e o que importa (criar, painel) sumia. */}
       <div className="flex flex-col gap-3">
         {vouchers.length > 0 && (
@@ -124,9 +124,9 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           >
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[19px]">🎟️</span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[16.5px] font-bold leading-tight">Seus cupons</span>
+              <span className="block text-[16.5px] font-bold leading-tight">Seus vouchers</span>
               <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">
-                {vouchers.length} {vouchers.length === 1 ? "cupom criado" : "cupons criados"}. Toque pra gerenciar e editar.
+                {vouchers.length} {vouchers.length === 1 ? "voucher criado" : "vouchers criados"}. Toque pra gerenciar e editar.
               </span>
             </span>
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft transition-transform ${listaAberta ? "rotate-180" : ""}`}>
@@ -203,9 +203,9 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         {vouchers.length === 0 && !creating && (
           <div className="flex flex-col items-center rounded-[24px] border border-dashed border-divider p-8 text-center">
             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-soft text-[22px]">🎟️</span>
-            <p className="mt-3 text-[15px] font-medium">Nenhum cupom ainda</p>
+            <p className="mt-3 text-[15px] font-medium">Nenhum voucher ainda</p>
             <p className="mt-1 max-w-[240px] text-[13px] leading-relaxed text-text-tertiary">
-              Crie o primeiro cupom aí embaixo, leva menos de um minuto.
+              Crie o primeiro voucher aí embaixo, leva menos de um minuto.
             </p>
           </div>
         )}
@@ -213,7 +213,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
 
       {creating ? (
         <form onSubmit={createVoucher} className="flex flex-col gap-3 rounded-[24px] border border-divider bg-surface-white p-5">
-          <p className="text-[15px] font-semibold">Novo cupom</p>
+          <p className="text-[15px] font-semibold">Novo voucher</p>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -229,7 +229,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           />
 
           <div>
-            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Cor do cupom</p>
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Cor do voucher</p>
             <div className="mt-2 grid grid-cols-4 gap-2">
               {(Object.keys(VOUCHER_THEMES) as VoucherColor[]).map((key) => (
                 <button
@@ -256,12 +256,12 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               maxLength={24}
               className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
             />
-            <p className="mt-1 text-[12px] text-text-tertiary">Aparece como um selinho no cupom, na página do visitante.</p>
+            <p className="mt-1 text-[12px] text-text-tertiary">Aparece como um selinho no voucher, na página do visitante.</p>
           </div>
 
           <div>
-            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Foto do cupom (opcional)</p>
-            <p className="mb-2 mt-1 text-[12px] text-text-tertiary">Fica do lado do desconto, na galeria de cupons. Uma foto do produto ou do ambiente funciona bem.</p>
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Foto do voucher (opcional)</p>
+            <p className="mb-2 mt-1 text-[12px] text-text-tertiary">Fica do lado do desconto, na galeria de vouchers. Uma foto do produto ou do ambiente funciona bem.</p>
             <ImageUpload value={imageUrl} businessId={businessId} lockedRatio="quadrado" promptKind="capa" promptSubject={title || undefined} onChange={setImageUrl} />
           </div>
           <div className="flex gap-2">
@@ -283,7 +283,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             />
           </div>
           <div>
-            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Quantos cupons disponíveis</p>
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Quantos vouchers disponíveis</p>
             <input
               value={quantityTotal}
               onChange={(e) => setQuantityTotal(e.target.value)}
@@ -316,7 +316,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               disabled={saving || !title.trim() || !discountValue || !quantityTotal}
               className="flex-1 rounded-full bg-button-primary px-4 py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
             >
-              {saving ? "Criando…" : "Criar cupom"}
+              {saving ? "Criando…" : "Criar voucher"}
             </button>
           </div>
         </form>
@@ -325,7 +325,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           onClick={() => setCreating(true)}
           className="orbi-gradient rounded-full px-5 py-3 text-[14px] font-medium text-on-background"
         >
-          + Novo cupom
+          + Novo voucher
         </button>
       )}
     </div>

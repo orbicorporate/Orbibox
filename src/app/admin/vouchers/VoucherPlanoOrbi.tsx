@@ -65,7 +65,7 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
       <OrbiInsightCard className="mt-4">
         <OrbiInsightHeader />
         <p className="relative mt-3 font-[family-name:var(--font-manrope)] text-[21px] font-semibold leading-tight tracking-[-0.01em]">
-          Como fazer esse cupom render
+          Como fazer esse voucher render
         </p>
         <p className="relative mt-2 text-[14.5px] leading-relaxed text-text-secondary">
           A Orbi monta o plano de divulgação: onde postar, quando, e o texto pronto pra copiar.
@@ -106,9 +106,9 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
           </header>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-10" style={{ paddingTop: "66px", WebkitOverflowScrolling: "touch" }}>
-            {/* Estratégia: por que esse cupom existe */}
+            {/* Estratégia: por que esse voucher existe */}
             {plano.estrategia && (
-              <div className="orbi-card-light relative overflow-hidden rounded-[30px] px-6 py-7">
+              <div className="orbi-rise orbi-card-light relative overflow-hidden rounded-[30px] px-6 py-7">
                 <span className="relative mx-auto block h-14 w-14 overflow-hidden rounded-full">
                   <OrbiParticleSphere size={56} colors={orbiColors ?? undefined} vivid className="rounded-full" />
                 </span>
@@ -125,7 +125,11 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
             {plano.canais.map((c, i) => {
               const ic = iconeDoCanal(c.canal);
               return (
-                <div key={i} className="mt-4 rounded-[26px] border border-divider bg-surface-white px-6 py-6">
+                <div
+                  key={i}
+                  className="orbi-rise mt-4 rounded-[26px] border border-divider bg-surface-white px-6 py-6"
+                  style={{ animationDelay: `${80 + i * 70}ms` }}
+                >
                   <div className="flex items-center gap-3">
                     <span
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[15px]"
@@ -165,7 +169,7 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
 
             {/* No balcão */}
             {plano.no_balcao.length > 0 && (
-              <div className="mt-4 rounded-[26px] border border-divider bg-surface-white px-6 py-6">
+              <div className="orbi-rise mt-4 rounded-[26px] border border-divider bg-surface-white px-6 py-6" style={{ animationDelay: "380ms" }}>
                 <div className="flex items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEDE9] text-[15px] text-on-background">◆</span>
                   <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold leading-tight tracking-[-0.01em]">
@@ -187,7 +191,7 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
 
             {/* O que evitar */}
             {plano.evite.length > 0 && (
-              <div className="mt-4 rounded-[26px] border border-divider bg-surface-white px-6 py-6">
+              <div className="orbi-rise mt-4 rounded-[26px] border border-divider bg-surface-white px-6 py-6" style={{ animationDelay: "450ms" }}>
                 <div className="flex items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FDEEDF] text-[15px] text-[#C2650A]">▲</span>
                   <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold leading-tight tracking-[-0.01em]">
@@ -212,7 +216,7 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
               onClick={() => setAberto(false)}
               className="mt-2.5 w-full rounded-full bg-on-background py-4 text-[15.5px] font-semibold text-white"
             >
-              Voltar ao cupom
+              Voltar ao voucher
             </button>
           </div>
         </div>,

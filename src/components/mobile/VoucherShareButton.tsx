@@ -92,11 +92,11 @@ export function VoucherShareButton({ title, code, message, className }: { title:
     try {
       const blob = await buildVoucherImage(title, code, message);
       if (!blob) return;
-      const file = new File([blob], `cupom-${code}.png`, { type: "image/png" });
+      const file = new File([blob], `voucher-${code}.png`, { type: "image/png" });
 
       if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: `Cupom ${code}` });
+          await navigator.share({ files: [file], title: `Voucher ${code}` });
           return;
         } catch {
           // Pessoa cancelou a folha, não faz nada.
@@ -108,7 +108,7 @@ export function VoucherShareButton({ title, code, message, className }: { title:
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `cupom-${code}.png`;
+      a.download = `voucher-${code}.png`;
       a.click();
       URL.revokeObjectURL(url);
     } finally {

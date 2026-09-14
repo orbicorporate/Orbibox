@@ -125,7 +125,7 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
                 onClick={() => setMenuOpen(false)}
                 className="relative mt-2 block overflow-hidden rounded-[22px] bg-gradient-to-br from-[#E9FF8C] via-[#B9F7C8] to-[#9BEFE6] p-4"
               >
-                {/* Ilustração de cupons "%" ao fundo, só enfeite */}
+                {/* Ilustração de vouchers "%" ao fundo, só enfeite */}
                 <span aria-hidden className="pointer-events-none absolute -bottom-3 -right-2 rotate-[-12deg] select-none">
                   <span className="flex h-20 w-24 items-center justify-center rounded-2xl bg-white/70 text-[34px] font-black text-[#2E9E5B] shadow-[0_6px_16px_rgba(0,0,0,0.08)]">%</span>
                 </span>
@@ -142,7 +142,7 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
                   </span>
                 </span>
                 <span className="relative mt-3 block max-w-[68%] text-[13px] leading-relaxed text-on-background/80">
-                  Crie cupons personalizados com controle de estoque, isso traz cliente na mesma hora.
+                  Crie vouchers personalizados com controle de estoque, isso traz cliente na mesma hora.
                 </span>
                 <span className="relative mt-3.5 inline-flex items-center gap-2 rounded-full bg-[#14301F] px-5 py-2.5 text-[14px] font-semibold text-white">
                   Experimentar <span aria-hidden>→</span>

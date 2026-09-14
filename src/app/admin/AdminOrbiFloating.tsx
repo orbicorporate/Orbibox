@@ -25,7 +25,7 @@ export function AdminOrbiFloating({
   const pathname = usePathname();
 
   // Não aparece em telas onde atraparia botões de ação ou seria redundante:
-  // a própria config da Orbi, e a de cupons (que tem o "Novo cupom" no rodapé).
+  // a própria config da Orbi, e a de vouchers (que tem o "Novo voucher" no rodapé).
   if (pathname?.startsWith("/admin/agent") || pathname?.startsWith("/admin/vouchers")) {
     return null;
   }
