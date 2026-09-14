@@ -185,97 +185,82 @@ function Passo({ n, feito, continuo, titulo, desc, children, href, badge, onClic
 
 /** Tela cheia com a análise completa do site: o que a Orbi entendeu do
  * negócio, mais uma leitura de mercado (desafios e oportunidades), num
- * tom de consultoria. Fecha com um botão grande de volta pra configuração. */
+ * tom de consultoria. Cada bloco vive no seu próprio card, com ícone
+ * colorido, pra ficar parecido com a página pública do negócio. */
 function AnaliseSiteModal({ aberto, onFechar, resultado, orbiColors }: { aberto: boolean; onFechar: () => void; resultado: ResultadoImport; orbiColors?: string[] | null }) {
   if (typeof document === "undefined" || !aberto) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] mx-auto flex max-w-[440px] flex-col bg-background-main">
-      <header className="flex items-center gap-3 border-b border-divider bg-surface-white px-4 py-3">
+      <header className="flex shrink-0 items-center gap-3 border-b border-divider bg-surface-white px-4 py-3">
         <button onClick={onFechar} aria-label="Voltar" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
         </button>
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full">
-          <OrbiParticleSphere size={32} colors={orbiColors ?? undefined} className="rounded-full" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-semibold leading-tight">Análise do site</p>
-          <p className="text-[12px] text-text-tertiary">feita pela Orbi</p>
-        </div>
+        <p className="min-w-0 flex-1 text-[15px] font-semibold leading-tight">Análise do site</p>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6" style={{ WebkitOverflowScrolling: "touch" }}>
-        <div className="rounded-2xl bg-surface-soft px-4 py-3.5">
-          <p className="text-[12.5px] leading-relaxed text-text-secondary">
-            Essas informações vão ser usadas pra montar a página do seu negócio dentro do Orbibox. Você pode editar tudo depois, a qualquer momento, nas Configurações.
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-4" style={{ WebkitOverflowScrolling: "touch" }}>
+        {/* Capa: a Orbi assinando a análise */}
+        <div className="orbi-card-light relative overflow-hidden rounded-[28px] px-6 py-7">
+          <span className="relative mx-auto block h-16 w-16 overflow-hidden rounded-full">
+            <OrbiParticleSphere size={64} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+          </span>
+          <p className="relative mt-4 text-center font-[family-name:var(--font-manrope)] text-[26px] font-semibold leading-[1.15] tracking-[-0.01em] text-on-background">
+            Li seu site inteiro
+          </p>
+          <p className="relative mt-2 text-center text-[14.5px] leading-relaxed text-text-secondary">
+            Aqui está o que entendi do seu negócio e como vejo o seu mercado hoje.
           </p>
         </div>
 
         {resultado.about && (
-          <Secao titulo="Sobre o negócio">
-            <p className="text-[14.5px] leading-relaxed text-on-background">{resultado.about}</p>
-          </Secao>
+          <Bloco titulo="Sobre o negócio" icone="◆" corIcone="#111318" fundoIcone="#ECEDE9">
+            <p className="text-[15.5px] leading-[1.65] text-on-background">{resultado.about}</p>
+          </Bloco>
         )}
 
         {resultado.differentials && resultado.differentials.length > 0 && (
-          <Secao titulo="Diferenciais">
-            <div className="flex flex-col gap-3">
-              {resultado.differentials.map((d, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <span className="mt-0.5 shrink-0 text-[14px]">{d.icon}</span>
-                  <div className="min-w-0">
-                    <p className="text-[13.5px] font-semibold text-on-background">{d.title}</p>
-                    {d.description && <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">{d.description}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Secao>
+          <Bloco titulo="Diferenciais" icone="✦" corIcone="#1F9E4C" fundoIcone="#DEF3E3">
+            <ListaTopicos
+              itens={resultado.differentials}
+              corIcone="#1F9E4C"
+              fundoIcone="#DEF3E3"
+              usarIconeDoItem
+            />
+          </Bloco>
         )}
 
         {resultado.challenges && resultado.challenges.length > 0 && (
-          <Secao titulo="Desafios do mercado" tom="alerta">
-            <div className="flex flex-col gap-3">
-              {resultado.challenges.map((t, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <span className="mt-0.5 shrink-0 text-[14px]">▲</span>
-                  <div className="min-w-0">
-                    <p className="text-[13.5px] font-semibold text-on-background">{t.title}</p>
-                    {t.description && <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">{t.description}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Secao>
+          <Bloco titulo="Desafios do mercado" icone="▲" corIcone="#C2650A" fundoIcone="#FDEEDF">
+            <ListaTopicos itens={resultado.challenges} corIcone="#C2650A" fundoIcone="#FDEEDF" iconePadrao="▲" />
+          </Bloco>
         )}
 
         {resultado.opportunities && resultado.opportunities.length > 0 && (
-          <Secao titulo="Oportunidades" tom="positivo">
-            <div className="flex flex-col gap-3">
-              {resultado.opportunities.map((t, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <span className="mt-0.5 shrink-0 text-[14px]">↗</span>
-                  <div className="min-w-0">
-                    <p className="text-[13.5px] font-semibold text-on-background">{t.title}</p>
-                    {t.description && <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">{t.description}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Secao>
+          <Bloco titulo="Oportunidades" icone="↗" corIcone="#1D4ED8" fundoIcone="#E2EAFE">
+            <ListaTopicos itens={resultado.opportunities} corIcone="#1D4ED8" fundoIcone="#E2EAFE" iconePadrao="↗" />
+          </Bloco>
         )}
 
         {resultado.policies && (
-          <Secao titulo="Políticas identificadas">
-            <p className="text-[14px] leading-relaxed text-text-secondary">{resultado.policies}</p>
-          </Secao>
+          <Bloco titulo="Políticas identificadas" icone="◫" corIcone="#555960" fundoIcone="#ECEDE9">
+            <p className="text-[15px] leading-[1.65] text-text-secondary">{resultado.policies}</p>
+          </Bloco>
         )}
+
+        {/* Aviso de uso, no fim: já viu tudo, agora sabe o que acontece com isso */}
+        <div className="mt-4 rounded-[24px] border border-divider bg-surface-white px-5 py-5">
+          <p className="text-[14.5px] font-semibold text-on-background">O que acontece agora</p>
+          <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
+            Essas informações vão montar a página do seu negócio dentro do Orbibox. Você pode editar tudo depois, quando quiser, nas Configurações.
+          </p>
+        </div>
 
         <button
           onClick={onFechar}
-          className="mt-8 w-full rounded-full bg-on-background py-4 text-[15px] font-semibold text-white"
+          className="mt-5 w-full rounded-full bg-on-background py-4 text-[15px] font-semibold text-white"
         >
-          ← Voltar à configuração da IA
+          Voltar à configuração da IA
         </button>
       </div>
     </div>,
@@ -283,12 +268,50 @@ function AnaliseSiteModal({ aberto, onFechar, resultado, orbiColors }: { aberto:
   );
 }
 
-function Secao({ titulo, children, tom }: { titulo: string; children: React.ReactNode; tom?: "alerta" | "positivo" }) {
-  const cor = tom === "alerta" ? "text-[#C2650A]" : tom === "positivo" ? "text-[#1F9E4C]" : "text-text-tertiary";
+/** Card branco de uma seção da análise, com título e ícone colorido. */
+function Bloco({ titulo, icone, corIcone, fundoIcone, children }: {
+  titulo: string; icone: string; corIcone: string; fundoIcone: string; children: React.ReactNode;
+}) {
   return (
-    <div className="mt-6 border-t border-divider pt-6 first:mt-5 first:border-t-0 first:pt-5">
-      <p className={`text-[11px] font-semibold uppercase tracking-wide ${cor}`}>{titulo}</p>
-      <div className="mt-2.5">{children}</div>
+    <div className="mt-4 rounded-[24px] border border-divider bg-surface-white px-5 py-5">
+      <div className="flex items-center gap-2.5">
+        <span
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[14px]"
+          style={{ backgroundColor: fundoIcone, color: corIcone }}
+        >
+          {icone}
+        </span>
+        <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold leading-tight">{titulo}</p>
+      </div>
+      <div className="mt-4">{children}</div>
+    </div>
+  );
+}
+
+/** Lista de tópicos (diferencial, desafio, oportunidade) com bolinha colorida. */
+function ListaTopicos({ itens, corIcone, fundoIcone, iconePadrao, usarIconeDoItem }: {
+  itens: { title: string; description: string; icon?: string }[];
+  corIcone: string;
+  fundoIcone: string;
+  iconePadrao?: string;
+  usarIconeDoItem?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      {itens.map((t, i) => (
+        <div key={i} className="flex items-start gap-3">
+          <span
+            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px]"
+            style={{ backgroundColor: fundoIcone, color: corIcone }}
+          >
+            {usarIconeDoItem ? t.icon ?? "✦" : iconePadrao ?? "✦"}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[15.5px] font-semibold leading-snug text-on-background">{t.title}</p>
+            {t.description && <p className="mt-1 text-[14.5px] leading-[1.6] text-text-secondary">{t.description}</p>}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
