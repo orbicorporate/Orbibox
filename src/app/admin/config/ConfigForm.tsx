@@ -45,6 +45,14 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "erro"; text: string } | null>(null);
   const [generatingDesc, setGeneratingDesc] = useState(false);
+  // A capa e a descrição do compartilhamento ficam recolhidas: são dois
+  // cards longos e, uma vez configurados, quase nunca mudam.
+  // Quem chega pelo link "#compartilhamento" (vindo do modal de compartilhar)
+  // quer editar agora, então a seção já abre expandida nesse caso.
+  const [shareAberto, setShareAberto] = useState(
+    () => typeof window !== "undefined" && window.location.hash === "#compartilhamento",
+  );
+  const compartilhamentoPronto = !!(b.share_image_url && b.share_description?.trim());
   // Logotipo começa recolhido (já tem logo) ou aberto (ainda não tem, pra
   // incentivar a subir). Recolhível pra economizar espaço.
   const [logoOpen, setLogoOpen] = useState(!business.logo_url);
@@ -190,13 +198,37 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
           WhatsApp + os dois campos em cards separados. Âncora pra o botão de
           compartilhar levar direto aqui. */}
       <div id="compartilhamento" className="mt-6 scroll-mt-20">
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#DEF3E3] text-[15px]">🔗</span>
-          <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Como seu link aparece quando compartilhado</p>
-        </div>
-        <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
-          É a primeira impressão de quem recebe seu link no WhatsApp ou Instagram. Capriche na capa e na descrição.
-        </p>
+        {/* Botão grande que abre a configuração inteira. Recolhido por padrão:
+            são dois cards longos que empurravam o resto da página pra baixo. */}
+        <button
+          onClick={() => setShareAberto((v) => !v)}
+          className="w-full rounded-[24px] orbi-gradient p-[1.5px] text-left"
+        >
+          <span className="flex w-full items-center gap-3.5 rounded-[23px] bg-surface-white p-5">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#DEF3E3] text-[20px]">🔗</span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-[family-name:var(--font-manrope)] text-[16.5px] font-semibold leading-tight">
+                Configure a capa e a descrição do seu link
+              </span>
+              <span className="mt-1 block text-[13px] leading-snug text-text-secondary">
+                {compartilhamentoPronto
+                  ? "Está configurado. Toque pra revisar."
+                  : "É a primeira impressão de quem recebe seu link no WhatsApp."}
+              </span>
+            </span>
+            <span className={`shrink-0 text-text-tertiary transition-transform ${shareAberto ? "rotate-90" : ""}`}>→</span>
+          </span>
+        </button>
+
+        {!compartilhamentoPronto && !shareAberto && (
+          <p className="mt-2 px-1 text-[12.5px] text-[#C2650A]">
+            Ainda falta configurar. Sem isso, o WhatsApp mostra só o endereço.
+          </p>
+        )}
+      </div>
+
+      {shareAberto && (
+      <div className="mt-4">
 
         {/* Preview estilo card de link do WhatsApp */}
         <div className="mt-4 overflow-hidden rounded-[18px] border border-divider bg-surface-white">
@@ -219,7 +251,6 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
             <p className="mt-1 text-[11px] text-text-tertiary">orbibox-one.vercel.app</p>
           </div>
         </div>
-      </div>
 
       {/* Card da CAPA */}
       <div className="mt-4 rounded-[24px] border border-divider bg-surface-white p-5">
@@ -273,6 +304,9 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
           <p className="text-[12px] text-text-tertiary">{(b.share_description ?? "").length}/90</p>
         </div>
       </div>
+
+      </div>
+      )}
 
       {b.site_type && (
         <div className="mt-4 rounded-[22px] bg-surface-soft p-5">
