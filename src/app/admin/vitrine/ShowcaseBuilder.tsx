@@ -545,11 +545,12 @@ export function ShowcaseBuilder({
 
       {items.length > 0 && (
         <div className="mb-4 rounded-[18px] border border-divider bg-surface-white p-3">
-          <p className="mb-2 px-1 text-[12px] font-medium text-text-secondary">Paleta da vitrine · toque pra aplicar</p>
+          <p className="mb-1 px-1 text-[14px] font-semibold">Qual sensação você quer que sua vitrine passe?</p>
+          <p className="mb-3 px-1 text-[12px] text-text-tertiary">Toque numa paleta pra aplicar na hora.</p>
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {currentBrandColors.length > 0 && (
               <PaletteChip
-                label="✦ Sugestão da Orbi"
+                label="✦ A cara da sua marca"
                 cores={currentBrandColors}
                 loading={applyingPalette === "orbi"}
                 onClick={() => aplicarPaleta("orbi", currentBrandColors)}
@@ -558,7 +559,7 @@ export function ShowcaseBuilder({
             {VITRINE_THEMES.map((t) => (
               <PaletteChip
                 key={t.id}
-                label={t.name}
+                label={t.vibe}
                 cores={t.colors}
                 loading={applyingPalette === t.id}
                 onClick={() => aplicarPaleta(t.id, t.colors)}
@@ -958,23 +959,28 @@ function CoverExampleModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+/** Bolinhas grandes + a sensação que a paleta passa. O ramo do negócio
+ * não aparece: o que ajuda a escolher é o clima, não o rótulo. */
 function PaletteChip({ label, cores, loading, onClick }: { label: string; cores: { hex: string }[]; loading: boolean; onClick: () => void }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={loading}
-      className="flex shrink-0 items-center gap-2 rounded-full border border-divider bg-surface-white px-3 py-2 disabled:opacity-50"
+      className="flex w-[104px] shrink-0 cursor-pointer flex-col items-center gap-2 rounded-[20px] border border-divider bg-surface-white px-2 py-3 disabled:opacity-50"
     >
       <span className="flex">
         {cores.slice(0, 4).map((c, i) => (
           <span
             key={i}
-            className="h-5 w-5 rounded-full border-2 border-surface-white"
-            style={{ backgroundColor: c.hex, marginLeft: i === 0 ? 0 : -8 }}
+            className="h-8 w-8 rounded-full border-2 border-surface-white shadow-sm"
+            style={{ backgroundColor: c.hex, marginLeft: i === 0 ? 0 : -11 }}
           />
         ))}
       </span>
-      <span className="whitespace-nowrap text-[12px] font-medium">{loading ? "Aplicando…" : label}</span>
+      <span className="text-center text-[11.5px] font-medium leading-tight text-text-secondary">
+        {loading ? "Aplicando…" : label}
+      </span>
     </button>
   );
 }

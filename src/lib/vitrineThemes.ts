@@ -284,4 +284,48 @@ export const VITRINE_THEMES: VitrineTheme[] = [
       { hex: "#9FA8B5", role: "Suave" },
     ],
   },
+  // Três paletas claras e sofisticadas, pra quem quer a vitrine leve e
+  // arejada em vez de contrastada. Fundo quase branco, contraste suave.
+  {
+    id: "sereno",
+    name: "Sereno",
+    vibe: "Sereno, respirável",
+    exampleBusiness: "Casa Lumen",
+    description: "Off-white com cinza-pedra e um toque de verde-sálvia. Pra quem quer calma e espaço em volta dos produtos.",
+    bg: "#F7F7F4",
+    colors: [
+      { hex: "#F4F4F0", role: "Fundo" },
+      { hex: "#4A4F4A", role: "Contraste" },
+      { hex: "#9FB0A3", role: "Detalhe" },
+      { hex: "#DDDED6", role: "Suave" },
+    ],
+  },
+  {
+    id: "algodao",
+    name: "Algodão",
+    vibe: "Suave, acolhedor",
+    exampleBusiness: "Marina Ateliê",
+    description: "Areia clarinha com rosa-nude e marrom-claro. Pra quem quer uma vitrine macia, quente e sem peso.",
+    bg: "#FAF6F2",
+    colors: [
+      { hex: "#F8F2EC", role: "Fundo" },
+      { hex: "#5A4A42", role: "Contraste" },
+      { hex: "#D9B8A8", role: "Detalhe" },
+      { hex: "#EADCD0", role: "Suave" },
+    ],
+  },
+  {
+    id: "orvalho",
+    name: "Orvalho",
+    vibe: "Fresco, luminoso",
+    exampleBusiness: "Studio Azul",
+    description: "Branco frio com azul-gelo e prata. Pra quem quer uma vitrine limpa, moderna e com ar de novo.",
+    bg: "#F5F8FA",
+    colors: [
+      { hex: "#F2F6F9", role: "Fundo" },
+      { hex: "#36414D", role: "Contraste" },
+      { hex: "#A9C3D6", role: "Detalhe" },
+      { hex: "#DDE6EC", role: "Suave" },
+    ],
+  },
 ];
