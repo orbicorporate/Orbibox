@@ -357,7 +357,7 @@ export function BoxesManager({
                   <span className="text-[11px] font-medium">Logotipo</span>
                 </button>
               </div>
-              <Link href="/admin/agent#cores-orbi" className="mt-2 inline-block text-[11px] font-medium text-text-secondary underline">
+              <Link href="/admin/agent#cores-orbi" className="mt-2 inline-block rounded-full bg-surface-soft px-3.5 py-1.5 text-[11.5px] font-semibold text-text-secondary">
                 ✦ Configurar cor
               </Link>
               {!availableLogo && (
@@ -517,7 +517,13 @@ export function BoxesManager({
                   </div>
 
                   {!m.assinatura && (
-                    <button onClick={() => setEditingId(editing ? null : box.id)} className="mt-3 text-[12px] text-text-tertiary underline">
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(editing ? null : box.id)}
+                      className={`mt-3 cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold ${
+                        editing ? "bg-surface-soft text-text-secondary" : "bg-button-primary text-white"
+                      }`}
+                    >
                       {editing ? "Fechar" : "Cor, ícone e mais"}
                     </button>
                   )}
