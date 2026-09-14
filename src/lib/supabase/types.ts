@@ -29,8 +29,8 @@ export type Database = {
       }
       click_events: { Row: { business_id: string; content_item_id: string | null; created_at: string; id: string; kind: string; target_url: string | null; visitor_session_id: string | null }; Insert: { business_id: string; content_item_id?: string | null; created_at?: string; id?: string; kind: string; target_url?: string | null; visitor_session_id?: string | null }; Update: Partial<Database["public"]["Tables"]["click_events"]["Insert"]>; Relationships: [] }
       conversations: {
-        Row: { business_id: string; channel: string; ended_at: string | null; id: string; seen_by_owner: boolean; started_at: string; status: string; visitor_session_id: string | null }
-        Insert: { business_id: string; channel?: string; ended_at?: string | null; id?: string; seen_by_owner?: boolean; started_at?: string; status?: string; visitor_session_id?: string | null }
+        Row: { business_id: string; channel: string; ended_at: string | null; id: string; seen_by_owner: boolean; started_at: string; status: string; visitor_session_id: string | null ; lead_id: string | null; summary: string | null; temperature: number | null; analyzed_at: string | null }
+        Insert: { business_id: string; channel?: string; ended_at?: string | null; id?: string; seen_by_owner?: boolean; started_at?: string; status?: string; visitor_session_id?: string | null ; lead_id?: string | null; summary?: string | null; temperature?: number | null; analyzed_at?: string | null }
         Update: Partial<Database["public"]["Tables"]["conversations"]["Insert"]>
         Relationships: []
       }
@@ -122,6 +122,12 @@ export type Database = {
         Row: { id: string; bonus_link_id: string; user_id: string; granted_until: string | null; created_at: string }
         Insert: { id?: string; bonus_link_id: string; user_id: string; granted_until?: string | null; created_at?: string }
         Update: Partial<Database["public"]["Tables"]["bonus_redemptions"]["Insert"]>
+        Relationships: []
+      }
+      leads: {
+        Row: { id: string; business_id: string; whatsapp: string; name: string | null; source: string; status: string; temperature: number; summary: string | null; next_action: Json; notes: string | null; interests: string[]; visitor_session_id: string | null; last_activity_at: string; analyzed_at: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; business_id: string; whatsapp: string; name?: string | null; source?: string; status?: string; temperature?: number; summary?: string | null; next_action?: Json; notes?: string | null; interests?: string[]; visitor_session_id?: string | null; last_activity_at?: string; analyzed_at?: string | null; created_at?: string; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["leads"]["Insert"]>
         Relationships: []
       }
       inspire_theme_photos: {
@@ -236,6 +242,18 @@ export type Database = {
       register_affiliate_click: {
         Args: { p_code: string }
         Returns: undefined
+      }
+      upsert_lead: {
+        Args: { p_business_id: string; p_whatsapp: string; p_name?: string | null; p_source?: string; p_session_id?: string | null; p_interest?: string | null }
+        Returns: string | null
+      }
+      lead_context: {
+        Args: { p_lead_id: string }
+        Returns: Json
+      }
+      link_conversation_lead: {
+        Args: { p_conversation_id: string }
+        Returns: string | null
       }
       register_affiliate_referral: {
         Args: { p_code: string }
