@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { OrbiEntrevista } from "./OrbiEntrevista";
 
+type Diferencial = { icon: string; title: string; description: string };
+type ResultadoImport = { about?: string; differentials?: Diferencial[]; policies?: string };
+
 export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPendentes = 0, baseFeita = false, onDone }: { businessId: string; businessName: string; orbiColors?: string[] | null; gapsPendentes?: number; baseFeita?: boolean; onDone?: () => void }) {
   const router = useRouter();
   const [url, setUrl] = useState("");
@@ -12,6 +15,7 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
   const [erro, setErro] = useState<string | null>(null);
   const [site, setSite] = useState<"idle" | "form">("idle");
   const [feito, setFeito] = useState(baseFeita);
+  const [resultado, setResultado] = useState<ResultadoImport | null>(null);
 
   async function importar() {
     if (!url.trim() || importando) return;
@@ -26,6 +30,7 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
       const data = await res.json();
       if (!res.ok) { setErro(data.error || "Não consegui ler esse site."); return; }
       setFeito(true);
+      setResultado({ about: data.about, differentials: data.differentials, policies: data.policies });
       setSite("idle");
       onDone?.();
       router.refresh();
@@ -52,7 +57,7 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
           desc={feito ? "Base do negócio já registrada. Toque pra reforçar." : "O jeito mais rápido: ela lê em segundos."}
           onClick={() => setSite((s) => (s === "form" ? "idle" : "form"))}
         >
-          {site === "form" && (
+          {site === "form" ? (
             <div className="mt-2" onClick={(e) => e.stopPropagation()}>
               <div className="flex gap-2">
                 <input
@@ -69,7 +74,30 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
               </div>
               {erro && <p className="mt-1.5 text-[12px] text-red-600">{erro}</p>}
             </div>
-          )}
+          ) : resultado && (resultado.about || (resultado.differentials?.length ?? 0) > 0) ? (
+            <div className="mt-3 rounded-2xl bg-[#DEF3E3] p-3.5" onClick={(e) => e.stopPropagation()}>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#1F9E4C]">✓ O que a Orbi entendeu do seu site</p>
+              {resultado.about && (
+                <p className="mt-2 text-[13px] leading-relaxed text-on-background">{resultado.about}</p>
+              )}
+              {resultado.differentials && resultado.differentials.length > 0 && (
+                <div className="mt-3 flex flex-col gap-2">
+                  {resultado.differentials.map((d, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="mt-0.5 shrink-0 text-[13px]">{d.icon}</span>
+                      <div className="min-w-0">
+                        <p className="text-[12.5px] font-semibold text-on-background">{d.title}</p>
+                        {d.description && <p className="text-[12px] leading-snug text-text-secondary">{d.description}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="mt-3 text-[11.5px] leading-relaxed text-[#1F9E4C]/80">
+                Já salvei isso na configuração. Toque no passo pra ler outro site e reforçar.
+              </p>
+            </div>
+          ) : null}
         </Passo>
 
         <Divisor />
