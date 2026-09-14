@@ -10,22 +10,6 @@ const DEFAULT_ORBI = ["#7FE84A", "#8B2BFF"];
 // Mesmas cores que o degradê padrão da tela inicial sempre usou.
 const DEFAULT_HERO = ["#B7F34A", "#6EE7D8"];
 
-// Clareia (percent > 0) ou escurece (percent < 0) um hex, pra montar o
-// degradê com reflexo das cores marcadas como metálicas.
-function metallicShade(hex: string, percent: number): string {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const r = (n >> 16) & 0xff;
-  const g = (n >> 8) & 0xff;
-  const b = n & 0xff;
-  const mix = (channel: number) => {
-    const t = percent > 0 ? 255 : 0;
-    const p = Math.abs(percent) / 100;
-    return Math.round(channel + (t - channel) * p);
-  };
-  const toHex = (v: number) => v.toString(16).padStart(2, "0");
-  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
-}
-
 type PickerKey = "primaria" | "secundaria" | "detalhe" | "hero1" | "hero2";
 
 // Cada botão mostra só a cor atual (uma bolinha) + o nome, a paleta inteira
@@ -238,11 +222,7 @@ function ColorPickerSheet({
               aria-label={c.label}
               title={c.label}
               className={`aspect-square rounded-full border-2 transition-transform ${current?.toLowerCase() === c.hex.toLowerCase() ? "scale-110 border-on-background" : "border-transparent"}`}
-              style={
-                c.metallic
-                  ? { backgroundImage: `linear-gradient(135deg, ${metallicShade(c.hex, 40)} 0%, ${c.hex} 35%, ${metallicShade(c.hex, -25)} 60%, ${metallicShade(c.hex, 35)} 100%)` }
-                  : { backgroundColor: c.hex }
-              }
+              style={{ backgroundColor: c.hex }}
             />
           ))}
         </div>

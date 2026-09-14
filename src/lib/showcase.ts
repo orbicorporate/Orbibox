@@ -312,7 +312,7 @@ export function isVideoUrl(url: string): boolean {
  * saturadas o bastante pra ficarem bonitas na animação, evitando tons
  * apagados demais. A pessoa escolhe duas; qualquer combinação funciona bem
  * porque o degradê interpola suavemente entre elas. */
-export const ORBI_SPHERE_COLORS: { hex: string; label: string; metallic?: boolean }[] = [
+export const ORBI_SPHERE_COLORS: { hex: string; label: string }[] = [
   { hex: "#7FE84A", label: "Verde-limão" },
   { hex: "#12E0D4", label: "Ciano" },
   { hex: "#1FA2FF", label: "Azul elétrico" },
@@ -381,11 +381,11 @@ export const ORBI_SPHERE_COLORS: { hex: string; label: string; metallic?: boolea
   { hex: "#DDA15E", label: "Ocre-claro" },
   { hex: "#BC6C25", label: "Âmbar-queimado" },
   { hex: "#264653", label: "Petróleo-escuro" },
-  // Cores metálicas, pra completar a fileira.
-  { hex: "#D4AF37", label: "Dourado-metálico", metallic: true },
-  { hex: "#2B2B2E", label: "Preto-metálico", metallic: true },
-  { hex: "#B3243C", label: "Vermelho-metálico", metallic: true },
-  { hex: "#3D7A5C", label: "Verde-metálico", metallic: true },
-  { hex: "#C4A77D", label: "Areia-metálica", metallic: true },
-  { hex: "#35597A", label: "Azul-metálico", metallic: true },
+  // Mais 6 tons nobres, diferentes dos de cima.
+  { hex: "#1D3F6E", label: "Safira" },
+  { hex: "#6B0F2B", label: "Granada" },
+  { hex: "#0B4F3A", label: "Jade" },
+  { hex: "#CBB889", label: "Champanhe" },
+  { hex: "#4B2E5E", label: "Ametista" },
+  { hex: "#A15C3E", label: "Cobre" },
 ];
