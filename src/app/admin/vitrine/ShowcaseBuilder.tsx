@@ -11,6 +11,7 @@ import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
+import { PreviewVisitante } from "@/components/mobile/PreviewVisitante";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { MiniTour } from "@/components/tour/MiniTour";
 import { InspireModal } from "./InspireModal";
@@ -584,10 +585,6 @@ export function ShowcaseBuilder({
         >
           {arranging ? <OrbiWorking label="Organizando…" variant="inline" /> : "✦ Organizar com Orbi"}
         </button>
-        <span className="mx-1 h-5 w-px bg-divider" />
-        <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
-          Ver publicado ↗
-        </Link>
         <button
           onClick={undo}
           disabled={history.length === 0 || undoing}
@@ -716,10 +713,15 @@ export function ShowcaseBuilder({
         </div>
       )}
 
-      <p className="mt-4 text-[14px] text-text-secondary">
-        {publishedCount === 0 ? "Nenhum item ativo ainda." : `${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"} na sua vitrine.`}
-        {" "}Toque num item pra editar.
-      </p>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="min-w-0 flex-1 text-[14px] text-text-secondary">
+          {publishedCount === 0 ? "Nenhum item ativo ainda." : `${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"} na sua vitrine.`}
+          {" "}Toque num item pra editar.
+        </p>
+        {/* Espiada rápida sem trocar de aba: abre a página real num quadro
+            de celular e fecha de volta aqui. */}
+        <PreviewVisitante slug={slug} />
+      </div>
 
       {items.length === 0 && (
         <div className="mt-6 rounded-[28px] border border-divider bg-surface-white p-6">

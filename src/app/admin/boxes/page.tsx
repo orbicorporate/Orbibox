@@ -3,7 +3,7 @@ import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { BoxesManager } from "./BoxesManager";
 import { parseLogoGallery } from "@/lib/logoGallery";
-import Link from "next/link";
+import { PreviewVisitante } from "@/components/mobile/PreviewVisitante";
 
 export default async function BoxesPage() {
   const supabase = await createClient();
@@ -39,13 +39,9 @@ export default async function BoxesPage() {
         <h1 data-tour="boxes" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
           Smart Boxes
         </h1>
-        <Link
-          href={`/${business!.slug}`}
-          target="_blank"
-          className="mt-2 flex shrink-0 items-center gap-1.5 rounded-full border border-divider bg-surface-white px-3.5 py-2 text-[13px] font-medium text-text-secondary"
-        >
-          Ver como visitante ↗
-        </Link>
+        <div className="mt-2 shrink-0">
+          <PreviewVisitante slug={business!.slug} />
+        </div>
       </div>
       <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
         Cada box é um caminho que o visitante pode seguir quando abre seu link. Ligue os que fazem
