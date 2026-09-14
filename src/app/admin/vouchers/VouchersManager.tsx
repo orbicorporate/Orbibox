@@ -20,6 +20,9 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const { confirm, DialogRenderer } = useDialogs();
   const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
   const [creating, setCreating] = useState(false);
+  // Fechada por padrão: quem entra normalmente quer criar um cupom novo ou
+  // ver o painel, não rolar a lista inteira.
+  const [listaAberta, setListaAberta] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -109,15 +112,29 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         </div>
       )}
 
-      {/* Lista de cupons */}
+      {/* Lista de cupons, atrás de um botão que expande: com vários cupons
+          a página ficava enorme e o que importa (criar, painel) sumia. */}
       <div className="flex flex-col gap-3">
         {vouchers.length > 0 && (
-          <div className="mb-1">
-            <p className="font-[family-name:var(--font-manrope)] text-[24px] font-bold tracking-[-0.01em]">Seus cupons</p>
-            <p className="mt-1 text-[14px] text-text-secondary">Gerencie, edite e acompanhe o desempenho dos seus cupons.</p>
-          </div>
+          <button
+            type="button"
+            onClick={() => setListaAberta((v) => !v)}
+            aria-expanded={listaAberta}
+            className="flex w-full cursor-pointer items-center gap-3 rounded-[22px] border border-divider bg-surface-white p-4 text-left"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[19px]">🎟️</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[16.5px] font-bold leading-tight">Seus cupons</span>
+              <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">
+                {vouchers.length} {vouchers.length === 1 ? "cupom criado" : "cupons criados"}. Toque pra gerenciar e editar.
+              </span>
+            </span>
+            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft transition-transform ${listaAberta ? "rotate-180" : ""}`}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+            </span>
+          </button>
         )}
-        {vouchers.map((v) => {
+        {listaAberta && vouchers.map((v) => {
           const restam = v.quantity_total - v.quantity_claimed;
           const pct = v.quantity_total > 0 ? Math.min(100, Math.round((v.quantity_claimed / v.quantity_total) * 100)) : 0;
           const meusResgates = redemptionsByVoucher[v.id] ?? [];
