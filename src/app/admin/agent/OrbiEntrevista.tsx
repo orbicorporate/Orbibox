@@ -6,14 +6,15 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 
 type Turno = { pergunta: string; resposta: string };
 
-// 5 perguntas fixas e estratégicas. Ordem pensada pra a Orbi entender o
-// essencial do negócio. Fixas = impossível repetir.
+// 5 perguntas fixas e estratégicas. Cada uma alimenta um campo real do
+// negócio: o que faz, por que escolhem, pra quem, como soa e o que os
+// clientes perguntam. Fixas = impossível repetir.
 const PERGUNTAS = [
   "Pra começar, me conta: o que o seu negócio faz e pra quem?",
-  "O que faz o seu negócio ser diferente ou especial, na sua visão?",
-  "Quem é o seu cliente ideal? (quem compra, o que valoriza, como é)",
+  "Por que um cliente escolhe você, e não o concorrente ao lado?",
+  "Quem é o seu melhor cliente? (o que ele valoriza, o que ele evita)",
   "Como você quer que a sua marca soe? (ex: próxima e descontraída, ou elegante e sóbria)",
-  "E onde você mais quer que a Orbi te ajude no dia a dia?",
+  "O que os clientes mais perguntam antes de fechar com você?",
 ];
 const TOTAL = PERGUNTAS.length;
 
@@ -23,7 +24,7 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
   const [resposta, setResposta] = useState("");
   const [pensando, setPensando] = useState(false);
   const [finalizando, setFinalizando] = useState(false);
-  const [concluido, setConcluido] = useState<null | { sobre?: string; diferenciais?: string; publico?: string }>(null);
+  const [concluido, setConcluido] = useState<null | { sobre?: string; diferenciais?: string; publico?: string; duvidas?: string }>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   // Índice da pergunta atual = quantas já foram respondidas.
@@ -54,7 +55,7 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
           body: JSON.stringify({ businessId, historico: novoHist, acao: "finalizar" }),
         });
         const data = await res.json();
-        setConcluido({ sobre: data.sobre, diferenciais: data.diferenciais, publico: data.publico });
+        setConcluido({ sobre: data.sobre, diferenciais: data.diferenciais, publico: data.publico, duvidas: data.duvidas });
         onDone?.();
       } catch {
         setConcluido({});
@@ -174,6 +175,12 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
                 <div className="mt-2.5 rounded-xl bg-white/70 p-3.5">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#1F9E4C]">Público</p>
                   <p className="mt-1 text-[13.5px] leading-relaxed text-on-background">{concluido.publico}</p>
+                </div>
+              )}
+              {concluido.duvidas && (
+                <div className="mt-2.5 rounded-xl bg-white/70 p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#1F9E4C]">Já sei responder</p>
+                  <p className="mt-1 text-[13.5px] leading-relaxed text-on-background">{concluido.duvidas}</p>
                 </div>
               )}
 
