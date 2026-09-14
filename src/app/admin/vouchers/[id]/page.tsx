@@ -18,11 +18,17 @@ export default async function VoucherDetailPage({ params }: { params: Promise<{ 
     .maybeSingle();
   if (!voucher) notFound();
 
+  const { data: agentConfig } = await supabase
+    .from("agent_configs")
+    .select("orbi_colors")
+    .eq("business_id", businessId)
+    .maybeSingle();
+
   const { data: redemptions } = await supabase
     .from("voucher_redemptions")
     .select("*")
     .eq("voucher_id", id)
     .order("created_at", { ascending: false });
 
-  return <VoucherDetailPanel voucher={voucher} initialRedemptions={redemptions ?? []} />;
+  return <VoucherDetailPanel voucher={voucher} initialRedemptions={redemptions ?? []} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />;
 }

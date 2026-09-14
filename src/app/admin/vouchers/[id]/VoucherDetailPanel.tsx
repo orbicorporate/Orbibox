@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
 import { whatsappLink } from "@/lib/track";
 import { RedeemCodeCard } from "../RedeemCodeCard";
+import { VoucherPlanoOrbi } from "../VoucherPlanoOrbi";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
@@ -27,7 +28,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
-export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: Voucher; initialRedemptions: Redemption[] }) {
+export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: { voucher: Voucher; initialRedemptions: Redemption[]; orbiColors?: string[] | null }) {
   const supabase = createClient();
   const router = { push: (href: string) => { window.location.href = href; } };
   const { confirm, DialogRenderer } = useDialogs();
@@ -131,6 +132,10 @@ export function VoucherDetailPanel({ voucher, initialRedemptions }: { voucher: V
       <p className="mt-2 text-[12px] leading-relaxed text-text-tertiary">
         {v.expires_hours ? `Cada código expira em ${v.expires_hours}h se não for usado.` : "Códigos não têm validade."}
       </p>
+
+      {/* Plano de divulgação da Orbi: o cupom só rende se for divulgado,
+          então isso vem antes da operação do balcão. */}
+      <VoucherPlanoOrbi voucherId={v.id} voucherTitulo={v.title} orbiColors={orbiColors} />
 
       {/* Resgate rápido no balcão, mesmo card da referência, reaproveitado */}
       <div className="mt-6">
