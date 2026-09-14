@@ -44,17 +44,10 @@ export function ImageUpload({
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [resolving, setResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [urlDraft, setUrlDraft] = useState(value ?? "");
-  const [lastValue, setLastValue] = useState(value);
   const [showPrompt, setShowPrompt] = useState(false);
   const [copied, setCopied] = useState(false);
-  if (value !== lastValue) {
-    setLastValue(value);
-    setUrlDraft(value ?? "");
-  }
 
   const ratio = lockedRatio ?? "quadrado";
   const medida = RATIO_PIXELS[ratio];
@@ -62,34 +55,6 @@ export function ImageUpload({
   const promptTexto = isAvatar
     ? `Criar um avatar/logotipo redondo em ${medida}, sofisticado e minimalista, para representar "${promptSubject || "minha marca"}". Fundo limpo, boa leitura em tamanho pequeno. Use como referência de estilo as imagens que vou anexar.`
     : `Criar uma capa em ${medida}, sofisticada e minimalista, com o objetivo de "${promptSubject || "apresentar isso da melhor forma"}". Use como referência de estilo as imagens que vou anexar.`;
-
-  async function resolveUrl(raw: string) {
-    const trimmed = raw.trim();
-    if (!trimmed) {
-      onChange(null);
-      return;
-    }
-    setError(null);
-    setResolving(true);
-    try {
-      const res = await fetch("/api/resolve-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: trimmed }),
-      });
-      const data = await res.json();
-      if (data.imageUrl) {
-        onChange(data.imageUrl);
-        setUrlDraft(data.imageUrl);
-      } else {
-        setError(data.error ?? "Não consegui usar esse link, cole o link direto de uma imagem.");
-      }
-    } catch {
-      setError("Não consegui buscar esse link. Tente de novo.");
-    } finally {
-      setResolving(false);
-    }
-  }
 
   function handlePick(file: File) {
     setError(null);
@@ -176,30 +141,6 @@ export function ImageUpload({
         }}
       />
 
-      <div className="flex gap-2">
-        <input
-          value={urlDraft}
-          onChange={(e) => setUrlDraft(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.currentTarget.blur(); resolveUrl(urlDraft); } }}
-          placeholder="ou cole o link de uma imagem (ou da página do produto)"
-          className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
-        />
-        <button
-          type="button"
-          onClick={() => resolveUrl(urlDraft)}
-          disabled={resolving || !urlDraft.trim() || urlDraft.trim() === (value ?? "").trim()}
-          className="shrink-0 rounded-2xl bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
-        >
-          Carregar
-        </button>
-      </div>
-      {resolving && (
-        <p className="flex items-center gap-2 text-[12px] text-text-tertiary">
-          <span className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-divider border-t-on-background" />
-          Buscando a imagem…
-        </p>
-      )}
-
       {error && <p className="text-[12px] text-red-600">{error}</p>}
 
       {!isAvatar && !value && (
@@ -222,7 +163,7 @@ export function ImageUpload({
         <div className="rounded-2xl border border-divider bg-surface-soft p-3">
           <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{promptTexto}</p>
           <p className="mt-2 text-[11px] text-text-tertiary">
-            Copie, cole no ChatGPT (ou outro gerador de imagem) já anexando fotos suas de referência, e cole o link ou baixe e envie a imagem gerada aqui.
+            Copie, cole no ChatGPT (ou outro gerador de imagem) já anexando fotos suas de referência, depois baixe a imagem gerada e envie aqui.
           </p>
           <button
             type="button"
