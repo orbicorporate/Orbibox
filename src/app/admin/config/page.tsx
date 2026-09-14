@@ -50,8 +50,18 @@ export default async function ConfigMenuPage() {
   // Quantos campos de cada seção ainda estão vazios. Vira a tag vermelha
   // no menu, pra pessoa saber o que falta sem abrir tudo.
   const vazio = (v: unknown) => !(typeof v === "string" ? v.trim() : v);
+  // Capa e descrição do link contam a mesma cascata do OpenGraph: capa da
+  // vitrine ou logo já servem de capa, e o "sobre" serve de descrição. Não
+  // adianta cobrar um campo que o app já resolve sozinho.
+  const temCapaLink = !!(
+    business.share_image_url ||
+    business.vitrine_cover_url ||
+    (Array.isArray(business.vitrine_cover_urls) && (business.vitrine_cover_urls as string[])[0]) ||
+    business.logo_url
+  );
+  const temDescricaoLink = !!(business.share_description?.trim() || business.about_business?.trim());
   const pendencias: Pendencias = {
-    marca: [business.logo_url, business.share_image_url, business.share_description].filter(vazio).length,
+    marca: [business.logo_url].filter(vazio).length + (temCapaLink ? 0 : 1) + (temDescricaoLink ? 0 : 1),
     contatos: [business.contact_whatsapp, business.contact_phone, business.contact_email, business.address].filter(vazio).length,
     orbi: [business.about_business, business.differentials, business.policies].filter(vazio).length,
   };

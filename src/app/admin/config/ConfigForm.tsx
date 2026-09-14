@@ -53,7 +53,18 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
   const [shareAberto, setShareAberto] = useState(
     () => typeof window !== "undefined" && window.location.hash === "#compartilhamento",
   );
-  const compartilhamentoPronto = !!(b.share_image_url && b.share_description?.trim());
+  // Vale a mesma cascata que o OpenGraph usa em /[slug]: uma capa própria,
+  // a da vitrine ou o logo já rendem um preview decente, e a descrição cai
+  // no "sobre" quando não há uma específica. Só fica pendente quando não há
+  // nenhuma imagem nem nenhum texto pra mostrar.
+  const temCapaCompartilhamento = !!(
+    b.share_image_url ||
+    b.vitrine_cover_url ||
+    (Array.isArray(b.vitrine_cover_urls) && (b.vitrine_cover_urls as string[])[0]) ||
+    b.logo_url
+  );
+  const temDescricaoCompartilhamento = !!(b.share_description?.trim() || b.about_business?.trim());
+  const compartilhamentoPronto = temCapaCompartilhamento && temDescricaoCompartilhamento;
   // Logotipo começa recolhido (já tem logo) ou aberto (ainda não tem, pra
   // incentivar a subir). Recolhível pra economizar espaço.
   const [logoOpen, setLogoOpen] = useState(!business.logo_url);
@@ -263,11 +274,11 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
           />
         </div>
         {!b.share_image_url && (
-          <p className="mt-3 rounded-xl bg-surface-soft px-3 py-2 text-[12.5px] text-text-tertiary">
+          <p className={`mt-3 rounded-xl px-3 py-2 text-[12.5px] ${temCapaCompartilhamento ? "bg-surface-soft text-text-tertiary" : "bg-[#FDE7E7] text-[#C0392B]"}`}>
             {(b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && (b.vitrine_cover_urls as string[])[0]))
-              ? "Por enquanto está usando a capa da Vitrine. Envie uma própria pra caprichar."
+              ? "Está usando a capa da Vitrine, que já funciona bem. Envie uma própria se quiser caprichar."
               : b.logo_url
-              ? "Por enquanto está usando o logotipo. Envie uma capa pra ficar mais bonito."
+              ? "Está usando o logotipo, que já funciona. Envie uma capa se quiser caprichar."
               : "Ainda não tem nenhuma imagem, o link fica sem capa."}
           </p>
         )}
