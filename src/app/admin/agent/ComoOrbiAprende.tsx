@@ -45,9 +45,15 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
 
       <div className="mt-4 flex flex-col">
         {/* PASSO 1 — site */}
-        <Passo n={1} feito={feito} titulo="Importe seu site" desc={feito ? "Base do negócio já registrada." : "O jeito mais rápido: ela lê em segundos."}>
-          {!feito && site === "form" && (
-            <div className="mt-2">
+        <Passo
+          n={1}
+          feito={feito}
+          titulo="Importe seu site"
+          desc={feito ? "Base do negócio já registrada. Toque pra reforçar." : "O jeito mais rápido: ela lê em segundos."}
+          onClick={() => setSite((s) => (s === "form" ? "idle" : "form"))}
+        >
+          {site === "form" && (
+            <div className="mt-2" onClick={(e) => e.stopPropagation()}>
               <div className="flex gap-2">
                 <input
                   value={url}
@@ -63,11 +69,6 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
               </div>
               {erro && <p className="mt-1.5 text-[12px] text-red-600">{erro}</p>}
             </div>
-          )}
-          {!feito && site === "idle" && (
-            <button onClick={() => setSite("form")} className="mt-1.5 rounded-full bg-surface-soft px-3.5 py-1.5 text-[12.5px] font-semibold text-text-secondary">
-              Colar meu site
-            </button>
           )}
         </Passo>
 
@@ -107,8 +108,8 @@ function Divisor() {
   return <div className="ml-[11px] h-3 w-px bg-divider" />;
 }
 
-function Passo({ n, feito, continuo, titulo, desc, children, href, badge }: {
-  n: number; feito: boolean; continuo?: boolean; titulo: string; desc: string; children?: React.ReactNode; href?: string; badge?: number;
+function Passo({ n, feito, continuo, titulo, desc, children, href, badge, onClick }: {
+  n: number; feito: boolean; continuo?: boolean; titulo: string; desc: string; children?: React.ReactNode; href?: string; badge?: number; onClick?: () => void;
 }) {
   const bolinha = (
     <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold transition-colors duration-150 ${
@@ -127,7 +128,7 @@ function Passo({ n, feito, continuo, titulo, desc, children, href, badge }: {
         <div className="flex items-center gap-2">
           <p className={`text-[15px] font-semibold ${feito ? "text-text-tertiary line-through" : ""}`}>{titulo}</p>
           {badge && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1F9E4C] px-1.5 text-[11px] font-bold text-white">{badge}</span>}
-          {href && <span className="ml-auto text-text-tertiary">→</span>}
+          {(href || onClick) && <span className="ml-auto text-text-tertiary">→</span>}
         </div>
         <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">{desc}</p>
         {children}
@@ -137,6 +138,9 @@ function Passo({ n, feito, continuo, titulo, desc, children, href, badge }: {
 
   if (href) {
     return <Link href={href} className="py-1">{conteudo}</Link>;
+  }
+  if (onClick) {
+    return <button type="button" onClick={onClick} className="w-full py-1 text-left">{conteudo}</button>;
   }
   return <div className="py-1">{conteudo}</div>;
 }

@@ -432,7 +432,7 @@ export function VisitorExperience({
                         if (e.key === "Escape") setEditingBoxId(null);
                       }}
                       autoFocus
-                      className="w-full rounded-lg border border-on-background/20 bg-white px-2 py-1 text-[15px] font-semibold outline-none"
+                      className="w-full rounded-full border border-on-background/20 bg-white px-3 py-1 text-[15px] font-semibold outline-none"
                     />
                   ) : (
                     <>

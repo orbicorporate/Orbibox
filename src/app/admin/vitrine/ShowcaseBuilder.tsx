@@ -1463,7 +1463,7 @@ function ItemCard({
                     type="datetime-local"
                     defaultValue={isoToDatetimeLocal(item.starts_at)}
                     onBlur={(e) => save(item.id, { starts_at: datetimeLocalToIso(e.target.value) })}
-                    className="mt-1 w-full rounded-xl border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                    className="mt-1 w-full rounded-full border border-divider px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
                   />
                 </div>
                 <div className="flex-1">
@@ -1472,7 +1472,7 @@ function ItemCard({
                     type="datetime-local"
                     defaultValue={isoToDatetimeLocal(item.ends_at)}
                     onBlur={(e) => save(item.id, { ends_at: datetimeLocalToIso(e.target.value) })}
-                    className="mt-1 w-full rounded-xl border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                    className="mt-1 w-full rounded-full border border-divider px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
                   />
                 </div>
               </div>

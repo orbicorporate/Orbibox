@@ -110,7 +110,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
                   placeholder="Orbi"
                   autoFocus
                   onKeyDown={(e) => { if (e.key === "Enter") setEditandoNome(false); }}
-                  className="min-w-0 flex-1 rounded-xl border border-divider bg-surface-white px-3 py-1.5 font-[family-name:var(--font-manrope)] text-[18px] font-medium outline-none focus:border-on-background"
+                  className="min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 py-1.5 font-[family-name:var(--font-manrope)] text-[18px] font-medium outline-none focus:border-on-background"
                 />
                 <button onClick={() => setEditandoNome(false)} className="shrink-0 rounded-full bg-button-primary px-3.5 py-1.5 text-[12px] font-semibold text-white">OK</button>
               </div>

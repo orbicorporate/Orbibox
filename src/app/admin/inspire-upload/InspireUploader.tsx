@@ -152,7 +152,7 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
         <select
           value={theme}
           onChange={(e) => trocarTema(e.target.value)}
-          className="mt-1.5 w-full rounded-xl border border-divider bg-surface-white px-3 py-2.5 text-[14px] outline-none"
+          className="mt-1.5 w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none"
         >
           {TEMAS.map(([id, label]) => (
             <option key={id} value={id}>{label}</option>
@@ -209,13 +209,13 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
                     value={r.title}
                     onChange={(e) => updateField(i, "title", e.target.value)}
                     placeholder={r.suggesting ? "✦ Pensando num nome…" : "Nome"}
-                    className="w-full rounded-lg border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                    className="w-full rounded-full border border-divider px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
                   />
                   <input
                     value={r.price}
                     onChange={(e) => updateField(i, "price", e.target.value)}
                     placeholder="Preço (opcional, ex: R$ 68)"
-                    className="w-full rounded-lg border border-divider px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                    className="w-full rounded-full border border-divider px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
                   />
                 </div>
                 <button onClick={() => removerFoto(i)} className="shrink-0 self-start text-[12px] text-red-600">

@@ -552,7 +552,7 @@ export function BoxesManager({
                         type="datetime-local"
                         defaultValue={isoToDatetimeLocal(box.starts_at)}
                         onBlur={(e) => saveSchedule(box, datetimeLocalToIso(e.target.value), box.ends_at)}
-                        className="mt-1 w-full rounded-xl border border-divider bg-surface-white px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                        className="mt-1 w-full rounded-full border border-divider bg-surface-white px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
                       />
                     </div>
                     <div className="flex-1">
@@ -561,7 +561,7 @@ export function BoxesManager({
                         type="datetime-local"
                         defaultValue={isoToDatetimeLocal(box.ends_at)}
                         onBlur={(e) => saveSchedule(box, box.starts_at, datetimeLocalToIso(e.target.value))}
-                        className="mt-1 w-full rounded-xl border border-divider bg-surface-white px-2.5 py-2 text-[13px] outline-none focus:border-on-background"
+                        className="mt-1 w-full rounded-full border border-divider bg-surface-white px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
                       />
                     </div>
                   </div>
@@ -636,14 +636,14 @@ export function BoxesManager({
                             defaultValue={c.title}
                             onBlur={(e) => saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, title: e.target.value } : x)))}
                             placeholder="Título (ex: Experiência sênior)"
-                            className="mt-2 w-full rounded-xl border border-divider px-3 py-2 text-[13px] font-medium outline-none focus:border-on-background"
+                            className="mt-2 w-full rounded-full border border-divider px-4 py-2 text-[13px] font-medium outline-none focus:border-on-background"
                           />
                           <textarea
                             defaultValue={c.description ?? ""}
                             onBlur={(e) => saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, description: e.target.value } : x)))}
                             rows={2}
                             placeholder="Uma frase explicando esse diferencial"
-                            className="mt-1.5 w-full resize-none rounded-xl border border-divider px-3 py-2 text-[13px] outline-none focus:border-on-background"
+                            className="mt-1.5 w-full resize-none rounded-2xl border border-divider px-3 py-2 text-[13px] outline-none focus:border-on-background"
                           />
                         </div>
                       ))}
