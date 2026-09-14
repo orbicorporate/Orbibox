@@ -30,6 +30,10 @@ export function CuradoriaOrbi({
   const [loadingQ, setLoadingQ] = useState(true);
   const [escolhida, setEscolhida] = useState<string | null>(null);
   const [frase, setFrase] = useState<string | null>(null);
+  // Convite pra falar com uma pessoa agora, com o WhatsApp do negócio.
+  // É o passo que faltava: a Orbi mostrava os itens e parava por aí.
+  const [convite, setConvite] = useState<string | null>(null);
+  const [whatsapp, setWhatsapp] = useState<string | null>(null);
   const [curados, setCurados] = useState<Product[]>([]);
   const [curating, setCurating] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -67,6 +71,8 @@ export function CuradoriaOrbi({
       const r = await fetch("/api/curate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessId, mode: "curate", question: opcao }) });
       const d = await r.json();
       setFrase(d.frase ?? null);
+      setConvite(d.convite ?? null);
+      setWhatsapp(d.whatsapp ?? null);
       const map = new Map(products.map((p) => [p.id, p]));
       setCurados((d.ids ?? []).map((id: string) => map.get(id)).filter(Boolean));
     } catch {
@@ -79,6 +85,8 @@ export function CuradoriaOrbi({
   function resetar() {
     setEscolhida(null);
     setFrase(null);
+    setConvite(null);
+    setWhatsapp(null);
     setCurados([]);
     setExpanded(false);
   }
@@ -178,6 +186,22 @@ export function CuradoriaOrbi({
                     ))}
                   </div>
                 )}
+
+                {/* Convite pra falar com uma pessoa agora. Mostrar item e
+                    parar ali deixava o visitante sem próximo passo. */}
+                {convite && whatsapp && (
+                  <a
+                    href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Oi! Vim pelo site e me interessei por ${escolhida ?? "isso"}.`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 flex items-center justify-center gap-2 rounded-full bg-[#1F9E4C] py-3.5 text-[14.5px] font-semibold text-white"
+                  >
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                      <path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .7.5l.9 2.1c.1.2.1.4 0 .6l-.4.5-.3.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2 1.3 2.3 1.5.3.1.5.1.6 0l.9-1c.2-.2.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.8-.1 1.5z" />
+                    </svg>
+                    {convite}
+                  </a>
+                )}
               </>
             )}
           </>
@@ -238,6 +262,22 @@ export function CuradoriaOrbi({
                 ))}
               </div>
             )}
+
+                {/* Convite pra falar com uma pessoa agora. Mostrar item e
+                    parar ali deixava o visitante sem próximo passo. */}
+                {convite && whatsapp && (
+                  <a
+                    href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Oi! Vim pelo site e me interessei por ${escolhida ?? "isso"}.`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 flex items-center justify-center gap-2 rounded-full bg-[#1F9E4C] py-3.5 text-[14.5px] font-semibold text-white"
+                  >
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                      <path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .7.5l.9 2.1c.1.2.1.4 0 .6l-.4.5-.3.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2 1.3 2.3 1.5.3.1.5.1.6 0l.9-1c.2-.2.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.8-.1 1.5z" />
+                    </svg>
+                    {convite}
+                  </a>
+                )}
           </div>
 
           <form onSubmit={enviarPergunta} className="px-6 pb-8 pt-3">

@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createClient();
     const [{ data: biz }, { data: items }] = await Promise.all([
-      supabase.from("businesses").select("name, about_business, differentials").eq("id", businessId).maybeSingle(),
+      supabase.from("businesses").select("name, about_business, differentials, policies, contact_whatsapp, service_modes, brand_voice_summary").eq("id", businessId).maybeSingle(),
       supabase.from("content_items").select("id, title, description, price, brand_label").eq("business_id", businessId).eq("status", "published").limit(30),
     ]);
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     if (!catalog) return NextResponse.json({ questions: [], products: [] });
 
-    const contexto = `Negócio: ${biz?.name ?? ""}. ${biz?.about_business ? "Sobre: " + biz.about_business + ". " : ""}${biz?.differentials ? "Diferenciais: " + biz.differentials + ". " : ""}\n\nCatálogo:\n${catalog}`;
+    const contexto = `Negócio: ${biz?.name ?? ""}. ${biz?.about_business ? "Sobre: " + biz.about_business + ". " : ""}${biz?.differentials ? "Diferenciais: " + biz.differentials + ". " : ""}${biz?.policies ? "Políticas: " + biz.policies + ". " : ""}\n\nCatálogo:\n${catalog}`;
 
     // MODO 1: perguntas-chave. Se o dono definiu uma customizada, usa ela.
     if (mode === "questions") {
@@ -71,10 +71,28 @@ Responda APENAS um JSON válido, sem texto antes ou depois, no formato:
 
     // MODO 2: curar os produtos pra uma resposta escolhida.
     if (mode === "curate" && question) {
-      const system = `Você é a curadora inteligente da vitrine de ${biz?.name ?? "um negócio"}. O visitante escolheu: "${question}". Escolha do catálogo os itens que MAIS combinam com isso (no máximo 4), pela ordem de relevância. Escreva uma frase curta, calorosa e personalizada apresentando a seleção (como "Separei essas pra você porque combinam com um dia quente"), e liste os ids escolhidos.
+      // Regras fixas pra a resposta nunca sair genérica, em qualquer ramo:
+      // reconhece o que a pessoa quer, prova que o negócio faz isso (com um
+      // fato real do próprio contexto) e convida pra conversar agora.
+      const system = `Você é a curadora inteligente da vitrine de ${biz?.name ?? "um negócio"}${biz?.brand_voice_summary ? `, com este tom de voz: ${biz.brand_voice_summary}` : ""}. O visitante escolheu: "${question}".
+
+Escolha do catálogo os itens que MAIS combinam com isso (no máximo 4), por ordem de relevância.
+
+A frase de apresentação segue SEMPRE esta estrutura, em 2 frases curtas no total:
+1. Reconheça o que ele quer e afirme que o negócio faz isso, com confiança. Ex: "Ótima escolha, isso é com a gente."
+2. Dê UM motivo concreto pra confiar, tirado do que você sabe do negócio (um diferencial real, tempo de casa, um cliente conhecido, algo do catálogo). Nunca invente.
+
+Regras que valem sempre:
+- Nunca use elogio vazio ("combinam perfeitamente", "seleção especial", "as melhores opções") sem um fato que sustente.
+- Nunca repita a frase que o visitante escolheu palavra por palavra.
+- Fale como um dono atencioso que conhece o próprio negócio, não como catálogo automático.
+- Se o catálogo não tiver nada que sirva, diga isso com honestidade em vez de empurrar item que não combina.
+- Máximo 35 palavras somando as duas frases. Português do Brasil. Nunca use travessão.
+
+Escreva também o convite pra falar com uma pessoa agora ("convite"), curto e específico pro que ele escolheu. Ex: "Quer falar com a gente sobre isso agora?". Máximo 9 palavras.
 
 Responda APENAS um JSON válido, sem texto antes ou depois:
-{"frase":"...","ids":["id1","id2"]}
+{"frase":"...","convite":"...","ids":["id1","id2"]}
 Use só ids que existem no catálogo. Se nada combinar bem, retorne poucos ou nenhum.`;
       const raw = await callClaude(system, contexto, 400);
       try {
@@ -82,7 +100,14 @@ Use só ids que existem no catálogo. Se nada combinar bem, retorne poucos ou ne
         const parsed = JSON.parse(clean);
         const validIds = new Set((items ?? []).map((i) => i.id));
         const ids = (parsed.ids ?? []).filter((id: string) => validIds.has(id)).slice(0, 4);
-        return NextResponse.json({ frase: (parsed.frase ?? "Separei estas opções pra você:").replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, ", "), ids });
+        const limpar = (s: string) => s.replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, ", ");
+        return NextResponse.json({
+          frase: limpar(String(parsed.frase ?? "Separei estas opções pra você:")),
+          convite: parsed.convite ? limpar(String(parsed.convite)) : "Quer falar com a gente agora?",
+          // O botão só aparece se o negócio tiver WhatsApp cadastrado.
+          whatsapp: biz?.contact_whatsapp ?? null,
+          ids,
+        });
       } catch {
         return NextResponse.json({ frase: "Separei estas opções pra você:", ids: [] });
       }
