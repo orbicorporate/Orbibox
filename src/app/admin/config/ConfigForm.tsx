@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { HelperText } from "@/components/ui/HelperText";
+import { StatusTag } from "@/components/ui/SecaoRecolhivel";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
 import { OrbiVisualPanel } from "./OrbiVisualPanel";
 
@@ -194,44 +195,36 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
         <OrbiVisualPanel businessId={b.id} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={(b as { hero_style?: string }).hero_style} />
       </div>
 
-      {/* Capa e descrição do link, revitalizado: preview de como aparece no
-          WhatsApp + os dois campos em cards separados. Âncora pra o botão de
-          compartilhar levar direto aqui. */}
-      <div id="compartilhamento" className="mt-6 scroll-mt-20">
-        {/* Botão grande que abre a configuração inteira. Recolhido por padrão:
-            são dois cards longos que empurravam o resto da página pra baixo. */}
-        <button
-          type="button"
-          aria-expanded={shareAberto}
-          onClick={() => setShareAberto((v) => !v)}
-          className="block w-full cursor-pointer rounded-[24px] orbi-gradient p-[1.5px] text-left"
-        >
-          <span className="flex w-full items-center gap-3.5 rounded-[23px] bg-surface-white p-5">
+      {/* Capa e descrição do link: um card só, que abre por dentro. A pessoa
+          clica no cabeçalho e a configuração inteira aparece dentro da mesma
+          moldura, em vez de surgir solta embaixo. */}
+      <div id="compartilhamento" className="mt-6 scroll-mt-20 rounded-[24px] orbi-gradient p-[1.5px]">
+        <div className="rounded-[23px] bg-surface-white">
+          <button
+            type="button"
+            aria-expanded={shareAberto}
+            onClick={() => setShareAberto((v) => !v)}
+            className="flex w-full cursor-pointer items-start gap-3.5 p-5 text-left"
+          >
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#DEF3E3] text-[20px]">🔗</span>
             <span className="min-w-0 flex-1">
-              <span className="block font-[family-name:var(--font-manrope)] text-[16.5px] font-semibold leading-tight">
-                Configure a capa e a descrição do seu link
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="font-[family-name:var(--font-manrope)] text-[16.5px] font-semibold leading-tight">
+                  Capa e descrição do link
+                </span>
+                <StatusTag preenchido={compartilhamentoPronto} />
               </span>
               <span className="mt-1 block text-[13px] leading-snug text-text-secondary">
                 {compartilhamentoPronto
-                  ? "Está configurado. Toque pra revisar."
+                  ? "Toque pra revisar como seu link aparece."
                   : "É a primeira impressão de quem recebe seu link no WhatsApp."}
               </span>
             </span>
-            <span className={`shrink-0 text-text-tertiary transition-transform ${shareAberto ? "rotate-90" : ""}`}>→</span>
-          </span>
-        </button>
+            <span className={`mt-1 shrink-0 text-text-tertiary transition-transform ${shareAberto ? "rotate-90" : ""}`}>→</span>
+          </button>
 
-        {!compartilhamentoPronto && !shareAberto && (
-          <p className="mt-2 px-1 text-[12.5px] text-[#C2650A]">
-            Ainda falta configurar. Sem isso, o WhatsApp mostra só o endereço.
-          </p>
-        )}
-      </div>
-
-      {shareAberto && (
-      <div className="mt-4">
-
+          {shareAberto && (
+            <div className="border-t border-divider px-5 pb-5 pt-1">
         {/* Preview estilo card de link do WhatsApp */}
         <div className="mt-4 overflow-hidden rounded-[18px] border border-divider bg-surface-white">
           <div className="aspect-[1200/630] w-full bg-surface-soft">
@@ -255,7 +248,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
         </div>
 
       {/* Card da CAPA */}
-      <div className="mt-4 rounded-[24px] border border-divider bg-surface-white p-5">
+      <div className="mt-5">
         <p className="text-[15px] font-semibold">Capa do link</p>
         <HelperText>
           A imagem que aparece quando alguém cola seu link no WhatsApp, Instagram ou qualquer outro app. Sem escolher uma aqui, usa automaticamente a capa da Vitrine ou o logotipo.
@@ -281,7 +274,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
       </div>
 
       {/* Card da DESCRIÇÃO */}
-      <div className="mt-4 rounded-[24px] border border-divider bg-surface-white p-5">
+      <div className="mt-6 border-t border-divider pt-5">
         <p className="text-[15px] font-semibold">Descrição do link</p>
         <HelperText>
           O texto que aparece embaixo do nome, que já mostra o nome do negócio, então não precisa repetir aqui. Curto é melhor: até 3 linhas cabem no preview do WhatsApp.
@@ -306,9 +299,11 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
           <p className="text-[12px] text-text-tertiary">{(b.share_description ?? "").length}/90</p>
         </div>
       </div>
-
+            </div>
+          )}
+        </div>
       </div>
-      )}
+
 
       {b.site_type && (
         <div className="mt-4 rounded-[22px] bg-surface-soft p-5">
