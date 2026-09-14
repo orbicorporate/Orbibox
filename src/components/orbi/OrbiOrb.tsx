@@ -1,48 +1,33 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { OrbiParticleSphere } from "./OrbiParticleSphere";
 
 /**
- * A Orbi, esfera em vídeo (render 3D real, hospedado em /public). O contorno
- * orgânico e o brilho de vidro continuam em CSS, recortando e realçando o
- * vídeo por cima. Ajustes de reprodução minimizam as travadas do loop.
+ * A Orbi. Antes era um vídeo 3D em /public: pesava quase 1 MB, tinha cor
+ * fixa (ignorando a paleta escolhida em Configurações) e o iOS bloqueava o
+ * autoplay em Modo de Baixo Consumo, mostrando um botão de play no meio da
+ * tela. Agora é a mesma esfera de partículas do resto do app, desenhada em
+ * canvas: sempre fluida, sem download, e respeitando as cores da marca.
+ *
+ * O contorno orgânico que morfa e o brilho de vidro continuam em CSS.
  */
-export function OrbiOrb({ size = 96, className = "" }: { size?: number; className?: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    // Garante que o vídeo esteja sempre tocando (alguns navegadores pausam ao
-    // sair/voltar da aba) e reinicia o loop de forma suave, sem o "engasgo"
-    // que acontece quando o navegador espera o fim exato pra recomeçar.
-    v.playbackRate = 1;
-    const play = () => { v.play().catch(() => {}); };
-    play();
-    const onVisibility = () => { if (!document.hidden) play(); };
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, []);
-
+export function OrbiOrb({
+  size = 96,
+  className = "",
+  colors,
+}: {
+  size?: number;
+  className?: string;
+  /** Cores da Orbi do negócio. Sem isso, usa o degradê padrão da marca. */
+  colors?: string[] | null;
+}) {
   return (
     <div
       className={`orbi-orb relative shrink-0 overflow-hidden ${className}`}
       style={{ width: size, height: size }}
       aria-hidden
     >
-      <video
-        ref={videoRef}
-        src="/orbi-orb.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        disablePictureInPicture
-        disableRemotePlayback
-        className="h-full w-full object-cover"
-        style={{ willChange: "transform", transform: "translateZ(0)" }}
-      />
+      <OrbiParticleSphere size={size} colors={colors ?? undefined} className="h-full w-full" />
     </div>
   );
 }

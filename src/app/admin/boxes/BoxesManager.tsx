@@ -345,7 +345,7 @@ export function BoxesManager({
                   onClick={() => saveHeroAvatar("sphere")}
                   className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${(heroAvatar === "sphere" || (heroAvatar === "auto" && !availableLogo)) ? "border-on-background" : "border-transparent"}`}
                 >
-                  <OrbiOrb size={40} />
+                  <OrbiOrb size={40} colors={orbiColors} />
                   <span className="text-[11px] font-medium">Esfera clássica</span>
                 </button>
                 <button
@@ -373,7 +373,7 @@ export function BoxesManager({
             lockedRatio="quadrado"
             promptKind="avatar"
             promptSubject={businessName}
-            emptyPreview={<OrbiOrb size={72} />}
+            emptyPreview={<OrbiOrb size={72} colors={orbiColors} />}
             onChange={async (url) => {
               setLogoUrl(url);
               await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);

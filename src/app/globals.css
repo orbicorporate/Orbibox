@@ -85,7 +85,7 @@ body {
 /* ============================================================
    Orbi — esfera em vídeo (arquivo em /public, nunca embutido no código).
    O contorno orgânico que se estica como uma gota e o brilho de vidro
-   continuam em CSS, recortando e realçando o vídeo por cima.
+   continuam em CSS, recortando e realçando a esfera por cima.
    ============================================================ */
 .orbi-orb {
   isolation: isolate;

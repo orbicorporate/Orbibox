@@ -355,12 +355,12 @@ export function VisitorExperience({
             ) : business.hero_avatar === "logo" && business.logo_url ? (
               <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
             ) : business.hero_avatar === "sphere" ? (
-              <OrbiOrb size={96} className="mb-8" />
+              <OrbiOrb size={96} className="mb-8" colors={orbiColors} />
             ) : business.logo_url ? (
               // "auto" (padrão): mantém o comportamento de sempre, logo se tiver, senão a esfera.
               <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
             ) : (
-              <OrbiOrb size={96} className="mb-8" />
+              <OrbiOrb size={96} className="mb-8" colors={orbiColors} />
             )}
             <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
               {business.name}
