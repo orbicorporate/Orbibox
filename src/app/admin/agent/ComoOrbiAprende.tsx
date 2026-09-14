@@ -85,12 +85,12 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
               {erro && <p className="mt-1.5 text-[12px] text-red-600">{erro}</p>}
 
               {importando && (
-                <div className="mt-3 flex items-center gap-2.5 rounded-2xl bg-surface-soft px-3.5 py-3">
+                <div className="mt-3 flex items-center gap-2.5 px-1 py-2">
                   <span className="h-6 w-6 shrink-0 overflow-hidden rounded-full">
                     <OrbiParticleSphere size={24} colors={orbiColors ?? undefined} className="rounded-full" />
                   </span>
-                  <span className="h-[3px] flex-1 overflow-hidden rounded-full bg-divider">
-                    <span className="orbi-progress-bar block h-full rounded-full bg-on-background" />
+                  <span className="h-[3px] flex-1 overflow-hidden rounded-full bg-divider/40">
+                    <span className="orbi-progress-bar orbi-gradient block h-full rounded-full shadow-[0_0_8px_rgba(110,231,216,0.9)]" />
                   </span>
                   <span className="shrink-0 text-[11.5px] text-text-tertiary">analisando…</span>
                 </div>
