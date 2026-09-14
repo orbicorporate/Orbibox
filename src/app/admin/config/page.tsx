@@ -10,7 +10,7 @@ const ITEMS = [
     key: "marca" as const,
     href: "/admin/config/marca",
     label: "Identidade e marca",
-    desc: "Logotipo, cores da Orbi e a capa que aparece ao compartilhar seu link.",
+    desc: "Logotipo, fundo da tela inicial e a capa que aparece ao compartilhar seu link.",
     bg: "#E7EAFC", fg: "#4453D6",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

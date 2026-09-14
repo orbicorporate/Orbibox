@@ -20,7 +20,7 @@ export default async function AprendizadoPage() {
 
   return (
     <div className="flex flex-col pb-4">
-      <Link href="/admin/agent" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Personalidade da Marca</Link>
+      <Link href="/admin/agent" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Sua IA</Link>
       <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">O que a Orbi aprendeu</h1>
       <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
         Conforme os visitantes conversam, a Orbi anota o que não soube responder bem. Ensine ela e cada resposta fica melhor.

@@ -27,7 +27,7 @@ export default async function AgentPage() {
 
     return (
       <div className="flex flex-col">
-        <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Personalidade da Marca (AgentBox)</h1>
+        <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Sua IA</h1>
         <div className="mt-6 rounded-2xl border border-divider bg-surface-white p-6">
           <p className="text-[15px] font-medium">✦ A Orbi é uma IA que conversa com seus clientes</p>
           <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
@@ -71,7 +71,7 @@ export default async function AgentPage() {
 
   return (
     <div className="flex flex-col">
-      <h1 data-tour="orbi-ai" className="mt-2 font-[family-name:var(--font-manrope)] text-[27px] font-semibold leading-tight tracking-[-0.02em]">Personalidade da Marca</h1>
+      <h1 data-tour="orbi-ai" className="mt-2 font-[family-name:var(--font-manrope)] text-[27px] font-semibold leading-tight tracking-[-0.02em]">Sua IA</h1>
       <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">Defina como a Orbi interage com seus visitantes.</p>
       {config && (
         <AgentConfigForm

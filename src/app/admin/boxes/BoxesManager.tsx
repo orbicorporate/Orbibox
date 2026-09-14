@@ -316,7 +316,7 @@ export function BoxesManager({
       <div className="rounded-[20px] bg-surface-soft p-4">
         <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Avatar da tela inicial</p>
         <p className="mt-1 text-[12px] text-text-secondary">
-          Escolha o que aparece no topo da tela inicial: a esfera clássica da Orbi, seu logotipo, ou a esfera já com as cores que você configurou em Personalidade da Marca.
+          Escolha o que aparece no topo da tela inicial: a esfera clássica da Orbi, seu logotipo, ou a esfera já com as cores que você configurou em Sua IA.
         </p>
         {(() => {
           // Qualquer logo já enviado, em Configurações ou em qualquer box , 
@@ -357,7 +357,7 @@ export function BoxesManager({
                   <span className="text-[11px] font-medium">Logotipo</span>
                 </button>
               </div>
-              <Link href="/admin/config/marca#cores-orbi" className="mt-2 inline-block text-[11px] font-medium text-text-secondary underline">
+              <Link href="/admin/agent#cores-orbi" className="mt-2 inline-block text-[11px] font-medium text-text-secondary underline">
                 ✦ Configurar cor
               </Link>
               {!availableLogo && (

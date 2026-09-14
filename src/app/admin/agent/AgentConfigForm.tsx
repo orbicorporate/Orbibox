@@ -9,6 +9,7 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/components/orbi/OrbiInsightCard";
 import { ComoOrbiAprende } from "./ComoOrbiAprende";
 import { SecaoRecolhivel } from "@/components/ui/SecaoRecolhivel";
+import { OrbiColorsPanel } from "./OrbiColorsPanel";
 
 type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; curation_question: string | null; curation_options: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
@@ -132,27 +133,9 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
         </div>
       </div>
 
-      {/* As cores vivem em Identidade e marca, junto do logotipo e da capa,
-          porque o mesmo painel também define o fundo da tela inicial, que é
-          da página e não da Orbi. Aqui fica só o caminho pra lá. */}
-      <Link
-        href="/admin/config/marca#cores-orbi"
-        className="-mt-2 block w-full rounded-[24px] orbi-gradient p-[1.5px]"
-      >
-        <span className="flex w-full items-center gap-3.5 rounded-[23px] bg-surface-white p-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl orbi-gradient text-on-background">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="13.5" cy="6.5" r="2.5" /><circle cx="17.5" cy="13" r="2.5" /><circle cx="8.5" cy="7.5" r="2.5" /><circle cx="6.5" cy="14" r="2.5" />
-              <path d="M12 21a9 9 0 0 1 0-18 4 4 0 0 0 0 8 3 3 0 0 1 0 6 1 1 0 0 0 0 2z" />
-            </svg>
-          </span>
-          <span className="min-w-0 flex-1 text-left">
-            <span className="block text-[16px] font-semibold text-on-background">✦ Cores da Orbi</span>
-            <span className="mt-0.5 block text-[12.5px] text-text-tertiary">Escolha as cores da esfera e o fundo da sua página.</span>
-          </span>
-          <span className="shrink-0 text-text-tertiary">→</span>
-        </span>
-      </Link>
+      {/* Cores da esfera: identidade da Orbi, mora aqui junto do nome e do
+          tom. O fundo da página fica em Identidade e marca. */}
+      <OrbiColorsPanel businessId={businessId} initialOrbiColors={orbiColors} />
 
       {/* Ajuste de comportamento */}
       <div>

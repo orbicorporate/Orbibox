@@ -7,7 +7,7 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { HelperText } from "@/components/ui/HelperText";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
-import { OrbiVisualPanel } from "./OrbiVisualPanel";
+import { HeroBackgroundPanel } from "./HeroBackgroundPanel";
 
 type Business = {
   id: string;
@@ -160,7 +160,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
       </div>
 
       <div className="mt-6">
-        <OrbiVisualPanel businessId={b.id} initialOrbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={(b as { hero_style?: string }).hero_style} />
+        <HeroBackgroundPanel businessId={b.id} orbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={(b as { hero_style?: string }).hero_style} />
       </div>
 
       {/* Capa e descrição do link: um card só, que abre por dentro. A pessoa
@@ -354,7 +354,7 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
       <p className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">O que a Orbi sabe</p>
       <HelperText>O texto que ela usa pra responder seus visitantes. Escreva do seu jeito ou corrija o que ela já escreveu.</HelperText>
 
-      {/* Ensinar a Orbi acontece em Personalidade da Marca, que tem o fluxo
+      {/* Ensinar a Orbi acontece na página Sua IA, que tem o fluxo
           guiado (ler o site, entrevista de 5 perguntas). Aqui é só o texto
           final, pra revisar e ajustar. Este atalho liga as duas pontas. */}
       <Link
