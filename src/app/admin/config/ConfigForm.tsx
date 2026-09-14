@@ -8,7 +8,6 @@ import { HelperText } from "@/components/ui/HelperText";
 import { ChipGroup, CLASSES, FAIXAS_ETARIAS, PAGAMENTOS, ATENDIMENTOS } from "./ChipGroup";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
-import { HeroBackgroundPanel } from "./HeroBackgroundPanel";
 
 type Business = {
   id: string;
@@ -41,7 +40,7 @@ const TIPO_LABEL: Record<string, string> = {
   links: "Página de links",
 };
 
-export function ConfigForm({ business, orbiColors, heroGradient, section }: { business: Business; orbiColors: string[] | null; heroGradient: string[] | null; section: "marca" | "contatos" | "orbi" }) {
+export function ConfigForm({ business, section }: { business: Business; section: "marca" | "contatos" | "orbi" }) {
   const supabase = createClient();
   const [b, setB] = useState(business);
   const [logoGallery, setLogoGallery] = useState<string[]>(parseLogoGallery(business.logo_gallery));
@@ -198,10 +197,6 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
             </div>
           )}
         </div>
-      </div>
-
-      <div className="mt-6">
-        <HeroBackgroundPanel businessId={b.id} orbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={(b as { hero_style?: string }).hero_style} />
       </div>
 
       {/* Capa e descrição do link: um card só, que abre por dentro. A pessoa

@@ -4,14 +4,14 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { HERO_STYLES, heroBackground, heroPrecisaVeu } from "@/lib/heroStyle";
-import { ColorChip, ColorPickerSheet, DEFAULT_HERO, DEFAULT_ORBI } from "./colorPieces";
+import { ColorChip, ColorPickerSheet, DEFAULT_HERO, DEFAULT_ORBI } from "@/app/admin/config/colorPieces";
 
 type PickerKey = "hero1" | "hero2";
 
 /**
- * Fundo da tela inicial da página pública. É identidade da página, não da
- * Orbi, por isso mora aqui junto do logotipo e da capa do link. A esfera
- * aparece só como referência na prévia, com as cores que ela já tem.
+ * Fundo da tela inicial da página pública. Fica logo abaixo das cores da
+ * Orbi porque a esfera aparece em cima dele: na prática a pessoa escolhe
+ * os dois juntos, olhando se combinam.
  */
 export function HeroBackgroundPanel({
   businessId,

@@ -10,6 +10,7 @@ import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/compon
 import { ComoOrbiAprende } from "./ComoOrbiAprende";
 import { SecaoRecolhivel } from "@/components/ui/SecaoRecolhivel";
 import { OrbiColorsPanel } from "./OrbiColorsPanel";
+import { HeroBackgroundPanel } from "./HeroBackgroundPanel";
 
 type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; curation_question: string | null; curation_options: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
@@ -28,7 +29,7 @@ const KNOWLEDGE: { key: keyof Knowledge; label: string; href: string }[] = [
   { key: "diferenciais", label: "Estilo e Curadoria", href: "/admin/config" },
 ];
 
-export function AgentConfigForm({ config, businessId, businessName, slug, knowledge, gapsPendentes = 0 }: { config: Config; businessId: string; businessName: string; slug: string; knowledge: Knowledge; gapsPendentes?: number }) {
+export function AgentConfigForm({ config, businessId, businessName, slug, heroGradient, heroStyle, knowledge, gapsPendentes = 0 }: { config: Config; businessId: string; businessName: string; slug: string; heroGradient: string[] | null; heroStyle?: string | null; knowledge: Knowledge; gapsPendentes?: number }) {
   const supabase = createClient();
   const router = useRouter();
   const [state, setState] = useState(config);
@@ -136,6 +137,10 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
       {/* Cores da esfera: identidade da Orbi, mora aqui junto do nome e do
           tom. O fundo da página fica em Identidade e marca. */}
       <OrbiColorsPanel businessId={businessId} initialOrbiColors={orbiColors} />
+
+      {/* Fundo logo abaixo: a esfera fica em cima dele, então escolher os
+          dois na mesma tela é o que faz sentido pra quem está ajustando. */}
+      <HeroBackgroundPanel businessId={businessId} orbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={heroStyle} />
 
       {/* Ajuste de comportamento */}
       <div>

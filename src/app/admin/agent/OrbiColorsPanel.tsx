@@ -8,9 +8,9 @@ import { ColorChip, ColorPickerSheet, DEFAULT_ORBI } from "@/app/admin/config/co
 type PickerKey = "primaria" | "secundaria" | "detalhe";
 
 /**
- * Cores da esfera da Orbi. Mora na página da IA, junto do nome e do tom,
- * porque é identidade dela. O fundo da tela inicial, que antes vinha no
- * mesmo painel, é identidade da página e ficou em Identidade e marca.
+ * Cores da esfera da Orbi. Fica logo acima do fundo da tela inicial, que
+ * é um painel separado: são coisas diferentes, mas a esfera aparece em
+ * cima do fundo, então escolher as duas na mesma tela é o que ajuda.
  */
 export function OrbiColorsPanel({
   businessId,

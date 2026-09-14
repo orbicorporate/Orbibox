@@ -56,6 +56,9 @@ export default async function AgentPage() {
   const orbiColors = Array.isArray(config?.orbi_colors) && config.orbi_colors.length >= 2
     ? (config.orbi_colors as string[])
     : null;
+  const heroGradient = Array.isArray(business!.hero_gradient) && business!.hero_gradient.length >= 2
+    ? (business!.hero_gradient as string[])
+    : null;
   const { count: catalogCount } = await supabase
     .from("content_items")
     .select("id", { count: "exact", head: true })
@@ -79,6 +82,8 @@ export default async function AgentPage() {
           businessId={business!.id}
           businessName={business!.name}
           slug={business!.slug}
+          heroGradient={heroGradient}
+          heroStyle={(business as { hero_style?: string }).hero_style ?? null}
           knowledge={{
             catalogo: (catalogCount ?? 0) > 0,
             historia: !!business!.about_business?.trim(),
