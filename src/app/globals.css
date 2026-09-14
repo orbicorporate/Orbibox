@@ -375,7 +375,18 @@ body {
   animation: orbiCheckPop 0.3s ease-out;
 }
 
-/* Tremida sutil pra chamar atenção pro CTA "Começar o papo". */
+/* Barra fina de "pensando" da Orbi entre uma pergunta e outra —
+ * preenche uma vez, da esquerda pra direita, em 2s (não é loop). */
+@keyframes orbiFillOnce {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.orbi-fill-once {
+  animation: orbiFillOnce 2s linear forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-fill-once { animation: none; width: 100%; }
+}
 @keyframes orbiShake {
   0%, 100% { transform: translateX(0); }
   15% { transform: translateX(-3px) rotate(-1.5deg); }
