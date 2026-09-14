@@ -81,7 +81,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
       <div className="mt-4 grid grid-cols-3 gap-2.5">
         <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#E7EAFC" }}>
           <p className="text-[24px] font-bold" style={{ color: "#4453D6" }}>{totalResgatados}</p>
-          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#4453D6" }}>pegaram o cupom</p>
+          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#4453D6" }}>resgataram o cupom</p>
         </div>
         <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#FDEEDF" }}>
           <p className="text-[24px] font-bold" style={{ color: "#C2650A" }}>{totalAguardando}</p>
@@ -92,12 +92,6 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
           <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#1F9E4C" }}>já usaram</p>
         </div>
       </div>
-      <p className="mt-2.5 text-[12px] leading-relaxed text-text-tertiary">
-        <span className="font-medium text-text-secondary">Pegaram</span> é quanta gente resgatou o cupom na sua página.
-        Desses, <span className="font-medium text-text-secondary">ainda não usaram</span> são os que têm o código mas não foram até você, e
-        <span className="font-medium text-text-secondary"> já usaram</span> são os que você confirmou no atendimento.
-      </p>
-
       {/* Resgatar no balcão, mesmo card da referência, reaproveitado */}
       <div className="mt-5">
         <RedeemCodeCard businessId={businessId} onRedeemed={refresh} vouchers={vouchers.map((v) => ({ id: v.id, title: v.title }))} />

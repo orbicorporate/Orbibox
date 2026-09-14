@@ -113,7 +113,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-[20px] p-4" style={{ backgroundColor: "#E7EAFC" }}>
           <p className="text-[26px] font-bold" style={{ color: "#4453D6" }}>{v.quantity_claimed}</p>
-          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#4453D6" }}>pegaram o cupom<br /><span className="opacity-70">de {v.quantity_total} disponíveis</span></p>
+          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#4453D6" }}>resgataram o cupom<br /><span className="opacity-70">de {v.quantity_total} disponíveis</span></p>
         </div>
         <div className="rounded-[20px] p-4" style={{ backgroundColor: "#F1F0EE" }}>
           <p className="text-[26px] font-bold" style={{ color: "#6B7280" }}>{restam}</p>
