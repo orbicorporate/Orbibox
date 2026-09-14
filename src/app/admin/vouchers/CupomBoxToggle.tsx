@@ -27,21 +27,19 @@ export function CupomBoxToggle({ businessId, initialHasBox, boxId, nextPosition 
   }
 
   if (hasBox) {
+    // Confirmação discreta: o box já está lá, então isso é status, não
+    // algo que precise ocupar meia tela toda vez.
     return (
-      <div className="flex items-center gap-4 rounded-[24px] border border-[#BBF7D0] bg-surface-white p-5">
-        <span className="relative flex h-14 w-14 shrink-0 items-center justify-center">
-          <span aria-hidden className="absolute inset-0 rounded-full bg-[#22C55E] opacity-35 blur-md" />
-          <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#4ADE80] to-[#16A34A] text-white shadow-[0_6px_18px_rgba(34,197,94,0.45)]">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
-          </span>
+      <div className="flex items-center gap-2.5 rounded-full border border-[#BBF7D0] bg-surface-white py-2 pl-2.5 pr-2">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#4ADE80] to-[#16A34A] text-white">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
         </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-bold leading-snug" style={{ color: "#15803D" }}>O box &quot;Cupons&quot; já está na sua página inicial</p>
-          <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">É por ele que o visitante encontra seus cupons.</p>
-        </div>
+        <p className="min-w-0 flex-1 truncate text-[13px] font-semibold" style={{ color: "#15803D" }}>
+          Box &quot;Cupons&quot; na sua página
+        </p>
         {/* Leva direto pro box certo, já aberto pra editar, em vez de
             largar a pessoa no topo da lista pra procurar. */}
-        <Link href={boxId ? `/admin/boxes?box=${boxId}` : "/admin/boxes"} className="shrink-0 rounded-full border border-[#BBF7D0] bg-white px-4 py-2 text-[14px] font-semibold" style={{ color: "#15803D" }}>
+        <Link href={boxId ? `/admin/boxes?box=${boxId}` : "/admin/boxes"} className="shrink-0 rounded-full bg-[#DEF3E3] px-3 py-1.5 text-[12.5px] font-semibold" style={{ color: "#15803D" }}>
           Editar
         </Link>
       </div>
