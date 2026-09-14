@@ -9,6 +9,7 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/components/orbi/OrbiInsightCard";
 import { OrbiVisualPanel } from "@/app/admin/config/OrbiVisualPanel";
 import { ComoOrbiAprende } from "./ComoOrbiAprende";
+import { SecaoRecolhivel } from "@/components/ui/SecaoRecolhivel";
 
 type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; curation_question: string | null; curation_options: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
@@ -198,9 +199,9 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
               <Link
                 key={k.key}
                 href={k.href}
-                className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-divider px-3 py-1.5 text-[12px] text-text-tertiary"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#FDE7E7] px-3 py-1.5 text-[12px] font-medium text-[#C0392B]"
               >
-                {k.label} · preencher
+                {k.label} · ainda não configurado
               </Link>
             );
           })}
@@ -252,12 +253,13 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
       )}
 
       {/* Perguntas sugeridas no chat */}
-      <div className="rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
-        <p className="text-[14px] font-medium">Perguntas sugeridas no chat</p>
-        <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
-          Os 4 botões que aparecem no início da conversa. Deixe em branco pra a {state.agent_name} sugerir sozinha, com base no seu catálogo.
-        </p>
-        <div className="mt-3 flex flex-col gap-2">
+      <SecaoRecolhivel
+        titulo="Perguntas sugeridas no chat"
+        descricao={`Os 4 botões que aparecem no início da conversa. Opcional: em branco, a ${state.agent_name} sugere sozinha com base no seu catálogo.`}
+        preenchido={state.suggested_questions.some((q) => (q ?? "").trim())}
+        opcional
+      >
+        <div className="flex flex-col gap-2">
           {[0, 1, 2, 3].map((i) => (
             <input
               key={i}
@@ -275,20 +277,20 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
             />
           ))}
         </div>
-      </div>
+      </SecaoRecolhivel>
 
       {/* Pergunta da curadoria (Orbi recomenda) */}
-      <div className="rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
-        <p className="text-[14px] font-medium">✦ Pergunta da curadoria</p>
-        <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
-          Na sua página, a {state.agent_name} pergunta algo e recomenda produtos que combinam com a resposta. Deixe em
-          branco pra ela criar a pergunta sozinha (analisando seu catálogo), ou defina a sua.
-        </p>
+      <SecaoRecolhivel
+        titulo="✦ Pergunta da curadoria"
+        descricao={`Na sua página, a ${state.agent_name} pergunta algo e recomenda produtos que combinam com a resposta. Opcional: em branco, ela cria a pergunta sozinha analisando seu catálogo.`}
+        preenchido={!!(state.curation_question ?? "").trim()}
+        opcional
+      >
         <input
           value={state.curation_question ?? ""}
           onChange={(e) => { setSaved(false); setState((s) => ({ ...s, curation_question: e.target.value })); }}
           placeholder="Ex: O que você procura hoje?"
-          className="mt-3 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+          className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
         />
         <p className="mt-3 text-[12px] font-medium text-text-tertiary">Respostas (2 a 4)</p>
         <div className="mt-1.5 flex flex-col gap-2">
@@ -309,7 +311,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
             />
           ))}
         </div>
-      </div>
+      </SecaoRecolhivel>
 
       {/* Orbi Insight */}
       <OrbiInsightCard>

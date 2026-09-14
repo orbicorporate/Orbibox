@@ -2,8 +2,11 @@ import Link from "next/link";
 import { loadConfigData } from "./loadConfigData";
 import { SignOutButton } from "./SignOutButton";
 
+type Pendencias = { marca: number; contatos: number; orbi: number };
+
 const ITEMS = [
   {
+    key: "marca" as const,
     href: "/admin/config/marca",
     label: "Identidade e marca",
     desc: "Logotipo, cores da Orbi e a capa que aparece ao compartilhar seu link.",
@@ -15,6 +18,7 @@ const ITEMS = [
     ),
   },
   {
+    key: "contatos" as const,
     href: "/admin/config/contatos",
     label: "Contatos",
     desc: "WhatsApp, telefone, e-mail, site e endereço que o visitante vê.",
@@ -26,6 +30,7 @@ const ITEMS = [
     ),
   },
   {
+    key: "orbi" as const,
     href: "/admin/config/orbi",
     label: "O que a Orbi sabe",
     desc: "Sobre o negócio, diferenciais e políticas, o que a IA usa pra responder.",
@@ -39,7 +44,16 @@ const ITEMS = [
 ];
 
 export default async function ConfigMenuPage() {
-  const { businessId } = await loadConfigData();
+  const { businessId, business } = await loadConfigData();
+
+  // Quantos campos de cada seção ainda estão vazios. Vira a tag vermelha
+  // no menu, pra pessoa saber o que falta sem abrir tudo.
+  const vazio = (v: unknown) => !(typeof v === "string" ? v.trim() : v);
+  const pendencias: Pendencias = {
+    marca: [business.logo_url, business.share_image_url, business.share_description].filter(vazio).length,
+    contatos: [business.contact_whatsapp, business.contact_phone, business.contact_email, business.address].filter(vazio).length,
+    orbi: [business.about_business, business.differentials, business.policies].filter(vazio).length,
+  };
 
   return (
     <div className="flex flex-col pb-4">
@@ -64,7 +78,14 @@ export default async function ConfigMenuPage() {
               ) : item.icon}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold">{item.label}</span>
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="text-[15px] font-semibold">{item.label}</span>
+                {pendencias[item.key] > 0 && (
+                  <span className="shrink-0 rounded-full bg-[#FDE7E7] px-2.5 py-1 text-[11px] font-semibold text-[#C0392B]">
+                    {pendencias[item.key]} {pendencias[item.key] === 1 ? "campo" : "campos"} sem preencher
+                  </span>
+                )}
+              </span>
               <span className="mt-0.5 block text-[13px] leading-snug text-text-tertiary">{item.desc}</span>
             </span>
             <span className="shrink-0 text-text-tertiary">→</span>
