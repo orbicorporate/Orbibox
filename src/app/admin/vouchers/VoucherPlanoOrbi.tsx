@@ -95,7 +95,7 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
 
       {aberto && plano && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[9999] mx-auto flex max-w-[440px] flex-col bg-background-main">
-          <header className="flex shrink-0 items-center gap-3 border-b border-divider bg-surface-white px-4 py-3">
+          <header className="absolute inset-x-0 top-0 z-10 flex items-center gap-3 border-b border-divider/50 bg-surface-white/70 px-4 py-3 backdrop-blur-xl">
             <button onClick={() => setAberto(false)} aria-label="Voltar" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
             </button>
@@ -105,7 +105,7 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
             </div>
           </header>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-10 pt-4" style={{ WebkitOverflowScrolling: "touch" }}>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-10" style={{ paddingTop: "66px", WebkitOverflowScrolling: "touch" }}>
             {/* Estratégia: por que esse cupom existe */}
             {plano.estrategia && (
               <div className="orbi-card-light relative overflow-hidden rounded-[30px] px-6 py-7">

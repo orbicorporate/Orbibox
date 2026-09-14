@@ -100,8 +100,9 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] mx-auto flex max-w-[440px] flex-col bg-background-main">
-      {/* Cabeçalho fixo */}
-      <header className="flex items-center gap-3 border-b border-divider bg-surface-white px-4 py-3">
+      {/* Cabeçalho sobreposto: as mensagens correm por baixo dele, que é o
+          que faz o vidro fosco ter o que desfocar. */}
+      <header className="absolute inset-x-0 top-0 z-10 flex items-center gap-3 border-b border-divider/50 bg-surface-white/70 px-4 py-3 backdrop-blur-xl">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full">
           <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} className="rounded-full" />
         </span>
@@ -117,7 +118,7 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
       </header>
 
       {/* Mensagens */}
-      <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-5">
+      <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-5 pt-[82px]">
         <div className="flex flex-col gap-3">
           {historico.map((t, i) => (
             <div key={i} className="flex flex-col gap-3">
@@ -199,7 +200,7 @@ export function OrbiEntrevista({ businessId, orbiColors, onDone, compact = false
 
       {/* Barra de resposta fixa */}
       {!concluido && (
-        <div className="border-t border-divider bg-surface-white px-4 pt-3" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+        <div className="border-t border-divider/50 bg-surface-white/70 px-4 pt-3 backdrop-blur-xl" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
           <div className="flex items-end gap-2">
             <textarea
               value={resposta}
