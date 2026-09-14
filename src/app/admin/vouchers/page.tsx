@@ -55,39 +55,13 @@ export default async function VouchersPage() {
           <path d="M13 5v2M13 11v2M13 17v2" />
         </svg>
       </span>
-      <h1 className="mt-4 font-[family-name:var(--font-manrope)] text-[34px] font-bold tracking-[-0.02em]">Cupons</h1>
-      <p className="mt-1.5 text-[14.5px] leading-relaxed text-text-secondary">
-        Crie cupons com estoque limitado. Cada resgate gera um código único, sem risco de uso duplicado.
-      </p>
-
-      {/* Ativa assim que existe pelo menos um cupom, antes disso não tem
-          painel de ninguém pra ver ainda. Vermelho forte com reflexo. */}
-      {canSave && vouchers && vouchers.length > 0 && (
-        <Link
-          href="/admin/vouchers/painel"
-          className="relative mt-5 flex items-center gap-3 overflow-hidden rounded-[22px] bg-gradient-to-r from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-3.5 text-white shadow-[0_14px_36px_rgba(204,23,57,0.45)]"
-        >
-          <span aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.35)_0%,rgba(255,255,255,0)_48%)]" />
-          <span aria-hidden className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
-          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/25">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="12" width="4" height="8" rx="1" /><rect x="10" y="7" width="4" height="13" rx="1" /><rect x="16" y="3" width="4" height="17" rx="1" /></svg>
-          </span>
-          <span className="relative flex-1 text-[17px] font-bold">Ver painel de controle</span>
-          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-[16px]">›</span>
-        </Link>
-      )}
-
-      {/* Resgate rápido no topo, recolhível, pra loja validar o cupom do
-          cliente na hora, sem precisar entrar no painel. */}
-      {canSave && vouchers && vouchers.length > 0 && (
-        <div className="mt-4">
-          <RedeemCodeCard businessId={business!.id} collapsible vouchers={(vouchers ?? []).map((v) => ({ id: v.id, title: v.title }))} />
-        </div>
-      )}
-
-      {canSave && (
-        <div className="mt-6 flex flex-col gap-4">
-          <VoucherExplainer>
+      <div className="mt-4 flex items-start justify-between gap-3">
+        <h1 className="min-w-0 font-[family-name:var(--font-manrope)] text-[34px] font-bold tracking-[-0.02em]">Cupons</h1>
+        {/* A explicação vive aqui em cima agora, num botão pequeno: quem já
+            sabe não perde meia tela com um card que não vai ler. */}
+        {canSave && (
+          <div className="mt-2 shrink-0">
+            <VoucherExplainer>
           {/* Explicação curta, só o essencial, separado do resto */}
           <div className="rounded-[24px] bg-surface-soft p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-secondary">Como funciona</p>
@@ -141,8 +115,41 @@ export default async function VouchersPage() {
               ))}
             </div>
           </div>
-          </VoucherExplainer>
+            </VoucherExplainer>
+          </div>
+        )}
+      </div>
+      <p className="mt-1.5 text-[14.5px] leading-relaxed text-text-secondary">
+        Crie cupons com estoque limitado. Cada resgate gera um código único, sem risco de uso duplicado.
+      </p>
 
+      {/* Ativa assim que existe pelo menos um cupom, antes disso não tem
+          painel de ninguém pra ver ainda. Vermelho forte com reflexo. */}
+      {canSave && vouchers && vouchers.length > 0 && (
+        <Link
+          href="/admin/vouchers/painel"
+          className="relative mt-5 flex items-center gap-3 overflow-hidden rounded-[22px] bg-gradient-to-r from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-3.5 text-white shadow-[0_14px_36px_rgba(204,23,57,0.45)]"
+        >
+          <span aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.35)_0%,rgba(255,255,255,0)_48%)]" />
+          <span aria-hidden className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
+          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/25">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="12" width="4" height="8" rx="1" /><rect x="10" y="7" width="4" height="13" rx="1" /><rect x="16" y="3" width="4" height="17" rx="1" /></svg>
+          </span>
+          <span className="relative flex-1 text-[17px] font-bold">Ver painel de controle</span>
+          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-[16px]">›</span>
+        </Link>
+      )}
+
+      {/* Resgate rápido no topo, recolhível, pra loja validar o cupom do
+          cliente na hora, sem precisar entrar no painel. */}
+      {canSave && vouchers && vouchers.length > 0 && (
+        <div className="mt-4">
+          <RedeemCodeCard businessId={business!.id} collapsible vouchers={(vouchers ?? []).map((v) => ({ id: v.id, title: v.title }))} />
+        </div>
+      )}
+
+      {canSave && (
+        <div className="mt-6 flex flex-col gap-4">
           {/* O elo que faltava: colocar (ou confirmar que já tem) o box na Home */}
           <CupomBoxToggle businessId={business!.id} initialHasBox={!!cupomBox} boxId={cupomBox?.id ?? null} nextPosition={nextPosition} />
         </div>
