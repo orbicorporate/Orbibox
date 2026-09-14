@@ -353,7 +353,10 @@ export function VisitorExperience({
         </button>
       )}
 
-      <div className="relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center justify-center px-6 py-16">
+      {/* Centralizado só na tela inicial. Nas telas de conteúdo (vouchers,
+          catálogo, sobre) centralizar empurrava tudo pra baixo e sobrava
+          um vazio enorme no topo. */}
+      <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
         {intent === null && (
           <div className="flex flex-col items-center text-center">
             {business.hero_avatar === "particle" ? (
@@ -734,7 +737,7 @@ function VoucherFlow({ business, sessionId, onBack }: { business: Business; sess
 
   return (
     <div className="w-full">
-      <button onClick={onBack} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
+      <button onClick={onBack} className="mb-3 text-[14px] text-text-tertiary hover:underline">← voltar</button>
       <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">Vouchers</h2>
       <p className="mt-1 text-[14px] text-text-secondary">Vantagens exclusivas pra você.</p>
 
@@ -843,8 +846,12 @@ function VoucherFlow({ business, sessionId, onBack }: { business: Business; sess
                     <p className="mt-3 text-[12px] opacity-75">{restam > 0 ? `${restam} restantes` : "Acabou"}</p>
                   </div>
                   {v.image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={v.image_url} alt={v.title} className="w-[42%] shrink-0 object-cover" />
+                    // Foto com respiro e cantos arredondados: colada na borda
+                    // ela brigava com o raio do card e parecia recorte.
+                    <div className="w-[42%] shrink-0 py-4 pr-4">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={v.image_url} alt={v.title} className="h-full w-full rounded-[18px] object-cover" />
+                    </div>
                   )}
                 </div>
               </div>
