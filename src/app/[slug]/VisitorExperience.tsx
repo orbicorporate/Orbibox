@@ -9,6 +9,7 @@ import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiFloatingButton } from "./OrbiFloatingButton";
 import { CuradoriaOrbi } from "./CuradoriaOrbi";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { LeadCapture } from "@/components/mobile/LeadCapture";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
@@ -603,7 +604,19 @@ export function VisitorExperience({
             {content.length === 0 ? (
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
             ) : (
-              <Showcase content={content} business={business} sessionId={sessionId} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
+              <>
+                <Showcase content={content} business={business} sessionId={sessionId} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
+                {/* Captura discreta no fim do catálogo: quem chegou até aqui
+                    olhou tudo, é o momento certo de oferecer aviso. */}
+                <LeadCapture
+                  businessId={business.id}
+                  businessName={business.name}
+                  sessionId={sessionId}
+                  orbiColors={orbiColors}
+                  contexto="vitrine"
+                  className="mt-6"
+                />
+              </>
             )}
           </div>
         )}
@@ -623,7 +636,7 @@ export function VisitorExperience({
         )}
 
         {intent === "cupom" && (
-          <VoucherFlow business={business} sessionId={sessionId} onBack={() => setIntent(null)} />
+          <VoucherFlow business={business} sessionId={sessionId} orbiColors={orbiColors} onBack={() => setIntent(null)} />
         )}
       </div>
 
@@ -674,7 +687,7 @@ function resultMessage(businessName: string, expiresAt: string | null) {
   return `${base} Vale até ${data}.`;
 }
 
-function VoucherFlow({ business, sessionId, onBack }: { business: Business; sessionId: string | null; onBack: () => void }) {
+function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Business; sessionId: string | null; orbiColors: string[] | null; onBack: () => void }) {
   const supabase = createClient();
   const [vouchers, setVouchers] = useState<VoucherPublic[] | null>(null);
   const [claiming, setClaiming] = useState<string | null>(null);
@@ -740,6 +753,17 @@ function VoucherFlow({ business, sessionId, onBack }: { business: Business; sess
       <button onClick={onBack} className="mb-3 text-[14px] text-text-tertiary hover:underline">← voltar</button>
       <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">Vouchers</h2>
       <p className="mt-1 text-[14px] text-text-secondary">Vantagens exclusivas pra você.</p>
+
+      {!result && (
+        <LeadCapture
+          businessId={business.id}
+          businessName={business.name}
+          sessionId={sessionId}
+          orbiColors={orbiColors}
+          contexto="voucher"
+          className="mt-4"
+        />
+      )}
 
       {result ? (
         <div className="relative mt-6">
