@@ -861,6 +861,9 @@ function BoxEditor({
   const [showAllIcons, setShowAllIcons] = useState(false);
   const color = cfg.color || "#111318";
   const animated = isAnimatedIcon(cfg.icon);
+  // Ações que vêm prontas do atalho de criação e não se troca por outra:
+  // o box existe justamente pra fazer isso.
+  const acaoFixa = cfg.action === "cupom" || cfg.action === "endereco" || cfg.action === "avaliar";
 
   function update(next: Partial<BoxConfig>) {
     const merged = { ...cfg, ...next };
@@ -908,18 +911,32 @@ function BoxEditor({
 
       {isCustom && (
         <>
-          <p className="text-[13px] font-medium text-text-secondary">Ao tocar, o botão…</p>
-          <div className="flex flex-wrap gap-2">
-            {(["vitrine", "zara", "whatsapp", "link"] as (keyof typeof ACTION_LABEL)[]).map((a) => (
-              <button
-                key={a}
-                onClick={() => { update({ action: a }); if (!liveOnly) onSave({ ...cfg, action: a }); }}
-                className={`rounded-full px-3.5 py-2 text-[13px] font-medium ${cfg.action === a ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
-              >
-                {ACTION_LABEL[a]}
-              </button>
-            ))}
-          </div>
+          {/* Boxes de cupom, endereço e avaliação já nascem com a ação
+              definida, então oferecer as quatro opções só confundia: nenhuma
+              ficava marcada e escolher qualquer uma quebrava o box. Nesses
+              casos a gente só diz o que ele faz. */}
+          {acaoFixa ? (
+            <div className="rounded-2xl bg-surface-soft px-4 py-3">
+              <p className="text-[12px] text-text-tertiary">Ao tocar, o botão</p>
+              <p className="mt-0.5 text-[13.5px] font-semibold">{ACTION_LABEL[cfg.action!]}</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-[13px] font-medium text-text-secondary">Ao tocar, o botão…</p>
+              <div className="flex flex-wrap gap-2">
+                {(["vitrine", "zara", "whatsapp", "link"] as (keyof typeof ACTION_LABEL)[]).map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => { update({ action: a }); if (!liveOnly) onSave({ ...cfg, action: a }); }}
+                    className={`cursor-pointer rounded-full px-3.5 py-2 text-[13px] font-medium ${cfg.action === a ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                  >
+                    {ACTION_LABEL[a]}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           {(cfg.action === "link" || cfg.action === "whatsapp") && (
             <input
