@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { HelperText } from "@/components/ui/HelperText";
@@ -408,13 +408,13 @@ export function ConfigForm({ business, section }: { business: Business; section:
       </Link>
 
       <p className={rotulo}>Sobre o negócio</p>
-      <textarea
+      <AutoTextarea
         value={b.about_business ?? ""}
-        onChange={(e) => set("about_business", e.target.value)}
-        onBlur={(e) => save("about_business", e.target.value)}
-        rows={3}
+        onChange={(v) => set("about_business", v)}
+        onBlur={(v) => save("about_business", v)}
+        minRows={6}
         placeholder="O que vocês fazem e para quem."
-        className={`${campo} resize-none`}
+        className={`${campo} resize-none overflow-hidden leading-relaxed`}
       />
 
       {/* Diferenciais numerados: um campo por diferencial, em vez de um
@@ -481,13 +481,13 @@ export function ConfigForm({ business, section }: { business: Business; section:
       />
 
       <p className={rotulo}>Políticas</p>
-      <textarea
+      <AutoTextarea
         value={b.policies ?? ""}
-        onChange={(e) => set("policies", e.target.value)}
-        onBlur={(e) => save("policies", e.target.value)}
-        rows={3}
+        onChange={(v) => set("policies", v)}
+        onBlur={(v) => save("policies", v)}
+        minRows={5}
         placeholder="Prazos de entrega, frete, trocas, horários, formas de pagamento."
-        className={`${campo} resize-none`}
+        className={`${campo} resize-none overflow-hidden leading-relaxed`}
       />
 
       <Link
@@ -500,5 +500,45 @@ export function ConfigForm({ business, section }: { business: Business; section:
 
       {saved && <p className="mt-3 text-[12px] text-text-tertiary">Salvo ✓</p>}
     </div>
+  );
+}
+
+/** Campo de texto que cresce junto com o conteúdo, até um limite. Evita
+ * o texto longo ficar espremido em três linhas com barra de rolagem. */
+function AutoTextarea({
+  value,
+  onChange,
+  onBlur,
+  placeholder,
+  className,
+  minRows = 5,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onBlur: (v: string) => void;
+  placeholder?: string;
+  className?: string;
+  minRows?: number;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  function ajustar(el: HTMLTextAreaElement | null) {
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 460)}px`;
+  }
+
+  useEffect(() => { ajustar(ref.current); }, [value]);
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={(e) => { onChange(e.target.value); ajustar(e.target); }}
+      onBlur={(e) => onBlur(e.target.value)}
+      rows={minRows}
+      placeholder={placeholder}
+      className={className}
+    />
   );
 }
