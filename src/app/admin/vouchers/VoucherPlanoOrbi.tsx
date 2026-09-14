@@ -6,7 +6,8 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiInsightCard, OrbiInsightHeader } from "@/components/orbi/OrbiInsightCard";
 
 type Canal = { canal: string; quando: string; texto: string; dica: string };
-type Plano = { estrategia: string; canais: Canal[]; no_balcao: string[]; evite: string[] };
+type Estrategia = { alvo: string; porque: string };
+type Plano = { estrategia: Estrategia; canais: Canal[]; no_balcao: string[]; evite: string[] };
 
 // Ícone por canal, desenhado em linha pra não virar emoji colorido no iOS.
 const ICONES: Record<string, { glifo: string; cor: string; fundo: string }> = {
@@ -107,17 +108,27 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-10" style={{ paddingTop: "66px", WebkitOverflowScrolling: "touch" }}>
             {/* Estratégia: por que esse voucher existe */}
-            {plano.estrategia && (
-              <div className="orbi-rise orbi-card-light relative overflow-hidden rounded-[30px] px-6 py-7">
-                <span className="relative mx-auto block h-14 w-14 overflow-hidden rounded-full">
-                  <OrbiParticleSphere size={56} colors={orbiColors ?? undefined} vivid className="rounded-full" />
-                </span>
-                <p className="relative mt-4 text-center text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
-                  A jogada
-                </p>
-                <p className="relative mt-2 text-center text-[16.5px] leading-[1.6] text-on-background">
-                  {plano.estrategia}
-                </p>
+            {(plano.estrategia?.alvo || plano.estrategia?.porque) && (
+              <div className="orbi-rise orbi-card-light relative overflow-hidden rounded-[30px] px-6 py-6">
+                {/* Esfera e rótulo na mesma linha, à esquerda: sobra espaço
+                    pro texto e o bloco deixa de ser um quadrado centralizado. */}
+                <div className="relative flex items-center gap-2.5">
+                  <span className="block h-8 w-8 shrink-0 overflow-hidden rounded-full">
+                    <OrbiParticleSphere size={32} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+                  </span>
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary">A jogada</span>
+                </div>
+
+                {plano.estrategia.alvo && (
+                  <p className="relative mt-3.5 font-[family-name:var(--font-manrope)] text-[21px] font-semibold leading-[1.25] tracking-[-0.01em] text-on-background">
+                    {plano.estrategia.alvo}
+                  </p>
+                )}
+                {plano.estrategia.porque && (
+                  <p className="relative mt-2.5 text-[15px] leading-[1.6] text-text-secondary">
+                    {plano.estrategia.porque}
+                  </p>
+                )}
               </div>
             )}
 
