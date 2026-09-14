@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { HelperText } from "@/components/ui/HelperText";
+import { ChipGroup, CLASSES, FAIXAS_ETARIAS, PAGAMENTOS, ATENDIMENTOS } from "./ChipGroup";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
 import { HeroBackgroundPanel } from "./HeroBackgroundPanel";
@@ -22,6 +23,10 @@ type Business = {
   about_business: string | null;
   differentials: string | null;
   policies: string | null;
+  customer_classes: string[] | null;
+  customer_ages: string[] | null;
+  payment_methods: string[] | null;
+  service_modes: string[] | null;
   logo_url: string | null;
   logo_gallery: unknown;
   share_image_url: string | null;
@@ -107,6 +112,42 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
 
   async function save(key: CampoEditavel, value: string) {
     const patch: Partial<Record<CampoEditavel, string | null>> = { [key]: value.trim() || null };
+    await supabase.from("businesses").update(patch).eq("id", b.id);
+    setSaved(true);
+  }
+
+  // Diferenciais viram até 4 linhas separadas. No banco continua sendo um
+  // texto só (uma linha por diferencial), pra não quebrar quem já lê esse
+  // campo: a Orbi, a página Sobre e a análise do site.
+  const [listaDiferenciais, setListaDiferenciais] = useState<string[]>(() => {
+    const bruto = (b.differentials ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+    return [0, 1, 2, 3].map((i) => bruto[i] ?? "");
+  });
+
+  function setDiferencial(i: number, valor: string) {
+    setListaDiferenciais((atual) => {
+      const next = [...atual];
+      next[i] = valor;
+      return next;
+    });
+  }
+
+  async function salvarDiferenciais() {
+    const texto = listaDiferenciais.map((d) => d.trim()).filter(Boolean).join("\n");
+    setB((p) => ({ ...p, differentials: texto || null }));
+    await supabase.from("businesses").update({ differentials: texto || null }).eq("id", b.id);
+    setSaved(true);
+  }
+
+  // Marca/desmarca uma opção de um dos grupos de chips.
+  async function toggleLista(
+    campoLista: "customer_classes" | "customer_ages" | "payment_methods" | "service_modes",
+    id: string,
+  ) {
+    const atual = b[campoLista] ?? [];
+    const next = atual.includes(id) ? atual.filter((x) => x !== id) : [...atual, id];
+    setB((p) => ({ ...p, [campoLista]: next }));
+    const patch: Partial<Record<typeof campoLista, string[]>> = { [campoLista]: next };
     await supabase.from("businesses").update(patch).eq("id", b.id);
     setSaved(true);
   }
@@ -381,14 +422,67 @@ export function ConfigForm({ business, orbiColors, heroGradient, section }: { bu
         className={`${campo} resize-none`}
       />
 
+      {/* Diferenciais numerados: um campo por diferencial, em vez de um
+          bloco de texto único. Fica claro quantos faltam e é bem mais
+          fácil de escrever (e de a Orbi usar depois, separadamente). */}
       <p className={rotulo}>Diferenciais</p>
-      <textarea
-        value={b.differentials ?? ""}
-        onChange={(e) => set("differentials", e.target.value)}
-        onBlur={(e) => save("differentials", e.target.value)}
-        rows={2}
-        placeholder="O que te separa dos concorrentes."
-        className={`${campo} resize-none`}
+      <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">
+        Até 4 motivos pra alguém escolher você. Um por linha.
+      </p>
+      <div className="mt-2.5 flex flex-col gap-2">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-2.5">
+            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-bold ${
+              listaDiferenciais[i]?.trim() ? "orbi-green-gradient text-white" : "bg-surface-soft text-text-tertiary"
+            }`}>
+              {i + 1}
+            </span>
+            <input
+              value={listaDiferenciais[i] ?? ""}
+              onChange={(e) => setDiferencial(i, e.target.value)}
+              onBlur={() => salvarDiferenciais()}
+              placeholder={
+                i === 0 ? "Ex: Time 100% sênior"
+                : i === 1 ? "Ex: Entrega no mesmo dia"
+                : i === 2 ? "Ex: Garantia de 1 ano"
+                : "Ex: Orçamento sem compromisso"
+              }
+              className="min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Daqui pra baixo é tudo de marcar: a pessoa não escreve nada, só
+          toca. A Orbi usa isso pra falar de preço, forma de pagamento e
+          como o cliente recebe. */}
+      <ChipGroup
+        titulo="Cliente típico"
+        ajuda="Marque as classes que mais combinam com quem compra de você."
+        opcoes={CLASSES}
+        selecionadas={b.customer_classes ?? []}
+        onToggle={(id) => toggleLista("customer_classes", id)}
+      />
+
+      <ChipGroup
+        titulo="Faixa de idade"
+        opcoes={FAIXAS_ETARIAS}
+        selecionadas={b.customer_ages ?? []}
+        onToggle={(id) => toggleLista("customer_ages", id)}
+      />
+
+      <ChipGroup
+        titulo="Formas de pagamento"
+        opcoes={PAGAMENTOS}
+        selecionadas={b.payment_methods ?? []}
+        onToggle={(id) => toggleLista("payment_methods", id)}
+      />
+
+      <ChipGroup
+        titulo="Como você atende"
+        opcoes={ATENDIMENTOS}
+        selecionadas={b.service_modes ?? []}
+        onToggle={(id) => toggleLista("service_modes", id)}
       />
 
       <p className={rotulo}>Políticas</p>

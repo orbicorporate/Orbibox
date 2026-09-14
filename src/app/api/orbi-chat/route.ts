@@ -3,6 +3,18 @@ import { askClaude } from "@/lib/anthropic";
 import { AI_MODEL_RAPIDO } from "@/lib/aiModel";
 import { createClient } from "@/lib/supabase/server";
 
+// Os chips são salvos por id; a Orbi precisa do rótulo em português.
+const PAGAMENTO_LABEL: Record<string, string> = {
+  pix: "Pix", credito: "cartão de crédito", debito: "cartão de débito",
+  dinheiro: "dinheiro", boleto: "boleto", parcelado: "parcelamento",
+};
+const ATENDIMENTO_LABEL: Record<string, string> = {
+  loja: "loja física", delivery: "delivery", online: "online",
+  agendamento: "com agendamento", domicilio: "atende a domicílio",
+};
+const rotuloPagamento = (id: string) => PAGAMENTO_LABEL[id] ?? id;
+const rotuloAtendimento = (id: string) => ATENDIMENTO_LABEL[id] ?? id;
+
 export async function POST(req: NextRequest) {
   try {
     const { businessId, conversationId, message, history, trialMode } = await req.json();
@@ -31,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     const { data: business } = await supabase
       .from("businesses")
-      .select("name, brand_voice_summary, about_business, differentials, policies, contact_whatsapp, address")
+      .select("name, brand_voice_summary, about_business, differentials, policies, payment_methods, service_modes, contact_whatsapp, address")
       .eq("id", businessId)
       .maybeSingle();
 
@@ -64,7 +76,7 @@ export async function POST(req: NextRequest) {
     const system = `Você é ${agentName}, a assistente de IA (AgentBox) do negócio "${business?.name ?? "este negócio"}" dentro do Orbibox, uma plataforma de "web adaptativa".
 Seu tom de voz é: ${toneDesc}.
 Objetivos da conversa: ${agentConfig?.objectives?.join(", ") || "ajudar o visitante"}.
-${business?.brand_voice_summary ? `Tom da marca: ${business.brand_voice_summary}` : ""}\n${business?.about_business ? `Sobre o negócio: ${business.about_business}` : ""}\n${business?.differentials ? `Diferenciais: ${business.differentials}` : ""}\n${business?.policies ? `Políticas (entrega, trocas, horários): ${business.policies}` : ""}\n${business?.address ? `Endereço: ${business.address}` : ""}
+${business?.brand_voice_summary ? `Tom da marca: ${business.brand_voice_summary}` : ""}\n${business?.about_business ? `Sobre o negócio: ${business.about_business}` : ""}\n${business?.differentials ? `Diferenciais: ${business.differentials}` : ""}\n${business?.policies ? `Políticas (entrega, trocas, horários): ${business.policies}` : ""}\n${business?.payment_methods?.length ? `Formas de pagamento aceitas: ${business.payment_methods.map(rotuloPagamento).join(", ")}` : ""}\n${business?.service_modes?.length ? `Como atende: ${business.service_modes.map(rotuloAtendimento).join(", ")}` : ""}\n${business?.address ? `Endereço: ${business.address}` : ""}
 ${catalog ? `Catálogo disponível:\n${catalog}` : "O catálogo ainda não tem produtos publicados."}
 
 Regras:

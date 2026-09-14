@@ -7,7 +7,7 @@ export async function loadConfigData() {
   const businessId = await getCurrentBusinessId(user!.id);
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug, site_type, contact_whatsapp, contact_phone, contact_email, contact_site, address, about_business, differentials, policies, logo_url, logo_gallery, hero_gradient, share_image_url, share_description, vitrine_cover_url, vitrine_cover_urls")
+    .select("id, name, slug, site_type, contact_whatsapp, contact_phone, contact_email, contact_site, address, about_business, differentials, differentials_cards, policies, customer_classes, customer_ages, payment_methods, service_modes, logo_url, logo_gallery, hero_gradient, share_image_url, share_description, vitrine_cover_url, vitrine_cover_urls")
     .eq("id", businessId!)
     .single();
   const { data: agentConfig } = await supabase.from("agent_configs").select("orbi_colors").eq("business_id", business!.id).maybeSingle();
