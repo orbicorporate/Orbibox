@@ -45,6 +45,13 @@ export function ConfigForm({ business, section }: { business: Business; section:
   const [b, setB] = useState(business);
   const [logoGallery, setLogoGallery] = useState<string[]>(parseLogoGallery(business.logo_gallery));
   const [saved, setSaved] = useState(false);
+
+  // O aviso de salvo some sozinho, senão fica pendurado na tela pra sempre.
+  useEffect(() => {
+    if (!saved) return;
+    const t = setTimeout(() => setSaved(false), 2000);
+    return () => clearTimeout(t);
+  }, [saved]);
   const [generatingDesc, setGeneratingDesc] = useState(false);
   // A capa e a descrição do compartilhamento ficam recolhidas: são dois
   // cards longos e, uma vez configurados, quase nunca mudam.
@@ -490,15 +497,37 @@ export function ConfigForm({ business, section }: { business: Business; section:
         className={`${campo} resize-none overflow-hidden leading-relaxed`}
       />
 
+      {/* Fecha o ciclo: a pessoa acabou de preencher na mão, e aqui lembra
+          que a Orbi faz isso sozinha lendo o site, deixando mais afiado. */}
       <Link
         href="/admin/agent"
-        className="mt-8 rounded-full border border-divider bg-surface-white px-5 py-3 text-center text-[14px] font-medium"
+        className="mt-8 flex items-center gap-3.5 rounded-[22px] orbi-gradient p-[1.5px]"
       >
-        Personalidade da Orbi →
+        <span className="flex w-full items-center gap-3.5 rounded-[21px] bg-surface-white p-4">
+          <span className="orbi-gradient flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[17px] text-on-background">✦</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14.5px] font-semibold leading-tight">Quer calibrar ainda mais?</span>
+            <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">
+              Cole o link do seu site e a Orbi aprende sozinha, completando o que faltou aqui.
+            </span>
+          </span>
+          <span className="shrink-0 text-text-tertiary">→</span>
+        </span>
       </Link>
       </>)}
 
-      {saved && <p className="mt-3 text-[12px] text-text-tertiary">Salvo ✓</p>}
+      {/* Aviso flutuante: o "Salvo" antigo ficava no fim da página e quem
+          mexia nos chips lá em cima nunca via, parecendo que não salvou. */}
+      {saved && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-28 z-50 flex justify-center">
+          <span className="orbi-green-gradient flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold text-white shadow-lg">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+            Salvo
+          </span>
+        </div>
+      )}
     </div>
   );
 }
