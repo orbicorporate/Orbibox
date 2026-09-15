@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { ConversasTabs } from "./ConversasTabs";
+import { HelperText } from "@/components/ui/HelperText";
 
 export default async function ConversasPage() {
   const supabase = await createClient();
@@ -68,11 +69,9 @@ export default async function ConversasPage() {
       <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
         Talks
       </h1>
-      <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-        Trate seus visitantes com a inteligência da Orbi. Ela entende o que eles gostam e o que gostariam de
-        receber, te dá a mensagem pronta, a temperatura do lead e o motivo de agir. Isso não é venda, é troca
-        real que deixa seu lead feliz.
-      </p>
+      <HelperText className="mt-2">
+        Trate seus visitantes com a inteligência da Orbi. Ela entende o que eles gostam e o que gostariam de receber, te dá a mensagem pronta, a temperatura do lead e o motivo de agir. Isso não é venda, é troca real que deixa seu lead feliz.
+      </HelperText>
       <ConversasTabs conversations={list} businessId={business!.id} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />
     </div>
   );
