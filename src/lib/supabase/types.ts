@@ -124,6 +124,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["bonus_redemptions"]["Insert"]>
         Relationships: []
       }
+      lead_lists: {
+        Row: { id: string; business_id: string; name: string; motivo: string; kind: string; remind_after_days: number | null; created_at: string }
+        Insert: { id?: string; business_id: string; name: string; motivo: string; kind?: string; remind_after_days?: number | null; created_at?: string }
+        Update: Partial<Database["public"]["Tables"]["lead_lists"]["Insert"]>
+        Relationships: []
+      }
+      lead_list_members: {
+        Row: { list_id: string; lead_id: string; added_at: string; contacted_at: string | null }
+        Insert: { list_id: string; lead_id: string; added_at?: string; contacted_at?: string | null }
+        Update: Partial<Database["public"]["Tables"]["lead_list_members"]["Insert"]>
+        Relationships: []
+      }
       leads: {
         Row: { id: string; business_id: string; whatsapp: string; name: string | null; source: string; status: string; temperature: number; summary: string | null; next_action: Json; notes: string | null; interests: string[]; visitor_session_id: string | null; last_activity_at: string; analyzed_at: string | null; created_at: string; updated_at: string }
         Insert: { id?: string; business_id: string; whatsapp: string; name?: string | null; source?: string; status?: string; temperature?: number; summary?: string | null; next_action?: Json; notes?: string | null; interests?: string[]; visitor_session_id?: string | null; last_activity_at?: string; analyzed_at?: string | null; created_at?: string; updated_at?: string }
@@ -246,6 +258,26 @@ export type Database = {
       lead_segments: {
         Args: { p_business_id: string }
         Returns: Json
+      }
+      create_lead_list: {
+        Args: { p_business_id: string; p_name: string; p_motivo: string; p_kind?: string; p_remind_after_days?: number | null }
+        Returns: string
+      }
+      bulk_import_to_list: {
+        Args: { p_list_id: string; p_contacts: Json }
+        Returns: number
+      }
+      list_lead_lists: {
+        Args: { p_business_id: string }
+        Returns: { id: string; name: string; motivo: string; kind: string; remind_after_days: number | null; total: number; vencidos: number; created_at: string }[]
+      }
+      get_lead_list: {
+        Args: { p_list_id: string }
+        Returns: Json
+      }
+      mark_list_member_contacted: {
+        Args: { p_list_id: string; p_lead_id: string }
+        Returns: undefined
       }
       add_manual_lead: {
         Args: { p_business_id: string; p_whatsapp: string; p_name?: string | null; p_note?: string | null }

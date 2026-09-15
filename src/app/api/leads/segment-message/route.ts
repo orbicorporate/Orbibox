@@ -15,14 +15,15 @@ const SEGMENTO_DESC: Record<string, string> = {
 };
 
 /**
- * Mensagem pronta pra um segmento inteiro. A Orbi escreve uma base com
- * {nome} como marcador; o front troca por cada nome na hora de mandar.
+ * Mensagem pronta pra um segmento inteiro (automático) ou pra uma lista
+ * própria (com motivo livre escrito pelo dono). A Orbi escreve uma base
+ * com {nome} como marcador; o front troca por cada nome na hora de mandar.
  * Pode vir também um "gancho" (item novo na vitrine, voucher novo).
  */
 export async function POST(req: NextRequest) {
   try {
-    const { businessId, segmento, gancho } = await req.json();
-    if (!businessId || !segmento) return NextResponse.json({ error: "Parâmetros." }, { status: 400 });
+    const { businessId, segmento, motivo, gancho } = await req.json();
+    if (!businessId || (!segmento && !motivo)) return NextResponse.json({ error: "Parâmetros." }, { status: 400 });
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -36,7 +37,15 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
     if (!biz) return NextResponse.json({ error: "Negócio não encontrado." }, { status: 404 });
 
-    const system = `Você é a Orbi, assistente de vendas de "${biz.name}". Vai escrever UMA mensagem de WhatsApp que o dono vai mandar, uma por uma, pra ${SEGMENTO_DESC[segmento] ?? "um grupo de contatos"}.
+    // Lista própria: o motivo é escrito pelo dono, na hora que ele criou a
+    // lista ("compraram corte de cabelo em julho", "perguntaram de aluguel
+    // e sumiram"). É mais específico que os segmentos automáticos, então a
+    // mensagem sai mais precisa.
+    const descricaoGrupo = typeof motivo === "string" && motivo.trim()
+      ? motivo.trim()
+      : SEGMENTO_DESC[segmento] ?? "um grupo de contatos";
+
+    const system = `Você é a Orbi, assistente de vendas de "${biz.name}". Vai escrever UMA mensagem de WhatsApp que o dono vai mandar, uma por uma, pra um grupo de pessoas. O motivo de elas estarem juntas nessa lista é: ${descricaoGrupo}
 
 Sobre o negócio: ${biz.about_business || "não informado"}
 Diferenciais: ${biz.differentials || "não informados"}
