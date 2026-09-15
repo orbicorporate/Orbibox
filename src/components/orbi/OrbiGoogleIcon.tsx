@@ -93,12 +93,12 @@ export function OrbiGoogleIcon({
       const hlx = -1 + ((t * 0.4) % 1) * 2;
       const hl = ctx.createLinearGradient(cx + hlx * R - R * 0.4, cy - R, cx + hlx * R + R * 0.4, cy + R);
       hl.addColorStop(0, "rgba(255,255,255,0)");
-      hl.addColorStop(0.5, "rgba(255,255,255,0.45)");
+      hl.addColorStop(0.5, "rgba(255,255,255,0.28)");
       hl.addColorStop(1, "rgba(255,255,255,0)");
       ctx.fillStyle = hl;
       ctx.fillRect(0, 0, size, size);
       const top = ctx.createLinearGradient(cx, cy - R, cx, cy);
-      top.addColorStop(0, "rgba(255,255,255,0.4)");
+      top.addColorStop(0, "rgba(255,255,255,0.24)");
       top.addColorStop(1, "rgba(255,255,255,0)");
       ctx.fillStyle = top;
       ctx.fillRect(cx - R, cy - R, R * 2, R);

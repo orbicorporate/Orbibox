@@ -20,8 +20,10 @@ export function OrbiMapPin({ size = 28, className = "" }: { size?: number; class
         <circle cx="12" cy="10" r="3.4" fill="white" />
         <defs>
           <linearGradient id="orbiPinGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
-            <stop stopColor="var(--orbi-gradient-start)" />
-            <stop offset="1" stopColor="var(--orbi-gradient-end)" />
+            {/* Verde próprio, mais forte e saturado que o degradê da Orbi
+                (que é limão claro e ficava lavado num ícone pequeno). */}
+            <stop stopColor="#34C759" />
+            <stop offset="1" stopColor="#159B4E" />
           </linearGradient>
         </defs>
       </svg>
