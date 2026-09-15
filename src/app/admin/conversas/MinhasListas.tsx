@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatFone } from "@/lib/utils";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { NovaTag, TagChip, type Tag } from "./Etiquetas";
 
 type ListaResumo = { id: string; name: string; motivo: string; kind: string; remind_after_days: number | null; total: number; vencidos: number };
 type Membro = { lead_id: string; name: string | null; whatsapp: string; contacted_at: string | null; vencido: boolean };
@@ -144,10 +145,14 @@ export function MinhasListas({ businessId, orbiColors }: { businessId: string; o
 
   return (
     <div className="mt-5 flex flex-col gap-3">
-      <p className="text-[13.5px] leading-relaxed text-text-secondary">
-        Listas que você monta do seu jeito: clientes que compraram algo específico, quem perguntou de um serviço, ou
-        uma lista que você já tem em outro lugar. Diga o motivo e a Orbi escreve a mensagem certa pra esse grupo.
-      </p>
+      <div className="rounded-[20px] bg-surface-soft p-4">
+        <p className="text-[13.5px] font-semibold">Contatos que vêm de fora do Orbibox</p>
+        <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">
+          Aqui você traz gente da sua lista externa: clientes antigos, quem você já atende por WhatsApp. Como eles não
+          passaram pelo seu link, a Orbi ainda não sabe nada sobre eles. Você conta, marcando etiquetas na hora de
+          importar. Quanto mais contar, melhor ela escreve.
+        </p>
+      </div>
 
       {listas.length === 0 ? (
         <div className="rounded-[24px] border border-dashed border-divider bg-surface-white p-5 text-center">
@@ -185,8 +190,15 @@ function NovaLista({ businessId, onClose, onCreated }: { businessId: string; onC
   const [recompra, setRecompra] = useState(false);
   const [dias, setDias] = useState("30");
   const [bruto, setBruto] = useState("");
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [tagsMarcadas, setTagsMarcadas] = useState<Set<string>>(new Set());
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.rpc("list_lead_tags", { p_business_id: businessId }).then(({ data }) => setTags((data ?? []) as Tag[]));
+  }, [businessId]);
 
   // Aceita "Nome, telefone" ou "Nome - telefone" ou "Nome telefone", uma
   // pessoa por linha. Um número sozinho na linha também funciona.
@@ -223,7 +235,7 @@ function NovaLista({ businessId, onClose, onCreated }: { businessId: string; onC
         p_remind_after_days: recompra ? parseInt(dias, 10) || 30 : null,
       });
       if (error || !listId) throw error;
-      await supabase.rpc("bulk_import_to_list", { p_list_id: listId, p_contacts: contatos });
+      await supabase.rpc("bulk_import_to_list", { p_list_id: listId, p_contacts: contatos, p_tag_ids: [...tagsMarcadas] });
       onCreated(listId);
     } catch {
       setErro("Não consegui criar a lista. Tenta de novo.");
@@ -256,6 +268,15 @@ function NovaLista({ businessId, onClose, onCreated }: { businessId: string; onC
           <span className="text-[13px] text-text-secondary">dias</span>
         </div>
       )}
+
+      <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">O que você sabe sobre eles?</p>
+      <p className="mt-0.5 text-[11.5px] text-text-tertiary">Marque etiquetas pra contar à Orbi. Todas as pessoas dessa lista recebem essas etiquetas.</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {tags.map((tg) => (
+          <TagChip key={tg.id} tag={tg} ativo={tagsMarcadas.has(tg.id)} onClick={() => setTagsMarcadas((s) => { const n = new Set(s); if (n.has(tg.id)) n.delete(tg.id); else n.add(tg.id); return n; })} />
+        ))}
+        <NovaTag businessId={businessId} onCreated={(nova) => { setTags((prev) => [...prev, nova]); setTagsMarcadas((s) => new Set(s).add(nova.id)); }} />
+      </div>
 
       <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Cole os contatos</p>
       <p className="mt-0.5 text-[11.5px] text-text-tertiary">Um por linha: nome e telefone. Ex: Marina, 11 98888-7777</p>

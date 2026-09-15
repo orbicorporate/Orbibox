@@ -4,6 +4,7 @@ import { useState, type ComponentProps } from "react";
 import { ConversasList } from "./ConversasList";
 import { Segmentos } from "./Segmentos";
 import { MinhasListas } from "./MinhasListas";
+import { PorEtiqueta } from "./Etiquetas";
 
 /**
  * Três abas: Conversas (quem chegou pelo link e falou com a Orbi), Listas
@@ -14,7 +15,7 @@ import { MinhasListas } from "./MinhasListas";
  */
 export function ConversasTabs(props: ComponentProps<typeof ConversasList>) {
   const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-  const [aba, setAba] = useState<"conversas" | "automaticas" | "minhas">(
+  const [aba, setAba] = useState<"conversas" | "automaticas" | "minhas" | "etiquetas">(
     params?.get("lista") ? "automaticas" : "conversas",
   );
 
@@ -23,7 +24,7 @@ export function ConversasTabs(props: ComponentProps<typeof ConversasList>) {
   return (
     <>
       <div className="mt-4 flex flex-wrap gap-2">
-        {([["conversas", "Conversas"], ["automaticas", "Listas automáticas"], ["minhas", "Minhas listas"]] as const).map(([k, l]) => (
+        {([["conversas", "Conversas"], ["etiquetas", "Por etiqueta"], ["automaticas", "Listas automáticas"], ["minhas", "Minhas listas"]] as const).map(([k, l]) => (
           <button
             key={k}
             type="button"
@@ -53,6 +54,7 @@ export function ConversasTabs(props: ComponentProps<typeof ConversasList>) {
       {aba === "conversas" && !semNadaAinda && <ConversasList {...props} />}
       {aba === "automaticas" && <Segmentos businessId={props.businessId} orbiColors={props.orbiColors} />}
       {aba === "minhas" && <MinhasListas businessId={props.businessId} orbiColors={props.orbiColors} />}
+      {aba === "etiquetas" && <PorEtiqueta businessId={props.businessId} orbiColors={props.orbiColors} />}
     </>
   );
 }

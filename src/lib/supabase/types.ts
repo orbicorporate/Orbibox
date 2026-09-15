@@ -124,6 +124,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["bonus_redemptions"]["Insert"]>
         Relationships: []
       }
+      lead_tags: {
+        Row: { id: string; business_id: string; name: string; color: string; created_at: string }
+        Insert: { id?: string; business_id: string; name: string; color?: string; created_at?: string }
+        Update: Partial<Database["public"]["Tables"]["lead_tags"]["Insert"]>
+        Relationships: []
+      }
+      lead_tag_assignments: {
+        Row: { tag_id: string; lead_id: string }
+        Insert: { tag_id: string; lead_id: string }
+        Update: Partial<Database["public"]["Tables"]["lead_tag_assignments"]["Insert"]>
+        Relationships: []
+      }
       lead_lists: {
         Row: { id: string; business_id: string; name: string; motivo: string; kind: string; remind_after_days: number | null; created_at: string }
         Insert: { id?: string; business_id: string; name: string; motivo: string; kind?: string; remind_after_days?: number | null; created_at?: string }
@@ -137,7 +149,7 @@ export type Database = {
         Relationships: []
       }
       leads: {
-        Row: { id: string; business_id: string; whatsapp: string; name: string | null; source: string; status: string; temperature: number; summary: string | null; next_action: Json; notes: string | null; interests: string[]; visitor_session_id: string | null; last_activity_at: string; analyzed_at: string | null; created_at: string; updated_at: string }
+        Row: { id: string; business_id: string; whatsapp: string; name: string | null; source: string; status: string; temperature: number; summary: string | null; next_action: Json; notes: string | null; interests: string[]; visitor_session_id: string | null; last_activity_at: string; analyzed_at: string | null; origin: string | null; created_at: string; updated_at: string }
         Insert: { id?: string; business_id: string; whatsapp: string; name?: string | null; source?: string; status?: string; temperature?: number; summary?: string | null; next_action?: Json; notes?: string | null; interests?: string[]; visitor_session_id?: string | null; last_activity_at?: string; analyzed_at?: string | null; created_at?: string; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["leads"]["Insert"]>
         Relationships: []
@@ -259,12 +271,28 @@ export type Database = {
         Args: { p_business_id: string }
         Returns: Json
       }
+      create_lead_tag: {
+        Args: { p_business_id: string; p_name: string; p_color?: string }
+        Returns: string
+      }
+      toggle_lead_tag: {
+        Args: { p_tag_id: string; p_lead_id: string; p_on: boolean }
+        Returns: undefined
+      }
+      list_lead_tags: {
+        Args: { p_business_id: string }
+        Returns: { id: string; name: string; color: string; total: number; do_orbibox: number; externos: number }[]
+      }
+      leads_by_tag: {
+        Args: { p_tag_id: string }
+        Returns: Json
+      }
       create_lead_list: {
         Args: { p_business_id: string; p_name: string; p_motivo: string; p_kind?: string; p_remind_after_days?: number | null }
         Returns: string
       }
       bulk_import_to_list: {
-        Args: { p_list_id: string; p_contacts: Json }
+        Args: { p_list_id: string; p_contacts: Json; p_tag_ids?: string[] }
         Returns: number
       }
       list_lead_lists: {
