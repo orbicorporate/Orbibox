@@ -123,14 +123,14 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
             </filter>
           </defs>
 
-          <circle cx="50" cy="50" r="46" fill="none" stroke="var(--divider)" strokeWidth="3" />
+          <circle cx="50" cy="50" r="46" fill="none" stroke="var(--divider)" strokeWidth="2" />
           <circle
             cx="50"
             cy="50"
             r="46"
             fill="none"
             stroke={semDados ? ctx.cor : "url(#anelOrbi)"}
-            strokeWidth="3"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray={`${(anim / 100) * circ} ${circ}`}
             filter={semDados ? undefined : "url(#anelGlow)"}
