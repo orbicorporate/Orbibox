@@ -33,6 +33,9 @@ export function PulseDetails({
   slug: string;
 }) {
   const [open, setOpen] = useState<string | null>(null);
+  // Começam fechadas: são listas longas que empurram o resto pra baixo.
+  const [paginasAberto, setPaginasAberto] = useState(false);
+  const [clicadosAberto, setClicadosAberto] = useState(false);
 
   return (
     <>
@@ -110,8 +113,15 @@ export function PulseDetails({
       </div>
 
       {paginas.length > 0 && (
-        <>
-          <p className="mt-8 text-[13px] uppercase tracking-wide text-text-tertiary">Páginas visitadas</p>
+        <div className="mt-8">
+          <button type="button" onClick={() => setPaginasAberto((v) => !v)} className="flex w-full cursor-pointer items-center justify-between text-left">
+            <span className="text-[13px] uppercase tracking-wide text-text-tertiary">Páginas visitadas</span>
+            <span className="flex items-center gap-2">
+              <span className="text-[12px] text-text-tertiary">{paginas.length}</span>
+              <span className={`text-text-tertiary transition-transform ${paginasAberto ? "rotate-90" : ""}`}>›</span>
+            </span>
+          </button>
+          {paginasAberto && (
           <div className="mt-3 flex flex-col gap-2">
             {paginas.map((p) => {
               const info = itemMap[p.id];
@@ -141,12 +151,20 @@ export function PulseDetails({
               );
             })}
           </div>
-        </>
+          )}
+        </div>
       )}
 
       {topItems.length > 0 && (
-        <>
-          <p className="mt-8 text-[13px] uppercase tracking-wide text-text-tertiary">Itens mais clicados</p>
+        <div className="mt-8">
+          <button type="button" onClick={() => setClicadosAberto((v) => !v)} className="flex w-full cursor-pointer items-center justify-between text-left">
+            <span className="text-[13px] uppercase tracking-wide text-text-tertiary">Itens mais clicados</span>
+            <span className="flex items-center gap-2">
+              <span className="text-[12px] text-text-tertiary">{topItems.length}</span>
+              <span className={`text-text-tertiary transition-transform ${clicadosAberto ? "rotate-90" : ""}`}>›</span>
+            </span>
+          </button>
+          {clicadosAberto && (
           <div className="mt-3 flex flex-col gap-2">
             {topItems.map((t, i) => {
               const info = itemMap[t.id];
@@ -174,7 +192,8 @@ export function PulseDetails({
               );
             })}
           </div>
-        </>
+          )}
+        </div>
       )}
     </>
   );
