@@ -115,7 +115,7 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
               <animate attributeName="x2" values="0;2;0" dur="4s" repeatCount="indefinite" />
             </linearGradient>
             <filter id="anelGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="2.2" result="blur" />
+              <feGaussianBlur stdDeviation="1.1" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
