@@ -125,11 +125,12 @@ export default async function VouchersPage() {
       </p>
 
       {/* Ativa assim que existe pelo menos um cupom, antes disso não tem
-          painel de ninguém pra ver ainda. Vermelho forte com reflexo. */}
+          painel de ninguém pra ver ainda. Vermelho forte com reflexo, sombra
+          cinza neutra (a sombra colorida parecia fumaça vazando do botão). */}
       {canSave && vouchers && vouchers.length > 0 && (
         <Link
           href="/admin/vouchers/painel"
-          className="relative mt-5 flex items-center gap-3 overflow-hidden rounded-[22px] bg-gradient-to-r from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-3.5 text-white shadow-[0_14px_36px_rgba(204,23,57,0.45)]"
+          className="relative mt-5 flex items-center gap-3 overflow-hidden rounded-[22px] bg-gradient-to-r from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-3.5 text-white shadow-[0_8px_20px_rgba(17,19,24,0.12)]"
         >
           <span aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.35)_0%,rgba(255,255,255,0)_48%)]" />
           <span aria-hidden className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
