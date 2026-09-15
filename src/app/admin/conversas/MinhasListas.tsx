@@ -176,10 +176,22 @@ export function MinhasListas({ businessId, orbiColors }: { businessId: string; o
       <div className="rounded-[20px] bg-surface-soft p-4">
         <p className="text-[13.5px] font-semibold">Contatos que vêm de fora do Orbibox</p>
         <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">
-          Aqui você traz gente da sua lista externa: clientes antigos, quem você já atende por WhatsApp. Como eles não
-          passaram pelo seu link, a Orbi ainda não sabe nada sobre eles. Você conta, marcando etiquetas na hora de
-          importar. Quanto mais contar, melhor ela escreve.
+          Clientes antigos, gente que você já atende por WhatsApp, uma lista que já existe em outro lugar. Funciona em 3 passos:
         </p>
+        <div className="mt-3 flex flex-col gap-2">
+          {[
+            ["Traga", "Cole sua lista e os contatos entram aqui."],
+            ["Conte", "Marque etiquetas dizendo quem são. A Orbi não os conhece, então isso é o que ela usa pra escrever certo."],
+            ["Fale", "Ela escreve a mensagem e você manda do seu WhatsApp."],
+          ].map(([passo, texto], i) => (
+            <div key={passo} className="flex items-start gap-2.5">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-on-background text-[11px] font-bold text-white">{i + 1}</span>
+              <p className="text-[12.5px] leading-snug text-text-secondary">
+                <span className="font-semibold text-on-background">{passo}. </span>{texto}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {listas.length === 0 ? (
