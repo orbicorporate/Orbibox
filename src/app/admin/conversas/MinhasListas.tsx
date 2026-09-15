@@ -28,8 +28,18 @@ export function MinhasListas({ businessId, orbiColors }: { businessId: string; o
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [escrevendo, setEscrevendo] = useState(false);
+  const [editandoNome, setEditandoNome] = useState(false);
+  const [editNome, setEditNome] = useState("");
+  const [editMotivo, setEditMotivo] = useState("");
 
   const supabase = createClient();
+
+  async function salvarNome() {
+    if (!detalhe || !editNome.trim()) return;
+    await supabase.rpc("update_lead_list", { p_list_id: detalhe.id, p_name: editNome.trim(), p_motivo: editMotivo.trim() });
+    setDetalhe((d) => d ? { ...d, name: editNome.trim(), motivo: editMotivo.trim() } : d);
+    setEditandoNome(false);
+  }
 
   function recarregarListas() {
     supabase.rpc("list_lead_lists", { p_business_id: businessId }).then(({ data }) => {
@@ -89,8 +99,26 @@ export function MinhasListas({ businessId, orbiColors }: { businessId: string; o
         ) : (
           <>
             <div className="rounded-[24px] border border-divider bg-surface-white p-5">
-              <p className="text-[16px] font-semibold leading-tight">{detalhe.name}</p>
-              <p className="mt-1 text-[13px] text-text-secondary">{detalhe.motivo}</p>
+              {editandoNome ? (
+                <div className="flex flex-col gap-2">
+                  <input value={editNome} onChange={(e) => setEditNome(e.target.value)} className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[15px] font-semibold outline-none focus:border-on-background" />
+                  <textarea value={editMotivo} onChange={(e) => setEditMotivo(e.target.value)} rows={2} className="w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13.5px] outline-none focus:border-on-background" />
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setEditandoNome(false)} className="flex-1 cursor-pointer rounded-full border border-divider py-2 text-[13px] font-medium">Cancelar</button>
+                    <button type="button" onClick={salvarNome} className="flex-1 cursor-pointer rounded-full bg-on-background py-2 text-[13px] font-semibold text-white">Salvar</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[16px] font-semibold leading-tight">{detalhe.name}</p>
+                    <p className="mt-1 text-[13px] text-text-secondary">{detalhe.motivo}</p>
+                  </div>
+                  <button type="button" onClick={() => { setEditNome(detalhe.name); setEditMotivo(detalhe.motivo); setEditandoNome(true); }} aria-label="Editar nome" className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-tertiary hover:bg-surface-soft">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                  </button>
+                </div>
+              )}
               {detalhe.kind === "recompra" && detalhe.remind_after_days && (
                 <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#E2EAFE] px-2.5 py-1 text-[11.5px] font-semibold text-[#1D4ED8]">
                   ◷ Lembra de novo {detalhe.remind_after_days} dias depois do contato

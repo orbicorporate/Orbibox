@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { formatFone } from "@/lib/utils";
 
@@ -77,6 +78,7 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
   const [detalhe, setDetalhe] = useState<{ id: string; name: string; color: string; leads: { lead_id: string; name: string | null; whatsapp: string; origin: string; summary: string | null }[] } | null>(null);
   const [mensagem, setMensagem] = useState("");
   const [escrevendo, setEscrevendo] = useState(false);
+  const [editando, setEditando] = useState<Tag | null>(null);
   const supabase = createClient();
 
   function recarregar() {
@@ -155,10 +157,14 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
 
   return (
     <div className="mt-5 flex flex-col gap-3">
-      <p className="text-[13.5px] leading-relaxed text-text-secondary">
-        Etiquetas são o que você conta pra Orbi sobre as pessoas: cliente antigo, comprou tal coisa, interessado num
-        assunto. Aqui os contatos aparecem juntos por etiqueta, venham do seu link ou da sua lista de fora.
-      </p>
+      <div className="rounded-[20px] bg-surface-soft p-4">
+        <p className="text-[13.5px] font-semibold">O que você conta pra Orbi</p>
+        <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">
+          Etiquetas descrevem seus contatos: cliente antigo, comprou tal coisa, interessado num assunto. A Orbi usa
+          isso pra escrever certo, principalmente pra quem veio de fora e ela não conhece. Toque numa etiqueta pra ver
+          e falar com o grupo; toque no lápis pra editar.
+        </p>
+      </div>
 
       {tags.length === 0 ? (
         <div className="rounded-[24px] border border-dashed border-divider bg-surface-white p-5 text-center text-[14px] text-text-secondary">
@@ -166,21 +172,105 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
         </div>
       ) : (
         tags.map((t) => (
-          <button key={t.id} type="button" onClick={() => abrir(t)} disabled={(t.total ?? 0) === 0} className="flex w-full cursor-pointer items-center gap-3 rounded-[22px] border border-divider bg-surface-white p-4 text-left disabled:cursor-default disabled:opacity-50">
-            <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: t.color }} />
-            <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold leading-tight">{t.name}</span>
-              <span className="mt-0.5 block text-[12px] text-text-tertiary">
-                {t.total ?? 0} {(t.total ?? 0) === 1 ? "pessoa" : "pessoas"}
-                {(t.do_orbibox ?? 0) > 0 && (t.externos ?? 0) > 0 ? ` · ${t.do_orbibox} do Orbibox, ${t.externos} da sua lista` : ""}
+          <div key={t.id} className="flex items-center gap-1 rounded-[22px] border border-divider bg-surface-white p-2 pl-4">
+            <button
+              type="button"
+              onClick={() => abrir(t)}
+              disabled={(t.total ?? 0) === 0}
+              className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 py-2 text-left disabled:cursor-default disabled:opacity-50"
+            >
+              <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: t.color }} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-semibold leading-tight">{t.name}</span>
+                <span className="mt-0.5 block text-[12px] text-text-tertiary">
+                  {(t.total ?? 0) === 0
+                    ? "Ninguém marcado ainda"
+                    : <>{t.total} {(t.total ?? 0) === 1 ? "pessoa" : "pessoas"}{(t.do_orbibox ?? 0) > 0 && (t.externos ?? 0) > 0 ? ` · ${t.do_orbibox} do link, ${t.externos} da sua lista` : ""}</>}
+                </span>
               </span>
-            </span>
-            {(t.total ?? 0) > 0 && <span className="shrink-0 text-text-tertiary">→</span>}
-          </button>
+              {(t.total ?? 0) > 0 && <span className="shrink-0 text-text-tertiary">→</span>}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditando(t)}
+              aria-label="Editar etiqueta"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-tertiary hover:bg-surface-soft"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+            </button>
+          </div>
         ))
       )}
 
       <NovaTag businessId={businessId} onCreated={() => recarregar()} />
+
+      {editando && (
+        <EditarTag
+          tag={editando}
+          onClose={() => setEditando(null)}
+          onSaved={() => { setEditando(null); recarregar(); }}
+        />
+      )}
     </div>
+  );
+}
+
+/** Folha pra renomear, trocar a cor ou apagar uma etiqueta. */
+function EditarTag({ tag, onClose, onSaved }: { tag: Tag; onClose: () => void; onSaved: () => void }) {
+  const [nome, setNome] = useState(tag.name);
+  const [cor, setCor] = useState(tag.color);
+  const [salvando, setSalvando] = useState(false);
+  const [confirmandoApagar, setConfirmandoApagar] = useState(false);
+  const supabase = createClient();
+
+  async function salvar() {
+    if (!nome.trim()) return;
+    setSalvando(true);
+    await supabase.rpc("update_lead_tag", { p_tag_id: tag.id, p_name: nome.trim(), p_color: cor });
+    setSalvando(false);
+    onSaved();
+  }
+
+  async function apagar() {
+    setSalvando(true);
+    await supabase.rpc("delete_lead_tag", { p_tag_id: tag.id });
+    setSalvando(false);
+    onSaved();
+  }
+
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-on-background/50 backdrop-blur-sm" onClick={() => !salvando && onClose()}>
+      <div className="mx-auto w-full max-w-[440px] rounded-t-[28px] bg-background-main px-5 pb-8 pt-4" onClick={(e) => e.stopPropagation()}>
+        <span className="mx-auto mb-4 block h-1.5 w-12 rounded-full bg-divider" />
+        <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold tracking-[-0.01em]">Editar etiqueta</p>
+
+        <input value={nome} onChange={(e) => setNome(e.target.value)} className="mt-4 w-full rounded-full border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+        <div className="mt-3 flex flex-wrap gap-2">
+          {["#6D28D9", "#1D4ED8", "#0E7490", "#1F7A3D", "#C2650A", "#B0463C", "#B0309E", "#555960"].map((c) => (
+            <button key={c} type="button" onClick={() => setCor(c)} className={`h-8 w-8 rounded-full transition-transform ${cor === c ? "scale-110 ring-2 ring-offset-2 ring-on-background" : ""}`} style={{ backgroundColor: c }} />
+          ))}
+        </div>
+
+        <button type="button" onClick={salvar} disabled={salvando || !nome.trim()} className="mt-5 w-full cursor-pointer rounded-full bg-on-background py-3.5 text-[15px] font-semibold text-white disabled:opacity-40">
+          {salvando ? "Salvando…" : "Salvar"}
+        </button>
+
+        {!confirmandoApagar ? (
+          <button type="button" onClick={() => setConfirmandoApagar(true)} className="mt-2 w-full cursor-pointer py-2 text-center text-[13px] font-medium text-red-600">
+            Apagar etiqueta
+          </button>
+        ) : (
+          <div className="mt-3 rounded-2xl bg-[#FDE7E7] p-3.5 text-center">
+            <p className="text-[13px] text-[#C0392B]">Apagar &quot;{tag.name}&quot;? Os contatos continuam, só perdem essa etiqueta.</p>
+            <div className="mt-2.5 flex gap-2">
+              <button type="button" onClick={() => setConfirmandoApagar(false)} className="flex-1 cursor-pointer rounded-full bg-surface-white py-2 text-[13px] font-medium">Cancelar</button>
+              <button type="button" onClick={apagar} disabled={salvando} className="flex-1 cursor-pointer rounded-full bg-red-600 py-2 text-[13px] font-semibold text-white disabled:opacity-50">Apagar</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body,
   );
 }

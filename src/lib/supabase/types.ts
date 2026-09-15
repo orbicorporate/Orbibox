@@ -271,6 +271,14 @@ export type Database = {
         Args: { p_business_id: string }
         Returns: Json
       }
+      update_lead_tag: {
+        Args: { p_tag_id: string; p_name: string; p_color: string }
+        Returns: undefined
+      }
+      delete_lead_tag: {
+        Args: { p_tag_id: string }
+        Returns: undefined
+      }
       create_lead_tag: {
         Args: { p_business_id: string; p_name: string; p_color?: string }
         Returns: string
@@ -286,6 +294,10 @@ export type Database = {
       leads_by_tag: {
         Args: { p_tag_id: string }
         Returns: Json
+      }
+      update_lead_list: {
+        Args: { p_list_id: string; p_name: string; p_motivo: string }
+        Returns: undefined
       }
       create_lead_list: {
         Args: { p_business_id: string; p_name: string; p_motivo: string; p_kind?: string; p_remind_after_days?: number | null }
