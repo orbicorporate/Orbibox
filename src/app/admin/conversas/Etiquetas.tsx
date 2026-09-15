@@ -9,6 +9,55 @@ export type Tag = { id: string; name: string; color: string; total?: number; do_
 
 const CORES = ["#6D28D9", "#1D4ED8", "#0E7490", "#1F7A3D", "#C2650A", "#B0463C", "#B0309E", "#555960"];
 
+// Etiquetas comuns pra oferecer de largada, quando a pessoa ainda não tem
+// nenhuma. Cobrem o ciclo de venda; todas viram etiquetas editáveis.
+export const SUGESTOES_TAG: { name: string; color: string }[] = [
+  { name: "Clientes ativos", color: "#1F7A3D" },
+  { name: "Já compraram", color: "#1D4ED8" },
+  { name: "Ainda não compraram", color: "#C2650A" },
+  { name: "Demonstraram interesse", color: "#6D28D9" },
+  { name: "Pra reativar", color: "#B0463C" },
+];
+
+/**
+ * Ofertas de etiqueta prontas, pra não encarar a tela vazia. Toca pra criar
+ * na hora; depois é só editar como qualquer outra. Só aparece enquanto não
+ * há nenhuma etiqueta, pra não poluir quem já organizou as suas.
+ */
+export function SugestoesTag({ businessId, onCreated }: { businessId: string; onCreated: (t: Tag) => void }) {
+  const [criando, setCriando] = useState<string | null>(null);
+  const supabase = createClient();
+
+  async function criar(s: { name: string; color: string }) {
+    setCriando(s.name);
+    const { data: id } = await supabase.rpc("create_lead_tag", { p_business_id: businessId, p_name: s.name, p_color: s.color });
+    setCriando(null);
+    if (id) onCreated({ id: id as string, name: s.name, color: s.color, total: 0 });
+  }
+
+  return (
+    <div className="rounded-[20px] bg-surface-soft p-4">
+      <p className="text-[12.5px] font-semibold">Sugestões pra começar</p>
+      <p className="mt-0.5 text-[12px] text-text-tertiary">Toque pra criar. Depois é só editar do seu jeito.</p>
+      <div className="mt-2.5 flex flex-wrap gap-2">
+        {SUGESTOES_TAG.map((s) => (
+          <button
+            key={s.name}
+            type="button"
+            onClick={() => criar(s)}
+            disabled={criando === s.name}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium disabled:opacity-50"
+            style={{ backgroundColor: s.color + "22", color: s.color }}
+          >
+            <span className="text-[13px] leading-none">+</span>
+            {s.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** Chip de etiqueta, com a cor dela. */
 export function TagChip({ tag, ativo, onClick }: { tag: Tag; ativo?: boolean; onClick?: () => void }) {
   return (
@@ -167,9 +216,7 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
       </div>
 
       {tags.length === 0 ? (
-        <div className="rounded-[24px] border border-dashed border-divider bg-surface-white p-5 text-center text-[14px] text-text-secondary">
-          Nenhuma etiqueta ainda. Crie a primeira e comece a marcar seus contatos.
-        </div>
+        <SugestoesTag businessId={businessId} onCreated={() => recarregar()} />
       ) : (
         tags.map((t) => (
           <div key={t.id} className="flex items-center gap-1 rounded-[22px] border border-divider bg-surface-white p-2 pl-4">

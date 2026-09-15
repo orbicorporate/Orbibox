@@ -173,28 +173,11 @@ export function MinhasListas({ businessId, orbiColors }: { businessId: string; o
 
   return (
     <div className="mt-5 flex flex-col gap-3">
-      <div className="rounded-[24px] bg-surface-soft p-5">
-        <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold leading-tight tracking-[-0.01em]">Contatos que vêm de fora do Orbibox</p>
-        <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-          Clientes antigos, contatos do WhatsApp ou uma lista que você já tem.
+      <div className="rounded-[20px] bg-surface-soft p-4">
+        <p className="text-[13.5px] font-semibold">Contatos que vêm de fora do Orbibox</p>
+        <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">
+          Clientes antigos ou uma lista que você já tem. Em 3 passos: <span className="font-medium text-on-background">traga</span> colando a lista, <span className="font-medium text-on-background">conte</span> quem são com etiquetas, e a Orbi <span className="font-medium text-on-background">escreve</span> a mensagem pra você mandar.
         </p>
-
-        <p className="mt-4 text-[13px] font-medium text-text-secondary">Comece em 3 passos</p>
-        <div className="mt-2 flex flex-col gap-2.5">
-          {[
-            ["Traga seus contatos", "Cole sua lista pra reunir os contatos aqui."],
-            ["Conte quem são", "Adicione etiquetas. A Orbi usa esse contexto pra escrever mensagens mais adequadas."],
-            ["Prepare a conversa", "A Orbi escreve a mensagem e você envia pelo seu WhatsApp."],
-          ].map(([titulo, texto], i) => (
-            <div key={titulo} className="flex items-start gap-3 rounded-[18px] bg-surface-white p-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[14px] font-bold text-on-background">{i + 1}</span>
-              <div className="min-w-0">
-                <p className="text-[15px] font-semibold leading-tight">{titulo}</p>
-                <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">{texto}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {listas.length === 0 ? (
