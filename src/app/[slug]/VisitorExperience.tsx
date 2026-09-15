@@ -848,34 +848,31 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
                 className="relative overflow-hidden rounded-[24px] text-white"
                 style={{ background: voucherGradient(v.color), boxShadow: `0 12px 30px ${tema.glow}` }}
               >
+                {/* Foto ocupa a lateral direita, com recorte curvo, e o
+                    degradê da cor entra por cima dela pela esquerda, então o
+                    texto continua legível sem espremer nada. Sem foto, fica
+                    só o fundo metálico com as linhas. */}
+                {v.image_url && (
+                  <div className="absolute inset-y-0 right-0 w-[52%]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={v.image_url} alt={v.title} className="h-full w-full object-cover" style={{ WebkitMaskImage: "radial-gradient(140% 120% at 100% 50%, #000 55%, transparent 78%)", maskImage: "radial-gradient(140% 120% at 100% 50%, #000 55%, transparent 78%)" }} />
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(90deg, ${tema.via} 0%, ${tema.via}CC 30%, transparent 72%)` }} />
+                  </div>
+                )}
                 <VoucherLines />
                 <div className="relative p-5">
-                  {/* Cabeçalho: o desconto manda, a foto vira selo quadrado
-                      ao lado. Antes ela ocupava 42% da largura e espremia o
-                      texto a ponto do botão quebrar em duas linhas. */}
-                  <div className="flex items-start gap-4">
-                    <div className="min-w-0 flex-1">
-                      {v.badge?.trim() && (
-                        <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
-                          {v.badge}
-                        </span>
-                      )}
-                      <p className={`font-[family-name:var(--font-manrope)] text-[32px] font-extrabold leading-none tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}`}>
-                        {voucherDiscountBig(v)}
-                      </p>
-                      <p className="mt-2 text-[16px] font-semibold leading-snug">{v.title}</p>
-                      {v.description?.trim() && (
-                        <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-80">{v.description}</p>
-                      )}
-                    </div>
-
-                    {v.image_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={v.image_url}
-                        alt={v.title}
-                        className="h-[88px] w-[88px] shrink-0 rounded-[18px] object-cover ring-1 ring-white/25"
-                      />
+                  <div className="max-w-[62%]">
+                    {v.badge?.trim() && (
+                      <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                        {v.badge}
+                      </span>
+                    )}
+                    <p className={`font-[family-name:var(--font-manrope)] text-[32px] font-extrabold leading-none tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}`}>
+                      {voucherDiscountBig(v)}
+                    </p>
+                    <p className="mt-2 text-[16px] font-semibold leading-snug">{v.title}</p>
+                    {v.description?.trim() && (
+                      <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-80">{v.description}</p>
                     )}
                   </div>
 
