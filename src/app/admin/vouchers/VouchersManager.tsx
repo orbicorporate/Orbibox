@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { VOUCHER_THEMES, voucherGradient, CHERRY_GRADIENT, CHERRY_SHADOW, type VoucherColor } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
 
@@ -145,7 +146,15 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={v.image_url} alt={v.title} className="h-14 w-14 shrink-0 rounded-2xl object-cover" />
                 ) : (
-                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-[22px]" style={{ background: voucherGradient(v.color) }}>🎟️</span>
+                  // Sem foto: mini cartão do voucher, com o desconto em
+                  // destaque na cor dele. Mais informativo que o emoji.
+                  <span className="relative flex h-14 w-14 shrink-0 flex-col items-center justify-center overflow-hidden rounded-2xl text-white" style={{ background: voucherGradient(v.color) }}>
+                    <VoucherLines />
+                    <span className="relative text-[9px] font-bold uppercase leading-none opacity-80">
+                      {v.discount_type === "percent" ? "%" : "R$"}
+                    </span>
+                    <span className="relative text-[17px] font-extrabold leading-none">{v.discount_value}</span>
+                  </span>
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-semibold">{v.title}</p>
