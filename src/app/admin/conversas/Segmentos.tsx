@@ -9,11 +9,11 @@ type LeadSeg = { id: string; name: string | null; whatsapp: string; motivo: stri
 type Segmentos = Record<string, LeadSeg[]>;
 
 const SEGMENTOS = [
-  { id: "voucher_nao_usado", label: "Pegaram voucher e não usaram", cor: "#C0392B", fundo: "#FDE7E7", icone: "🎟️" },
-  { id: "quentes", label: "Quentes sem fechar", cor: "#C2650A", fundo: "#FDEEDF", icone: "🔥" },
-  { id: "sumiram", label: "Conversaram e sumiram", cor: "#1D4ED8", fundo: "#E2EAFE", icone: "◷" },
-  { id: "querem_novidades", label: "Pediram pra ser avisados", cor: "#1F7A3D", fundo: "#DEF3E3", icone: "✦" },
-  { id: "todos", label: "Todos os contatos", cor: "#555960", fundo: "#ECEDE9", icone: "◎" },
+  { id: "voucher_nao_usado", label: "Pegaram voucher e não usaram", criterio: "Resgataram um voucher mas ainda não passaram na loja", cor: "#C0392B", fundo: "#FDE7E7", icone: "🎟️" },
+  { id: "quentes", label: "Quentes sem fechar", criterio: "Pediram preço, perguntaram como comprar ou voltaram várias vezes", cor: "#C2650A", fundo: "#FDEEDF", icone: "🔥" },
+  { id: "sumiram", label: "Conversaram e sumiram", criterio: "Falaram com a Orbi e ficaram mais de 3 dias sem voltar", cor: "#1D4ED8", fundo: "#E2EAFE", icone: "◷" },
+  { id: "querem_novidades", label: "Pediram pra ser avisados", criterio: "Deixaram o WhatsApp na vitrine pra receber novidades", cor: "#1F7A3D", fundo: "#DEF3E3", icone: "✦" },
+  { id: "todos", label: "Todos os contatos", criterio: "Todo mundo que já teve algum contato com você", cor: "#555960", fundo: "#ECEDE9", icone: "◎" },
 ] as const;
 
 /**
@@ -86,14 +86,15 @@ export function Segmentos({ businessId, orbiColors, refreshKey = 0 }: { business
                 type="button"
                 onClick={() => { setAberto(s.id); setMensagem(""); setGancho(""); setEnviados(new Set()); }}
                 disabled={n === 0}
-                className="flex w-full cursor-pointer items-center gap-3 rounded-[22px] border border-divider bg-surface-white p-4 text-left disabled:cursor-default disabled:opacity-50"
+                className="flex w-full cursor-pointer items-start gap-3 rounded-[22px] border border-divider bg-surface-white p-4 text-left disabled:cursor-default disabled:opacity-50"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[18px]" style={{ backgroundColor: s.fundo, color: s.cor }}>{s.icone}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[15px] font-semibold leading-tight">{s.label}</span>
-                  <span className="mt-0.5 block text-[12.5px] text-text-tertiary">{n === 0 ? "Ninguém aqui ainda" : `${n} ${n === 1 ? "pessoa" : "pessoas"}`}</span>
+                  <span className="mt-0.5 block text-[12px] leading-snug text-text-secondary">{s.criterio}</span>
+                  <span className="mt-1 block text-[12px] font-medium" style={{ color: n === 0 ? undefined : s.cor }}>{n === 0 ? "Ninguém aqui ainda" : `${n} ${n === 1 ? "pessoa" : "pessoas"}`}</span>
                 </span>
-                {n > 0 && <span className="shrink-0 text-text-tertiary">→</span>}
+                {n > 0 && <span className="mt-1 shrink-0 text-text-tertiary">→</span>}
               </button>
             );
           })}
