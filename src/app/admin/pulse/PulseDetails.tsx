@@ -113,13 +113,16 @@ export function PulseDetails({
       </div>
 
       {paginas.length > 0 && (
-        <div className="mt-8">
-          <button type="button" onClick={() => setPaginasAberto((v) => !v)} className="flex w-full cursor-pointer items-center justify-between text-left">
-            <span className="text-[13px] uppercase tracking-wide text-text-tertiary">Páginas visitadas</span>
-            <span className="flex items-center gap-2">
-              <span className="text-[12px] text-text-tertiary">{paginas.length}</span>
-              <span className={`text-text-tertiary transition-transform ${paginasAberto ? "rotate-90" : ""}`}>›</span>
+        <div className="mt-6">
+          <button type="button" onClick={() => setPaginasAberto((v) => !v)} className="flex w-full cursor-pointer items-center gap-3 rounded-[22px] border border-divider bg-surface-white p-4 text-left">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E2EAFE] text-[#1D4ED8]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h20v14H2zM8 21h8M12 17v4" /></svg>
             </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold leading-tight">Páginas visitadas</span>
+              <span className="mt-0.5 block text-[12px] text-text-tertiary">{paginas.length} {paginas.length === 1 ? "página com visita" : "páginas com visitas"}</span>
+            </span>
+            <span className={`shrink-0 text-text-tertiary transition-transform ${paginasAberto ? "rotate-90" : ""}`}>›</span>
           </button>
           {paginasAberto && (
           <div className="mt-3 flex flex-col gap-2">
@@ -156,13 +159,16 @@ export function PulseDetails({
       )}
 
       {topItems.length > 0 && (
-        <div className="mt-8">
-          <button type="button" onClick={() => setClicadosAberto((v) => !v)} className="flex w-full cursor-pointer items-center justify-between text-left">
-            <span className="text-[13px] uppercase tracking-wide text-text-tertiary">Itens mais clicados</span>
-            <span className="flex items-center gap-2">
-              <span className="text-[12px] text-text-tertiary">{topItems.length}</span>
-              <span className={`text-text-tertiary transition-transform ${clicadosAberto ? "rotate-90" : ""}`}>›</span>
+        <div className="mt-3">
+          <button type="button" onClick={() => setClicadosAberto((v) => !v)} className="flex w-full cursor-pointer items-center gap-3 rounded-[22px] border border-divider bg-surface-white p-4 text-left">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FDEEDF] text-[#C2650A]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m9 11 3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
             </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold leading-tight">Itens mais clicados</span>
+              <span className="mt-0.5 block text-[12px] text-text-tertiary">{topItems.length} {topItems.length === 1 ? "item no ranking" : "itens no ranking"}</span>
+            </span>
+            <span className={`shrink-0 text-text-tertiary transition-transform ${clicadosAberto ? "rotate-90" : ""}`}>›</span>
           </button>
           {clicadosAberto && (
           <div className="mt-3 flex flex-col gap-2">
