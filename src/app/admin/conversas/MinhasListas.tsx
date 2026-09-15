@@ -194,6 +194,28 @@ function NovaLista({ businessId, onClose, onCreated }: { businessId: string; onC
   const [tagsMarcadas, setTagsMarcadas] = useState<Set<string>>(new Set());
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [promptCopiado, setPromptCopiado] = useState(false);
+
+  const PROMPT_GPT = `Vou te passar uma lista de contatos bagunçada (pode estar em qualquer formato, com nomes e telefones misturados). Organize assim:
+
+- Uma pessoa por linha
+- Formato: Nome, telefone
+- Telefone com DDD, só números e espaços (ex: 11 98888-7777)
+- Se não houver nome, deixe só o telefone
+- Ignore linhas que não tenham telefone
+- Não invente dados, não adicione nada além do que eu mandar
+- Responda só a lista pronta, sem comentários
+
+Aqui está a lista:
+[cole sua lista aqui]`;
+
+  async function copiarPromptGpt() {
+    try {
+      await navigator.clipboard.writeText(PROMPT_GPT);
+      setPromptCopiado(true);
+      setTimeout(() => setPromptCopiado(false), 2000);
+    } catch { /* sem clipboard */ }
+  }
 
   useEffect(() => {
     const supabase = createClient();
@@ -278,7 +300,18 @@ function NovaLista({ businessId, onClose, onCreated }: { businessId: string; onC
         <NovaTag businessId={businessId} onCreated={(nova) => { setTags((prev) => [...prev, nova]); setTagsMarcadas((s) => new Set(s).add(nova.id)); }} />
       </div>
 
-      <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Cole os contatos</p>
+      <div className="mt-4 flex items-center justify-between gap-2">
+        <p className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Cole os contatos</p>
+        {/* Pra quem tem a lista bagunçada (print, caderno, grupo): copia um
+            prompt pronto pra organizar no ChatGPT e colar já formatado. */}
+        <button
+          type="button"
+          onClick={copiarPromptGpt}
+          className="shrink-0 cursor-pointer rounded-full bg-surface-soft px-3 py-1.5 text-[11.5px] font-semibold text-text-secondary"
+        >
+          {promptCopiado ? "Prompt copiado ✓" : "✦ Organizar no ChatGPT"}
+        </button>
+      </div>
       <p className="mt-0.5 text-[11.5px] text-text-tertiary">Um por linha: nome e telefone. Ex: Marina, 11 98888-7777</p>
       <textarea value={bruto} onChange={(e) => setBruto(e.target.value)} rows={5} placeholder={"Marina, 11 98888-7777\nJoão Pedro - (11) 97777-6666"} className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13.5px] leading-relaxed outline-none focus:border-on-background" />
       {bruto.trim() && <p className="mt-1 text-[11.5px] text-text-tertiary">{contatos.length} {contatos.length === 1 ? "contato reconhecido" : "contatos reconhecidos"}</p>}
