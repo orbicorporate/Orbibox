@@ -76,9 +76,28 @@ function contexto(taxa: number, visitas: number) {
   };
 }
 
-export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { taxa: number; visitas: number; totalCliques: number; orbiColors?: string[] | null }) {
+export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiColors }: { taxa: number; visitas: number; totalCliques: number; businessId: string; orbiColors?: string[] | null }) {
   // Anima o número e o arco de 0 até o valor real, ao montar.
   const [anim, setAnim] = useState(0);
+  // Dica extra gerada pela Orbi por IA, complementa os passos fixos.
+  const [extra, setExtra] = useState<{ titulo: string; texto: string } | null>(null);
+  const [gerando, setGerando] = useState(false);
+
+  async function gerarExtra() {
+    if (gerando) return;
+    setGerando(true);
+    try {
+      const r = await fetch("/api/pulse/extra-tip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId, taxa, visitas, evitar: extra?.texto }),
+      });
+      const d = await r.json();
+      if (r.ok && d.titulo) setExtra({ titulo: d.titulo, texto: d.texto });
+    } finally {
+      setGerando(false);
+    }
+  }
   useEffect(() => {
     let raf = 0;
     const inicio = performance.now();
@@ -151,7 +170,7 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Leitura da Orbi</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Orbi Insights</span>
             </div>
             <p className="mt-0.5 text-[16px] font-normal leading-tight" style={{ color: ctx.cor }}>{ctx.titulo}</p>
           </div>
@@ -162,7 +181,7 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
           <ol className="mt-3 flex flex-col gap-2.5">
             {ctx.passos.map(([titulo, texto], i) => (
               <li key={i} className="flex items-start gap-3 rounded-[18px] border border-divider bg-surface-white p-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white" style={{ backgroundImage: ctx.grad }}>{i + 1}</span>
+                <span className="orbi-gradient flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-on-background">{i + 1}</span>
                 <div className="min-w-0">
                   <p className="text-[14.5px] font-semibold leading-tight text-on-background">{titulo}</p>
                   <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">{texto}</p>
@@ -175,6 +194,27 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
             <Link href={ctx.link.href} className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-button-primary px-5 py-2.5 text-[13.5px] font-semibold text-white">
               {ctx.link.label} <span aria-hidden>→</span>
             </Link>
+          )}
+
+          {extra && (
+            <div className="orbi-card-light relative mt-3 overflow-hidden rounded-[18px] p-4">
+              <p className="relative text-[11px] font-semibold uppercase tracking-wide text-text-secondary">✦ Ideia da Orbi pro seu negócio</p>
+              <p className="relative mt-1.5 text-[14.5px] font-semibold leading-tight">{extra.titulo}</p>
+              <p className="relative mt-0.5 text-[13px] leading-snug text-text-secondary">{extra.texto}</p>
+            </div>
+          )}
+
+          {visitas >= 10 && (
+            <button
+              type="button"
+              onClick={gerarExtra}
+              disabled={gerando}
+              className="mt-3 flex cursor-pointer items-center gap-2 rounded-full bg-surface-soft px-4 py-2 text-[13px] font-semibold text-text-secondary disabled:opacity-60"
+            >
+              {gerando ? (
+                <><span className="h-4 w-4 overflow-hidden rounded-full"><OrbiParticleSphere size={16} colors={orbiColors ?? undefined} className="rounded-full" /></span> Pensando…</>
+              ) : extra ? "✦ Gerar outra ideia" : "✦ Gerar ideia pro meu negócio"}
+            </button>
           )}
 
           {visitas >= 10 && (
