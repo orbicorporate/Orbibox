@@ -173,22 +173,25 @@ export function MinhasListas({ businessId, orbiColors }: { businessId: string; o
 
   return (
     <div className="mt-5 flex flex-col gap-3">
-      <div className="rounded-[20px] bg-surface-soft p-4">
-        <p className="text-[13.5px] font-semibold">Contatos que vêm de fora do Orbibox</p>
-        <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">
-          Clientes antigos, gente que você já atende por WhatsApp, uma lista que já existe em outro lugar. Funciona em 3 passos:
+      <div className="rounded-[24px] bg-surface-soft p-5">
+        <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold leading-tight tracking-[-0.01em]">Contatos que vêm de fora do Orbibox</p>
+        <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
+          Clientes antigos, contatos do WhatsApp ou uma lista que você já tem.
         </p>
-        <div className="mt-3 flex flex-col gap-2">
+
+        <p className="mt-4 text-[13px] font-medium text-text-secondary">Comece em 3 passos</p>
+        <div className="mt-2 flex flex-col gap-2.5">
           {[
-            ["Traga", "Cole sua lista e os contatos entram aqui."],
-            ["Conte", "Marque etiquetas dizendo quem são. A Orbi não os conhece, então isso é o que ela usa pra escrever certo."],
-            ["Fale", "Ela escreve a mensagem e você manda do seu WhatsApp."],
-          ].map(([passo, texto], i) => (
-            <div key={passo} className="flex items-start gap-2.5">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-on-background text-[11px] font-bold text-white">{i + 1}</span>
-              <p className="text-[12.5px] leading-snug text-text-secondary">
-                <span className="font-semibold text-on-background">{passo}. </span>{texto}
-              </p>
+            ["Traga seus contatos", "Cole sua lista pra reunir os contatos aqui."],
+            ["Conte quem são", "Adicione etiquetas. A Orbi usa esse contexto pra escrever mensagens mais adequadas."],
+            ["Prepare a conversa", "A Orbi escreve a mensagem e você envia pelo seu WhatsApp."],
+          ].map(([titulo, texto], i) => (
+            <div key={titulo} className="flex items-start gap-3 rounded-[18px] bg-surface-white p-4">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[14px] font-bold text-on-background">{i + 1}</span>
+              <div className="min-w-0">
+                <p className="text-[15px] font-semibold leading-tight">{titulo}</p>
+                <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">{texto}</p>
+              </div>
             </div>
           ))}
         </div>
