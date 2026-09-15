@@ -112,6 +112,8 @@ export function VisitorExperience({
   // hora quanto o banco.
   const [boxList, setBoxList] = useState<BoxRow[]>(boxes);
   const [editingBoxId, setEditingBoxId] = useState<string | null>(null);
+  // Box com a paletinha de cor aberta na tela inicial.
+  const [colorPickerBox, setColorPickerBox] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState("");
   // "Modo visitante", o dono liga isso pra ver a Home exatamente como o
   // visitante vê, sem os controles de edição no meio, sem precisar sair da
@@ -279,6 +281,18 @@ export function VisitorExperience({
     const nextCfg: CustomConfig = { ...cfg, layout: nextLayout };
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: nextCfg } : b)));
     await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key);
+  }
+
+  // Troca a cor do box direto na tela inicial, sem abrir o editor. Salva na
+  // hora. cor null volta o card pro branco padrão.
+  async function setBoxColor(key: string, cor: string | null) {
+    const box = boxList.find((b) => b.id === key);
+    if (!box) return;
+    const cfg = (box.config ?? {}) as CustomConfig;
+    const nextCfg: CustomConfig = { ...cfg, color: cor ?? undefined };
+    setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: nextCfg } : b)));
+    await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key);
+    setColorPickerBox(null);
   }
 
   function startEditTitle(key: string, current: string) {
@@ -467,6 +481,16 @@ export function VisitorExperience({
                         <span
                           role="button"
                           tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); setColorPickerBox(colorPickerBox === o.key ? null : o.key); }}
+                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
+                          aria-label="Trocar a cor"
+                          title="Cor do card"
+                        >
+                          <span className="h-4 w-4 rounded-full border border-black/10" style={{ background: o.color || "conic-gradient(from 0deg, #C0392B, #C2650A, #1F7A3D, #1D4ED8, #6D28D9, #C0392B)" }} />
+                        </span>
+                        <span
+                          role="button"
+                          tabIndex={0}
                           onClick={(e) => { e.stopPropagation(); toggleLayout(o.key, largo); }}
                           className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
                           aria-label={largo ? "Deixar quadrado (metade)" : "Deixar retângulo (linha toda)"}
@@ -496,6 +520,37 @@ export function VisitorExperience({
                         >
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
                         </span>
+                      </div>
+                    )}
+
+                    {/* Paletinha rápida de cor, abre sobre o card. Salva no
+                        toque, sem precisar abrir o editor completo. */}
+                    {showOwnerControls && colorPickerBox === o.key && (
+                      <div
+                        className="absolute right-2.5 top-11 z-20 flex flex-wrap gap-2 rounded-2xl bg-white p-3 shadow-[0_8px_24px_rgba(17,19,24,0.18)]"
+                        style={{ width: 176 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setBoxColor(o.key, null)}
+                          className="flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white"
+                          aria-label="Branco padrão"
+                        >
+                          {!o.color && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111318" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
+                        </button>
+                        {["#111318", "#C0392B", "#C2650A", "#1F7A3D", "#0E7490", "#1D4ED8", "#6D28D9", "#B0309E"].map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setBoxColor(o.key, c)}
+                            className="flex h-7 w-7 items-center justify-center rounded-full"
+                            style={{ backgroundColor: c }}
+                            aria-label={`Cor ${c}`}
+                          >
+                            {o.color === c && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
+                          </button>
+                        ))}
                       </div>
                     )}
                     {largo ? (
