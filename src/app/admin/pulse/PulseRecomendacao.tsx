@@ -6,6 +6,13 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 
 type TopItem = { title: string; image_url: string | null; clicks: number };
 
+const OBJETIVOS = [
+  { id: "vender", label: "Vender mais" },
+  { id: "autoridade", label: "Ganhar autoridade" },
+  { id: "presenca", label: "Ser mais presente" },
+  { id: "percepcao", label: "Melhorar a impressão" },
+] as const;
+
 export function PulseRecomendacao({
   businessId,
   topItem,
@@ -30,6 +37,9 @@ export function PulseRecomendacao({
   const hashtags = tagsPorVersao[idx] ?? [];
   // Tema do post: por padrão o item mais procurado, mas o dono pode trocar.
   const [temaEscolhido, setTemaEscolhido] = useState<string | null>(null);
+  // Objetivo do post: calibra o ângulo do texto (e se pode ter CTA de venda).
+  // null = autoridade, o padrão que a Orbi já seguia antes disso existir.
+  const [objetivo, setObjetivo] = useState<string | null>(null);
   const [sugestoes, setSugestoes] = useState<string[]>([]);
   const [carregandoTemas, setCarregandoTemas] = useState(false);
   const [temaCustom, setTemaCustom] = useState("");
@@ -87,7 +97,7 @@ export function PulseRecomendacao({
       const res = await fetch("/api/gerar-conteudo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, productTitle: topItem!.title, tipo: t, tema: temaEscolhido ?? undefined }),
+        body: JSON.stringify({ businessId, productTitle: topItem!.title, tipo: t, tema: temaEscolhido ?? undefined, objetivo: objetivo ?? undefined }),
       });
       const data = await res.json();
       if (data.limiteAtingido) {
@@ -249,6 +259,26 @@ export function PulseRecomendacao({
             <button onClick={() => setTrocandoTema(false)} className="mt-2 text-[12px] text-text-tertiary underline">Cancelar</button>
           </div>
         )}
+      </div>
+
+      {/* O que você quer com esse post: calibra o ângulo e se pode ter CTA
+          de venda. Fica entre o tema e o formato, na ordem em que a decisão
+          acontece de verdade. */}
+      <div className="relative mt-4">
+        <p className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">O que você quer agora?</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {OBJETIVOS.map((o) => (
+            <button
+              key={o.id}
+              onClick={() => setObjetivo((v) => (v === o.id ? null : o.id))}
+              className={`rounded-full px-3.5 py-2 text-[12.5px] font-medium ${
+                (objetivo ?? "autoridade") === o.id ? "bg-on-background text-white" : "bg-white/70 text-text-secondary"
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Ações */}

@@ -43,7 +43,7 @@ const FORMATO: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessId, productTitle, tipo, tema, acao } = await req.json();
+    const { businessId, productTitle, tipo, tema, objetivo, acao } = await req.json();
     if (!businessId) return NextResponse.json({ error: "faltam dados" }, { status: 400 });
 
     const key = process.env.ANTHROPIC_API_KEY || process.env.CHAVE_API_ANTROPICA;
@@ -149,12 +149,27 @@ Revise antes de responder: separou em paragrafos com linha em branco (nao um blo
 
 Responda APENAS o texto final, pronto pra copiar e colar. Sem titulo, sem aspas, sem "aqui esta", sem explicacao, sem citar as fontes da busca.`;
 
+    // Objetivo do post: calibra o ângulo e, principalmente, se pode ter CTA
+    // de venda ou não. Regra fixa (nº5) proíbe apelo comercial por padrão;
+    // quando o objetivo é vender, essa regra é substituída aqui.
+    const OBJETIVO_INSTRUCAO: Record<string, string> = {
+      vender: 'O objetivo deste texto e gerar venda. Pode, com elegancia, terminar com um convite direto (perguntar preco, chamar no WhatsApp, saber mais). A regra "nao venda" do seu padrao fica suspensa so pra este texto: ainda sem clice de vendedor ("corre", "nao perca"), mas o CTA pode ser claro.',
+      autoridade: "O objetivo e mostrar autoridade e dominio real do assunto. Ensine algo genuino, sem falar do produto diretamente. Nao venda.",
+      presenca: "O objetivo e manter a marca presente na cabeca de quem ve, com naturalidade. Pode ser mais leve e cotidiano, sem precisar ensinar algo denso. Nao venda.",
+      percepcao: "O objetivo e melhorar a percepcao da marca: bastidores, cuidado, valores, o porque por tras do que voce faz. Nao venda.",
+    };
+    const objetivoInstrucao = typeof objetivo === "string" && OBJETIVO_INSTRUCAO[objetivo]
+      ? OBJETIVO_INSTRUCAO[objetivo]
+      : OBJETIVO_INSTRUCAO.autoridade;
+
     // PARTE VARIÁVEL — muda por negócio/tema, não é cacheada.
     const systemVariavel = `${agent?.agent_name && agent.agent_name !== "Orbi" ? `Seu nome e ${agent.agent_name}.\n` : ""}Contexto do negocio:
 ${contexto || "Poucas informacoes disponiveis. Foque no universo do tema com inteligencia."}
 ${tomLinhas.length ? "\nTom desejado: " + tomLinhas.join(" ") : ""}
 
 O tema em foco e "${foco}". Use como gancho pra uma reflexao valiosa sobre esse universo, ancorada no dado que voce pesquisou.
+
+${objetivoInstrucao}
 
 Escreva: ${oQue}`;
 
