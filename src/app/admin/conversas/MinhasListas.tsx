@@ -176,8 +176,22 @@ export function MinhasListas({ businessId, orbiColors }: { businessId: string; o
       <div className="rounded-[20px] bg-surface-soft p-4">
         <p className="text-[13.5px] font-semibold">Contatos que vêm de fora do Orbibox</p>
         <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">
-          Clientes antigos ou uma lista que você já tem. Em 3 passos: <span className="font-medium text-on-background">traga</span> colando a lista, <span className="font-medium text-on-background">conte</span> quem são com etiquetas, e a Orbi <span className="font-medium text-on-background">escreve</span> a mensagem pra você mandar.
+          Clientes antigos ou uma lista que você já tem.
         </p>
+        <div className="mt-3 flex flex-col gap-2">
+          {[
+            ["Traga", "cole sua lista"],
+            ["Conte", "marque etiquetas dizendo quem são"],
+            ["Escreve", "a Orbi cria a mensagem pra você mandar"],
+          ].map(([verbo, texto], i) => (
+            <div key={verbo} className="flex items-baseline gap-2.5">
+              <span className="text-[12px] font-bold tabular-nums text-text-tertiary">{i + 1}</span>
+              <p className="text-[12.5px] leading-snug text-text-secondary">
+                <span className="font-semibold text-on-background">{verbo}</span> {texto}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {listas.length === 0 ? (
