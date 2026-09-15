@@ -153,7 +153,7 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Leitura da Orbi</span>
             </div>
-            <p className="mt-0.5 text-[16px] font-semibold leading-tight" style={{ color: ctx.cor }}>{ctx.titulo}</p>
+            <p className="mt-0.5 text-[16px] font-medium leading-tight" style={{ color: ctx.cor }}>{ctx.titulo}</p>
           </div>
         </div>
 
