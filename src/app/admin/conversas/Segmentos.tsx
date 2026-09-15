@@ -25,7 +25,7 @@ const SEGMENTOS = [
  * dentro das regras, e cada mensagem sai com cara de mensagem, não de
  * campanha.
  */
-export function Segmentos({ businessId, orbiColors }: { businessId: string; orbiColors?: string[] | null }) {
+export function Segmentos({ businessId, orbiColors, refreshKey = 0 }: { businessId: string; orbiColors?: string[] | null; refreshKey?: number }) {
   const [dados, setDados] = useState<Segmentos | null>(null);
   // Lista e gancho podem chegar pela URL (ex: publicou item na vitrine).
   const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
@@ -40,7 +40,9 @@ export function Segmentos({ businessId, orbiColors }: { businessId: string; orbi
     supabase.rpc("lead_segments", { p_business_id: businessId }).then(({ data }) => {
       setDados((data ?? {}) as Segmentos);
     });
-  }, [businessId]);
+    // refreshKey muda quando um contato é adicionado manualmente, pra essa
+    // lista já incluir ele sem precisar recarregar a página inteira.
+  }, [businessId, refreshKey]);
 
   async function escrever(segmento: string) {
     setEscrevendo(true);

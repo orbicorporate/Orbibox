@@ -247,6 +247,10 @@ export type Database = {
         Args: { p_business_id: string }
         Returns: Json
       }
+      add_manual_lead: {
+        Args: { p_business_id: string; p_whatsapp: string; p_name?: string | null; p_note?: string | null }
+        Returns: string
+      }
       upsert_lead: {
         Args: { p_business_id: string; p_whatsapp: string; p_name?: string | null; p_source?: string; p_session_id?: string | null; p_interest?: string | null }
         Returns: string | null
