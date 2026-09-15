@@ -14,10 +14,10 @@ function contexto(taxa: number, visitas: number) {
       titulo: "Ainda são poucas visitas",
       resumo: "Com pouca gente entrando, esse número ainda não é confiável. Primeiro, traga visitas:",
       passos: [
-        "Compartilhe seu link nos stories do Instagram.",
-        "Coloque o link do Orbibox na bio do seu perfil.",
-        "Mande o link nos grupos de WhatsApp que você participa.",
-      ],
+        ["Stories do Instagram", "Compartilhe seu link nos stories, com uma chamada."],
+        ["Link na bio", "Coloque o link do Orbibox na bio do seu perfil."],
+        ["Grupos de WhatsApp", "Mande o link nos grupos que você participa."],
+      ] as [string, string][],
       link: null as { label: string; href: string } | null,
     };
   }
@@ -28,9 +28,9 @@ function contexto(taxa: number, visitas: number) {
       titulo: "Excelente. Sua página convence.",
       resumo: "A maioria de quem entra faz alguma ação. Pra manter esse nível:",
       passos: [
-        "Mantenha os produtos e preços da Vitrine sempre atualizados.",
-        "Confira de vez em quando se o WhatsApp e os contatos estão certos.",
-      ],
+        ["Vitrine em dia", "Mantenha produtos e preços sempre atualizados."],
+        ["Contatos certos", "Confira de vez em quando se o WhatsApp e os contatos estão corretos."],
+      ] as [string, string][],
       link: { label: "Revisar Vitrine", href: "/admin/vitrine" },
     };
   }
@@ -41,10 +41,10 @@ function contexto(taxa: number, visitas: number) {
       titulo: "Está num bom caminho.",
       resumo: "Boa parte age ao entrar. Pra subir mais, faça isto:",
       passos: [
-        "Em Boxes, arraste o box mais importante (WhatsApp ou Vitrine) pra ficar em primeiro.",
-        "Dê a ele um nome que convide a tocar, tipo \"Falar agora no WhatsApp\".",
-        "Tire da frente qualquer box que você não usa, pra não distrair.",
-      ],
+        ["Destaque o que importa", "Em Boxes, arraste WhatsApp ou Vitrine pra primeira posição."],
+        ["Convide para a ação", "Use um nome claro, como \"Falar agora no WhatsApp\"."],
+        ["Simplifique a escolha", "Oculte os boxes que você não usa, pra evitar distrações."],
+      ] as [string, string][],
       link: { label: "Organizar Boxes", href: "/admin/boxes" },
     };
   }
@@ -55,10 +55,10 @@ function contexto(taxa: number, visitas: number) {
       titulo: "Dá pra melhorar.",
       resumo: "Muita gente entra e sai sem tocar em nada. Deixe a primeira tela mais direta:",
       passos: [
-        "Abra sua página e veja a primeira tela: dá pra entender o que fazer em 3 segundos?",
-        "Deixe UM botão principal bem no topo (ex: WhatsApp) e nomeie com clareza.",
-        "Reduza o número de boxes: menos opções, decisão mais fácil.",
-      ],
+        ["Teste os 3 segundos", "Abra sua página: dá pra entender o que fazer num relance?"],
+        ["Um botão principal", "Deixe uma ação no topo (ex: WhatsApp) com nome claro."],
+        ["Menos boxes", "Menos opções na tela deixam a decisão mais fácil."],
+      ] as [string, string][],
       link: { label: "Ajustar Boxes", href: "/admin/boxes" },
     };
   }
@@ -68,10 +68,10 @@ function contexto(taxa: number, visitas: number) {
     titulo: "Vale ajustar a página.",
     resumo: "Quase ninguém age ao entrar. Provavelmente falta um caminho claro. Comece por aqui:",
     passos: [
-      "Garanta que existe um box de ação no topo (WhatsApp ou Vitrine).",
-      "Preencha a Vitrine com pelo menos alguns produtos ou serviços.",
-      "Deixe só uma ação óbvia na primeira tela, sem poluição.",
-    ],
+      ["Uma ação no topo", "Garanta um box de ação em primeiro (WhatsApp ou Vitrine)."],
+      ["Vitrine com conteúdo", "Preencha com pelo menos alguns produtos ou serviços."],
+      ["Primeira tela limpa", "Deixe só uma ação óbvia, sem poluição."],
+    ] as [string, string][],
     link: { label: "Revisar minha página", href: "/admin/boxes" },
   };
 }
@@ -160,10 +160,13 @@ export function TaxaConversao({ taxa, visitas, totalCliques, orbiColors }: { tax
         <div className="border-t border-divider px-5 py-4">
           <p className="text-[13.5px] leading-relaxed text-text-secondary">{ctx.resumo}</p>
           <ol className="mt-3 flex flex-col gap-2.5">
-            {ctx.passos.map((p, i) => (
-              <li key={i} className="flex gap-2.5 text-[13.5px] leading-relaxed">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ backgroundImage: ctx.grad }}>{i + 1}</span>
-                <span className="text-on-background">{p}</span>
+            {ctx.passos.map(([titulo, texto], i) => (
+              <li key={i} className="flex items-start gap-3 rounded-[18px] border border-divider bg-surface-white p-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white" style={{ backgroundImage: ctx.grad }}>{i + 1}</span>
+                <div className="min-w-0">
+                  <p className="text-[14.5px] font-semibold leading-tight text-on-background">{titulo}</p>
+                  <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">{texto}</p>
+                </div>
               </li>
             ))}
           </ol>
