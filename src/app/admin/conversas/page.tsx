@@ -66,10 +66,12 @@ export default async function ConversasPage() {
   return (
     <div className="flex flex-col">
       <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
-        Conversas
+        Talks
       </h1>
       <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-        A Orbi lê cada conversa, resume o que a pessoa quis e te diz quem está quente e o que mandar.
+        Trate seus visitantes com a inteligência da Orbi. Ela entende o que eles gostam e o que gostariam de
+        receber, te dá a mensagem pronta, a temperatura do lead e o motivo de agir. Isso não é venda, é troca
+        real que deixa seu lead feliz.
       </p>
       <ConversasTabs conversations={list} businessId={business!.id} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />
     </div>

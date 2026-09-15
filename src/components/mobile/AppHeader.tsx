@@ -52,7 +52,7 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
         <ProgressBadge pct={progressPct} />
         {/* Sino de notificação, pisca quando tem conversa que ainda não foi
             vista. Ao lado do ícone de configurações, sempre alinhado. */}
-        <Link href="/admin/conversas" className="relative flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft" aria-label="Conversas">
+        <Link href="/admin/conversas" className="relative flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft" aria-label="Talks">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M12 3a5 5 0 0 0-5 5v3.2c0 .7-.25 1.36-.7 1.9L5 15h14l-1.3-1.9a3 3 0 0 1-.7-1.9V8a5 5 0 0 0-5-5Z" />
             <path d="M9.5 18a2.5 2.5 0 0 0 5 0" />
