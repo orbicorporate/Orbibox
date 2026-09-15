@@ -14,9 +14,24 @@ export function voucherTheme(color: string | null | undefined) {
   return VOUCHER_THEMES[(color as VoucherColor) in VOUCHER_THEMES ? (color as VoucherColor) : "cherry"];
 }
 
+/**
+ * Fundo metálico: em vez de um degradê linear plano, empilha faixas de luz
+ * (um brilho no canto superior, uma sombra na diagonal, um realce embaixo)
+ * sobre a cor base. Dá o efeito de metal escovado, com reflexo, sem trocar
+ * a cor do tema.
+ */
 export function voucherGradient(color: string | null | undefined) {
   const t = voucherTheme(color);
-  return `linear-gradient(135deg, ${t.from} 0%, ${t.via} 55%, ${t.to} 100%)`;
+  return [
+    // brilho do canto (reflexo de luz)
+    `radial-gradient(120% 90% at 12% 0%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 42%)`,
+    // sombra diagonal (dá o vinco metálico)
+    `linear-gradient(135deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 68%, rgba(0,0,0,0.28) 100%)`,
+    // realce quente na base
+    `linear-gradient(180deg, rgba(255,255,255,0) 60%, ${t.to}55 100%)`,
+    // cor base do tema
+    `linear-gradient(135deg, ${t.from} 0%, ${t.via} 55%, ${t.to} 100%)`,
+  ].join(", ");
 }
 
 // Vermelho cereja, o mesmo tom em todo botão/cabeçalho do Vouchers no admin.

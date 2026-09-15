@@ -1,5 +1,6 @@
 /** Linhas finas decorativas, traços brancos bem sutis por cima do degradê
- * do voucher. É só enfeite: fica atrás do conteúdo e não captura toque. */
+ * do voucher. É só enfeite: fica atrás do conteúdo e não captura toque.
+ * Uma faixa de reflexo diagonal reforça o ar metálico do fundo. */
 export function VoucherLines({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -9,11 +10,27 @@ export function VoucherLines({ className = "" }: { className?: string }) {
       preserveAspectRatio="none"
       fill="none"
     >
-      <path d="M-20 160 C 80 120, 140 190, 240 140 S 380 60, 430 90" stroke="white" strokeOpacity="0.18" strokeWidth="1" />
-      <path d="M-20 185 C 90 150, 160 215, 260 165 S 400 90, 440 120" stroke="white" strokeOpacity="0.12" strokeWidth="1" />
-      <path d="M260 -10 C 300 40, 250 90, 300 140 S 380 190, 420 210" stroke="white" strokeOpacity="0.14" strokeWidth="1" />
-      <circle cx="340" cy="30" r="46" stroke="white" strokeOpacity="0.10" strokeWidth="1" />
-      <circle cx="340" cy="30" r="70" stroke="white" strokeOpacity="0.06" strokeWidth="1" />
+      <defs>
+        <linearGradient id="voucherSheen" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="white" stopOpacity="0" />
+          <stop offset="48%" stopColor="white" stopOpacity="0.10" />
+          <stop offset="52%" stopColor="white" stopOpacity="0.10" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      {/* Faixa de reflexo, o brilho que "corta" o metal */}
+      <path d="M-40 70 L 180 -30 L 230 -30 L 10 70 Z" fill="url(#voucherSheen)" />
+
+      {/* Curvas finas, guilhoché discreto */}
+      <path d="M-20 150 C 90 118, 150 178, 250 134 S 390 66, 440 96" stroke="white" strokeOpacity="0.16" strokeWidth="0.75" />
+      <path d="M-20 168 C 96 138, 168 196, 268 150 S 410 84, 448 116" stroke="white" strokeOpacity="0.10" strokeWidth="0.75" />
+      <path d="M-20 186 C 100 158, 180 214, 286 168 S 420 100, 456 134" stroke="white" strokeOpacity="0.07" strokeWidth="0.75" />
+
+      {/* Anéis concêntricos finos, canto superior */}
+      <circle cx="352" cy="24" r="40" stroke="white" strokeOpacity="0.12" strokeWidth="0.75" />
+      <circle cx="352" cy="24" r="62" stroke="white" strokeOpacity="0.08" strokeWidth="0.75" />
+      <circle cx="352" cy="24" r="84" stroke="white" strokeOpacity="0.05" strokeWidth="0.75" />
     </svg>
   );
 }
