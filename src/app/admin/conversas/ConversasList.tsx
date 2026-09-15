@@ -198,29 +198,25 @@ export function ConversasList({ conversations, businessId, orbiColors }: { conve
     <div className="mt-5 flex flex-col">
       <DialogRenderer />
 
-      {/* Números que importam, antes da lista */}
+      {/* Números que importam, antes da lista. Cada card é o atalho do
+          filtro correspondente: tocar filtra a lista embaixo. */}
       <div className="grid grid-cols-3 gap-2.5">
-        <div className="rounded-[20px] border border-divider bg-surface-white px-4 py-3.5 text-center">
+        <button type="button" onClick={() => setFiltro("todos")} className={`cursor-pointer rounded-[20px] border px-4 py-3.5 text-center transition-colors ${filtro === "todos" ? "border-on-background bg-surface-white" : "border-divider bg-surface-white"}`}>
           <p className="text-[22px] font-bold leading-none">{lista.length}</p>
           <p className="mt-1 text-[11.5px] text-text-tertiary">conversas</p>
-        </div>
-        <div className="rounded-[20px] border border-divider bg-surface-white px-4 py-3.5 text-center">
+        </button>
+        <button type="button" onClick={() => setFiltro("contato")} className={`cursor-pointer rounded-[20px] border px-4 py-3.5 text-center transition-colors ${filtro === "contato" ? "border-[#128C3E] bg-surface-white" : "border-divider bg-surface-white"}`}>
           <p className="text-[22px] font-bold leading-none text-[#128C3E]">{comContato}</p>
           <p className="mt-1 text-[11.5px] text-text-tertiary">com contato</p>
-        </div>
-        <div className="rounded-[20px] border border-divider bg-surface-white px-4 py-3.5 text-center">
+        </button>
+        <button type="button" onClick={() => setFiltro("quentes")} className={`cursor-pointer rounded-[20px] border px-4 py-3.5 text-center transition-colors ${filtro === "quentes" ? "border-[#C0392B] bg-surface-white" : "border-divider bg-surface-white"}`}>
           <p className="text-[22px] font-bold leading-none text-[#C0392B]">{quentes}</p>
           <p className="mt-1 text-[11.5px] text-text-tertiary">quentes</p>
-        </div>
+        </button>
       </div>
 
+      {/* Só o período aqui: os três cards acima já fazem o filtro por tipo. */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        {([["todos", "Todas"], ["quentes", "🔥 Quentes"], ["contato", "☎ Com contato"]] as const).map(([k, l]) => (
-          <button key={k} type="button" onClick={() => setFiltro(k)} className={`cursor-pointer rounded-full px-3.5 py-1.5 text-[13px] font-medium ${filtro === k ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>
-            {l}
-          </button>
-        ))}
-        <span className="h-5 w-px bg-divider" />
         {PERIODOS.map((p) => (
           <button key={p.key} type="button" onClick={() => setPeriodo(p.key)} className={`cursor-pointer rounded-full px-3 py-1.5 text-[12.5px] font-medium ${periodo === p.key ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>
             {p.label}
