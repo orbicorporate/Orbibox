@@ -12,7 +12,7 @@ type ListaDetalhe = { id: string; name: string; motivo: string; kind: string; re
 
 /**
  * Listas que o dono cria, não que o sistema monta sozinho. A diferença
- * pro "Listas automáticas" (Segmentos.tsx): aqui o motivo é escrito por
+ * pro "Listas da Orbi" (Segmentos.tsx): aqui o motivo é escrito por
  * quem conhece o cliente de verdade ("compraram corte em julho", "pediram
  * orçamento de reforma"), o que faz a Orbi escrever uma mensagem muito
  * mais específica do que um segmento genérico consegue.
@@ -92,7 +92,7 @@ export function MinhasListas({ businessId, orbiColors }: { businessId: string; o
   if (abertaId) {
     return (
       <div className="mt-5 flex flex-col gap-3">
-        <button type="button" onClick={() => { setAbertaId(null); recarregarListas(); }} className="cursor-pointer self-start text-[13px] text-text-tertiary hover:underline">← Minhas listas</button>
+        <button type="button" onClick={() => { setAbertaId(null); recarregarListas(); }} className="cursor-pointer self-start text-[13px] text-text-tertiary hover:underline">← Listas suas</button>
 
         {carregandoDetalhe || !detalhe ? (
           <p className="text-[13px] text-text-tertiary">Carregando…</p>

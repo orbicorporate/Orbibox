@@ -13,8 +13,8 @@ type AbaKey = "conversas" | "etiquetas" | "automaticas" | "minhas";
 const ABAS: { key: AbaKey; label: string; icon: string; cor: string; fundo: string; desc: string }[] = [
   { key: "conversas", label: "Conversas", icon: "▤", cor: "#1D4ED8", fundo: "#E2EAFE", desc: "Quem falou com a Orbi pelo seu link. Ela resume, mede a temperatura e sugere o que responder." },
   { key: "etiquetas", label: "Por etiqueta", icon: "◉", cor: "#6D28D9", fundo: "#EDE6FC", desc: "Seus contatos agrupados por interesse, misturando quem veio do link e quem você importou." },
-  { key: "automaticas", label: "Listas automáticas", icon: "✦", cor: "#1F7A3D", fundo: "#DEF3E3", desc: "Listas que a Orbi monta sozinha: quem esquentou, sumiu, ou pegou voucher e não usou." },
-  { key: "minhas", label: "Minhas listas", icon: "◫", cor: "#C2650A", fundo: "#FDEEDF", desc: "Contatos que você traz de fora do Orbibox e organiza do seu jeito, com lembrete de recompra." },
+  { key: "automaticas", label: "Listas da Orbi", icon: "✦", cor: "#1F7A3D", fundo: "#DEF3E3", desc: "Listas que a Orbi monta sozinha: quem esquentou, sumiu, ou pegou voucher e não usou." },
+  { key: "minhas", label: "Listas suas", icon: "◫", cor: "#C2650A", fundo: "#FDEEDF", desc: "Contatos que você traz de fora do Orbibox e organiza do seu jeito, com lembrete de recompra." },
 ];
 
 /**
@@ -62,11 +62,11 @@ export function ConversasTabs(props: ComponentProps<typeof ConversasList>) {
         <div className="mt-4 rounded-[24px] border border-dashed border-divider bg-surface-white p-5">
           <p className="text-[15px] font-semibold">Ainda sem conversas pelo link</p>
           <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-            Sem problema, o Talks funciona mesmo assim. Em &quot;Minhas listas&quot; você importa os clientes que já
+            Sem problema, o Talks funciona mesmo assim. Em &quot;Listas suas&quot; você importa os clientes que já
             tem e a Orbi escreve mensagens pra eles também.
           </p>
           <button type="button" onClick={() => setAba("minhas")} className="mt-3 cursor-pointer rounded-full bg-on-background px-4 py-2.5 text-[13.5px] font-semibold text-white">
-            Ir pra Minhas listas
+            Ir pra Listas suas
           </button>
         </div>
       )}
