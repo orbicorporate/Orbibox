@@ -40,7 +40,7 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between bg-background-main/90 px-6 py-4 backdrop-blur">
+    <header className={`sticky top-0 flex items-center justify-between bg-background-main/90 px-6 py-4 backdrop-blur ${menuOpen ? "z-50" : "z-20"}`}>
       <div className="flex items-center gap-2">
         <BackButton />
         <OrbiOrb size={28} />
@@ -79,13 +79,14 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
 
         {menuOpen && (
           <>
-            {/* Backdrop, clique fora fecha o menu. */}
+            {/* Backdrop, clique em qualquer lugar fora do menu fecha. Fica
+                acima de todo o conteúdo da página (z-40) e abaixo do menu. */}
             <button
               aria-label="Fechar menu"
               onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-20 cursor-default bg-on-background/10 backdrop-blur-[2px]"
+              className="fixed inset-0 z-40 cursor-default bg-on-background/10 backdrop-blur-[2px]"
             />
-            <div className="absolute right-0 top-12 z-30 w-[320px] overflow-hidden rounded-[28px] bg-surface-white p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
+            <div className="absolute right-0 top-12 z-50 w-[320px] overflow-hidden rounded-[28px] bg-surface-white p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
               <p className="px-2 pb-2 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Configurações</p>
 
               <div className="flex flex-col gap-1">
