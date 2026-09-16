@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 function brl(cents: number) {
@@ -101,7 +102,7 @@ export default async function MasterOverview() {
       <div>
         <div className="flex items-center justify-between">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Embaixadores</p>
-          <a href="/master/afiliados" className="text-[12.5px] font-medium text-text-secondary underline">Ver todos</a>
+          <Link href="/master/afiliados" className="text-[12.5px] font-medium text-text-secondary underline">Ver todos</Link>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {embaixadores.map((c) => (
