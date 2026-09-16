@@ -4,7 +4,19 @@ import { OrbiContactDisc } from "./OrbiContactDisc";
 import { OrbiGoogleIcon } from "./OrbiGoogleIcon";
 import { OrbiMapPin } from "./OrbiMapPin";
 import { OrbiLogoBadge } from "./OrbiLogoBadge";
+import { OrbiMoneyIcon, OrbiPercentIcon, OrbiArrowIcon, OrbiHeartIcon, OrbiGiftIcon, OrbiHappyIcon, OrbiDogIcon, OrbiLeafIcon } from "./OrbiEmojiStickers";
 import { isAnimatedIcon } from "@/lib/showcase";
+
+const EMOJI_STICKERS: Record<string, (size: number) => ReactNode> = {
+  __money__: (s) => <OrbiMoneyIcon size={s} />,
+  __percent__: (s) => <OrbiPercentIcon size={s} />,
+  __arrow__: (s) => <OrbiArrowIcon size={s} />,
+  __heart__: (s) => <OrbiHeartIcon size={s} />,
+  __gift__: (s) => <OrbiGiftIcon size={s} />,
+  __happy__: (s) => <OrbiHappyIcon size={s} />,
+  __dog__: (s) => <OrbiDogIcon size={s} />,
+  __leaf__: (s) => <OrbiLeafIcon size={s} />,
+};
 
 export type HomeCardLayout = "largo" | "medio";
 
@@ -37,6 +49,8 @@ export function HomeIcon({
         <OrbiGoogleIcon size={48} className="rounded-full" />
       ) : icon === "__pin__" ? (
         <OrbiMapPin size={32} />
+      ) : EMOJI_STICKERS[icon] ? (
+        EMOJI_STICKERS[icon](42)
       ) : icon === "__logo__" && (boxLogo || businessLogo) ? (
         <OrbiLogoBadge logoUrl={boxLogo || businessLogo!} size={44} />
       ) : (

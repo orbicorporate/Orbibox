@@ -262,10 +262,14 @@ export const ICON_LIBRARY = [
 /** Primeiros ícones mostrados antes de tocar em "Ver mais", os mais comuns. */
 export const ICON_LIBRARY_PREVIEW_COUNT = 24;
 
-/** Valores de ícone que são animações em canvas (esfera, check, disco de
- * contato, logo). Regra do app: ícone animado sempre roda com FUNDO
- * TRANSPARENTE, herda o fundo do box, sem quadradinho de cor por trás. */
-export const ANIMATED_ICONS = ["__orb__", "__orbcheck__", "__orbwa__", "__wadisc__", "__google__", "__pin__"] as const;
+/** Valores de ícone que são animações em canvas ou CSS (esfera, check, disco
+ * de contato, logo, pin, e os selos de emoji). Regra do app: ícone animado
+ * sempre roda com FUNDO TRANSPARENTE, herda o fundo do box, sem quadradinho
+ * de cor por trás. */
+export const ANIMATED_ICONS = [
+  "__orb__", "__orbcheck__", "__orbwa__", "__wadisc__", "__google__", "__pin__",
+  "__money__", "__percent__", "__arrow__", "__heart__", "__gift__", "__happy__", "__dog__", "__leaf__",
+] as const;
 
 export function isAnimatedIcon(icon: string | null | undefined): boolean {
   return !!icon && (ANIMATED_ICONS as readonly string[]).includes(icon);

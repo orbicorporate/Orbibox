@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -11,6 +11,7 @@ import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { OrbiLogoBadge } from "@/components/orbi/OrbiLogoBadge";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
+import { OrbiMoneyIcon, OrbiPercentIcon, OrbiArrowIcon, OrbiHeartIcon, OrbiGiftIcon, OrbiHappyIcon, OrbiDogIcon, OrbiLeafIcon } from "@/components/orbi/OrbiEmojiStickers";
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon, isVideoUrl } from "@/lib/showcase";
 import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
@@ -52,6 +53,19 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
 
 const ICON_CHOICES = ICON_LIBRARY;
 const DIFF_ICONS = ICON_LIBRARY;
+
+/** Mapa dos 8 selos de emoji animados, pra não repetir o switch em cada
+ * lugar que precisa renderizar um ícone animado pelo valor salvo. */
+const EMOJI_STICKERS: Record<string, (size: number) => ReactNode> = {
+  __money__: (s) => <OrbiMoneyIcon size={s} />,
+  __percent__: (s) => <OrbiPercentIcon size={s} />,
+  __arrow__: (s) => <OrbiArrowIcon size={s} />,
+  __heart__: (s) => <OrbiHeartIcon size={s} />,
+  __gift__: (s) => <OrbiGiftIcon size={s} />,
+  __happy__: (s) => <OrbiHappyIcon size={s} />,
+  __dog__: (s) => <OrbiDogIcon size={s} />,
+  __leaf__: (s) => <OrbiLeafIcon size={s} />,
+};
 
 /** Preto ou branco, o que der mais contraste, pra ícone ficar legível em
  * qualquer cor da paleta, mesmo as claras. */
@@ -445,6 +459,8 @@ export function BoxesManager({
                     <OrbiGoogleIcon size={44} />
                   ) : icon === "__pin__" ? (
                     <OrbiMapPin size={30} />
+                  ) : EMOJI_STICKERS[icon] ? (
+                    EMOJI_STICKERS[icon](40)
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={40} />
                   ) : (
@@ -1051,6 +1067,8 @@ function BoxEditor({
               <OrbiGoogleIcon size={36} />
             ) : cfg.icon === "__pin__" ? (
               <OrbiMapPin size={26} />
+            ) : EMOJI_STICKERS[cfg.icon ?? ""] ? (
+              EMOJI_STICKERS[cfg.icon ?? ""](32)
             ) : null}
           </span>
           <span className="text-[13px] leading-relaxed text-text-secondary">Esse ícone já vem com cor e movimento próprios, por isso não dá pra escolher um fundo atrás dele, ele aparece sozinho.</span>
@@ -1093,6 +1111,21 @@ function BoxEditor({
         <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={22} /></span>
         <span className="text-[13px] font-medium">Pin animado</span>
       </button>
+
+      {/* Selos de emoji animados: só os ícones, sem nome do lado, pra
+          escolher rápido igual escolhe uma cor. */}
+      <div className="flex flex-wrap gap-2">
+        {Object.entries(EMOJI_STICKERS).map(([key, render]) => (
+          <button
+            key={key}
+            onClick={() => pickIcon(key)}
+            aria-label={key.replace(/__/g, "")}
+            className={`flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 ${cfg.icon === key ? "border-on-background" : "border-transparent"}`}
+          >
+            {render(38)}
+          </button>
+        ))}
+      </div>
 
       {/* Logotipo: mostra todos os que já foram enviados (em Configurações ou
           em qualquer outro box) como sugestão pronta, sempre a biblioteca

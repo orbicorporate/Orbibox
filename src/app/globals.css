@@ -351,6 +351,36 @@ body {
   animation: orbiPinShadow 1.8s ease-in-out infinite;
 }
 
+/* Selos de emoji animados (dinheiro, %, seta, coração, presente, carinha,
+   cachorro, folha). Cada um usa um destes 4 movimentos, sempre sutil. */
+@keyframes orbiStickerBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.03); }
+}
+@keyframes orbiStickerPulse {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.14); }
+  40% { transform: scale(0.97); }
+  60% { transform: scale(1.08); }
+}
+@keyframes orbiStickerNudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+@keyframes orbiStickerWag {
+  0%, 100% { transform: rotate(-7deg); }
+  50% { transform: rotate(7deg); }
+}
+@keyframes orbiStickerSway {
+  0%, 100% { transform: rotate(-5deg) translateY(0); }
+  50% { transform: rotate(5deg) translateY(-2px); }
+}
+.orbi-sticker-bounce { animation: orbiStickerBounce 1.9s ease-in-out infinite; }
+.orbi-sticker-pulse { animation: orbiStickerPulse 1.6s ease-in-out infinite; }
+.orbi-sticker-nudge { animation: orbiStickerNudge 1.1s ease-in-out infinite; }
+.orbi-sticker-wag { animation: orbiStickerWag 0.9s ease-in-out infinite; }
+.orbi-sticker-sway { animation: orbiStickerSway 2.4s ease-in-out infinite; }
+
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
