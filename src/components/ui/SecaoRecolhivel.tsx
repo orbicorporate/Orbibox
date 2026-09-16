@@ -42,18 +42,28 @@ export function SecaoRecolhivel({
   descricao,
   preenchido,
   opcional = false,
+  destaque = false,
   children,
 }: {
   titulo: string;
   descricao: string;
   preenchido: boolean;
   opcional?: boolean;
+  /** Layout mais forte (borda de cor, seta maior), pra seção que não pode
+   * passar despercebida no meio de outras mais discretas. */
+  destaque?: boolean;
   children: React.ReactNode;
 }) {
   const [aberto, setAberto] = useState(!preenchido && !opcional);
 
   return (
-    <div className="rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
+    <div
+      className={`rounded-[28px] bg-surface-white p-6 ${
+        destaque
+          ? "border-2 border-on-background shadow-[0_4px_20px_rgba(17,19,24,0.10)]"
+          : "shadow-[0_2px_16px_rgba(17,19,24,0.05)]"
+      }`}
+    >
       <button
         type="button"
         aria-expanded={aberto}
@@ -62,12 +72,12 @@ export function SecaoRecolhivel({
       >
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
-            <span className="text-[15px] font-semibold">{titulo}</span>
+            <span className={destaque ? "text-[17px] font-bold" : "text-[15px] font-semibold"}>{titulo}</span>
             <StatusTag preenchido={preenchido} opcional={opcional} />
           </span>
           <span className="mt-1.5 block text-[13px] leading-relaxed text-text-secondary">{descricao}</span>
         </span>
-        <span className={`mt-0.5 shrink-0 text-text-tertiary transition-transform ${aberto ? "rotate-90" : ""}`}>
+        <span className={`mt-0.5 shrink-0 transition-transform ${destaque ? "text-[20px] text-on-background" : "text-text-tertiary"} ${aberto ? "rotate-90" : ""}`}>
           →
         </span>
       </button>

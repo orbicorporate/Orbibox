@@ -345,6 +345,7 @@ export function BoxesManager({
         titulo="Tela inicial"
         descricao="A frase de saudação e o avatar que aparecem no topo, antes dos caminhos."
         preenchido
+        destaque
       >
         <div className="flex flex-col gap-4">
           <div className="rounded-[20px] bg-surface-soft p-4">
