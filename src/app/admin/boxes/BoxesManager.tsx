@@ -261,6 +261,11 @@ export function BoxesManager({
       setCreating(false);
       setDraft({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
       setDraftLabel("");
+      // Abre o box recém-criado já em edição: é onde vive o Agendar
+      // (opcional), que só existe pra um box que já tem id salvo. Sem
+      // isso, a pessoa criava o box e caía numa lista fechada, sem ver
+      // onde configurar a agenda.
+      setEditingId((data as Box).id);
     } else {
       setCreateError("Não foi possível criar. Tente de novo.");
     }
