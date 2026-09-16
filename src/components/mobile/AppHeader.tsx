@@ -120,20 +120,18 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
               {/* Vouchers ganha destaque de propósito, é a ferramenta com
                   maior impacto comercial direto (fecha venda na hora), então
                   precisa parecer maior e mais chamativa que as configurações
-                  comuns acima, não só uma cor diferente. */}
+                  comuns acima, não só uma cor diferente. Fundo é a arte 3D do
+                  ticket de desconto, não gradiente CSS. */}
               <Link
                 href="/admin/vouchers"
                 onClick={() => setMenuOpen(false)}
-                className="relative mt-2 block overflow-hidden rounded-[22px] bg-gradient-to-br from-[#E9FF8C] via-[#B9F7C8] to-[#9BEFE6] p-5"
+                className="relative mt-2 block overflow-hidden rounded-[22px] bg-cover bg-center p-5"
+                style={{ backgroundImage: "url(/vouchers-promo-bg.webp)" }}
               >
-                {/* "%" gigante ancorado no canto, bem sutil, atrás de tudo. */}
-                <span aria-hidden className="pointer-events-none absolute -bottom-6 -right-4 select-none text-[130px] font-black leading-none text-white/25">%</span>
-
-                <span className="relative flex items-center justify-between gap-2">
+                <span className="relative flex items-center">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-white/60 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-[#1F7A45]">
-                    ★ Ferramenta comercial
+                    ★ Mais clientes hoje
                   </span>
-                  <span className="text-[10.5px] font-semibold uppercase tracking-wide text-[#2E9E5B]/80">mais clientes hoje ↘</span>
                 </span>
 
                 <span className="relative mt-3.5 flex items-center gap-3">
