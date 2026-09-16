@@ -1099,7 +1099,7 @@ function BoxEditor({
         className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__wadisc__" || cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
       >
         <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiContactDisc size={32} /></span>
-        <span className="text-[13px] font-medium">Emblema de contato animado</span>
+        <span className="text-[13px] font-medium">Contato</span>
       </button>
 
       <button
@@ -1107,14 +1107,14 @@ function BoxEditor({
         className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__google__" ? "border-on-background" : "border-divider"}`}
       >
         <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiGoogleIcon size={32} /></span>
-        <span className="text-[13px] font-medium">Google animado</span>
+        <span className="text-[13px] font-medium">Google</span>
       </button>
       <button
         onClick={() => pickIcon("__pin__")}
         className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__pin__" ? "border-on-background" : "border-divider"}`}
       >
         <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={22} /></span>
-        <span className="text-[13px] font-medium">Pin animado</span>
+        <span className="text-[13px] font-medium">Localização</span>
       </button>
 
       {/* Selos de emoji animados: só os ícones, sem nome do lado, pra
