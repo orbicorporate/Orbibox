@@ -125,16 +125,24 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
               <Link
                 href="/admin/vouchers"
                 onClick={() => setMenuOpen(false)}
-                className="relative mt-2 block overflow-hidden rounded-[22px] bg-cover bg-center p-5 pt-14"
+                className="relative mt-2 block overflow-hidden rounded-[22px] bg-cover bg-center p-5"
                 style={{ backgroundImage: "url(/vouchers-promo-bg.webp)" }}
               >
-                <span className="relative flex items-center gap-3">
+                <span className="relative flex items-center">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/60 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-[#1F7A45]">
+                    ★ Mais clientes hoje
+                  </span>
+                </span>
+
+                <span className="relative mt-3.5 flex items-center gap-3">
                   <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-[22px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]">🎟️</span>
                   <span className="block font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-none tracking-[-0.01em] text-on-background">Vouchers</span>
                 </span>
 
                 <span className="relative mt-4 block max-w-[80%] text-[13.5px] leading-relaxed text-on-background/75">
-                  Crie ofertas com estoque controlado. Traz cliente na mesma hora.
+                  Crie ofertas com
+                  <br />
+                  estoque controlado.
                 </span>
 
                 <span className="relative mt-4 inline-flex items-center gap-2 rounded-full bg-[#14301F] px-5 py-2.5 text-[14px] font-semibold text-white">
