@@ -1518,23 +1518,23 @@ function ItemCard({
             <div>
               <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Agendar (opcional)</p>
               <HelperText>Publica e some da Vitrine sozinho nas datas escolhidas, bom pra promoção por tempo limitado.</HelperText>
-              <div className="mt-3 flex gap-2">
-                <div className="flex-1">
-                  <p className="text-[12px] text-text-tertiary">Começa em</p>
+              <div className="mt-3 flex flex-col gap-2.5">
+                <div>
+                  <p className="text-[12px] font-medium text-text-tertiary">Começa em</p>
                   <input
                     type="datetime-local"
                     defaultValue={isoToDatetimeLocal(item.starts_at)}
                     onBlur={(e) => save(item.id, { starts_at: datetimeLocalToIso(e.target.value) })}
-                    className="mt-1 w-full rounded-full border border-divider px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
+                    className="mt-1.5 w-full rounded-2xl border border-divider px-4 py-3 text-[14px] outline-none focus:border-on-background"
                   />
                 </div>
-                <div className="flex-1">
-                  <p className="text-[12px] text-text-tertiary">Termina em</p>
+                <div>
+                  <p className="text-[12px] font-medium text-text-tertiary">Termina em</p>
                   <input
                     type="datetime-local"
                     defaultValue={isoToDatetimeLocal(item.ends_at)}
                     onBlur={(e) => save(item.id, { ends_at: datetimeLocalToIso(e.target.value) })}
-                    className="mt-1 w-full rounded-full border border-divider px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
+                    className="mt-1.5 w-full rounded-2xl border border-divider px-4 py-3 text-[14px] outline-none focus:border-on-background"
                   />
                 </div>
               </div>

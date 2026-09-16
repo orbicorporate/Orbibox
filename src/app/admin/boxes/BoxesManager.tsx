@@ -580,23 +580,23 @@ export function BoxesManager({
                   <HelperText>
                     Ativa e desativa sozinho nas datas escolhidas, bom pra promoção por tempo limitado, sem precisar lembrar de desligar.
                   </HelperText>
-                  <div className="mt-3 flex gap-2">
-                    <div className="flex-1">
-                      <p className="text-[12px] text-text-tertiary">Começa em</p>
+                  <div className="mt-3 flex flex-col gap-2.5">
+                    <div>
+                      <p className="text-[12px] font-medium text-text-tertiary">Começa em</p>
                       <input
                         type="datetime-local"
                         defaultValue={isoToDatetimeLocal(box.starts_at)}
                         onBlur={(e) => saveSchedule(box, datetimeLocalToIso(e.target.value), box.ends_at)}
-                        className="mt-1 w-full rounded-full border border-divider bg-surface-white px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
+                        className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] outline-none focus:border-on-background"
                       />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-[12px] text-text-tertiary">Termina em</p>
+                    <div>
+                      <p className="text-[12px] font-medium text-text-tertiary">Termina em</p>
                       <input
                         type="datetime-local"
                         defaultValue={isoToDatetimeLocal(box.ends_at)}
                         onBlur={(e) => saveSchedule(box, box.starts_at, datetimeLocalToIso(e.target.value))}
-                        className="mt-1 w-full rounded-full border border-divider bg-surface-white px-3.5 py-2 text-[13px] outline-none focus:border-on-background"
+                        className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] outline-none focus:border-on-background"
                       />
                     </div>
                   </div>
