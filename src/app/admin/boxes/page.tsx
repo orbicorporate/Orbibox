@@ -19,6 +19,7 @@ export default async function BoxesPage() {
   ]);
   const { data: boxes } = await supabase.from("smart_boxes").select("*").eq("business_id", business!.id).order("position", { ascending: true });
   const { data: agentConfig } = await supabase.from("agent_configs").select("orbi_colors").eq("business_id", business!.id).maybeSingle();
+  const { data: giftCfg } = await supabase.from("gift_settings").select("enabled").eq("business_id", business!.id).maybeSingle();
   const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length >= 2
     ? (agentConfig.orbi_colors as string[])
     : null;
@@ -63,6 +64,7 @@ export default async function BoxesPage() {
         brandColors={brandColors}
         orbiColors={orbiColors}
         hasVouchers={access?.hasVouchers ?? false}
+        giftEnabled={!!giftCfg?.enabled}
         hasAiChat={access?.hasAiChat ?? false}
       />
     </div>

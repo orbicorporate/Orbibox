@@ -72,7 +72,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -202,6 +202,7 @@ export function VisitorExperience({
       const cfg = (b.config ?? {}) as CustomConfig;
       if (b.box_type === "custom" && cfg.action === "zara") return false;
       if (b.box_type === "custom" && cfg.action === "cupom" && !hasVouchers) return false;
+      if (b.box_type === "custom" && cfg.action === "gift" && !giftEnabled) return false;
       return true;
     })
     .sort((a, b) => a.position - b.position)
@@ -233,6 +234,8 @@ export function VisitorExperience({
             }
           } else if (cfg.action === "cupom") {
             chooseIntent("cupom");
+          } else if (cfg.action === "gift") {
+            chooseIntent("presentear");
           } else if (cfg.url) {
             trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: cfg.url });
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");

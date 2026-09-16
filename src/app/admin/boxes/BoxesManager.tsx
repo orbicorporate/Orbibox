@@ -20,7 +20,7 @@ import { addToLogoGallery } from "@/lib/logoGallery";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 
 type BrandColor = { hex: string; role?: string };
-type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown; starts_at: string | null; ends_at: string | null };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
@@ -47,6 +47,7 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   endereco: "Mostra o endereço",
   link: "Abre um link",
   cupom: "Abre os vouchers",
+  gift: "Abre o gift card",
 };
 
 const ICON_CHOICES = ICON_LIBRARY;
@@ -79,6 +80,7 @@ export function BoxesManager({
   brandColors,
   orbiColors,
   hasVouchers,
+  giftEnabled,
   hasAiChat,
 }: {
   businessId: string;
@@ -96,6 +98,7 @@ export function BoxesManager({
   brandColors: BrandColor[];
   orbiColors: string[] | null;
   hasVouchers: boolean;
+  giftEnabled: boolean;
   hasAiChat: boolean;
 }) {
   const supabase = createClient();
@@ -267,6 +270,11 @@ export function BoxesManager({
   // ficam numa página própria, não dá pra configurar direto por aqui).
   function novoBoxVoucher() {
     setDraftLabel("Vouchers"); setDraft({ label: "Vouchers", subtitle: "Resgate agora e aproveite", icon: "🎟️", action: "cupom", url: "", color: "transparent" });
+    setCreating(true);
+  }
+
+  function novoBoxGift() {
+    setDraftLabel("Presentear"); setDraft({ label: "Presentear", subtitle: "Monte um vale-presente", icon: "🎁", action: "gift", url: "", color: "transparent" });
     setCreating(true);
   }
 
@@ -829,6 +837,32 @@ export function BoxesManager({
               </span>
             </Link>
           )}
+
+          {/* Box de gift, atalho pronto. Só faz sentido se o gift estiver
+              ativo; senão leva pra ferramenta pra configurar primeiro. */}
+          {giftEnabled ? (
+            <button
+              onClick={novoBoxGift}
+              className="flex items-center gap-3 rounded-[22px] border border-divider bg-surface-white p-4 text-left"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EDE6FC] text-[20px]">🎁</span>
+              <span>
+                <span className="block text-[14px] font-semibold">🎁 Box de gift · presente pronto</span>
+                <span className="block text-[12.5px] text-text-tertiary">O cliente monta um vale-presente e combina o pagamento com você.</span>
+              </span>
+            </button>
+          ) : (
+            <Link
+              href="/admin/gift"
+              className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EDE6FC] text-[20px]">🎁</span>
+              <span>
+                <span className="block text-[14px] font-semibold">🎁 Box de gift <span className="rounded-full bg-gradient-to-r from-[#6D28D9] to-[#B0309E] bg-clip-text text-transparent">novidade</span></span>
+                <span className="block text-[12.5px] text-text-tertiary">Deixe seus clientes darem vale-presentes. Toque pra ativar.</span>
+              </span>
+            </Link>
+          )}
         </div>
       )}
     </div>
@@ -868,7 +902,7 @@ function BoxEditor({
   const animated = isAnimatedIcon(cfg.icon);
   // Ações que vêm prontas do atalho de criação e não se troca por outra:
   // o box existe justamente pra fazer isso.
-  const acaoFixa = cfg.action === "cupom" || cfg.action === "endereco" || cfg.action === "avaliar";
+  const acaoFixa = cfg.action === "cupom" || cfg.action === "endereco" || cfg.action === "avaliar" || cfg.action === "gift";
 
   function update(next: Partial<BoxConfig>) {
     const merged = { ...cfg, ...next };
