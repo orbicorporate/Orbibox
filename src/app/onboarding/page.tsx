@@ -175,15 +175,17 @@ export default function OnboardingPage() {
       }
     }
 
-    // Loja vende, então Comprar e Presentear na frente. Serviço não tem o que
-    // "comprar" direto, Conhecer e tirar dúvida importam mais. Sem site, deixa
-    // tudo ligado e o dono decide depois em Boxes.
+    // Loja vende, então Comprar na frente. Serviço não tem o que "comprar"
+    // direto, Conhecer e tirar dúvida importam mais. Sem site, deixa tudo
+    // ligado e o dono decide depois em Boxes. O box de Presentear nasce
+    // sempre desligado agora: "para presente" virou uma opção dentro da
+    // pergunta de curadoria da Orbi, não um botão à parte na tela inicial.
     const ativos =
       siteType === "ecommerce"
-        ? { product: true, campaign: true, content: false, agent: true }
+        ? { product: true, campaign: false, content: false, agent: true }
         : siteType === "institucional" || siteType === "links"
         ? { product: false, campaign: false, content: true, agent: true }
-        : { product: true, campaign: true, content: true, agent: true };
+        : { product: true, campaign: false, content: true, agent: true };
 
     await supabase.from("smart_boxes").insert([
       { business_id: business.id, box_type: "hero", title: "Entrada Adaptativa", position: 0 },

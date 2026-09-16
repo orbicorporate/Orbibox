@@ -636,7 +636,7 @@ export function VisitorExperience({
 
             {hasAiChat && content.length >= 3 && (
               <div className="mt-6 w-full">
-                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} agentName={agentName} onAskOrbi={hasAiChat ? (q) => chooseIntent("duvida", q) : undefined} />
+                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} agentName={agentName} onAskOrbi={hasAiChat ? (q) => chooseIntent("duvida", q) : undefined} onGift={giftEnabled ? () => chooseIntent("presentear") : undefined} />
               </div>
             )}
           </div>

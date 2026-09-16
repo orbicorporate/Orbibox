@@ -15,6 +15,7 @@ export function CuradoriaOrbi({
   products,
   agentName = "Orbi",
   onAskOrbi,
+  onGift,
   compact = false,
 }: {
   businessId: string;
@@ -23,6 +24,7 @@ export function CuradoriaOrbi({
   products: Product[];
   agentName?: string;
   onAskOrbi?: (question?: string) => void;
+  onGift?: () => void;
   compact?: boolean;
 }) {
   const [pergunta, setPergunta] = useState<string | null>(null);
@@ -63,6 +65,13 @@ export function CuradoriaOrbi({
   }, [businessId]);
 
   async function escolher(opcao: string) {
+    // "Para presente" não é uma resposta de curadoria normal: abre o fluxo
+    // de gift card de verdade (montar valor, pra quem, liberar por
+    // WhatsApp), em vez de a Orbi tentar recomendar produtos pra isso.
+    if (onGift && opcao.toLowerCase().includes("presente")) {
+      onGift();
+      return;
+    }
     setEscolhida(opcao);
     setCurating(true);
     setFrase(null);

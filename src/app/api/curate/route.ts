@@ -44,15 +44,24 @@ export async function POST(req: NextRequest) {
 
     // MODO 1: perguntas-chave. Se o dono definiu uma customizada, usa ela.
     if (mode === "questions") {
-      const { data: cfg } = await supabase
-        .from("agent_configs")
-        .select("curation_question, curation_options")
-        .eq("business_id", businessId)
-        .maybeSingle();
+      const [{ data: cfg }, { data: gift }] = await Promise.all([
+        supabase.from("agent_configs").select("curation_question, curation_options").eq("business_id", businessId).maybeSingle(),
+        supabase.from("gift_settings").select("enabled").eq("business_id", businessId).maybeSingle(),
+      ]);
+      const giftEnabled = !!gift?.enabled;
+      // "Para presente" garante acesso ao gift card direto na pergunta de
+      // curadoria, sem precisar de um box à parte. Só entra se o negócio
+      // aceita gift cards, e só se nenhuma opção já cobrir isso.
+      function comGift(opcoes: string[]): string[] {
+        if (!giftEnabled) return opcoes;
+        if (opcoes.some((o) => o.toLowerCase().includes("presente"))) return opcoes;
+        return opcoes.length >= 4 ? [...opcoes.slice(0, 3), "Para presente"] : [...opcoes, "Para presente"];
+      }
+
       const custom = cfg?.curation_question?.trim();
       const customOpts = Array.isArray(cfg?.curation_options) ? (cfg.curation_options as string[]).filter(Boolean) : [];
       if (custom && customOpts.length >= 2) {
-        return NextResponse.json({ pergunta: custom, opcoes: customOpts.slice(0, 4) });
+        return NextResponse.json({ pergunta: custom, opcoes: comGift(customOpts.slice(0, 4)) });
       }
 
       const system = `Você é a inteligência de curadoria de uma vitrine. Olhando o catálogo de um negócio específico, crie UMA pergunta curta e envolvente pra fazer ao visitante (como "O que bateu vontade hoje?" numa sorveteria, ou "Qual seu momento?" numa loja), e de 3 a 4 respostas possíveis, curtas (1-3 palavras cada), que dividam o catálogo de formas úteis e reais pra ESSE negócio. As respostas devem refletir o que o catálogo realmente oferece, nada genérico. Português do Brasil, tom leve.
@@ -63,7 +72,7 @@ Responda APENAS um JSON válido, sem texto antes ou depois, no formato:
       try {
         const clean = raw.replace(/```json|```/g, "").trim();
         const parsed = JSON.parse(clean);
-        return NextResponse.json({ pergunta: parsed.pergunta, opcoes: (parsed.opcoes ?? []).slice(0, 4) });
+        return NextResponse.json({ pergunta: parsed.pergunta, opcoes: comGift((parsed.opcoes ?? []).slice(0, 4)) });
       } catch {
         return NextResponse.json({ pergunta: null, opcoes: [] });
       }
