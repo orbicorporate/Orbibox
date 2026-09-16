@@ -123,28 +123,28 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
               <Link
                 href="/admin/vouchers"
                 onClick={() => setMenuOpen(false)}
-                className="relative mt-2 block overflow-hidden rounded-[22px] bg-gradient-to-br from-[#E9FF8C] via-[#B9F7C8] to-[#9BEFE6] p-4"
+                className="relative mt-2 block overflow-hidden rounded-[22px] bg-gradient-to-br from-[#E9FF8C] via-[#B9F7C8] to-[#9BEFE6] p-5"
               >
-                {/* Ilustração de vouchers "%" ao fundo, só enfeite */}
-                <span aria-hidden className="pointer-events-none absolute -bottom-3 -right-2 rotate-[-12deg] select-none">
-                  <span className="flex h-20 w-24 items-center justify-center rounded-2xl bg-white/70 text-[34px] font-black text-[#2E9E5B] shadow-[0_6px_16px_rgba(0,0,0,0.08)]">%</span>
-                </span>
-                <span aria-hidden className="pointer-events-none absolute right-4 top-3 text-[10.5px] font-semibold uppercase tracking-wide text-[#2E9E5B]/80">
-                  mais clientes hoje ↘
-                </span>
-                <span className="relative flex items-center gap-3">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-[22px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]">🎟️</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[20px] font-bold leading-tight text-on-background">Vouchers</span>
-                    <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-white/60 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-[#1F7A45]">
-                      ★ Super ferramenta comercial
-                    </span>
+                {/* "%" gigante ancorado no canto, bem sutil, atrás de tudo. */}
+                <span aria-hidden className="pointer-events-none absolute -bottom-6 -right-4 select-none text-[130px] font-black leading-none text-white/25">%</span>
+
+                <span className="relative flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/60 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-[#1F7A45]">
+                    ★ Ferramenta comercial
                   </span>
+                  <span className="text-[10.5px] font-semibold uppercase tracking-wide text-[#2E9E5B]/80">mais clientes hoje ↘</span>
                 </span>
-                <span className="relative mt-3 block max-w-[68%] text-[13px] leading-relaxed text-on-background/80">
-                  Crie vouchers personalizados com controle de estoque, isso traz cliente na mesma hora.
+
+                <span className="relative mt-3.5 flex items-center gap-3">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-[22px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]">🎟️</span>
+                  <span className="block font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-none tracking-[-0.01em] text-on-background">Vouchers</span>
                 </span>
-                <span className="relative mt-3.5 inline-flex items-center gap-2 rounded-full bg-[#14301F] px-5 py-2.5 text-[14px] font-semibold text-white">
+
+                <span className="relative mt-3 block max-w-[80%] text-[13.5px] leading-relaxed text-on-background/75">
+                  Crie ofertas com estoque controlado. Traz cliente na mesma hora.
+                </span>
+
+                <span className="relative mt-4 inline-flex items-center gap-2 rounded-full bg-[#14301F] px-5 py-2.5 text-[14px] font-semibold text-white">
                   Experimentar <span aria-hidden>→</span>
                 </span>
               </Link>
