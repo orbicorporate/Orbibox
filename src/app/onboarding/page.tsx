@@ -237,7 +237,7 @@ export default function OnboardingPage() {
   }
 
   function goToApp() {
-    router.push("/admin/agent?tour=0");
+    router.push("/admin/apresentacao");
     router.refresh();
   }
 

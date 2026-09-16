@@ -15,13 +15,18 @@ export default function LandingPage() {
         <p className="mt-4 max-w-sm text-[16px] text-text-secondary">
           Seu negócio com inteligência própria.
         </p>
-        <div className="mt-10 flex gap-3">
-          <Link href="/signup">
-            <Button variant="orbi">Criar meu Orbibox ✦</Button>
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <Link href="/apresentacao">
+            <Button variant="orbi">Ver como funciona ✦</Button>
           </Link>
-          <Link href="/login">
-            <Button variant="ghost">Entrar</Button>
-          </Link>
+          <div className="flex gap-3">
+            <Link href="/signup">
+              <Button variant="ghost">Criar meu Orbibox</Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="ghost">Entrar</Button>
+            </Link>
+          </div>
         </div>
       </div>
     </main>
