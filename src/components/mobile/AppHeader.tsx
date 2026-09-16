@@ -150,6 +150,20 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
                 </span>
               </Link>
 
+              {/* Gift Cards, atalho discreto abaixo do destaque de Vouchers */}
+              <Link
+                href="/admin/gift"
+                onClick={() => setMenuOpen(false)}
+                className="mt-2 flex items-center gap-3 rounded-2xl border border-divider bg-surface-white px-4 py-3.5"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EDE6FC] text-[16px]">🎁</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14.5px] font-semibold">Gift Cards</span>
+                  <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">Seus clientes montam vale-presentes pra dar.</span>
+                </span>
+                <span className="shrink-0 text-text-tertiary">→</span>
+              </Link>
+
               {/* Atalho pro painel de gestão, só pros masters */}
               {isMaster && (
                 <Link

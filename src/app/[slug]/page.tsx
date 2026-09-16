@@ -78,7 +78,7 @@ export default async function VisitorPage({
   const isOwner = !!user && user.id === business.owner_id;
 
   // As quatro dependem só do business, vão juntas em vez de em fila.
-  const [contentRes, boxesRes, agentRes, hasAiChat, hasVouchers] = await Promise.all([
+  const [contentRes, boxesRes, agentRes, hasAiChat, hasVouchers, giftRes] = await Promise.all([
     supabase
       .from("content_items")
       .select("id, title, description, price, price_type, price_max, image_url, brand_label, type, position, layout_size, box_color, footer_color, box_style, title_placement, target_url, link_kind, starts_at, ends_at")
@@ -93,10 +93,12 @@ export default async function VisitorPage({
     supabase.from("agent_configs").select("agent_name, orbi_colors, suggested_questions").eq("business_id", business.id).maybeSingle(),
     getOwnerHasAiChat(business.owner_id),
     getOwnerHasVouchers(business.owner_id),
+    supabase.from("gift_settings").select("enabled").eq("business_id", business.id).maybeSingle(),
   ]);
   // Fora da janela de data agendada = como se não existisse pro visitante,
   // mesmo estando "publicado"/"ativo", assim não precisa lembrar de
   // desligar manualmente uma promoção que já venceu.
+  const giftEnabled = !!giftRes.data?.enabled;
   const content = filterLive(contentRes.data ?? []);
   const boxes = filterLive(boxesRes.data ?? []);
   const agentConfig = agentRes.data;
@@ -115,6 +117,7 @@ export default async function VisitorPage({
       isOwner={isOwner}
       hasAiChat={hasAiChat}
       hasVouchers={hasVouchers}
+      giftEnabled={giftEnabled}
     />
   );
 }

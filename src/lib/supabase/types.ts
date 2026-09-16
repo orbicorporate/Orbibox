@@ -148,6 +148,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["lead_list_members"]["Insert"]>
         Relationships: []
       }
+      gift_settings: {
+        Row: { business_id: string; enabled: boolean; art_url: string | null; suggested_values: number[] | null; allow_custom_value: boolean; min_value_cents: number; message: string | null; updated_at: string }
+        Insert: { business_id: string; enabled?: boolean; art_url?: string | null; suggested_values?: number[] | null; allow_custom_value?: boolean; min_value_cents?: number; message?: string | null; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["gift_settings"]["Insert"]>
+        Relationships: []
+      }
+      gift_cards: {
+        Row: { id: string; business_id: string; code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; buyer_whatsapp: string | null; status: string; created_at: string; paid_at: string | null; used_at: string | null }
+        Insert: { id?: string; business_id: string; code: string; value_cents: number; from_name?: string | null; to_name?: string | null; message?: string | null; buyer_whatsapp?: string | null; status?: string; created_at?: string; paid_at?: string | null; used_at?: string | null }
+        Update: Partial<Database["public"]["Tables"]["gift_cards"]["Insert"]>
+        Relationships: []
+      }
       leads: {
         Row: { id: string; business_id: string; whatsapp: string; name: string | null; source: string; status: string; temperature: number; summary: string | null; next_action: Json; notes: string | null; interests: string[]; visitor_session_id: string | null; last_activity_at: string; analyzed_at: string | null; origin: string | null; created_at: string; updated_at: string }
         Insert: { id?: string; business_id: string; whatsapp: string; name?: string | null; source?: string; status?: string; temperature?: number; summary?: string | null; next_action?: Json; notes?: string | null; interests?: string[]; visitor_session_id?: string | null; last_activity_at?: string; analyzed_at?: string | null; created_at?: string; updated_at?: string }
@@ -322,6 +334,14 @@ export type Database = {
       add_manual_lead: {
         Args: { p_business_id: string; p_whatsapp: string; p_name?: string | null; p_note?: string | null }
         Returns: string
+      }
+      create_gift_card: {
+        Args: { p_business_id: string; p_value_cents: number; p_from: string; p_to: string; p_message: string; p_whatsapp: string }
+        Returns: Json
+      }
+      get_gift_card: {
+        Args: { p_code: string }
+        Returns: Json
       }
       upsert_lead: {
         Args: { p_business_id: string; p_whatsapp: string; p_name?: string | null; p_source?: string; p_session_id?: string | null; p_interest?: string | null }

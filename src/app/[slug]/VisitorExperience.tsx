@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiFloatingButton } from "./OrbiFloatingButton";
+import { GiftFlow } from "./GiftFlow";
 import { CuradoriaOrbi } from "./CuradoriaOrbi";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { LeadCapture } from "@/components/mobile/LeadCapture";
@@ -90,6 +91,7 @@ export function VisitorExperience({
   isOwner,
   hasAiChat,
   hasVouchers,
+  giftEnabled = false,
   suggestedQuestions = [],
 }: {
   business: Business;
@@ -100,6 +102,7 @@ export function VisitorExperience({
   isOwner: boolean;
   hasAiChat: boolean;
   hasVouchers: boolean;
+  giftEnabled?: boolean;
   suggestedQuestions?: string[];
 }) {
   const supabase = createClient();
@@ -636,7 +639,13 @@ export function VisitorExperience({
           </div>
         )}
 
-        {(intent === "comprar" || intent === "presentear") && (
+        {intent === "presentear" && giftEnabled && (
+          <div className="w-full">
+            <GiftFlow businessId={business.id} businessName={business.name} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
+          </div>
+        )}
+
+        {((intent === "comprar") || (intent === "presentear" && !giftEnabled)) && (
           <div className="w-full">
             <VitrineCoverBleed business={business} />
             <button onClick={() => setIntent(null)} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
