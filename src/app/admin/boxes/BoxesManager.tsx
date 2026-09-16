@@ -52,6 +52,18 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   gift: "Abre o gift card",
 };
 
+/** Descrição do box personalizado, específica pra cada atalho pronto
+ * (WhatsApp, avaliação, endereço, gift), já que eles nascem de um botão
+ * dedicado e não são um "caminho livre" como um box de link qualquer.
+ * Sem action reconhecida (ou action "link"), cai na frase genérica. */
+const CUSTOM_EXPLICA: Partial<Record<NonNullable<BoxConfig["action"]>, string>> = {
+  whatsapp: "Abre a conversa no WhatsApp, com sua mensagem já pronta.",
+  avaliar: "Leva direto pra avaliação no Google, sem precisar procurar.",
+  endereco: "Mostra o endereço com atalho pro Waze e Google Maps.",
+  gift: "Abre o fluxo de vale-presente: o cliente monta e você libera.",
+};
+const CUSTOM_EXPLICA_GENERICA = "Um caminho extra que você define, WhatsApp, portfólio, qualquer link.";
+
 const ICON_CHOICES = ICON_LIBRARY;
 const DIFF_ICONS = ICON_LIBRARY;
 
@@ -431,7 +443,7 @@ export function BoxesManager({
           const isHero = false;
           const isCustom = box.box_type === "custom";
           const cfg = box.config as BoxConfig | null;
-          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Box livre", explica: "Um caminho extra que você define, WhatsApp, portfólio, qualquer link.", icon: cfg?.icon || "◆" };
+          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Box livre", explica: (cfg?.action && CUSTOM_EXPLICA[cfg.action]) || CUSTOM_EXPLICA_GENERICA, icon: cfg?.icon || "◆" };
           // O box "Sobre" já sugere o nome da marca, o dono usa, ajusta ou desativa.
           const suggestedName = box.box_type === "content" ? `Sobre a ${businessName}` : m.name;
           const label = cfg?.label ?? (isCustom ? box.title ?? "" : suggestedName);
