@@ -536,41 +536,39 @@ export function BoxesManager({
 
               <p className="mt-3 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>
 
-              {!isHero && (
-                <>
-                  <div className="mt-3">
-                    <p className="mb-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">Assim aparece pro visitante</p>
-                    <HomeOptionCardPreview
-                      layout={cfg?.layout && cfg.layout !== "auto" ? cfg.layout : "medio"}
-                      icon={icon}
-                      boxLogo={cfg?.logo_url}
-                      color={color}
-                      orbiColors={orbiColors}
-                      businessLogo={logoUrl}
-                      title={cfg?.action === "cupom" ? "Vouchers" : (label || suggestedName)}
-                      ai={m.assinatura}
-                      stars={cfg?.action === "avaliar"}
-                      cupom={cfg?.action === "cupom"}
-                      description={cfg?.action === "cupom" ? "Resgate agora e aproveite" : (cfg?.subtitle || (isCustom ? "" : (BOX_DEFAULT_DESCRIPTION[box.box_type] || "")))}
-                      className={(!cfg?.layout || cfg.layout === "auto") ? "max-w-[190px]" : cfg.layout === "medio" ? "max-w-[190px]" : ""}
-                    />
-                    {(!cfg?.layout || cfg.layout === "auto") && (
-                      <p className="mt-1.5 text-[11px] text-text-tertiary">No automático o formato real pode variar, aqui é uma prévia representativa.</p>
-                    )}
-                  </div>
+              {!isHero && !m.assinatura && (
+                <button
+                  type="button"
+                  onClick={() => setEditingId(editing ? null : box.id)}
+                  className={`mt-3 cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold ${
+                    editing ? "bg-surface-soft text-text-secondary" : "bg-button-primary text-white"
+                  }`}
+                >
+                  {editing ? "Fechar" : "Configurar"}
+                </button>
+              )}
 
-                  {!m.assinatura && (
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(editing ? null : box.id)}
-                      className={`mt-3 cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold ${
-                        editing ? "bg-surface-soft text-text-secondary" : "bg-button-primary text-white"
-                      }`}
-                    >
-                      {editing ? "Fechar" : "Cor, ícone e mais"}
-                    </button>
+              {editing && !isHero && (
+                <div className="mt-3">
+                  <p className="mb-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">Assim aparece pro visitante</p>
+                  <HomeOptionCardPreview
+                    layout={cfg?.layout && cfg.layout !== "auto" ? cfg.layout : "medio"}
+                    icon={icon}
+                    boxLogo={cfg?.logo_url}
+                    color={color}
+                    orbiColors={orbiColors}
+                    businessLogo={logoUrl}
+                    title={cfg?.action === "cupom" ? "Vouchers" : (label || suggestedName)}
+                    ai={m.assinatura}
+                    stars={cfg?.action === "avaliar"}
+                    cupom={cfg?.action === "cupom"}
+                    description={cfg?.action === "cupom" ? "Resgate agora e aproveite" : (cfg?.subtitle || (isCustom ? "" : (BOX_DEFAULT_DESCRIPTION[box.box_type] || "")))}
+                    className={(!cfg?.layout || cfg.layout === "auto") ? "max-w-[190px]" : cfg.layout === "medio" ? "max-w-[190px]" : ""}
+                  />
+                  {(!cfg?.layout || cfg.layout === "auto") && (
+                    <p className="mt-1.5 text-[11px] text-text-tertiary">No automático o formato real pode variar, aqui é uma prévia representativa.</p>
                   )}
-                </>
+                </div>
               )}
 
               {editing && !isHero && !m.assinatura && (
