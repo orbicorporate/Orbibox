@@ -42,9 +42,10 @@ ${evitar ? `Não repita esta ideia já dada: "${evitar}".` : ""}
 
 Responda SOMENTE JSON: {"titulo":"até 5 palavras","texto":"1 ou 2 frases práticas, até 30 palavras, sem clichê, sem travessão"}`;
 
-    const raw = await askClaude({ system, messages: [{ role: "user", content: "Gere a dica." }], maxTokens: 200 });
+    const raw = await askClaude({ system, messages: [{ role: "user", content: "Gere a dica." }], maxTokens: 400 });
     const match = raw.match(/\{[\s\S]*\}/);
-    const parsed = JSON.parse(match ? match[0] : raw);
+    if (!match) throw new Error(`Resposta sem JSON completo: ${raw.slice(0, 200)}`);
+    const parsed = JSON.parse(match[0]);
 
     return NextResponse.json({ titulo: limpar(String(parsed.titulo ?? "")), texto: limpar(String(parsed.texto ?? "")) });
   } catch (err) {

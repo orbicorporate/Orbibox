@@ -82,10 +82,12 @@ export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiCol
   // Dica extra gerada pela Orbi por IA, complementa os passos fixos.
   const [extra, setExtra] = useState<{ titulo: string; texto: string } | null>(null);
   const [gerando, setGerando] = useState(false);
+  const [erroExtra, setErroExtra] = useState(false);
 
   async function gerarExtra() {
     if (gerando) return;
     setGerando(true);
+    setErroExtra(false);
     try {
       const r = await fetch("/api/pulse/extra-tip", {
         method: "POST",
@@ -94,6 +96,9 @@ export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiCol
       });
       const d = await r.json();
       if (r.ok && d.titulo) setExtra({ titulo: d.titulo, texto: d.texto });
+      else setErroExtra(true);
+    } catch {
+      setErroExtra(true);
     } finally {
       setGerando(false);
     }
@@ -221,6 +226,10 @@ export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiCol
             <p className="mt-3 text-[12px] text-text-tertiary">
               Baseado em {totalCliques} {totalCliques === 1 ? "ação" : "ações"} em {visitas} {visitas === 1 ? "visita" : "visitas"} no período.
             </p>
+          )}
+
+          {erroExtra && !gerando && (
+            <p className="mt-2 text-[12px] text-red-600">Não consegui gerar agora, tenta de novo em instantes.</p>
           )}
         </div>
       </div>

@@ -178,15 +178,20 @@ export function MinhasListas({ businessId, orbiColors }: { businessId: string; o
         <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">
           Clientes antigos ou uma lista que você já tem.
         </p>
-        <div className="mt-3 flex flex-col gap-2">
+        <div className="mt-3.5 flex flex-col">
           {[
             ["Traga", "cole sua lista"],
             ["Conte", "marque etiquetas dizendo quem são"],
             ["Escreve", "a Orbi cria a mensagem pra você mandar"],
-          ].map(([verbo, texto], i) => (
-            <div key={verbo} className="flex items-baseline gap-2.5">
-              <span className="text-[12px] font-bold tabular-nums text-text-tertiary">{i + 1}</span>
-              <p className="text-[12.5px] leading-snug text-text-secondary">
+          ].map(([verbo, texto], i, arr) => (
+            <div key={verbo} className="flex gap-3">
+              <div className="flex flex-col items-center">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-background text-[11.5px] font-bold text-white">
+                  {i + 1}
+                </span>
+                {i < arr.length - 1 && <span className="my-1 w-px flex-1 bg-divider" />}
+              </div>
+              <p className={`text-[13px] leading-snug text-text-secondary ${i < arr.length - 1 ? "pb-4" : ""}`}>
                 <span className="font-semibold text-on-background">{verbo}</span> {texto}
               </p>
             </div>
