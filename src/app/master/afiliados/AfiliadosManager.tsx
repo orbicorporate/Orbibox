@@ -172,6 +172,7 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
                 ["Recorrente por 12 meses", "conta desde a primeira cobrança de cada indicado, não só a primeira venda."],
                 ["Carência de 7 dias", "cada comissão fica retida uma semana (garantia). Se o cliente cancelar nesse prazo, ela não é paga."],
                 ["Sem precisar de conta", "o afiliado não usa o Orbibox. Você cadastra aqui e ele acompanha tudo por um link próprio."],
+                ["Bônus pro indicado", "quem entra por um afiliado e assina o plano anual ganha 1 mês grátis extra."],
               ].map(([titulo, texto]) => (
                 <div key={titulo} className="flex items-start gap-2.5">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-text-tertiary" />

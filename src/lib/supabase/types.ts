@@ -335,6 +335,10 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: string | null
       }
+      grant_affiliate_referred_bonus: {
+        Args: { p_user_id: string; p_billing_cycle: string }
+        Returns: boolean
+      }
       register_affiliate_referral: {
         Args: { p_code: string }
         Returns: boolean

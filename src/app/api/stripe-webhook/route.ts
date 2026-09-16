@@ -124,7 +124,19 @@ async function registrarComissaoAfiliado(invoice: Stripe.Invoice, ownerId: strin
 
   const agora = new Date();
 
-  // Primeira cobrança paga: marca como assinante e abre a janela de 12 meses.
+  // Primeira cobrança paga do indicado: se o plano for anual, ele ganha 1
+  // mês grátis extra (benefício de quem entra por afiliado). Concedido uma
+  // vez só; a função checa o ciclo e o bonus_granted.
+  if (!indicacao.subscribed_at) {
+    try {
+      const sub = invoice.parent?.subscription_details?.subscription;
+      const subId = typeof sub === "string" ? sub : sub?.id;
+      const ciclo = subId ? (await stripe.subscriptions.retrieve(subId)).items.data[0]?.price?.recurring?.interval : null;
+      if (ciclo === "year") {
+        await supabase.rpc("grant_affiliate_referred_bonus", { p_user_id: ownerId, p_billing_cycle: "yearly" });
+      }
+    } catch { /* não bloqueia a comissão se o bônus falhar */ }
+  }
   if (!indicacao.subscribed_at) {
     const fim = new Date(agora);
     fim.setMonth(fim.getMonth() + 12);

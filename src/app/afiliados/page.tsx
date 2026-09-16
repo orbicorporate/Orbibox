@@ -39,6 +39,17 @@ export default function AfiliadosPublico() {
         <AfiliadoSimulador />
       </div>
 
+      {/* Benefício de quem você indica: argumento de venda pro afiliado */}
+      <div className="orbi-rise mt-4 flex items-center gap-3.5 rounded-[22px] bg-[#DEF3E3] p-5" style={{ animationDelay: "150ms" }}>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[20px]">🎁</span>
+        <div className="min-w-0">
+          <p className="text-[14.5px] font-semibold text-[#15803D]">Quem você indica também ganha</p>
+          <p className="mt-0.5 text-[13px] leading-snug text-[#1F7A3D]/90">
+            Assinando o plano anual, seu indicado leva 1 mês grátis extra. Um bom motivo pra ele fechar com você.
+          </p>
+        </div>
+      </div>
+
       <div className="orbi-rise mt-8" style={{ animationDelay: "180ms" }}>
         <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Como funciona</p>
         <div className="mt-3 flex flex-col gap-2.5">
