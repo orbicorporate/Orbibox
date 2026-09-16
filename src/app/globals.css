@@ -376,6 +376,37 @@ body {
   opacity: 0;
   animation: orbiRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+
+/* Slider do simulador de afiliado: trilho no degradê da Orbi, polegar
+   branco com sombra. Estiliza o input range nativo nos dois motores. */
+.afiliado-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--orbi-gradient-start), var(--orbi-gradient-end));
+  outline: none;
+}
+.afiliado-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 26px;
+  width: 26px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid rgba(17, 19, 24, 0.08);
+  box-shadow: 0 3px 10px rgba(17, 19, 24, 0.22);
+  cursor: pointer;
+}
+.afiliado-range::-moz-range-thumb {
+  height: 26px;
+  width: 26px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid rgba(17, 19, 24, 0.08);
+  box-shadow: 0 3px 10px rgba(17, 19, 24, 0.22);
+  cursor: pointer;
+}
 @media (prefers-reduced-motion: reduce) {
   .orbi-rise { animation: none; opacity: 1; }
 }
