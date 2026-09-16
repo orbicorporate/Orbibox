@@ -3,7 +3,7 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { AfiliadoSimulador } from "./AfiliadoSimulador";
 
 export const metadata: Metadata = {
-  title: "Programa de Afiliados, Orbibox",
+  title: "Seja Embaixador Orbibox",
   description: "Compartilhe o Orbibox, as pessoas assinam, e você ganha todo mês que elas pagam. 30% de comissão recorrente e acumulativa.",
 };
 
@@ -20,7 +20,7 @@ export default function AfiliadosPublico() {
       <div className="orbi-rise flex items-center gap-2.5" style={{ animationDelay: "0ms" }}>
         <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-on-background text-[15px] font-bold text-white">O</span>
         <span className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold tracking-[-0.01em]">Orbibox</span>
-        <span className="ml-1 rounded-full bg-gradient-to-r from-[#B8860B] to-[#E0B34C] px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-white">Afiliados</span>
+        <span className="ml-1 rounded-full bg-gradient-to-r from-[#B8860B] to-[#E0B34C] px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-white">Embaixador</span>
       </div>
 
       <div className="orbi-rise orbi-card-light relative mt-6 overflow-hidden rounded-[32px] px-6 py-9 text-center" style={{ animationDelay: "60ms" }}>
@@ -31,7 +31,7 @@ export default function AfiliadosPublico() {
           Indique. Elas assinam.<br />Você ganha todo mês.
         </h1>
         <p className="relative mx-auto mt-3 max-w-[420px] text-[15px] leading-relaxed text-text-secondary">
-          Compartilhe seu link, as pessoas entram e assinam, e você ganha 30% de cada mensalidade que elas pagarem. Recorrente e acumulativo.
+          Acumule ganhos recorrentes só indicando o seu link de embaixador Orbibox. As pessoas assinam, e você ganha 30% de cada mensalidade, todo mês.
         </p>
       </div>
 
