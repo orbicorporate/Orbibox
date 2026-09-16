@@ -16,6 +16,7 @@ import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIco
 import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
 import { HelperText } from "@/components/ui/HelperText";
+import { SecaoRecolhivel } from "@/components/ui/SecaoRecolhivel";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery } from "@/lib/logoGallery";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
@@ -340,81 +341,89 @@ export function BoxesManager({
           : `${ativos} ${ativos === 1 ? "caminho ativo" : "caminhos ativos"} na sua tela inicial.`}
       </p>
 
-      <div className="rounded-[20px] bg-surface-soft p-4">
-        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase de saudação (tela inicial)</p>
-        <p className="mt-1 text-[12px] text-text-secondary">A pergunta que aparece antes do nome do seu negócio, quando o visitante chega.</p>
-        <input
-          value={heroQuestion}
-          onChange={(e) => setHeroQuestion(e.target.value)}
-          onBlur={(e) => saveHeroQuestion(e.target.value)}
-          placeholder="O que trouxe você aqui hoje?"
-          className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-        />
-      </div>
+      <SecaoRecolhivel
+        titulo="Tela inicial"
+        descricao="A frase de saudação e o avatar que aparecem no topo, antes dos caminhos."
+        preenchido
+      >
+        <div className="flex flex-col gap-4">
+          <div className="rounded-[20px] bg-surface-soft p-4">
+            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase de saudação (tela inicial)</p>
+            <p className="mt-1 text-[12px] text-text-secondary">A pergunta que aparece antes do nome do seu negócio, quando o visitante chega.</p>
+            <input
+              value={heroQuestion}
+              onChange={(e) => setHeroQuestion(e.target.value)}
+              onBlur={(e) => saveHeroQuestion(e.target.value)}
+              placeholder="O que trouxe você aqui hoje?"
+              className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+            />
+          </div>
 
-      <div className="rounded-[20px] bg-surface-soft p-4">
-        <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Avatar da tela inicial</p>
-        <p className="mt-1 text-[12px] text-text-secondary">
-          Escolha o que aparece no topo da tela inicial: a esfera clássica da Orbi, seu logotipo, ou a esfera já com as cores que você configurou em Sua IA.
-        </p>
-        {(() => {
-          // Qualquer logo já enviado, em Configurações ou em qualquer box , 
-          // conta aqui. Se o logo "oficial" (logo_url) ainda não foi definido,
-          // usa o mais recente da galeria como avatar.
-          const availableLogo = logoUrl ?? logoGallery[logoGallery.length - 1] ?? null;
-          async function pickLogoAvatar() {
-            if (!availableLogo) return;
-            if (!logoUrl) {
-              setLogoUrl(availableLogo);
-              await supabase.from("businesses").update({ logo_url: availableLogo }).eq("id", businessId);
-            }
-            saveHeroAvatar("logo");
-          }
-          return (
-            <>
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => saveHeroAvatar("particle")}
-                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${(heroAvatar === "particle" || heroAvatar === "sphere" || (heroAvatar === "auto" && !availableLogo)) ? "border-on-background" : "border-transparent"}`}
-                >
-                  <OrbiParticleSphere size={40} colors={orbiColors ?? undefined} className="rounded-full" />
-                  <span className="text-[11px] font-medium">Esfera da Orbi</span>
-                </button>
-                <button
-                  onClick={pickLogoAvatar}
-                  disabled={!availableLogo}
-                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 disabled:opacity-40 ${(heroAvatar === "logo" || (heroAvatar === "auto" && !!availableLogo)) ? "border-on-background" : "border-transparent"}`}
-                >
-                  {availableLogo ? <OrbiLogoBadge logoUrl={availableLogo} size={40} /> : <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px]">◎</span>}
-                  <span className="text-[11px] font-medium">Logotipo</span>
-                </button>
-              </div>
-              <Link href="/admin/agent#cores-orbi" className="mt-2 inline-block rounded-full bg-surface-soft px-3.5 py-1.5 text-[11.5px] font-semibold text-text-secondary">
-                ✦ Configurar cor
-              </Link>
-              {!availableLogo && (
-                <p className="mt-2 text-[11px] text-text-tertiary">Envie um logotipo abaixo pra poder usar essa opção.</p>
-              )}
-            </>
-          );
-        })()}
-        <div className="mt-3">
-          <ImageUpload
-            value={logoUrl}
-            businessId={businessId}
-            lockedRatio="quadrado"
-            promptKind="avatar"
-            promptSubject={businessName}
-            emptyPreview={<OrbiOrb size={72} colors={orbiColors} />}
-            onChange={async (url) => {
-              setLogoUrl(url);
-              await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);
-              if (url) setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url));
-              else if (heroAvatar === "logo") saveHeroAvatar("sphere");
-            }}
-          />
+          <div className="rounded-[20px] bg-surface-soft p-4">
+            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Avatar da tela inicial</p>
+            <p className="mt-1 text-[12px] text-text-secondary">
+              Escolha o que aparece no topo da tela inicial: a esfera clássica da Orbi, seu logotipo, ou a esfera já com as cores que você configurou em Sua IA.
+            </p>
+            {(() => {
+              // Qualquer logo já enviado, em Configurações ou em qualquer box , 
+              // conta aqui. Se o logo "oficial" (logo_url) ainda não foi definido,
+              // usa o mais recente da galeria como avatar.
+              const availableLogo = logoUrl ?? logoGallery[logoGallery.length - 1] ?? null;
+              async function pickLogoAvatar() {
+                if (!availableLogo) return;
+                if (!logoUrl) {
+                  setLogoUrl(availableLogo);
+                  await supabase.from("businesses").update({ logo_url: availableLogo }).eq("id", businessId);
+                }
+                saveHeroAvatar("logo");
+              }
+              return (
+                <>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={() => saveHeroAvatar("particle")}
+                      className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${(heroAvatar === "particle" || heroAvatar === "sphere" || (heroAvatar === "auto" && !availableLogo)) ? "border-on-background" : "border-transparent"}`}
+                    >
+                      <OrbiParticleSphere size={40} colors={orbiColors ?? undefined} className="rounded-full" />
+                      <span className="text-[11px] font-medium">Esfera da Orbi</span>
+                    </button>
+                    <button
+                      onClick={pickLogoAvatar}
+                      disabled={!availableLogo}
+                      className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 disabled:opacity-40 ${(heroAvatar === "logo" || (heroAvatar === "auto" && !!availableLogo)) ? "border-on-background" : "border-transparent"}`}
+                    >
+                      {availableLogo ? <OrbiLogoBadge logoUrl={availableLogo} size={40} /> : <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px]">◎</span>}
+                      <span className="text-[11px] font-medium">Logotipo</span>
+                    </button>
+                  </div>
+                  <Link href="/admin/agent#cores-orbi" className="mt-2 inline-block rounded-full bg-surface-soft px-3.5 py-1.5 text-[11.5px] font-semibold text-text-secondary">
+                    ✦ Configurar cor
+                  </Link>
+                  {!availableLogo && (
+                    <p className="mt-2 text-[11px] text-text-tertiary">Envie um logotipo abaixo pra poder usar essa opção.</p>
+                  )}
+                </>
+              );
+            })()}
+            <div className="mt-3">
+              <ImageUpload
+                value={logoUrl}
+                businessId={businessId}
+                lockedRatio="quadrado"
+                promptKind="avatar"
+                promptSubject={businessName}
+                emptyPreview={<OrbiOrb size={72} colors={orbiColors} />}
+                onChange={async (url) => {
+                  setLogoUrl(url);
+                  await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);
+                  if (url) setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url));
+                  else if (heroAvatar === "logo") saveHeroAvatar("sphere");
+                }}
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      </SecaoRecolhivel>
 
       <div className="flex flex-col gap-3">
         {visibleBoxes.map((box, idx) => {
