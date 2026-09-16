@@ -181,6 +181,14 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
                 </div>
               ))}
             </div>
+            {/* Página pública pra mandar pro parceiro antes de cadastrar. */}
+            <button
+              type="button"
+              onClick={() => copiar(`${base}/afiliados`, "pagina-publica")}
+              className="mt-3 w-full cursor-pointer rounded-full bg-on-background py-2.5 text-[13px] font-semibold text-white"
+            >
+              {copiado === "pagina-publica" ? "Link copiado ✓" : "Copiar página pra mostrar ao afiliado"}
+            </button>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
