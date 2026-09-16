@@ -65,7 +65,7 @@ export function HomeIcon({
  * `cupom` troca o fundo branco pelo degradê cereja com reflexo animado. */
 export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?: boolean) {
   const ring = ai ? " ring-1 ring-orbi-gradient-start/60" : "";
-  const bg = cupom ? "cupom-box text-white shadow-[0_10px_30px_rgba(204,23,57,0.4)]" : "bg-surface-white shadow-[0_2px_12px_rgba(17,19,24,0.05)]";
+  const bg = cupom ? "cupom-box text-white shadow-[0_10px_30px_rgba(204,23,57,0.4)]" : "bg-surface-white shadow-[0_6px_24px_rgba(17,19,24,0.12)]";
   if (layout === "largo") {
     return `flex w-full items-center gap-4 rounded-[24px] p-5 text-left ${bg}${ring}`;
   }
