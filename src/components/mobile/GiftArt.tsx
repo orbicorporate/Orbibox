@@ -1,13 +1,22 @@
 "use client";
 
+import { giftGradient } from "@/lib/giftThemes";
+
 /**
  * A arte do gift card. Quando "liberado" (pago), aparece limpa e colorida,
  * pronta pra presentear. Quando "bloqueado" (ainda não pago), leva uma
  * marca d'água por cima, pra ninguém usar um gift que não foi acertado
  * com a loja.
  *
- * O fundo é a arte que a loja subiu (art_url). Sem arte, cai num degradê
- * bonito padrão, pra funcionar mesmo antes de a loja configurar.
+ * O fundo é a foto que a loja subiu (art_url), quando existe. Sem foto,
+ * cai num dos 4 degradês prontos (art_theme), que a loja escolhe.
+ *
+ * O véu escuro por cima é sempre aplicado, nunca opcional: garante que o
+ * valor e o código fiquem legíveis mesmo se a loja subir uma foto ruim
+ * pra isso (contraste baixo, muita informação visual etc). Sobre foto
+ * enviada pela loja o véu é mais forte, porque não controlamos o
+ * conteúdo; sobre os degradês prontos, mais leve, porque já são
+ * desenhados pra ficar legíveis.
  */
 export function GiftArt({
   valorCents,
@@ -17,6 +26,7 @@ export function GiftArt({
   negocio,
   codigo,
   artUrl,
+  artTheme,
   bloqueado,
 }: {
   valorCents: number;
@@ -26,21 +36,31 @@ export function GiftArt({
   negocio: string;
   codigo: string;
   artUrl?: string | null;
+  artTheme?: string | null;
   bloqueado: boolean;
 }) {
   const valor = (valorCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
   return (
     <div className="relative aspect-[1.6/1] w-full overflow-hidden rounded-[22px] text-white shadow-[0_12px_36px_rgba(17,19,24,0.2)]">
-      {/* Fundo: arte da loja ou degradê padrão */}
+      {/* Fundo: foto da loja ou um dos 4 degradês prontos */}
       {artUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={artUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
       ) : (
-        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #6D28D9 0%, #B0309E 50%, #C2650A 100%)" }} />
+        <div className="absolute inset-0" style={{ background: giftGradient(artTheme) }} />
       )}
-      {/* Véu escuro pra o texto ficar legível sobre qualquer arte */}
-      <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.5) 100%)" }} />
+      {/* Véu escuro pra o texto ficar legível, sempre ligado por padrão.
+          Mais forte sobre foto da loja (imprevisível), mais leve sobre os
+          degradês prontos (já pensados pra contraste). */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: artUrl
+            ? "linear-gradient(180deg, rgba(0,0,0,0.32) 0%, rgba(0,0,0,0.18) 40%, rgba(0,0,0,0.65) 100%)"
+            : "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.5) 100%)",
+        }}
+      />
 
       <div className="relative flex h-full flex-col justify-between p-5">
         <div className="flex items-start justify-between">

@@ -10,7 +10,7 @@ export default async function GiftPublicPage({ params }: { params: Promise<{ cod
 
   const gift = data as {
     code: string; value_cents: number; from_name: string | null; to_name: string | null;
-    message: string | null; status: string; business_name: string; art_url: string | null;
+    message: string | null; status: string; business_name: string; art_url: string | null; art_theme: string | null;
   } | null;
 
   if (!gift) {

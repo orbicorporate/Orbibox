@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GiftArt } from "@/components/mobile/GiftArt";
+import { GIFT_THEMES, type GiftTheme } from "@/lib/giftThemes";
 import type { Database } from "@/lib/supabase/types";
 
 type Settings = Database["public"]["Tables"]["gift_settings"]["Row"];
@@ -24,6 +25,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
   const supabase = createClient();
   const [enabled, setEnabled] = useState(initialSettings?.enabled ?? false);
   const [artUrl, setArtUrl] = useState(initialSettings?.art_url ?? null);
+  const [artTheme, setArtTheme] = useState<GiftTheme>((initialSettings?.art_theme as GiftTheme) ?? "roxo");
   const [minValue, setMinValue] = useState(String((initialSettings?.min_value_cents ?? 2000) / 100));
   const [gifts, setGifts] = useState(initialGifts);
   const [saved, setSaved] = useState(false);
@@ -32,11 +34,16 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
     setSaved(false);
     await supabase.from("gift_settings").upsert({
       business_id: businessId,
-      enabled, art_url: artUrl, min_value_cents: parseInt(minValue, 10) * 100 || 2000,
+      enabled, art_url: artUrl, art_theme: artTheme, min_value_cents: parseInt(minValue, 10) * 100 || 2000,
       ...patch,
     }, { onConflict: "business_id" });
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
+  }
+
+  async function mudarTema(t: GiftTheme) {
+    setArtTheme(t);
+    await salvar({ art_theme: t });
   }
 
   async function toggle() {
@@ -71,13 +78,26 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
             <p className="text-[15px] font-semibold">Arte do gift card</p>
             <p className="mt-0.5 text-[13px] leading-relaxed text-text-secondary">
-              A imagem de fundo do cartão. O valor, o nome e o código entram por cima. Sem arte, usamos um degradê bonito padrão.
+              A imagem de fundo do cartão. O valor, o nome e o código entram por cima, com um véu escuro automático pra garantir a leitura. Sem foto, usamos um dos degradês abaixo.
             </p>
             <div className="mt-4">
-              <GiftArt valorCents={10000} paraQuem="Maria" deQuem="João" mensagem="Feliz aniversário!" negocio="Sua loja" codigo="GIFT-EXEMPL" artUrl={artUrl} bloqueado={false} />
+              <GiftArt valorCents={10000} paraQuem="Maria" deQuem="João" mensagem="Feliz aniversário!" negocio="Sua loja" codigo="GIFT-EXEMPL" artUrl={artUrl} artTheme={artTheme} bloqueado={false} />
             </div>
             <div className="mt-3">
               <ImageUpload value={artUrl} onChange={(url) => { setArtUrl(url); salvar({ art_url: url }); }} businessId={businessId} />
+            </div>
+
+            <p className="mt-5 text-[13px] font-semibold">{artUrl ? "Degradê de reserva (se você remover a foto)" : "Degradê"}</p>
+            <div className="mt-2 flex gap-2.5">
+              {(Object.keys(GIFT_THEMES) as GiftTheme[]).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => mudarTema(t)}
+                  aria-label={GIFT_THEMES[t].label}
+                  className={`h-11 w-11 shrink-0 rounded-full transition-shadow ${artTheme === t ? "ring-2 ring-offset-2 ring-on-background" : ""}`}
+                  style={{ background: GIFT_THEMES[t].swatch }}
+                />
+              ))}
             </div>
 
             <p className="mt-5 text-[13px] font-semibold">Valor mínimo</p>

@@ -3,7 +3,7 @@
 import { GiftArt } from "@/components/mobile/GiftArt";
 
 /** Página que mostra o gift ao cliente: bloqueado (a liberar) ou pronto. */
-export function GiftReveal({ gift }: { gift: { code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; business_name: string; art_url: string | null } }) {
+export function GiftReveal({ gift }: { gift: { code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; business_name: string; art_url: string | null; art_theme: string | null } }) {
   const liberado = gift.status === "paid" || gift.status === "used";
 
   return (
@@ -19,6 +19,7 @@ export function GiftReveal({ gift }: { gift: { code: string; value_cents: number
         negocio={gift.business_name}
         codigo={gift.code}
         artUrl={gift.art_url}
+        artTheme={gift.art_theme}
         bloqueado={!liberado}
       />
       {liberado ? (

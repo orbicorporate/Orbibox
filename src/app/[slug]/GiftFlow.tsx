@@ -7,6 +7,7 @@ import { GiftArt } from "@/components/mobile/GiftArt";
 type Config = {
   enabled: boolean;
   art_url: string | null;
+  art_theme: string | null;
   suggested_values: number[] | null;
   allow_custom_value: boolean;
   min_value_cents: number;
@@ -36,8 +37,8 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("gift_settings").select("enabled, art_url, suggested_values, allow_custom_value, min_value_cents, message").eq("business_id", businessId).maybeSingle().then(({ data }) => {
-      setCfg((data as Config) ?? { enabled: false, art_url: null, suggested_values: [50, 100, 150, 200], allow_custom_value: true, min_value_cents: 2000, message: null });
+    supabase.from("gift_settings").select("enabled, art_url, art_theme, suggested_values, allow_custom_value, min_value_cents, message").eq("business_id", businessId).maybeSingle().then(({ data }) => {
+      setCfg((data as Config) ?? { enabled: false, art_url: null, art_theme: "roxo", suggested_values: [50, 100, 150, 200], allow_custom_value: true, min_value_cents: 2000, message: null });
       if (data?.suggested_values?.[1]) setValor(data.suggested_values[1]);
     });
   }, [businessId]);
@@ -112,6 +113,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
           negocio={businessName}
           codigo={criado?.code ?? "GIFT-••••••"}
           artUrl={cfg.art_url}
+          artTheme={cfg.art_theme}
           bloqueado
         />
       </div>
