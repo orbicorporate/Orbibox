@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 
-const PLANO_MEDIO = 100; // R$ médio por assinatura/mês
+// Médias reais dos dois planos (Titânio R$79/R$790, Nióbio R$109/R$981),
+// já que a comissão de 30% incide sobre a fatura de verdade na Stripe:
+// mensal gera fatura todo mês (comissão recorrente), anual gera UMA fatura
+// com o valor cheio (comissão cai de uma vez só, na assinatura).
+const PLANO_MEDIO_MENSAL = 94;
+const PLANO_MEDIO_ANUAL = 886;
 const COMISSAO = 0.3;
 const MIN = 10;
 const MAX = 10000;
@@ -46,27 +51,29 @@ function useContador(alvo: number, dur = 380) {
 
 export function EmbaixadorSimulador() {
   const [pos, setPos] = useState(600); // começa em ~1000 assinaturas
+  const [ciclo, setCiclo] = useState<"mensal" | "anual">("anual");
   const assinaturas = posParaAssinaturas(pos);
 
-  const porMes = assinaturas * PLANO_MEDIO * COMISSAO;
-  const porAno = porMes * 12;
-
-  const mesAnim = useContador(porMes);
-  const anoAnim = useContador(porAno);
+  const porAssinatura = (ciclo === "anual" ? PLANO_MEDIO_ANUAL : PLANO_MEDIO_MENSAL) * COMISSAO;
+  const total = assinaturas * porAssinatura;
+  const totalAnim = useContador(total);
+  const porAssinaturaAnim = useContador(Math.round(porAssinatura));
 
   return (
     <div className="orbi-card-light relative overflow-hidden rounded-[28px] px-6 py-7">
       <p className="relative text-center text-[11px] font-semibold uppercase tracking-wide text-text-secondary">Simule seu ganho</p>
 
       <p className="relative mt-3 text-center font-[family-name:var(--font-manrope)] text-[46px] font-semibold leading-none tracking-[-0.03em] text-on-background tabular-nums">
-        {brl(mesAnim)}
+        {brl(totalAnim)}
       </p>
-      <p className="relative mt-1 text-center text-[13.5px] text-text-secondary">por mês, recorrente</p>
+      <p className="relative mt-1 text-center text-[13.5px] text-text-secondary">
+        {ciclo === "anual" ? "recebidos de uma vez" : "por mês, recorrente"}
+      </p>
 
       <div className="relative mt-6">
         <div className="flex items-end justify-between">
           <span className="text-[14px] font-medium text-on-background tabular-nums">{assinaturas.toLocaleString("pt-BR")}</span>
-          <span className="text-[12px] text-text-tertiary">{assinaturas === 1 ? "assinatura ativa" : "assinaturas ativas"}</span>
+          <span className="text-[12px] text-text-tertiary">assinaturas indicadas</span>
         </div>
         <input
           type="range"
@@ -84,13 +91,44 @@ export function EmbaixadorSimulador() {
         </div>
       </div>
 
-      <div className="relative mt-5 rounded-2xl bg-white/70 px-4 py-3 text-center">
-        <p className="text-[12px] text-text-secondary">Isso dá, em um ano</p>
-        <p className="mt-0.5 font-[family-name:var(--font-manrope)] text-[24px] font-semibold tracking-[-0.02em] text-on-background tabular-nums">{brl(anoAnim)}</p>
+      <div className="relative mt-5 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setCiclo("mensal")}
+          className={`flex-1 rounded-2xl border py-2.5 text-[13.5px] font-semibold transition-colors ${
+            ciclo === "mensal" ? "border-transparent bg-[#14301F] text-white" : "border-divider bg-white/70 text-on-background"
+          }`}
+        >
+          Assinam o mensal
+        </button>
+        <button
+          type="button"
+          onClick={() => setCiclo("anual")}
+          className={`flex-1 rounded-2xl border py-2.5 text-[13.5px] font-semibold transition-colors ${
+            ciclo === "anual" ? "border-transparent bg-[#14301F] text-white" : "border-divider bg-white/70 text-on-background"
+          }`}
+        >
+          Assinam o anual
+        </button>
+      </div>
+
+      <div className="relative mt-3 rounded-2xl bg-white/70 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <p className="text-[12.5px] text-text-secondary">Por assinatura indicada</p>
+          <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold tracking-[-0.01em] text-on-background tabular-nums">
+            {brl(porAssinaturaAnim)}
+          </p>
+        </div>
+        <p className="mt-1.5 text-[11.5px] leading-relaxed text-text-tertiary">
+          {ciclo === "anual"
+            ? "O anual é cobrado de uma vez, então sua comissão cai logo na primeira fatura, sem esperar mês a mês."
+            : "O mensal renova todo mês, então sua comissão também repete todo mês, enquanto o cliente continuar pagando."}
+        </p>
       </div>
 
       <p className="relative mt-3 text-center text-[11px] leading-relaxed text-text-tertiary">
-        Considerando um plano médio de R$ 100/mês e 30% de comissão. Enquanto o cliente paga, você ganha.
+        Considerando um plano médio de {brl(ciclo === "anual" ? PLANO_MEDIO_ANUAL : PLANO_MEDIO_MENSAL)}
+        {ciclo === "anual" ? "/ano" : "/mês"} e 30% de comissão sobre o valor de cada fatura paga.
       </p>
     </div>
   );
