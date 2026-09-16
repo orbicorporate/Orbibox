@@ -348,17 +348,10 @@ export function BoxesManager({
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => saveHeroAvatar("particle")}
-                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${heroAvatar === "particle" ? "border-on-background" : "border-transparent"}`}
+                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${(heroAvatar === "particle" || heroAvatar === "sphere" || (heroAvatar === "auto" && !availableLogo)) ? "border-on-background" : "border-transparent"}`}
                 >
                   <OrbiParticleSphere size={40} colors={orbiColors ?? undefined} className="rounded-full" />
-                  <span className="text-[11px] font-medium">Orbi configurada</span>
-                </button>
-                <button
-                  onClick={() => saveHeroAvatar("sphere")}
-                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${(heroAvatar === "sphere" || (heroAvatar === "auto" && !availableLogo)) ? "border-on-background" : "border-transparent"}`}
-                >
-                  <OrbiOrb size={40} colors={orbiColors} />
-                  <span className="text-[11px] font-medium">Esfera clássica</span>
+                  <span className="text-[11px] font-medium">Esfera da Orbi</span>
                 </button>
                 <button
                   onClick={pickLogoAvatar}

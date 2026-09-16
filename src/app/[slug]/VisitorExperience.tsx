@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
-import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiFloatingButton } from "./OrbiFloatingButton";
 import { CuradoriaOrbi } from "./CuradoriaOrbi";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
@@ -374,17 +373,15 @@ export function VisitorExperience({
       <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
         {intent === null && (
           <div className="flex flex-col items-center text-center">
-            {business.hero_avatar === "particle" ? (
+            {business.hero_avatar === "particle" || business.hero_avatar === "sphere" ? (
               <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="mb-8 rounded-full" />
             ) : business.hero_avatar === "logo" && business.logo_url ? (
               <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
-            ) : business.hero_avatar === "sphere" ? (
-              <OrbiOrb size={96} className="mb-8" colors={orbiColors} />
             ) : business.logo_url ? (
               // "auto" (padrão): mantém o comportamento de sempre, logo se tiver, senão a esfera.
               <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
             ) : (
-              <OrbiOrb size={96} className="mb-8" colors={orbiColors} />
+              <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="mb-8 rounded-full" />
             )}
             <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
               {business.name}
