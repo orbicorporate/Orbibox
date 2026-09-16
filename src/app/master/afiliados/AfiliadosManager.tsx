@@ -162,6 +162,27 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
 
       {aba === "afiliados" ? (
         <>
+          {/* Regras do programa, como combinamos: comissão recorrente por
+              12 meses, sem exigir conta, com carência de garantia. */}
+          <div className="rounded-[24px] bg-surface-soft p-5">
+            <p className="text-[13.5px] font-semibold">Como funciona a comissão</p>
+            <div className="mt-2.5 flex flex-col gap-2">
+              {[
+                ["30% de comissão", "sobre cada cobrança paga por quem o afiliado indicar."],
+                ["Recorrente por 12 meses", "conta desde a primeira cobrança de cada indicado, não só a primeira venda."],
+                ["Carência de 7 dias", "cada comissão fica retida uma semana (garantia). Se o cliente cancelar nesse prazo, ela não é paga."],
+                ["Sem precisar de conta", "o afiliado não usa o Orbibox. Você cadastra aqui e ele acompanha tudo por um link próprio."],
+              ].map(([titulo, texto]) => (
+                <div key={titulo} className="flex items-start gap-2.5">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-text-tertiary" />
+                  <p className="text-[12.5px] leading-snug text-text-secondary">
+                    <span className="font-semibold text-on-background">{titulo}</span>, {texto}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-[20px] border border-divider bg-surface-white p-4">
               <p className="text-[12.5px] text-text-tertiary">Comissão a pagar</p>
@@ -176,7 +197,7 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
             <p className="text-[15px] font-semibold">Novo afiliado</p>
             <p className="mt-1 text-[12.5px] text-text-tertiary">
-              30% de comissão sobre cada cobrança, pelos primeiros 12 meses de cada indicado. Cada comissão fica retida 7 dias (garantia) antes de virar devida.
+              Preencha os dados e gere o link. A chave Pix é onde você vai pagar a comissão.
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} placeholder="Nome do afiliado" className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
@@ -243,7 +264,7 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
             <p className="text-[15px] font-semibold">Novo link de bônus</p>
             <p className="mt-1 text-[12.5px] text-text-tertiary">
-              Quem entrar por esse link ganha o plano Nióbio liberado, sem cartão.
+              Quem entrar por esse link ganha o plano Nióbio liberado, sem cartão. Escolha por quanto tempo: 30 dias, 90 dias ou pra sempre. Dá pra limitar quantas pessoas podem usar.
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <input value={bonusLabel} onChange={(e) => setBonusLabel(e.target.value)} placeholder="Pra que serve, ex: Evento Sorocaba" className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
