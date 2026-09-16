@@ -222,10 +222,11 @@ export function formatPrice(item: { price: number | null; price_type?: string | 
   }
 }
 
-/** Biblioteca de ícones minimalistas, mesmo estilo geométrico simples usado
- * em todo o Orbibox, sem emoji colorido, pra combinar com qualquer paleta. */
-/** Biblioteca de ícones minimalistas, mesmo estilo geométrico simples usado
- * em todo o Orbibox, sem emoji colorido, pra combinar com qualquer paleta.
+/** Biblioteca de ícones do app: a base é geométrica e minimalista, mesmo
+ * estilo simples que combina com qualquer paleta, mas também tem emojis
+ * coloridos (chat, dinheiro, e agora presente/voucher/expressões), pros
+ * casos em que cor e expressividade ajudam mais que combinar com a cor do
+ * box.
  * "\uFE0E" força a versão em texto (preto e branco) de símbolos que alguns
  * sistemas tentam renderizar como emoji colorido (telefone, aviso, etc.). */
 export const ICON_LIBRARY = [
@@ -251,6 +252,11 @@ export const ICON_LIBRARY = [
   "☺\uFE0E", "☻\uFE0E",
   // Atenção
   "⚠\uFE0E", "‼",
+  // Comercial / promoção, coloridos: presente, voucher, dinheiro, desconto,
+  // aprovação e oportunidade, pros boxes de Presentear, Vouchers etc.
+  "🎁", "🎟\uFE0F", "💰", "🏷\uFE0F", "✅", "🚀", "💯",
+  // Expressões, coloridas
+  "😊", "😄", "🥳",
 ];
 
 /** Primeiros ícones mostrados antes de tocar em "Ver mais", os mais comuns. */
