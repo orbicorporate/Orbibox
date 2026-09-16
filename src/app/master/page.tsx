@@ -23,6 +23,22 @@ export default async function MasterOverview() {
     { label: "Usando a Vitrine", value: m.using_vitrine ?? 0, sub: "têm itens publicados" },
   ];
 
+  // Saúde da base: o que impede de crescer sem perceber.
+  const saude = [
+    { label: "Cancelaram este mês", value: m.canceled_this_month ?? 0, sub: "saíram da base", warn: (m.canceled_this_month ?? 0) > 0 },
+    { label: "Testes parados", value: m.trial_stale ?? 0, sub: "passaram de 14 dias sem virar pagante", warn: (m.trial_stale ?? 0) > 0 },
+    { label: "Travados no início", value: m.travados_onboarding ?? 0, sub: "cadastraram mas não configuraram", warn: (m.travados_onboarding ?? 0) > 0 },
+    { label: "Sem nenhuma visita", value: m.sem_visitas ?? 0, sub: "link provavelmente nunca divulgado" },
+  ];
+
+  // Embaixadores: de onde vem o crescimento.
+  const embaixadores = [
+    { label: "Embaixadores ativos", value: m.ambassadors_active ?? 0, sub: `${m.ambassadors_total ?? 0} no total` },
+    { label: "Assinaturas por indicação", value: m.subs_from_ambassadors ?? 0, sub: "vieram de embaixadores" },
+    { label: "Comissão a pagar", value: brl(m.commission_to_pay_cents ?? 0), sub: "acumulada até agora" },
+    { label: "Negócios ativos (7d)", value: m.ativos_7d ?? 0, sub: "tiveram visita esta semana" },
+  ];
+
   // Previsão simples: MRR anualizado.
   const arr = (m.mrr_cents ?? 0) * 12;
 
@@ -65,6 +81,37 @@ export default async function MasterOverview() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* SAÚDE DA BASE — o que impede de crescer sem perceber */}
+      <div>
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Saúde da base</p>
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {saude.map((c) => (
+            <div key={c.label} className={`rounded-[20px] p-5 ${c.warn ? "border border-red-200 bg-red-50" : "border border-divider bg-surface-white"}`}>
+              <p className="text-[12px] font-medium text-text-tertiary">{c.label}</p>
+              <p className={`mt-1.5 font-[family-name:var(--font-manrope)] text-[26px] font-bold tracking-tight ${c.warn ? "text-red-600" : ""}`}>{c.value}</p>
+              <p className="mt-1 text-[11.5px] text-text-secondary">{c.sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* EMBAIXADORES — de onde vem o crescimento */}
+      <div>
+        <div className="flex items-center justify-between">
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Embaixadores</p>
+          <a href="/master/afiliados" className="text-[12.5px] font-medium text-text-secondary underline">Ver todos</a>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {embaixadores.map((c) => (
+            <div key={c.label} className="rounded-[20px] border border-divider bg-surface-white p-5">
+              <p className="text-[12px] font-medium text-text-tertiary">{c.label}</p>
+              <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[26px] font-bold tracking-tight">{c.value}</p>
+              <p className="mt-1 text-[11.5px] text-text-secondary">{c.sub}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="rounded-[20px] border border-divider bg-surface-white p-6">
