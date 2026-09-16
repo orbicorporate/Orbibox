@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Afiliado = {
+type Embaixador = {
   id: string;
   name: string;
   email: string | null;
@@ -51,16 +51,16 @@ function gerarCodigo(base: string, tamanho = 6) {
   return `${limpo}${sufixo}`.slice(0, 12);
 }
 
-export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciais }: { afiliados: Afiliado[]; bonusLinks: BonusLink[] }) {
+export function EmbaixadoresManager({ embaixadores: iniciais, bonusLinks: bonusIniciais }: { embaixadores: Embaixador[]; bonusLinks: BonusLink[] }) {
   const supabase = createClient();
   const [aba, setAba] = useState<"afiliados" | "bonus">("afiliados");
-  const [afiliados, setAfiliados] = useState(iniciais);
+  const [embaixadores, setEmbaixadores] = useState(iniciais);
   const [bonus, setBonus] = useState(bonusIniciais);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  // Formulário de afiliado
+  // Formulário de embaixador
   const [novoNome, setNovoNome] = useState("");
   const [novoEmail, setNovoEmail] = useState("");
   const [novoPhone, setNovoPhone] = useState("");
@@ -81,7 +81,7 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
     } catch { /* sem clipboard */ }
   }
 
-  async function criarAfiliado() {
+  async function criarEmbaixador() {
     const nome = novoNome.trim();
     if (!nome || salvando) return;
     setSalvando(true);
@@ -99,17 +99,17 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
       .single();
     setSalvando(false);
     if (error || !data) { setErro(error?.message ?? "Não consegui criar."); return; }
-    setAfiliados((a) => [
+    setEmbaixadores((a) => [
       { ...data, indicados: 0, assinantes: 0, comissao_pendente_cents: 0, comissao_paga_cents: 0 },
       ...a,
     ]);
     setNovoNome(""); setNovoEmail(""); setNovoPhone(""); setNovoPix("");
   }
 
-  async function alternarAfiliado(af: Afiliado) {
+  async function alternarEmbaixador(af: Embaixador) {
     const { error } = await supabase.from("affiliates").update({ active: !af.active }).eq("id", af.id);
     if (!error) {
-      setAfiliados((lista) => lista.map((x) => (x.id === af.id ? { ...x, active: !x.active } : x)));
+      setEmbaixadores((lista) => lista.map((x) => (x.id === af.id ? { ...x, active: !x.active } : x)));
     }
   }
 
@@ -141,13 +141,13 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
     }
   }
 
-  const totalPendente = afiliados.reduce((s, a) => s + Number(a.comissao_pendente_cents ?? 0), 0);
-  const totalPago = afiliados.reduce((s, a) => s + Number(a.comissao_paga_cents ?? 0), 0);
+  const totalPendente = embaixadores.reduce((s, a) => s + Number(a.comissao_pendente_cents ?? 0), 0);
+  const totalPago = embaixadores.reduce((s, a) => s + Number(a.comissao_paga_cents ?? 0), 0);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-2">
-        {([["afiliados", "Afiliados"], ["bonus", "Links de bônus"]] as const).map(([id, label]) => (
+        {([["afiliados", "Embaixadores"], ["bonus", "Links de bônus"]] as const).map(([id, label]) => (
           <button
             key={id}
             onClick={() => setAba(id)}
@@ -168,11 +168,11 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
             <p className="text-[13.5px] font-semibold">Como funciona a comissão</p>
             <div className="mt-2.5 flex flex-col gap-2">
               {[
-                ["30% de comissão", "sobre cada cobrança paga por quem o afiliado indicar."],
+                ["30% de comissão", "sobre cada cobrança paga por quem o embaixador indicar."],
                 ["Recorrente por 12 meses", "conta desde a primeira cobrança de cada indicado, não só a primeira venda."],
                 ["Carência de 7 dias", "cada comissão fica retida uma semana (garantia). Se o cliente cancelar nesse prazo, ela não é paga."],
-                ["Sem precisar de conta", "o afiliado não usa o Orbibox. Você cadastra aqui e ele acompanha tudo por um link próprio."],
-                ["Bônus pro indicado", "quem entra por um afiliado e assina o plano anual ganha 1 mês grátis extra."],
+                ["Sem precisar de conta", "o embaixador não usa o Orbibox. Você cadastra aqui e ele acompanha tudo por um link próprio."],
+                ["Bônus pro indicado", "quem entra por um embaixador e assina o plano anual ganha 1 mês grátis extra."],
               ].map(([titulo, texto]) => (
                 <div key={titulo} className="flex items-start gap-2.5">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-text-tertiary" />
@@ -188,7 +188,7 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
               onClick={() => copiar(`${base}/afiliados`, "pagina-publica")}
               className="mt-3 w-full cursor-pointer rounded-full bg-on-background py-2.5 text-[13px] font-semibold text-white"
             >
-              {copiado === "pagina-publica" ? "Link copiado ✓" : "Copiar página pra mostrar ao afiliado"}
+              {copiado === "pagina-publica" ? "Link copiado ✓" : "Copiar página pra mostrar ao embaixador"}
             </button>
           </div>
 
@@ -204,25 +204,25 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
           </div>
 
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
-            <p className="text-[15px] font-semibold">Novo afiliado</p>
+            <p className="text-[15px] font-semibold">Novo embaixador</p>
             <p className="mt-1 text-[12.5px] text-text-tertiary">
               Preencha os dados e gere o link. A chave Pix é onde você vai pagar a comissão.
             </p>
             <div className="mt-3 flex flex-col gap-2">
-              <input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} placeholder="Nome do afiliado" className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
+              <input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} placeholder="Nome do embaixador" className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
               <input value={novoEmail} onChange={(e) => setNovoEmail(e.target.value)} placeholder="E-mail (opcional)" className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
               <input value={novoPhone} onChange={(e) => setNovoPhone(e.target.value)} placeholder="WhatsApp (opcional)" className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
               <input value={novoPix} onChange={(e) => setNovoPix(e.target.value)} placeholder="Chave Pix pra pagar a comissão (opcional)" className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
-              <button onClick={criarAfiliado} disabled={!novoNome.trim() || salvando} className="rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white disabled:opacity-40">
-                {salvando ? "Criando…" : "Criar afiliado e gerar link"}
+              <button onClick={criarEmbaixador} disabled={!novoNome.trim() || salvando} className="rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white disabled:opacity-40">
+                {salvando ? "Criando…" : "Criar embaixador e gerar link"}
               </button>
             </div>
           </div>
 
-          {afiliados.length === 0 ? (
-            <p className="rounded-[20px] bg-surface-soft px-4 py-6 text-center text-[13.5px] text-text-tertiary">Nenhum afiliado ainda.</p>
+          {embaixadores.length === 0 ? (
+            <p className="rounded-[20px] bg-surface-soft px-4 py-6 text-center text-[13.5px] text-text-tertiary">Nenhum embaixador ainda.</p>
           ) : (
-            afiliados.map((af) => {
+            embaixadores.map((af) => {
               const link = `${base}/a/${af.code}`;
               return (
                 <div key={af.id} className="rounded-[24px] border border-divider bg-surface-white p-5">
@@ -234,7 +234,7 @@ export function AfiliadosManager({ afiliados: iniciais, bonusLinks: bonusIniciai
                       </p>
                     </div>
                     <button
-                      onClick={() => alternarAfiliado(af)}
+                      onClick={() => alternarEmbaixador(af)}
                       className={`shrink-0 rounded-full px-3 py-1 text-[11.5px] font-semibold ${af.active ? "bg-green-100 text-green-700" : "bg-surface-soft text-text-tertiary"}`}
                     >
                       {af.active ? "Ativo" : "Pausado"}

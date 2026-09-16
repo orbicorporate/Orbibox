@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
-// Chamada logo após entrar/cadastrar. Lê o código do afiliado no cookie e
+// Chamada logo após entrar/cadastrar. Lê o código do embaixador no cookie e
 // registra a indicação (a função ignora código inválido e duplicado).
 export async function POST() {
   const jar = await cookies();

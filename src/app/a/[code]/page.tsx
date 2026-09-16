@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
-// Link de afiliado: /a/CODIGO. Guarda o código num cookie (60 dias, mais
+// Link de embaixador: /a/CODIGO. Guarda o código num cookie (60 dias, mais
 // folgado que o de indicação porque o ciclo de venda de parceiro é maior)
 // e manda pro cadastro. Depois da conta criada, o código vira uma linha
 // em affiliate_referrals.

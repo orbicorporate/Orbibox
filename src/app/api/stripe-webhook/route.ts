@@ -104,14 +104,14 @@ async function notifyPaymentFailed(ownerId: string) {
 
 
 /**
- * Gera a comissão do afiliado a cada cobrança paga.
+ * Gera a comissão do embaixador a cada cobrança paga.
  *
  * Regras combinadas: 30% do valor recebido, pelos primeiros 12 meses de cada
  * indicado, e só depois dos 7 dias de garantia (mesma carência da indicação
  * entre usuários). A janela de 12 meses começa a contar no momento em que a
  * assinatura vira paga, e fica gravada em commission_until.
  */
-async function registrarComissaoAfiliado(invoice: Stripe.Invoice, ownerId: string) {
+async function registrarComissaoEmbaixador(invoice: Stripe.Invoice, ownerId: string) {
   const supabase = createServiceClient();
 
   const { data: indicacao } = await supabase
@@ -125,7 +125,7 @@ async function registrarComissaoAfiliado(invoice: Stripe.Invoice, ownerId: strin
   const agora = new Date();
 
   // Primeira cobrança paga do indicado: se o plano for anual, ele ganha 1
-  // mês grátis extra (benefício de quem entra por afiliado). Concedido uma
+  // mês grátis extra (benefício de quem entra por embaixador). Concedido uma
   // vez só; a função checa o ciclo e o bonus_granted.
   if (!indicacao.subscribed_at) {
     try {
@@ -158,13 +158,13 @@ async function registrarComissaoAfiliado(invoice: Stripe.Invoice, ownerId: strin
   // Passou dos 12 meses, não comissiona mais.
   if (indicacao.commission_until && new Date(indicacao.commission_until) < agora) return;
 
-  const { data: afiliado } = await supabase
+  const { data: embaixador } = await supabase
     .from("affiliates")
     .select("commission_rate, active")
     .eq("id", indicacao.affiliate_id)
     .maybeSingle();
 
-  if (!afiliado?.active) return;
+  if (!embaixador?.active) return;
 
   const base = invoice.amount_paid ?? 0;
   if (base <= 0) return;
@@ -174,7 +174,7 @@ async function registrarComissaoAfiliado(invoice: Stripe.Invoice, ownerId: strin
   await supabase.from("affiliate_commissions").insert({
     affiliate_id: indicacao.affiliate_id,
     affiliate_referral_id: indicacao.id,
-    amount_cents: Math.round(base * Number(afiliado.commission_rate ?? 0.3)),
+    amount_cents: Math.round(base * Number(embaixador.commission_rate ?? 0.3)),
     base_amount_cents: base,
     stripe_invoice_id: invoice.id ?? null,
     status: "pending",
@@ -233,7 +233,7 @@ export async function POST(req: NextRequest) {
             .update({ status: "reversed", updated_at: new Date().toISOString() })
             .eq("referred_user_id", ownerId)
             .eq("status", "pending");
-          // Mesma lógica pro afiliado: cancelou, para de comissionar daqui pra frente.
+          // Mesma lógica pro embaixador: cancelou, para de comissionar daqui pra frente.
           await supabase
             .from("affiliate_referrals")
             .update({ status: "canceled", commission_until: new Date().toISOString() })
@@ -249,7 +249,7 @@ export async function POST(req: NextRequest) {
           const id = typeof subscriptionId === "string" ? subscriptionId : subscriptionId.id;
           const subscription = await stripe.subscriptions.retrieve(id);
           const ownerId = subscription.metadata?.owner_id;
-          if (ownerId) await registrarComissaoAfiliado(invoice, ownerId);
+          if (ownerId) await registrarComissaoEmbaixador(invoice, ownerId);
         }
         break;
       }

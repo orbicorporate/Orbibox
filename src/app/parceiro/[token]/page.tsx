@@ -36,7 +36,7 @@ function mesLongo(iso: string) {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
-export default async function PainelAfiliado({ params }: { params: Promise<{ token: string }> }) {
+export default async function PainelEmbaixador({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const supabase = await createClient();
 

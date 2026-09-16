@@ -44,7 +44,7 @@ function useContador(alvo: number, dur = 380) {
   return v;
 }
 
-export function AfiliadoSimulador() {
+export function EmbaixadorSimulador() {
   const [pos, setPos] = useState(600); // começa em ~1000 assinaturas
   const assinaturas = posParaAssinaturas(pos);
 

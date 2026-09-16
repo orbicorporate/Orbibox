@@ -39,7 +39,7 @@ export default function SignupPage() {
       setCheckEmail(true);
       return;
     }
-    // Já logado: registra indicação/afiliado e resgata o bônus (se veio por
+    // Já logado: registra indicação/embaixador e resgata o bônus (se veio por
     // algum desses links) antes de seguir pro onboarding.
     try {
       await Promise.all([

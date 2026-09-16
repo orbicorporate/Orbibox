@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
-import { AfiliadoSimulador } from "./AfiliadoSimulador";
+import { EmbaixadorSimulador } from "./EmbaixadorSimulador";
 
 export const metadata: Metadata = {
   title: "Seja Embaixador Orbibox",
@@ -14,7 +14,7 @@ const PASSOS = [
   { n: 4, titulo: "E vai acumulando", texto: "Cada nova indicação soma na anterior. Quanto mais gente ativa, maior o seu ganho fixo mensal." },
 ];
 
-export default function AfiliadosPublico() {
+export default function EmbaixadoresPublico() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-[640px] px-5 pb-16 pt-8">
       <div className="orbi-rise flex items-center gap-2.5" style={{ animationDelay: "0ms" }}>
@@ -36,10 +36,10 @@ export default function AfiliadosPublico() {
       </div>
 
       <div className="orbi-rise mt-4" style={{ animationDelay: "120ms" }}>
-        <AfiliadoSimulador />
+        <EmbaixadorSimulador />
       </div>
 
-      {/* Benefício de quem você indica: argumento de venda pro afiliado */}
+      {/* Benefício de quem você indica: argumento de venda pro embaixador */}
       <div className="orbi-rise mt-4 flex items-center gap-3.5 rounded-[22px] bg-[#DEF3E3] p-5" style={{ animationDelay: "150ms" }}>
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[20px]">🎁</span>
         <div className="min-w-0">
