@@ -31,7 +31,7 @@ export default function EmbaixadoresPublico() {
           Indique. Elas assinam.<br />Você ganha todo mês.
         </h1>
         <p className="relative mx-auto mt-3 max-w-[420px] text-[15px] leading-relaxed text-text-secondary">
-          Acumule ganhos recorrentes só indicando o seu link de embaixador Orbibox. As pessoas assinam, e você ganha 30% de cada mensalidade, todo mês.
+          Acumule ganhos recorrentes apenas indicando o seu link de embaixador Orbibox.
         </p>
       </div>
 
