@@ -174,11 +174,11 @@ type Slide = { rotulo: string; titulo: string; frase: string; cena?: () => React
 
 /** Slide de vitrine com as fotos reais do tema do Inspire-se. Se o tema
  * ainda não tiver fotos cadastradas, cai na versão ilustrada (gradientes). */
-function vitrineSlide(inspire: InspireParaApresentacao, temaId: string, titulo: string, frase: string): Slide {
+function vitrineSlide(inspire: InspireParaApresentacao, temaId: string, nome: string, titulo: string, frase: string): Slide {
   const fotos = inspire[temaId]?.photos ?? [];
   const fallback: Record<string, keyof typeof VITRINES> = { restaurante: "cafe", fitness: "pilates", moda: "moda", doceria: "doceria", arquitetura: "arquitetura" };
   const Cena = fotos.length >= 4
-    ? function CenaVitrineReal() { return <CenaVitrineFotos temaId={temaId} photos={fotos} titleStyle={inspire[temaId].titleStyle} />; }
+    ? function CenaVitrineReal() { return <CenaVitrineFotos temaId={temaId} nome={nome} photos={fotos} titleStyle={inspire[temaId].titleStyle} />; }
     : function CenaVitrineIlustrada() { return <CenaVitrine tema={fallback[temaId] ?? "cafe"} />; };
   return { rotulo: "Vitrine", titulo, frase, cena: Cena };
 }
@@ -191,11 +191,9 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       frase: "A pessoa chega, diz o que quer, e o seu negócio responde na hora.",
       cena: CenaInicio,
     },
-    vitrineSlide(inspire, "restaurante", "Seu catálogo, do seu jeito", "Produtos, fotos e preços que a Orbi já conhece de cor."),
-    vitrineSlide(inspire, "moda", "Editorial, pra moda", "Peças, coleção, tamanhos. A Orbi já sabe o que tem em estoque."),
-    vitrineSlide(inspire, "doceria", "Delicada, pra doceria", "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque."),
-    vitrineSlide(inspire, "arquitetura", "Sóbria, pra arquitetura", "Portfólio de projetos, serviços e um jeito fácil de pedir orçamento."),
-    vitrineSlide(inspire, "fitness", "Serve pra qualquer negócio", "Serviço, loja, clínica, studio. Muda a cor, muda o tom, não muda o trabalho."),
+    vitrineSlide(inspire, "doceria", "Doce Ateliê", "Delicada, pra doceria", "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque."),
+    vitrineSlide(inspire, "fitness", "Fit Store", "Direta, pra loja", "Produtos, fotos e preços que a Orbi já conhece de cor."),
+    vitrineSlide(inspire, "arquitetura", "Studio Design", "Sóbria, pra serviço", "Portfólio, serviços e um jeito fácil de pedir orçamento."),
     {
       rotulo: "IA pessoal",
       titulo: "Uma Orbi que responde por você",
@@ -431,21 +429,21 @@ function ScrollLento({ children }: { children: ReactNode }) {
 
 /** Vitrine com as fotos reais do Inspire-se, na mesma grade sem buraco e no
  * mesmo visual (faixa branca ou nome sobre a foto) que a pessoa vai ver lá. */
-function CenaVitrineFotos({ temaId, photos, titleStyle }: { temaId: string; photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }) {
+function CenaVitrineFotos({ temaId, nome, photos, titleStyle }: { temaId: string; nome: string; photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }) {
   const tema = VITRINE_THEMES.find((t) => t.id === temaId);
   const fundo = tema?.bg ?? "#F7F7F4";
   const contraste = tema?.colors[1]?.hex ?? "#111318";
   const suave = tema?.colors[3]?.hex ?? "#E5E5E5";
   const objPos = tema?.objectPosition ?? "center";
   const fotos = photos.slice(0, 9);
-  const sizes = tamanhosSemBuraco(fotos.length);
+  const sizes = tamanhosSemBuraco(fotos.length, { semAlto: titleStyle === "faixa" });
   const ratio = { destaque: "aspect-[16/9]", largo: "aspect-[1920/830]", medio: "aspect-square", alto: "aspect-[4/5]" } as const;
   return (
     <TelaReal>
       <div className="flex h-full flex-col" style={{ background: fundo }}>
         <div className="px-5 pt-14 pb-4">
           <p className="text-[12px] uppercase tracking-wide" style={{ color: contraste, opacity: 0.6 }}>Vitrine</p>
-          <p className="font-[family-name:var(--font-manrope)] text-[26px] font-semibold tracking-[-0.01em]" style={{ color: contraste }}>{tema?.exampleBusiness ?? "Vitrine"}</p>
+          <p className="font-[family-name:var(--font-manrope)] text-[26px] font-semibold tracking-[-0.01em]" style={{ color: contraste }}>{nome}</p>
         </div>
         <div className="min-h-0 flex-1 px-5">
           <ScrollLento>
@@ -463,12 +461,10 @@ function CenaVitrineFotos({ temaId, photos, titleStyle }: { temaId: string; phot
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={f.url} alt={title || ""} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} />
                       </div>
-                      {title && (
-                        <div className={med ? "p-3" : "p-4"}>
-                          <p className={`truncate font-[family-name:var(--font-manrope)] font-medium leading-tight text-on-background ${med ? "text-[14px]" : "text-[17px]"}`}>{title}</p>
-                          {price && <p className={`mt-0.5 font-[family-name:var(--font-manrope)] font-medium text-text-secondary ${med ? "text-[13px]" : "text-[15px]"}`}>{price}</p>}
-                        </div>
-                      )}
+                      <div className={med ? "h-[60px] px-3 py-2.5" : "h-[70px] px-4 py-3"}>
+                        <p className={`truncate font-[family-name:var(--font-manrope)] font-medium leading-tight text-on-background ${med ? "text-[14px]" : "text-[17px]"}`}>{title || "\u00a0"}</p>
+                        <p className={`mt-0.5 truncate font-[family-name:var(--font-manrope)] font-medium text-text-secondary ${med ? "text-[13px]" : "text-[15px]"}`}>{price || "\u00a0"}</p>
+                      </div>
                     </div>
                   );
                 }

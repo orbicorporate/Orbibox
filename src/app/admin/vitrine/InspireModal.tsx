@@ -68,7 +68,7 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
 
 function ThemePreview({ theme, photos, titleStyle }: { theme: VitrineTheme; photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }) {
   // Um box por foto enviada, usa o nome/preço da própria foto.
-  const sizes = tamanhosSemBuraco(photos.length);
+  const sizes = tamanhosSemBuraco(photos.length, { semAlto: titleStyle === "faixa" });
   const boxes: ThemeBox[] = photos.map((_, i) => ({
     title: "",
     size: sizes[i],

@@ -18,8 +18,21 @@ export const SIZE_RHYTHM: ThemeBox["size"][] = [
  * fecham a coluna ao lado vira "medio"; (2) se a última linha ficar pela
  * metade, o último box vira "largo" e fecha a linha. Simula a colocação
  * automática da grade de 2 colunas (mesma regra do CSS) pra decidir. */
-export function tamanhosSemBuraco(n: number): ThemeBox["size"][] {
-  const sizes = Array.from({ length: n }, (_, i) => SIZE_RHYTHM[i % SIZE_RHYTHM.length]);
+// Versão sem "alto", pro estilo "faixa" (foto + rodapé branco): ali o alto
+// não ocupa 2 linhas de verdade, só fica mais alto que o vizinho e estica o
+// card ao lado com branco sobrando. Linhas só de 2 colunas ou de 2 quadrados.
+export const SIZE_RHYTHM_SEM_ALTO: ThemeBox["size"][] = [
+  "destaque",
+  "medio", "medio",
+  "largo",
+  "medio", "medio",
+  "medio", "medio",
+  "largo",
+];
+
+export function tamanhosSemBuraco(n: number, opts?: { semAlto?: boolean }): ThemeBox["size"][] {
+  const ritmo = opts?.semAlto ? SIZE_RHYTHM_SEM_ALTO : SIZE_RHYTHM;
+  const sizes = Array.from({ length: n }, (_, i) => ritmo[i % ritmo.length]);
   const ultimoAlto = sizes.lastIndexOf("alto");
   if (ultimoAlto !== -1) {
     let ini = ultimoAlto;
