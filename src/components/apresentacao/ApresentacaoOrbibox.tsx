@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNod
 import Link from "next/link";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { GiftArt } from "@/components/mobile/GiftArt";
+import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
 
 /**
  * Apresentação do Orbibox: carrossel de tela cheia, um slide por feature,
@@ -116,12 +117,12 @@ export function ApresentacaoOrbibox({ finalHref, finalLabel, skipHref, skipLabel
       <div ref={trackRef} className="apr-track relative z-10 flex flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden">
         {slides.map((s, i) => (
           <section key={i} className="flex w-full shrink-0 snap-start flex-col items-center justify-center px-6 pb-4">
-            <div className="mb-4 text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-tertiary">{s.rotulo}</p>
-              <h2 className="mt-1.5 font-[family-name:var(--font-manrope)] text-[26px] font-semibold leading-tight tracking-[-0.02em] text-on-background">
+            <div className="mb-3 text-center">
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-text-tertiary">{s.rotulo}</p>
+              <h2 className="mt-1 font-[family-name:var(--font-manrope)] text-[23px] font-semibold leading-tight tracking-[-0.02em] text-on-background">
                 {s.titulo}
               </h2>
-              <p className="mx-auto mt-1.5 max-w-[300px] text-[14px] leading-snug text-text-secondary">{s.frase}</p>
+              <p className="mx-auto mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">{s.frase}</p>
             </div>
             {s.cena ? (
               <Celular>{i === ativo ? <s.cena key={`cena-${i}-${ativo}`} /> : <s.cena />}</Celular>
@@ -150,7 +151,7 @@ export function ApresentacaoOrbibox({ finalHref, finalLabel, skipHref, skipLabel
 
 function Celular({ children }: { children: ReactNode }) {
   return (
-    <div className="apr-float relative" style={{ height: "min(56vh, 560px)" }}>
+    <div className="apr-float relative" style={{ height: "min(66vh, 660px)" }}>
       <div className="relative aspect-[9/18.5] h-full rounded-[40px] border-[6px] border-[#111318] bg-[#111318] shadow-[0_24px_60px_rgba(17,19,24,0.28)]">
         {/* dynamic island */}
         <div className="absolute left-1/2 top-2.5 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111318]" />
@@ -227,40 +228,71 @@ function montarSlides(finalHref: string, finalLabel: string): Slide[] {
 
 const d = (i: number) => ({ animationDelay: `${i * 0.14}s` });
 
-function CenaInicio() {
-  const boxes = [
-    { icon: "◆", t: "Comprar", s: "Explore nosso catálogo." },
-    { icon: "◇", t: "Conhecer", s: "Nossa história e espaço." },
-    { icon: "✦", t: "Falar com a Orbi", s: "Tira dúvida na hora.", ai: true },
-    { icon: "🎟️", t: "Vouchers", s: "Resgate agora e aproveite.", cupom: true },
-  ];
+/** Renderiza o conteúdo na largura real da Home (390px) e só reduz com
+ * escala pra caber na tela do celular desenhado. Assim a proporção entre
+ * fonte, ícone, padding e card fica idêntica ao site de verdade. */
+function TelaReal({ children }: { children: ReactNode }) {
+  const REAL = 390;
+  const ref = useRef<HTMLDivElement>(null);
+  const [dim, setDim] = useState({ w: REAL, h: 800 });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setDim({ w: e.contentRect.width, h: e.contentRect.height }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const escala = dim.w / REAL;
   return (
-    <div className="flex h-full flex-col px-4 pt-12">
-      <div className="apr-pop flex flex-col items-center" style={d(0)}>
-        <OrbiParticleSphere size={64} className="rounded-full" />
-        <p className="mt-3 text-[13px] text-text-secondary">O que trouxe você aqui hoje?</p>
-        <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold tracking-[-0.01em]">Café Mirante</p>
-      </div>
-      <div className="mt-5 flex flex-col gap-2.5">
-        {boxes.map((b, i) => (
-          <div
-            key={b.t}
-            style={d(i + 2)}
-            className={`apr-pop flex items-center gap-3 rounded-[18px] px-3.5 py-3 ${
-              b.cupom ? "cupom-box text-white" : "bg-surface-white shadow-[0_6px_18px_rgba(17,19,24,0.08)]"
-            }`}
-          >
-            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[15px] ${b.ai ? "orbi-gradient" : b.cupom ? "bg-white/20" : "bg-surface-soft"}`}>
-              {b.icon}
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[14px] font-semibold leading-tight">{b.t}</span>
-              <span className={`block text-[11.5px] ${b.cupom ? "text-white/80" : "text-text-secondary"}`}>{b.s}</span>
-            </span>
-          </div>
-        ))}
+    <div ref={ref} className="h-full w-full overflow-hidden">
+      <div style={{ width: REAL, height: dim.h / escala, transform: `scale(${escala})`, transformOrigin: "top left" }}>
+        {children}
       </div>
     </div>
+  );
+}
+
+function CenaInicio() {
+  const cor = ["#B7F34A", "#6EE7D8"];
+  const boxes: { layout: "largo" | "medio"; icon: string; t: string; s: string; color?: string; ai?: boolean; cupom?: boolean; stars?: boolean }[] = [
+    { layout: "largo", icon: "◆", t: "Comprar", s: "Explore nosso catálogo completo.", color: "#111318" },
+    { layout: "medio", icon: "◇", t: "Conhecer", s: "Nossa história e espaço." },
+    { layout: "medio", icon: "__orb__", t: "Falar com a Orbi", s: "Tira dúvida na hora.", ai: true },
+    { layout: "largo", icon: "🎟️", t: "Vouchers", s: "Resgate agora e aproveite.", cupom: true },
+    { layout: "medio", icon: "__google__", t: "Avaliar", s: "Deixe sua nota no Google.", stars: true },
+    { layout: "medio", icon: "__pin__", t: "Como chegar", s: "Waze e Google Maps." },
+    { layout: "largo", icon: "__wadisc__", t: "WhatsApp", s: "Fala direto com a gente." },
+    { layout: "medio", icon: "__gift__", t: "Presentear", s: "Monte um vale-presente." },
+    { layout: "medio", icon: "__money__", t: "Cartão fidelidade", s: "A cada 10, um grátis." },
+  ];
+  return (
+    <TelaReal>
+      <div className="apr-scroll-up px-5 pt-14" style={{ animationDuration: "8s" }}>
+        <div className="apr-pop flex flex-col items-center" style={d(0)}>
+          <OrbiParticleSphere size={110} colors={cor} className="rounded-full" />
+          <p className="mt-4 text-[15px] text-text-secondary">O que trouxe você aqui hoje?</p>
+          <p className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold tracking-[-0.01em]">Café Mirante</p>
+        </div>
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          {boxes.map((b, i) => (
+            <div key={b.t} className={`apr-pop ${b.layout === "largo" ? "col-span-2" : "col-span-1"}`} style={d(i + 2)}>
+              <HomeOptionCardPreview
+                layout={b.layout}
+                icon={b.icon}
+                color={b.color}
+                orbiColors={cor}
+                title={b.t}
+                description={b.s}
+                ai={b.ai}
+                cupom={b.cupom}
+                stars={b.stars}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="h-24" />
+      </div>
+    </TelaReal>
   );
 }
 
