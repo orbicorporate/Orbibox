@@ -7,6 +7,9 @@ import { GiftArt } from "@/components/mobile/GiftArt";
 import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
 import { VITRINE_THEMES, type ThemePhoto } from "@/lib/vitrineThemes";
 import { tamanhosSemBuraco } from "@/lib/inspireGrid";
+import { TaxaConversao } from "@/app/admin/pulse/TaxaConversao";
+import { PulseDetails } from "@/app/admin/pulse/PulseDetails";
+import { PulseAudience } from "@/app/admin/pulse/PulseAudience";
 
 /** Fotos reais do Inspire-se, por tema, passadas pela página (servidor). */
 export type InspireParaApresentacao = Record<string, { photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }>;
@@ -104,7 +107,7 @@ export function ApresentacaoOrbibox({ inspire = {}, finalHref, finalLabel, skipH
                 <div
                   key={`fill-${ativo}`}
                   className={`apr-fill h-full rounded-full bg-on-background ${pausado ? "apr-paused" : ""}`}
-                  style={{ animationDuration: `${AUTO_MS}ms` }}
+                  style={{ animationDuration: `${slides[ativo].duracaoMs ?? AUTO_MS}ms` }}
                   onAnimationEnd={() => irPara(ativo + 1)}
                 />
               ) : i === ativo ? (
@@ -162,7 +165,7 @@ function Celular({ children }: { children: ReactNode }) {
       <div className="relative aspect-[9/18.5] h-full rounded-[40px] border-[6px] border-[#111318] bg-[#111318] shadow-[0_24px_60px_rgba(17,19,24,0.28)]">
         {/* dynamic island */}
         <div className="absolute left-1/2 top-2.5 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111318]" />
-        <div className="relative h-full w-full overflow-hidden rounded-[34px] bg-background-main">{children}</div>
+        <div className="pointer-events-none relative h-full w-full overflow-hidden rounded-[34px] bg-background-main">{children}</div>
       </div>
     </div>
   );
@@ -170,7 +173,7 @@ function Celular({ children }: { children: ReactNode }) {
 
 /* ---------- Roteiro dos slides ---------- */
 
-type Slide = { rotulo: string; titulo: string; frase: string; cena?: () => ReactNode; livre?: ReactNode };
+type Slide = { rotulo: string; titulo: string; frase: string; cena?: () => ReactNode; livre?: ReactNode; duracaoMs?: number };
 
 /** Slide de vitrine com as fotos reais do tema do Inspire-se. Se o tema
  * ainda não tiver fotos cadastradas, cai na versão ilustrada (gradientes). */
@@ -180,7 +183,7 @@ function vitrineSlide(inspire: InspireParaApresentacao, temaId: string, nome: st
   const Cena = fotos.length >= 4
     ? function CenaVitrineReal() { return <CenaVitrineFotos temaId={temaId} nome={nome} photos={fotos} titleStyle={inspire[temaId].titleStyle} />; }
     : function CenaVitrineIlustrada() { return <CenaVitrine tema={fallback[temaId] ?? "cafe"} />; };
-  return { rotulo: "Vitrine", titulo, frase, cena: Cena };
+  return { rotulo: "Vitrine", titulo, frase, cena: Cena, duracaoMs: 9000 };
 }
 
 function montarSlides(finalHref: string, finalLabel: string, inspire: InspireParaApresentacao): Slide[] {
@@ -190,6 +193,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       titulo: "Um link que se adapta a quem entra",
       frase: "A pessoa chega, diz o que quer, e o seu negócio responde na hora.",
       cena: CenaInicio,
+      duracaoMs: 9500,
     },
     vitrineSlide(inspire, "doceria", "Doce Ateliê", "Delicada, pra doceria", "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque."),
     vitrineSlide(inspire, "fitness", "Fit Store", "Direta, pra loja", "Produtos, fotos e preços que a Orbi já conhece de cor."),
@@ -205,6 +209,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       titulo: "Saiba de onde vem cada cliente",
       frase: "Quantos entraram, de onde vieram e o que fizeram. E o que fazer a seguir.",
       cena: CenaPulse,
+      duracaoMs: 13000,
     },
     {
       rotulo: "Vouchers",
@@ -276,7 +281,7 @@ function CenaInicio() {
   ];
   return (
     <TelaReal>
-      <div className="apr-scroll-up px-5 pt-14" style={{ animationDuration: "8s" }}>
+      <div className="apr-scroll-up px-5 pt-14" style={{ animationDuration: "9s" }}>
         <div className="apr-pop flex flex-col items-center" style={d(0)}>
           <OrbiParticleSphere size={110} colors={cor} className="rounded-full" />
           <p className="mt-4 text-[15px] text-text-secondary">O que trouxe você aqui hoje?</p>
@@ -402,7 +407,7 @@ function CenaVitrine({ tema }: { tema: keyof typeof VITRINES }) {
 
 /** Rola o conteúdo até o fim, devagar, medindo a altura real (não um
  * percentual fixo), então nunca corta o começo nem sobra vazio embaixo. */
-function ScrollLento({ children }: { children: ReactNode }) {
+function ScrollLento({ children, dur = 7.5 }: { children: ReactNode; dur?: number }) {
   const fora = useRef<HTMLDivElement>(null);
   const dentro = useRef<HTMLDivElement>(null);
   const [ate, setAte] = useState(0);
@@ -420,7 +425,7 @@ function ScrollLento({ children }: { children: ReactNode }) {
   }, []);
   return (
     <div ref={fora} className="h-full w-full overflow-hidden">
-      <div ref={dentro} className="apr-scroll-to" style={{ "--apr-to": `${ate}px` } as CSSProperties}>
+      <div ref={dentro} className="apr-scroll-to" style={{ "--apr-to": `${ate}px`, animationDuration: `${dur}s` } as CSSProperties}>
         {children}
       </div>
     </div>
@@ -541,72 +546,83 @@ function Digitando({ delay }: { delay: number }) {
   );
 }
 
+/** Pulse com o design exato do painel: os mesmos componentes da página
+ * real (TaxaConversao, PulseDetails, PulseAudience) com dados de exemplo,
+ * na largura real, rolando pra baixo com cada bloco entrando em sequência
+ * e o gráfico se desenhando no fim. */
 function CenaPulse() {
-  const alvo = 68;
-  const raio = 44;
-  const circ = 2 * Math.PI * raio;
-  const [n, setN] = useState(0);
-  useEffect(() => {
-    let raf = 0;
-    const t0 = performance.now();
-    const passo = (t: number) => {
-      const p = Math.min(1, (t - t0 - 300) / 1600);
-      if (p >= 0) setN(Math.round(alvo * (1 - Math.pow(1 - Math.max(0, p), 3))));
-      if (p < 1) raf = requestAnimationFrame(passo);
-    };
-    raf = requestAnimationFrame(passo);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-  const fontes = [
-    { n: "Instagram", v: 62, c: "#B0309E" },
-    { n: "WhatsApp", v: 44, c: "#1EA66B" },
-    { n: "Google", v: 28, c: "#2F63C9" },
-  ];
+  const cor = ["#B7F34A", "#6EE7D8"];
+  const serie = [12, 18, 15, 26, 31, 28, 44, 39, 52, 61, 58, 74, 69, 88];
+  const w = 320, h = 90, max = Math.max(...serie), pts = serie.length - 1;
+  const path = serie.map((v, i) => `${i === 0 ? "M" : "L"}${((i / pts) * w).toFixed(1)},${(h - (v / max) * h).toFixed(1)}`).join(" ");
+  const labels = ["4/9", "", "6/9", "", "8/9", "", "10/9", "", "12/9", "", "14/9", "", "16/9", "17/9"];
   return (
-    <div className="flex h-full flex-col px-4 pt-11">
-      <p className="apr-pop text-[11px] uppercase tracking-wide text-text-tertiary" style={d(0)}>Pulse · 30 dias</p>
-      <div className="apr-pop mt-3 flex items-center gap-3 rounded-[18px] bg-surface-white p-3.5 shadow-[0_6px_18px_rgba(17,19,24,0.08)]" style={d(1)}>
-        <svg width="104" height="104" viewBox="0 0 104 104" className="shrink-0 -rotate-90">
-          <circle cx="52" cy="52" r={raio} stroke="rgba(17,19,24,0.08)" strokeWidth="9" fill="none" />
-          <circle
-            cx="52" cy="52" r={raio} strokeWidth="9" fill="none" strokeLinecap="round"
-            stroke="url(#aprPulseGrad)"
-            strokeDasharray={circ}
-            strokeDashoffset={circ}
-            className="apr-ring"
-            style={{ "--apr-ring-to": `${circ * (1 - alvo / 100)}` } as CSSProperties}
-          />
-          <defs>
-            <linearGradient id="aprPulseGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop stopColor="#B7F34A" />
-              <stop offset="1" stopColor="#6EE7D8" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div>
-          <p className="font-[family-name:var(--font-manrope)] text-[34px] font-medium leading-none tabular-nums">{n}%</p>
-          <p className="mt-1 text-[11.5px] text-text-secondary">de quem entra, age</p>
-        </div>
-      </div>
-      <div className="apr-pop mt-3 rounded-[18px] bg-surface-white p-3.5 shadow-[0_6px_18px_rgba(17,19,24,0.08)]" style={d(3)}>
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">De onde vêm</p>
-        <div className="mt-2 flex flex-col gap-2">
-          {fontes.map((f, i) => (
-            <div key={f.n}>
-              <div className="flex justify-between text-[11.5px]"><span>{f.n}</span><span className="tabular-nums text-text-secondary">{f.v}</span></div>
-              <div className="mt-1 h-2 overflow-hidden rounded-full bg-surface-soft">
-                <div className="apr-grow-x h-full rounded-full" style={{ width: `${f.v}%`, background: f.c, animationDelay: `${0.6 + i * 0.2}s` }} />
-              </div>
+    <TelaReal>
+      <ScrollLento dur={12}>
+        <div className="flex flex-col px-5 pt-12 pb-8">
+          <p className="apr-pop mt-2 text-center text-[13px] uppercase tracking-wide text-text-tertiary" style={d(0)}>Orbi Pulse</p>
+
+          <div className="apr-pop" style={d(1)}>
+            <TaxaConversao taxa={68} visitas={1240} totalCliques={843} businessId="apresentacao" orbiColors={cor} />
+          </div>
+
+          <p className="apr-pop mt-6 text-[12px] uppercase tracking-wide text-text-tertiary" style={d(4)}>Período</p>
+          <div className="apr-pop mt-2 flex gap-2" style={d(4)}>
+            {["7 dias", "30 dias", "90 dias", "Este ano"].map((p, i) => (
+              <span key={p} className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-medium ${i === 1 ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{p}</span>
+            ))}
+          </div>
+
+          <div className="apr-pop mt-4 flex items-center justify-between rounded-[22px] bg-surface-soft px-5 py-4" style={d(5)}>
+            <span className="text-[14px] text-text-secondary">Visitas</span>
+            <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">1.240</span>
+          </div>
+
+          <div className="apr-pop" style={d(6)}>
+            <PulseDetails
+              porTipo={{ whatsapp: 312, produto: 268, zara: 141, categoria: 77, link: 45 }}
+              porTipoItem={{}}
+              itemMap={{}}
+              topItems={[]}
+              paginas={[]}
+              slug="studio-design"
+            />
+          </div>
+
+          <div className="apr-pop" style={d(8)}>
+            <PulseAudience
+              origens={[
+                { nome: "Instagram", count: 612 },
+                { nome: "WhatsApp", count: 437 },
+                { nome: "Google", count: 118 },
+                { nome: "Link direto", count: 73 },
+              ]}
+              dispositivos={[
+                { nome: "Celular", count: 1104 },
+                { nome: "Computador", count: 136 },
+              ]}
+              totalSessoes={1240}
+            />
+          </div>
+
+          <div className="apr-pop mt-8 rounded-[28px] border border-divider bg-surface-white p-6" style={d(10)}>
+            <p className="text-[14px] text-text-secondary">Últimos 14 dias</p>
+            <svg viewBox={`0 0 ${w} ${h}`} className="mt-4 w-full overflow-visible">
+              <path d={path} pathLength={1} fill="none" stroke="var(--on-background)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="apr-draw" />
+            </svg>
+            <div className="mt-3 flex justify-between text-[11px] text-text-tertiary">
+              {labels.map((l, i) => <span key={i}>{l}</span>)}
             </div>
-          ))}
+          </div>
+
+          <div className="apr-pop orbi-card-light mt-4 rounded-[24px] p-5" style={d(12)}>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary">✦ Orbi Insights</p>
+            <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">Instagram traz, mas poucos compram</p>
+            <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">Crie um voucher só pra quem vem de lá e meça em 7 dias.</p>
+          </div>
         </div>
-      </div>
-      <div className="apr-pop orbi-card-light mt-3 rounded-[18px] p-3.5" style={d(8)}>
-        <p className="text-[10.5px] font-semibold uppercase tracking-wide text-text-secondary">✦ Orbi Insights</p>
-        <p className="mt-1 text-[12.5px] font-semibold leading-tight">Instagram traz, mas poucos compram</p>
-        <p className="mt-0.5 text-[11.5px] leading-snug text-text-secondary">Crie um voucher só pra quem vem de lá.</p>
-      </div>
-    </div>
+      </ScrollLento>
+    </TelaReal>
   );
 }
 

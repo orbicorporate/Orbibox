@@ -518,3 +518,6 @@ body {
 
 @keyframes aprScrollTo { 0%, 18% { transform: translateY(0); } 100% { transform: translateY(var(--apr-to, 0px)); } }
 .apr-scroll-to { animation: aprScrollTo 7.5s ease-in-out forwards; }
+
+@keyframes aprDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.apr-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: aprDraw 1.8s cubic-bezier(0.22, 1, 0.36, 1) 1.6s forwards; }
