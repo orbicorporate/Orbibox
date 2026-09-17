@@ -5,6 +5,11 @@ import Link from "next/link";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { GiftArt } from "@/components/mobile/GiftArt";
 import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
+import { VITRINE_THEMES, type ThemePhoto } from "@/lib/vitrineThemes";
+import { tamanhosSemBuraco } from "@/lib/inspireGrid";
+
+/** Fotos reais do Inspire-se, por tema, passadas pela página (servidor). */
+export type InspireParaApresentacao = Record<string, { photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }>;
 
 /**
  * Apresentação do Orbibox: carrossel de tela cheia, um slide por feature,
@@ -21,6 +26,8 @@ import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
  */
 
 type Props = {
+  /** Fotos reais do Inspire-se (restaurante, moda, doceria, arquitetura, fitness). */
+  inspire?: InspireParaApresentacao;
   /** Pra onde vai o botão final. */
   finalHref: string;
   finalLabel: string;
@@ -31,13 +38,13 @@ type Props = {
 
 const AUTO_MS = 6500;
 
-export function ApresentacaoOrbibox({ finalHref, finalLabel, skipHref, skipLabel = "Pular" }: Props) {
+export function ApresentacaoOrbibox({ inspire = {}, finalHref, finalLabel, skipHref, skipLabel = "Pular" }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [ativo, setAtivo] = useState(0);
   const [pausado, setPausado] = useState(false);
   const [jaArrastou, setJaArrastou] = useState(false);
 
-  const slides = useMemo(() => montarSlides(finalHref, finalLabel), [finalHref, finalLabel]);
+  const slides = useMemo(() => montarSlides(finalHref, finalLabel, inspire), [finalHref, finalLabel, inspire]);
   const total = slides.length;
   const ultimo = ativo === total - 1;
 
@@ -165,7 +172,18 @@ function Celular({ children }: { children: ReactNode }) {
 
 type Slide = { rotulo: string; titulo: string; frase: string; cena?: () => ReactNode; livre?: ReactNode };
 
-function montarSlides(finalHref: string, finalLabel: string): Slide[] {
+/** Slide de vitrine com as fotos reais do tema do Inspire-se. Se o tema
+ * ainda não tiver fotos cadastradas, cai na versão ilustrada (gradientes). */
+function vitrineSlide(inspire: InspireParaApresentacao, temaId: string, titulo: string, frase: string): Slide {
+  const fotos = inspire[temaId]?.photos ?? [];
+  const fallback: Record<string, keyof typeof VITRINES> = { restaurante: "cafe", fitness: "pilates", moda: "moda", doceria: "doceria", arquitetura: "arquitetura" };
+  const Cena = fotos.length >= 4
+    ? function CenaVitrineReal() { return <CenaVitrineFotos temaId={temaId} photos={fotos} titleStyle={inspire[temaId].titleStyle} />; }
+    : function CenaVitrineIlustrada() { return <CenaVitrine tema={fallback[temaId] ?? "cafe"} />; };
+  return { rotulo: "Vitrine", titulo, frase, cena: Cena };
+}
+
+function montarSlides(finalHref: string, finalLabel: string, inspire: InspireParaApresentacao): Slide[] {
   return [
     {
       rotulo: "Orbibox",
@@ -173,36 +191,11 @@ function montarSlides(finalHref: string, finalLabel: string): Slide[] {
       frase: "A pessoa chega, diz o que quer, e o seu negócio responde na hora.",
       cena: CenaInicio,
     },
-    {
-      rotulo: "Vitrine",
-      titulo: "Seu catálogo, do seu jeito",
-      frase: "Produtos, fotos e preços que a Orbi já conhece de cor.",
-      cena: CenaVitrineCafe,
-    },
-    {
-      rotulo: "Vitrine",
-      titulo: "Editorial, pra moda",
-      frase: "Peças, coleção, tamanhos. A Orbi já sabe o que tem em estoque.",
-      cena: CenaVitrineModa,
-    },
-    {
-      rotulo: "Vitrine",
-      titulo: "Delicada, pra doceria",
-      frase: "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque.",
-      cena: CenaVitrineDoceria,
-    },
-    {
-      rotulo: "Vitrine",
-      titulo: "Sóbria, pra arquitetura",
-      frase: "Portfólio de projetos, serviços e um jeito fácil de pedir orçamento.",
-      cena: CenaVitrineArquitetura,
-    },
-    {
-      rotulo: "Vitrine",
-      titulo: "Serve pra qualquer negócio",
-      frase: "Serviço, loja, clínica, studio. Muda a cor, muda o tom, não muda o trabalho.",
-      cena: CenaVitrinePilates,
-    },
+    vitrineSlide(inspire, "restaurante", "Seu catálogo, do seu jeito", "Produtos, fotos e preços que a Orbi já conhece de cor."),
+    vitrineSlide(inspire, "moda", "Editorial, pra moda", "Peças, coleção, tamanhos. A Orbi já sabe o que tem em estoque."),
+    vitrineSlide(inspire, "doceria", "Delicada, pra doceria", "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque."),
+    vitrineSlide(inspire, "arquitetura", "Sóbria, pra arquitetura", "Portfólio de projetos, serviços e um jeito fácil de pedir orçamento."),
+    vitrineSlide(inspire, "fitness", "Serve pra qualquer negócio", "Serviço, loja, clínica, studio. Muda a cor, muda o tom, não muda o trabalho."),
     {
       rotulo: "IA pessoal",
       titulo: "Uma Orbi que responde por você",
@@ -289,7 +282,7 @@ function CenaInicio() {
         <div className="apr-pop flex flex-col items-center" style={d(0)}>
           <OrbiParticleSphere size={110} colors={cor} className="rounded-full" />
           <p className="mt-4 text-[15px] text-text-secondary">O que trouxe você aqui hoje?</p>
-          <p className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold tracking-[-0.01em]">Café Mirante</p>
+          <p className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold tracking-[-0.01em]">Studio Design</p>
         </div>
         <div className="mt-8 grid grid-cols-2 gap-3">
           {boxes.map((b, i) => (
@@ -383,21 +376,6 @@ const VITRINES = {
   },
 };
 
-function CenaVitrineCafe() {
-  return <CenaVitrine tema="cafe" />;
-}
-function CenaVitrinePilates() {
-  return <CenaVitrine tema="pilates" />;
-}
-function CenaVitrineModa() {
-  return <CenaVitrine tema="moda" />;
-}
-function CenaVitrineDoceria() {
-  return <CenaVitrine tema="doceria" />;
-}
-function CenaVitrineArquitetura() {
-  return <CenaVitrine tema="arquitetura" />;
-}
 
 function CenaVitrine({ tema }: { tema: keyof typeof VITRINES }) {
   const v = VITRINES[tema];
@@ -421,6 +399,97 @@ function CenaVitrine({ tema }: { tema: keyof typeof VITRINES }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Rola o conteúdo até o fim, devagar, medindo a altura real (não um
+ * percentual fixo), então nunca corta o começo nem sobra vazio embaixo. */
+function ScrollLento({ children }: { children: ReactNode }) {
+  const fora = useRef<HTMLDivElement>(null);
+  const dentro = useRef<HTMLDivElement>(null);
+  const [ate, setAte] = useState(0);
+  useEffect(() => {
+    const medir = () => {
+      const f = fora.current, d = dentro.current;
+      if (!f || !d) return;
+      setAte(Math.min(0, f.clientHeight - d.scrollHeight));
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    if (fora.current) ro.observe(fora.current);
+    if (dentro.current) ro.observe(dentro.current);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div ref={fora} className="h-full w-full overflow-hidden">
+      <div ref={dentro} className="apr-scroll-to" style={{ "--apr-to": `${ate}px` } as CSSProperties}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** Vitrine com as fotos reais do Inspire-se, na mesma grade sem buraco e no
+ * mesmo visual (faixa branca ou nome sobre a foto) que a pessoa vai ver lá. */
+function CenaVitrineFotos({ temaId, photos, titleStyle }: { temaId: string; photos: ThemePhoto[]; titleStyle: "faixa" | "sobre" }) {
+  const tema = VITRINE_THEMES.find((t) => t.id === temaId);
+  const fundo = tema?.bg ?? "#F7F7F4";
+  const contraste = tema?.colors[1]?.hex ?? "#111318";
+  const suave = tema?.colors[3]?.hex ?? "#E5E5E5";
+  const objPos = tema?.objectPosition ?? "center";
+  const fotos = photos.slice(0, 9);
+  const sizes = tamanhosSemBuraco(fotos.length);
+  const ratio = { destaque: "aspect-[16/9]", largo: "aspect-[1920/830]", medio: "aspect-square", alto: "aspect-[4/5]" } as const;
+  return (
+    <TelaReal>
+      <div className="flex h-full flex-col" style={{ background: fundo }}>
+        <div className="px-5 pt-14 pb-4">
+          <p className="text-[12px] uppercase tracking-wide" style={{ color: contraste, opacity: 0.6 }}>Vitrine</p>
+          <p className="font-[family-name:var(--font-manrope)] text-[26px] font-semibold tracking-[-0.01em]" style={{ color: contraste }}>{tema?.exampleBusiness ?? "Vitrine"}</p>
+        </div>
+        <div className="min-h-0 flex-1 px-5">
+          <ScrollLento>
+            <div className="grid grid-cols-2 gap-3 pb-6">
+              {fotos.map((f, i) => {
+                const size = sizes[i];
+                const span = size === "destaque" || size === "largo" ? "col-span-2" : size === "alto" && titleStyle === "sobre" ? "col-span-1 row-span-2" : "col-span-1";
+                const title = f.title?.trim();
+                const price = f.price?.trim();
+                if (titleStyle === "faixa") {
+                  const med = size === "medio";
+                  return (
+                    <div key={i} style={d(i)} className={`apr-pop overflow-hidden rounded-[24px] bg-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${span}`}>
+                      <div className={`relative w-full ${ratio[size]}`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={f.url} alt={title || ""} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} />
+                      </div>
+                      {title && (
+                        <div className={med ? "p-3" : "p-4"}>
+                          <p className={`truncate font-[family-name:var(--font-manrope)] font-medium leading-tight text-on-background ${med ? "text-[14px]" : "text-[17px]"}`}>{title}</p>
+                          {price && <p className={`mt-0.5 font-[family-name:var(--font-manrope)] font-medium text-text-secondary ${med ? "text-[13px]" : "text-[15px]"}`}>{price}</p>}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return (
+                  <div key={i} style={{ ...d(i), backgroundColor: suave }} className={`apr-pop relative overflow-hidden rounded-[24px] ${span} ${ratio[size]}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={f.url} alt={title || ""} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} />
+                    {title && (
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                        <p className="text-[14px] font-semibold leading-tight text-white">{title}</p>
+                        {price && <p className="text-[12px] text-white/85">{price}</p>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </ScrollLento>
+        </div>
+      </div>
+    </TelaReal>
   );
 }
 

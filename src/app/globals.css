@@ -515,3 +515,6 @@ body {
 
 @keyframes aprFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 .apr-float { animation: aprFloat 3.2s ease-in-out infinite; }
+
+@keyframes aprScrollTo { 0%, 18% { transform: translateY(0); } 100% { transform: translateY(var(--apr-to, 0px)); } }
+.apr-scroll-to { animation: aprScrollTo 7.5s ease-in-out forwards; }

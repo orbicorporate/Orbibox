@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ApresentacaoOrbibox } from "@/components/apresentacao/ApresentacaoOrbibox";
+import { inspireParaApresentacao } from "@/lib/inspireApresentacao";
 
 export const metadata: Metadata = {
   title: "Como funciona o Orbibox",
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
 };
 
 /** Versão pública da apresentação, pra quem ainda não assinou. */
-export default function ApresentacaoPublicaPage() {
-  return <ApresentacaoOrbibox finalHref="/signup" finalLabel="Criar meu Orbibox" skipHref="/" skipLabel="Fechar" />;
+export default async function ApresentacaoPublicaPage() {
+  const inspire = await inspireParaApresentacao();
+  return <ApresentacaoOrbibox inspire={inspire} finalHref="/signup" finalLabel="Criar meu Orbibox" skipHref="/" skipLabel="Fechar" />;
 }
