@@ -181,6 +181,24 @@ function montarSlides(finalHref: string, finalLabel: string): Slide[] {
     },
     {
       rotulo: "Vitrine",
+      titulo: "Editorial, pra moda",
+      frase: "Peças, coleção, tamanhos. A Orbi já sabe o que tem em estoque.",
+      cena: CenaVitrineModa,
+    },
+    {
+      rotulo: "Vitrine",
+      titulo: "Delicada, pra doceria",
+      frase: "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque.",
+      cena: CenaVitrineDoceria,
+    },
+    {
+      rotulo: "Vitrine",
+      titulo: "Sóbria, pra arquitetura",
+      frase: "Portfólio de projetos, serviços e um jeito fácil de pedir orçamento.",
+      cena: CenaVitrineArquitetura,
+    },
+    {
+      rotulo: "Vitrine",
       titulo: "Serve pra qualquer negócio",
       frase: "Serviço, loja, clínica, studio. Muda a cor, muda o tom, não muda o trabalho.",
       cena: CenaVitrinePilates,
@@ -323,6 +341,46 @@ const VITRINES = {
       { n: "Pacote 10 aulas", p: "R$ 1.100", g: "linear-gradient(135deg,#B8DCCB,#3B8A6C)" },
     ],
   },
+  // Paletas reais dos temas do Inspire-se (vitrineThemes.ts)
+  moda: {
+    nome: "Ateliê Norte",
+    cor: "#2E2A26",
+    fundo: "#EFE8DC",
+    itens: [
+      { n: "Vestido linho cru", p: "R$ 389", g: "linear-gradient(135deg,#E6DCCB,#A8927A)" },
+      { n: "Camisa oversized", p: "R$ 249", g: "linear-gradient(135deg,#F3EEE6,#C9BBA8)" },
+      { n: "Calça alfaiataria", p: "R$ 329", g: "linear-gradient(135deg,#8C7A66,#2E2A26)" },
+      { n: "Blazer de lã", p: "R$ 590", g: "linear-gradient(135deg,#C9BBA8,#6B5C4C)" },
+      { n: "Lenço de seda", p: "R$ 149", g: "linear-gradient(135deg,#E9DFD0,#B79E82)" },
+      { n: "Bolsa couro natural", p: "R$ 720", g: "linear-gradient(135deg,#A8927A,#4E4036)" },
+    ],
+  },
+  doceria: {
+    nome: "Doce Mel",
+    cor: "#4A3A34",
+    fundo: "#F0E6E0",
+    itens: [
+      { n: "Bolo red velvet", p: "R$ 140", g: "linear-gradient(135deg,#E8B6AE,#C98F84)" },
+      { n: "Brigadeiro gourmet", p: "R$ 4,50", g: "linear-gradient(135deg,#8A6A5E,#4A3A34)" },
+      { n: "Macarons (6 un.)", p: "R$ 42", g: "linear-gradient(135deg,#F2D9D2,#D8A6A0)" },
+      { n: "Torta de limão", p: "R$ 98", g: "linear-gradient(135deg,#F5EBC8,#D8C3AE)" },
+      { n: "Cookie de nutella", p: "R$ 12", g: "linear-gradient(135deg,#D8C3AE,#8F6F5C)" },
+      { n: "Bolo de aniversário", p: "sob encomenda", g: "linear-gradient(135deg,#F0D6CF,#C98F84)" },
+    ],
+  },
+  arquitetura: {
+    nome: "Studio Traço",
+    cor: "#2A2926",
+    fundo: "#EDEBE7",
+    itens: [
+      { n: "Projeto residencial", p: "a partir de R$ 8 mil", g: "linear-gradient(135deg,#D9D6CF,#9C8163)" },
+      { n: "Reforma de apartamento", p: "sob consulta", g: "linear-gradient(135deg,#B8B5AD,#5E5A54)" },
+      { n: "Interiores comerciais", p: "sob consulta", g: "linear-gradient(135deg,#E2DFD8,#B8B5AD)" },
+      { n: "Consultoria de 2h", p: "R$ 600", g: "linear-gradient(135deg,#9C8163,#4E4438)" },
+      { n: "Projeto de fachada", p: "a partir de R$ 4 mil", g: "linear-gradient(135deg,#CFCBC3,#7A7269)" },
+      { n: "Acompanhamento de obra", p: "mensal", g: "linear-gradient(135deg,#B7A58C,#2A2926)" },
+    ],
+  },
 };
 
 function CenaVitrineCafe() {
@@ -330,6 +388,15 @@ function CenaVitrineCafe() {
 }
 function CenaVitrinePilates() {
   return <CenaVitrine tema="pilates" />;
+}
+function CenaVitrineModa() {
+  return <CenaVitrine tema="moda" />;
+}
+function CenaVitrineDoceria() {
+  return <CenaVitrine tema="doceria" />;
+}
+function CenaVitrineArquitetura() {
+  return <CenaVitrine tema="arquitetura" />;
 }
 
 function CenaVitrine({ tema }: { tema: keyof typeof VITRINES }) {

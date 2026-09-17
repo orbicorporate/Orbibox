@@ -104,7 +104,19 @@ export function InspireModal({ businessId, inspirePhotos, onClose }: { businessI
 
   // Só mostra temas que já têm fotos cadastradas, os que ainda não foram
   // preenchidos pelo painel de upload ficam ocultos até terem imagem.
-  const temasComFoto = VITRINE_THEMES.filter((t) => (inspirePhotos[t.id]?.photos.length ?? 0) > 0);
+  // Ordem de vitrine: moda, doceria e arquitetura primeiro (os três que
+  // melhor mostram o alcance do produto), depois os demais na ordem original.
+  const INSPIRE_PRIMEIRO = ["moda", "doceria", "arquitetura"];
+  const temasComFoto = VITRINE_THEMES
+    .filter((t) => (inspirePhotos[t.id]?.photos.length ?? 0) > 0)
+    .sort((a, b) => {
+      const ia = INSPIRE_PRIMEIRO.indexOf(a.id);
+      const ib = INSPIRE_PRIMEIRO.indexOf(b.id);
+      if (ia === -1 && ib === -1) return 0;
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    });
 
   async function usarTema(themeId: string) {
     const tema = VITRINE_THEMES.find((t) => t.id === themeId);
