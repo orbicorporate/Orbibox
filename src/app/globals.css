@@ -521,3 +521,6 @@ body {
 
 @keyframes aprDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 .apr-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: aprDraw 1.8s cubic-bezier(0.22, 1, 0.36, 1) 1.6s forwards; }
+
+@keyframes aprCaret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.apr-caret { display: inline-block; margin-left: 1px; animation: aprCaret 0.9s step-end infinite; }

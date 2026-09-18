@@ -203,6 +203,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       titulo: "Uma Orbi que responde por você",
       frase: "Tira dúvida, indica produto e fecha venda, 24 horas por dia.",
       cena: CenaChat,
+      duracaoMs: 15500,
     },
     {
       rotulo: "Pulse",
@@ -495,31 +496,71 @@ function CenaVitrineFotos({ temaId, nome, photos, titleStyle }: { temaId: string
 }
 
 function CenaChat() {
+  const [numero, setNumero] = useState("");
+  const alvo = "(15) 99812-3456";
+  useEffect(() => {
+    let i = 0;
+    let intervalo: number | undefined;
+    const inicio = window.setTimeout(() => {
+      intervalo = window.setInterval(() => {
+        i++;
+        setNumero(alvo.slice(0, i));
+        if (i >= alvo.length) window.clearInterval(intervalo);
+      }, 45);
+    }, 3300); // espera a bolha aparecer (pop-in termina por volta de 3,2s)
+    return () => { window.clearTimeout(inicio); window.clearInterval(intervalo); };
+  }, []);
   return (
-    <div className="flex h-full flex-col px-3.5 pt-11">
-      <div className="apr-pop flex items-center gap-2.5" style={d(0)}>
-        <OrbiParticleSphere size={34} className="rounded-full" />
-        <div>
-          <p className="text-[13px] font-semibold leading-tight">Orbi</p>
-          <p className="text-[10.5px] text-text-tertiary">IA do Café Mirante</p>
-        </div>
-      </div>
-      <div className="mt-4 flex flex-col gap-2.5">
-        <Bolha lado="dir" delay={2}>Vocês têm opção sem lactose?</Bolha>
-        <Digitando delay={4} />
-        <Bolha lado="esq" delay={7}>
-          Temos sim! O cappuccino e o chai latte saem com leite de aveia sem custo extra. Quer que eu separe um pra você retirar?
-        </Bolha>
-        <div className="apr-pop ml-1 flex items-center gap-2.5 rounded-[14px] bg-surface-white p-2 shadow-[0_4px_14px_rgba(17,19,24,0.08)]" style={d(10)}>
-          <div className="h-11 w-11 shrink-0 rounded-[10px]" style={{ background: "linear-gradient(135deg,#E8C9A6,#A86B3C)" }} />
-          <div className="min-w-0">
-            <p className="text-[12px] font-semibold leading-tight">Chai latte, aveia</p>
-            <p className="text-[11px] text-text-secondary">R$ 15 · pronto em 5 min</p>
+    <TelaReal>
+      <ScrollLento dur={13.5}>
+        <div className="flex flex-col px-4 pt-12 pb-8">
+          <div className="apr-pop flex items-center gap-2.5" style={d(0)}>
+            <OrbiParticleSphere size={36} className="rounded-full" />
+            <div>
+              <p className="text-[14px] font-semibold leading-tight">Orbi</p>
+              <p className="text-[11px] text-text-tertiary">IA do Café Mirante</p>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-col gap-2.5">
+            <Bolha lado="dir" delay={2}>Vocês têm opção sem lactose?</Bolha>
+            <Digitando delay={4} />
+            <Bolha lado="esq" delay={7}>
+              Temos sim! O cappuccino e o chai latte saem com leite de aveia sem custo extra. Quer que eu separe um pra você retirar?
+            </Bolha>
+            <div className="apr-pop ml-1 flex items-center gap-2.5 rounded-[14px] bg-surface-white p-2 shadow-[0_4px_14px_rgba(17,19,24,0.08)]" style={d(10)}>
+              <div className="h-11 w-11 shrink-0 rounded-[10px]" style={{ background: "linear-gradient(135deg,#E8C9A6,#A86B3C)" }} />
+              <div className="min-w-0">
+                <p className="text-[12.5px] font-semibold leading-tight">Chai latte, aveia</p>
+                <p className="text-[11px] text-text-secondary">R$ 15 · pronto em 5 min</p>
+              </div>
+            </div>
+            <Bolha lado="dir" delay={12}>Quero sim!</Bolha>
+            <Digitando delay={14} />
+            <Bolha lado="esq" delay={16.5}>
+              Perfeito! Me confirma seu WhatsApp que eu já deixo separado e aviso assim que tiver pronto.
+            </Bolha>
+
+            <div className="apr-pop ml-1 flex items-center gap-2 rounded-[14px] border border-divider bg-surface-white px-3 py-2.5" style={d(19)}>
+              <span className="text-[15px]">📱</span>
+              <span className="min-w-[124px] text-[13px] tabular-nums text-on-background">
+                {numero}
+                <span className="apr-caret">|</span>
+              </span>
+            </div>
+
+            <Bolha lado="esq" delay={22}>Show, já te aviso por aqui. Obrigada! 🎉</Bolha>
+
+            <button type="button" className="apr-pop apr-press mt-1 flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-2.5 text-[13.5px] font-semibold text-white" style={d(24.5)}>
+              <span aria-hidden>💬</span> Continuar no WhatsApp
+            </button>
+
+            <div className="apr-pop mt-2 flex items-center gap-2 self-start rounded-full bg-[#E4F7EA] px-3 py-1.5" style={d(27)}>
+              <span className="text-[12px] font-semibold text-[#1F7A45]">✓ Novo lead salvo em Conversas</span>
+            </div>
           </div>
         </div>
-        <Bolha lado="dir" delay={12}>Quero sim!</Bolha>
-      </div>
-    </div>
+      </ScrollLento>
+    </TelaReal>
   );
 }
 
