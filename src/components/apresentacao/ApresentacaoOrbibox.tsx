@@ -134,14 +134,16 @@ export function ApresentacaoOrbibox({ inspire = {}, finalHref, finalLabel, skipH
               >
                 {s.rotulo}
               </span>
-              <h2 className="mt-3 font-[family-name:var(--font-manrope)] text-[22px] font-semibold leading-[1.15] tracking-[-0.02em] text-on-background">
+              <h2 className="mt-3 font-[family-name:var(--font-manrope)] text-[21px] font-semibold leading-[1.2] tracking-[-0.02em] text-on-background">
                 {s.titulo}
               </h2>
               {s.checks && s.checks.length > 0 ? (
-                <div className="mt-4 flex w-full max-w-[290px] flex-col gap-2 rounded-2xl bg-surface-white/80 px-3.5 py-3 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
+                <div className="mt-4 flex w-full max-w-[320px] flex-col gap-3 rounded-2xl bg-surface-white/80 px-4 py-3.5 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
                   {s.checks.map((c, ci) => (
-                    <div key={ci} className="flex items-center gap-2.5">
-                      <CheckTag cor={s.cor ?? "#111318"} />
+                    <div key={ci} className="flex items-start gap-2.5">
+                      <span className="mt-[1px]">
+                        <CheckTag cor={s.cor ?? "#111318"} />
+                      </span>
                       <span className="text-left text-[13px] font-medium leading-snug text-text-secondary">{c}</span>
                     </div>
                   ))}
@@ -206,75 +208,75 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
   return [
     {
       rotulo: "Orbibox",
-      titulo: "Seu site que atende sozinho",
+      titulo: "A IA da sua marca com site inteligente",
       frase: "A pessoa chega, diz o que quer, e o seu negócio responde na hora.",
-      checks: ["Entende o que cada cliente quer", "Responde na hora, sem você mexer"],
+      checks: ["Apresenta seu negócio e seus produtos", "Responde dúvidas dos seus clientes"],
       cor: "#111318",
       cena: CenaInicio,
       duracaoMs: 9500,
     },
     vitrineSlide(
-      inspire, "doceria", "Doce Ateliê", "Seu cardápio, sempre à mão",
+      inspire, "doceria", "Doce Ateliê", "Organize como quiser",
       "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque.",
-      "#B0309E", ["Cardápio do dia sempre em dia", "Encomenda com poucos toques"],
+      "#B0309E", ["Mostre opções, fotos e preços", "Facilite para o seu cliente"],
     ),
     vitrineSlide(
-      inspire, "fitness", "Fit Store", "Sua loja pronta pra vender",
+      inspire, "fitness", "Fit Store", "Vitrine de produtos",
       "Produtos, fotos e preços que a Orbi já conhece de cor.",
-      "#2F5D50", ["Fotos e preços sempre certos", "Cliente compra sem sair do chat"],
+      "#2F5D50", ["Organize seus produtos em um só lugar", "A IA ajuda o cliente a escolher"],
     ),
     vitrineSlide(
-      inspire, "arquitetura", "Studio Design", "Seu portfólio, sempre pronto",
+      inspire, "arquitetura", "Studio Design", "Portfólio",
       "Portfólio, serviços e um jeito fácil de pedir orçamento.",
-      "#5B4B3A", ["Trabalhos em destaque", "Orçamento pedido em 1 toque"],
+      "#5B4B3A", ["Apresente seus trabalhos", "Página exclusiva por item"],
     ),
     {
       rotulo: "IA pessoal",
-      titulo: "Um vendedor que nunca dorme",
+      titulo: "Agente IA da sua marca",
       frase: "Tira dúvida, indica produto e fecha venda, 24 horas por dia.",
-      checks: ["Tira dúvida e indica o produto certo", "Atende 24 horas, todo dia"],
+      checks: ["Conversa com seu cliente", "Recomenda produtos, 24 horas por dia"],
       cor: "#0E9488",
       cena: CenaChat,
       duracaoMs: 15500,
     },
     {
       rotulo: "Pulse",
-      titulo: "Veja o que está funcionando",
+      titulo: "Resultados",
       frase: "Quantos entraram, de onde vieram e o que fizeram. E o que fazer a seguir.",
-      checks: ["De onde vêm seus clientes", "O que fazer pra vender mais"],
+      checks: ["Saiba de onde vêm suas visitas", "Painel de insights valiosos"],
       cor: "#6D5EF5",
       cena: CenaPulse,
       duracaoMs: 13000,
     },
     {
       rotulo: "Vouchers",
-      titulo: "Traga gente pra loja hoje",
+      titulo: "Cupons de desconto",
       frase: "Cupom com estoque controlado, QR pra resgatar no balcão.",
-      checks: ["Estoque controlado, sem susto", "Resgate rápido com QR Code"],
+      checks: ["Conquiste clientes novos a qualquer momento", "Valide o uso por QR Code"],
       cor: "#B45309",
       cena: CenaVouchers,
     },
     {
       rotulo: "Gift",
-      titulo: "Presente com a cara do seu negócio",
+      titulo: "Vale-presente",
       frase: "Vale-presente com a sua cara, liberado pelo WhatsApp.",
-      checks: ["Vale-presente com a sua marca", "Liberado direto no WhatsApp"],
+      checks: ["Ofereça vales com a sua marca", "O cliente escolhe o valor e quem vai receber"],
       cor: "#C9932B",
       cena: CenaGift,
     },
     {
       rotulo: "Conversas",
-      titulo: "Nenhum cliente fica sem resposta",
+      titulo: "Captura de contatos",
       frase: "Quem chegou, quem esfriou, quem pediu aviso. A Orbi escreve, você manda.",
-      checks: ["Cada contato vira um lead salvo", "A Orbi escreve, você só confere"],
+      checks: ["Seu agente armazena o contato", "Monta estratégia e busca o visitante de volta pelo WhatsApp"],
       cor: "#2F63C9",
       cena: CenaConversas,
     },
     {
       rotulo: "Comece agora",
-      titulo: "Seu Orbibox em 5 minutos",
+      titulo: "Crie seu Orbibox",
       frase: "3 dias grátis. Cancela quando quiser.",
-      checks: ["3 dias grátis pra testar sem risco", "Cancela quando quiser"],
+      checks: ["Teste grátis por 3 dias", "Sem cartão para começar"],
       cor: "#1F7A45",
       livre: <CenaFinal href={finalHref} label={finalLabel} />,
     },
