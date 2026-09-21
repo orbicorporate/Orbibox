@@ -127,12 +127,28 @@ export function ApresentacaoOrbibox({ inspire = {}, finalHref, finalLabel, skipH
       <div ref={trackRef} className="apr-track relative z-10 flex flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden">
         {slides.map((s, i) => (
           <section key={i} className="flex w-full shrink-0 snap-start flex-col items-center justify-center px-6 pb-4">
-            <div className="mb-3 text-center">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-text-tertiary">{s.rotulo}</p>
-              <h2 className="mt-1 font-[family-name:var(--font-manrope)] text-[23px] font-semibold leading-tight tracking-[-0.02em] text-on-background">
+            <div className="mb-3 flex flex-col items-center text-center">
+              <span
+                className="rounded-full px-2.5 py-[3px] text-[10.5px] font-bold uppercase tracking-[0.1em]"
+                style={{ background: `${s.cor ?? "#111318"}17`, color: s.cor ?? "#111318" }}
+              >
+                {s.rotulo}
+              </span>
+              <h2 className="mt-1.5 font-[family-name:var(--font-manrope)] text-[23px] font-semibold leading-tight tracking-[-0.02em] text-on-background">
                 {s.titulo}
               </h2>
-              <p className="mx-auto mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">{s.frase}</p>
+              {s.checks && s.checks.length > 0 ? (
+                <div className="mt-2 flex flex-col items-start gap-1">
+                  {s.checks.map((c, ci) => (
+                    <div key={ci} className="flex items-center gap-1.5">
+                      <CheckTag cor={s.cor ?? "#111318"} />
+                      <span className="text-[12.5px] font-medium leading-snug text-text-secondary">{c}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mx-auto mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">{s.frase}</p>
+              )}
             </div>
             {s.cena ? (
               <Celular>{i === ativo ? <s.cena key={`cena-${i}-${ativo}`} /> : <s.cena />}</Celular>
@@ -173,17 +189,17 @@ function Celular({ children }: { children: ReactNode }) {
 
 /* ---------- Roteiro dos slides ---------- */
 
-type Slide = { rotulo: string; titulo: string; frase: string; cena?: () => ReactNode; livre?: ReactNode; duracaoMs?: number };
+type Slide = { rotulo: string; titulo: string; frase: string; checks?: string[]; cor?: string; cena?: () => ReactNode; livre?: ReactNode; duracaoMs?: number };
 
 /** Slide de vitrine com as fotos reais do tema do Inspire-se. Se o tema
  * ainda não tiver fotos cadastradas, cai na versão ilustrada (gradientes). */
-function vitrineSlide(inspire: InspireParaApresentacao, temaId: string, nome: string, titulo: string, frase: string): Slide {
+function vitrineSlide(inspire: InspireParaApresentacao, temaId: string, nome: string, titulo: string, frase: string, cor: string, checks: string[]): Slide {
   const fotos = inspire[temaId]?.photos ?? [];
   const fallback: Record<string, keyof typeof VITRINES> = { restaurante: "cafe", fitness: "pilates", moda: "moda", doceria: "doceria", arquitetura: "arquitetura" };
   const Cena = fotos.length >= 4
     ? function CenaVitrineReal() { return <CenaVitrineFotos temaId={temaId} nome={nome} photos={fotos} titleStyle={inspire[temaId].titleStyle} />; }
     : function CenaVitrineIlustrada() { return <CenaVitrine tema={fallback[temaId] ?? "cafe"} />; };
-  return { rotulo: "Vitrine", titulo, frase, cena: Cena, duracaoMs: 9000 };
+  return { rotulo: "Vitrine", titulo, frase, checks, cor, cena: Cena, duracaoMs: 9000 };
 }
 
 function montarSlides(finalHref: string, finalLabel: string, inspire: InspireParaApresentacao): Slide[] {
@@ -192,16 +208,32 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       rotulo: "Orbibox",
       titulo: "Um link que se adapta a quem entra",
       frase: "A pessoa chega, diz o que quer, e o seu negócio responde na hora.",
+      checks: ["Escolhe o que quer com um toque", "Recebe resposta na hora, sem esperar"],
+      cor: "#111318",
       cena: CenaInicio,
       duracaoMs: 9500,
     },
-    vitrineSlide(inspire, "doceria", "Doce Ateliê", "Delicada, pra doceria", "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque."),
-    vitrineSlide(inspire, "fitness", "Fit Store", "Direta, pra loja", "Produtos, fotos e preços que a Orbi já conhece de cor."),
-    vitrineSlide(inspire, "arquitetura", "Studio Design", "Sóbria, pra serviço", "Portfólio, serviços e um jeito fácil de pedir orçamento."),
+    vitrineSlide(
+      inspire, "doceria", "Doce Ateliê", "Delicada, pra doceria",
+      "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque.",
+      "#B0309E", ["Cardápio do dia sempre atualizado", "Encomenda em poucos toques"],
+    ),
+    vitrineSlide(
+      inspire, "fitness", "Fit Store", "Direta, pra loja",
+      "Produtos, fotos e preços que a Orbi já conhece de cor.",
+      "#2F5D50", ["Fotos e preços sempre certos", "A Orbi já conhece o catálogo"],
+    ),
+    vitrineSlide(
+      inspire, "arquitetura", "Studio Design", "Sóbria, pra serviço",
+      "Portfólio, serviços e um jeito fácil de pedir orçamento.",
+      "#5B4B3A", ["Portfólio em destaque", "Orçamento com um toque"],
+    ),
     {
       rotulo: "IA pessoal",
       titulo: "Uma Orbi que responde por você",
       frase: "Tira dúvida, indica produto e fecha venda, 24 horas por dia.",
+      checks: ["Tira dúvida e indica produto", "Atende 24 horas por dia"],
+      cor: "#0E9488",
       cena: CenaChat,
       duracaoMs: 15500,
     },
@@ -209,6 +241,8 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       rotulo: "Pulse",
       titulo: "Saiba de onde vem cada cliente",
       frase: "Quantos entraram, de onde vieram e o que fizeram. E o que fazer a seguir.",
+      checks: ["De onde vêm seus clientes", "O que fazer pra vender mais"],
+      cor: "#6D5EF5",
       cena: CenaPulse,
       duracaoMs: 13000,
     },
@@ -216,24 +250,32 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       rotulo: "Vouchers",
       titulo: "Ofertas que trazem gente hoje",
       frase: "Cupom com estoque controlado, QR pra resgatar no balcão.",
+      checks: ["Estoque controlado, sem susto", "Resgate por QR no balcão"],
+      cor: "#B45309",
       cena: CenaVouchers,
     },
     {
       rotulo: "Gift",
       titulo: "Deixe seus clientes presentearem",
       frase: "Vale-presente com a sua cara, liberado pelo WhatsApp.",
+      checks: ["Vale-presente com a sua cara", "Liberado direto no WhatsApp"],
+      cor: "#C9932B",
       cena: CenaGift,
     },
     {
       rotulo: "Conversas",
       titulo: "Cada contato vira um lead",
       frase: "Quem chegou, quem esfriou, quem pediu aviso. A Orbi escreve, você manda.",
+      checks: ["Cada contato vira um lead", "A Orbi escreve, você só manda"],
+      cor: "#2F63C9",
       cena: CenaConversas,
     },
     {
       rotulo: "Comece agora",
       titulo: "Seu Orbibox em 5 minutos",
       frase: "3 dias grátis. Cancela quando quiser.",
+      checks: ["3 dias grátis pra testar", "Cancela quando quiser"],
+      cor: "#1F7A45",
       livre: <CenaFinal href={finalHref} label={finalLabel} />,
     },
   ];
@@ -561,6 +603,18 @@ function CenaChat() {
         </div>
       </ScrollLento>
     </TelaReal>
+  );
+}
+
+/** Bolinha de check colorida (cor do slide), usada nos destaques do
+ * cabeçalho de cada tela pra deixar a leitura rápida, tipo checklist. */
+function CheckTag({ cor }: { cor: string }) {
+  return (
+    <span className="flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-full" style={{ background: cor }}>
+      <svg viewBox="0 0 12 12" width="8" height="8" fill="none">
+        <path d="M2.4 6.2 L5 8.8 L9.6 3.2" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
   );
 }
 
