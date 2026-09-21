@@ -127,27 +127,27 @@ export function ApresentacaoOrbibox({ inspire = {}, finalHref, finalLabel, skipH
       <div ref={trackRef} className="apr-track relative z-10 flex flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden">
         {slides.map((s, i) => (
           <section key={i} className="flex w-full shrink-0 snap-start flex-col items-center justify-center px-6 pb-4">
-            <div className="mb-3 flex flex-col items-center text-center">
+            <div className="mb-5 flex flex-col items-center text-center">
               <span
-                className="rounded-full px-2.5 py-[3px] text-[10.5px] font-bold uppercase tracking-[0.1em]"
+                className="rounded-full px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.12em]"
                 style={{ background: `${s.cor ?? "#111318"}17`, color: s.cor ?? "#111318" }}
               >
                 {s.rotulo}
               </span>
-              <h2 className="mt-1.5 font-[family-name:var(--font-manrope)] text-[23px] font-semibold leading-tight tracking-[-0.02em] text-on-background">
+              <h2 className="mt-3 font-[family-name:var(--font-manrope)] text-[22px] font-semibold leading-[1.15] tracking-[-0.02em] text-on-background">
                 {s.titulo}
               </h2>
               {s.checks && s.checks.length > 0 ? (
-                <div className="mt-2 flex flex-col items-start gap-1">
+                <div className="mt-4 flex w-full max-w-[290px] flex-col gap-2 rounded-2xl bg-surface-white/80 px-3.5 py-3 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
                   {s.checks.map((c, ci) => (
-                    <div key={ci} className="flex items-center gap-1.5">
+                    <div key={ci} className="flex items-center gap-2.5">
                       <CheckTag cor={s.cor ?? "#111318"} />
-                      <span className="text-[12.5px] font-medium leading-snug text-text-secondary">{c}</span>
+                      <span className="text-left text-[13px] font-medium leading-snug text-text-secondary">{c}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="mx-auto mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">{s.frase}</p>
+                <p className="mx-auto mt-2 max-w-[300px] text-[13px] leading-snug text-text-secondary">{s.frase}</p>
               )}
             </div>
             {s.cena ? (
@@ -206,40 +206,40 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
   return [
     {
       rotulo: "Orbibox",
-      titulo: "Um link que se adapta a quem entra",
+      titulo: "Seu site que atende sozinho",
       frase: "A pessoa chega, diz o que quer, e o seu negócio responde na hora.",
-      checks: ["Escolhe o que quer com um toque", "Recebe resposta na hora, sem esperar"],
+      checks: ["Entende o que cada cliente quer", "Responde na hora, sem você mexer"],
       cor: "#111318",
       cena: CenaInicio,
       duracaoMs: 9500,
     },
     vitrineSlide(
-      inspire, "doceria", "Doce Ateliê", "Delicada, pra doceria",
+      inspire, "doceria", "Doce Ateliê", "Seu cardápio, sempre à mão",
       "Encomenda, cardápio do dia, bolo de aniversário. Tudo num toque.",
-      "#B0309E", ["Cardápio do dia sempre atualizado", "Encomenda em poucos toques"],
+      "#B0309E", ["Cardápio do dia sempre em dia", "Encomenda com poucos toques"],
     ),
     vitrineSlide(
-      inspire, "fitness", "Fit Store", "Direta, pra loja",
+      inspire, "fitness", "Fit Store", "Sua loja pronta pra vender",
       "Produtos, fotos e preços que a Orbi já conhece de cor.",
-      "#2F5D50", ["Fotos e preços sempre certos", "A Orbi já conhece o catálogo"],
+      "#2F5D50", ["Fotos e preços sempre certos", "Cliente compra sem sair do chat"],
     ),
     vitrineSlide(
-      inspire, "arquitetura", "Studio Design", "Sóbria, pra serviço",
+      inspire, "arquitetura", "Studio Design", "Seu portfólio, sempre pronto",
       "Portfólio, serviços e um jeito fácil de pedir orçamento.",
-      "#5B4B3A", ["Portfólio em destaque", "Orçamento com um toque"],
+      "#5B4B3A", ["Trabalhos em destaque", "Orçamento pedido em 1 toque"],
     ),
     {
       rotulo: "IA pessoal",
-      titulo: "Uma Orbi que responde por você",
+      titulo: "Um vendedor que nunca dorme",
       frase: "Tira dúvida, indica produto e fecha venda, 24 horas por dia.",
-      checks: ["Tira dúvida e indica produto", "Atende 24 horas por dia"],
+      checks: ["Tira dúvida e indica o produto certo", "Atende 24 horas, todo dia"],
       cor: "#0E9488",
       cena: CenaChat,
       duracaoMs: 15500,
     },
     {
       rotulo: "Pulse",
-      titulo: "Saiba de onde vem cada cliente",
+      titulo: "Veja o que está funcionando",
       frase: "Quantos entraram, de onde vieram e o que fizeram. E o que fazer a seguir.",
       checks: ["De onde vêm seus clientes", "O que fazer pra vender mais"],
       cor: "#6D5EF5",
@@ -248,25 +248,25 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
     },
     {
       rotulo: "Vouchers",
-      titulo: "Ofertas que trazem gente hoje",
+      titulo: "Traga gente pra loja hoje",
       frase: "Cupom com estoque controlado, QR pra resgatar no balcão.",
-      checks: ["Estoque controlado, sem susto", "Resgate por QR no balcão"],
+      checks: ["Estoque controlado, sem susto", "Resgate rápido com QR Code"],
       cor: "#B45309",
       cena: CenaVouchers,
     },
     {
       rotulo: "Gift",
-      titulo: "Deixe seus clientes presentearem",
+      titulo: "Presente com a cara do seu negócio",
       frase: "Vale-presente com a sua cara, liberado pelo WhatsApp.",
-      checks: ["Vale-presente com a sua cara", "Liberado direto no WhatsApp"],
+      checks: ["Vale-presente com a sua marca", "Liberado direto no WhatsApp"],
       cor: "#C9932B",
       cena: CenaGift,
     },
     {
       rotulo: "Conversas",
-      titulo: "Cada contato vira um lead",
+      titulo: "Nenhum cliente fica sem resposta",
       frase: "Quem chegou, quem esfriou, quem pediu aviso. A Orbi escreve, você manda.",
-      checks: ["Cada contato vira um lead", "A Orbi escreve, você só manda"],
+      checks: ["Cada contato vira um lead salvo", "A Orbi escreve, você só confere"],
       cor: "#2F63C9",
       cena: CenaConversas,
     },
@@ -274,7 +274,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       rotulo: "Comece agora",
       titulo: "Seu Orbibox em 5 minutos",
       frase: "3 dias grátis. Cancela quando quiser.",
-      checks: ["3 dias grátis pra testar", "Cancela quando quiser"],
+      checks: ["3 dias grátis pra testar sem risco", "Cancela quando quiser"],
       cor: "#1F7A45",
       livre: <CenaFinal href={finalHref} label={finalLabel} />,
     },
@@ -610,8 +610,8 @@ function CenaChat() {
  * cabeçalho de cada tela pra deixar a leitura rápida, tipo checklist. */
 function CheckTag({ cor }: { cor: string }) {
   return (
-    <span className="flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-full" style={{ background: cor }}>
-      <svg viewBox="0 0 12 12" width="8" height="8" fill="none">
+    <span className="flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-full" style={{ background: cor }}>
+      <svg viewBox="0 0 12 12" width="9" height="9" fill="none">
         <path d="M2.4 6.2 L5 8.8 L9.6 3.2" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </span>
