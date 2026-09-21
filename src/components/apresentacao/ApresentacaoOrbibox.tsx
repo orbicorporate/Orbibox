@@ -528,7 +528,7 @@ function CenaChat() {
               Temos sim! O cappuccino e o chai latte saem com leite de aveia sem custo extra. Quer que eu separe um pra você retirar?
             </Bolha>
             <div className="apr-pop ml-1 flex items-center gap-2.5 rounded-[14px] bg-surface-white p-2 shadow-[0_4px_14px_rgba(17,19,24,0.08)]" style={d(10)}>
-              <div className="h-11 w-11 shrink-0 rounded-[10px]" style={{ background: "linear-gradient(135deg,#E8C9A6,#A86B3C)" }} />
+              <FotoLatte />
               <div className="min-w-0">
                 <p className="text-[12.5px] font-semibold leading-tight">Chai latte, aveia</p>
                 <p className="text-[11px] text-text-secondary">R$ 15 · pronto em 5 min</p>
@@ -583,6 +583,41 @@ function Digitando({ delay }: { delay: number }) {
       {[0, 1, 2].map((i) => (
         <span key={i} className="apr-dot h-1.5 w-1.5 rounded-full bg-text-tertiary" style={{ animationDelay: `${i * 0.18}s` }} />
       ))}
+    </div>
+  );
+}
+
+/** Fotinho ilustrada do latte pro card de produto da CenaChat — xícara com
+ * espuma e latte art desenhada à mão, no mesmo estilo dos ícones custom
+ * (gradiente + drop-shadow), no lugar do quadrado de degradê liso. */
+function FotoLatte() {
+  return (
+    <div
+      className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[10px]"
+      style={{ background: "linear-gradient(135deg,#EFD9BC,#C48A52)" }}
+    >
+      <svg viewBox="0 0 44 44" width="44" height="44" className="absolute inset-0">
+        <defs>
+          <linearGradient id="latteCopo" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="100%" stopColor="#F3E7D6" />
+          </linearGradient>
+          <linearGradient id="latteCreme" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FFF6E8" />
+            <stop offset="100%" stopColor="#E8C9A0" />
+          </linearGradient>
+        </defs>
+        {/* pires */}
+        <ellipse cx="22" cy="35" rx="15" ry="3.2" fill="#8A5A30" opacity="0.35" />
+        {/* corpo da xícara */}
+        <path d="M10 16 h20 l-1.6 14.5 a3 3 0 0 1 -3 2.7 H14.6 a3 3 0 0 1 -3 -2.7 Z" fill="url(#latteCopo)" />
+        {/* alça */}
+        <path d="M30 19.5 c5.2 0 5.2 8.5 0 8.5" fill="none" stroke="#F3E7D6" strokeWidth="2.4" strokeLinecap="round" />
+        {/* espuma / crema */}
+        <ellipse cx="20" cy="16" rx="10" ry="3.4" fill="url(#latteCreme)" />
+        {/* latte art (coração) */}
+        <path d="M20 15.2 c-0.9 -1.3 -3 -1.1 -3 0.5 c0 1.4 3 2.6 3 2.6 s3 -1.2 3 -2.6 c0 -1.6 -2.1 -1.8 -3 -0.5 Z" fill="#B9793A" opacity="0.75" />
+      </svg>
     </div>
   );
 }
