@@ -9,8 +9,8 @@ export default function LandingPage() {
       <div className="relative flex flex-col items-center">
         <OrbiOrb size={140} className="mb-8" />
         <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Orbibox</p>
-        <h1 className="mt-2 max-w-md font-[family-name:var(--font-manrope)] text-[44px] font-medium leading-tight tracking-[-0.01em]">
-          Um link, infinitas possibilidades.
+        <h1 className="mt-2 max-w-md font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-tight tracking-[-0.01em]">
+          A IA da sua marca com site inteligente.
         </h1>
         <p className="mt-4 max-w-sm text-[16px] text-text-secondary">
           Seu negócio com inteligência própria.
