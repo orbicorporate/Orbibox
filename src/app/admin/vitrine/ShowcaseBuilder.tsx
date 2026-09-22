@@ -1428,40 +1428,45 @@ function ItemCard({
                 />
 
                 <div className="mt-5 border-t border-orbi-gradient-start/20 pt-4">
-                  <p className="text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Destaque e gancho de conversa</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Credibilidade e conversa</p>
+                    <button
+                      onClick={onSuggestExtras}
+                      disabled={suggestingExtras}
+                      className={`shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-medium ${suggestingExtras ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
+                    >
+                      {suggestingExtras ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
+                    </button>
+                  </div>
                   <HelperText>
-                    Dois detalhes opcionais que deixam a página mais rica: uma linha curta de credibilidade e uma pergunta
-                    que a Orbi puxa antes do botão de contato. A Orbi pode sugerir os dois com base no que você já contou
-                    sobre o negócio; você edita ou apaga do jeito que quiser.
+                    Dois campos opcionais que deixam a página mais rica. Toque em "Orbi sugere" pra preencher os
+                    dois de uma vez, com base no que você já contou sobre o negócio, depois edite ou apague do
+                    jeito que quiser.
                   </HelperText>
 
-                  <p className="mt-3 text-[12px] font-medium text-text-tertiary">Destaque (opcional)</p>
-                  <input
+                  <p className="mt-4 text-[12px] font-medium text-text-tertiary">Frase de credibilidade (opcional)</p>
+                  <HelperText className="mt-1">Uma linha curta de prova social, tipo tempo de mercado ou número de clientes.</HelperText>
+                  <textarea
                     value={item.highlight_stat ?? ""}
                     onChange={(e) => patch(item.id, { highlight_stat: e.target.value })}
                     onBlur={(e) => save(item.id, { highlight_stat: e.target.value || null })}
                     placeholder="ex: 18 anos de experiência"
                     maxLength={80}
-                    className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                    rows={2}
+                    className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] leading-snug outline-none focus:border-on-background"
                   />
 
                   <p className="mt-3 text-[12px] font-medium text-text-tertiary">Pergunta da Orbi (opcional)</p>
-                  <input
+                  <HelperText className="mt-1">Aparece como um convite pra conversa, logo antes do botão de contato.</HelperText>
+                  <textarea
                     value={item.orbi_hook ?? ""}
                     onChange={(e) => patch(item.id, { orbi_hook: e.target.value })}
                     onBlur={(e) => save(item.id, { orbi_hook: e.target.value || null })}
                     placeholder="ex: Quer saber se cabe no seu espaço?"
                     maxLength={100}
-                    className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                    rows={2}
+                    className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] leading-snug outline-none focus:border-on-background"
                   />
-
-                  <button
-                    onClick={onSuggestExtras}
-                    disabled={suggestingExtras}
-                    className={`mt-3 rounded-full px-4 py-2 text-[12px] font-medium ${suggestingExtras ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
-                  >
-                    {suggestingExtras ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
-                  </button>
                 </div>
               </div>
             )}
