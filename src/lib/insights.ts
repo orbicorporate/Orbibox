@@ -135,5 +135,17 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
       href: "/admin/vitrine",
     });
   }
+  // Quando não falta mais nada de configuração, a fila não fica vazia: a
+  // Orbi passa a orientar pro Pulse, pra divulgação virar hábito em vez de
+  // ficar esquecida assim que a página fica pronta. Só entra depois de tudo
+  // o resto porque configuração básica sempre vem primeiro.
+  if (insightsQueue.length === 0 && activeBoxes > 0 && hasItems) {
+    insightsQueue.push({
+      title: "Hora de divulgar mais",
+      description: "Sua página está completa. Vá no Pulse: a Orbi sugere temas, pesquisa hashtags em alta e já escreve o texto pronto pra postar.",
+      ctaLabel: "Ir pro Pulse",
+      href: "/admin/pulse",
+    });
+  }
   return insightsQueue;
 }
