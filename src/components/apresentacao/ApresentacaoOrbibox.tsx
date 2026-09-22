@@ -613,7 +613,7 @@ function CenaProdutoDetalhe({ fotos }: { fotos: ThemePhoto[] }) {
   ];
   return (
     <TelaReal>
-      <ScrollLento dur={10.5}>
+      <ScrollLento dur={9}>
         <div className="flex min-h-full flex-col bg-background-main pb-7">
           <div className="apr-pop flex items-center px-4 pt-4" style={d(0)}>
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[16px]">←</div>
