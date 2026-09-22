@@ -196,6 +196,33 @@ export function OrbiDogIcon({ size = 36, className = "" }: IconProps) {
   );
 }
 
+/** Vouchers/cupom: bilhete com picote e furo, degradê vermelho cereja, pulsa
+ * devagar (chama atenção sem cansar), mesma linguagem dos outros selos. */
+export function OrbiTicketIcon({ size = 36, className = "" }: IconProps) {
+  return (
+    <span className={className}>
+      {wrap(
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <path
+            d="M3 9.2c0-.66.54-1.2 1.2-1.2h15.6c.66 0 1.2.54 1.2 1.2v1.9a1.7 1.7 0 0 0 0 3.4v1.9c0 .66-.54 1.2-1.2 1.2H4.2A1.2 1.2 0 0 1 3 16.6v-1.9a1.7 1.7 0 0 0 0-3.4V9.2z"
+            fill="url(#orbiTicketGrad)"
+          />
+          <path d="M14.6 7.2v9.6" stroke="rgba(255,255,255,0.55)" strokeWidth="1.3" strokeDasharray="1.6 1.8" strokeLinecap="round" />
+          <circle cx="17.6" cy="12" r="1.15" fill="#fff" />
+          <defs>
+            <linearGradient id="orbiTicketGrad" x1="3" y1="8" x2="21" y2="17" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#E4264C" />
+              <stop offset="1" stopColor="#A80F2B" />
+            </linearGradient>
+          </defs>
+        </svg>,
+        size,
+        "orbi-sticker-pulse"
+      )}
+    </span>
+  );
+}
+
 /** Folhinha: silhueta simples com nervura central, degradê verde. */
 export function OrbiLeafIcon({ size = 36, className = "" }: IconProps) {
   return (

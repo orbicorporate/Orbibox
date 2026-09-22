@@ -268,7 +268,7 @@ export const ICON_LIBRARY_PREVIEW_COUNT = 24;
  * de cor por trás. */
 export const ANIMATED_ICONS = [
   "__orb__", "__orbcheck__", "__orbwa__", "__wadisc__", "__google__", "__pin__",
-  "__money__", "__percent__", "__arrow__", "__heart__", "__gift__", "__happy__", "__dog__", "__leaf__",
+  "__money__", "__percent__", "__arrow__", "__heart__", "__gift__", "__happy__", "__dog__", "__leaf__", "__ticket__",
 ] as const;
 
 export function isAnimatedIcon(icon: string | null | undefined): boolean {

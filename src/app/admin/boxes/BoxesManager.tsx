@@ -300,7 +300,7 @@ export function BoxesManager({
   // Atalho: box de cupom, abre o gerenciador de vouchers (criação e resgate
   // ficam numa página própria, não dá pra configurar direto por aqui).
   function novoBoxVoucher() {
-    setDraftLabel("Vouchers"); setDraft({ label: "Vouchers", subtitle: "Resgate agora e aproveite", icon: "🎟️", action: "cupom", url: "", color: "transparent" });
+    setDraftLabel("Vouchers"); setDraft({ label: "Vouchers", subtitle: "Resgate agora e aproveite", icon: "__ticket__", action: "cupom", url: "", color: "transparent" });
     setCreating(true);
   }
 

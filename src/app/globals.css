@@ -215,7 +215,7 @@ body {
   position: relative;
   overflow: hidden;
   background-image:
-    radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--swatch-color) 55%, white) 0%, var(--swatch-color) 45%, color-mix(in srgb, var(--swatch-color) 80%, black) 100%);
+    radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--swatch-color) 75%, white) 0%, var(--swatch-color) 45%, color-mix(in srgb, var(--swatch-color) 86%, black) 100%);
 }
 .swatch-metal::before {
   content: "";
@@ -240,7 +240,7 @@ body {
   position: relative;
   overflow: hidden;
   background-image:
-    linear-gradient(135deg, color-mix(in srgb, var(--box-color) 60%, white) 0%, var(--box-color) 55%, color-mix(in srgb, var(--box-color) 78%, black) 100%);
+    linear-gradient(135deg, color-mix(in srgb, var(--box-color) 78%, white) 0%, var(--box-color) 55%, color-mix(in srgb, var(--box-color) 85%, black) 100%);
 }
 .box-metal::before {
   content: "";

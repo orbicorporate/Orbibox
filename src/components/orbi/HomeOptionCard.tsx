@@ -4,8 +4,8 @@ import { OrbiContactDisc } from "./OrbiContactDisc";
 import { OrbiGoogleIcon } from "./OrbiGoogleIcon";
 import { OrbiMapPin } from "./OrbiMapPin";
 import { OrbiLogoBadge } from "./OrbiLogoBadge";
-import { OrbiMoneyIcon, OrbiPercentIcon, OrbiArrowIcon, OrbiHeartIcon, OrbiGiftIcon, OrbiHappyIcon, OrbiDogIcon, OrbiLeafIcon } from "./OrbiEmojiStickers";
-import { isAnimatedIcon } from "@/lib/showcase";
+import { OrbiMoneyIcon, OrbiPercentIcon, OrbiArrowIcon, OrbiHeartIcon, OrbiGiftIcon, OrbiHappyIcon, OrbiDogIcon, OrbiLeafIcon, OrbiTicketIcon } from "./OrbiEmojiStickers";
+import { isAnimatedIcon, contrastFg } from "@/lib/showcase";
 
 const EMOJI_STICKERS: Record<string, (size: number) => ReactNode> = {
   __money__: (s) => <OrbiMoneyIcon size={s} />,
@@ -16,7 +16,15 @@ const EMOJI_STICKERS: Record<string, (size: number) => ReactNode> = {
   __happy__: (s) => <OrbiHappyIcon size={s} />,
   __dog__: (s) => <OrbiDogIcon size={s} />,
   __leaf__: (s) => <OrbiLeafIcon size={s} />,
+  __ticket__: (s) => <OrbiTicketIcon size={s} />,
 };
+
+/** Se a cor própria escolhida pro box é clara o bastante pra precisar de
+ * texto/ícone escuro em cima (branco, champagne, marfim etc.) em vez do
+ * branco padrão, que ficaria ilegível. */
+function needsDarkFg(color?: string | null): boolean {
+  return !!color && isCustomBoxColor(color) && contrastFg(color) === "#111318";
+}
 
 export type HomeCardLayout = "largo" | "medio";
 
@@ -36,24 +44,31 @@ export function HomeIcon({
   color,
   orbiColors,
   businessLogo,
+  cupom,
 }: {
   icon: string;
   boxLogo?: string | null;
   color?: string;
   orbiColors: string[] | null;
   businessLogo?: string | null;
+  cupom?: boolean;
 }) {
   const custom = isCustomBoxColor(color);
+  const dark = needsDarkFg(color);
   return (
     <span
       className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"} ${
         isAnimatedIcon(icon) || icon === "__logo__"
           ? ""
           : custom
-            ? "bg-white/20 text-white"
-            : color && color !== "transparent"
-              ? "text-white"
-              : "bg-surface-soft"
+            ? dark
+              ? "bg-[#111318]/10 text-[#111318]"
+              : "bg-white/20 text-white"
+            : cupom
+              ? "bg-white/20 text-white"
+              : color && color !== "transparent"
+                ? "text-white"
+                : "bg-surface-soft"
       }`}
       style={
         isAnimatedIcon(icon) || icon === "__logo__" || custom
@@ -94,8 +109,9 @@ export function HomeIcon({
 export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?: boolean, color?: string | null) {
   const ring = ai ? " ring-1 ring-orbi-gradient-start/60" : "";
   const custom = isCustomBoxColor(color);
+  const dark = needsDarkFg(color);
   const bg = custom
-    ? "box-metal text-white shadow-[0_10px_28px_rgba(17,19,24,0.22)]"
+    ? `box-metal ${dark ? "text-[#111318]" : "text-white"} shadow-[0_10px_28px_rgba(17,19,24,0.22)]`
     : cupom
       ? "cupom-box text-white shadow-[0_10px_30px_rgba(204,23,57,0.4)]"
       : "bg-surface-white shadow-[0_6px_24px_rgba(17,19,24,0.12)]";
@@ -151,34 +167,28 @@ export function HomeOptionCardContent({
       {ai ? <span className="orbi-gradient-text"> ✦</span> : null}
     </>
   );
-  const custom = !cupom && isCustomBoxColor(color);
-  const descClass = cupom || custom ? "text-white/85" : "text-text-tertiary";
+  const custom = isCustomBoxColor(color);
+  const dark = needsDarkFg(color);
+  const onDarkOrRed = cupom || custom;
+  const descClass = onDarkOrRed ? (dark ? "text-[#111318]/70" : "text-white/85") : "text-text-tertiary";
 
   if (layout === "largo") {
     return (
       <>
-        {cupom ? (
-          <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-[22px]">🎟️</span>
-        ) : (
-          <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} />
-        )}
+        <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
         <span className="relative min-w-0 flex-1">
           <span className="block text-[17px] font-semibold">{renderedTitle}</span>
           {stars && <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
           <span className={`mt-0.5 line-clamp-2 block text-[13px] ${descClass}`}>{description}</span>
         </span>
-        <span className={`relative shrink-0 ${cupom || custom ? "text-white/80" : "text-text-tertiary"}`}>{addressIndicator ?? "→"}</span>
+        <span className={`relative shrink-0 ${onDarkOrRed ? (dark ? "text-[#111318]/80" : "text-white/80") : "text-text-tertiary"}`}>{addressIndicator ?? "→"}</span>
       </>
     );
   }
 
   return (
     <>
-      {cupom ? (
-        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-[22px]">🎟️</span>
-      ) : (
-        <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} />
-      )}
+      <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
       <span className="relative">
         <span className="flex min-h-[48px] items-end text-[19px] font-semibold leading-tight">{renderedTitle}</span>
         {stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
