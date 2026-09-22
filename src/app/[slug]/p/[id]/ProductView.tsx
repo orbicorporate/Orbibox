@@ -181,7 +181,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
               )}
               {checklist.length > 0 && (
                 <div className="mt-5">
-                  <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">O que está incluído</p>
+                  <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Destaques</p>
                   <div className="mt-2.5 flex flex-col">
                     {checklist.map((line, i) => (
                       <div key={i} className={`flex items-start gap-2.5 py-2.5 text-[14.5px] leading-snug ${i > 0 ? "border-t border-divider" : ""}`}>
@@ -192,29 +192,35 @@ export function ProductView({ business, item }: { business: Business; item: Item
                   </div>
                 </div>
               )}
+
+              {/* O destaque avulso só aparece quando não há checklist: senão
+                  ele quase sempre repete algo que já está numa das linhas
+                  acima (mesma base de contexto do negócio). */}
+              {checklist.length === 0 && item.highlight_stat?.trim() && (
+                <div className="mt-5 flex items-center gap-2 text-[13.5px] text-text-secondary">
+                  <span aria-hidden>✦</span>
+                  {item.highlight_stat}
+                </div>
+              )}
             </>
           );
         })()}
 
-        {item.highlight_stat?.trim() && (
-          <div className="mt-5 flex items-center gap-2 text-[13.5px] text-text-secondary">
-            <span aria-hidden>✦</span>
-            {item.highlight_stat}
-          </div>
-        )}
-
         {item.orbi_hook?.trim() && (
-          <Link
+          <a
             href={`/${business.slug}?chat=1&msg=${encodeURIComponent(item.orbi_hook)}`}
             onClick={() => trackClick({ businessId: business.id, kind: "zara", contentItemId: item.id })}
-            className="mt-5 flex flex-col gap-1 rounded-2xl bg-surface-soft px-4 py-3.5"
+            className="mt-5 flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3.5"
           >
-            <span className="flex items-center gap-1.5 text-[12px] font-medium text-text-tertiary">
-              <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
-              Orbi · IA da {business.name}
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-1.5 text-[12px] font-medium text-text-tertiary">
+                <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
+                Pergunte à Orbi, IA da {business.name}
+              </span>
+              <span className="mt-0.5 block text-[14px] font-medium">{item.orbi_hook}</span>
             </span>
-            <span className="text-[14px] font-medium">{item.orbi_hook}</span>
-          </Link>
+            <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>
+          </a>
         )}
 
         <div className="mt-7 flex flex-col gap-2.5">
