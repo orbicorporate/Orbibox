@@ -599,8 +599,8 @@ export function BoxesManager({
               )}
 
               {editing && !isHero && !m.fixo && (
-                <div className="mt-5 overflow-hidden rounded-[22px] border border-divider bg-surface-white">
-                  <div className="flex items-center gap-3 border-b border-divider bg-surface-soft/70 px-4 py-3.5">
+                <div className="mt-5 rounded-[22px] border border-divider bg-surface-white">
+                  <div className="flex items-center gap-3 rounded-t-[22px] border-b border-divider bg-surface-soft/70 px-4 py-3.5">
                     <span className="orbi-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[14px]">🗓️</span>
                     <div>
                       <p className="text-[13px] font-semibold">Agendar (opcional)</p>
@@ -609,7 +609,7 @@ export function BoxesManager({
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-3 p-4">
+                  <div className="flex flex-col gap-3 rounded-b-[22px] p-4">
                     <DateTimeField label="Começa em" value={box.starts_at} onChange={(iso) => saveSchedule(box, iso, box.ends_at)} />
                     <DateTimeField label="Termina em" value={box.ends_at} onChange={(iso) => saveSchedule(box, box.starts_at, iso)} />
                     {(box.starts_at || box.ends_at) && (
