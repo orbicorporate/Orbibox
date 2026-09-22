@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const TABS = [
+const TABS: { href: string; label: string; icon: string; glow?: boolean }[] = [
   { href: "/admin", label: "Today", icon: "◈" },
   { href: "/admin/boxes", label: "Boxes", icon: "▣" },
-  { href: "/admin/vitrine", label: "Vitrine", icon: "◫" },
+  { href: "/admin/vitrine", label: "Vitrine", icon: "◫", glow: true },
   { href: "/admin/conversas", label: "Talks", icon: "▤" },
   { href: "/admin/pulse", label: "Pulse", icon: "◔" },
 ];
@@ -29,7 +29,7 @@ export function BottomNav() {
               <span
                 className={`flex h-9 w-9 items-center justify-center rounded-full text-[16px] transition-colors ${
                   active ? "orbi-gradient text-on-background" : "text-text-tertiary"
-                }`}
+                } ${tab.glow ? "nav-glow-ring" : ""}`}
               >
                 {tab.icon}
               </span>
