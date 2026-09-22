@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { COVER_RATIO_BY_SIZE, formatPrice, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
@@ -56,6 +57,7 @@ function splitDescription(description: string | null): { intro: string[]; checkl
 }
 
 export function ProductView({ business, item }: { business: Business; item: Item }) {
+  const router = useRouter();
   const [active, setActive] = useState(0);
   // A capa (image_url) só aparece sozinha quando não há carrossel próprio , 
   // se já existem outras fotos (gallery_urls), elas bastam e a capa não se repete.
@@ -77,14 +79,29 @@ export function ProductView({ business, item }: { business: Business; item: Item
 
   return (
     <main className="mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
-      {/* Botão de voltar, fora da imagem, igual qualquer app, não sobrepõe a foto */}
-      <div className="flex items-center px-4 pt-4">
-        <Link
-          href={`/${business.slug}`}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[16px]"
+      {/* Voltar, fora da imagem, igual qualquer app, não sobrepõe a foto.
+          Usa o histórico de verdade quando existe (ex: veio da Vitrine ou
+          de uma busca), então volta pra tela de onde a pessoa realmente
+          saiu, não sempre pro início do site; só cai pro início quando não
+          há de onde voltar (link direto, aba nova). "Ver vitrine" sempre
+          leva pro catálogo, útil sobretudo pra quem chegou aqui por uma
+          recomendação da Orbi no chat e quer continuar olhando produtos. */}
+      <div className="flex items-center justify-between gap-2 px-4 pt-4">
+        <button
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) router.back();
+            else router.push(`/${business.slug}`);
+          }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px]"
           aria-label="Voltar"
         >
           ←
+        </button>
+        <Link
+          href={`/${business.slug}?tab=vitrine`}
+          className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface-soft px-3.5 py-2 text-[13px] font-medium text-text-secondary"
+        >
+          <span aria-hidden>⊞</span> Ver vitrine
         </Link>
       </div>
 
