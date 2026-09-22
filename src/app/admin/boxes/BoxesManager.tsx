@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, type CSSProperties, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -1105,7 +1105,7 @@ function BoxEditor({
             onClick={() => setColorModalOpen(true)}
             className="flex items-center gap-2.5 self-start rounded-full border border-divider py-1.5 pl-1.5 pr-4"
           >
-            <span className="h-8 w-8 rounded-full" style={{ backgroundColor: color }} />
+            <span className="swatch-metal h-8 w-8 rounded-full" style={{ "--swatch-color": color } as CSSProperties} />
             <span className="text-[13px] font-medium">Escolher cor</span>
           </button>
         </>
