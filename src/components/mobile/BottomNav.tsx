@@ -2,12 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
-const TABS: { href: string; label: string; icon: string; glow?: boolean }[] = [
+// Balãozinho de mensagem minimalista, só o contorno, pra combinar com o
+// resto dos ícones geométricos vazados da barra.
+function TalkIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 5.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H9.5L5 19.5V16H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z" />
+    </svg>
+  );
+}
+
+const TABS: { href: string; label: string; icon: ReactNode; glow?: boolean }[] = [
   { href: "/admin", label: "Today", icon: "◈" },
   { href: "/admin/boxes", label: "Boxes", icon: "▣" },
   { href: "/admin/vitrine", label: "Vitrine", icon: "◫", glow: true },
-  { href: "/admin/conversas", label: "Talks", icon: "▤" },
+  { href: "/admin/conversas", label: "Talks", icon: <TalkIcon /> },
   { href: "/admin/pulse", label: "Pulse", icon: "◔" },
 ];
 
