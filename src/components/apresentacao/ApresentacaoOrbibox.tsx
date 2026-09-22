@@ -292,6 +292,15 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       duracaoMs: 13000,
     },
     {
+      rotulo: "Marketing IA",
+      titulo: "Agente de marketing e copy",
+      frase: "A Orbi entende o que mais interessa, sugere o tema e escreve pronto pra postar.",
+      checks: ["Sugestão de tema e planejamento", "Pesquisa de hashtags em alta"],
+      cor: "#189B6C",
+      cena: CenaMarketing,
+      duracaoMs: 13000,
+    },
+    {
       rotulo: "Vouchers",
       titulo: "Cupons de desconto",
       frase: "Cupom com estoque controlado, QR pra resgatar no balcão.",
@@ -935,6 +944,112 @@ function CenaPulse() {
             <p className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary">✦ Orbi Insights</p>
             <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">Instagram traz, mas poucos compram</p>
             <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">Crie um voucher só pra quem vem de lá e meça em 7 dias.</p>
+          </div>
+        </div>
+      </ScrollLento>
+    </TelaReal>
+  );
+}
+
+/** Marketing IA: a aba de dentro do Pulse que sugere o tema do post, calibra
+ * o objetivo (vender, autoridade, presença) e escreve legenda pronta com
+ * hashtags pesquisadas, pra copiar e postar. Mesma sequência do Pulse:
+ * rola pra baixo com os blocos entrando em ordem, resultado já gerado
+ * aparecendo no fim. */
+function CenaMarketing() {
+  const objetivos = ["Vender mais", "Ganhar autoridade", "Ser mais presente", "Melhorar a impressão"];
+  const acoes = [
+    { label: "Legenda pro Instagram", hint: "Post que para o feed" },
+    { label: "Ideia de Story", hint: "Com sugestão de visual" },
+    { label: "Texto pro WhatsApp", hint: "Pra mandar de perto" },
+  ];
+  const hashtags = [
+    { tag: "#gestaoderedessociais", vol: "210k" },
+    { tag: "#socialmediamarketing", vol: "1.4M" },
+    { tag: "#marketingdigital", vol: "9.8M" },
+    { tag: "#estrategiadigital", vol: "320k" },
+    { tag: "#socialcommerce", vol: "95k" },
+    { tag: "#consumidordigital", vol: "48k" },
+  ];
+  return (
+    <TelaReal>
+      <ScrollLento dur={13}>
+        <div className="flex flex-col px-5 pt-12 pb-8">
+          <p className="apr-pop mt-2 text-center text-[13px] uppercase tracking-wide text-text-tertiary" style={d(0)}>Orbi Pulse</p>
+
+          <div className="apr-pop mt-5 grid grid-cols-2 gap-2.5" style={d(1)}>
+            <span className="flex items-center justify-center gap-1.5 rounded-full bg-on-background py-3.5 text-[14px] font-semibold text-white">
+              <span aria-hidden>✦</span> Marketing IA
+            </span>
+            <span className="flex items-center justify-center gap-1.5 rounded-full border border-divider py-3.5 text-[14px] font-semibold text-text-secondary">
+              <span aria-hidden>◑</span> Visitantes
+            </span>
+          </div>
+
+          <div className="apr-pop orbi-card-light mt-4 overflow-hidden rounded-[28px] p-6" style={d(2)}>
+            <div className="relative flex items-center gap-2.5">
+              <OrbiParticleSphere size={30} colors={["#B7F34A", "#6EE7D8"]} vivid className="rounded-full" />
+              <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-text-secondary">Recomendação da Orbi</span>
+            </div>
+            <p className="relative mt-4 font-[family-name:var(--font-manrope)] text-[18px] font-medium leading-snug text-on-background">
+              <span className="font-bold">Gestão de redes sociais</span> foi o mais procurado da semana. Bora aproveitar esse interesse?
+            </p>
+            <span className="relative mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3.5 py-2 text-[13px] font-medium text-text-secondary">
+              <span aria-hidden>✦</span> Escrever sobre outro tema
+            </span>
+
+            <p className="relative mt-5 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">O que você quer agora?</p>
+            <div className="relative mt-2 flex flex-wrap gap-2">
+              {objetivos.map((o, i) => (
+                <span key={o} className={`rounded-full px-3.5 py-2 text-[12.5px] font-medium ${i === 1 ? "bg-on-background text-white" : "bg-white/70 text-text-secondary"}`}>{o}</span>
+              ))}
+            </div>
+
+            <div className="relative mt-5 flex flex-col gap-2.5">
+              {acoes.map((a) => (
+                <span key={a.label} className="flex items-center gap-3.5 rounded-[20px] bg-white/70 px-4 py-3.5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-on-background shadow-sm">✎</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[16px] font-semibold text-on-background">{a.label}</span>
+                    <span className="block text-[12.5px] text-text-tertiary">{a.hint}</span>
+                  </span>
+                  <span className="shrink-0 text-text-tertiary">→</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="apr-pop mt-4 rounded-[22px] bg-surface-white p-5 shadow-[0_4px_20px_rgba(17,19,24,0.06)]" style={d(6)}>
+            <p className="font-[family-name:var(--font-manrope)] text-[15.5px] leading-[1.6] text-on-background">
+              Sua presença nas redes não precisa ser mais um item pendente. Cuidamos do seu Instagram com estratégia, constância e a cara da sua marca, pra você focar no que só você sabe fazer. 📲✨
+            </p>
+
+            <div className="mt-4 rounded-2xl bg-surface-soft p-3.5">
+              <div className="flex items-center gap-1.5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1F9E4C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
+                </svg>
+                <span className="text-[12px] font-semibold text-[#1F9E4C]">Hashtags pesquisadas pra você</span>
+              </div>
+              <p className="mt-1 text-[11.5px] leading-relaxed text-text-tertiary">
+                Em alta no seu nicho, com o volume estimado de posts. O número é só informativo, ao copiar vão só as hashtags.
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {hashtags.map((h) => (
+                  <span key={h.tag} className="inline-flex items-center gap-1.5 rounded-full bg-surface-white px-2.5 py-1.5 text-[12.5px] font-medium">
+                    {h.tag} <span className="text-[11px] font-semibold text-[#1F9E4C]">{h.vol}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <span className="flex-1 rounded-full bg-button-primary py-3 text-center text-[14px] font-semibold text-white">Copiar texto</span>
+              <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 py-3 text-[14px] font-medium text-text-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6" /></svg>
+                Nova
+              </span>
+            </div>
           </div>
         </div>
       </ScrollLento>
