@@ -664,16 +664,21 @@ function CenaProdutoDetalhe({ fotos }: { fotos: ThemePhoto[] }) {
               ))}
             </div>
             <div className="mt-6 flex flex-col gap-2.5">
-              <div className="apr-pop rounded-full orbi-gradient py-3 text-center text-[13.5px] font-medium text-on-background" style={d(7)}>
+              <div className="apr-pop apr-press rounded-full orbi-gradient py-3 text-center text-[13.5px] font-medium text-on-background shadow-[0_8px_22px_rgba(110,231,216,0.3)]" style={d(7)}>
                 ✦ Falar com a IA da marca
               </div>
               <div className="apr-pop rounded-full bg-button-primary py-3 text-center text-[13.5px] font-medium text-white" style={d(7.5)}>
                 Ver no site ↗
               </div>
-              <div className="apr-pop rounded-full border border-divider py-3 text-center text-[13.5px] font-medium" style={d(8)}>
-                WhatsApp
+              <div
+                className="apr-pop apr-press flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-3 text-center text-[13.5px] font-semibold text-white shadow-[0_8px_22px_rgba(37,211,102,0.32)]"
+                style={d(8)}
+              >
+                <span aria-hidden>💬</span> WhatsApp
               </div>
             </div>
+
+            <BadgeLeadSalvo delay={11} />
           </div>
         </div>
       </ScrollLento>
@@ -754,27 +759,7 @@ function CenaChat() {
               <span aria-hidden>💬</span> Continuar no WhatsApp
             </button>
 
-            <div
-              className="apr-badge-pop apr-glow-pulse relative mt-2 flex items-center gap-2 self-start overflow-visible rounded-full px-3 py-1.5"
-              style={{ ...d(27), background: "linear-gradient(135deg, rgba(183,243,74,0.25), rgba(110,231,216,0.25))" }}
-            >
-              {CONFETE_ANGULOS.map((ang, i) => (
-                <span
-                  key={i}
-                  className="apr-confetti"
-                  style={
-                    {
-                      animationDelay: `${4.03 + i * 0.03}s`,
-                      "--tx": `${Math.round(Math.cos(ang) * (22 + (i % 3) * 6))}px`,
-                      "--ty": `${Math.round(Math.sin(ang) * (22 + (i % 3) * 6))}px`,
-                      "--c": ["#B7F34A", "#6EE7D8", "#25D366", "#1F7A45"][i % 4],
-                    } as CSSProperties
-                  }
-                />
-              ))}
-              <CheckTag cor="linear-gradient(135deg, #B7F34A, #6EE7D8)" />
-              <span className="text-[12px] font-semibold text-[#1F7A45]">Novo lead salvo em Conversas</span>
-            </div>
+            <BadgeLeadSalvo delay={27} />
           </div>
         </div>
       </ScrollLento>
@@ -791,6 +776,35 @@ function CheckTag({ cor }: { cor: string }) {
         <path d="M2.4 6.2 L5 8.8 L9.6 3.2" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </span>
+  );
+}
+
+/** Badge de sucesso "lead salvo", com confetes coloridos estourando pra
+ * fora e um anel de brilho pulsando. `delay` usa a mesma escala de d(). */
+function BadgeLeadSalvo({ delay, texto = "Novo lead salvo em Conversas" }: { delay: number; texto?: string }) {
+  const inicioSeg = delay * 0.14 + 0.25;
+  return (
+    <div
+      className="apr-badge-pop apr-glow-pulse relative mt-2 flex items-center gap-2 self-start overflow-visible rounded-full px-3 py-1.5"
+      style={{ ...d(delay), background: "linear-gradient(135deg, rgba(183,243,74,0.25), rgba(110,231,216,0.25))" }}
+    >
+      {CONFETE_ANGULOS.map((ang, i) => (
+        <span
+          key={i}
+          className="apr-confetti"
+          style={
+            {
+              animationDelay: `${inicioSeg + i * 0.03}s`,
+              "--tx": `${Math.round(Math.cos(ang) * (22 + (i % 3) * 6))}px`,
+              "--ty": `${Math.round(Math.sin(ang) * (22 + (i % 3) * 6))}px`,
+              "--c": ["#B7F34A", "#6EE7D8", "#25D366", "#1F7A45"][i % 4],
+            } as CSSProperties
+          }
+        />
+      ))}
+      <CheckTag cor="linear-gradient(135deg, #B7F34A, #6EE7D8)" />
+      <span className="text-[12px] font-semibold text-[#1F7A45]">{texto}</span>
+    </div>
   );
 }
 
