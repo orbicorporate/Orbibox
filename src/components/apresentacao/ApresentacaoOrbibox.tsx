@@ -312,6 +312,10 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
 
 const d = (i: number) => ({ animationDelay: `${i * 0.14}s` });
 
+/** Ângulos (em radianos) pra espalhar os confetes do badge de sucesso
+ * uniformemente em volta, tipo uma explosão de comemoração. */
+const CONFETE_ANGULOS = Array.from({ length: 7 }, (_, i) => (i / 7) * Math.PI * 2);
+
 /** Renderiza o conteúdo na largura real da Home (390px) e só reduz com
  * escala pra caber na tela do celular desenhado. Assim a proporção entre
  * fonte, ícone, padding e card fica idêntica ao site de verdade. */
@@ -728,8 +732,26 @@ function CenaChat() {
               <span aria-hidden>💬</span> Continuar no WhatsApp
             </button>
 
-            <div className="apr-badge-pop mt-2 flex items-center gap-2 self-start rounded-full bg-[#E4F7EA] px-3 py-1.5" style={d(27)}>
-              <span className="text-[12px] font-semibold text-[#1F7A45]">✓ Novo lead salvo em Conversas</span>
+            <div
+              className="apr-badge-pop apr-glow-pulse relative mt-2 flex items-center gap-2 self-start overflow-visible rounded-full px-3 py-1.5"
+              style={{ ...d(27), background: "linear-gradient(135deg, rgba(183,243,74,0.25), rgba(110,231,216,0.25))" }}
+            >
+              {CONFETE_ANGULOS.map((ang, i) => (
+                <span
+                  key={i}
+                  className="apr-confetti"
+                  style={
+                    {
+                      animationDelay: `${4.03 + i * 0.03}s`,
+                      "--tx": `${Math.round(Math.cos(ang) * (22 + (i % 3) * 6))}px`,
+                      "--ty": `${Math.round(Math.sin(ang) * (22 + (i % 3) * 6))}px`,
+                      "--c": ["#B7F34A", "#6EE7D8", "#25D366", "#1F7A45"][i % 4],
+                    } as CSSProperties
+                  }
+                />
+              ))}
+              <CheckTag cor="linear-gradient(135deg, #B7F34A, #6EE7D8)" />
+              <span className="text-[12px] font-semibold text-[#1F7A45]">Novo lead salvo em Conversas</span>
             </div>
           </div>
         </div>

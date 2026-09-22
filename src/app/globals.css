@@ -564,3 +564,34 @@ body {
   50% { transform: translate(8px, -6px) scale(1.08); }
 }
 .apr-blob { animation: aprBlobDrift 7s ease-in-out infinite; }
+
+/* Confete: uma bolinha voando pra fora do badge de sucesso e sumindo,
+   usada em conjunto (várias, cada uma com --tx/--ty/--c próprios via style
+   inline) pra dar uma explosão comemorativa de cor quando o lead é salvo. */
+@keyframes aprConfetti {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  15% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--tx, 20px), var(--ty, -20px)) scale(0.5) rotate(140deg); }
+}
+.apr-confetti {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px;
+  border-radius: 2px;
+  background: var(--c, #6EE7D8);
+  opacity: 0;
+  animation: aprConfetti 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Anel de brilho pulsando ao redor do badge, em degradê de cor da IA */
+@keyframes aprGlowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(110, 231, 216, 0.35), 0 0 0 0 rgba(183, 243, 74, 0.25); }
+  50% { box-shadow: 0 0 0 5px rgba(110, 231, 216, 0.12), 0 0 14px 3px rgba(183, 243, 74, 0.18); }
+}
+.apr-glow-pulse { animation: aprGlowPulse 2.2s ease-in-out 0.6s 3; }
+@media (prefers-reduced-motion: reduce) {
+  .apr-confetti, .apr-glow-pulse { animation: none; opacity: 0; }
+}
