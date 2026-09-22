@@ -1445,7 +1445,11 @@ function ItemCard({
                   </HelperText>
 
                   <p className="mt-4 text-[12px] font-medium text-text-tertiary">Frase de credibilidade (opcional)</p>
-                  <HelperText className="mt-1">Uma linha curta de prova social, tipo tempo de mercado ou número de clientes.</HelperText>
+                  <HelperText className="mt-1">
+                    {/(^|\n)\s*•/.test(item.description ?? "")
+                      ? 'A lista "Destaques" que aparece na página vem da descrição do item, lá em cima. Esta frase é um extra que só aparece quando a descrição não tem essa lista.'
+                      : "Uma linha curta de prova social, tipo tempo de mercado ou número de clientes. Aparece sozinha na página."}
+                  </HelperText>
                   <textarea
                     value={item.highlight_stat ?? ""}
                     onChange={(e) => patch(item.id, { highlight_stat: e.target.value })}
