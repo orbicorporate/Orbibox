@@ -670,34 +670,44 @@ function CenaChat() {
   return (
     <TelaReal>
       <ScrollLento dur={13.5}>
-        <div className="flex flex-col px-4 pt-12 pb-8">
-          <div className="apr-pop flex items-center gap-2.5" style={d(0)}>
-            <OrbiParticleSphere size={36} className="rounded-full" />
+        <div className="relative flex min-h-full flex-col overflow-hidden bg-background-main px-4 pt-12 pb-8">
+          {/* mancha de luz decorativa, dá profundidade ao topo do chat */}
+          <div
+            aria-hidden
+            className="apr-blob pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full opacity-25 blur-3xl"
+            style={{ background: "linear-gradient(135deg, var(--orbi-gradient-start), var(--orbi-gradient-end))" }}
+          />
+
+          <div className="apr-pop relative flex items-center gap-2.5" style={d(0)}>
+            <div className="relative">
+              <OrbiParticleSphere size={36} className="rounded-full" />
+              <span className="apr-online-dot absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#25D366]" />
+            </div>
             <div>
               <p className="text-[14px] font-semibold leading-tight">Sua IA</p>
-              <p className="text-[11px] text-text-tertiary">IA do Café Mirante</p>
+              <p className="text-[11px] text-text-tertiary">IA do Café Mirante · online agora</p>
             </div>
           </div>
-          <div className="mt-4 flex flex-col gap-2.5">
-            <Bolha lado="dir" delay={2}>Vocês têm opção sem lactose?</Bolha>
+          <div className="relative mt-4 flex flex-col gap-2.5">
+            <Bolha lado="dir" delay={2} check checkDelay={3.6}>Vocês têm opção sem lactose?</Bolha>
             <Digitando delay={4} />
             <Bolha lado="esq" delay={7}>
               Temos sim! O cappuccino e o chai latte saem com leite de aveia sem custo extra. Quer que eu separe um pra você retirar?
             </Bolha>
-            <div className="apr-pop ml-1 flex items-center gap-3 rounded-[16px] bg-surface-white p-2.5 shadow-[0_4px_14px_rgba(17,19,24,0.08)]" style={d(10)}>
+            <div className="apr-pop apr-card-shine ml-1 flex items-center gap-3 rounded-[16px] bg-surface-white p-2.5 shadow-[0_6px_20px_rgba(17,19,24,0.1)] ring-1 ring-black/5" style={d(10)}>
               <FotoLatte />
               <div className="min-w-0">
                 <p className="text-[13.5px] font-semibold leading-tight">Chai latte, aveia</p>
                 <p className="mt-0.5 text-[11.5px] text-text-secondary">R$ 15 · pronto em 5 min</p>
               </div>
             </div>
-            <Bolha lado="dir" delay={12}>Quero sim!</Bolha>
+            <Bolha lado="dir" delay={12} check checkDelay={13.6}>Quero sim!</Bolha>
             <Digitando delay={14} />
             <Bolha lado="esq" delay={16.5}>
               Perfeito! Me confirma seu WhatsApp que eu já deixo separado e aviso assim que tiver pronto.
             </Bolha>
 
-            <div className="apr-pop ml-1 flex items-center gap-2 rounded-[14px] border border-divider bg-surface-white px-3 py-2.5" style={d(19)}>
+            <div className="apr-pop ml-1 flex items-center gap-2 rounded-[14px] border border-divider bg-surface-white px-3 py-2.5 shadow-[0_2px_10px_rgba(17,19,24,0.04)]" style={d(19)}>
               <span className="text-[15px]">📱</span>
               <span className="min-w-[124px] text-[13px] tabular-nums text-on-background">
                 {numero}
@@ -707,11 +717,15 @@ function CenaChat() {
 
             <Bolha lado="esq" delay={22}>Show, já te aviso por aqui. Obrigada! 🎉</Bolha>
 
-            <button type="button" className="apr-pop apr-press mt-1 flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-2.5 text-[13.5px] font-semibold text-white" style={d(24.5)}>
+            <button
+              type="button"
+              className="apr-pop apr-press mt-1 flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-2.5 text-[13.5px] font-semibold text-white shadow-[0_6px_18px_rgba(37,211,102,0.35)]"
+              style={d(24.5)}
+            >
               <span aria-hidden>💬</span> Continuar no WhatsApp
             </button>
 
-            <div className="apr-pop mt-2 flex items-center gap-2 self-start rounded-full bg-[#E4F7EA] px-3 py-1.5" style={d(27)}>
+            <div className="apr-badge-pop mt-2 flex items-center gap-2 self-start rounded-full bg-[#E4F7EA] px-3 py-1.5" style={d(27)}>
               <span className="text-[12px] font-semibold text-[#1F7A45]">✓ Novo lead salvo em Conversas</span>
             </div>
           </div>
@@ -733,15 +747,32 @@ function CheckTag({ cor }: { cor: string }) {
   );
 }
 
-function Bolha({ lado, delay, children }: { lado: "esq" | "dir"; delay: number; children: ReactNode }) {
+function Bolha({
+  lado,
+  delay,
+  children,
+  check,
+  checkDelay,
+}: {
+  lado: "esq" | "dir";
+  delay: number;
+  children: ReactNode;
+  check?: boolean;
+  checkDelay?: number;
+}) {
   return (
     <div
       style={d(delay)}
-      className={`apr-pop max-w-[86%] rounded-[16px] px-3 py-2 text-[12.5px] leading-snug ${
+      className={`apr-pop flex max-w-[86%] items-end gap-1.5 rounded-[16px] px-3 py-2 text-[12.5px] leading-snug ${
         lado === "dir" ? "self-end rounded-br-[6px] bg-on-background text-white" : "self-start rounded-bl-[6px] bg-surface-white text-on-background shadow-[0_4px_14px_rgba(17,19,24,0.06)]"
       }`}
     >
-      {children}
+      <span>{children}</span>
+      {check && (
+        <span className="apr-check-in shrink-0 text-[11px] leading-none text-[#6EE7D8]" style={checkDelay ? d(checkDelay) : undefined}>
+          ✓✓
+        </span>
+      )}
     </div>
   );
 }
