@@ -867,6 +867,8 @@ export function ShowcaseBuilder({
                   onNewCategory={(name) => { if (!allCategoryNamesRef().includes(name)) saveCategories([...categories, name]); }}
                   onImprove={() => improveWithOrbi(item)}
                   improving={improving === item.id}
+                  onSuggestExtras={() => suggestExtras(item)}
+                  suggestingExtras={suggestingExtras === item.id}
                   onDelete={() => deleteItem(item)}
                   slug={slug}
                   whatsapp={whatsapp}
@@ -1081,6 +1083,8 @@ function ItemCard({
   onNewCategory,
   onImprove,
   improving,
+  onSuggestExtras,
+  suggestingExtras,
   onDelete,
   slug,
   whatsapp,
@@ -1105,6 +1109,8 @@ function ItemCard({
   onNewCategory: (name: string) => void;
   onImprove: () => void;
   improving: boolean;
+  onSuggestExtras: () => void;
+  suggestingExtras: boolean;
   onDelete: () => void;
   slug: string;
   whatsapp?: string | null;
@@ -1450,11 +1456,11 @@ function ItemCard({
                   />
 
                   <button
-                    onClick={() => suggestExtras(item)}
-                    disabled={suggestingExtras === item.id}
-                    className={`mt-3 rounded-full px-4 py-2 text-[12px] font-medium ${suggestingExtras === item.id ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
+                    onClick={onSuggestExtras}
+                    disabled={suggestingExtras}
+                    className={`mt-3 rounded-full px-4 py-2 text-[12px] font-medium ${suggestingExtras ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
                   >
-                    {suggestingExtras === item.id ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
+                    {suggestingExtras ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
                   </button>
                 </div>
               </div>
