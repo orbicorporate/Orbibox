@@ -664,17 +664,18 @@ function CenaProdutoDetalhe({ fotos }: { fotos: ThemePhoto[] }) {
               ))}
             </div>
             <div className="mt-6 flex flex-col gap-2.5">
-              <div className="apr-pop apr-press rounded-full orbi-gradient py-3 text-center text-[13.5px] font-medium text-on-background shadow-[0_8px_22px_rgba(110,231,216,0.3)]" style={d(7)}>
-                ✦ Falar com a IA da marca
+              <div className="apr-pop" style={d(7)}>
+                <div className="apr-press rounded-full orbi-gradient py-3 text-center text-[13.5px] font-medium text-on-background shadow-[0_8px_22px_rgba(110,231,216,0.3)]">
+                  ✦ Falar com a IA da marca
+                </div>
               </div>
               <div className="apr-pop rounded-full bg-button-primary py-3 text-center text-[13.5px] font-medium text-white" style={d(7.5)}>
                 Ver no site ↗
               </div>
-              <div
-                className="apr-pop apr-press flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-3 text-center text-[13.5px] font-semibold text-white shadow-[0_8px_22px_rgba(37,211,102,0.32)]"
-                style={d(8)}
-              >
-                <span aria-hidden>💬</span> WhatsApp
+              <div className="apr-pop" style={d(8)}>
+                <div className="apr-press flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-3 text-center text-[13.5px] font-semibold text-white shadow-[0_8px_22px_rgba(37,211,102,0.32)]">
+                  <span aria-hidden>💬</span> WhatsApp
+                </div>
               </div>
             </div>
 
@@ -751,13 +752,14 @@ function CenaChat() {
 
             <Bolha lado="esq" delay={22}>Show, já te aviso por aqui. Obrigada! 🎉</Bolha>
 
-            <button
-              type="button"
-              className="apr-pop apr-press mt-1 flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-2.5 text-[13.5px] font-semibold text-white shadow-[0_6px_18px_rgba(37,211,102,0.35)]"
-              style={d(24.5)}
-            >
-              <span aria-hidden>💬</span> Continuar no WhatsApp
-            </button>
+            <div className="apr-pop mt-1" style={d(24.5)}>
+              <button
+                type="button"
+                className="apr-press flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] py-2.5 text-[13.5px] font-semibold text-white shadow-[0_6px_18px_rgba(37,211,102,0.35)]"
+              >
+                <span aria-hidden>💬</span> Continuar no WhatsApp
+              </button>
+            </div>
 
             <BadgeLeadSalvo delay={27} />
           </div>
@@ -784,26 +786,28 @@ function CheckTag({ cor }: { cor: string }) {
 function BadgeLeadSalvo({ delay, texto = "Novo lead salvo em Conversas" }: { delay: number; texto?: string }) {
   const inicioSeg = delay * 0.14 + 0.25;
   return (
-    <div
-      className="apr-badge-pop apr-glow-pulse relative mt-2 flex items-center gap-2 self-start overflow-visible rounded-full px-3 py-1.5"
-      style={{ ...d(delay), background: "linear-gradient(135deg, rgba(183,243,74,0.25), rgba(110,231,216,0.25))" }}
-    >
-      {CONFETE_ANGULOS.map((ang, i) => (
-        <span
-          key={i}
-          className="apr-confetti"
-          style={
-            {
-              animationDelay: `${inicioSeg + i * 0.03}s`,
-              "--tx": `${Math.round(Math.cos(ang) * (22 + (i % 3) * 6))}px`,
-              "--ty": `${Math.round(Math.sin(ang) * (22 + (i % 3) * 6))}px`,
-              "--c": ["#B7F34A", "#6EE7D8", "#25D366", "#1F7A45"][i % 4],
-            } as CSSProperties
-          }
-        />
-      ))}
-      <CheckTag cor="linear-gradient(135deg, #B7F34A, #6EE7D8)" />
-      <span className="text-[12px] font-semibold text-[#1F7A45]">{texto}</span>
+    <div className="apr-badge-pop mt-2 self-start overflow-visible" style={d(delay)}>
+      <div
+        className="apr-glow-pulse relative flex items-center gap-2 rounded-full px-3 py-1.5"
+        style={{ background: "linear-gradient(135deg, rgba(183,243,74,0.25), rgba(110,231,216,0.25))" }}
+      >
+        {CONFETE_ANGULOS.map((ang, i) => (
+          <span
+            key={i}
+            className="apr-confetti"
+            style={
+              {
+                animationDelay: `${inicioSeg + i * 0.03}s`,
+                "--tx": `${Math.round(Math.cos(ang) * (22 + (i % 3) * 6))}px`,
+                "--ty": `${Math.round(Math.sin(ang) * (22 + (i % 3) * 6))}px`,
+                "--c": ["#B7F34A", "#6EE7D8", "#25D366", "#1F7A45"][i % 4],
+              } as CSSProperties
+            }
+          />
+        ))}
+        <CheckTag cor="linear-gradient(135deg, #B7F34A, #6EE7D8)" />
+        <span className="text-[12px] font-semibold text-[#1F7A45]">{texto}</span>
+      </div>
     </div>
   );
 }
@@ -975,9 +979,11 @@ function CenaVouchers() {
               <p className="mt-0.5 text-[11.5px] text-text-secondary">A loja escaneia e o cupom baixa do estoque.</p>
             </div>
           </div>
-          <button type="button" className="apr-pop apr-press mt-3 rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white" style={d(6)}>
-            Resgatar agora
-          </button>
+          <div className="apr-pop mt-3" style={d(6)}>
+            <button type="button" className="apr-press w-full rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
+              Resgatar agora
+            </button>
+          </div>
           <p className={`apr-pop mt-2.5 text-center text-[11.5px] font-medium transition-opacity ${resgatado ? "opacity-100 text-[#1F7A45]" : "opacity-0"}`} style={d(7)}>
             ✓ Resgatado · 11 restantes
           </p>
@@ -1130,8 +1136,10 @@ function CenaFinal({
         orbibox
       </p>
 
-      <div className="apr-pop apr-float mt-6" style={d(1.5)}>
-        <OrbiParticleSphere size={128} vivid className="rounded-full" />
+      <div className="apr-pop mt-6" style={d(1.5)}>
+        <div className="apr-float">
+          <OrbiParticleSphere size={128} vivid className="rounded-full" />
+        </div>
       </div>
 
       <span className="apr-pop mt-7 text-[11px] font-bold uppercase tracking-[0.14em] text-text-tertiary" style={d(4)}>
@@ -1150,13 +1158,14 @@ function CenaFinal({
         ))}
       </div>
 
-      <Link
-        href={href}
-        className="apr-pop apr-press orbi-gradient mt-8 flex items-center gap-2 rounded-full px-8 py-4 text-[16px] font-semibold text-on-background shadow-[0_10px_30px_rgba(110,231,216,0.35)]"
-        style={d(10)}
-      >
-        {label} <span aria-hidden>→</span>
-      </Link>
+      <div className="apr-pop mt-8" style={d(10)}>
+        <Link
+          href={href}
+          className="apr-press orbi-gradient flex items-center gap-2 rounded-full px-8 py-4 text-[16px] font-semibold text-on-background shadow-[0_10px_30px_rgba(110,231,216,0.35)]"
+        >
+          {label} <span aria-hidden>→</span>
+        </Link>
+      </div>
     </div>
   );
 }
