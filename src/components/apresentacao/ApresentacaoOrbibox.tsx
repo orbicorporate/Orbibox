@@ -127,31 +127,33 @@ export function ApresentacaoOrbibox({ inspire = {}, finalHref, finalLabel, skipH
       <div ref={trackRef} className="apr-track relative z-10 flex flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden">
         {slides.map((s, i) => (
           <section key={i} className="flex w-full shrink-0 snap-start flex-col items-center justify-center px-6 pb-4">
-            <div className="mb-5 flex flex-col items-center text-center">
-              <span
-                className="rounded-full px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.12em]"
-                style={{ background: `${s.cor ?? "#111318"}17`, color: s.cor ?? "#111318" }}
-              >
-                {s.rotulo}
-              </span>
-              <h2 className="mt-3 font-[family-name:var(--font-manrope)] text-[21px] font-semibold leading-[1.2] tracking-[-0.02em] text-on-background">
-                {s.titulo}
-              </h2>
-              {s.checks && s.checks.length > 0 ? (
-                <div className="mt-4 flex w-full max-w-[320px] flex-col gap-3 rounded-2xl bg-surface-white/80 px-4 py-3.5 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
-                  {s.checks.map((c, ci) => (
-                    <div key={ci} className="flex items-start gap-2.5">
-                      <span className="mt-[1px]">
-                        <CheckTag cor={s.cor ?? "#111318"} />
-                      </span>
-                      <span className="text-left text-[13px] font-medium leading-snug text-text-secondary">{c}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="mx-auto mt-2 max-w-[300px] text-[13px] leading-snug text-text-secondary">{s.frase}</p>
-              )}
-            </div>
+            {!s.full && (
+              <div className="mb-5 flex flex-col items-center text-center">
+                <span
+                  className="rounded-full px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.12em]"
+                  style={{ background: `${s.cor ?? "#111318"}17`, color: s.cor ?? "#111318" }}
+                >
+                  {s.rotulo}
+                </span>
+                <h2 className="mt-3 font-[family-name:var(--font-manrope)] text-[21px] font-semibold leading-[1.2] tracking-[-0.02em] text-on-background">
+                  {s.titulo}
+                </h2>
+                {s.checks && s.checks.length > 0 ? (
+                  <div className="mt-4 flex w-full max-w-[320px] flex-col gap-3 rounded-2xl bg-surface-white/80 px-4 py-3.5 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
+                    {s.checks.map((c, ci) => (
+                      <div key={ci} className="flex items-start gap-2.5">
+                        <span className="mt-[1px]">
+                          <CheckTag cor={s.cor ?? "#111318"} />
+                        </span>
+                        <span className="text-left text-[13px] font-medium leading-snug text-text-secondary">{c}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mx-auto mt-2 max-w-[300px] text-[13px] leading-snug text-text-secondary">{s.frase}</p>
+                )}
+              </div>
+            )}
             {s.cena ? (
               <Celular>{i === ativo ? <s.cena key={`cena-${i}-${ativo}`} /> : <s.cena />}</Celular>
             ) : (
@@ -191,7 +193,7 @@ function Celular({ children }: { children: ReactNode }) {
 
 /* ---------- Roteiro dos slides ---------- */
 
-type Slide = { rotulo: string; titulo: string; frase: string; checks?: string[]; cor?: string; cena?: () => ReactNode; livre?: ReactNode; duracaoMs?: number };
+type Slide = { rotulo: string; titulo: string; frase: string; checks?: string[]; cor?: string; cena?: () => ReactNode; livre?: ReactNode; duracaoMs?: number; full?: boolean };
 
 /** Slide de vitrine com as fotos reais do tema do Inspire-se. Se o tema
  * ainda não tiver fotos cadastradas, cai na versão ilustrada (gradientes). */
@@ -296,11 +298,12 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
     },
     {
       rotulo: "Comece agora",
-      titulo: "Crie seu Orbibox",
+      titulo: "Crie a IA da sua marca com site inteligente",
       frase: "3 dias grátis. Cancela quando quiser.",
       checks: ["Teste grátis por 3 dias", "Sem cartão para começar"],
       cor: "#1F7A45",
-      livre: <CenaFinal href={finalHref} label={finalLabel} />,
+      full: true,
+      livre: <CenaFinal href={finalHref} label={finalLabel} rotulo="Comece agora" titulo="Crie a IA da sua marca com site inteligente" checks={["Teste grátis por 3 dias", "Sem cartão para começar"]} />,
     },
   ];
 }
@@ -1050,16 +1053,52 @@ function CenaConversas() {
   );
 }
 
-function CenaFinal({ href, label }: { href: string; label: string }) {
+function CenaFinal({
+  href,
+  label,
+  rotulo,
+  titulo,
+  checks,
+}: {
+  href: string;
+  label: string;
+  rotulo: string;
+  titulo: string;
+  checks: string[];
+}) {
   return (
-    <div className="flex flex-col items-center">
-      <OrbiParticleSphere size={120} vivid className="rounded-full" />
-      <div className="mt-8 flex flex-col items-center gap-3">
-        <Link href={href} className="orbi-gradient rounded-full px-8 py-4 text-[16px] font-semibold text-on-background shadow-[0_10px_30px_rgba(110,231,216,0.35)]">
-          {label} ✦
-        </Link>
-        <p className="text-[12px] text-text-tertiary">Sem cartão pra começar a montar.</p>
+    <div className="flex flex-col items-center text-center">
+      <p className="apr-pop font-[family-name:var(--font-manrope)] text-[17px] font-semibold tracking-[-0.01em] text-on-background" style={d(0)}>
+        orbibox
+      </p>
+
+      <div className="apr-pop apr-float mt-6" style={d(1.5)}>
+        <OrbiParticleSphere size={128} vivid className="rounded-full" />
       </div>
+
+      <span className="apr-pop mt-7 text-[11px] font-bold uppercase tracking-[0.14em] text-text-tertiary" style={d(4)}>
+        {rotulo}
+      </span>
+      <h2 className="apr-pop mt-2 max-w-[300px] font-[family-name:var(--font-manrope)] text-[27px] font-bold leading-[1.15] tracking-[-0.02em] text-on-background" style={d(5)}>
+        {titulo}
+      </h2>
+
+      <div className="mt-6 flex flex-col items-start gap-2.5 self-center">
+        {checks.map((c, i) => (
+          <div key={c} className="apr-pop flex items-center gap-2.5" style={d(7 + i * 1)}>
+            <CheckTag cor="#1F7A45" />
+            <span className="text-left text-[14px] font-medium text-text-secondary">{c}</span>
+          </div>
+        ))}
+      </div>
+
+      <Link
+        href={href}
+        className="apr-pop apr-press orbi-gradient mt-8 flex items-center gap-2 rounded-full px-8 py-4 text-[16px] font-semibold text-on-background shadow-[0_10px_30px_rgba(110,231,216,0.35)]"
+        style={d(10)}
+      >
+        {label} <span aria-hidden>→</span>
+      </Link>
     </div>
   );
 }
