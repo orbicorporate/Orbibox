@@ -29,7 +29,7 @@ type Item = {
   link_kind: string | null;
   layout_size: string;
   type: string;
-  highlight_stat: string | null;
+  highlights: string[] | null;
   orbi_hook: string | null;
 };
 
@@ -39,10 +39,11 @@ type Item = {
 const EYEBROW_LABEL: Record<string, string> = { product: "Produtos", service: "Serviços" };
 
 // A Orbi já escreve a descrição de serviços em bullets ("• algo"), um por
-// linha, quando melhora o texto. Em vez de mostrar isso como parágrafo cru,
-// separa em intro (linhas soltas) + checklist (linhas com bullet) e desenha
-// como lista com check, se e só se existirem bullets de verdade. Produto
-// simples, sem bullet nenhum, continua exatamente como sempre foi: parágrafo.
+// linha, quando melhora o texto (versão antiga, antes do campo "highlights"
+// existir). Continua separado em intro (linhas soltas) + checklist (linhas
+// com bullet) só como reserva, pra item antigo sem nada no campo novo não
+// perder a listinha. Item novo usa "highlights" direto, editável campo a
+// campo no painel, sem depender de parsear texto solto.
 function splitDescription(description: string | null): { intro: string[]; checklist: string[] } {
   const lines = (description ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
   const intro: string[] = [];
@@ -171,7 +172,12 @@ export function ProductView({ business, item }: { business: Business; item: Item
         )}
 
         {(() => {
-          const { intro, checklist } = splitDescription(item.description);
+          const { intro, checklist: legacyChecklist } = splitDescription(item.description);
+          // "highlights" (campo próprio, editável linha a linha no painel) é
+          // a fonte de verdade. Item antigo sem nada nesse campo ainda usa o
+          // que a Orbi escreveu como bullet dentro da descrição, pra não
+          // sumir com a lista de quem já tinha.
+          const diferenciais = item.highlights && item.highlights.length > 0 ? item.highlights : legacyChecklist;
           return (
             <>
               {intro.length > 0 && (
@@ -179,27 +185,17 @@ export function ProductView({ business, item }: { business: Business; item: Item
                   {intro.map((line, i) => <p key={i}>{line}</p>)}
                 </div>
               )}
-              {checklist.length > 0 && (
+              {diferenciais.length > 0 && (
                 <div className="mt-5">
-                  <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Destaques</p>
+                  <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Diferenciais</p>
                   <div className="mt-2.5 flex flex-col">
-                    {checklist.map((line, i) => (
+                    {diferenciais.map((line, i) => (
                       <div key={i} className={`flex items-start gap-2.5 py-2.5 text-[14.5px] leading-snug ${i > 0 ? "border-t border-divider" : ""}`}>
                         <span className="orbi-gradient mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px]">✓</span>
                         {line}
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* O destaque avulso só aparece quando não há checklist: senão
-                  ele quase sempre repete algo que já está numa das linhas
-                  acima (mesma base de contexto do negócio). */}
-              {checklist.length === 0 && item.highlight_stat?.trim() && (
-                <div className="mt-5 flex items-center gap-2 text-[13.5px] text-text-secondary">
-                  <span aria-hidden>✦</span>
-                  {item.highlight_stat}
                 </div>
               )}
             </>

@@ -4,11 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 
 /**
  * Gera duas coisas curtas e opcionais pra página própria de um item
- * (produto/serviço/categoria): um destaque de prova social (só se houver
- * base real pra isso no que o dono já contou sobre o negócio, nunca
- * inventado) e uma pergunta da Orbi pra puxar conversa sobre aquele item
- * específico. O dono pode editar ou apagar o que vier, em qualquer um dos
- * dois campos, exatamente como já acontece com a descrição melhorada.
+ * (produto/serviço/categoria): uma lista curta de diferenciais/prova social
+ * (só com base real no que o dono já contou sobre o negócio, nunca
+ * inventada) e uma pergunta da Orbi pra puxar conversa sobre aquele item
+ * específico. O dono pode editar, apagar ou completar o que vier, em
+ * qualquer um dos campos, exatamente como já acontece com a descrição
+ * melhorada.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     const system = `Você é a Orbi, a camada de inteligência do Orbibox. Sua tarefa aqui tem duas partes curtas pra a página própria de um item (produto, serviço ou categoria):
 
-1) DESTAQUE: uma linha curta de prova social ou credibilidade (tipo "18 anos de experiência", "+500 clientes atendidos", "Entrega em todo o Brasil"). REGRA MAIS IMPORTANTE: só escreva algo aqui se existir uma base real e específica no contexto do negócio abaixo (tempo de mercado, número concreto, alcance, certificação etc). Nunca invente número, tempo ou dado que não esteja no contexto. Se não houver nada específico o bastante pra sustentar uma frase honesta, devolva a linha DESTAQUE vazia (só "DESTAQUE:" sem nada depois). Se a descrição do item (abaixo) já menciona esse mesmo dado, também devolva vazio: esse destaque só serve pra quando a descrição NÃO cobre esse ponto, nunca pra repetir o que ela já diz.
+1) DIFERENCIAL: até 3 linhas curtas de prova social ou credibilidade (tipo "18 anos de experiência", "+500 clientes atendidos", "Entrega em todo o Brasil"), uma por linha, cada uma começando com "DIFERENCIAL: ". REGRA MAIS IMPORTANTE: só escreva uma linha se existir uma base real e específica no contexto do negócio abaixo (tempo de mercado, número concreto, alcance, certificação etc). Nunca invente número, tempo ou dado que não esteja no contexto. Se a descrição do item (abaixo) já menciona esse mesmo dado, não repita, escreva sobre outro ângulo real ou pule. Se não houver nenhuma base específica o bastante, não escreva nenhuma linha DIFERENCIAL.
 
 2) PERGUNTA: uma pergunta curta, natural, que a Orbi faria pra puxar conversa sobre ESSE item específico (baseada no título/descrição dele), do tipo que aparece antes do botão de contato pra incentivar a pessoa a continuar conversando. Sempre gere essa, mesmo sem contexto extra do negócio, mas mantenha coerente com o item. Máximo 80 caracteres, sem aspas.
 
@@ -47,8 +48,9 @@ Sobre o negócio: ${business?.about_business || "(sem informação)"}
 Diferenciais: ${business?.differentials || "(nenhum informado)"}
 ${business?.brand_voice_summary ? `Tom de voz: ${business.brand_voice_summary}` : ""}
 
-Responda em EXATAMENTE duas linhas, neste formato, sem nada antes ou depois:
-DESTAQUE: <texto ou vazio>
+Responda só com linhas nesse formato, sem nada antes ou depois (zero a três linhas DIFERENCIAL, sempre uma linha PERGUNTA):
+DIFERENCIAL: <texto>
+DIFERENCIAL: <texto>
 PERGUNTA: <texto>`;
 
     const userMsg = `Item: ${item.title}
@@ -58,21 +60,24 @@ Descrição: ${item.description || "(nenhuma)"}`;
     const raw = await askClaude({
       system,
       messages: [{ role: "user", content: userMsg }],
-      maxTokens: 200,
+      maxTokens: 260,
     });
 
-    const stat = raw.match(/DESTAQUE:\s*(.*)/i)?.[1]?.trim() ?? "";
-    const hook = raw.match(/PERGUNTA:\s*(.*)/i)?.[1]?.trim() ?? "";
+    const strip = (s: string) => s.trim().replace(/^"|"$/g, "");
 
-    const highlightStat = stat.replace(/^"|"$/g, "") || null;
-    const orbiHook = hook.replace(/^"|"$/g, "") || null;
+    const highlights = [...raw.matchAll(/DIFERENCIAL:\s*(.*)/gi)]
+      .map((m) => strip(m[1] ?? ""))
+      .filter(Boolean)
+      .slice(0, 3);
+    const hook = raw.match(/PERGUNTA:\s*(.*)/i)?.[1] ?? "";
+    const orbiHook = strip(hook) || null;
 
     await supabase
       .from("content_items")
-      .update({ highlight_stat: highlightStat, orbi_hook: orbiHook })
+      .update({ highlights: highlights.length ? highlights : null, orbi_hook: orbiHook })
       .eq("id", contentItemId);
 
-    return NextResponse.json({ highlightStat, orbiHook });
+    return NextResponse.json({ highlights, orbiHook });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Falha ao gerar sugestões." }, { status: 500 });
