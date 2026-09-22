@@ -96,6 +96,28 @@ export function ApresentacaoOrbibox({ inspire = {}, finalHref, finalLabel, skipH
       <div className="pointer-events-none absolute -top-32 -left-24 h-80 w-80 rounded-full orbi-gradient opacity-25 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -right-24 h-96 w-96 rounded-full orbi-gradient opacity-20 blur-3xl" />
 
+      {/* Setinhas de navegação, ao lado do celular */}
+      {ativo > 0 && (
+        <button
+          type="button"
+          onClick={() => irPara(ativo - 1)}
+          aria-label="Slide anterior"
+          className="absolute left-2 top-[54%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface-white/90 text-[18px] font-bold text-on-background shadow-[0_4px_14px_rgba(17,19,24,0.16)] backdrop-blur-sm transition active:scale-90 hover:bg-surface-white"
+        >
+          ‹
+        </button>
+      )}
+      {!ultimo && (
+        <button
+          type="button"
+          onClick={() => irPara(ativo + 1)}
+          aria-label="Próximo slide"
+          className="absolute right-2 top-[54%] z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface-white/90 text-[18px] font-bold text-on-background shadow-[0_4px_14px_rgba(17,19,24,0.16)] backdrop-blur-sm transition active:scale-90 hover:bg-surface-white"
+        >
+          ›
+        </button>
+      )}
+
       {/* Barras de progresso + Pular */}
       <div className="relative z-10 flex items-center gap-3 px-4 pt-[max(14px,env(safe-area-inset-top))]">
         <div className="flex flex-1 gap-1.5">
