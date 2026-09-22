@@ -273,6 +273,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       checks: ["Conquiste clientes novos a qualquer momento", "Valide o uso por QR Code"],
       cor: "#B45309",
       cena: CenaVouchers,
+      duracaoMs: 9500,
     },
     {
       rotulo: "Gift",
@@ -281,6 +282,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       checks: ["Ofereça vales com a sua marca", "O cliente escolhe o valor e quem vai receber"],
       cor: "#C9932B",
       cena: CenaGift,
+      duracaoMs: 10500,
     },
     {
       rotulo: "Conversas",
@@ -289,6 +291,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       checks: ["Seu agente armazena o contato", "Monta estratégia e busca o visitante de volta pelo WhatsApp"],
       cor: "#2F63C9",
       cena: CenaConversas,
+      duracaoMs: 10000,
     },
     {
       rotulo: "Comece agora",
@@ -842,30 +845,61 @@ function CenaPulse() {
 }
 
 function CenaVouchers() {
+  const [restantes, setRestantes] = useState(12);
+  useEffect(() => {
+    const t = window.setTimeout(() => setRestantes(11), 3400);
+    return () => window.clearTimeout(t);
+  }, []);
+  const resgatado = restantes < 12;
+  const outros = [
+    { t: "Leve 2, pague 1 no brownie", cod: "DUPLO", cor: "#B45309" },
+    { t: "Frete grátis acima de R$ 80", cod: "FRETE80", cor: "#2F63C9" },
+  ];
   return (
-    <div className="flex h-full flex-col px-4 pt-11">
-      <p className="apr-pop text-[11px] uppercase tracking-wide text-text-tertiary" style={d(0)}>Vouchers</p>
-      <div className="apr-pop cupom-box mt-3 rounded-[20px] p-4 text-white" style={d(1)}>
-        <p className="text-[10.5px] font-semibold uppercase tracking-wide text-white/80">Só hoje · 12 restantes</p>
-        <p className="mt-1 font-[family-name:var(--font-manrope)] text-[24px] font-semibold leading-tight">20% no cappuccino</p>
-        <p className="mt-1 text-[12px] text-white/85">Apresente no balcão e pronto.</p>
-        <div className="mt-3 flex items-center justify-between rounded-[14px] bg-white/15 px-3 py-2">
-          <span className="text-[12px] font-semibold tracking-widest">MIRANTE20</span>
-          <span className="text-[11px] text-white/80">válido até 23h</span>
+    <TelaReal>
+      <ScrollLento dur={8.5}>
+        <div className="flex flex-col px-4 pt-11 pb-7">
+          <p className="apr-pop text-[11px] uppercase tracking-wide text-text-tertiary" style={d(0)}>Vouchers</p>
+          <div className="apr-pop cupom-box mt-3 rounded-[20px] p-4 text-white" style={d(1)}>
+            <p className="text-[10.5px] font-semibold uppercase tracking-wide text-white/80">Só hoje · {restantes} restantes</p>
+            <p className="mt-1 font-[family-name:var(--font-manrope)] text-[24px] font-semibold leading-tight">20% no cappuccino</p>
+            <p className="mt-1 text-[12px] text-white/85">Apresente no balcão e pronto.</p>
+            <div className="mt-3 flex items-center justify-between rounded-[14px] bg-white/15 px-3 py-2">
+              <span className="text-[12px] font-semibold tracking-widest">MIRANTE20</span>
+              <span className="text-[11px] text-white/80">válido até 23h</span>
+            </div>
+            <div className="mt-3 flex items-center gap-[3px]">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-700 ${i < restantes ? "bg-white/70" : "bg-white/20"}`} />
+              ))}
+            </div>
+          </div>
+          <div className="apr-pop mt-3 flex items-center gap-3 rounded-[18px] bg-surface-white p-3.5 shadow-[0_6px_18px_rgba(17,19,24,0.08)]" style={d(4)}>
+            <QRFalso />
+            <div>
+              <p className="text-[12.5px] font-semibold leading-tight">Mostre esse QR</p>
+              <p className="mt-0.5 text-[11.5px] text-text-secondary">A loja escaneia e o cupom baixa do estoque.</p>
+            </div>
+          </div>
+          <button type="button" className="apr-pop apr-press mt-3 rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white" style={d(6)}>
+            Resgatar agora
+          </button>
+          <p className={`apr-pop mt-2.5 text-center text-[11.5px] font-medium transition-opacity ${resgatado ? "opacity-100 text-[#1F7A45]" : "opacity-0"}`} style={d(7)}>
+            ✓ Resgatado · 11 restantes
+          </p>
+
+          <p className="apr-pop mt-5 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary" style={d(8)}>Outros cupons ativos</p>
+          <div className="mt-2 flex flex-col gap-2">
+            {outros.map((o, i) => (
+              <div key={o.cod} className="apr-pop flex items-center justify-between rounded-[14px] bg-surface-white px-3 py-2.5 shadow-[0_4px_14px_rgba(17,19,24,0.06)]" style={d(9 + i * 0.8)}>
+                <p className="text-[12px] font-medium">{o.t}</p>
+                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style={{ color: o.cor, background: `${o.cor}17` }}>{o.cod}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="apr-pop mt-3 flex items-center gap-3 rounded-[18px] bg-surface-white p-3.5 shadow-[0_6px_18px_rgba(17,19,24,0.08)]" style={d(4)}>
-        <QRFalso />
-        <div>
-          <p className="text-[12.5px] font-semibold leading-tight">Mostre esse QR</p>
-          <p className="mt-0.5 text-[11.5px] text-text-secondary">A loja escaneia e o cupom baixa do estoque.</p>
-        </div>
-      </div>
-      <button type="button" className="apr-pop apr-press mt-3 rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white" style={d(6)}>
-        Resgatar agora
-      </button>
-      <p className="apr-pop mt-3 text-center text-[11.5px] text-text-tertiary" style={d(14)}>✓ Resgatado · 11 restantes</p>
-    </div>
+      </ScrollLento>
+    </TelaReal>
   );
 }
 
@@ -887,37 +921,48 @@ function QRFalso() {
 function CenaGift() {
   const [liberado, setLiberado] = useState(false);
   useEffect(() => {
-    const t = window.setTimeout(() => setLiberado(true), 2600);
+    const t = window.setTimeout(() => setLiberado(true), 4600);
     return () => window.clearTimeout(t);
   }, []);
   return (
-    <div className="flex h-full flex-col px-4 pt-11">
-      <p className="apr-pop text-[11px] uppercase tracking-wide text-text-tertiary" style={d(0)}>Gift card</p>
-      <div className="apr-pop mt-3" style={d(1)}>
-        <GiftArt
-          valorCents={10000}
-          paraQuem="Ana"
-          deQuem="Lucas"
-          mensagem="Feliz aniversário!"
-          negocio="Café Mirante"
-          codigo="GIFT-7K2M9"
-          artUrl={null}
-          artTheme="dourado"
-          bloqueado={!liberado}
-        />
-      </div>
-      <div className="apr-pop mt-3 rounded-[18px] bg-surface-white p-3.5 shadow-[0_6px_18px_rgba(17,19,24,0.08)]" style={d(3)}>
-        <div className="flex items-center justify-between">
-          <p className="text-[12.5px] font-semibold">R$ 100 · Lucas → Ana</p>
-          <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold transition-colors duration-500 ${liberado ? "bg-[#E4F7EA] text-[#1F7A45]" : "bg-surface-soft text-text-secondary"}`}>
-            {liberado ? "✓ Liberado" : "Aguardando"}
-          </span>
+    <TelaReal>
+      <ScrollLento dur={9.5}>
+        <div className="flex flex-col px-4 pt-11 pb-7">
+          <p className="apr-pop text-[11px] uppercase tracking-wide text-text-tertiary" style={d(0)}>Gift card</p>
+
+          <div className="mt-3 flex flex-col gap-2">
+            <Bolha lado="dir" delay={1}>Quero mandar um vale de R$ 100 pro Lucas, presente de aniversário 🎁</Bolha>
+            <Bolha lado="esq" delay={3}>Perfeito! Confirmo R$ 100 em nome do Café Mirante, libero assim que o pagamento cair.</Bolha>
+            {!liberado && <Digitando delay={4.6} />}
+          </div>
+
+          <div className="apr-pop mt-4" style={d(6.5)}>
+            <GiftArt
+              valorCents={10000}
+              paraQuem="Ana"
+              deQuem="Lucas"
+              mensagem="Feliz aniversário!"
+              negocio="Café Mirante"
+              codigo="GIFT-7K2M9"
+              artUrl={null}
+              artTheme="dourado"
+              bloqueado={!liberado}
+            />
+          </div>
+          <div className="apr-pop mt-3 rounded-[18px] bg-surface-white p-3.5 shadow-[0_6px_18px_rgba(17,19,24,0.08)]" style={d(7)}>
+            <div className="flex items-center justify-between">
+              <p className="text-[12.5px] font-semibold">R$ 100 · Lucas → Ana</p>
+              <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold transition-colors duration-500 ${liberado ? "bg-[#E4F7EA] text-[#1F7A45]" : "bg-surface-soft text-text-secondary"}`}>
+                {liberado ? "✓ Liberado" : "Aguardando"}
+              </span>
+            </div>
+            <p className="mt-1 text-[11.5px] leading-snug text-text-secondary">
+              {liberado ? "Pago via WhatsApp. Ana já pode usar." : "Lucas acerta o valor com a loja pelo WhatsApp."}
+            </p>
+          </div>
         </div>
-        <p className="mt-1 text-[11.5px] leading-snug text-text-secondary">
-          {liberado ? "Pago via WhatsApp. Ana já pode usar." : "Lucas acerta o valor com a loja pelo WhatsApp."}
-        </p>
-      </div>
-    </div>
+      </ScrollLento>
+    </TelaReal>
   );
 }
 
@@ -928,28 +973,47 @@ function CenaConversas() {
     { n: "Carla Dias", s: "Novo", c: "#B0309E", bg: "#FBE7F6", t: "entrou pelo Instagram" },
     { n: "Diego Reis", s: "Esfriou", c: "#B45309", bg: "#FFF1DC", t: "12 dias sem voltar" },
   ];
+  const resumo = [
+    { label: "Novos", valor: 6, cor: "#B0309E" },
+    { label: "Conversando", valor: 4, cor: "#2F63C9" },
+    { label: "Fecharam", valor: 9, cor: "#1F7A45" },
+  ];
   return (
-    <div className="flex h-full flex-col px-4 pt-11">
-      <p className="apr-pop text-[11px] uppercase tracking-wide text-text-tertiary" style={d(0)}>Conversas</p>
-      <div className="mt-3 flex flex-col gap-2">
-        {leads.map((l, i) => (
-          <div key={l.n} style={d(i + 1)} className="apr-pop flex items-center justify-between rounded-[16px] bg-surface-white px-3 py-2.5 shadow-[0_4px_14px_rgba(17,19,24,0.06)]">
-            <div className="min-w-0">
-              <p className="text-[12.5px] font-semibold leading-tight">{l.n}</p>
-              <p className="text-[11px] text-text-secondary">{l.t}</p>
-            </div>
-            <span className="shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style={{ color: l.c, background: l.bg }}>{l.s}</span>
+    <TelaReal>
+      <ScrollLento dur={9}>
+        <div className="flex flex-col px-4 pt-11 pb-7">
+          <p className="apr-pop text-[11px] uppercase tracking-wide text-text-tertiary" style={d(0)}>Conversas</p>
+
+          <div className="apr-pop mt-3 grid grid-cols-3 gap-2" style={d(0.6)}>
+            {resumo.map((r) => (
+              <div key={r.label} className="rounded-[14px] bg-surface-white px-2 py-2.5 text-center shadow-[0_4px_14px_rgba(17,19,24,0.06)]">
+                <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold leading-none" style={{ color: r.cor }}>{r.valor}</p>
+                <p className="mt-1 text-[9.5px] leading-tight text-text-tertiary">{r.label}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div className="apr-pop orbi-card-light mt-3 rounded-[18px] p-3.5" style={d(7)}>
-        <p className="text-[10.5px] font-semibold uppercase tracking-wide text-text-secondary">✦ Orbi escreveu pro Diego</p>
-        <p className="mt-1 text-[12px] leading-snug">Oi Diego! Sentimos sua falta no Café Mirante. Essa semana tem chai latte novo, e um cupom de 20% te esperando ☕</p>
-      </div>
-      <button type="button" className="apr-pop mt-2.5 rounded-full bg-[#25D366] py-2.5 text-[13px] font-semibold text-white" style={d(10)}>
-        Mandar pelo WhatsApp
-      </button>
-    </div>
+
+          <div className="mt-3 flex flex-col gap-2">
+            {leads.map((l, i) => (
+              <div key={l.n} style={d(1.4 + i * 0.7)} className="apr-pop flex items-center justify-between rounded-[16px] bg-surface-white px-3 py-2.5 shadow-[0_4px_14px_rgba(17,19,24,0.06)]">
+                <div className="min-w-0">
+                  <p className="text-[12.5px] font-semibold leading-tight">{l.n}</p>
+                  <p className="text-[11px] text-text-secondary">{l.t}</p>
+                </div>
+                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style={{ color: l.c, background: l.bg }}>{l.s}</span>
+              </div>
+            ))}
+          </div>
+          <div className="apr-pop orbi-card-light mt-3 rounded-[18px] p-3.5" style={d(5)}>
+            <p className="text-[10.5px] font-semibold uppercase tracking-wide text-text-secondary">✦ Orbi escreveu pro Diego</p>
+            <p className="mt-1 text-[12px] leading-snug">Oi Diego! Sentimos sua falta no Café Mirante. Essa semana tem chai latte novo, e um cupom de 20% te esperando ☕</p>
+          </div>
+          <button type="button" className="apr-pop mt-2.5 rounded-full bg-[#25D366] py-2.5 text-[13px] font-semibold text-white" style={d(6)}>
+            Mandar pelo WhatsApp
+          </button>
+        </div>
+      </ScrollLento>
+    </TelaReal>
   );
 }
 
