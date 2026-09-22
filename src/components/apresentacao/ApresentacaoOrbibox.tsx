@@ -351,8 +351,8 @@ function CenaInicio() {
       <div className="apr-scroll-up px-5 pt-14" style={{ animationDuration: "9s" }}>
         <div className="apr-pop flex flex-col items-center" style={d(0)}>
           <OrbiParticleSphere size={110} colors={cor} className="rounded-full" />
-          <p className="mt-4 text-[15px] text-text-secondary">O que trouxe você aqui hoje?</p>
-          <p className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold tracking-[-0.01em]">Studio Design</p>
+          <p className="mt-4 text-[15px] font-medium text-text-tertiary">Studio Design</p>
+          <p className="font-[family-name:var(--font-manrope)] text-[24px] font-semibold tracking-[-0.01em]">O que trouxe você aqui hoje?</p>
         </div>
         <div className="mt-8 grid grid-cols-2 gap-3">
           {boxes.map((b, i) => (
