@@ -569,7 +569,7 @@ export function VisitorExperience({
                         onClick={() => !isEditingThis && o.onClick()}
                         onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
                         className={homeCardShellClass("largo", o.ai, o.cupom, o.color)}
-                        style={homeCardShellStyle(o.cupom, o.color)}
+                        style={homeCardShellStyle(o.color)}
                       >
                         <HomeOptionCardContent
                           layout="largo"
@@ -598,7 +598,7 @@ export function VisitorExperience({
                         onClick={() => !isEditingThis && o.onClick()}
                         onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
                         className={homeCardShellClass("medio", o.ai, o.cupom, o.color)}
-                        style={homeCardShellStyle(o.cupom, o.color)}
+                        style={homeCardShellStyle(o.color)}
                       >
                         <HomeOptionCardContent
                           layout="medio"

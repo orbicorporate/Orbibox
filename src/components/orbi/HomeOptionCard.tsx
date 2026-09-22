@@ -88,15 +88,16 @@ export function HomeIcon({
 
 /** Classes do "casco" do card, únicas pros dois formatos, fonte única de
  * verdade pra não desalinhar visual entre a Home real e o preview do admin.
- * `cupom` troca o fundo branco pelo degradê cereja com reflexo animado; uma
- * cor própria escolhida pro box faz o mesmo, só que com a cor do dono. */
+ * `cupom` troca o fundo branco pelo degradê cereja padrão do box de
+ * Vouchers; se o dono escolher uma cor própria pra ele (mesma regra dos
+ * outros boxes), essa cor tem prioridade sobre o vermelho padrão. */
 export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?: boolean, color?: string | null) {
   const ring = ai ? " ring-1 ring-orbi-gradient-start/60" : "";
-  const custom = !cupom && isCustomBoxColor(color);
-  const bg = cupom
-    ? "cupom-box text-white shadow-[0_10px_30px_rgba(204,23,57,0.4)]"
-    : custom
-      ? "box-metal text-white shadow-[0_10px_28px_rgba(17,19,24,0.22)]"
+  const custom = isCustomBoxColor(color);
+  const bg = custom
+    ? "box-metal text-white shadow-[0_10px_28px_rgba(17,19,24,0.22)]"
+    : cupom
+      ? "cupom-box text-white shadow-[0_10px_30px_rgba(204,23,57,0.4)]"
       : "bg-surface-white shadow-[0_6px_24px_rgba(17,19,24,0.12)]";
   if (layout === "largo") {
     return `flex w-full items-center gap-4 rounded-[24px] p-5 text-left ${bg}${ring}`;
@@ -107,8 +108,8 @@ export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?:
 /** Estilo inline que acompanha `homeCardShellClass`: só a cor escolhida
  * entra como custom property, pro `.box-metal` (globals.css) montar o
  * degradê metalizado em cima dela. */
-export function homeCardShellStyle(cupom?: boolean, color?: string | null): CSSProperties | undefined {
-  if (cupom || !isCustomBoxColor(color)) return undefined;
+export function homeCardShellStyle(color?: string | null): CSSProperties | undefined {
+  if (!isCustomBoxColor(color)) return undefined;
   return { "--box-color": color } as CSSProperties;
 }
 
@@ -218,7 +219,7 @@ export function HomeOptionCardPreview({
   className?: string;
 }) {
   return (
-    <div className={`${homeCardShellClass(layout, ai, cupom, color)} ${className}`} style={homeCardShellStyle(cupom, color)}>
+    <div className={`${homeCardShellClass(layout, ai, cupom, color)} ${className}`} style={homeCardShellStyle(color)}>
       <HomeOptionCardContent
         layout={layout}
         icon={icon}
