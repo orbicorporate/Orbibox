@@ -15,11 +15,10 @@ import { OrbiMoneyIcon, OrbiPercentIcon, OrbiArrowIcon, OrbiHeartIcon, OrbiGiftI
 import { PALETTE_GROUPS, ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon, isVideoUrl } from "@/lib/showcase";
 import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
-import { HelperText } from "@/components/ui/HelperText";
 import { SecaoRecolhivel } from "@/components/ui/SecaoRecolhivel";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery } from "@/lib/logoGallery";
-import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
+import { DateTimeField } from "./DateTimeField";
 
 type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
@@ -475,7 +474,7 @@ export function BoxesManager({
                     </button>
                   </div>
                 )}
-                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon)) ? "transparent" : color, color: isHero ? "#fff" : fg }}>
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon) || icon === "__logo__") ? "transparent" : color, color: isHero ? "#fff" : fg }}>
                   {icon === "__orb__" ? (
                     <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} />
                   ) : icon === "__orbcheck__" ? (
@@ -489,7 +488,7 @@ export function BoxesManager({
                   ) : EMOJI_STICKERS[icon] ? (
                     EMOJI_STICKERS[icon](40)
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
-                    <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={40} />
+                    <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={40} ringColor={isHero ? undefined : color} />
                   ) : (
                     icon
                   )}
@@ -600,36 +599,28 @@ export function BoxesManager({
               )}
 
               {editing && !isHero && !m.fixo && (
-                <div className="mt-5 rounded-2xl bg-surface-soft p-4">
-                  <p className="text-[13px] font-medium text-text-secondary">Agendar (opcional)</p>
-                  <HelperText>
-                    Ativa e desativa sozinho nas datas escolhidas, bom pra promoção por tempo limitado, sem precisar lembrar de desligar.
-                  </HelperText>
-                  <div className="mt-3 flex flex-col gap-2.5">
+                <div className="mt-5 overflow-hidden rounded-[22px] border border-divider bg-surface-white">
+                  <div className="flex items-center gap-3 border-b border-divider bg-surface-soft/70 px-4 py-3.5">
+                    <span className="orbi-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[14px]">🗓️</span>
                     <div>
-                      <p className="text-[12px] font-medium text-text-tertiary">Começa em</p>
-                      <input
-                        type="datetime-local"
-                        defaultValue={isoToDatetimeLocal(box.starts_at)}
-                        onBlur={(e) => saveSchedule(box, datetimeLocalToIso(e.target.value), box.ends_at)}
-                        className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] outline-none focus:border-on-background"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-[12px] font-medium text-text-tertiary">Termina em</p>
-                      <input
-                        type="datetime-local"
-                        defaultValue={isoToDatetimeLocal(box.ends_at)}
-                        onBlur={(e) => saveSchedule(box, box.starts_at, datetimeLocalToIso(e.target.value))}
-                        className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] outline-none focus:border-on-background"
-                      />
+                      <p className="text-[13px] font-semibold">Agendar (opcional)</p>
+                      <p className="mt-0.5 text-[11.5px] leading-snug text-text-tertiary">
+                        Ativa e desativa sozinho nas datas escolhidas, bom pra promoção por tempo limitado.
+                      </p>
                     </div>
                   </div>
-                  {(box.starts_at || box.ends_at) && (
-                    <button onClick={() => saveSchedule(box, null, null)} className="mt-3 text-[12px] font-medium text-red-600">
-                      Remover agendamento
-                    </button>
-                  )}
+                  <div className="flex flex-col gap-3 p-4">
+                    <DateTimeField label="Começa em" value={box.starts_at} onChange={(iso) => saveSchedule(box, iso, box.ends_at)} />
+                    <DateTimeField label="Termina em" value={box.ends_at} onChange={(iso) => saveSchedule(box, box.starts_at, iso)} />
+                    {(box.starts_at || box.ends_at) && (
+                      <button
+                        onClick={() => saveSchedule(box, null, null)}
+                        className="self-start text-[12px] font-medium text-red-600"
+                      >
+                        Remover agendamento
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
 

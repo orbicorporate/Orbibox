@@ -36,8 +36,16 @@ export function HomeIcon({
 }) {
   return (
     <span
-      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"} ${isAnimatedIcon(icon) ? "" : color && color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
-      style={isAnimatedIcon(icon) ? { background: "transparent" } : color && color !== "transparent" ? { backgroundColor: color } : color === "transparent" ? { background: "transparent" } : undefined}
+      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"} ${isAnimatedIcon(icon) || icon === "__logo__" ? "" : color && color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
+      style={
+        isAnimatedIcon(icon) || icon === "__logo__"
+          ? { background: "transparent" }
+          : color && color !== "transparent"
+            ? { backgroundColor: color }
+            : color === "transparent"
+              ? { background: "transparent" }
+              : undefined
+      }
     >
       {icon === "__orb__" ? (
         <OrbiParticleSphere size={48} colors={orbiColors ?? undefined} className="rounded-full" />
@@ -52,7 +60,7 @@ export function HomeIcon({
       ) : EMOJI_STICKERS[icon] ? (
         EMOJI_STICKERS[icon](42)
       ) : icon === "__logo__" && (boxLogo || businessLogo) ? (
-        <OrbiLogoBadge logoUrl={boxLogo || businessLogo!} size={44} />
+        <OrbiLogoBadge logoUrl={boxLogo || businessLogo!} size={44} ringColor={color} />
       ) : (
         icon
       )}

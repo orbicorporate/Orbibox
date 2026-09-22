@@ -4,10 +4,25 @@
  * redor e um brilho reflexivo que varre a imagem, nunca um círculo estático.
  * Reaproveita as mesmas animações CSS do OrbiAvatar (globals.css).
  */
-export function OrbiLogoBadge({ logoUrl, size = 44, className = "" }: { logoUrl: string; size?: number; className?: string }) {
+export function OrbiLogoBadge({
+  logoUrl,
+  size = 44,
+  className = "",
+  ringColor,
+}: {
+  logoUrl: string;
+  size?: number;
+  className?: string;
+  /** Cor escolhida pro box: como a foto do logo já preenche o círculo
+   * inteiro, a cor não tem "fundo" pra pintar — então ela aparece como um
+   * contorno colorido em volta da foto, grosso o bastante pra não parecer
+   * só um risquinho sem querer. */
+  ringColor?: string;
+}) {
   // O ponto de luz e a espessura do brilho são calibrados pra uma esfera de
   // ~96px, escalamos proporcionalmente pra caber bem num ícone pequeno de box.
   const dot = Math.max(4, size * 0.083);
+  const temCorPropria = !!ringColor && ringColor !== "transparent" && ringColor.toLowerCase() !== "#111318";
   return (
     <div className={`relative shrink-0 ${className}`} style={{ width: size, height: size }} aria-hidden>
       <div className="orbi-avatar-ring absolute inset-0 rounded-full">
@@ -16,7 +31,10 @@ export function OrbiLogoBadge({ logoUrl, size = 44, className = "" }: { logoUrl:
           style={{ width: dot, height: dot, marginLeft: -dot / 2, top: -dot * 0.4 }}
         />
       </div>
-      <div className="relative h-full w-full overflow-hidden rounded-full bg-surface-soft">
+      <div
+        className="relative h-full w-full overflow-hidden rounded-full bg-surface-soft"
+        style={temCorPropria ? { boxShadow: `0 0 0 3px ${ringColor}, 0 3px 12px -1px ${ringColor}99` } : undefined}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoUrl} alt="" className="h-full w-full object-cover" />
         <div className="orbi-avatar-shine pointer-events-none absolute inset-0" />
