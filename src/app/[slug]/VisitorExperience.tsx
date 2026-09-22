@@ -543,9 +543,10 @@ export function VisitorExperience({
                           {!o.color && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111318" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
                         </button>
                         {[
-                          "#111318", "#C0392B", "#C2650A", "#1F7A3D", "#0E7490", "#1D4ED8", "#6D28D9", "#B0309E",
+                          "#000000", "#C0392B", "#C2650A", "#1F7A3D", "#0E7490", "#1D4ED8", "#6D28D9", "#B0309E",
                           // Cores premium: tons mais profundos/acinzentados, acabamento joia.
                           "#1B2A4A", "#6E1F3A", "#0B6B4F", "#B8860B", "#C97064", "#3A3F44", "#0F4C5C", "#5B2A6E",
+                          "#4A3728", "#B76E79", "#5C6B73",
                         ].map((c) => (
                           <button
                             key={c}
