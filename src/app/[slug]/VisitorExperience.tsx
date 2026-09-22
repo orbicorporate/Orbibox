@@ -1547,7 +1547,7 @@ function OrbiChat({
             )}
             {whatsapp && !sending && (
               <a
-                href={whatsappLink(whatsapp, `Olá! Vim conversando com a ${agentName} no site.`)}
+                href={whatsappLink(whatsapp, "Oi! Eu vim pelo Orbibox.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackClick({ businessId, kind: "whatsapp", sessionId })}
