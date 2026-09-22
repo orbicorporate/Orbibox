@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { OrbiParticleSphere } from "./OrbiParticleSphere";
 import { OrbiContactDisc } from "./OrbiContactDisc";
 import { OrbiGoogleIcon } from "./OrbiGoogleIcon";
@@ -20,6 +20,15 @@ const EMOJI_STICKERS: Record<string, (size: number) => ReactNode> = {
 
 export type HomeCardLayout = "largo" | "medio";
 
+/** Cor "de verdade" escolhida pro box: descarta o preto padrão (que todo
+ * box novo carrega antes de o dono escolher algo) e o transparente (usado
+ * pelos boxes fixos que não devem pintar nada). Fonte única de verdade pra
+ * decidir tanto se o card inteiro ganha o fundo metalizado quanto se o
+ * ícone precisa virar um contorno/fundo translúcido em vez de sólido. */
+export function isCustomBoxColor(color?: string | null): boolean {
+  return !!color && color !== "transparent" && color.toLowerCase() !== "#111318";
+}
+
 /** Ícone de um box da Home, igual nos dois lugares (site real e preview do admin). */
 export function HomeIcon({
   icon,
@@ -34,12 +43,21 @@ export function HomeIcon({
   orbiColors: string[] | null;
   businessLogo?: string | null;
 }) {
+  const custom = isCustomBoxColor(color);
   return (
     <span
-      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"} ${isAnimatedIcon(icon) || icon === "__logo__" ? "" : color && color !== "transparent" ? "text-white" : "bg-surface-soft"}`}
-      style={
+      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"} ${
         isAnimatedIcon(icon) || icon === "__logo__"
-          ? { background: "transparent" }
+          ? ""
+          : custom
+            ? "bg-white/20 text-white"
+            : color && color !== "transparent"
+              ? "text-white"
+              : "bg-surface-soft"
+      }`}
+      style={
+        isAnimatedIcon(icon) || icon === "__logo__" || custom
+          ? undefined
           : color && color !== "transparent"
             ? { backgroundColor: color }
             : color === "transparent"
@@ -70,14 +88,28 @@ export function HomeIcon({
 
 /** Classes do "casco" do card, únicas pros dois formatos, fonte única de
  * verdade pra não desalinhar visual entre a Home real e o preview do admin.
- * `cupom` troca o fundo branco pelo degradê cereja com reflexo animado. */
-export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?: boolean) {
+ * `cupom` troca o fundo branco pelo degradê cereja com reflexo animado; uma
+ * cor própria escolhida pro box faz o mesmo, só que com a cor do dono. */
+export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?: boolean, color?: string | null) {
   const ring = ai ? " ring-1 ring-orbi-gradient-start/60" : "";
-  const bg = cupom ? "cupom-box text-white shadow-[0_10px_30px_rgba(204,23,57,0.4)]" : "bg-surface-white shadow-[0_6px_24px_rgba(17,19,24,0.12)]";
+  const custom = !cupom && isCustomBoxColor(color);
+  const bg = cupom
+    ? "cupom-box text-white shadow-[0_10px_30px_rgba(204,23,57,0.4)]"
+    : custom
+      ? "box-metal text-white shadow-[0_10px_28px_rgba(17,19,24,0.22)]"
+      : "bg-surface-white shadow-[0_6px_24px_rgba(17,19,24,0.12)]";
   if (layout === "largo") {
     return `flex w-full items-center gap-4 rounded-[24px] p-5 text-left ${bg}${ring}`;
   }
   return `flex h-full min-h-[168px] w-full flex-col justify-between rounded-[24px] p-5 text-left ${bg}${ring}`;
+}
+
+/** Estilo inline que acompanha `homeCardShellClass`: só a cor escolhida
+ * entra como custom property, pro `.box-metal` (globals.css) montar o
+ * degradê metalizado em cima dela. */
+export function homeCardShellStyle(cupom?: boolean, color?: string | null): CSSProperties | undefined {
+  if (cupom || !isCustomBoxColor(color)) return undefined;
+  return { "--box-color": color } as CSSProperties;
 }
 
 /** Miolo do card (ícone + título + descrição + indicador), igual nos dois
@@ -118,7 +150,8 @@ export function HomeOptionCardContent({
       {ai ? <span className="orbi-gradient-text"> ✦</span> : null}
     </>
   );
-  const descClass = cupom ? "text-white/85" : "text-text-tertiary";
+  const custom = !cupom && isCustomBoxColor(color);
+  const descClass = cupom || custom ? "text-white/85" : "text-text-tertiary";
 
   if (layout === "largo") {
     return (
@@ -133,7 +166,7 @@ export function HomeOptionCardContent({
           {stars && <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
           <span className={`mt-0.5 line-clamp-2 block text-[13px] ${descClass}`}>{description}</span>
         </span>
-        <span className={`relative shrink-0 ${cupom ? "text-white/80" : "text-text-tertiary"}`}>{addressIndicator ?? "→"}</span>
+        <span className={`relative shrink-0 ${cupom || custom ? "text-white/80" : "text-text-tertiary"}`}>{addressIndicator ?? "→"}</span>
       </>
     );
   }
@@ -185,7 +218,7 @@ export function HomeOptionCardPreview({
   className?: string;
 }) {
   return (
-    <div className={`${homeCardShellClass(layout, ai, cupom)} ${className}`}>
+    <div className={`${homeCardShellClass(layout, ai, cupom, color)} ${className}`} style={homeCardShellStyle(cupom, color)}>
       <HomeOptionCardContent
         layout={layout}
         icon={icon}

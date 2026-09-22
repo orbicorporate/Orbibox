@@ -19,7 +19,7 @@ import { heroBackground } from "@/lib/heroStyle";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
-import { homeCardShellClass, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
+import { homeCardShellClass, homeCardShellStyle, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
 import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
@@ -563,7 +563,8 @@ export function VisitorExperience({
                         tabIndex={0}
                         onClick={() => !isEditingThis && o.onClick()}
                         onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
-                        className={homeCardShellClass("largo", o.ai, o.cupom)}
+                        className={homeCardShellClass("largo", o.ai, o.cupom, o.color)}
+                        style={homeCardShellStyle(o.cupom, o.color)}
                       >
                         <HomeOptionCardContent
                           layout="largo"
@@ -591,7 +592,8 @@ export function VisitorExperience({
                         tabIndex={0}
                         onClick={() => !isEditingThis && o.onClick()}
                         onKeyDown={(e) => { if (!isEditingThis && (e.key === "Enter" || e.key === " ")) o.onClick(); }}
-                        className={homeCardShellClass("medio", o.ai, o.cupom)}
+                        className={homeCardShellClass("medio", o.ai, o.cupom, o.color)}
+                        style={homeCardShellStyle(o.cupom, o.color)}
                       >
                         <HomeOptionCardContent
                           layout="medio"
