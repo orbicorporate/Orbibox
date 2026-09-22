@@ -185,7 +185,8 @@ export function VisitorExperience({
   useEffect(() => {
     const chat = searchParams.get("chat");
     const tab = searchParams.get("tab");
-    if (chat === "1" && hasAiChat) chooseIntent("duvida");
+    const msg = searchParams.get("msg");
+    if (chat === "1" && hasAiChat) chooseIntent("duvida", msg || undefined);
     else if (tab === "conhecer") chooseIntent("conhecer");
     else if (tab === "vitrine") chooseIntent("comprar");
     // eslint-disable-next-line react-hooks/exhaustive-deps

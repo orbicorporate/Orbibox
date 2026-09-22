@@ -47,6 +47,8 @@ type Item = {
   target_url: string | null;
   starts_at: string | null;
   ends_at: string | null;
+  highlight_stat: string | null;
+  orbi_hook: string | null;
 };
 
 /** Formatos desenhados como miniatura, para escolher pelo olho e não pela palavra. */
@@ -118,6 +120,7 @@ export function ShowcaseBuilder({
   const [arranging, setArranging] = useState(false);
   const [creating, setCreating] = useState(false);
   const [improving, setImproving] = useState<string | null>(null);
+  const [suggestingExtras, setSuggestingExtras] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [showInspire, setShowInspire] = useState(false);
   const [showCoverExample, setShowCoverExample] = useState(false);
@@ -227,6 +230,8 @@ export function ShowcaseBuilder({
             ai_optimized: i.ai_optimized,
             link_kind: i.link_kind,
             target_url: i.target_url,
+            highlight_stat: i.highlight_stat,
+            orbi_hook: i.orbi_hook,
           })
         ),
         ...toDelete.map((i) => supabase.from("content_items").delete().eq("id", i.id)),
@@ -252,6 +257,8 @@ export function ShowcaseBuilder({
               ai_optimized: i.ai_optimized,
               link_kind: i.link_kind,
               target_url: i.target_url,
+              highlight_stat: i.highlight_stat,
+              orbi_hook: i.orbi_hook,
             })
             .eq("id", i.id)
         ),
@@ -466,6 +473,23 @@ export function ShowcaseBuilder({
       }
     } finally {
       setImproving(null);
+    }
+  }
+
+  async function suggestExtras(item: Item) {
+    setSuggestingExtras(item.id);
+    try {
+      const res = await fetch("/api/suggest-item-extras", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentItemId: item.id }),
+      });
+      if (res.ok) {
+        const { highlightStat, orbiHook } = await res.json();
+        await save(item.id, { highlight_stat: highlightStat, orbi_hook: orbiHook });
+      }
+    } finally {
+      setSuggestingExtras(null);
     }
   }
 
@@ -1396,6 +1420,43 @@ function ItemCard({
                   }}
                   onRemove={(url) => save(item.id, { gallery_urls: item.gallery_urls.filter((u) => u !== url) })}
                 />
+
+                <div className="mt-5 border-t border-orbi-gradient-start/20 pt-4">
+                  <p className="text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Destaque e gancho de conversa</p>
+                  <HelperText>
+                    Dois detalhes opcionais que deixam a página mais rica: uma linha curta de credibilidade e uma pergunta
+                    que a Orbi puxa antes do botão de contato. A Orbi pode sugerir os dois com base no que você já contou
+                    sobre o negócio; você edita ou apaga do jeito que quiser.
+                  </HelperText>
+
+                  <p className="mt-3 text-[12px] font-medium text-text-tertiary">Destaque (opcional)</p>
+                  <input
+                    value={item.highlight_stat ?? ""}
+                    onChange={(e) => patch(item.id, { highlight_stat: e.target.value })}
+                    onBlur={(e) => save(item.id, { highlight_stat: e.target.value || null })}
+                    placeholder="ex: 18 anos de experiência"
+                    maxLength={80}
+                    className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                  />
+
+                  <p className="mt-3 text-[12px] font-medium text-text-tertiary">Pergunta da Orbi (opcional)</p>
+                  <input
+                    value={item.orbi_hook ?? ""}
+                    onChange={(e) => patch(item.id, { orbi_hook: e.target.value })}
+                    onBlur={(e) => save(item.id, { orbi_hook: e.target.value || null })}
+                    placeholder="ex: Quer saber se cabe no seu espaço?"
+                    maxLength={100}
+                    className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                  />
+
+                  <button
+                    onClick={() => suggestExtras(item)}
+                    disabled={suggestingExtras === item.id}
+                    className={`mt-3 rounded-full px-4 py-2 text-[12px] font-medium ${suggestingExtras === item.id ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
+                  >
+                    {suggestingExtras === item.id ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
+                  </button>
+                </div>
               </div>
             )}
 

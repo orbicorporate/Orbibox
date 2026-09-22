@@ -28,7 +28,31 @@ type Item = {
   target_url: string | null;
   link_kind: string | null;
   layout_size: string;
+  type: string;
+  highlight_stat: string | null;
+  orbi_hook: string | null;
 };
+
+// Rótulo da categoria lá em cima da capa, só aparece quando o tipo do item
+// tem um nome de sobra que faça sentido mostrar (produto/serviço); link
+// solto não ganha rótulo, não ajudaria em nada.
+const EYEBROW_LABEL: Record<string, string> = { product: "Produtos", service: "Serviços" };
+
+// A Orbi já escreve a descrição de serviços em bullets ("• algo"), um por
+// linha, quando melhora o texto. Em vez de mostrar isso como parágrafo cru,
+// separa em intro (linhas soltas) + checklist (linhas com bullet) e desenha
+// como lista com check, se e só se existirem bullets de verdade. Produto
+// simples, sem bullet nenhum, continua exatamente como sempre foi: parágrafo.
+function splitDescription(description: string | null): { intro: string[]; checklist: string[] } {
+  const lines = (description ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+  const intro: string[] = [];
+  const checklist: string[] = [];
+  for (const line of lines) {
+    if (line.startsWith("•")) checklist.push(line.replace(/^•\s*/, ""));
+    else intro.push(line);
+  }
+  return { intro, checklist };
+}
 
 export function ProductView({ business, item }: { business: Business; item: Item }) {
   const [active, setActive] = useState(0);
@@ -136,17 +160,61 @@ export function ProductView({ business, item }: { business: Business; item: Item
       </div>
 
       <div className="px-6 pt-6">
-        {item.brand_label && <p className="text-[13px] uppercase tracking-wide text-text-tertiary">{item.brand_label}</p>}
+        {(item.brand_label || EYEBROW_LABEL[item.type]) && (
+          <p className="text-[13px] font-medium uppercase tracking-wide text-text-tertiary">
+            {item.brand_label || EYEBROW_LABEL[item.type]}
+          </p>
+        )}
         <h1 className="mt-1 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight">{item.title}</h1>
         {formatPrice(item) && (
           <p className="mt-2 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{formatPrice(item)}</p>
         )}
-        {item.description && (
-          <div className="mt-4 flex flex-col gap-2 text-[15px] leading-relaxed text-text-secondary">
-            {item.description.split("\n").filter((line) => line.trim()).map((line, i) => (
-              <p key={i}>{line}</p>
-            ))}
+
+        {(() => {
+          const { intro, checklist } = splitDescription(item.description);
+          return (
+            <>
+              {intro.length > 0 && (
+                <div className="mt-4 flex flex-col gap-2 text-[15px] leading-relaxed text-text-secondary">
+                  {intro.map((line, i) => <p key={i}>{line}</p>)}
+                </div>
+              )}
+              {checklist.length > 0 && (
+                <div className="mt-5">
+                  <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">O que está incluído</p>
+                  <div className="mt-2.5 flex flex-col">
+                    {checklist.map((line, i) => (
+                      <div key={i} className={`flex items-start gap-2.5 py-2.5 text-[14.5px] leading-snug ${i > 0 ? "border-t border-divider" : ""}`}>
+                        <span className="orbi-gradient mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px]">✓</span>
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          );
+        })()}
+
+        {item.highlight_stat?.trim() && (
+          <div className="mt-5 flex items-center gap-2 text-[13.5px] text-text-secondary">
+            <span aria-hidden>✦</span>
+            {item.highlight_stat}
           </div>
+        )}
+
+        {item.orbi_hook?.trim() && (
+          <Link
+            href={`/${business.slug}?chat=1&msg=${encodeURIComponent(item.orbi_hook)}`}
+            onClick={() => trackClick({ businessId: business.id, kind: "zara", contentItemId: item.id })}
+            className="mt-5 flex flex-col gap-1 rounded-2xl bg-surface-soft px-4 py-3.5"
+          >
+            <span className="flex items-center gap-1.5 text-[12px] font-medium text-text-tertiary">
+              <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
+              Orbi · IA da {business.name}
+            </span>
+            <span className="text-[14px] font-medium">{item.orbi_hook}</span>
+          </Link>
         )}
 
         <div className="mt-7 flex flex-col gap-2.5">
@@ -176,39 +244,45 @@ export function ProductView({ business, item }: { business: Business; item: Item
               Ver no site ↗
             </a>
           )}
-          {business.contact_whatsapp && (
-            <a
-              href={whatsappLink(business.contact_whatsapp, `Olá! Vi "${item.title}" no ${business.name}.`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", contentItemId: item.id })}
-              className="rounded-full border border-divider py-3.5 text-center text-[14px] font-medium"
-            >
-              WhatsApp
-            </a>
-          )}
-          {business.contact_phone && (
-            <a
-              href={`tel:${business.contact_phone.replace(/\D/g, "")}`}
-              onClick={() => trackClick({ businessId: business.id, kind: "ligar", contentItemId: item.id })}
-              className="rounded-full border border-divider py-3.5 text-center text-[14px] font-medium"
-            >
-              Ligar
-            </a>
-          )}
-          {business.contact_email && (
-            <a
-              href={`mailto:${business.contact_email}`}
-              onClick={() => trackClick({ businessId: business.id, kind: "email", contentItemId: item.id })}
-              className="rounded-full border border-divider py-3.5 text-center text-[14px] text-text-secondary"
-            >
-              E-mail
-            </a>
-          )}
-          {!item.target_url && !business.contact_whatsapp && !business.contact_phone && !business.contact_email && (
-            <Link href={`/${business.slug}`} className="rounded-full border border-divider py-3.5 text-center text-[14px] font-medium">
-              Voltar para o Orbibox
-            </Link>
+
+          {(business.contact_whatsapp || business.contact_phone || business.contact_email) ? (
+            <div className="flex gap-2.5">
+              {business.contact_whatsapp && (
+                <a
+                  href={whatsappLink(business.contact_whatsapp, `Olá! Vi "${item.title}" no ${business.name}.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", contentItemId: item.id })}
+                  className="flex-1 rounded-full border border-divider py-3 text-center text-[13.5px] font-medium"
+                >
+                  WhatsApp
+                </a>
+              )}
+              {business.contact_phone && (
+                <a
+                  href={`tel:${business.contact_phone.replace(/\D/g, "")}`}
+                  onClick={() => trackClick({ businessId: business.id, kind: "ligar", contentItemId: item.id })}
+                  className="flex-1 rounded-full border border-divider py-3 text-center text-[13.5px] font-medium"
+                >
+                  Ligar
+                </a>
+              )}
+              {business.contact_email && (
+                <a
+                  href={`mailto:${business.contact_email}`}
+                  onClick={() => trackClick({ businessId: business.id, kind: "email", contentItemId: item.id })}
+                  className="flex-1 rounded-full border border-divider py-3 text-center text-[13.5px] text-text-secondary"
+                >
+                  E-mail
+                </a>
+              )}
+            </div>
+          ) : (
+            !item.target_url && (
+              <Link href={`/${business.slug}`} className="rounded-full border border-divider py-3.5 text-center text-[14px] font-medium">
+                Voltar para o Orbibox
+              </Link>
+            )
           )}
         </div>
       </div>
