@@ -647,7 +647,7 @@ function CenaChat() {
           <div className="apr-pop flex items-center gap-2.5" style={d(0)}>
             <OrbiParticleSphere size={36} className="rounded-full" />
             <div>
-              <p className="text-[14px] font-semibold leading-tight">Orbi</p>
+              <p className="text-[14px] font-semibold leading-tight">Sua IA</p>
               <p className="text-[11px] text-text-tertiary">IA do Café Mirante</p>
             </div>
           </div>
