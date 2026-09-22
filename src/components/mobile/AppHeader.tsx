@@ -36,8 +36,23 @@ const MENU_ITEMS = [
   },
 ] as const;
 
-export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = false }: { unseenConversas?: number; progressPct?: number; isMaster?: boolean }) {
+export function AppHeader({
+  unseenConversas = 0,
+  progressPct = 100,
+  isMaster = false,
+  pendencias = [],
+}: {
+  unseenConversas?: number;
+  progressPct?: number;
+  isMaster?: boolean;
+  /** Fila de "o que falta" (mesma do checklist/insights), pro sino avisar
+   * além de conversa não vista, o objetivo é a pessoa nunca ficar perdida
+   * sobre o que fazer, mesmo sumindo dias e voltando depois. */
+  pendencias?: { title: string; href: string }[];
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [sinoOpen, setSinoOpen] = useState(false);
+  const totalSino = unseenConversas + pendencias.length;
 
   return (
     <header className={`sticky top-0 flex items-center justify-between bg-background-main/90 px-6 py-4 backdrop-blur ${menuOpen ? "z-50" : "z-20"}`}>
@@ -50,22 +65,81 @@ export function AppHeader({ unseenConversas = 0, progressPct = 100, isMaster = f
       </div>
       <div className="relative flex items-center gap-2">
         <ProgressBadge pct={progressPct} />
-        {/* Sino de notificação, pisca quando tem conversa que ainda não foi
-            vista. Ao lado do ícone de configurações, sempre alinhado. */}
-        <Link href="/admin/conversas" className="relative flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft" aria-label="Talks">
+        {/* Sino de notificação: junta conversa não vista com pendências do
+            negócio (checklist, fotos faltando, etc), pra pessoa nunca ficar
+            sem saber o que fazer, mesmo voltando depois de dias sumida. */}
+        <button
+          type="button"
+          onClick={() => { setSinoOpen((v) => !v); setMenuOpen(false); }}
+          aria-label="Notificações e pendências"
+          aria-expanded={sinoOpen}
+          className="relative flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft"
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M12 3a5 5 0 0 0-5 5v3.2c0 .7-.25 1.36-.7 1.9L5 15h14l-1.3-1.9a3 3 0 0 1-.7-1.9V8a5 5 0 0 0-5-5Z" />
             <path d="M9.5 18a2.5 2.5 0 0 0 5 0" />
           </svg>
-          {unseenConversas > 0 && (
+          {totalSino > 0 && (
             <span className="notif-badge absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
-              {unseenConversas > 9 ? "9+" : unseenConversas}
+              {totalSino > 9 ? "9+" : totalSino}
             </span>
           )}
-        </Link>
+        </button>
+
+        {sinoOpen && (
+          <>
+            <button
+              aria-label="Fechar notificações"
+              onClick={() => setSinoOpen(false)}
+              className="fixed inset-0 z-40 cursor-default bg-on-background/10 backdrop-blur-[2px]"
+            />
+            <div className="absolute right-0 top-12 z-50 w-[300px] overflow-hidden rounded-[24px] bg-surface-white p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
+              <p className="px-2 pb-2 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Pendências</p>
+
+              {totalSino === 0 ? (
+                <p className="px-2 pb-2 text-[13px] text-text-secondary">Tudo em dia por aqui! ✨</p>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {unseenConversas > 0 && (
+                    <Link
+                      href="/admin/conversas"
+                      onClick={() => setSinoOpen(false)}
+                      className="flex items-center justify-between gap-3 rounded-2xl px-3 py-3 active:bg-surface-soft"
+                    >
+                      <span className="text-[13.5px] font-medium">
+                        {unseenConversas} {unseenConversas === 1 ? "conversa nova" : "conversas novas"} em Talks
+                      </span>
+                      <span className="text-text-tertiary">›</span>
+                    </Link>
+                  )}
+                  {pendencias.slice(0, 4).map((p) => (
+                    <Link
+                      key={p.href + p.title}
+                      href={p.href}
+                      onClick={() => setSinoOpen(false)}
+                      className="flex items-center justify-between gap-3 rounded-2xl px-3 py-3 active:bg-surface-soft"
+                    >
+                      <span className="min-w-0 truncate text-[13.5px] font-medium">{p.title}</span>
+                      <span className="shrink-0 text-text-tertiary">›</span>
+                    </Link>
+                  ))}
+                  {pendencias.length > 4 && (
+                    <Link
+                      href="/admin/pendencias"
+                      onClick={() => setSinoOpen(false)}
+                      className="mt-1 rounded-2xl bg-surface-soft px-3 py-2.5 text-center text-[12.5px] font-semibold text-text-secondary"
+                    >
+                      Ver tudo ({pendencias.length})
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
         <button
-          onClick={() => setMenuOpen((v) => !v)}
+          onClick={() => { setMenuOpen((v) => !v); setSinoOpen(false); }}
           title="Configurações"
           aria-label="Configurações"
           aria-expanded={menuOpen}

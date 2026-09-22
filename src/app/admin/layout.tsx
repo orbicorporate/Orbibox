@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/mobile/BottomNav";
 import { AdminOrbiFloating } from "./AdminOrbiFloating";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { getBusinessProgress } from "@/lib/progress";
+import { getPendingInsights } from "@/lib/insights";
 import { TourOverlay } from "@/components/tour/TourOverlay";
 import { ReferralCelebration } from "./ReferralCelebration";
 
@@ -103,6 +104,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .maybeSingle();
 
   const headerProgress = await getBusinessProgress(business.id);
+  // Mesma fila de pendências usada na Home e em "/admin/pendencias", agora
+  // também alimenta o sino do header em toda tela do painel.
+  const headerPendencias = (await getPendingInsights(business.id)).map((i) => ({ title: i.title, href: i.href }));
 
   // Dados pra Orbi flutuante do painel: plano (define o comportamento) + o que
   // ela precisa pra o teste (nome, cores, produtos, endereço).
@@ -115,7 +119,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background-main">
-      <AppHeader unseenConversas={(unseenConversas ?? 0) + (unseenNotifs ?? 0)} progressPct={headerProgress.pct} isMaster={!!isSuper} />
+      <AppHeader
+        unseenConversas={(unseenConversas ?? 0) + (unseenNotifs ?? 0)}
+        progressPct={headerProgress.pct}
+        isMaster={!!isSuper}
+        pendencias={headerPendencias}
+      />
       {celebrateNotif && (
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />
       )}
