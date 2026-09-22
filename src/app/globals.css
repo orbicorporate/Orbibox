@@ -359,18 +359,18 @@ body {
   .orbi-avatar-ring, .orbi-avatar-shine { animation: none; }
 }
 
-/* Aro fininho e luminoso, mesmo verde do gradiente da marca, em volta de
-   um ícone pra chamar atenção sem gritar (ex: aba da Vitrine na navegação
-   de baixo). Respira devagar, nunca pisca forte. */
+/* Linha fininha e verde, mesmo tom do gradiente da marca, em volta de um
+   ícone pra chamar atenção sem gritar (ex: aba da Vitrine na navegação de
+   baixo). Só o contorno, sem brilho espalhado, respirando bem de leve. */
 @keyframes navGlowRing {
-  0%, 100% { box-shadow: 0 0 0 1.5px rgba(183, 243, 74, 0.85), 0 0 6px 1px rgba(183, 243, 74, 0.35); }
-  50% { box-shadow: 0 0 0 1.5px rgba(183, 243, 74, 0.55), 0 0 10px 3px rgba(183, 243, 74, 0.55); }
+  0%, 100% { box-shadow: 0 0 0 1px rgba(183, 243, 74, 0.9); }
+  50% { box-shadow: 0 0 0 1px rgba(183, 243, 74, 0.45); }
 }
 .nav-glow-ring {
   animation: navGlowRing 2.8s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .nav-glow-ring { animation: none; box-shadow: 0 0 0 1.5px rgba(183, 243, 74, 0.75); }
+  .nav-glow-ring { animation: none; box-shadow: 0 0 0 1px rgba(183, 243, 74, 0.7); }
 }
 
 /* Some carrosséis (fotos, capa, diferenciais) usam scroll nativo com
