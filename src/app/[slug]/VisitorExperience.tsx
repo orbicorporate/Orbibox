@@ -531,7 +531,7 @@ export function VisitorExperience({
                     {showOwnerControls && colorPickerBox === o.key && (
                       <div
                         className="absolute right-2.5 top-11 z-20 flex flex-wrap gap-2 rounded-2xl bg-white p-3 shadow-[0_8px_24px_rgba(17,19,24,0.18)]"
-                        style={{ width: 176 }}
+                        style={{ width: 224 }}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
@@ -542,7 +542,11 @@ export function VisitorExperience({
                         >
                           {!o.color && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111318" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
                         </button>
-                        {["#111318", "#C0392B", "#C2650A", "#1F7A3D", "#0E7490", "#1D4ED8", "#6D28D9", "#B0309E"].map((c) => (
+                        {[
+                          "#111318", "#C0392B", "#C2650A", "#1F7A3D", "#0E7490", "#1D4ED8", "#6D28D9", "#B0309E",
+                          // Cores premium: tons mais profundos/acinzentados, acabamento joia.
+                          "#1B2A4A", "#6E1F3A", "#0B6B4F", "#B8860B", "#C97064", "#3A3F44", "#0F4C5C", "#5B2A6E",
+                        ].map((c) => (
                           <button
                             key={c}
                             type="button"
