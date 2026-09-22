@@ -204,6 +204,23 @@ function vitrineSlide(inspire: InspireParaApresentacao, temaId: string, nome: st
   return { rotulo: "Vitrine", titulo, frase, checks, cor, cena: Cena, duracaoMs: 9000 };
 }
 
+/** Slide de detalhe do produto, logo depois do Portfólio: mostra a página
+ * que abre quando o visitante toca num item da vitrine. Usa uma foto real
+ * do tema arquitetura quando existe. */
+function produtoSlide(inspire: InspireParaApresentacao): Slide {
+  const fotos = inspire["arquitetura"]?.photos ?? [];
+  const foto = fotos.find((f) => f.title === "Living Panorâmico Integrado") ?? fotos[1] ?? fotos[0];
+  return {
+    rotulo: "Produto",
+    titulo: "Cada item, sua própria página",
+    frase: "Fotos, preço, diferenciais e botão de contato, tudo num só lugar.",
+    checks: ["Diferenciais em destaque, não só a foto", "Botão direto pro WhatsApp ou pro site"],
+    cor: "#5B4B3A",
+    cena: () => <CenaProdutoDetalhe foto={foto} />,
+    duracaoMs: 10000,
+  };
+}
+
 function montarSlides(finalHref: string, finalLabel: string, inspire: InspireParaApresentacao): Slide[] {
   return [
     {
@@ -230,6 +247,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       "Portfólio, serviços e um jeito fácil de pedir orçamento.",
       "#5B4B3A", ["Apresente seus trabalhos", "Página exclusiva por item"],
     ),
+    produtoSlide(inspire),
     {
       rotulo: "IA pessoal",
       titulo: "Agente IA da sua marca",
@@ -535,6 +553,71 @@ function CenaVitrineFotos({ temaId, nome, photos, titleStyle }: { temaId: string
           </ScrollLento>
         </div>
       </div>
+    </TelaReal>
+  );
+}
+
+/** Página de detalhe do item, no mesmo layout de verdade da ProductView:
+ * foto grande, marca, título, preço, diferenciais e os botões de contato
+ * (Orbi, site, WhatsApp). Reaproveita uma foto real do Inspire-se quando
+ * existe, senão cai num degradê no lugar da imagem. */
+function CenaProdutoDetalhe({ foto }: { foto?: ThemePhoto }) {
+  const titulo = foto?.title || "Living Panorâmico Integrado";
+  const diferenciais = [
+    "Vidro do piso ao teto, com vista panorâmica",
+    "Marcenaria sob medida em madeira nobre",
+    "Projeto de iluminação e automação inclusos",
+  ];
+  return (
+    <TelaReal>
+      <ScrollLento dur={9.5}>
+        <div className="flex min-h-full flex-col bg-background-main pb-7">
+          <div className="apr-pop flex items-center px-4 pt-4" style={d(0)}>
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[16px]">←</div>
+          </div>
+          <div className="apr-pop px-4 pt-3" style={d(1)}>
+            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[22px] bg-surface-soft">
+              {foto?.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={foto.url} alt={titulo} className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full" style={{ background: "linear-gradient(135deg,#CFCBC3,#5B4B3A)" }} />
+              )}
+            </div>
+            <div className="mt-3 flex justify-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-on-background" />
+              <span className="h-1.5 w-1.5 rounded-full bg-on-background/25" />
+              <span className="h-1.5 w-1.5 rounded-full bg-on-background/25" />
+            </div>
+          </div>
+          <div className="px-6 pt-5">
+            <p className="apr-pop text-[12px] uppercase tracking-wide text-text-tertiary" style={d(2)}>Studio Design</p>
+            <h1 className="apr-pop mt-1 font-[family-name:var(--font-manrope)] text-[22px] font-medium leading-tight" style={d(2.5)}>{titulo}</h1>
+            <p className="apr-pop mt-2 font-[family-name:var(--font-manrope)] text-[18px] font-medium" style={d(3)}>Sob consulta</p>
+            <div className="mt-4 flex flex-col gap-2">
+              {diferenciais.map((diferencial, i) => (
+                <div key={diferencial} className="apr-pop flex items-start gap-2" style={d(4 + i * 0.6)}>
+                  <span className="mt-[1px]">
+                    <CheckTag cor="#5B4B3A" />
+                  </span>
+                  <p className="text-[13px] leading-snug text-text-secondary">{diferencial}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-col gap-2.5">
+              <div className="apr-pop rounded-full orbi-gradient py-3 text-center text-[13.5px] font-medium text-on-background" style={d(6.5)}>
+                ✦ Falar com a Orbi
+              </div>
+              <div className="apr-pop rounded-full bg-button-primary py-3 text-center text-[13.5px] font-medium text-white" style={d(7)}>
+                Ver no site ↗
+              </div>
+              <div className="apr-pop rounded-full border border-divider py-3 text-center text-[13.5px] font-medium" style={d(7.5)}>
+                WhatsApp
+              </div>
+            </div>
+          </div>
+        </div>
+      </ScrollLento>
     </TelaReal>
   );
 }
