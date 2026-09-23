@@ -27,7 +27,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[440px]">
-      <div className="m-4 flex items-center justify-around rounded-[28px] border border-divider bg-surface-white/95 px-2 py-3 shadow-[0_8px_30px_rgba(17,19,24,0.10)] backdrop-blur">
+      <div className="m-4 flex items-center justify-around rounded-[28px] border border-divider bg-surface-white/75 px-2 py-3 shadow-[0_8px_30px_rgba(17,19,24,0.10)] backdrop-blur-xl">
         {TABS.map((tab) => {
           const active =
             tab.href === "/admin" ? pathname === "/admin" : pathname.startsWith(tab.href);

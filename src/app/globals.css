@@ -61,7 +61,17 @@ html { -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
 }
 
 body {
-  background: var(--background-main);
+  /* Fundo com manchas suaves de cor (mesmo verde-lima/teal da marca, bem
+     diluído) atrás do conteúdo, referência do Nume Calendar: dá o efeito
+     glass no header e na navbar de baixo, que já são translúcidos com
+     blur, sem precisar mexer no --background-main usado como cor sólida
+     em dezenas de outros lugares do app. */
+  background-color: var(--background-main);
+  background-image:
+    radial-gradient(ellipse 620px 420px at 8% -6%, rgba(183, 243, 74, 0.16), transparent 62%),
+    radial-gradient(ellipse 560px 460px at 100% 18%, rgba(110, 231, 216, 0.14), transparent 60%),
+    radial-gradient(ellipse 520px 420px at 6% 96%, rgba(110, 231, 216, 0.10), transparent 60%);
+  background-attachment: fixed;
   color: var(--on-background);
   touch-action: manipulation;
   /* Impede o "bounce" de borracha do iOS de vazar por trás de overlays

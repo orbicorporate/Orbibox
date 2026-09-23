@@ -55,7 +55,7 @@ export function AppHeader({
   const totalSino = unseenConversas + pendencias.length;
 
   return (
-    <header className={`sticky top-0 flex items-center justify-between bg-background-main/90 px-6 py-4 backdrop-blur ${menuOpen ? "z-50" : "z-20"}`}>
+    <header className={`sticky top-0 flex items-center justify-between bg-background-main/65 px-6 py-4 backdrop-blur-xl ${menuOpen ? "z-50" : "z-20"}`}>
       <div className="flex items-center gap-2">
         <BackButton />
         <OrbiOrb size={28} />

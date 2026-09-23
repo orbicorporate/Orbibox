@@ -118,7 +118,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { data: adminProducts } = await supabase.from("content_items").select("id, title, price, price_type, price_max, image_url, link_kind, target_url").eq("business_id", business.id).eq("status", "published").limit(20);
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background-main">
+    <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col">
       <AppHeader
         unseenConversas={(unseenConversas ?? 0) + (unseenNotifs ?? 0)}
         progressPct={headerProgress.pct}
