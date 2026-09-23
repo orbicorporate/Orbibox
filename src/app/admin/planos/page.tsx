@@ -21,6 +21,15 @@ export default async function PlanosPage({
   const { data: uso } = businessId ? await supabase.rpc("uso_ia", { p_business_id: businessId }) : { data: null };
   const u = uso as { conteudo_usado: number; conteudo_limite: number; chat_usado: number; chat_limite: number } | null;
 
+  // Vouchers resgatados no ciclo atual, 1 real cada, cobrado junto da
+  // próxima fatura da assinatura (não é cobrança avulsa na hora).
+  const billingPeriod = new Date().toISOString().slice(0, 7);
+  const { count: vouchersCobrados } = await supabase
+    .from("voucher_billing_events")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", user!.id)
+    .eq("billing_period", billingPeriod);
+
   return (
     <div className="flex flex-col">
       <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">
@@ -61,6 +70,18 @@ export default async function PlanosPage({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {!!vouchersCobrados && vouchersCobrados > 0 && (
+        <div className="mt-5 rounded-[22px] border border-divider bg-surface-white p-5">
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Vouchers resgatados este ciclo</p>
+          <p className="mt-1 text-[12px] text-text-tertiary">R$ 1,00 por voucher resgatado por um cliente, somado e cobrado junto da sua próxima fatura.</p>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold">{vouchersCobrados}</span>
+            <span className="text-[13px] text-text-secondary">{vouchersCobrados === 1 ? "voucher" : "vouchers"}</span>
+            <span className="ml-auto text-[15px] font-medium text-text-secondary">R$ {(vouchersCobrados * 1).toFixed(2).replace(".", ",")}</span>
+          </div>
         </div>
       )}
 
