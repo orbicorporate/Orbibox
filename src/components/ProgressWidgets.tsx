@@ -144,13 +144,64 @@ export function ProgressCard({ done, pct }: { done: Record<string, boolean>; pct
   );
 }
 
-// Versão em tags do mesmo checklist, uma pílula por funcionalidade. Ao
-// contrário do ProgressCard (que some quando bate 100%, faz sentido na
-// Home onde o espaço é concorrido), essa fica sempre visível: com tudo
-// pronto, declara "100% preenchido" e mostra as tags todas marcadas, em
-// vez de simplesmente desaparecer e deixar a pessoa sem essa confirmação.
-// Usada na página "/admin/pendencias", que é justamente sobre isso.
-export function ProgressTags({ done, pct }: { done: Record<string, boolean>; pct: number }) {
+// Rótulo curto de cada passo, só pra tag, o label completo (usado no
+// ProgressCard) é longo demais e força uma pílula por linha.
+const SHORT_LABELS: Record<ProgressKey, string> = {
+  marca: "Marca",
+  vitrine: "Vitrine",
+  boxes: "Boxes",
+  whatsapp: "WhatsApp",
+  capa: "Capa",
+  orbi: "Orbi IA",
+};
+
+function TagCheck() {
+  return (
+    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+// Uma pílula compacta, reaproveitada tanto pelos 6 passos do checklist
+// quanto pelos itens extras (Vouchers, Gift Card, etc). Feito reaproveita
+// a mesma cor verde de "concluído" pra tudo, pendente usa a cor própria
+// do recurso, assim dá pra escanear rápido o que falta sem ler texto.
+function Tag({ href, label, feito, bg, fg, icon }: { href: string; label: string; feito: boolean; bg: string; fg: string; icon: ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2.5 text-[12px] font-medium active:opacity-60 ${
+        feito ? "bg-[#E4F7EA] text-[#1F7A45]" : "border border-dashed border-divider text-text-secondary"
+      }`}
+    >
+      <span
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+        style={feito ? { backgroundColor: "#1F7A45", color: "#fff" } : bg === "orbi-gradient" ? undefined : { backgroundColor: bg, color: fg }}
+      >
+        {feito ? <TagCheck /> : bg === "orbi-gradient" ? (
+          <span className="orbi-gradient flex h-5 w-5 items-center justify-center rounded-full" style={{ color: fg }}>
+            {icon}
+          </span>
+        ) : (
+          icon
+        )}
+      </span>
+      {label}
+    </Link>
+  );
+}
+
+export type ProgressExtra = { key: string; label: string; href: string; done: boolean; bg: string; fg: string; icon: ReactNode };
+
+// Versão em tags do mesmo checklist, uma pílula compacta por funcionalidade
+// (várias por linha, não uma por linha). Ao contrário do ProgressCard (que
+// some quando bate 100%, faz sentido na Home onde o espaço é concorrido),
+// essa fica sempre visível: com tudo pronto, declara "100% preenchido" e
+// mostra as tags todas marcadas, em vez de simplesmente desaparecer.
+// `extras` é pra recursos opcionais que vale a pena conferir mas não
+// entram na conta do checklist básico (Vouchers, Gift Card).
+export function ProgressTags({ done, pct, extras }: { done: Record<string, boolean>; pct: number; extras?: ProgressExtra[] }) {
   const completo = pct >= 100;
 
   return (
@@ -171,45 +222,25 @@ export function ProgressTags({ done, pct }: { done: Record<string, boolean>; pct
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-1.5">
         {PROGRESS_STEPS.map((step) => {
-          const feito = done[step.key];
           const cfg = STEP_ICONS[step.key];
           return (
-            <Link
-              key={step.key}
-              href={step.href}
-              className={`flex items-center gap-1.5 rounded-full py-1.5 pl-1.5 pr-3 text-[12.5px] font-medium active:opacity-60 ${
-                feito ? "bg-[#E4F7EA] text-[#1F7A45]" : "border border-dashed border-divider text-text-secondary"
-              }`}
-            >
-              <span
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-                style={
-                  feito
-                    ? { backgroundColor: "#1F7A45", color: "#fff" }
-                    : cfg.bg === "orbi-gradient"
-                      ? undefined
-                      : { backgroundColor: cfg.bg, color: cfg.fg }
-                }
-              >
-                {feito ? (
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : cfg.bg === "orbi-gradient" ? (
-                  <span className="orbi-gradient flex h-6 w-6 items-center justify-center rounded-full" style={{ color: cfg.fg }}>
-                    {cfg.icon}
-                  </span>
-                ) : (
-                  cfg.icon
-                )}
-              </span>
-              {step.label}
-            </Link>
+            <Tag key={step.key} href={step.href} label={SHORT_LABELS[step.key]} feito={!!done[step.key]} bg={cfg.bg} fg={cfg.fg} icon={cfg.icon} />
           );
         })}
       </div>
+
+      {extras && extras.length > 0 && (
+        <div className="mt-4 border-t border-divider pt-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Vale conferir também</p>
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {extras.map((ex) => (
+              <Tag key={ex.key} href={ex.href} label={ex.label} feito={ex.done} bg={ex.bg} fg={ex.fg} icon={ex.icon} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getBusinessProgress } from "@/lib/progress";
 import { getPendingInsights, type Insight } from "@/lib/insights";
-import { ProgressTags } from "@/components/ProgressWidgets";
+import { ProgressTags, type ProgressExtra } from "@/components/ProgressWidgets";
 
 // Cada pendência cai numa dessas 4 categorias, pra lista parar de ser um
 // amontoado de itens soltos e virar algo mais didático: primeiro o básico
@@ -126,6 +126,23 @@ function DotIcon() {
     </svg>
   );
 }
+function TicketIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9a2 2 0 0 1 0 4v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 1 0-4V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2z" />
+      <path d="M13 5v2M13 11v2M13 17v2" />
+    </svg>
+  );
+}
+function GiftIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="8" width="18" height="4" rx="1" />
+      <path d="M12 8v13M5 12v7a1 1 0 001 1h12a1 1 0 001-1v-7" />
+      <path d="M12 8c-1.4 0-2.8-.9-2.8-2.3A2.2 2.2 0 0112 3.5c0 1.8-1 4.5-1 4.5zM12 8c1.4 0 2.8-.9 2.8-2.3A2.2 2.2 0 0012 3.5c0 1.8 1 4.5 1 4.5z" />
+    </svg>
+  );
+}
 
 // Ícone + cor + categoria de cada pendência, casado por palavra-chave do
 // título (vem de getPendingInsights). Mesma paleta de referência usada no
@@ -168,10 +185,35 @@ export default async function PendenciasPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
 
-  const [progress, insights] = await Promise.all([
+  const [progress, insights, voucherCountRes, giftSettingsRes] = await Promise.all([
     getBusinessProgress(businessId!),
     getPendingInsights(businessId!),
+    supabase.from("vouchers").select("id", { count: "exact", head: true }).eq("business_id", businessId!),
+    supabase.from("gift_settings").select("enabled").eq("business_id", businessId!).maybeSingle(),
   ]);
+
+  // Recursos opcionais, não entram na conta do checklist básico (não fazem
+  // sentido pra todo mundo), mas valem a pena aparecer como lembrete.
+  const extras: ProgressExtra[] = [
+    {
+      key: "vouchers",
+      label: "Vouchers",
+      href: "/admin/vouchers",
+      done: (voucherCountRes.count ?? 0) > 0,
+      bg: "#FCE8EC",
+      fg: "#C4143A",
+      icon: <TicketIcon />,
+    },
+    {
+      key: "gift",
+      label: "Gift Card",
+      href: "/admin/gift",
+      done: giftSettingsRes.data?.enabled === true,
+      bg: "#EDE6FC",
+      fg: "#6D28D9",
+      icon: <GiftIcon />,
+    },
+  ];
 
   // Agrupa mantendo a prioridade que getPendingInsights já definiu dentro
   // de cada categoria, só reordena por categoria por cima.
@@ -197,7 +239,7 @@ export default async function PendenciasPage() {
         Tudo que ainda pode melhorar no seu Orbibox, organizado por prioridade. Quanto mais completo, mais gente confia e compra.
       </p>
 
-      <ProgressTags done={progress.done} pct={progress.pct} />
+      <ProgressTags done={progress.done} pct={progress.pct} extras={extras} />
 
       {insights.length > 0 ? (
         <div className="mt-2 flex flex-col gap-7">
