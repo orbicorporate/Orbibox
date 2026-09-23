@@ -144,6 +144,76 @@ export function ProgressCard({ done, pct }: { done: Record<string, boolean>; pct
   );
 }
 
+// Versão em tags do mesmo checklist, uma pílula por funcionalidade. Ao
+// contrário do ProgressCard (que some quando bate 100%, faz sentido na
+// Home onde o espaço é concorrido), essa fica sempre visível: com tudo
+// pronto, declara "100% preenchido" e mostra as tags todas marcadas, em
+// vez de simplesmente desaparecer e deixar a pessoa sem essa confirmação.
+// Usada na página "/admin/pendencias", que é justamente sobre isso.
+export function ProgressTags({ done, pct }: { done: Record<string, boolean>; pct: number }) {
+  const completo = pct >= 100;
+
+  return (
+    <div className="mt-5 rounded-[24px] border border-divider bg-surface-white p-5">
+      <div className="flex items-center justify-between">
+        <p className="text-[15px] font-semibold">
+          {completo ? "Seu Orbibox está 100% preenchido 🎉" : "Deixe seu Orbibox completo"}
+        </p>
+        {!completo && <span className="text-[13px] font-semibold text-text-secondary">{pct}%</span>}
+      </div>
+      <p className="mt-0.5 text-[13px] text-text-tertiary">
+        {completo ? "Todo o básico está preenchido. Toque numa tag pra revisar." : "Toque numa tag pra completar o que falta."}
+      </p>
+
+      {!completo && (
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-soft">
+          <div className="h-full rounded-full orbi-gradient transition-all" style={{ width: `${pct}%` }} />
+        </div>
+      )}
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {PROGRESS_STEPS.map((step) => {
+          const feito = done[step.key];
+          const cfg = STEP_ICONS[step.key];
+          return (
+            <Link
+              key={step.key}
+              href={step.href}
+              className={`flex items-center gap-1.5 rounded-full py-1.5 pl-1.5 pr-3 text-[12.5px] font-medium active:opacity-60 ${
+                feito ? "bg-[#E4F7EA] text-[#1F7A45]" : "border border-dashed border-divider text-text-secondary"
+              }`}
+            >
+              <span
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+                style={
+                  feito
+                    ? { backgroundColor: "#1F7A45", color: "#fff" }
+                    : cfg.bg === "orbi-gradient"
+                      ? undefined
+                      : { backgroundColor: cfg.bg, color: cfg.fg }
+                }
+              >
+                {feito ? (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : cfg.bg === "orbi-gradient" ? (
+                  <span className="orbi-gradient flex h-6 w-6 items-center justify-center rounded-full" style={{ color: cfg.fg }}>
+                    {cfg.icon}
+                  </span>
+                ) : (
+                  cfg.icon
+                )}
+              </span>
+              {step.label}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // Selo fino de progresso (ProgressBadge) mudou pra /components/ProgressBadge.tsx
 //, não pode ficar aqui porque esse arquivo depende de "@/lib/progress"
 // (server-only), e o badge é usado num Client Component (o AppHeader).

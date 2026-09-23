@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getBusinessProgress } from "@/lib/progress";
 import { getPendingInsights, type Insight } from "@/lib/insights";
-import { ProgressCard } from "@/components/ProgressWidgets";
+import { ProgressTags } from "@/components/ProgressWidgets";
 
 // Cada pendência cai numa dessas 4 categorias, pra lista parar de ser um
 // amontoado de itens soltos e virar algo mais didático: primeiro o básico
@@ -197,7 +197,7 @@ export default async function PendenciasPage() {
         Tudo que ainda pode melhorar no seu Orbibox, organizado por prioridade. Quanto mais completo, mais gente confia e compra.
       </p>
 
-      <ProgressCard done={progress.done} pct={progress.pct} />
+      <ProgressTags done={progress.done} pct={progress.pct} />
 
       {insights.length > 0 ? (
         <div className="mt-2 flex flex-col gap-7">
