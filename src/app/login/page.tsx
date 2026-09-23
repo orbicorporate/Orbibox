@@ -59,6 +59,9 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
           />
+          <Link href="/esqueci-senha" className="-mt-2 self-end text-[13px] text-text-secondary underline">
+            Esqueci minha senha
+          </Link>
           {error && <p className="text-[13px] text-red-600">{error}</p>}
           <Button type="submit" disabled={loading}>
             {loading ? "Entrando…" : "Entrar"}
