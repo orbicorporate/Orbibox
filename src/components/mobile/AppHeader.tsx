@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { BackButton } from "./BackButton";
 import { ProgressBadge } from "@/components/ProgressBadge";
+import { createClient } from "@/lib/supabase/client";
 
 const MENU_ITEMS = [
   {
@@ -50,9 +52,19 @@ export function AppHeader({
    * sobre o que fazer, mesmo sumindo dias e voltando depois. */
   pendencias?: { title: string; href: string }[];
 }) {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sinoOpen, setSinoOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const totalSino = unseenConversas + pendencias.length;
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <header className={`sticky top-0 flex items-center justify-between bg-background-main/65 px-6 py-4 backdrop-blur-xl ${menuOpen ? "z-50" : "z-20"}`}>
@@ -253,6 +265,26 @@ export function AppHeader({
                   <span className="text-[#8A6A1E]/60">→</span>
                 </Link>
               )}
+
+              {/* Sair fica sempre visível aqui, é o lugar mais óbvio de
+                  procurar (menu de configurações), pra não ficar escondido
+                  lá no fundo de /admin/config. */}
+              <button
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="mt-2 flex w-full items-center gap-3 rounded-2xl px-3 py-3.5 text-left active:bg-surface-soft disabled:opacity-50"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                    <path d="M16 17l5-5-5-5" />
+                    <path d="M21 12H9" />
+                  </svg>
+                </span>
+                <span className="text-[14.5px] font-semibold text-red-600">
+                  {signingOut ? "Saindo…" : "Sair da conta"}
+                </span>
+              </button>
             </div>
           </>
         )}
