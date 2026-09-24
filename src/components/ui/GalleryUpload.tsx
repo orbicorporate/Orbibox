@@ -29,6 +29,7 @@ export function GalleryUpload({
   lockedReason,
   onFormatChosen,
   emptySlots,
+  emptyLabel,
 }: {
   value: string[];
   onChange: (urls: string[]) => void;
@@ -38,6 +39,8 @@ export function GalleryUpload({
   lockedReason?: string;
   onFormatChosen?: (ratio: Ratio) => void;
   emptySlots?: number;
+  /** Texto curto no slot vazio. Sem ele, o slot mostra o formato e a medida. */
+  emptyLabel?: string;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -136,7 +139,9 @@ export function GalleryUpload({
               ) : (
                 <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-text-tertiary">
                   <span className="text-[18px] leading-none">+</span>
-                  {lockedRatio && (
+                  {emptyLabel ? (
+                    <span className="px-1 text-center text-[11px] leading-tight">{emptyLabel}</span>
+                  ) : lockedRatio && (
                     <span className="px-1 text-center text-[10px] leading-tight">
                       {RATIOS[lockedRatio].label}
                       <br />

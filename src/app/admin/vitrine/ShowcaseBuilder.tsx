@@ -12,7 +12,7 @@ import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { PreviewVisitante } from "@/components/mobile/PreviewVisitante";
-import { RATIOS } from "@/components/ui/ImageCropModal";
+import { RATIOS, RATIO_PIXELS } from "@/components/ui/ImageCropModal";
 import { MiniTour } from "@/components/tour/MiniTour";
 import { InspireModal } from "./InspireModal";
 import { VITRINE_THEMES } from "@/lib/vitrineThemes";
@@ -1399,33 +1399,37 @@ function ItemCard({
                 <p className="inline-flex items-center gap-1.5 rounded-full bg-surface-white px-2.5 py-1 text-[12px] font-medium uppercase tracking-wide text-text-secondary">
                   📄 Conteúdo da página própria
                 </p>
-                <p className="mt-3 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Fotos e vídeos (até 6)</p>
-                <HelperText>
-                  Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos/vídeos que viram um carrossel dentro dela, pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
-                </HelperText>
-                <HelperText>
-                  {`As fotos do carrossel seguem o mesmo formato da capa (${SIZE_LABEL[size]}). Se trocar o formato do card, o carrossel acompanha.`}
-                </HelperText>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <p className="text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Fotos e vídeos</p>
+                  <span className="text-[12px] text-text-tertiary">{item.gallery_urls.length}/6 · opcional</span>
+                </div>
+                <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">
+                  {`Viram um carrossel na página deste produto. Mesmo formato da capa: ${RATIOS[COVER_RATIO_BY_SIZE[size]].label} (${RATIO_PIXELS[COVER_RATIO_BY_SIZE[size]]}).`}
+                </p>
                 <div className="mt-3">
                   <GalleryUpload
                     value={item.gallery_urls}
                     businessId={businessId}
                     lockedRatio={COVER_RATIO_BY_SIZE[size]}
                     lockedReason="Segue o mesmo formato da capa, pra mudar, troque o formato do card lá em cima."
+                    emptySlots={1}
+                    emptyLabel="Foto"
                     onChange={(urls) => save(item.id, { gallery_urls: urls })}
                   />
                 </div>
 
-                <YoutubeAdder
-                  videos={item.gallery_urls.filter((u) => isVideoUrl(u))}
-                  hint="Cole o link, ele entra na grade acima, no fim da fila. Depois é só usar as setinhas pra mover pra posição que quiser."
-                  showList={false}
-                  onAdd={(url) => {
-                    if (item.gallery_urls.includes(url)) return;
-                    save(item.id, { gallery_urls: [...item.gallery_urls, url] });
-                  }}
-                  onRemove={(url) => save(item.id, { gallery_urls: item.gallery_urls.filter((u) => u !== url) })}
-                />
+                {item.gallery_urls.length < 6 && (
+                  <YoutubeAdder
+                    compact
+                    videos={item.gallery_urls.filter((u) => isVideoUrl(u))}
+                    showList={false}
+                    onAdd={(url) => {
+                      if (item.gallery_urls.includes(url)) return;
+                      save(item.id, { gallery_urls: [...item.gallery_urls, url] });
+                    }}
+                    onRemove={(url) => save(item.id, { gallery_urls: item.gallery_urls.filter((u) => u !== url) })}
+                  />
+                )}
 
                 <div className="mt-5 border-t border-orbi-gradient-start/20 pt-4">
                   <div className="flex items-start justify-between gap-3">

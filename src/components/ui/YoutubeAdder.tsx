@@ -20,6 +20,7 @@ export function YoutubeAdder({
   label = "Vídeos (YouTube ou Reels)",
   hint = "Cole o link de um vídeo do YouTube ou de um Reels do Instagram, ele entra no mesmo carrossel, junto das fotos, sempre no formato certo (paisagem ou vertical).",
   showList = true,
+  compact = false,
 }: {
   videos: string[];
   onAdd: (url: string) => void;
@@ -28,6 +29,8 @@ export function YoutubeAdder({
   label?: string;
   hint?: string;
   showList?: boolean;
+  /** Só a linha de colar o link, sem título nem texto de ajuda. */
+  compact?: boolean;
 }) {
   const [url, setUrl] = useState("");
   const [erro, setErro] = useState(false);
@@ -47,20 +50,26 @@ export function YoutubeAdder({
   }
 
   return (
-    <div className="mt-4">
-      <p className="text-[13px] uppercase tracking-wide text-text-tertiary">{label} (opcional, até {max})</p>
-      <HelperText>{`${hint} Pode adicionar até ${max}.`}</HelperText>
+    <div className={compact ? "mt-3" : "mt-4"}>
+      {compact ? (
+        <p className="text-[12px] text-text-tertiary">Tem vídeo? Cole o link do YouTube ou Reels (até {max}).</p>
+      ) : (
+        <>
+          <p className="text-[13px] uppercase tracking-wide text-text-tertiary">{label} (opcional, até {max})</p>
+          <HelperText>{`${hint} Pode adicionar até ${max}.`}</HelperText>
+        </>
+      )}
       {cheio ? (
         <p className="mt-2 text-[13px] text-text-tertiary">Você já adicionou o máximo de {max} vídeos. Remova um pra trocar.</p>
       ) : (
-        <div className="mt-3 flex gap-2">
+        <div className={`${compact ? "mt-1.5" : "mt-3"} flex gap-2`}>
           <input
             value={url}
             onChange={(e) => { setUrl(e.target.value); setErro(false); }}
-            placeholder="https://youtube.com/watch?v=… ou instagram.com/reel/…"
-            className="min-w-0 flex-1 rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+            placeholder={compact ? "Link do vídeo" : "https://youtube.com/watch?v=… ou instagram.com/reel/…"}
+            className={`min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 ${compact ? "py-2 text-[13px]" : "py-2.5 text-[14px]"} outline-none focus:border-on-background`}
           />
-          <button onClick={add} className="shrink-0 rounded-full bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white">
+          <button onClick={add} className={`shrink-0 rounded-full bg-button-primary px-4 ${compact ? "py-2" : "py-2.5"} text-[13px] font-medium text-white`}>
             Adicionar
           </button>
         </div>
