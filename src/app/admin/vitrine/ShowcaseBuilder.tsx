@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
@@ -1428,8 +1428,11 @@ function ItemCard({
                 />
 
                 <div className="mt-5 border-t border-orbi-gradient-start/20 pt-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Diferenciais e conversa</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Diferenciais e conversa</p>
+                      <p className="mt-1 text-[12px] leading-snug text-text-tertiary">A Orbi pode preencher os dois passos abaixo pra você.</p>
+                    </div>
                     <button
                       onClick={onSuggestExtras}
                       disabled={suggestingExtras}
@@ -1438,70 +1441,80 @@ function ItemCard({
                       {suggestingExtras ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
                     </button>
                   </div>
-                  <HelperText>
-                    Preenche os dois campos abaixo de uma vez, com base no que você já contou sobre o negócio.
-                    Depois é só editar, apagar ou adicionar mais, do jeito que quiser.
-                  </HelperText>
 
-                  <p className="mt-4 text-[12px] font-medium text-text-tertiary">Diferenciais (opcional)</p>
-                  <HelperText className="mt-1">
-                    Frases curtas de prova social, uma por campo: tempo de mercado, número de clientes, certificação.
-                    Aparecem como lista com check na página do item.
-                  </HelperText>
-                  <div className="mt-1.5 flex flex-col gap-2">
-                    {(item.highlights ?? []).map((h, i) => (
-                      <div key={i} className="flex items-start gap-2">
-                        <textarea
-                          value={h}
-                          onChange={(e) => {
-                            const next = [...(item.highlights ?? [])];
-                            next[i] = e.target.value;
-                            patch(item.id, { highlights: next });
-                          }}
-                          onBlur={(e) => {
-                            const next = [...(item.highlights ?? [])];
-                            next[i] = e.target.value;
-                            const cleaned = next.filter((x) => x.trim());
-                            save(item.id, { highlights: cleaned.length ? cleaned : null });
-                          }}
-                          placeholder={`Diferencial ${i + 1}, ex: 18 anos de experiência`}
-                          maxLength={90}
-                          rows={1}
-                          className="min-w-0 flex-1 resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] leading-snug outline-none focus:border-on-background"
-                        />
+                  {/* Passo 1: diferenciais, numerados na ordem em que aparecem na página. */}
+                  <div className="mt-4 rounded-2xl bg-surface-white/70 p-3.5">
+                    <div className="flex items-center gap-2">
+                      <StepNumber n={1} />
+                      <p className="flex-1 text-[14px] font-medium text-on-background">Diferenciais</p>
+                      <span className="text-[12px] text-text-tertiary">{(item.highlights ?? []).length}/6 · opcional</span>
+                    </div>
+                    <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">
+                      Frases curtas que provam valor (tempo de mercado, clientes, certificação). Aparecem com ✓ na página do produto, nesta ordem.
+                    </p>
+                    <div className="mt-3 flex flex-col gap-2">
+                      {(item.highlights ?? []).map((h, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-2.5 w-5 shrink-0 text-right text-[13px] font-medium tabular-nums text-text-tertiary">{i + 1}.</span>
+                          <AutoTextarea
+                            value={h}
+                            onChange={(v) => {
+                              const next = [...(item.highlights ?? [])];
+                              next[i] = v;
+                              patch(item.id, { highlights: next });
+                            }}
+                            onBlur={(v) => {
+                              const next = [...(item.highlights ?? [])];
+                              next[i] = v;
+                              const cleaned = next.filter((x) => x.trim());
+                              save(item.id, { highlights: cleaned.length ? cleaned : null });
+                            }}
+                            placeholder="ex: 18 anos de experiência"
+                            maxLength={90}
+                          />
+                          <button
+                            onClick={() => {
+                              const next = (item.highlights ?? []).filter((_, idx) => idx !== i);
+                              save(item.id, { highlights: next.length ? next : null });
+                            }}
+                            aria-label={`Remover diferencial ${i + 1}`}
+                            className="mt-2 shrink-0 px-1 text-[13px] text-text-tertiary"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      {(item.highlights?.length ?? 0) < 6 && (
                         <button
-                          onClick={() => {
-                            const next = (item.highlights ?? []).filter((_, idx) => idx !== i);
-                            save(item.id, { highlights: next.length ? next : null });
-                          }}
-                          aria-label="Remover diferencial"
-                          className="mt-1.5 shrink-0 text-[13px] text-text-tertiary"
+                          onClick={() => patch(item.id, { highlights: [...(item.highlights ?? []), ""] })}
+                          className="ml-7 self-start rounded-full border border-dashed border-divider px-3.5 py-1.5 text-[12px] font-medium text-text-secondary"
                         >
-                          ✕
+                          + Adicionar diferencial
                         </button>
-                      </div>
-                    ))}
-                    {(item.highlights?.length ?? 0) < 6 && (
-                      <button
-                        onClick={() => patch(item.id, { highlights: [...(item.highlights ?? []), ""] })}
-                        className="self-start rounded-full border border-dashed border-divider px-3.5 py-1.5 text-[12px] font-medium text-text-secondary"
-                      >
-                        + Adicionar diferencial
-                      </button>
-                    )}
+                      )}
+                    </div>
                   </div>
 
-                  <p className="mt-4 text-[12px] font-medium text-text-tertiary">Pergunta da Orbi (opcional)</p>
-                  <HelperText className="mt-1">Aparece como um convite pra conversa, logo antes do botão de contato.</HelperText>
-                  <textarea
-                    value={item.orbi_hook ?? ""}
-                    onChange={(e) => patch(item.id, { orbi_hook: e.target.value })}
-                    onBlur={(e) => save(item.id, { orbi_hook: e.target.value || null })}
-                    placeholder="ex: Quer saber se cabe no seu espaço?"
-                    maxLength={100}
-                    rows={2}
-                    className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] leading-snug outline-none focus:border-on-background"
-                  />
+                  {/* Passo 2: a pergunta que abre conversa. */}
+                  <div className="mt-3 rounded-2xl bg-surface-white/70 p-3.5">
+                    <div className="flex items-center gap-2">
+                      <StepNumber n={2} />
+                      <p className="flex-1 text-[14px] font-medium text-on-background">Pergunta da Orbi</p>
+                      <span className="text-[12px] text-text-tertiary">opcional</span>
+                    </div>
+                    <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">
+                      Um convite pra conversa, que aparece logo antes do botão de contato.
+                    </p>
+                    <div className="mt-3">
+                      <AutoTextarea
+                        value={item.orbi_hook ?? ""}
+                        onChange={(v) => patch(item.id, { orbi_hook: v })}
+                        onBlur={(v) => save(item.id, { orbi_hook: v || null })}
+                        placeholder="ex: Quer saber se cabe no seu espaço?"
+                        maxLength={100}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -1768,5 +1781,49 @@ function ItemCard({
         </div>
       )}
     </div>
+  );
+}
+
+function StepNumber({ n }: { n: number }) {
+  return (
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-on-background text-[11px] font-semibold text-white">
+      {n}
+    </span>
+  );
+}
+
+/** Campo de texto que cresce com o conteúdo, sem cortar a primeira linha
+ * como acontecia com o textarea de uma linha fixa. */
+function AutoTextarea({
+  value,
+  onChange,
+  onBlur,
+  placeholder,
+  maxLength,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onBlur: (v: string) => void;
+  placeholder?: string;
+  maxLength?: number;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight + 2}px`;
+  }, [value]);
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={(e) => onBlur(e.target.value)}
+      placeholder={placeholder}
+      maxLength={maxLength}
+      rows={1}
+      className="w-full min-w-0 flex-1 resize-none overflow-hidden rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] leading-snug outline-none focus:border-on-background"
+    />
   );
 }
