@@ -1119,7 +1119,6 @@ function ItemCard({
   promptFn: (options: { title: string; placeholder?: string }) => Promise<string | null>;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const [footerPaletteTab, setFooterPaletteTab] = useState<string>(brandColors.length > 0 ? "Marca" : PALETTE_GROUPS[0].name);
   const [justSaved, setJustSaved] = useState(false);
   const [lastUrl, setLastUrl] = useState(item.image_url);
   if (item.image_url !== lastUrl) {
@@ -1546,52 +1545,54 @@ function ItemCard({
               </div>
             </div>
 
-            {item.image_url && (
-              <div>
-                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
-                  Cor do rodapé · independente da cor do box acima
-                </p>
-                <div className="mt-2 flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
-                  <button onClick={() => save(item.id, { footer_color: null })} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${!item.footer_color ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>Branco (padrão)</button>
-                  {brandColors.length > 0 && (
-                    <button onClick={() => setFooterPaletteTab("Marca")} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${footerPaletteTab === "Marca" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>✦ Marca</button>
-                  )}
-                  {PALETTE_GROUPS.map((g) => (
-                    <button key={g.name} onClick={() => setFooterPaletteTab(g.name)} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${footerPaletteTab === g.name ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>{g.name}</button>
-                  ))}
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2.5">
-                  {footerPaletteTab === "Marca"
-                    ? brandColors.map((bc, i) => (
-                        <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { footer_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.footer_color?.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: bc.hex }} />
-                      ))
-                    : Object.entries(PALETTE_GROUPS.find((g) => g.name === footerPaletteTab)?.colors ?? {}).map(([key, cc]) => (
-                        <button key={key} onClick={() => save(item.id, { footer_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.footer_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
-                      ))}
-                </div>
-              </div>
-            )}
-
+            {/* Com foto, primeiro decide onde vai o nome. Só existe rodapé no
+                modo "faixa", então a cor dele só aparece nesse caso, usando a
+                mesma paleta já escolhida em "Cor do box" (sem abas repetidas). */}
             {item.image_url && (
               <div>
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do card</p>
                 <div className="mt-2 flex gap-2">
-                  <button
-                    onClick={() => save(item.id, { title_placement: "faixa" })}
-                    className={`flex-1 rounded-2xl border-2 px-3 py-2.5 text-[13px] font-medium ${(item.title_placement ?? "faixa") === "faixa" ? "border-on-background" : "border-divider text-text-secondary"}`}
-                  >
-                    Na faixa branca
-                  </button>
-                  <button
-                    onClick={() => save(item.id, { title_placement: "sobre" })}
-                    className={`flex-1 rounded-2xl border-2 px-3 py-2.5 text-[13px] font-medium ${item.title_placement === "sobre" ? "border-on-background" : "border-divider text-text-secondary"}`}
-                  >
-                    Sobre a imagem
-                  </button>
+                  {([
+                    { v: "faixa", t: "Num rodapé", d: "Faixa embaixo da foto" },
+                    { v: "sobre", t: "Sobre a foto", d: "Com degradê, mais editorial" },
+                  ] as const).map(({ v, t, d }) => {
+                    const ativo = (item.title_placement ?? "faixa") === v;
+                    return (
+                      <button
+                        key={v}
+                        onClick={() => save(item.id, { title_placement: v })}
+                        className={`flex flex-1 flex-col items-start rounded-2xl border-2 px-3 py-2.5 text-left ${ativo ? "border-on-background" : "border-divider"}`}
+                      >
+                        <span className={`text-[13px] font-medium ${ativo ? "" : "text-text-secondary"}`}>{t}</span>
+                        <span className="text-[11px] text-text-tertiary">{d}</span>
+                      </button>
+                    );
+                  })}
                 </div>
-                <p className="mt-1 text-[11px] text-text-tertiary">
-                  &quot;Sobre a imagem&quot; deixa o nome dentro da foto, com um degradê pra ficar legível, visual mais editorial.
-                </p>
+
+                {(item.title_placement ?? "faixa") === "faixa" && (
+                  <div className="mt-4">
+                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor do rodapé</p>
+                    <p className="mt-1 text-[11px] text-text-tertiary">
+                      {`Branco ou uma cor da paleta escolhida acima (${paletteTab === "Marca" ? "Marca" : paletteTab}).`}
+                    </p>
+                    <div className="mt-2.5 flex flex-wrap gap-2.5">
+                      <button
+                        onClick={() => save(item.id, { footer_color: null })}
+                        aria-label="Branco"
+                        title="Branco"
+                        className={`h-10 w-10 rounded-full border bg-white ${!item.footer_color ? "border-2 border-on-background" : "border-divider"}`}
+                      />
+                      {paletteTab === "Marca"
+                        ? brandColors.map((bc, i) => (
+                            <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { footer_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.footer_color?.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: bc.hex }} />
+                          ))
+                        : Object.entries(PALETTE_GROUPS.find((g) => g.name === paletteTab)?.colors ?? {}).map(([key, cc]) => (
+                            <button key={key} onClick={() => save(item.id, { footer_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.footer_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
+                          ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
