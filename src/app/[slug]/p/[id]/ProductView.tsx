@@ -62,10 +62,9 @@ export function ProductView({ business, item }: { business: Business; item: Item
   // A capa (image_url) só aparece sozinha quando não há carrossel próprio , 
   // se já existem outras fotos (gallery_urls), elas bastam e a capa não se repete.
   const images = item.gallery_urls.length > 0 ? item.gallery_urls : [item.image_url].filter((u): u is string => !!u);
-  // Carrossel próprio (gallery_urls) é sempre retrato 4:5, igual ao recorte
-  // travado no admin. Só quando cai na capa sozinha é que segue o formato do
-  // card, que é o formato em que a capa foi recortada.
-  const ratio = item.gallery_urls.length > 0 ? "retrato" : COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
+  // Carrossel e capa seguem o mesmo formato do card, igual ao recorte
+  // travado no admin, pra página do item ficar coerente com a Vitrine.
+  const ratio = COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
   const aspectRatio = RATIOS[ratio].value;
 
   // Abrir a página do item já conta como interesse, mesmo tipo de clique de sempre.

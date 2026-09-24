@@ -1404,14 +1404,14 @@ function ItemCard({
                   Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos/vídeos que viram um carrossel dentro dela, pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
                 </HelperText>
                 <HelperText>
-                  {`Repara: esse carrossel é sempre em formato retrato (4:5, 1080 x 1350 px), diferente da foto de capa lá em cima, que segue o formato do card (${SIZE_LABEL[sizeOf(item.layout_size)]}). São duas coisas independentes.`}
+                  {`As fotos do carrossel seguem o mesmo formato da capa (${SIZE_LABEL[size]}). Se trocar o formato do card, o carrossel acompanha.`}
                 </HelperText>
                 <div className="mt-3">
                   <GalleryUpload
                     value={item.gallery_urls}
                     businessId={businessId}
-                    lockedRatio="retrato"
-                    lockedReason="As fotos da galeria são sempre verticais (retrato), pra manter o carrossel uniforme."
+                    lockedRatio={COVER_RATIO_BY_SIZE[size]}
+                    lockedReason="Segue o mesmo formato da capa, pra mudar, troque o formato do card lá em cima."
                     onChange={(urls) => save(item.id, { gallery_urls: urls })}
                   />
                 </div>
