@@ -1404,7 +1404,7 @@ function ItemCard({
                   Você pode criar uma página exclusiva deste produto ou serviço, se quiser, e preencher até 6 fotos/vídeos que viram um carrossel dentro dela, pra mostrar de vários ângulos. É opcional: se não for fazer a página, pode pular.
                 </HelperText>
                 <HelperText>
-                  {`Repara: esse carrossel é sempre em formato retrato, diferente da foto de capa lá em cima, que segue o formato do card (${SIZE_LABEL[sizeOf(item.layout_size)]}). São duas coisas independentes.`}
+                  {`Repara: esse carrossel é sempre em formato retrato (4:5, 1080 x 1350 px), diferente da foto de capa lá em cima, que segue o formato do card (${SIZE_LABEL[sizeOf(item.layout_size)]}). São duas coisas independentes.`}
                 </HelperText>
                 <div className="mt-3">
                   <GalleryUpload

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ImageCropModal, RATIOS, type Ratio } from "./ImageCropModal";
+import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropModal";
 import { isVideoUrl, youtubeId, instagramReelId } from "@/lib/showcase";
 
 /**
@@ -134,7 +134,16 @@ export function GalleryUpload({
               ) : uploadingIndex === i ? (
                 <span className="flex h-full w-full items-center justify-center text-[10px] text-text-tertiary">…</span>
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-[18px] text-text-tertiary">+</span>
+                <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-text-tertiary">
+                  <span className="text-[18px] leading-none">+</span>
+                  {lockedRatio && (
+                    <span className="px-1 text-center text-[10px] leading-tight">
+                      {RATIOS[lockedRatio].label}
+                      <br />
+                      {RATIO_PIXELS[lockedRatio]}
+                    </span>
+                  )}
+                </span>
               )}
             </button>
             {url && (
