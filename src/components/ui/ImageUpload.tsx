@@ -88,6 +88,121 @@ export function ImageUpload({
     if (!lockedRatio) onFormatChosen?.(ratio);
   }
 
+  const fileInput = (
+    <input
+      ref={inputRef}
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={(e) => {
+        const f = e.target.files?.[0];
+        if (f) handlePick(f);
+        e.target.value = "";
+      }}
+    />
+  );
+
+  const copyPrompt = async () => {
+    await navigator.clipboard.writeText(promptTexto);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  // Capa: prévia grande no formato real, ações em cima da própria foto e o
+  // atalho de IA discreto embaixo. O avatar (logo) segue no layout compacto.
+  if (!isAvatar) {
+    const aspect = lockedRatio ? RATIOS[lockedRatio].value : 1;
+    // Formatos largos ocupam a linha toda; quadrado/retrato ficam menores
+    // pra prévia não virar uma foto gigante na tela.
+    const sizeClass = aspect >= 1.5 ? "w-full" : "w-2/3 max-w-[240px]";
+    return (
+      <div className="flex flex-col gap-2.5">
+        {value ? (
+          <div className={`relative overflow-hidden rounded-2xl bg-surface-soft ${sizeClass}`} style={{ aspectRatio: aspect }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={value} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute bottom-2 right-2 flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                disabled={uploading}
+                className="rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-medium text-on-background shadow backdrop-blur disabled:opacity-60"
+              >
+                {uploading ? "Enviando…" : "Trocar"}
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange(null)}
+                aria-label="Remover foto"
+                className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-black/60 text-[13px] text-white backdrop-blur"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-divider bg-surface-soft px-4 disabled:opacity-60 ${sizeClass}`}
+            style={{ aspectRatio: aspect, minHeight: 120 }}
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-white text-[18px] leading-none text-on-background shadow-sm">+</span>
+            <span className="text-[13px] font-medium text-on-background">{uploading ? "Enviando…" : "Enviar foto de capa"}</span>
+            <span className="text-[11.5px] text-text-tertiary">{medida}</span>
+          </button>
+        )}
+
+        {value && <p className="text-[11.5px] text-text-tertiary">Medida ideal: {medida}</p>}
+
+        {fileInput}
+        {error && <p className="text-[12px] text-red-600">{error}</p>}
+
+        {(
+          <div className={`rounded-2xl ${showPrompt ? "border border-divider bg-surface-white p-3.5" : ""}`}>
+            <button
+              type="button"
+              onClick={() => setShowPrompt((v) => !v)}
+              className={`flex w-full items-center gap-2.5 text-left ${showPrompt ? "" : "rounded-2xl border border-divider bg-surface-white px-3.5 py-3"}`}
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl orbi-gradient text-[13px] text-on-background">✦</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13.5px] font-medium text-on-background">Criar a capa com IA</span>
+                <span className="block text-[11.5px] text-text-tertiary">Prompt pronto pro ChatGPT, já na medida certa</span>
+              </span>
+              <span className={`shrink-0 text-[12px] text-text-tertiary transition-transform ${showPrompt ? "rotate-180" : ""}`}>▾</span>
+            </button>
+
+            {showPrompt && (
+              <div className="mt-3">
+                <div className="rounded-xl bg-surface-soft p-3">
+                  <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{promptTexto}</p>
+                </div>
+                <ol className="mt-3 flex flex-col gap-1 text-[12px] text-text-secondary">
+                  <li><span className="font-medium text-on-background">1.</span> Copie o prompt</li>
+                  <li><span className="font-medium text-on-background">2.</span> Cole no ChatGPT e anexe fotos suas de referência</li>
+                  <li><span className="font-medium text-on-background">3.</span> Baixe a imagem gerada e envie aqui em cima</li>
+                </ol>
+                <button
+                  type="button"
+                  onClick={copyPrompt}
+                  className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white"
+                >
+                  {copied ? "✓ Copiado" : "Copiar prompt"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {pendingFile && (
+          <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} lockedReason={lockedReason} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <p className="text-[12px] text-text-tertiary">Medida recomendada: <span className="font-medium text-text-secondary">{medida}</span></p>
