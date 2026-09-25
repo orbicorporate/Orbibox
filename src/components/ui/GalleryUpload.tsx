@@ -101,12 +101,20 @@ export function GalleryUpload({
   const vazivosVisiveis = emptySlots ?? max;
   const totalSlots = Math.min(max, value.length + vazivosVisiveis);
   const slots = Array.from({ length: totalSlots }, (_, i) => value[i] ?? null);
+  const wide = !!lockedRatio && RATIOS[lockedRatio].value > 2;
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Formato bem largo (banner) fica espremido em 3 colunas: vira uma
-          foto por linha, pra dar pra ver o recorte e ler a medida. */}
-      <div className={`grid ${lockedRatio && RATIOS[lockedRatio].value > 2 ? "grid-cols-1" : "grid-cols-3"} items-start gap-2`}>
+      {/* Formato bem largo (banner) não cabe em 3 colunas e empilhado fica
+          enorme: vira uma fileira que desliza pro lado, uma foto por vez,
+          com a próxima (ou o "+") aparecendo na beirada. */}
+      <div
+        className={
+          wide
+            ? "no-scrollbar -mx-1 flex snap-x snap-mandatory items-stretch gap-2 overflow-x-auto px-1 pb-1"
+            : "grid grid-cols-3 items-start gap-2"
+        }
+      >
         {slots.map((url, i) => {
           const video = url && isVideoUrl(url);
           const ytId = video ? youtubeId(url) : null;
@@ -119,8 +127,14 @@ export function GalleryUpload({
           return (
           <div
             key={i}
-            className="relative overflow-hidden rounded-xl border border-dashed border-divider bg-surface-soft"
-            style={{ aspectRatio: videoRatio ?? (lockedRatio ? RATIOS[lockedRatio].value : 1) }}
+            className={`relative overflow-hidden rounded-xl border border-dashed border-divider bg-surface-soft ${
+              wide ? `shrink-0 snap-start ${url ? "w-[86%]" : value.length > 0 ? "w-[34%]" : "w-full"}` : ""
+            }`}
+            style={
+              wide && !url && value.length > 0
+                ? undefined // o "+" estica na altura das fotos, sem proporção própria
+                : { aspectRatio: videoRatio ?? (lockedRatio ? RATIOS[lockedRatio].value : 1) }
+            }
           >
             <button type="button" onClick={() => openPicker(i)} className="absolute inset-0">
               {video ? (

@@ -761,7 +761,7 @@ export function ShowcaseBuilder({
             max={6}
             emptySlots={1}
             lockedRatio="banner"
-            emptyLabel={coverUrls.length === 0 ? "Adicionar foto de capa · 1920 x 830 px" : "Adicionar outra foto"}
+            emptyLabel={coverUrls.length === 0 ? "Adicionar foto de capa · 1920 x 830 px" : "Adicionar"}
             onChange={async (urls) => {
               snapshot();
               setCoverUrls(urls);
@@ -771,7 +771,7 @@ export function ShowcaseBuilder({
         </div>
 
         <div className="mt-3 flex items-center justify-between text-[11.5px] text-text-tertiary">
-          <span>Equipe, espaço, bastidores ou produtos</span>
+          <span>{coverUrls.length > 1 ? "Deslize pro lado pra ver todas →" : "Equipe, espaço, bastidores ou produtos"}</span>
           <span className="tabular-nums">{coverUrls.length}/6</span>
         </div>
       </div>
