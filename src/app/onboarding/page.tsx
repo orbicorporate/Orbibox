@@ -39,6 +39,8 @@ export default function OnboardingPage() {
   const [instagram, setInstagram] = useState("");
   const [website, setWebsite] = useState("");
   const [description, setDescription] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [linkedin, setLinkedin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -110,12 +112,36 @@ export default function OnboardingPage() {
     for (let i = 2; used.has(slug) && i < 100; i++) slug = `${base}-${i}`;
     if (used.has(slug)) slug = `${base}-${Date.now().toString(36)}`;
 
+    // Contatos opcionais do DNA da Marca, normalizados pra virarem boxes
+    // prontos no painel (o dono só revisa).
+    const whatsappDigits = (() => {
+      const d = whatsapp.replace(/\D/g, "");
+      if (d.length < 10) return "";
+      return d.startsWith("55") ? d : `55${d}`;
+    })();
+    const comHttps = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`);
+    const siteUrl = website.trim() ? comHttps(website.trim()) : null;
+    const instagramUrl = (() => {
+      const v = instagram.trim();
+      if (!v) return null;
+      if (/instagram\.com/i.test(v)) return comHttps(v.replace(/^https?:\/\//i, ""));
+      return `https://instagram.com/${v.replace(/^@/, "")}`;
+    })();
+    const linkedinUrl = (() => {
+      const v = linkedin.trim();
+      if (!v) return null;
+      if (/linkedin\.com/i.test(v)) return comHttps(v.replace(/^https?:\/\//i, ""));
+      return `https://www.linkedin.com/company/${v.replace(/^@/, "")}`;
+    })();
+
     const payload = {
       owner_id: user.id,
       name,
       instagram_handle: instagram || null,
       website_url: website || null,
       about_business: description.trim() || null,
+      contact_whatsapp: whatsappDigits || null,
+      contact_site: siteUrl,
       brand_personality: traits,
       brand_colors: colors,
       brand_voice_summary: voice,
@@ -195,19 +221,22 @@ export default function OnboardingPage() {
       { business_id: business.id, box_type: "campaign", title: "Seleção de Presentes", position: 4, is_active: ativos.campaign },
     ]);
 
-    // Se a Orbi achou um WhatsApp no site, já cria o botão pronto, o dono só confirma.
-    if (siteType) {
+    // Boxes de contato prontos: WhatsApp (digitado ou achado no site),
+    // Instagram, LinkedIn e site. Entram ativos, o dono só revisa em Boxes.
+    let waFinal = whatsappDigits;
+    if (!waFinal && siteType) {
       const { data: atualizado } = await supabase.from("businesses").select("contact_whatsapp").eq("id", business.id).maybeSingle();
-      if (atualizado?.contact_whatsapp) {
-        await supabase.from("smart_boxes").insert({
-          business_id: business.id,
-          box_type: "custom",
-          title: "Fale no WhatsApp",
-          position: 5,
-          is_active: true,
-          config: { label: "Fale no WhatsApp", icon: "☎", action: "whatsapp" },
-        });
-      }
+      waFinal = atualizado?.contact_whatsapp ?? "";
+    }
+    const contatos: { title: string; config: { [k: string]: string } }[] = [];
+    if (waFinal) contatos.push({ title: "Fale no WhatsApp", config: { label: "Fale no WhatsApp", subtitle: "Atendimento rápido", icon: "__wadisc__", color: "transparent", action: "whatsapp", url: "" } });
+    if (instagramUrl) contatos.push({ title: "Instagram", config: { label: "Instagram", subtitle: "Siga a gente", icon: "@", color: "#111318", action: "link", url: instagramUrl } });
+    if (linkedinUrl) contatos.push({ title: "LinkedIn", config: { label: "LinkedIn", subtitle: "Conheça a empresa", icon: "👤\uFE0E", color: "#111318", action: "link", url: linkedinUrl } });
+    if (siteUrl) contatos.push({ title: "Nosso site", config: { label: "Nosso site", subtitle: siteUrl.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""), icon: "➜", color: "#111318", action: "link", url: siteUrl } });
+    if (contatos.length) {
+      await supabase.from("smart_boxes").insert(
+        contatos.map((c, i) => ({ business_id: business!.id, box_type: "custom", title: c.title, position: 5 + i, is_active: true, config: c.config })),
+      );
     }
 
     const oportunidades = [
@@ -259,11 +288,13 @@ export default function OnboardingPage() {
         {step === "dados" && (
           <>
             <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">DNA da Marca</h1>
-            <p className="mt-1 text-[15px] text-text-secondary">A Orbi vai ler seu site para montar o manual da sua marca e já trazer seus produtos.</p>
+            <p className="mt-1 text-[15px] text-text-secondary">A Orbi lê seu site pra montar o manual da sua marca e trazer seus produtos. Os links e o WhatsApp já viram botões prontos na sua página.</p>
             <form onSubmit={startAnalysis} className="mt-8 flex flex-col gap-4">
               <input required placeholder="Nome do negócio" value={name} onChange={(e) => setName(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
-              <input placeholder="@seuinstagram" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
-              <input placeholder="seusite.com.br, de onde vêm seus produtos" value={website} onChange={(e) => setWebsite(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <input placeholder="@seuinstagram (opcional)" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <input placeholder="seusite.com.br (opcional, de onde vêm seus produtos)" value={website} onChange={(e) => setWebsite(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <input placeholder="WhatsApp com DDD (opcional)" inputMode="tel" autoComplete="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <input placeholder="LinkedIn da empresa (opcional)" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <textarea
                 placeholder="Em poucas palavras, o que vocês fazem? (a Orbi usa isso pra conversar com seus clientes, mesmo sem site)"
                 value={description}
