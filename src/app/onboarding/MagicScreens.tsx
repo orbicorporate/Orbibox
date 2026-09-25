@@ -146,7 +146,7 @@ export function AnaliseAoVivo({
                 <div className="mt-2.5 flex gap-1.5 overflow-hidden pl-4">
                   {imagens.slice(0, 6).map((src, k) => (
                     <div
-                      key={src}
+                      key={`${src}-${k}`}
                       className="orbi-foto-entra relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-surface-soft"
                       style={{ animationDelay: `${k * 110}ms` }}
                     >
