@@ -1552,13 +1552,36 @@ function ItemCard({
                   <div className="mt-3 rounded-2xl bg-surface-white/70 p-3.5">
                     <div className="flex items-center gap-2">
                       <StepNumber n={2} />
-                      <p className="flex-1 text-[14px] font-medium text-on-background">Pergunta da Orbi</p>
+                      <p className="flex-1 text-[14px] font-medium text-on-background">Pergunta pronta pra Orbi</p>
                       <span className="text-[12px] text-text-tertiary">opcional</span>
                     </div>
                     <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">
-                      Um convite pra conversa, que aparece logo antes do botão de contato.
+                      Uma pergunta que o cliente toca e a Orbi já responde no chat. Ajuda quem está em dúvida a puxar conversa.
                     </p>
-                    <div className="mt-3">
+
+                    {/* Prévia: exatamente o cartão que aparece na página do
+                        produto, acima do botão de falar com a Orbi. */}
+                    <div className="mt-3 rounded-2xl border border-dashed border-divider bg-background-main p-3">
+                      <p className="text-[10.5px] font-medium uppercase tracking-wide text-text-tertiary">Na página do produto</p>
+                      <div className="mt-2 flex items-center gap-3 rounded-2xl bg-surface-white px-3.5 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-1.5 text-[11px] font-medium text-text-tertiary">
+                            <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
+                            Pergunte à Orbi
+                          </span>
+                          <span className={`mt-0.5 block text-[13.5px] font-medium ${item.orbi_hook?.trim() ? "text-on-background" : "text-text-tertiary"}`}>
+                            {item.orbi_hook?.trim() || "Quer saber se cabe no seu espaço?"}
+                          </span>
+                        </span>
+                        <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>
+                      </div>
+                      <div className="mt-2 rounded-full orbi-gradient py-2 text-center text-[12px] font-medium text-on-background opacity-60">
+                        ✦ Falar com a Orbi
+                      </div>
+                    </div>
+
+                    <p className="mt-3 text-[12px] font-medium text-text-secondary">Sua pergunta</p>
+                    <div className="mt-1.5">
                       <AutoTextarea
                         value={item.orbi_hook ?? ""}
                         onChange={(v) => patch(item.id, { orbi_hook: v })}
@@ -1567,6 +1590,7 @@ function ItemCard({
                         maxLength={100}
                       />
                     </div>
+                    <p className="mt-1.5 text-[11px] text-text-tertiary">Deixe em branco pra não mostrar.</p>
                   </div>
                 </div>
               </div>
