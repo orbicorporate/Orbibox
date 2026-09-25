@@ -482,8 +482,10 @@ export type FonteLida = { data: SiteData; fonte: "site" | "instagram"; url: stri
  * vier vazio/bloqueado), o Instagram; e se o Instagram tiver um site no link
  * da bio, tenta esse site também. Devolve null só quando nada deu pra ler.
  */
-export async function lerMelhorFonte({ site, instagram }: { site?: string | null; instagram?: string | null }): Promise<FonteLida | null> {
-  const tentativas: string[] = [];
+export async function lerMelhorFonte(
+  { site, instagram }: { site?: string | null; instagram?: string | null },
+  tentativas: string[] = [],
+): Promise<FonteLida | null> {
   const BOM = 400; // texto mínimo pra considerar a leitura boa
 
   let lidoSite: SiteData | null = null;

@@ -34,9 +34,10 @@ export async function GET(req: NextRequest) {
   const nome = u.searchParams.get("nome") || "Negócio";
   const soLer = u.searchParams.get("soLer") === "1";
   const t0 = Date.now();
-  const lida = await lerMelhorFonte({ site, instagram: ig });
+  const tent: string[] = [];
+  const lida = await lerMelhorFonte({ site, instagram: ig }, tent);
   const tLeitura = Date.now() - t0;
-  if (!lida) return NextResponse.json({ ok: false, etapa: "leitura", tLeitura });
+  if (!lida) return NextResponse.json({ ok: false, etapa: "leitura", tLeitura, tentativas: tent });
   const base = {
     fonte: lida.fonte,
     url: lida.url,
