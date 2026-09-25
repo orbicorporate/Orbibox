@@ -1601,15 +1601,16 @@ function ItemCard({
 
             <div>
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Preço</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
+              <div className="mt-2.5 flex flex-wrap gap-2">
                 {(Object.keys(PRICE_TYPE_LABEL) as PriceType[]).map((t) => {
                   const ativo = (item.price_type ?? "exato") === t;
                   return (
                     <button
                       key={t}
                       onClick={() => save(item.id, { price_type: t })}
-                      className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${ativo ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                      className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors ${ativo ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
                     >
+                      {ativo && <span aria-hidden>✓</span>}
                       {PRICE_TYPE_LABEL[t]}
                     </button>
                   );
@@ -1696,27 +1697,41 @@ function ItemCard({
             </div>
 
             <div>
-              <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Categoria (vira seção)</p>
-              <select
-                value={item.brand_label ?? ""}
-                onChange={async (e) => {
-                  if (e.target.value === "__nova__") {
+              <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Categoria</p>
+              <p className="mt-1 text-[12px] leading-snug text-text-tertiary">Cada categoria vira uma seção com título na Vitrine.</p>
+              {/* Chips em vez de lista suspensa: dá pra ver todas as opções de
+                  uma vez e trocar com um toque. */}
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {[{ v: null as string | null, t: "Destaques" }, ...categories.map((name) => ({ v: name as string | null, t: name }))].map(({ v, t }) => {
+                  const ativo = (item.brand_label ?? null) === v;
+                  return (
+                    <button
+                      key={t + (v ?? "")}
+                      type="button"
+                      onClick={() => save(item.id, { brand_label: v })}
+                      className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors ${ativo ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                    >
+                      {ativo && <span aria-hidden>✓</span>}
+                      {t}
+                      {v === null && <span className={`text-[11px] font-normal ${ativo ? "text-white/70" : "text-text-tertiary"}`}>sem categoria</span>}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={async () => {
                     const nome = await promptFn({ title: "Nome da nova categoria", placeholder: "Ex: Bebidas" });
                     if (nome && nome.trim()) {
                       const trimmed = nome.trim();
                       save(item.id, { brand_label: trimmed });
                       onNewCategory(trimmed);
                     }
-                    return;
-                  }
-                  save(item.id, { brand_label: e.target.value || null });
-                }}
-                className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-              >
-                <option value="">Sem categoria (Destaques)</option>
-                {categories.map((name) => <option key={name} value={name}>{name}</option>)}
-                <option value="__nova__">+ Nova categoria…</option>
-              </select>
+                  }}
+                  className="rounded-full border border-dashed border-text-tertiary px-3.5 py-2 text-[13px] font-medium text-text-secondary"
+                >
+                  + Nova
+                </button>
+              </div>
             </div>
 
             <div data-tour="item-destino">
