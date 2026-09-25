@@ -1736,7 +1736,7 @@ function ItemCard({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="text-[14px] font-medium text-on-background">Agendar publicação</span>
+                    <span className="text-[14px] font-medium text-on-background">Agendar exibição dessa box</span>
                     {(item.starts_at || item.ends_at) && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10.5px] font-medium text-text-secondary">
                         <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
