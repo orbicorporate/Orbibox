@@ -105,7 +105,7 @@ export function LeadCapture({
               <path d="M13.7 21a2 2 0 0 1-3.4 0" />
             </svg>
           </span>
-          <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">Receba novidades no WhatsApp</span>
+          <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">Receba novidades</span>
           <span className="shrink-0 text-[12.5px] font-semibold text-on-background">Quero →</span>
         </button>
       ) : (
