@@ -591,6 +591,9 @@ async function linksDoAgregador(url: string): Promise<{ sites: string[]; instagr
         if (new URL(x).pathname.length <= 1) nota += 1; // página inicial
         return { x, nota };
       })
+      // Só aceita site com o nome da marca no domínio: página de links costuma
+      // ter anúncio e link de terceiros, e ler a marca errada é pior que não ler.
+      .filter((c) => c.nota >= 10)
       .sort((a, b) => b.nota - a.nota)
       .map((c) => c.x);
     return { sites: candidatos.slice(0, 3), instagram };
