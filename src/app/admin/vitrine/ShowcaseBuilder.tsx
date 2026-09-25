@@ -1185,7 +1185,7 @@ function ItemCard({
     <div
       id={`item-${item.id}`}
       className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${widthClass}`}
-      style={!editing && hasPhoto && fc ? { backgroundColor: fc.bg } : undefined}
+      style={!editing && hasPhoto && fc && item.title_placement !== "sobre" ? { backgroundColor: fc.bg } : undefined}
     >
       <div
         className="relative"
@@ -1289,7 +1289,7 @@ function ItemCard({
             O status (Ativo/Rascunho) agora mora no rodapé branco, junto do título,
             exceto quando não tem rodapé (sem foto ou foto quebrada). */}
         <div className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
-          {!hasPhoto && (
+          {(!hasPhoto || (item.title_placement === "sobre" && !editing)) && (
             <button
               onClick={(e) => { e.stopPropagation(); onTogglePublish(); }}
               className="inline-flex items-center gap-1.5 rounded-full bg-surface-white/95 px-3 py-1.5 text-[11px] font-medium shadow backdrop-blur"
@@ -1312,7 +1312,9 @@ function ItemCard({
 
       </div>
 
-      {(hasPhoto || editing) && (
+      {/* "Sem rodapé" (nome sobre a foto): fechado, o card é só a foto, igual
+          na página pública. O status vai pro canto da foto. */}
+      {(editing || (hasPhoto && item.title_placement !== "sobre")) && (
         <div className="p-5">
           {!editing ? (
             hasPhoto && item.title_placement === "sobre" ? (

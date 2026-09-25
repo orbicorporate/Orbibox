@@ -1906,7 +1906,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 );
 
                 const classe = `block overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${size === "medio" ? "w-[calc(50%-10px)]" : "w-full"}`;
-                const cardStyle = photo && fc ? { backgroundColor: fc.bg } : undefined;
+                const cardStyle = photo && fc && item.title_placement !== "sobre" ? { backgroundColor: fc.bg } : undefined;
 
                 if (!destino) {
                   return (
