@@ -132,13 +132,17 @@ async function fetchSite(url: string): Promise<SiteData | null> {
 
     // Links internos, viram destino dos boxes de categoria/produto
     const links = new Set<string>();
-    const linkRegex = /<a[^>]+href=["']([^"'#]+)["'][^>]*>([\s\S]{0,80}?)<\/a>/gi;
+    const linkRegex = /<a[^>]+href=["']([^"'#]+)["'][^>]*>([\s\S]{0,600}?)<\/a>/gi;
     let lm: RegExpExecArray | null;
     while ((lm = linkRegex.exec(html)) && links.size < 60) {
       let href = lm[1];
       if (href.startsWith("/")) href = base + href;
-      if (!href.startsWith("http") || !href.startsWith(base)) continue;
-      const label = lm[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      // Aceita o mesmo site com ou sem "www".
+      const mesmoSite = href.replace("://www.", "://").startsWith(base.replace("://www.", "://"));
+      if (!href.startsWith("http") || !mesmoSite) continue;
+      // Texto do link; se for só imagem, usa o alt/aria-label dela.
+      const label = (lm[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() ||
+        (lm[0].match(/(?:aria-label|title|alt)=["']([^"']+)["']/i)?.[1] ?? "")).slice(0, 80);
       if (label && label.length > 1) links.add(`${label} :: ${href}`);
     }
 
