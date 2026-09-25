@@ -1552,19 +1552,18 @@ function ItemCard({
               <div>
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do card</p>
                 <div className="mt-2 flex gap-2">
-                  {([
-                    { v: "faixa", t: "Num rodapé", d: "Faixa embaixo da foto" },
-                    { v: "sobre", t: "Sobre a foto", d: "Com degradê, mais editorial" },
-                  ] as const).map(({ v, t, d }) => {
+                  {(["faixa", "sobre"] as const).map((v) => {
                     const ativo = (item.title_placement ?? "faixa") === v;
                     return (
                       <button
                         key={v}
                         onClick={() => save(item.id, { title_placement: v })}
-                        className={`flex flex-1 flex-col items-start rounded-2xl border-2 px-3 py-2.5 text-left ${ativo ? "border-on-background" : "border-divider"}`}
+                        className={`flex flex-1 flex-col gap-2 rounded-2xl border-2 p-2 ${ativo ? "border-on-background" : "border-divider"}`}
                       >
-                        <span className={`text-[13px] font-medium ${ativo ? "" : "text-text-secondary"}`}>{t}</span>
-                        <span className="text-[11px] text-text-tertiary">{d}</span>
+                        <TitlePlacementExample kind={v} />
+                        <span className={`mt-auto text-[12.5px] font-medium ${ativo ? "" : "text-text-secondary"}`}>
+                          {v === "faixa" ? "Com rodapé" : "Sem rodapé"}
+                        </span>
                       </button>
                     );
                   })}
@@ -1830,5 +1829,32 @@ function AutoTextarea({
       rows={1}
       className="w-full min-w-0 flex-1 resize-none overflow-hidden rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] leading-snug outline-none focus:border-on-background"
     />
+  );
+}
+
+// Foto do tema "Escritório de Arquitetura" do Inspire-se, usada só como
+// exemplo visual das duas formas de mostrar o nome do card.
+const EXEMPLO_FOTO = "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/arquitetura-01.jpg";
+
+/** Mini card de exemplo: com rodapé (nome numa faixa embaixo da foto) ou
+ * sem rodapé (nome sobre a foto, com degradê). */
+function TitlePlacementExample({ kind }: { kind: "faixa" | "sobre" }) {
+  return (
+    <span className="block w-full overflow-hidden rounded-xl bg-white text-left shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+      <span className="relative block aspect-[4/3] w-full">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={EXEMPLO_FOTO} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        {kind === "sobre" && (
+          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-2 pb-1.5 pt-6">
+            <span className="block truncate text-[11px] font-semibold leading-tight text-white">Sala de Estar</span>
+          </span>
+        )}
+      </span>
+      {kind === "faixa" && (
+        <span className="block px-2 py-1.5">
+          <span className="block truncate text-[11px] font-medium leading-tight text-on-background">Sala de Estar</span>
+        </span>
+      )}
+    </span>
   );
 }
