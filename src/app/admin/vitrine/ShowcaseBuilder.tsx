@@ -1563,7 +1563,7 @@ function ItemCard({
                         onClick={() => save(item.id, { title_placement: v })}
                         className={`flex flex-1 flex-col gap-2 rounded-2xl border-2 p-2 ${ativo ? "border-on-background" : "border-divider"}`}
                       >
-                        <TitlePlacementExample kind={v} footer={fc} photo={hasPhoto ? item.image_url : null} title={item.title} />
+                        <TitlePlacementExample kind={v} footer={fc} photo={hasPhoto ? item.image_url : null} title={item.title} price={priceLabel} />
                         <span className={`mt-auto text-[12.5px] font-medium ${ativo ? "" : "text-text-secondary"}`}>
                           {v === "faixa" ? "Com rodapé" : "Sem rodapé"}
                         </span>
@@ -1900,16 +1900,20 @@ function TitlePlacementExample({
   footer,
   photo,
   title,
+  price,
 }: {
   kind: "faixa" | "sobre";
   footer?: { bg: string; fg: string } | null;
   photo?: string | null;
   title?: string;
+  price?: string | null;
 }) {
-  // Usa a foto e o nome do próprio card; a foto do tema Arquitetura só
-  // entra enquanto o card ainda não tem imagem.
+  // Espelha o card de verdade: foto, nome e preço dele, e se estiverem
+  // vazios fica vazio também. O exemplo do tema Arquitetura só entra
+  // inteiro (foto + nome) quando o card ainda não tem foto.
   const src = photo || EXEMPLO_FOTO;
-  const nome = title?.trim() || "Sala de Estar";
+  const nome = photo ? title?.trim() ?? "" : "Sala de Estar";
+  const preco = photo ? price ?? null : null;
   // A foto tem o mesmo tamanho nos dois exemplos; o "com rodapé" só ganha a
   // faixa embaixo, que já mostra a cor escolhida.
   return (
@@ -1917,9 +1921,10 @@ function TitlePlacementExample({
       <span className="relative block h-[84px] w-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-        {kind === "sobre" && (
+        {kind === "sobre" && (nome || preco) && (
           <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-2.5 pb-2 pt-6">
-            <span className="block truncate text-[11.5px] font-semibold leading-tight text-white">{nome}</span>
+            {nome && <span className="block truncate text-[11.5px] font-semibold leading-tight text-white">{nome}</span>}
+            {preco && <span className="mt-0.5 block truncate text-[10.5px] leading-tight text-white/85">{preco}</span>}
           </span>
         )}
       </span>
@@ -1928,7 +1933,10 @@ function TitlePlacementExample({
           className="flex h-[40px] items-center px-2.5 transition-colors"
           style={{ backgroundColor: footer?.bg ?? "#FFFFFF" }}
         >
-          <span className="block truncate text-[11.5px] font-medium leading-tight" style={{ color: footer?.fg ?? "#111318" }}>{nome}</span>
+          <span className="min-w-0">
+            {nome && <span className="block truncate text-[11.5px] font-medium leading-tight" style={{ color: footer?.fg ?? "#111318" }}>{nome}</span>}
+            {preco && <span className="mt-0.5 block truncate text-[10.5px] leading-tight" style={{ color: footer?.fg ?? "#111318", opacity: 0.8 }}>{preco}</span>}
+          </span>
         </span>
       )}
     </span>
