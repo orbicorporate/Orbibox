@@ -1,8 +1,13 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 
-export default function LandingPage() {
+export default async function LandingPage({ searchParams }: { searchParams: Promise<{ code?: string }> }) {
+  // Se o Supabase mandar o link de confirmação pra raiz do site (Site URL),
+  // encaminha pro callback que finaliza o login.
+  const { code } = await searchParams;
+  if (code) redirect(`/auth/callback?code=${encodeURIComponent(code)}`);
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background-main px-6 text-center">
       <div className="pointer-events-none absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full orbi-gradient opacity-20 blur-3xl" />
