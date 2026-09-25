@@ -496,9 +496,14 @@ export async function lerMelhorFonte(
   // verdade e o Instagram que estão listados nela e segue por eles.
   if (urlSite && ehAgregadorDeLinks(urlSite) && !/wa\.me|whatsapp/i.test(urlSite)) {
     const saidas = await linksDoAgregador(urlSite);
-    tentativas.push(`agregador ${urlSite}: ${saidas.site ?? "sem site"}, ${saidas.instagram ?? "sem instagram"}`);
+    tentativas.push(`agregador ${urlSite}: ${saidas.sites.length} sites, ${saidas.instagram ?? "sem instagram"}`);
     igDoAgregador = saidas.instagram ?? "";
-    urlSite = saidas.site ?? "";
+    urlSite = "";
+    for (const cand of saidas.sites) {
+      const r = await fetchSiteResiliente(cand);
+      tentativas.push(`site do agregador ${cand}: ${r ? `${r.text.length} caracteres` : "falhou"}`);
+      if (r && r.text.length >= BOM) return { data: r, fonte: "site", url: cand, tentativas };
+    }
   }
   if (urlSite && !/instagram\.com/i.test(urlSite)) {
     lidoSite = await fetchSiteResiliente(urlSite);
@@ -539,36 +544,57 @@ export async function lerMelhorFonte(
   }
 
   // Só sobrou um site fraco: ainda assim usa, a Orbi faz o que der.
-  if (lidoSite && lidoSite.text.length >= 80) return { data: lidoSite, fonte: "site", url: urlSite, tentativas };
+  if (lidoSite && lidoSite.text.length >= 200) return { data: lidoSite, fonte: "site", url: urlSite, tentativas };
   return null;
 }
 
 const REDES = /(instagram\.com|facebook\.com|fb\.com|tiktok\.com|youtube\.com|youtu\.be|twitter\.com|x\.com|linkedin\.com|pinterest\.|spotify\.com|wa\.me|whatsapp\.com|t\.me|linktr\.ee|linktree|beacons\.ai|bio\.link|lnk\.bio|taplink|ifood\.com|google\.com|goo\.gl|maps\.app|apple\.com|play\.google)/i;
 
-/** Lê uma página de links (Linktree etc.) e acha o site da marca e o Instagram. */
-async function linksDoAgregador(url: string): Promise<{ site: string | null; instagram: string | null }> {
+/** Lê uma página de links (Linktree etc.) e devolve os sites candidatos
+ * (mais prováveis primeiro) e o Instagram da marca. */
+async function linksDoAgregador(url: string): Promise<{ sites: string[]; instagram: string | null }> {
   try {
     const u = url.startsWith("http") ? url : `https://${url}`;
     const res = await fetch(u, {
       signal: AbortSignal.timeout(8000),
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" },
     });
-    if (!res.ok) return { site: null, instagram: null };
+    if (!res.ok) return { sites: [], instagram: null };
     const html = await res.text();
-    const urls = [...html.matchAll(/https?:\\?\/\\?\/[^"'\s<>\\]+/g)].map((m) => m[0].replace(/\\\//g, "/"));
+    const urls = [...new Set([...html.matchAll(/https?:\\?\/\\?\/[^"'\s<>\\]+/g)].map((m) => m[0].replace(/\\\//g, "/")))];
     const instagram = urls.find((x) => /instagram\.com\/[A-Za-z0-9._]+/i.test(x) && !/instagram\.com\/(p|reel|explore|accounts)\//i.test(x)) ?? null;
-    const host = new URL(u).host;
-    const site =
-      urls.find((x) => {
+
+    const pagina = new URL(u);
+    const usuario = (pagina.pathname.split("/").filter(Boolean)[0] ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const RASTREIO = /(thanks\.is|bit\.ly|tinyurl|linktr\.ee|onelink|adj\.st|app\.link|go\.link|click\.|track|utm_|doubleclick|googleadservices|pixel)/i;
+    const candidatos = urls
+      .filter((x) => {
         try {
           const h = new URL(x).host;
-          return h !== host && !REDES.test(x) && !/\.(png|jpe?g|webp|svg|gif|css|js|woff2?)(\?|$)/i.test(x) && !/(cdn|static|assets|fonts|sentry|cloudflare|googletag|gstatic|schema\.org|w3\.org)/i.test(h);
+          return (
+            h !== pagina.host &&
+            !REDES.test(x) &&
+            !RASTREIO.test(x) &&
+            !/\.(png|jpe?g|webp|svg|gif|css|js|woff2?|ico)(\?|$)/i.test(x) &&
+            !/(cdn|static|assets|fonts|sentry|cloudflare|googletag|gstatic|schema\.org|w3\.org|linktree|ltree)/i.test(h)
+          );
         } catch {
           return false;
         }
-      }) ?? null;
-    return { site, instagram };
+      })
+      .map((x) => {
+        const h = new URL(x).host.toLowerCase().replace(/^www\./, "");
+        const raiz = h.split(".")[0].replace(/[^a-z0-9]/g, "");
+        let nota = 0;
+        if (usuario && (raiz.includes(usuario) || usuario.includes(raiz))) nota += 10; // domínio com o nome da marca
+        if (/\.(com\.br|com|br|net\.br|store|shop|site)$/.test(h)) nota += 2;
+        if (new URL(x).pathname.length <= 1) nota += 1; // página inicial
+        return { x, nota };
+      })
+      .sort((a, b) => b.nota - a.nota)
+      .map((c) => c.x);
+    return { sites: candidatos.slice(0, 3), instagram };
   } catch {
-    return { site: null, instagram: null };
+    return { sites: [], instagram: null };
   }
 }
