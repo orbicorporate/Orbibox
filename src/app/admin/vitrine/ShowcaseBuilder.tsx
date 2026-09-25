@@ -1839,11 +1839,11 @@ const EXEMPLO_FOTO = "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object
 /** Mini card de exemplo: com rodapé (nome numa faixa embaixo da foto) ou
  * sem rodapé (nome sobre a foto, com degradê). */
 function TitlePlacementExample({ kind, footer }: { kind: "faixa" | "sobre"; footer?: { bg: string; fg: string } | null }) {
-  // Os dois exemplos têm a mesma altura total: no "com rodapé" a foto fica
-  // um pouco menor pra sobrar espaço pra faixa, que já mostra a cor escolhida.
+  // A foto tem o mesmo tamanho nos dois exemplos; o "com rodapé" só ganha a
+  // faixa embaixo, que já mostra a cor escolhida.
   return (
     <span className="block w-full overflow-hidden rounded-xl bg-white text-left shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
-      <span className={`relative block w-full ${kind === "faixa" ? "h-[84px]" : "h-[124px]"}`}>
+      <span className="relative block h-[84px] w-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={EXEMPLO_FOTO} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         {kind === "sobre" && (
