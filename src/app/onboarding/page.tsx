@@ -38,6 +38,8 @@ export default function OnboardingPage() {
   const [instagram, setInstagram] = useState("");
   const [website, setWebsite] = useState("");
   const [description, setDescription] = useState("");
+  const [bizId, setBizId] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
   const [whatsapp, setWhatsapp] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +97,29 @@ export default function OnboardingPage() {
   }
   function removeColor(idx: number) {
     setColors((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  async function importarSite(id: string): Promise<{ imported: number; siteType: "ecommerce" | "institucional" | "links" | null; motivo: string | null; fetchError: string | null }> {
+    try {
+      const res = await fetch("/api/import-site", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId: id, url: website.trim() }),
+      });
+      const d = await res.json();
+      if (res.ok) return { imported: d.imported ?? 0, siteType: d.siteType ?? null, motivo: d.motivo ?? null, fetchError: null };
+      return { imported: 0, siteType: null, motivo: null, fetchError: d.error ?? "Não consegui ler esse site automaticamente." };
+    } catch {
+      return { imported: 0, siteType: null, motivo: null, fetchError: "Não consegui ler esse site automaticamente." };
+    }
+  }
+
+  async function tentarDeNovo() {
+    if (!bizId) return;
+    setRetrying(true);
+    const r = await importarSite(bizId);
+    setRetrying(false);
+    setImportSummary(r);
   }
 
   async function confirmAndCreate() {
@@ -181,22 +206,13 @@ export default function OnboardingPage() {
     let fetchError: string | null = null;
     if (website.trim()) {
       setStep("montando");
-      try {
-        const res = await fetch("/api/import-site", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ businessId: business.id, url: website.trim() }),
-        });
-        const d = await res.json();
-        if (res.ok) {
-          importados = d.imported ?? 0;
-          siteType = d.siteType ?? null;
-          motivo = d.motivo ?? null;
-        } else {
-          fetchError = d.error ?? "Não consegui ler esse site automaticamente.";
-        }
-      } catch {
-        fetchError = "Não consegui ler esse site automaticamente.";
+      setBizId(business.id);
+      // Tenta duas vezes antes de mostrar qualquer aviso: a maioria das
+      // falhas é passageira (site lento, instabilidade).
+      for (let tentativa = 0; tentativa < 2; tentativa++) {
+        const r = await importarSite(business.id);
+        importados = r.imported; siteType = r.siteType; motivo = r.motivo; fetchError = r.fetchError;
+        if (!fetchError) break;
       }
     }
 
@@ -329,12 +345,19 @@ export default function OnboardingPage() {
             {importSummary.fetchError ? (
               <>
                 <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">
-                  Não consegui ler seu site sozinha
+                  Quase lá
                 </h1>
                 <p className="text-center text-[14px] text-text-secondary">
-                  {importSummary.fetchError} Isso costuma acontecer quando o site bloqueia acesso automático, sem problema,
-                  você monta a vitrine na mão em poucos minutos, ou tenta importar de novo depois em Configurações.
+                  O site demorou ou não respondeu agora. Tenta de novo, ou siga e importe depois pela Vitrine.
                 </p>
+                <button
+                  type="button"
+                  onClick={tentarDeNovo}
+                  disabled={retrying}
+                  className="mx-auto rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[14px] font-medium disabled:opacity-60"
+                >
+                  {retrying ? "Lendo o site de novo…" : "Tentar ler o site de novo"}
+                </button>
               </>
             ) : importSummary.imported > 0 ? (
               <>

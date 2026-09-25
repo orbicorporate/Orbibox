@@ -1,15 +1,79 @@
 import { NextRequest, NextResponse } from "next/server";
-import { askClaude } from "@/lib/anthropic";
+import { askClaude, askClaudeJSON } from "@/lib/anthropic";
+import { jsonrepair } from "jsonrepair";
 import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
 
+type SiteData = { text: string; images: { id: string; url: string; alt: string; context: string }[]; links: string[]; base: string; html: string };
+
+// Tenta ler o site de todo jeito antes de desistir: o endereço como veio,
+// com/sem "www", http, e por fim um leitor que roda o JavaScript da página
+// (sites feitos em React/Wix/etc. chegam quase vazios num fetch simples).
+async function fetchSiteResiliente(url: string): Promise<SiteData | null> {
+  const limpo = url.trim().replace(/\/+$/, "");
+  const semProto = limpo.replace(/^https?:\/\//i, "");
+  const host = semProto.split("/")[0];
+  const resto = semProto.slice(host.length);
+  const hostAlt = host.startsWith("www.") ? host.slice(4) : `www.${host}`;
+  const variantes = [`https://${host}${resto}`, `https://${hostAlt}${resto}`, `http://${host}${resto}`];
+
+  let melhor: SiteData | null = null;
+  for (const v of variantes) {
+    const r = await fetchSite(v);
+    if (r && (!melhor || r.text.length > melhor.text.length)) melhor = r;
+    if (melhor && melhor.text.length >= 600) return melhor;
+  }
+
+  // Página vazia ou bloqueada: usa o leitor que renderiza o JavaScript.
+  const lido = await fetchRenderizado(`https://${host}${resto}`);
+  if (lido && (!melhor || lido.text.length > melhor.text.length)) {
+    // Mantém imagens e links do HTML cru quando existirem (o leitor só
+    // devolve texto e as imagens em markdown).
+    return { ...lido, images: lido.images.length ? lido.images : melhor?.images ?? [], links: lido.links.length ? lido.links : melhor?.links ?? [] };
+  }
+  return melhor;
+}
+
+async function fetchRenderizado(url: string): Promise<SiteData | null> {
+  try {
+    const res = await fetch(`https://r.jina.ai/${url}`, {
+      signal: AbortSignal.timeout(20000),
+      headers: { Accept: "text/plain", "X-Return-Format": "markdown" },
+    });
+    if (!res.ok) return null;
+    const md = await res.text();
+    if (md.trim().length < 50) return null;
+    const base = new URL(url).origin;
+    const images: SiteData["images"] = [];
+    const seen = new Set<string>();
+    const imgRe = /!\[([^\]]*)\]\((https?:[^)\s]+)\)/g;
+    let m: RegExpExecArray | null;
+    while ((m = imgRe.exec(md)) && images.length < 30) {
+      const src = m[2];
+      if (seen.has(src) || /\.(svg|gif)(\?|$)/i.test(src)) continue;
+      seen.add(src);
+      const context = md.slice(Math.max(0, m.index - 300), m.index).replace(/[#*_>\[\]()!]/g, " ").replace(/\s+/g, " ").trim().slice(-200);
+      images.push({ id: `img${images.length}`, url: src, alt: m[1].slice(0, 120), context });
+    }
+    const links = new Set<string>();
+    const linkRe = /(?<!!)\[([^\]]{2,80})\]\((https?:[^)\s]+)\)/g;
+    while ((m = linkRe.exec(md)) && links.size < 60) {
+      if (m[2].startsWith(base)) links.add(`${m[1].trim()} :: ${m[2]}`);
+    }
+    const text = md.replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+    return { text: text.slice(0, 12000), images, links: [...links], base, html: "" };
+  } catch {
+    return null;
+  }
+}
+
 // Busca o HTML do site e limpa deixando texto + imagens (com contexto) visíveis.
-async function fetchSite(url: string): Promise<{ text: string; images: { id: string; url: string; alt: string; context: string }[]; links: string[]; base: string; html: string } | null> {
+async function fetchSite(url: string): Promise<SiteData | null> {
   try {
     const normalized = url.startsWith("http") ? url : `https://${url}`;
     const res = await fetch(normalized, {
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(8000),
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -103,6 +167,38 @@ type Extracted = {
 
 type SiteType = "ecommerce" | "institucional" | "links";
 
+const PROPOSTA_SCHEMA = {
+  type: "object",
+  properties: {
+    site_type: { type: "string", enum: ["ecommerce", "institucional", "links"] },
+    motivo: { type: "string" },
+    about_business: { type: ["string", "null"] },
+    differentials: { type: ["string", "null"] },
+    policies: { type: ["string", "null"] },
+    contact_whatsapp: { type: ["string", "null"] },
+    contact_phone: { type: ["string", "null"] },
+    contact_email: { type: ["string", "null"] },
+    items: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          description: { type: "string" },
+          price: { type: ["number", "null"] },
+          type: { type: "string", enum: ["product", "service", "link"] },
+          brand_label: { type: ["string", "null"] },
+          image_hint: { type: ["string", "null"] },
+          target_url: { type: ["string", "null"] },
+          link_kind: { type: ["string", "null"], enum: ["categoria", "produto", "externo", null] },
+        },
+        required: ["title", "description", "type"],
+      },
+    },
+  },
+  required: ["site_type", "motivo", "items"],
+};
+
 /** O que a Orbi devolve depois de ler o site: o tipo, o conhecimento e os boxes propostos. */
 type Proposta = {
   site_type: SiteType;
@@ -140,7 +236,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Negócio não encontrado." }, { status: 404 });
     }
 
-    const site = await fetchSite(url);
+    const site = await fetchSiteResiliente(url);
     if (!site) {
       return NextResponse.json({ error: "Não consegui acessar esse site. Verifique o link." }, { status: 422 });
     }
@@ -181,7 +277,7 @@ Cada imagem candidata vem com [imgN], o "alt" (o que ela É, quando o site infor
 - Na dúvida, ou se não achar nada com sinal forte o suficiente, use null. Um item sem foto (fundo colorido, nome em destaque) fica com aparência muito melhor e mais profissional do que um item com a foto errada. Prefira sempre null a arriscar.
 - Cada imagem só pode ser usada em UM item, não repita a mesma imagem pra itens diferentes.
 
-Responda SOMENTE JSON válido:
+Entregue a resposta chamando a ferramenta salvar_proposta, neste formato:
 {"site_type":"ecommerce","motivo":"uma frase explicando como você reconheceu","about_business":"","differentials":"","policies":null,"contact_whatsapp":null,"contact_phone":null,"contact_email":null,"items":[{"title":"","description":"","price":null,"type":"product","brand_label":null,"image_hint":"img0","target_url":null,"link_kind":"categoria"}]}`;
 
     const linkList = site.links.join("\n");
@@ -197,14 +293,33 @@ ${linkList || "(nenhum)"}
 TEXTO DO SITE:
 ${site.text}`;
 
-    const raw = await askClaude({ system, messages: [{ role: "user", content: userMsg }], maxTokens: 3500 });
-
+    // Resposta estruturada (não dá pra vir JSON quebrado). Se algo falhar,
+    // tenta de novo no modo texto e conserta o JSON; só desiste se as duas
+    // tentativas falharem, e mesmo assim sem travar o cadastro.
     let proposta: Proposta | null = null;
     try {
-      const match = raw.match(/\{[\s\S]*\}/);
-      proposta = JSON.parse(match ? match[0] : raw) as Proposta;
+      const r = await askClaudeJSON<Proposta>({
+        system,
+        messages: [{ role: "user", content: userMsg }],
+        schema: PROPOSTA_SCHEMA,
+        toolName: "salvar_proposta",
+        maxTokens: 8000,
+      });
+      if (r.data && Array.isArray(r.data.items)) proposta = r.data;
+      if (r.truncated) console.warn("import-site: resposta estruturada cortada, usando o que veio");
     } catch (e) {
-      console.error("import-site: falha ao parsear extração", e, raw.slice(0, 300));
+      console.error("import-site: falha na resposta estruturada", e);
+    }
+    if (!proposta) {
+      try {
+        const raw = await askClaude({ system, messages: [{ role: "user", content: userMsg }], maxTokens: 8000 });
+        const ini = raw.indexOf("{");
+        proposta = JSON.parse(jsonrepair(ini >= 0 ? raw.slice(ini) : raw)) as Proposta;
+      } catch (e) {
+        console.error("import-site: falha também no modo texto", e);
+      }
+    }
+    if (!proposta) {
       return NextResponse.json({ error: "Não consegui interpretar o conteúdo do site." }, { status: 422 });
     }
 
