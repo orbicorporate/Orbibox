@@ -1120,6 +1120,8 @@ function ItemCard({
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  const [allColorsFor, setAllColorsFor] = useState<"box" | "footer" | null>(null);
+  const [scheduleOpen, setScheduleOpen] = useState(!!(item.starts_at || item.ends_at));
   const [lastUrl, setLastUrl] = useState(item.image_url);
   if (item.image_url !== lastUrl) {
     setLastUrl(item.image_url);
@@ -1542,6 +1544,7 @@ function ItemCard({
                   : Object.entries(PALETTE_GROUPS.find((g) => g.name === paletteTab)?.colors ?? {}).map(([key, cc]) => (
                       <button key={key} onClick={() => save(item.id, { box_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.box_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
                     ))}
+                <MoreColorsButton onClick={() => setAllColorsFor("box")} />
               </div>
             </div>
 
@@ -1589,6 +1592,7 @@ function ItemCard({
                         : Object.entries(PALETTE_GROUPS.find((g) => g.name === paletteTab)?.colors ?? {}).map(([key, cc]) => (
                             <button key={key} onClick={() => save(item.id, { footer_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.footer_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
                           ))}
+                      <MoreColorsButton onClick={() => setAllColorsFor("footer")} />
                     </div>
                   </div>
                 )}
@@ -1644,7 +1648,23 @@ function ItemCard({
             </div>
 
             <div>
-              <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Agendar (opcional)</p>
+              {/* Agendamento recolhido num botão claro; já abre sozinho se o
+                  item tem data marcada, pra não esconder algo ativo. */}
+              <button
+                type="button"
+                onClick={() => setScheduleOpen((v) => !v)}
+                className="flex w-full items-center justify-between gap-3 rounded-2xl bg-surface-soft px-4 py-3 text-left"
+              >
+                <span className="min-w-0">
+                  <span className="block text-[14px] font-medium text-on-background">🗓 Agendar publicação</span>
+                  <span className="block truncate text-[12px] text-text-tertiary">
+                    {item.starts_at || item.ends_at ? "Agendado, toque pra ver ou mudar" : "Opcional, entra e sai da Vitrine sozinho"}
+                  </span>
+                </span>
+                <span className={`shrink-0 text-text-tertiary transition-transform ${scheduleOpen ? "rotate-180" : ""}`}>▾</span>
+              </button>
+              {scheduleOpen && (
+              <>
               <HelperText>Publica e some da Vitrine sozinho nas datas escolhidas, bom pra promoção por tempo limitado.</HelperText>
               <div className="mt-3 flex flex-col gap-2.5">
                 <div>
@@ -1670,6 +1690,8 @@ function ItemCard({
                 <button onClick={() => save(item.id, { starts_at: null, ends_at: null })} className="mt-2 text-[12px] text-red-600">
                   Remover agendamento
                 </button>
+              )}
+              </>
               )}
             </div>
 
@@ -1794,6 +1816,16 @@ function ItemCard({
         )}
         </div>
       )}
+      {allColorsFor && (
+        <AllColorsSheet
+          title={allColorsFor === "box" ? "Cor do box" : "Cor do rodapé"}
+          current={allColorsFor === "box" ? item.box_color : item.footer_color}
+          brandColors={brandColors}
+          allowWhite={allColorsFor === "footer"}
+          onSelect={(v) => save(item.id, allColorsFor === "box" ? { box_color: v ?? "neutro" } : { footer_color: v })}
+          onClose={() => setAllColorsFor(null)}
+        />
+      )}
     </div>
   );
 }
@@ -1885,5 +1917,93 @@ function TitlePlacementExample({
         </span>
       )}
     </span>
+  );
+}
+
+function MoreColorsButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Mais cores"
+      title="Mais cores"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-dashed border-text-tertiary text-[18px] text-text-secondary"
+    >
+      +
+    </button>
+  );
+}
+
+/** Todas as paletas numa tela só (Marca + todos os grupos) e uma cor livre,
+ * pra não depender de trocar de aba pra achar a cor certa. */
+function AllColorsSheet({
+  title,
+  current,
+  brandColors,
+  allowWhite,
+  onSelect,
+  onClose,
+}: {
+  title: string;
+  current: string | null;
+  brandColors: { hex: string; role?: string | null }[];
+  allowWhite?: boolean;
+  onSelect: (value: string | null) => void;
+  onClose: () => void;
+}) {
+  const cur = (current ?? "").toLowerCase();
+  const pick = (v: string | null) => { onSelect(v); onClose(); };
+  const ring = (active: boolean) => (active ? "ring-2 ring-on-background ring-offset-2" : "border border-divider");
+  const customHex = /^#[0-9a-f]{6}$/i.test(current ?? "") ? current! : "#888888";
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50" onClick={onClose}>
+      <div className="max-h-[80vh] overflow-y-auto rounded-t-[28px] bg-surface-white p-5" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" aria-label="Fechar" />
+        <p className="text-center text-[14px] font-medium">{title}</p>
+
+        {allowWhite && (
+          <div className="mt-4">
+            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Padrão</p>
+            <div className="mt-2 flex flex-wrap gap-2.5">
+              <button onClick={() => pick(null)} aria-label="Branco" title="Branco" className={`h-10 w-10 rounded-full bg-white ${ring(!current)}`} />
+            </div>
+          </div>
+        )}
+
+        {brandColors.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">✦ Marca</p>
+            <div className="mt-2 flex flex-wrap gap-2.5">
+              {brandColors.map((bc, i) => (
+                <button key={`${bc.hex}-${i}`} onClick={() => pick(bc.hex)} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full ${ring(cur === bc.hex.toLowerCase())}`} style={{ backgroundColor: bc.hex }} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {PALETTE_GROUPS.map((g) => (
+          <div key={g.name} className="mt-4">
+            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">{g.name}</p>
+            <div className="mt-2 flex flex-wrap gap-2.5">
+              {Object.entries(g.colors).map(([key, cc]) => (
+                <button key={key} onClick={() => pick(key)} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full ${ring(cur === key.toLowerCase())}`} style={{ backgroundColor: cc.bg }} />
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div className="mt-5 mb-2">
+          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Outra cor</p>
+          <label className="mt-2 flex cursor-pointer items-center gap-2.5 self-start">
+            <input
+              type="color"
+              defaultValue={customHex}
+              onChange={(e) => onSelect(e.target.value)}
+              className="h-10 w-10 cursor-pointer rounded-full border border-divider bg-transparent p-0"
+            />
+            <span className="text-[13px] text-text-secondary">Escolher qualquer cor</span>
+          </label>
+        </div>
+      </div>
+    </div>
   );
 }
