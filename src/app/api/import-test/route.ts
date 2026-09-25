@@ -9,6 +9,26 @@ const CHAVE = "orbi-teste-7f3k9q2m";
 export async function GET(req: NextRequest) {
   const u = new URL(req.url);
   if (u.searchParams.get("key") !== CHAVE) return NextResponse.json({ error: "nope" }, { status: 404 });
+  // Modo sonda: busca uma URL crua e mostra status e começo da resposta.
+  const raw = u.searchParams.get("raw");
+  if (raw) {
+    const ua = u.searchParams.get("ua") === "bot"
+      ? "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+      : u.searchParams.get("ua") === "google"
+      ? "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+      : "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+    const headers: Record<string, string> = { "User-Agent": ua, "Accept-Language": "pt-BR,pt;q=0.9" };
+    if (u.searchParams.get("appid")) headers["x-ig-app-id"] = "936619743392459";
+    try {
+      const r = await fetch(raw, { headers, signal: AbortSignal.timeout(15000), redirect: "follow" });
+      const t = await r.text();
+      const find = u.searchParams.get("find");
+      const idx = find ? t.indexOf(find) : -1;
+      return NextResponse.json({ status: r.status, finalUrl: r.url, len: t.length, head: t.slice(0, 1500), achou: idx, trecho: idx >= 0 ? t.slice(idx, idx + 2500) : null });
+    } catch (e) {
+      return NextResponse.json({ erro: String(e) });
+    }
+  }
   const site = u.searchParams.get("site");
   const ig = u.searchParams.get("ig");
   const nome = u.searchParams.get("nome") || "Negócio";
