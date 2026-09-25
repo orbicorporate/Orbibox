@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { OrbBadge } from "@/components/ui/OrbBadge";
 import { slugify } from "@/lib/utils";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { coresDaOrbi } from "@/lib/orbiCores";
+import { colorOf } from "@/lib/showcase";
+import { AnaliseAoVivo, BrandOrb, VitrineMontando, type Analise, type Descoberta, type ItemMontado } from "./MagicScreens";
 
 type Color = { hex: string; role: string };
 type BrandAnalysis = {
@@ -52,6 +55,19 @@ export default function OnboardingPage() {
   const [colors, setColors] = useState<Color[]>([]);
   const [newColor, setNewColor] = useState("#111318");
 
+  // Telas mágicas: o que a leitura rápida achou, o resultado da análise,
+  // e a vitrine sendo montada.
+  const [descoberta, setDescoberta] = useState<Descoberta>({ status: "pending" });
+  const [analise, setAnalise] = useState<Analise>({ status: "pending" });
+  const [montagem, setMontagem] = useState<{ status: "pending" | "ok"; itens: ItemMontado[]; segundos: number | null }>({ status: "pending", itens: [], segundos: null });
+  const orbColors = useMemo(() => coresDaOrbi(colors), [colors]);
+  const alvo = useMemo(() => {
+    if (website.trim()) return website.trim().replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
+    const ig = instagram.trim().replace(/^.*instagram\.com\//i, "").replace(/[/?].*$/, "").replace(/^@/, "");
+    return ig ? `@${ig}` : null;
+  }, [website, instagram]);
+  const irParaConfirmar = useCallback(() => setStep("confirmar"), []);
+
   // O que a Orbi entendeu do site, mostrado na tela de resultado, com o
   // porquê explicado, pra nunca ser uma caixa preta.
   const [importSummary, setImportSummary] = useState<{
@@ -65,6 +81,19 @@ export default function OnboardingPage() {
   async function startAnalysis(e: React.FormEvent) {
     e.preventDefault();
     setStep("analisando");
+    setDescoberta({ status: "pending" });
+    setAnalise({ status: "pending" });
+    // Leitura rápida em paralelo: alimenta a tela ao vivo (fotos, palavras).
+    if (website.trim() || instagram.trim()) {
+      fetch("/api/descobrir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site: website.trim(), instagram: instagram.trim() }),
+      })
+        .then((r) => r.json())
+        .then((d) => setDescoberta(d?.ok ? { status: "ok", palavras: d.palavras ?? 0, imagens: d.imagens ?? [], fonte: d.fonte, host: d.host } : { status: "fail" }))
+        .catch(() => setDescoberta({ status: "fail" }));
+    }
     try {
       const result = await analyzeBrand(name, instagram, website);
       setTraits(result.personality);
@@ -78,7 +107,9 @@ export default function OnboardingPage() {
         seen.add(k);
         return true;
       }));
-      setStep("confirmar");
+      const unicas = (result.colors || []).filter((c, i, arr) => arr.findIndex((x) => x.hex.toLowerCase() === c.hex.toLowerCase()) === i);
+      // A tela ao vivo mostra isso e, quando terminar, vai pra confirmação.
+      setAnalise({ status: "ok", voice: result.voiceSummary, font: result.font || "Manrope", paleta: unicas.map((c) => c.hex), orbColors: coresDaOrbi(unicas) });
     } catch {
       setError("Não foi possível analisar sua marca agora. Tente novamente.");
       setStep("dados");
@@ -123,6 +154,8 @@ export default function OnboardingPage() {
   }
 
   async function confirmAndCreate() {
+    const inicio = Date.now();
+    setMontagem({ status: "pending", itens: [], segundos: null });
     setSaving(true);
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
@@ -195,7 +228,8 @@ export default function OnboardingPage() {
       return;
     }
 
-    await supabase.from("agent_configs").insert({ business_id: business.id, agent_name: "Orbi", objectives: ["vender", "informar"] });
+    // A esfera da Orbi já nasce com as cores da marca.
+    await supabase.from("agent_configs").insert({ business_id: business.id, agent_name: "Orbi", objectives: ["vender", "informar"], ...(orbColors ? { orbi_colors: orbColors } : {}) });
     await supabase.from("pulse_metrics").insert({ business_id: business.id, discovery_score: 62, interest_score: 58, conversion_score: 41, relationship_score: 70, overall_score: 58 });
     // O link do site já foi informado no DNA da Marca, a Orbi importa o catálogo agora,
     // sem pedir a mesma informação duas vezes. O tipo de site que ela descobre aqui
@@ -277,6 +311,21 @@ export default function OnboardingPage() {
     await supabase.from("opportunities").insert(oportunidades);
 
     setImportSummary({ imported: importados, siteType, motivo, fetchError });
+    // Importou: mostra a vitrine se montando no celular, com os itens reais.
+    if (importados > 0 && !fetchError) {
+      const { data: criados } = await supabase
+        .from("content_items")
+        .select("title, image_url, box_color")
+        .eq("business_id", business.id)
+        .order("position", { ascending: true })
+        .limit(7);
+      const itens: ItemMontado[] = (criados ?? []).map((c) => {
+        const cor = colorOf(c.box_color);
+        return { title: c.title, image_url: c.image_url, bg: cor.bg, fg: cor.fg };
+      });
+      setMontagem({ status: "ok", itens, segundos: Math.max(1, Math.round((Date.now() - inicio) / 1000)) });
+      return;
+    }
     setStep("resultado");
   }
 
@@ -323,26 +372,24 @@ export default function OnboardingPage() {
         )}
 
         {step === "analisando" && (
-          <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <OrbiOrb size={120} />
-            <p className="mt-2 text-[15px] text-text-secondary">A Orbi está lendo sua marca, extraindo personalidade, paleta, tom de voz e tipografia…</p>
-          </div>
+          <AnaliseAoVivo nome={name} alvo={alvo} descoberta={descoberta} analise={analise} onDone={irParaConfirmar} />
         )}
 
         {step === "montando" && (
-          <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <OrbiOrb size={120} />
-            <p className="mt-2 text-[15px] text-text-secondary">
-              {website.trim()
-                ? `A Orbi está lendo ${website.trim()} e montando sua vitrine, isso leva alguns segundos…`
-                : `A Orbi está lendo o Instagram ${instagram.trim().startsWith("@") ? instagram.trim() : "@" + instagram.trim().replace(/^.*instagram\.com\//i, "").replace(/\/.*$/, "")} e montando sua vitrine, isso leva alguns segundos…`}
-            </p>
-          </div>
+          <VitrineMontando
+            nome={name}
+            alvo={alvo ?? "sua marca"}
+            orbColors={orbColors}
+            status={montagem.status}
+            itens={montagem.itens}
+            segundos={montagem.segundos}
+            onContinuar={() => setStep("resultado")}
+          />
         )}
 
         {step === "resultado" && importSummary && (
           <div className="flex flex-col gap-5 py-2">
-            <div className="mx-auto"><OrbiOrb size={88} /></div>
+            <div className="mx-auto"><OrbiOrb size={88} colors={orbColors} /></div>
 
             {importSummary.fetchError ? (
               <>
@@ -427,6 +474,8 @@ export default function OnboardingPage() {
 
         {step === "confirmar" && (
           <>
+            {/* A esfera já com as cores da marca; muda ao vivo se a pessoa editar a paleta. */}
+            <div className="mb-4 flex justify-center"><BrandOrb colors={orbColors} size={88} /></div>
             <div className="flex items-center gap-2"><OrbBadge state="done" label="Mini manual da marca" /></div>
             <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[24px] font-medium">{name || "Sua marca"}</h1>
             <p className="mt-1 text-[13px] text-text-tertiary">A Orbi sugeriu isto, ajuste tudo como quiser antes de confirmar.</p>

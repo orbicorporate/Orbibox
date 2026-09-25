@@ -683,3 +683,38 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .apr-confetti, .apr-glow-pulse { animation: none; opacity: 0; }
 }
+
+/* Onboarding mágico: linhas, fotos e cards entrando; esfera trocando de cor. */
+.orbi-linha-entra { animation: orbiLinhaEntra 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes orbiLinhaEntra {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.orbi-foto-entra { animation: orbiFotoEntra 0.55s cubic-bezier(0.2, 0.9, 0.25, 1.25) both; }
+@keyframes orbiFotoEntra {
+  from { opacity: 0; transform: scale(0.6) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.orbi-card-cai { animation: orbiCardCai 0.6s cubic-bezier(0.2, 0.9, 0.25, 1.2) both; }
+@keyframes orbiCardCai {
+  from { opacity: 0; transform: translateY(-26px) scale(0.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.orbi-orb-entra { animation: orbiOrbEntra 1.6s ease-out both; }
+@keyframes orbiOrbEntra {
+  0% { opacity: 0; transform: scale(0.85); }
+  55% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.orbi-shimmer {
+  background-image: linear-gradient(100deg, rgba(0,0,0,0.04) 20%, rgba(255,255,255,0.7) 40%, rgba(0,0,0,0.04) 60%);
+  background-size: 250% 100%;
+  animation: orbiShimmer 1.6s ease-in-out infinite;
+}
+@keyframes orbiShimmer {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-linha-entra, .orbi-foto-entra, .orbi-card-cai, .orbi-orb-entra, .orbi-shimmer { animation: none; }
+}

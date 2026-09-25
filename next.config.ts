@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
         hostname: "bzuajbbwueptvkngtsoy.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      // Fotos lidas do site/Instagram na prévia ao vivo do onboarding.
+      { protocol: "https", hostname: "**.cdninstagram.com" },
+      { protocol: "https", hostname: "**.fbcdn.net" },
     ],
     formats: ["image/avif", "image/webp"],
   },
