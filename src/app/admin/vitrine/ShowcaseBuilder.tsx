@@ -95,6 +95,31 @@ export function ShowcaseBuilder({
   const supabase = createClient();
   const { confirm, prompt, alert: alertDialog, DialogRenderer } = useDialogs();
   const [items, setItems] = useState<Item[]>(initial);
+
+  // Âncora de rolagem: ao salvar algo que muda o layout (trocar categoria
+  // move o card pra outra seção, trocar preço muda a altura do card), o
+  // iPhone não compensa a rolagem e a página "pula". Guardamos a posição
+  // do elemento tocado antes e corrigimos a rolagem depois de renderizar,
+  // pra ele continuar exatamente embaixo do dedo.
+  const lastTapRef = useRef<Element | null>(null);
+  const scrollAnchorRef = useRef<{ el: Element; top: number; id: string; cardTop: number } | null>(null);
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => { lastTapRef.current = e.target as Element; };
+    document.addEventListener("pointerdown", onDown, true);
+    return () => document.removeEventListener("pointerdown", onDown, true);
+  }, []);
+  useLayoutEffect(() => {
+    const a = scrollAnchorRef.current;
+    if (!a) return;
+    scrollAnchorRef.current = null;
+    // Se o card foi remontado (mudou de seção), o botão tocado não existe
+    // mais: aí ancora pelo próprio card.
+    const card = document.getElementById(`item-${a.id}`);
+    const diff = a.el.isConnected
+      ? a.el.getBoundingClientRect().top - a.top
+      : card ? card.getBoundingClientRect().top - a.cardTop : 0;
+    if (Math.abs(diff) > 1) window.scrollBy(0, diff);
+  }, [items]);
   const [coverUrls, setCoverUrls] = useState<string[]>(initialCoverUrl ?? []);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>(initialCategories);
@@ -344,6 +369,12 @@ export function ShowcaseBuilder({
   }
 
   async function save(id: string, fields: Partial<Item>) {
+    const card = document.getElementById(`item-${id}`);
+    const tapped = lastTapRef.current;
+    const anchor = tapped && card?.contains(tapped) ? tapped : card;
+    if (anchor && card) {
+      scrollAnchorRef.current = { el: anchor, top: anchor.getBoundingClientRect().top, id, cardTop: card.getBoundingClientRect().top };
+    }
     snapshot();
     patch(id, fields);
     await supabase.from("content_items").update(fields).eq("id", id);
@@ -1702,7 +1733,7 @@ function ItemCard({
               {/* Chips em vez de lista suspensa: dá pra ver todas as opções de
                   uma vez e trocar com um toque. */}
               <div className="mt-2.5 flex flex-wrap gap-2">
-                {[{ v: null as string | null, t: "Destaques" }, ...categories.map((name) => ({ v: name as string | null, t: name }))].map(({ v, t }) => {
+                {[{ v: null as string | null, t: "Sem categoria" }, ...categories.map((name) => ({ v: name as string | null, t: name }))].map(({ v, t }) => {
                   const ativo = (item.brand_label ?? null) === v;
                   return (
                     <button
@@ -1713,7 +1744,6 @@ function ItemCard({
                     >
                       {ativo && <span aria-hidden>✓</span>}
                       {t}
-                      {v === null && <span className={`text-[11px] font-normal ${ativo ? "text-white/70" : "text-text-tertiary"}`}>sem categoria</span>}
                     </button>
                   );
                 })}
