@@ -17,9 +17,6 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
         <h1 className="mt-2 max-w-md font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-tight tracking-[-0.01em]">
           A IA da sua marca com site inteligente.
         </h1>
-        <p className="mt-4 max-w-sm text-[16px] text-text-secondary">
-          Seu negócio com inteligência própria.
-        </p>
         <div className="mt-10 flex flex-col items-center gap-3">
           <Link href="/apresentacao">
             <Button variant="orbi">Ver como funciona ✦</Button>
