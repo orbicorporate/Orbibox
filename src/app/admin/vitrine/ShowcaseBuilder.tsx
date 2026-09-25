@@ -1444,15 +1444,35 @@ function ItemCard({
             </div>
 
             {(item.link_kind ?? "produto") === "produto" && (
-              <div className="rounded-[22px] border border-orbi-gradient-start/30 bg-orbi-gradient-start/[0.06] p-5">
-                <p className="inline-flex items-center gap-1.5 rounded-full bg-surface-white px-2.5 py-1 text-[12px] font-medium uppercase tracking-wide text-text-secondary">
-                  📄 Conteúdo da página própria
-                </p>
-                <div className="mt-3 flex items-center justify-between gap-2">
-                  <p className="text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Fotos e vídeos</p>
+              <div className="overflow-hidden rounded-[22px] border border-divider bg-surface-white">
+                {/* Cabeçalho escuro: deixa claro que tudo daqui pra baixo é da
+                    página própria do produto, não do card da Vitrine. */}
+                <div className="flex items-center gap-3 bg-on-background px-5 py-4 text-white">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <rect x="5" y="3" width="14" height="18" rx="2.5" />
+                      <path d="M9 8h6M9 12h6M9 16h3" />
+                    </svg>
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[15px] font-semibold leading-tight">Página própria do produto</p>
+                    <p className="mt-0.5 text-[12px] leading-snug text-white/65">Aparece quando o cliente toca no card</p>
+                  </div>
+                  <Link
+                    href={`/${slug}/p/${item.id}`}
+                    target="_blank"
+                    className="shrink-0 rounded-full bg-white px-3 py-1.5 text-[12px] font-medium text-on-background"
+                  >
+                    Ver ↗
+                  </Link>
+                </div>
+
+                <div className="p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[15px] font-semibold text-on-background">Fotos e vídeos</p>
                   <span className="text-[12px] text-text-tertiary">{item.gallery_urls.length}/6 · opcional</span>
                 </div>
-                <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">
+                <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">
                   {`Viram um carrossel na página deste produto. Mesmo formato da capa: ${RATIOS[COVER_RATIO_BY_SIZE[size]].label} (${RATIO_PIXELS[COVER_RATIO_BY_SIZE[size]]}).`}
                 </p>
                 <div className="mt-3">
@@ -1480,11 +1500,11 @@ function ItemCard({
                   />
                 )}
 
-                <div className="mt-5 border-t border-orbi-gradient-start/20 pt-4">
+                <div className="mt-6 border-t border-divider pt-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Diferenciais e conversa</p>
-                      <p className="mt-1 text-[12px] leading-snug text-text-tertiary">A Orbi pode preencher os dois passos abaixo pra você.</p>
+                      <p className="text-[15px] font-semibold text-on-background">Diferenciais e conversa</p>
+                      <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">A Orbi pode preencher os dois passos abaixo pra você.</p>
                     </div>
                     <button
                       onClick={onSuggestExtras}
@@ -1496,7 +1516,7 @@ function ItemCard({
                   </div>
 
                   {/* Passo 1: diferenciais, numerados na ordem em que aparecem na página. */}
-                  <div className="mt-4 rounded-2xl bg-surface-white/70 p-3.5">
+                  <div className="mt-4 rounded-2xl bg-surface-soft/70 p-3.5">
                     <div className="flex items-center gap-2">
                       <StepNumber n={1} />
                       <p className="flex-1 text-[14px] font-medium text-on-background">Diferenciais</p>
@@ -1549,7 +1569,7 @@ function ItemCard({
                   </div>
 
                   {/* Passo 2: a pergunta que abre conversa. */}
-                  <div className="mt-3 rounded-2xl bg-surface-white/70 p-3.5">
+                  <div className="mt-3 rounded-2xl bg-surface-soft/70 p-3.5">
                     <div className="flex items-center gap-2">
                       <StepNumber n={2} />
                       <p className="flex-1 text-[14px] font-medium text-on-background">Pergunta pronta pra Orbi</p>
@@ -1592,6 +1612,7 @@ function ItemCard({
                     </div>
                     <p className="mt-1.5 text-[11px] text-text-tertiary">Deixe em branco pra não mostrar.</p>
                   </div>
+                </div>
                 </div>
               </div>
             )}
