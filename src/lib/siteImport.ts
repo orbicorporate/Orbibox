@@ -44,6 +44,8 @@ async function fetchRenderizado(url: string): Promise<SiteData | null> {
     if (!res.ok) return null;
     const md = await res.text();
     if (md.trim().length < 50) return null;
+    // Tela de login (Instagram, Facebook etc.) não é conteúdo da marca.
+    if (/log ?in(to)? (to )?(instagram|facebook)|entre no instagram|faça login|sign up to see/i.test(md.slice(0, 1500))) return null;
     const base = new URL(url).origin;
     const images: SiteData["images"] = [];
     const seen = new Set<string>();
@@ -328,6 +330,50 @@ export function instagramHandle(v: string | null | undefined): string | null {
   return /^[A-Za-z0-9._]{1,30}$/.test(h) ? h.toLowerCase() : null;
 }
 
+type IgUser = {
+  username?: string;
+  full_name?: string;
+  biography?: string;
+  external_url?: string | null;
+  is_private?: boolean;
+  edge_owner_to_timeline_media?: {
+    edges?: {
+      node?: {
+        display_url?: string;
+        taken_at_timestamp?: number;
+        edge_liked_by?: { count?: number };
+        edge_media_to_comment?: { count?: number };
+        edge_media_to_caption?: { edges?: { node?: { text?: string } }[] };
+      };
+    }[];
+  };
+};
+
+/** Extrai o JSON do perfil ("contextJSON") de dentro da página de embed. */
+function parseEmbed(html: string): IgUser | null {
+  const m = html.match(/"contextJSON":"((?:\\.|[^"\\])*)"/);
+  if (!m) return null;
+  try {
+    const ctx = JSON.parse(JSON.parse(`"${m[1]}"`))?.context;
+    if (!ctx) return null;
+    const midias: unknown[] = Array.isArray(ctx.graphql_media) ? ctx.graphql_media : [];
+    const edges = midias
+      .map((g) => (g as { shortcode_media?: Record<string, unknown> })?.shortcode_media)
+      .filter(Boolean)
+      .map((n) => ({ node: n as NonNullable<NonNullable<IgUser["edge_owner_to_timeline_media"]>["edges"]>[number]["node"] }));
+    return {
+      username: ctx.username,
+      full_name: ctx.full_name,
+      biography: ctx.biography ?? ctx.bio ?? "",
+      external_url: ctx.external_url ?? null,
+      is_private: ctx.is_private ?? false,
+      edge_owner_to_timeline_media: { edges },
+    };
+  } catch {
+    return null;
+  }
+}
+
 type IgPost = { caption: string; image: string; likes: number; comments: number; takenAt: number };
 export type InstagramData = SiteData & { externalUrl: string | null; fullName: string; bio: string; posts: IgPost[] };
 
@@ -340,49 +386,46 @@ export async function fetchInstagram(handleOrUrl: string): Promise<InstagramData
   const handle = instagramHandle(handleOrUrl);
   if (!handle) return null;
 
-  type IgUser = {
-    full_name?: string;
-    biography?: string;
-    external_url?: string | null;
-    is_private?: boolean;
-    edge_owner_to_timeline_media?: {
-      edges?: {
-        node?: {
-          display_url?: string;
-          taken_at_timestamp?: number;
-          edge_liked_by?: { count?: number };
-          edge_media_to_comment?: { count?: number };
-          edge_media_to_caption?: { edges?: { node?: { text?: string } }[] };
-        };
-      }[];
-    };
-  };
-
   let user: IgUser | null = null;
+
+  // 1) Página de "embed" do perfil: é pública (feita pra ser incorporada em
+  // sites) e traz nome, posts recentes, legendas e fotos num JSON dentro do HTML.
   try {
-    const res = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${handle}`, {
+    const res = await fetch(`https://www.instagram.com/${handle}/embed/`, {
       signal: AbortSignal.timeout(10000),
       headers: {
-        "x-ig-app-id": "936619743392459",
         "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-        Accept: "*/*",
         "Accept-Language": "pt-BR,pt;q=0.9",
       },
     });
-    if (res.ok) {
-      const j = await res.json();
-      user = j?.data?.user ?? null;
-    }
+    if (res.ok) user = parseEmbed(await res.text());
   } catch {
     user = null;
   }
 
-  // Plano C: leitor que abre a página como navegador.
-  if (!user) {
-    const lido = await fetchRenderizado(`https://www.instagram.com/${handle}/`);
-    if (!lido || lido.text.length < 80) return null;
-    return { ...lido, externalUrl: null, fullName: handle, bio: "", posts: [] };
+  // 2) Endpoint do próprio site do Instagram (costuma bloquear servidor, mas às vezes passa).
+  if (!user || !(user.edge_owner_to_timeline_media?.edges?.length)) {
+    try {
+      const res = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${handle}`, {
+        signal: AbortSignal.timeout(8000),
+        headers: {
+          "x-ig-app-id": "936619743392459",
+          "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+          Accept: "*/*",
+          "Accept-Language": "pt-BR,pt;q=0.9",
+        },
+      });
+      if (res.ok) {
+        const j = await res.json();
+        const u2: IgUser | null = j?.data?.user ?? null;
+        if (u2) user = { ...user, ...u2 };
+      }
+    } catch {
+      /* segue com o que tiver */
+    }
   }
+
+  if (!user) return null;
   if (user.is_private) return null;
 
   const posts: IgPost[] = (user.edge_owner_to_timeline_media?.edges ?? [])
