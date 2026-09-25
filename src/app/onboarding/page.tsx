@@ -104,7 +104,7 @@ export default function OnboardingPage() {
       const res = await fetch("/api/import-site", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId: id, url: website.trim() }),
+        body: JSON.stringify({ businessId: id, url: website.trim(), instagram: instagram.trim() }),
       });
       const d = await res.json();
       if (res.ok) return { imported: d.imported ?? 0, siteType: d.siteType ?? null, motivo: d.motivo ?? null, fetchError: null };
@@ -204,7 +204,7 @@ export default function OnboardingPage() {
     let siteType: "ecommerce" | "institucional" | "links" | null = null;
     let motivo: string | null = null;
     let fetchError: string | null = null;
-    if (website.trim()) {
+    if (website.trim() || instagram.trim()) {
       setStep("montando");
       setBizId(business.id);
       // Tenta duas vezes antes de mostrar qualquer aviso: a maioria das
@@ -303,7 +303,7 @@ export default function OnboardingPage() {
         {step === "dados" && (
           <>
             <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">DNA da Marca</h1>
-            <p className="mt-1 text-[15px] text-text-secondary">A Orbi lê seu site pra montar o manual da sua marca e trazer seus produtos. Os links e o WhatsApp já viram botões prontos na sua página.</p>
+            <p className="mt-1 text-[15px] text-text-secondary">A Orbi lê seu site (ou seu Instagram, se não tiver site) pra montar o manual da sua marca e trazer seus produtos. Os links e o WhatsApp já viram botões prontos na sua página.</p>
             <form onSubmit={startAnalysis} className="mt-8 flex flex-col gap-4">
               <input required placeholder="Nome do negócio" value={name} onChange={(e) => setName(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <input placeholder="@seuinstagram (opcional)" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
@@ -333,7 +333,9 @@ export default function OnboardingPage() {
           <div className="flex flex-col items-center gap-4 py-12 text-center">
             <OrbiOrb size={120} />
             <p className="mt-2 text-[15px] text-text-secondary">
-              A Orbi está lendo {website || "seu site"} e montando sua vitrine, isso leva alguns segundos…
+              {website.trim()
+                ? `A Orbi está lendo ${website.trim()} e montando sua vitrine, isso leva alguns segundos…`
+                : `A Orbi está lendo o Instagram ${instagram.trim().startsWith("@") ? instagram.trim() : "@" + instagram.trim().replace(/^.*instagram\.com\//i, "").replace(/\/.*$/, "")} e montando sua vitrine, isso leva alguns segundos…`}
             </p>
           </div>
         )}
@@ -348,7 +350,7 @@ export default function OnboardingPage() {
                   Quase lá
                 </h1>
                 <p className="text-center text-[14px] text-text-secondary">
-                  O site demorou ou não respondeu agora. Tenta de novo, ou siga e importe depois pela Vitrine.
+                  {importSummary.fetchError} Você pode tentar de novo, ou seguir e importar depois pela Vitrine.
                 </p>
                 <button
                   type="button"
@@ -356,7 +358,7 @@ export default function OnboardingPage() {
                   disabled={retrying}
                   className="mx-auto rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[14px] font-medium disabled:opacity-60"
                 >
-                  {retrying ? "Lendo o site de novo…" : "Tentar ler o site de novo"}
+                  {retrying ? "Lendo de novo…" : "Tentar de novo"}
                 </button>
               </>
             ) : importSummary.imported > 0 ? (
@@ -380,11 +382,11 @@ export default function OnboardingPage() {
                   )}
                 </p>
               </>
-            ) : !website.trim() ? (
+            ) : !website.trim() && !instagram.trim() ? (
               <>
                 <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">Tudo pronto</h1>
                 <p className="text-center text-[14px] text-text-secondary">
-                  Você não passou um site, então a vitrine começa vazia, monta ela do seu jeito quando quiser.
+                  Você não passou site nem Instagram, então a vitrine começa vazia, monta ela do seu jeito quando quiser.
                 </p>
               </>
             ) : (

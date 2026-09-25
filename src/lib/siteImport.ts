@@ -490,13 +490,23 @@ export async function lerMelhorFonte(
 
   let lidoSite: SiteData | null = null;
   let urlSite = site?.trim() || "";
+  let igDoAgregador = "";
+
+  // Linktree e afins não têm conteúdo próprio: abre a página, pega o site de
+  // verdade e o Instagram que estão listados nela e segue por eles.
+  if (urlSite && ehAgregadorDeLinks(urlSite) && !/wa\.me|whatsapp/i.test(urlSite)) {
+    const saidas = await linksDoAgregador(urlSite);
+    tentativas.push(`agregador ${urlSite}: ${saidas.site ?? "sem site"}, ${saidas.instagram ?? "sem instagram"}`);
+    igDoAgregador = saidas.instagram ?? "";
+    urlSite = saidas.site ?? "";
+  }
   if (urlSite && !/instagram\.com/i.test(urlSite)) {
     lidoSite = await fetchSiteResiliente(urlSite);
     tentativas.push(`site ${urlSite}: ${lidoSite ? `${lidoSite.text.length} caracteres` : "falhou"}`);
     if (lidoSite && lidoSite.text.length >= BOM) return { data: lidoSite, fonte: "site", url: urlSite, tentativas };
   }
   // Se a pessoa colou o link do Instagram no campo de site, usa como Instagram.
-  const ig = instagram?.trim() || (/instagram\.com/i.test(urlSite) ? urlSite : "");
+  const ig = instagram?.trim() || (/instagram\.com/i.test(urlSite) ? urlSite : "") || igDoAgregador;
 
   let lidoIg: InstagramData | null = null;
   if (ig) {
@@ -531,4 +541,34 @@ export async function lerMelhorFonte(
   // Só sobrou um site fraco: ainda assim usa, a Orbi faz o que der.
   if (lidoSite && lidoSite.text.length >= 80) return { data: lidoSite, fonte: "site", url: urlSite, tentativas };
   return null;
+}
+
+const REDES = /(instagram\.com|facebook\.com|fb\.com|tiktok\.com|youtube\.com|youtu\.be|twitter\.com|x\.com|linkedin\.com|pinterest\.|spotify\.com|wa\.me|whatsapp\.com|t\.me|linktr\.ee|linktree|beacons\.ai|bio\.link|lnk\.bio|taplink|ifood\.com|google\.com|goo\.gl|maps\.app|apple\.com|play\.google)/i;
+
+/** Lê uma página de links (Linktree etc.) e acha o site da marca e o Instagram. */
+async function linksDoAgregador(url: string): Promise<{ site: string | null; instagram: string | null }> {
+  try {
+    const u = url.startsWith("http") ? url : `https://${url}`;
+    const res = await fetch(u, {
+      signal: AbortSignal.timeout(8000),
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" },
+    });
+    if (!res.ok) return { site: null, instagram: null };
+    const html = await res.text();
+    const urls = [...html.matchAll(/https?:\\?\/\\?\/[^"'\s<>\\]+/g)].map((m) => m[0].replace(/\\\//g, "/"));
+    const instagram = urls.find((x) => /instagram\.com\/[A-Za-z0-9._]+/i.test(x) && !/instagram\.com\/(p|reel|explore|accounts)\//i.test(x)) ?? null;
+    const host = new URL(u).host;
+    const site =
+      urls.find((x) => {
+        try {
+          const h = new URL(x).host;
+          return h !== host && !REDES.test(x) && !/\.(png|jpe?g|webp|svg|gif|css|js|woff2?)(\?|$)/i.test(x) && !/(cdn|static|assets|fonts|sentry|cloudflare|googletag|gstatic|schema\.org|w3\.org)/i.test(h);
+        } catch {
+          return false;
+        }
+      }) ?? null;
+    return { site, instagram };
+  } catch {
+    return { site: null, instagram: null };
+  }
 }

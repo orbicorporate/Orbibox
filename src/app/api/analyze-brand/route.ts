@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 60;
 import { askClaude } from "@/lib/anthropic";
+import { fetchInstagram, fetchSiteResiliente } from "@/lib/siteImport";
+import { jsonrepair } from "jsonrepair";
 
 const PALETTES = [
   [{ hex: "#1c1b1c", role: "primary" }, { hex: "#B7F34A", role: "accent" }, { hex: "#F7F7F4", role: "background" }],
@@ -29,7 +33,16 @@ export async function POST(req: NextRequest) {
   try {
     const { name, instagram, website } = await req.json();
 
-    const siteText = website ? await fetchSiteText(website) : null;
+    // Site (lido do jeito resiliente) e Instagram em paralelo: o tom de voz
+    // e a paleta ficam muito melhores com os dois, e sem site o Instagram basta.
+    const [siteLido, igLido] = await Promise.all([
+      website ? fetchSiteResiliente(website).catch(() => null) : Promise.resolve(null),
+      instagram ? fetchInstagram(instagram).catch(() => null) : Promise.resolve(null),
+    ]);
+    const siteText =
+      [siteLido?.text ? siteLido.text.slice(0, 3500) : (website ? await fetchSiteText(website) : null), igLido?.text ? `INSTAGRAM:\n${igLido.text.slice(0, 2500)}` : null]
+        .filter(Boolean)
+        .join("\n\n") || null;
     const seed = ((name || "") + (instagram || "") + (website || "")).length;
     const colors = PALETTES[seed % PALETTES.length];
 
@@ -43,7 +56,7 @@ Responda SOMENTE em JSON válido, sem markdown, sem texto antes ou depois, no fo
 
     const userMsg = `Nome do negócio: ${name || "(não informado)"}
 Instagram: ${instagram || "(não informado)"}
-${siteText ? `Texto extraído do site:\n${siteText}` : "Site não informado ou não acessível, infira a partir do nome e segmento provável."}`;
+${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e Instagram não disponíveis, infira a partir do nome e segmento provável."}`;
 
     let personality = { energetica: 0.6, proxima: 0.6, visual: 0.6, direta: 0.6 };
     let voiceSummary = "Tom próximo e direto, pronto para conversar com quem chega.";
@@ -55,7 +68,7 @@ ${siteText ? `Texto extraído do site:\n${siteText}` : "Site não informado ou n
       // Extrai o primeiro bloco {...} da resposta, mesmo que venha com texto ao redor.
       const match = raw.match(/\{[\s\S]*\}/);
       const jsonText = match ? match[0] : raw.trim().replace(/^```json\n?|```$/g, "");
-      const parsed = JSON.parse(jsonText);
+      const parsed = JSON.parse(jsonrepair(jsonText));
       if (parsed.personality) personality = parsed.personality;
       if (parsed.voiceSummary) voiceSummary = parsed.voiceSummary;
       if (parsed.font) font = String(parsed.font).slice(0, 60);

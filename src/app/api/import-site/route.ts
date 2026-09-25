@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extrairProposta, fetchSiteResiliente, type Extracted, type SiteType } from "@/lib/siteImport";
+import { extrairProposta, instagramHandle, lerMelhorFonte, type Extracted, type SiteType } from "@/lib/siteImport";
 import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessId, url } = await req.json();
-    if (!businessId || !url) {
-      return NextResponse.json({ error: "businessId e url são obrigatórios." }, { status: 400 });
+    const body = await req.json();
+    const businessId: string | undefined = body.businessId;
+    const urlInformada: string = (body.url ?? "").trim();
+    const instagram: string = (body.instagram ?? "").trim();
+    if (!businessId || (!urlInformada && !instagram)) {
+      return NextResponse.json({ error: "Informe o site ou o Instagram." }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -28,14 +31,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Negócio não encontrado." }, { status: 404 });
     }
 
-    const site = await fetchSiteResiliente(url);
-    if (!site) {
-      return NextResponse.json({ error: "Não consegui acessar esse site. Verifique o link." }, { status: 422 });
+    // Site primeiro; sem site (ou site vazio/bloqueado), o Instagram.
+    const tentativas: string[] = [];
+    const lida = await lerMelhorFonte({ site: urlInformada, instagram }, tentativas);
+    if (!lida) {
+      console.warn("import-site: nenhuma fonte legível", { urlInformada, instagram, tentativas });
+      const soInstagram = !urlInformada && !!instagram;
+      return NextResponse.json(
+        {
+          error: soInstagram
+            ? "Não encontrei esse perfil do Instagram. Confere se o @ está certo e se o perfil é público."
+            : "Não consegui abrir esse site agora. Confere o endereço, ou informe também o Instagram.",
+          codigo: soInstagram ? "instagram_nao_encontrado" : "fonte_indisponivel",
+        },
+        { status: 422 },
+      );
     }
+    const site = lida.data;
+    const url = lida.url;
 
-    const proposta = await extrairProposta(site, url, business.name);
+    let proposta = await extrairProposta(site, url, business.name, lida.fonte);
+    // Uma segunda chance antes de desistir (instabilidade da IA).
+    if (!proposta) proposta = await extrairProposta(site, url, business.name, lida.fonte);
     if (!proposta) {
-      return NextResponse.json({ error: "Não consegui interpretar o conteúdo do site." }, { status: 422 });
+      return NextResponse.json({ error: "A Orbi não conseguiu montar a vitrine agora. Tenta de novo em instantes.", codigo: "ia" }, { status: 422 });
     }
 
     const tiposValidos: SiteType[] = ["ecommerce", "institucional", "links"];
@@ -82,6 +101,24 @@ export async function POST(req: NextRequest) {
     }
     const swatches = brandSwatches();
 
+    // Fotos do Instagram vêm de links que expiram em poucos dias: copia pro
+    // nosso armazenamento antes de salvar, senão a vitrine perde as fotos.
+    async function rehospedar(src: string): Promise<string | null> {
+      if (!/(cdninstagram\.com|fbcdn\.net)/i.test(src)) return src;
+      try {
+        const r = await fetch(src, { signal: AbortSignal.timeout(8000) });
+        if (!r.ok) return null;
+        const blob = await r.blob();
+        const tipo = blob.type || "image/jpeg";
+        const path = `${businessId}/ig-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${tipo.includes("webp") ? "webp" : "jpg"}`;
+        const { error } = await supabase.storage.from("box-images").upload(path, blob, { contentType: tipo, cacheControl: "31536000", upsert: false });
+        if (error) return null;
+        return supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
+      } catch {
+        return null;
+      }
+    }
+
     const RHYTHM = ["destaque", "medio", "medio", "largo", "medio", "medio"];
     let semFotoIdx = 0;
     const usedImages = new Set<string>();
@@ -120,6 +157,21 @@ export async function POST(req: NextRequest) {
       };
     });
 
+    await Promise.all(
+      rows.map(async (r, idx) => {
+        if (!r.image_url) return;
+        const nova = await rehospedar(r.image_url);
+        if (nova) {
+          r.image_url = nova;
+        } else {
+          // Não deu pra copiar a foto: o card fica em cor, nunca com foto quebrada.
+          r.image_url = null;
+          r.box_style = "cor";
+          r.box_color = swatches[idx % swatches.length];
+        }
+      }),
+    );
+
     const { data: inserted, error: insErr } = await supabase
       .from("content_items")
       .insert(rows)
@@ -133,7 +185,7 @@ export async function POST(req: NextRequest) {
     // Só preenche contato que ainda estiver vazio, não sobrescreve o que o dono digitou.
     const { data: atual } = await supabase
       .from("businesses")
-      .select("contact_whatsapp, contact_phone, contact_email")
+      .select("contact_whatsapp, contact_phone, contact_email, about_business, contact_site, instagram_handle")
       .eq("id", businessId)
       .maybeSingle();
 
@@ -143,8 +195,14 @@ export async function POST(req: NextRequest) {
         last_import_url: url,
         last_import_at: new Date().toISOString(),
         site_type: siteType,
-        contact_site: url,
-        about_business: proposta.about_business ?? null,
+        contact_site: lida.fonte === "site" ? url : atual?.contact_site ?? null,
+        instagram_handle: atual?.instagram_handle || (lida.fonte === "instagram" ? instagramHandle(url) : null) || (instagram ? instagramHandle(instagram) : null),
+        // O que o dono escreveu no cadastro vale mais; a Orbi completa.
+        about_business: atual?.about_business?.trim()
+          ? proposta.about_business && !atual.about_business.includes(proposta.about_business.slice(0, 40))
+            ? `${atual.about_business.trim()}\n\n${proposta.about_business}`
+            : atual.about_business
+          : proposta.about_business ?? null,
         differentials: proposta.differentials ?? null,
         policies: proposta.policies ?? null,
         contact_whatsapp: atual?.contact_whatsapp ?? proposta.contact_whatsapp ?? null,
@@ -157,6 +215,7 @@ export async function POST(req: NextRequest) {
       imported: inserted?.length ?? 0,
       ids: inserted?.map((r) => r.id) ?? [],
       siteType,
+      fonte: lida.fonte,
       motivo: proposta.motivo ?? null,
       semFoto: rows.filter((r) => !r.image_url).length,
     });
