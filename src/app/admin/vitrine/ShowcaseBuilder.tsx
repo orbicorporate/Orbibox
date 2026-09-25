@@ -1560,9 +1560,17 @@ function ItemCard({
                       {(item.highlights?.length ?? 0) < 6 && (
                         <button
                           onClick={() => patch(item.id, { highlights: [...(item.highlights ?? []), ""] })}
-                          className="ml-7 self-start rounded-full border border-dashed border-divider px-3.5 py-1.5 text-[12px] font-medium text-text-secondary"
+                          className="flex w-full items-center gap-3 rounded-2xl border border-dashed border-text-tertiary/40 bg-surface-white px-3.5 py-3 text-left transition-colors active:bg-surface-soft"
                         >
-                          + Adicionar diferencial
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-on-background text-[15px] leading-none text-white">+</span>
+                          <span className="min-w-0">
+                            <span className="block text-[13.5px] font-medium text-on-background">
+                              {(item.highlights?.length ?? 0) === 0 ? "Adicionar primeiro diferencial" : "Adicionar outro"}
+                            </span>
+                            {(item.highlights?.length ?? 0) === 0 && (
+                              <span className="block text-[11.5px] text-text-tertiary">ex: 18 anos de experiência</span>
+                            )}
+                          </span>
                         </button>
                       )}
                     </div>
