@@ -696,7 +696,7 @@ export function VisitorExperience({
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
             ) : (
               <>
-                <Showcase content={content} business={business} sessionId={sessionId} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
+                <Showcase content={content} business={business} sessionId={sessionId} orbiColors={orbiColors} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
                 {/* Captura discreta no fim do catálogo: quem chegou até aqui
                     olhou tudo, é o momento certo de oferecer aviso. */}
                 {!business.vitrine_lead_top && (
@@ -1620,7 +1620,7 @@ function OrbiChat({
   );
 }
 
-function OrbiRecommendation({ businessId, sessionId, onOrbi }: { businessId: string; sessionId: string | null; onOrbi?: () => void }) {
+function OrbiRecommendation({ businessId, sessionId, onOrbi, orbiColors }: { businessId: string; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
   const [rec, setRec] = useState<{ message: string; cta: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -1643,6 +1643,10 @@ function OrbiRecommendation({ businessId, sessionId, onOrbi }: { businessId: str
 
   return (
     <OrbiInsightCard>
+      {/* Esfera da Orbi no cantinho: deixa claro que quem "fala" é ela. */}
+      <span className="absolute right-5 top-5 h-9 w-9 overflow-hidden rounded-full" aria-hidden>
+        <OrbiParticleSphere size={36} colors={orbiColors ?? undefined} className="rounded-full" />
+      </span>
       <OrbiInsightHeader />
       <OrbiInsightMessage>{rec.message}</OrbiInsightMessage>
       {onOrbi && (
@@ -1758,7 +1762,7 @@ function VitrineCoverBleed({ business }: { business: Business }) {
   );
 }
 
-function Showcase({ content, business, sessionId, onOrbi }: { content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void }) {
+function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
   const sections = groupByCategory(content);
   const [active, setActive] = useState<string | null>(null);
 
@@ -1956,7 +1960,7 @@ function Showcase({ content, business, sessionId, onOrbi }: { content: ContentIt
                 );
               })}
             </div>
-            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} onOrbi={onOrbi} /></div>}
+            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} onOrbi={onOrbi} orbiColors={orbiColors} /></div>}
           </div>
         ))}
       </div>

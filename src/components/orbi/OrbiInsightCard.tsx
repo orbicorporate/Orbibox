@@ -32,7 +32,7 @@ export function OrbiSparkleMini({ size = 15 }: { size?: number }) {
 }
 
 export function OrbiInsightCard({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`orbi-card-light rounded-[28px] p-6 ${className}`}>{children}</div>;
+  return <div className={`orbi-card-light orbi-card-flow rounded-[28px] p-6 ${className}`}>{children}</div>;
 }
 
 export function OrbiInsightHeader({ label = "Orbi Insight" }: { label?: string }) {

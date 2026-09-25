@@ -182,6 +182,20 @@ body {
   animation: orbiLightSweep 7s ease-in-out infinite;
   pointer-events: none;
 }
+/* Degradê do fundo andando devagar (menta ↔ limão), usado nos cards de
+   insight. Fica por baixo da luz que varre (::before). */
+.orbi-card-flow {
+  background: linear-gradient(120deg, #F4FBE9, #E4FAEF, #DDF6F1, #EEFAE0, #F4FBE9);
+  background-size: 300% 300%;
+  animation: orbiCardFlow 12s ease-in-out infinite;
+}
+@keyframes orbiCardFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-card-flow { animation: none; }
+}
 @keyframes orbiLightSweep {
   0%, 100% { transform: translateX(0%); opacity: 0.45; }
   50% { transform: translateX(260%); opacity: 0.85; }
