@@ -1560,7 +1560,7 @@ function ItemCard({
                         onClick={() => save(item.id, { title_placement: v })}
                         className={`flex flex-1 flex-col gap-2 rounded-2xl border-2 p-2 ${ativo ? "border-on-background" : "border-divider"}`}
                       >
-                        <TitlePlacementExample kind={v} />
+                        <TitlePlacementExample kind={v} footer={fc} />
                         <span className={`mt-auto text-[12.5px] font-medium ${ativo ? "" : "text-text-secondary"}`}>
                           {v === "faixa" ? "Com rodapé" : "Sem rodapé"}
                         </span>
@@ -1838,21 +1838,26 @@ const EXEMPLO_FOTO = "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object
 
 /** Mini card de exemplo: com rodapé (nome numa faixa embaixo da foto) ou
  * sem rodapé (nome sobre a foto, com degradê). */
-function TitlePlacementExample({ kind }: { kind: "faixa" | "sobre" }) {
+function TitlePlacementExample({ kind, footer }: { kind: "faixa" | "sobre"; footer?: { bg: string; fg: string } | null }) {
+  // Os dois exemplos têm a mesma altura total: no "com rodapé" a foto fica
+  // um pouco menor pra sobrar espaço pra faixa, que já mostra a cor escolhida.
   return (
     <span className="block w-full overflow-hidden rounded-xl bg-white text-left shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
-      <span className="relative block aspect-[4/3] w-full">
+      <span className={`relative block w-full ${kind === "faixa" ? "h-[84px]" : "h-[124px]"}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={EXEMPLO_FOTO} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         {kind === "sobre" && (
-          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-2 pb-1.5 pt-6">
-            <span className="block truncate text-[11px] font-semibold leading-tight text-white">Sala de Estar</span>
+          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-2.5 pb-2 pt-6">
+            <span className="block truncate text-[11.5px] font-semibold leading-tight text-white">Sala de Estar</span>
           </span>
         )}
       </span>
       {kind === "faixa" && (
-        <span className="block px-2 py-1.5">
-          <span className="block truncate text-[11px] font-medium leading-tight text-on-background">Sala de Estar</span>
+        <span
+          className="flex h-[40px] items-center px-2.5 transition-colors"
+          style={{ backgroundColor: footer?.bg ?? "#FFFFFF" }}
+        >
+          <span className="block truncate text-[11.5px] font-medium leading-tight" style={{ color: footer?.fg ?? "#111318" }}>Sala de Estar</span>
         </span>
       )}
     </span>
