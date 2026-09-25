@@ -1611,7 +1611,11 @@ function ItemCard({
                   );
                 })}
               </div>
-              {item.price_type === "consulta" ? (
+              {item.price_type === "sem" ? (
+                <p className="mt-2 text-[12px] text-text-tertiary">
+                  O card não mostra preço nenhum. Bom pra serviço, portfólio ou quando preço não faz sentido.
+                </p>
+              ) : item.price_type === "consulta" ? (
                 <p className="mt-2 text-[12px] text-text-tertiary">
                   Sem valor, o card mostra só &quot;Sob consulta&quot;. Ideal quando o preço depende do projeto ou é combinado no contato.
                 </p>

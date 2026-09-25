@@ -189,9 +189,10 @@ export function groupByCategory<T extends { brand_label: string | null; position
   return [...map.entries()].map(([name, list]) => ({ name, items: list }));
 }
 
-export type PriceType = "exato" | "a_partir" | "faixa" | "media" | "consulta";
+export type PriceType = "sem" | "exato" | "a_partir" | "faixa" | "media" | "consulta";
 
 export const PRICE_TYPE_LABEL: Record<PriceType, string> = {
+  sem: "Sem preço",
   exato: "Preço exato",
   a_partir: "A partir de",
   faixa: "Faixa de preço",
@@ -209,6 +210,8 @@ export function formatPrice(item: { price: number | null; price_type?: string | 
   const tipo = (item.price_type as PriceType) || "exato";
   // "Sob consulta" não depende de valor, mostra o rótulo direto.
   if (tipo === "consulta") return "Sob consulta";
+  // "Sem preço": o card não mostra nada de preço, mesmo que tenha valor salvo.
+  if (tipo === "sem") return null;
   if (item.price == null) return null;
   switch (tipo) {
     case "a_partir":
