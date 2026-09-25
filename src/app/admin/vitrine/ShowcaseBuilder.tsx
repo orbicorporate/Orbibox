@@ -1702,15 +1702,38 @@ function ItemCard({
               <button
                 type="button"
                 onClick={() => setScheduleOpen((v) => !v)}
-                className="flex w-full items-center justify-between gap-3 rounded-2xl bg-surface-soft px-4 py-3 text-left"
+                className={`flex w-full items-center gap-3 rounded-2xl border bg-surface-white px-3.5 py-3 text-left transition-colors ${scheduleOpen ? "border-on-background" : "border-divider"}`}
               >
-                <span className="min-w-0">
-                  <span className="block text-[14px] font-medium text-on-background">🗓 Agendar publicação</span>
-                  <span className="block truncate text-[12px] text-text-tertiary">
-                    {item.starts_at || item.ends_at ? "Agendado, toque pra ver ou mudar" : "Opcional, entra e sai da Vitrine sozinho"}
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${item.starts_at || item.ends_at ? "bg-on-background text-white" : "bg-surface-soft text-on-background"}`}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+                    <path d="M3.5 10h17M8 3v4M16 3v4" />
+                  </svg>
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2">
+                    <span className="text-[14px] font-medium text-on-background">Agendar publicação</span>
+                    {(item.starts_at || item.ends_at) && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10.5px] font-medium text-text-secondary">
+                        <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
+                        Ativo
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-0.5 block truncate text-[12px] text-text-tertiary">
+                    {item.starts_at || item.ends_at
+                      ? [
+                          item.starts_at && `De ${new Date(item.starts_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}`,
+                          item.ends_at && `até ${new Date(item.ends_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}`,
+                        ].filter(Boolean).join(" ")
+                      : "Entra e sai da Vitrine sozinho"}
                   </span>
                 </span>
-                <span className={`shrink-0 text-text-tertiary transition-transform ${scheduleOpen ? "rotate-180" : ""}`}>▾</span>
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary transition-transform ${scheduleOpen ? "rotate-180" : ""}`}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </span>
               </button>
               {scheduleOpen && (
               <>
