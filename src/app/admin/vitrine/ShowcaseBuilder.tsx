@@ -1560,7 +1560,7 @@ function ItemCard({
                         onClick={() => save(item.id, { title_placement: v })}
                         className={`flex flex-1 flex-col gap-2 rounded-2xl border-2 p-2 ${ativo ? "border-on-background" : "border-divider"}`}
                       >
-                        <TitlePlacementExample kind={v} footer={fc} />
+                        <TitlePlacementExample kind={v} footer={fc} photo={hasPhoto ? item.image_url : null} title={item.title} />
                         <span className={`mt-auto text-[12.5px] font-medium ${ativo ? "" : "text-text-secondary"}`}>
                           {v === "faixa" ? "Com rodapé" : "Sem rodapé"}
                         </span>
@@ -1838,17 +1838,31 @@ const EXEMPLO_FOTO = "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object
 
 /** Mini card de exemplo: com rodapé (nome numa faixa embaixo da foto) ou
  * sem rodapé (nome sobre a foto, com degradê). */
-function TitlePlacementExample({ kind, footer }: { kind: "faixa" | "sobre"; footer?: { bg: string; fg: string } | null }) {
+function TitlePlacementExample({
+  kind,
+  footer,
+  photo,
+  title,
+}: {
+  kind: "faixa" | "sobre";
+  footer?: { bg: string; fg: string } | null;
+  photo?: string | null;
+  title?: string;
+}) {
+  // Usa a foto e o nome do próprio card; a foto do tema Arquitetura só
+  // entra enquanto o card ainda não tem imagem.
+  const src = photo || EXEMPLO_FOTO;
+  const nome = title?.trim() || "Sala de Estar";
   // A foto tem o mesmo tamanho nos dois exemplos; o "com rodapé" só ganha a
   // faixa embaixo, que já mostra a cor escolhida.
   return (
     <span className="block w-full overflow-hidden rounded-xl bg-white text-left shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
       <span className="relative block h-[84px] w-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={EXEMPLO_FOTO} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         {kind === "sobre" && (
           <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-2.5 pb-2 pt-6">
-            <span className="block truncate text-[11.5px] font-semibold leading-tight text-white">Sala de Estar</span>
+            <span className="block truncate text-[11.5px] font-semibold leading-tight text-white">{nome}</span>
           </span>
         )}
       </span>
@@ -1857,7 +1871,7 @@ function TitlePlacementExample({ kind, footer }: { kind: "faixa" | "sobre"; foot
           className="flex h-[40px] items-center px-2.5 transition-colors"
           style={{ backgroundColor: footer?.bg ?? "#FFFFFF" }}
         >
-          <span className="block truncate text-[11.5px] font-medium leading-tight" style={{ color: footer?.fg ?? "#111318" }}>Sala de Estar</span>
+          <span className="block truncate text-[11.5px] font-medium leading-tight" style={{ color: footer?.fg ?? "#111318" }}>{nome}</span>
         </span>
       )}
     </span>
