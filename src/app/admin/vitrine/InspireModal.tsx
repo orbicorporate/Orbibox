@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { VITRINE_THEMES, type ThemeBox, type ThemePhoto, type VitrineTheme } from "@/lib/vitrineThemes";
@@ -38,8 +39,7 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
     return (
       <div className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${spanCols}`}>
         <div className={`relative w-full ${ratioClass}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} loading="lazy" />
+          <Image src={photo.url} alt={title || "Exemplo"} fill sizes={box.size === "medio" || box.size === "alto" ? "(max-width: 480px) 45vw, 220px" : "(max-width: 480px) 90vw, 440px"} className="object-cover" style={{ objectPosition: objPos }} />
         </div>
         {title && (
           <div className={isMed ? "p-3" : "p-4"}>
@@ -54,8 +54,7 @@ function MockBox({ box, theme, photos, titleStyle }: { box: ThemeBox; theme: Vit
   // "sobre": nome sobre a imagem, com degradê.
   return (
     <div className={`relative overflow-hidden rounded-[24px] ${SPAN[box.size]}`} style={{ backgroundColor: theme.colors[3].hex }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={photo.url} alt={title || "Exemplo"} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} loading="lazy" />
+      <Image src={photo.url} alt={title || "Exemplo"} fill sizes={box.size === "medio" || box.size === "alto" ? "(max-width: 480px) 45vw, 220px" : "(max-width: 480px) 90vw, 440px"} className="object-cover" style={{ objectPosition: objPos }} />
       {title && (
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2.5">
           <p className="text-[12px] font-semibold leading-tight text-white">{title}</p>

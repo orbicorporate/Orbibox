@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { GiftArt } from "@/components/mobile/GiftArt";
 import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
@@ -568,8 +569,7 @@ function CenaVitrineFotos({ temaId, nome, photos, titleStyle }: { temaId: string
                   return (
                     <div key={i} style={d(i)} className={`apr-pop overflow-hidden rounded-[24px] bg-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${span}`}>
                       <div className={`relative w-full ${ratio[size]}`}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={f.url} alt={title || ""} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} />
+                        <Image src={f.url} alt={title || ""} fill sizes="(max-width: 480px) 90vw, 440px" className="object-cover" style={{ objectPosition: objPos }} />
                       </div>
                       <div className={med ? "h-[60px] px-3 py-2.5" : "h-[70px] px-4 py-3"}>
                         <p className={`truncate font-[family-name:var(--font-manrope)] font-medium leading-tight text-on-background ${med ? "text-[14px]" : "text-[17px]"}`}>{title || "\u00a0"}</p>
@@ -580,8 +580,7 @@ function CenaVitrineFotos({ temaId, nome, photos, titleStyle }: { temaId: string
                 }
                 return (
                   <div key={i} style={{ ...d(i), backgroundColor: suave }} className={`apr-pop relative overflow-hidden rounded-[24px] ${span} ${ratio[size]}`}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={f.url} alt={title || ""} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: objPos }} />
+                    <Image src={f.url} alt={title || ""} fill sizes="(max-width: 480px) 90vw, 440px" className="object-cover" style={{ objectPosition: objPos }} />
                     {title && (
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
                         <p className="text-[14px] font-semibold leading-tight text-white">{title}</p>
@@ -631,12 +630,13 @@ function CenaProdutoDetalhe({ fotos }: { fotos: ThemePhoto[] }) {
             <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[22px] bg-surface-soft">
               {fotos.length > 0 ? (
                 fotos.map((f, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     key={f.url}
                     src={f.url}
                     alt={f.title || titulo}
-                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${i === ativo ? "opacity-100" : "opacity-0"}`}
+                    fill
+                    sizes="(max-width: 480px) 90vw, 440px"
+                    className={`object-cover transition-opacity duration-700 ${i === ativo ? "opacity-100" : "opacity-0"}`}
                   />
                 ))
               ) : (
