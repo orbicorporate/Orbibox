@@ -104,7 +104,9 @@ export function GalleryUpload({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-3 items-start gap-2">
+      {/* Formato bem largo (banner) fica espremido em 3 colunas: vira uma
+          foto por linha, pra dar pra ver o recorte e ler a medida. */}
+      <div className={`grid ${lockedRatio && RATIOS[lockedRatio].value > 2 ? "grid-cols-1" : "grid-cols-3"} items-start gap-2`}>
         {slots.map((url, i) => {
           const video = url && isVideoUrl(url);
           const ytId = video ? youtubeId(url) : null;
@@ -143,8 +145,8 @@ export function GalleryUpload({
                     <span className="px-1 text-center text-[11px] leading-tight">{emptyLabel}</span>
                   ) : lockedRatio && (
                     <span className="px-1 text-center text-[10px] leading-tight">
-                      {RATIOS[lockedRatio].label}
-                      <br />
+                      {RATIOS[lockedRatio].label.replace(/\s*\(.*\)$/, "")}
+                      {RATIOS[lockedRatio].value > 2 ? " · " : <br />}
                       {RATIO_PIXELS[lockedRatio]}
                     </span>
                   )}
