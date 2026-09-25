@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -55,7 +54,7 @@ export default function SignupPage() {
   if (checkEmail) {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
-        <Card className="w-full max-w-sm text-center">
+        <div className="w-full max-w-sm text-center">
           <h1 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium">
             Confirme seu e-mail ✦
           </h1>
@@ -69,14 +68,14 @@ export default function SignupPage() {
           >
             Já confirmei, ir para o login
           </Link>
-        </Card>
+        </div>
       </main>
     );
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6">
-      <Card className="w-full max-w-sm">
+      <div className="w-full max-w-sm">
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">
           Criar meu Orbibox <span className="orbi-gradient-text">✦</span>
         </h1>
@@ -119,7 +118,7 @@ export default function SignupPage() {
             Entrar
           </Link>
         </p>
-      </Card>
+      </div>
     </main>
   );
 }

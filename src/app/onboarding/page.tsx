@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { OrbBadge } from "@/components/ui/OrbBadge";
 import { slugify } from "@/lib/utils";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
@@ -284,7 +283,7 @@ export default function OnboardingPage() {
       >
         Sair
       </button>
-      <Card className="w-full max-w-lg">
+      <div className="w-full max-w-lg">
         {step === "dados" && (
           <>
             <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">DNA da Marca</h1>
@@ -481,7 +480,7 @@ export default function OnboardingPage() {
             <Button className="mt-7 w-full" onClick={confirmAndCreate} disabled={saving}>{saving ? "Criando seu Orbibox…" : "Confirmar e continuar"}</Button>
           </>
         )}
-      </Card>
+      </div>
     </main>
   );
 }

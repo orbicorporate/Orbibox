@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 
 export default function EsqueciSenhaPage() {
   const supabase = createClient();
@@ -29,7 +28,7 @@ export default function EsqueciSenhaPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6">
-      <Card className="w-full max-w-sm">
+      <div className="w-full max-w-sm">
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">
           Esqueci minha senha
         </h1>
@@ -68,7 +67,7 @@ export default function EsqueciSenhaPage() {
             </p>
           </>
         )}
-      </Card>
+      </div>
     </main>
   );
 }

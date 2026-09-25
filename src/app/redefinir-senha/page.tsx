@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 
 export default function RedefinirSenhaPage() {
   const router = useRouter();
@@ -60,7 +59,7 @@ export default function RedefinirSenhaPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6">
-      <Card className="w-full max-w-sm">
+      <div className="w-full max-w-sm">
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">
           Nova senha
         </h1>
@@ -101,7 +100,7 @@ export default function RedefinirSenhaPage() {
             </form>
           </>
         )}
-      </Card>
+      </div>
     </main>
   );
 }
