@@ -77,6 +77,7 @@ export function ShowcaseBuilder({
   initialCatalogSubtitle = null,
   introSeen = false,
   inspirePhotos = {},
+  initialLeadTop = false,
 }: {
   items: Item[];
   slug: string;
@@ -90,11 +91,18 @@ export function ShowcaseBuilder({
   initialCatalogSubtitle?: string | null;
   introSeen?: boolean;
   inspirePhotos?: Record<string, InspireThemeData>;
+  initialLeadTop?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
   const { confirm, prompt, alert: alertDialog, DialogRenderer } = useDialogs();
   const [items, setItems] = useState<Item[]>(initial);
+  const [leadTop, setLeadTop] = useState(initialLeadTop);
+  async function toggleLeadTop() {
+    const next = !leadTop;
+    setLeadTop(next);
+    await supabase.from("businesses").update({ vitrine_lead_top: next }).eq("id", businessId);
+  }
 
   // Âncora de rolagem: ao salvar algo que muda o layout (trocar categoria
   // move o card pra outra seção, trocar preço muda a altura do card), o
@@ -774,6 +782,46 @@ export function ShowcaseBuilder({
           <span>{coverUrls.length > 1 ? "Deslize pro lado pra ver todas →" : "Equipe, espaço, bastidores ou produtos"}</span>
           <span className="tabular-nums">{coverUrls.length}/6</span>
         </div>
+      </div>
+
+      {/* Faixa opcional "Receba novidades no WhatsApp" no topo da Vitrine.
+          Desligada, a captura continua só no fim do catálogo, discreta. */}
+      <div className="mt-4 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Botão de novidades</p>
+            <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">
+              Um botão no topo da Vitrine pro cliente deixar o WhatsApp e receber novidades.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={leadTop}
+            aria-label="Mostrar botão de novidades no topo"
+            onClick={toggleLeadTop}
+            className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors ${leadTop ? "bg-[#25D366]" : "bg-divider"}`}
+          >
+            <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${leadTop ? "left-[22px]" : "left-0.5"}`} />
+          </button>
+        </div>
+
+        {/* Prévia de como aparece pro cliente. */}
+        <div className={`mt-3 flex items-center gap-3 rounded-full border border-divider bg-surface-white py-2 pl-2 pr-4 transition-opacity ${leadTop ? "" : "opacity-40"}`}>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+            </svg>
+          </span>
+          <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">Receba novidades no WhatsApp</span>
+          <span className="shrink-0 text-[12.5px] font-semibold text-on-background">Quero →</span>
+        </div>
+        <p className="mt-2 text-[11.5px] text-text-tertiary">
+          {leadTop
+            ? "Ligado: aparece no topo da Vitrine. Quem deixar o número entra em Conversas, na lista \"Pediram pra ser avisados\"."
+            : "Desligado: o convite aparece só no fim da Vitrine, de forma discreta."}
+        </p>
       </div>
 
       {showCoverExample && <CoverExampleModal onClose={() => setShowCoverExample(false)} />}

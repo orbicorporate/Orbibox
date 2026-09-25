@@ -48,6 +48,7 @@ type Business = {
   hero_gradient: unknown;
   catalog_title: string | null;
   catalog_subtitle: string | null;
+  vitrine_lead_top?: boolean | null;
 };
 
 type ContentItem = {
@@ -672,6 +673,19 @@ export function VisitorExperience({
               {intent === "presentear" ? "Seleções que fazem sentido para dar de presente" : (business.catalog_subtitle || "Explore nossas soluções.")}
             </p>
 
+            {/* Faixa de "receber novidades" no topo, só se o dono ligou. */}
+            {business.vitrine_lead_top && (
+              <LeadCapture
+                businessId={business.id}
+                businessName={business.name}
+                sessionId={sessionId}
+                orbiColors={orbiColors}
+                contexto="vitrine"
+                variant="compact"
+                className="mt-4"
+              />
+            )}
+
             {hasAiChat && content.length >= 3 && (
               <div className="mt-5">
                 <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} agentName={agentName} onAskOrbi={hasAiChat ? (q) => chooseIntent("duvida", q) : undefined} compact />
@@ -685,14 +699,16 @@ export function VisitorExperience({
                 <Showcase content={content} business={business} sessionId={sessionId} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
                 {/* Captura discreta no fim do catálogo: quem chegou até aqui
                     olhou tudo, é o momento certo de oferecer aviso. */}
-                <LeadCapture
-                  businessId={business.id}
-                  businessName={business.name}
-                  sessionId={sessionId}
-                  orbiColors={orbiColors}
-                  contexto="vitrine"
-                  className="mt-6"
-                />
+                {!business.vitrine_lead_top && (
+                  <LeadCapture
+                    businessId={business.id}
+                    businessName={business.name}
+                    sessionId={sessionId}
+                    orbiColors={orbiColors}
+                    contexto="vitrine"
+                    className="mt-6"
+                  />
+                )}
               </>
             )}
           </div>

@@ -21,6 +21,7 @@ export function LeadCapture({
   contexto = "vitrine",
   interesse,
   className = "",
+  variant = "card",
 }: {
   businessId: string;
   businessName: string;
@@ -31,6 +32,9 @@ export function LeadCapture({
   /** O que a pessoa estava olhando, vira "interesse" do lead. */
   interesse?: string;
   className?: string;
+  /** "card" é o cartão do fim do catálogo; "compact" é a faixa fina que o
+   * dono pode ligar no topo da Vitrine. Os dois abrem a mesma folha. */
+  variant?: "card" | "compact";
 }) {
   const chave = `orbi_lead_${businessId}`;
   const [aberto, setAberto] = useState(false);
@@ -89,6 +93,22 @@ export function LeadCapture({
 
   return (
     <>
+      {variant === "compact" ? (
+        <button
+          type="button"
+          onClick={() => setAberto(true)}
+          className={`flex w-full cursor-pointer items-center gap-3 rounded-full border border-divider bg-surface-white py-2 pl-2 pr-4 text-left ${className}`}
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+            </svg>
+          </span>
+          <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">Receba novidades no WhatsApp</span>
+          <span className="shrink-0 text-[12.5px] font-semibold text-on-background">Quero →</span>
+        </button>
+      ) : (
       <button
         type="button"
         onClick={() => setAberto(true)}
@@ -103,6 +123,7 @@ export function LeadCapture({
         </span>
         <span className="relative shrink-0 text-text-tertiary">→</span>
       </button>
+      )}
 
       {aberto && typeof document !== "undefined" && createPortal(
         <div
