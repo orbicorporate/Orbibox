@@ -139,10 +139,10 @@ export function GalleryUpload({
               ) : uploadingIndex === i ? (
                 <span className="flex h-full w-full items-center justify-center text-[10px] text-text-tertiary">…</span>
               ) : (
-                <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-text-tertiary">
-                  <span className="text-[18px] leading-none">+</span>
+                <span className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-text-tertiary">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-white text-[16px] leading-none text-on-background shadow-sm">+</span>
                   {emptyLabel ? (
-                    <span className="px-1 text-center text-[11px] leading-tight">{emptyLabel}</span>
+                    <span className="px-2 text-center text-[11.5px] font-medium leading-tight text-text-secondary">{emptyLabel}</span>
                   ) : lockedRatio && (
                     <span className="px-1 text-center text-[10px] leading-tight">
                       {RATIOS[lockedRatio].label.replace(/\s*\(.*\)$/, "")}

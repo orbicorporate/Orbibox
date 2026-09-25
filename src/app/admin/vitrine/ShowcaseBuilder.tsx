@@ -735,16 +735,25 @@ export function ShowcaseBuilder({
       </div>
 
       {/* Capa da Vitrine, opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
-      <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Capa da Vitrine (opcional)</p>
-          <button onClick={() => setShowCoverExample(true)} className="shrink-0 rounded-full border border-divider bg-surface-white px-3 py-1 text-[12px] font-medium text-text-secondary">
-            👁 Ver exemplo
+      <div className="mt-6 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Capa da Vitrine</p>
+              <span className="rounded-full bg-surface-soft px-2 py-0.5 text-[11px] font-medium text-text-tertiary">opcional</span>
+            </div>
+            <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">
+              Fotos grandes no topo, antes dos itens. Com mais de uma, vira carrossel.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowCoverExample(true)}
+            className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium text-text-secondary"
+          >
+            Ver exemplo
           </button>
         </div>
-        <HelperText>
-          Uma ou mais fotos grandes no topo da sua Vitrine, antes dos itens, com mais de uma, vira um carrossel (até 6). Pode usar fotos da empresa, da equipe, do espaço ou dos bastidores, por exemplo.
-        </HelperText>
+
         <div className="mt-4">
           <GalleryUpload
             value={coverUrls}
@@ -752,12 +761,18 @@ export function ShowcaseBuilder({
             max={6}
             emptySlots={1}
             lockedRatio="banner"
+            emptyLabel={coverUrls.length === 0 ? "Adicionar foto de capa · 1920 x 830 px" : "Adicionar outra foto"}
             onChange={async (urls) => {
               snapshot();
               setCoverUrls(urls);
               await supabase.from("businesses").update({ vitrine_cover_urls: urls }).eq("id", businessId);
             }}
           />
+        </div>
+
+        <div className="mt-3 flex items-center justify-between text-[11.5px] text-text-tertiary">
+          <span>Equipe, espaço, bastidores ou produtos</span>
+          <span className="tabular-nums">{coverUrls.length}/6</span>
         </div>
       </div>
 
