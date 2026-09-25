@@ -1702,46 +1702,52 @@ function ItemCard({
               <HelperText>Escolha o que acontece quando o cliente toca neste item na sua vitrine.</HelperText>
               <div className="mt-4 flex flex-col gap-2.5">
                 {/* Página própria */}
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => save(item.id, { link_kind: "produto", target_url: null })}
-                  className={`flex flex-col items-start gap-1 rounded-2xl border-2 px-4 py-3.5 text-left ${(item.link_kind ?? "produto") === "produto" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
+                  className={`flex cursor-pointer flex-col items-start rounded-2xl border-2 px-4 py-3 text-left ${(item.link_kind ?? "produto") === "produto" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                 >
                   <span className="flex items-center gap-1.5 text-[14px] font-semibold">
                     {(item.link_kind ?? "produto") === "produto" && <span>✓</span>}
                     Abrir uma página exclusiva do produto
                   </span>
-                  <span className="text-[13px] leading-relaxed text-text-secondary">
-                    O Orbibox monta uma página só desse item, com a capa, as fotos do carrossel, a descrição e o preço. Ideal pra apresentar bem antes do cliente decidir.
-                  </span>
-                </button>
+                  <div className="w-full" onClick={(e) => e.stopPropagation()}>
+                    <HelperText className="mt-1">O Orbibox monta uma página só desse item, com a capa, as fotos do carrossel, a descrição e o preço. Ideal pra apresentar bem antes do cliente decidir.</HelperText>
+                  </div>
+                </div>
 
                 {/* Link externo */}
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => save(item.id, { link_kind: "externo", target_url: item.target_url ?? "" })}
-                  className={`flex flex-col items-start gap-1 rounded-2xl border-2 px-4 py-3.5 text-left ${item.link_kind === "externo" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
+                  className={`flex cursor-pointer flex-col items-start rounded-2xl border-2 px-4 py-3 text-left ${item.link_kind === "externo" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                 >
                   <span className="flex items-center gap-1.5 text-[14px] font-semibold">
                     {item.link_kind === "externo" && <span>✓</span>}
                     Levar para um link externo
                   </span>
-                  <span className="text-[13px] leading-relaxed text-text-secondary">
-                    Manda o cliente direto pra outro lugar, seu site, uma loja, o WhatsApp. Não abre página no Orbibox.
-                  </span>
-                </button>
+                  <div className="w-full" onClick={(e) => e.stopPropagation()}>
+                    <HelperText className="mt-1">Manda o cliente direto pra outro lugar, seu site, uma loja, o WhatsApp. Não abre página no Orbibox.</HelperText>
+                  </div>
+                </div>
 
                 {/* Sem página */}
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => save(item.id, { link_kind: "nenhum", target_url: null })}
-                  className={`flex flex-col items-start gap-1 rounded-2xl border-2 px-4 py-3.5 text-left ${item.link_kind === "nenhum" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
+                  className={`flex cursor-pointer flex-col items-start rounded-2xl border-2 px-4 py-3 text-left ${item.link_kind === "nenhum" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
                 >
                   <span className="flex items-center gap-1.5 text-[14px] font-semibold">
                     {item.link_kind === "nenhum" && <span>✓</span>}
                     Não abrir nada (só mostrar)
                   </span>
-                  <span className="text-[13px] leading-relaxed text-text-secondary">
-                    O card fica só como vitrine, sem ser clicável. Bom pra destacar algo que não precisa de página nem link.
-                  </span>
-                </button>
+                  <div className="w-full" onClick={(e) => e.stopPropagation()}>
+                    <HelperText className="mt-1">O card fica só como vitrine, sem ser clicável. Bom pra destacar algo que não precisa de página nem link.</HelperText>
+                  </div>
+                </div>
               </div>
 
               {item.link_kind === "externo" && (
