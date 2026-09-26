@@ -115,13 +115,75 @@ export function AnaliseAoVivo({
   const incorporou = visiveis.some((x) => x.tipo === "cores");
   const terminou = analise.status === "ok" && reveladas >= linhas.length;
 
+  // Fim: depois das descobertas, uns segundos só da esfera grande virando a
+  // IA da marca, com um anel fino se completando e um check de concluído.
+  const [final, setFinal] = useState(false);
   useEffect(() => {
     if (!terminou) return;
-    const t = setTimeout(onDone, 2400);
+    const t = setTimeout(() => setFinal(true), 1100);
     return () => clearTimeout(t);
-  }, [terminou, onDone]);
+  }, [terminou]);
+  useEffect(() => {
+    if (!final) return;
+    const t = setTimeout(onDone, 4200);
+    return () => clearTimeout(t);
+  }, [final, onDone]);
 
   const orbColors = incorporou && analise.status === "ok" ? analise.orbColors : null;
+
+  if (final) {
+    const cor = orbColors?.[0] ?? "#111318";
+    const cor2 = orbColors?.[1] ?? cor;
+    const TAM = 196;
+    const R = TAM / 2 + 14;
+    const C = 2 * Math.PI * R;
+    return (
+      <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
+        <div className="orbi-final-entra relative" style={{ width: R * 2 + 4, height: R * 2 + 4 }}>
+          {/* Halo suave na cor da marca */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-full blur-3xl"
+            style={{ background: `radial-gradient(circle, ${cor}55, ${cor2}33 55%, transparent 72%)` }}
+          />
+          <div className="absolute" style={{ left: R + 2 - TAM / 2, top: R + 2 - TAM / 2 }}>
+            <OrbiOrb size={TAM} colors={orbColors} />
+          </div>
+          {/* Anel fino se completando */}
+          <svg className="absolute inset-0 -rotate-90" width={R * 2 + 4} height={R * 2 + 4} aria-hidden>
+            <circle cx={R + 2} cy={R + 2} r={R} fill="none" stroke={cor} strokeOpacity={0.12} strokeWidth={1.5} />
+            <circle
+              cx={R + 2}
+              cy={R + 2}
+              r={R}
+              fill="none"
+              stroke={cor}
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeDasharray={C}
+              strokeDashoffset={C}
+              className="orbi-anel-completa"
+              style={{ ["--anel" as string]: `${C}` }}
+            />
+          </svg>
+          {/* Check de concluído */}
+          <span
+            className="orbi-check-entra absolute flex h-11 w-11 items-center justify-center rounded-full text-white shadow-[0_6px_18px_rgba(0,0,0,0.18)]"
+            style={{ backgroundColor: cor, right: 10, bottom: 10 }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
+        </div>
+        <p className="orbi-final-texto mt-8 font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">
+          Sua IA está pronta
+        </p>
+        <p className="orbi-final-texto mt-1.5 text-[15px] text-text-secondary" style={{ animationDelay: "2.7s" }}>
+          Já com a cara da {marca}
+        </p>
+      </div>
+    );
+  }
   const imagens = descoberta.status === "ok" ? descoberta.imagens : [];
   const paleta = analise.status === "ok" ? analise.paleta : [];
 

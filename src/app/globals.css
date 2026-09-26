@@ -718,3 +718,25 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .orbi-linha-entra, .orbi-foto-entra, .orbi-card-cai, .orbi-orb-entra, .orbi-shimmer { animation: none; }
 }
+
+/* Final da análise: esfera cresce, anel se completa, check de concluído. */
+.orbi-final-entra { animation: orbiFinalEntra 0.9s cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+@keyframes orbiFinalEntra {
+  from { opacity: 0.4; transform: scale(0.72); }
+  to { opacity: 1; transform: scale(1); }
+}
+.orbi-anel-completa { animation: orbiAnel 2.1s cubic-bezier(0.55, 0, 0.25, 1) 0.4s forwards; }
+@keyframes orbiAnel {
+  from { stroke-dashoffset: var(--anel); }
+  to { stroke-dashoffset: 0; }
+}
+.orbi-check-entra { animation: orbiCheck 0.55s cubic-bezier(0.2, 0.9, 0.25, 1.5) 2.45s both; }
+@keyframes orbiCheck {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 1; transform: scale(1); }
+}
+.orbi-final-texto { animation: orbiLinhaEntra 0.6s ease-out 2.55s both; }
+@media (prefers-reduced-motion: reduce) {
+  .orbi-final-entra, .orbi-check-entra, .orbi-final-texto { animation: none; }
+  .orbi-anel-completa { animation: none; stroke-dashoffset: 0; }
+}
