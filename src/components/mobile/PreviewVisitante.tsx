@@ -8,11 +8,13 @@ import { createPortal } from "react-dom";
  * página de verdade num quadro de celular, então o que aparece aqui é
  * exatamente o que o visitante vê. Fecha e você continua onde estava.
  */
-export function PreviewVisitante({ slug, tab, className = "" }: {
+export function PreviewVisitante({ slug, tab, className = "", soIcone = false }: {
   slug: string;
   /** Abre direto numa parte da página, em vez da tela inicial. */
   tab?: "vitrine" | "conhecer";
   className?: string;
+  /** Só o olhinho, sem o texto (o texto fica pra leitor de tela). */
+  soIcone?: boolean;
 }) {
   const [aberto, setAberto] = useState(false);
   // Muda a cada abertura pra forçar o iframe a recarregar, senão a prévia
@@ -39,7 +41,7 @@ export function PreviewVisitante({ slug, tab, className = "" }: {
           <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
           <circle cx="12" cy="12" r="3" />
         </svg>
-        Ver como visitante
+        <span className={soIcone ? "sr-only" : ""}>Ver como visitante</span>
       </button>
 
       {aberto && typeof document !== "undefined" && createPortal(

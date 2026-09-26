@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
@@ -155,6 +156,40 @@ export function ShowcaseBuilder({
   const [improving, setImproving] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [showInspire, setShowInspire] = useState(false);
+  const [showEstilo, setShowEstilo] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
+  const [ajustesAbertos, setAjustesAbertos] = useState(false);
+  const [avisoDesfazer, setAvisoDesfazer] = useState<string | null>(null);
+  const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const estiloOk = useFlag(`vitrine_estilo_${businessId}`);
+  const guiaOculto = useFlag(`vitrine_guia_off_${businessId}`);
+
+  // Fecha o menu "Mais" ao tocar fora dele.
+  useEffect(() => {
+    if (!menuAberto) return;
+    function fora(e: PointerEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuAberto(false);
+    }
+    document.addEventListener("pointerdown", fora);
+    return () => document.removeEventListener("pointerdown", fora);
+  }, [menuAberto]);
+
+  // Aviso com "Desfazer" que aparece só depois de uma ação grande e some sozinho.
+  function mostrarAviso(texto: string) {
+    if (avisoTimer.current) clearTimeout(avisoTimer.current);
+    setAvisoDesfazer(texto);
+    avisoTimer.current = setTimeout(() => setAvisoDesfazer(null), 7000);
+  }
+
+  function abrirAjustes() {
+    setAjustesAbertos(true);
+    requestAnimationFrame(() => document.getElementById("vitrine-ajustes")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
+
+  function esconderGuia() {
+    gravarFlag(`vitrine_guia_off_${businessId}`);
+  }
   const [showCoverExample, setShowCoverExample] = useState(false);
   const [applyingPalette, setApplyingPalette] = useState<string | null>(null);
   const [currentBrandColors, setCurrentBrandColors] = useState<BrandColor[]>(brandColors);
@@ -167,6 +202,7 @@ export function ShowcaseBuilder({
     if (applyingPalette || cores.length === 0) return;
     setApplyingPalette(paletteId);
     snapshot();
+    gravarFlag(`vitrine_estilo_${businessId}`);
 
     // Cores utilizáveis (pula a primeira, que costuma ser o fundo claro).
     const usaveis = cores.length > 2 ? cores.slice(1) : cores;
@@ -197,6 +233,7 @@ export function ShowcaseBuilder({
       ),
     ]);
     setApplyingPalette(null);
+    mostrarAviso("Paleta aplicada");
   }
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
@@ -361,6 +398,40 @@ export function ShowcaseBuilder({
 
   const ordered = [...items].sort((a, b) => a.position - b.position);
   const publishedCount = items.filter((i) => i.status === "published").length;
+
+  // Passo a passo de quem está começando.
+  const paginasDeProduto = items.filter((i) => i.status === "published" && (i.link_kind ?? "produto") === "produto");
+  const paginasIncompletas = paginasDeProduto.filter((i) => i.gallery_urls.length === 0 && !(i.highlights ?? []).some((h) => h.trim()));
+  const passos = [
+    {
+      titulo: "Confira seus itens",
+      detalhe:
+        items.length === 0
+          ? "Importe do seu site ou crie o primeiro item"
+          : `A Orbi trouxe ${items.length} ${items.length === 1 ? "item" : "itens"}. Revise e deixe ativo o que quiser mostrar`,
+      feito: publishedCount > 0,
+      acao: () => (items.length === 0 ? setShowImport(true) : document.getElementById("vitrine-itens")?.scrollIntoView({ behavior: "smooth", block: "start" })),
+    },
+    {
+      titulo: "Escolha o estilo",
+      detalhe: "Cores da vitrine e ideias prontas pro seu tipo de negócio",
+      feito: estiloOk,
+      acao: () => setShowEstilo(true),
+    },
+    {
+      titulo: "Complete a página de cada item",
+      detalhe:
+        paginasDeProduto.length === 0
+          ? "Fotos, diferenciais e uma pergunta pra Orbi"
+          : `${paginasDeProduto.length - paginasIncompletas.length} de ${paginasDeProduto.length} prontas. Fotos, diferenciais e pergunta pra Orbi`,
+      feito: paginasDeProduto.length > 0 && paginasIncompletas.length === 0,
+      acao: () => {
+        const alvo = paginasIncompletas[0];
+        if (alvo) router.push(`/admin/vitrine/pagina/${alvo.id}`);
+      },
+    },
+  ];
+  const mostrarGuia = !guiaOculto && passos.some((p) => !p.feito);
   const [avisarNovidade, setAvisarNovidade] = useState<{ titulo: string; quantos: number } | null>(null);
 
   // Categorias que já existem em algum item, mesmo que ainda não estejam na
@@ -438,6 +509,7 @@ export function ShowcaseBuilder({
       updates.map((u) => supabase.from("content_items").update({ layout_size: u.layout_size, position: u.position }).eq("id", u.id))
     );
     setArranging(false);
+    mostrarAviso("Vitrine organizada pela Orbi");
   }
 
   async function createItem(brandLabel: string | null = null) {
@@ -554,6 +626,7 @@ export function ShowcaseBuilder({
     setEditingId(null);
     setItems((p) => p.filter((i) => i.id !== item.id));
     await supabase.from("content_items").delete().eq("id", item.id);
+    mostrarAviso(`"${item.title}" excluído`);
   }
 
   async function renameCategory(oldName: string) {
@@ -588,100 +661,69 @@ export function ShowcaseBuilder({
     <div className="mt-5 flex flex-col">
       <DialogRenderer />
 
-      <button
-        onClick={() => setShowInspire(true)}
-        className="orbi-gradient mb-4 flex items-center gap-3 rounded-[22px] p-4 text-left text-on-background shadow-[0_4px_20px_rgba(183,243,74,0.25)]"
-      >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-white/40 text-[20px]">✦</span>
-        <span className="flex-1">
-          <span className="block text-[15px] font-semibold leading-tight">Inspire-se pra montar sua vitrine</span>
-          <span className="block text-[12.5px] leading-snug opacity-80">Veja vitrines prontas por tipo de negócio e aplique o estilo num toque</span>
-        </span>
-        <span className="text-[18px]">→</span>
-      </button>
-
-      {items.length > 0 && (
-        <div className="mb-4 rounded-[18px] border border-divider bg-surface-white p-3">
-          <p className="mb-1 px-1 text-[14px] font-semibold">Qual sensação você quer que sua vitrine passe?</p>
-          <p className="mb-3 px-1 text-[12px] text-text-tertiary">Toque numa paleta pra aplicar na hora.</p>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-            {currentBrandColors.length > 0 && (
-              <PaletteChip
-                label="✦ A cara da sua marca"
-                cores={currentBrandColors}
-                loading={applyingPalette === "orbi"}
-                onClick={() => aplicarPaleta("orbi", currentBrandColors)}
-              />
-            )}
-            {VITRINE_THEMES.map((t) => (
-              <PaletteChip
-                key={t.id}
-                label={t.vibe}
-                cores={t.colors}
-                loading={applyingPalette === t.id}
-                onClick={() => aplicarPaleta(t.id, t.colors)}
-              />
+      {/* Passo a passo pra quem acabou de chegar: some sozinho quando os três
+          estão feitos (ou quando a pessoa esconde). */}
+      {mostrarGuia && (
+        <div className="mb-4 rounded-[22px] border border-divider bg-surface-white p-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[14px] font-semibold">Monte sua vitrine em 3 passos</p>
+            <button onClick={esconderGuia} className="text-[12px] text-text-tertiary">Ocultar</button>
+          </div>
+          <div className="mt-3 flex flex-col gap-2">
+            {passos.map((p, i) => (
+              <button
+                key={i}
+                onClick={p.acao}
+                disabled={p.feito}
+                className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors ${p.feito ? "bg-transparent" : "bg-surface-soft active:bg-divider/60"}`}
+              >
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ${
+                    p.feito ? "orbi-gradient text-on-background" : "border border-on-background/20 bg-surface-white text-on-background"
+                  }`}
+                >
+                  {p.feito ? "✓" : i + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className={`block text-[14px] font-medium ${p.feito ? "text-text-tertiary line-through decoration-text-tertiary/40" : "text-on-background"}`}>{p.titulo}</span>
+                  {!p.feito && <span className="block text-[12px] leading-snug text-text-tertiary">{p.detalhe}</span>}
+                </span>
+                {!p.feito && <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>}
+              </button>
             ))}
           </div>
         </div>
       )}
 
-      {avisarNovidade && (
-        <div className="orbi-card-light relative mb-4 flex items-center gap-3 overflow-hidden rounded-[22px] p-4">
-          <span className="relative text-[20px]">✦</span>
-          <div className="relative min-w-0 flex-1">
-            <p className="text-[14px] font-semibold leading-tight">
-              {avisarNovidade.quantos} {avisarNovidade.quantos === 1 ? "pessoa pediu" : "pessoas pediram"} pra ser avisada de novidade
-            </p>
-            <p className="mt-0.5 text-[12.5px] text-text-secondary">Quer avisar sobre &quot;{avisarNovidade.titulo}&quot;? A Orbi escreve a mensagem.</p>
-          </div>
-          <Link
-            href={`/admin/conversas?lista=querem_novidades&gancho=${encodeURIComponent(`chegou ${avisarNovidade.titulo}`)}`}
-            className="shrink-0 rounded-full bg-on-background px-3.5 py-2 text-[12.5px] font-semibold text-white"
+      {/* Ação principal visível; o resto fica no menu "Mais". */}
+      <div className="flex items-center gap-2">
+        <button onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-5 py-2.5 text-[14px] font-medium text-white disabled:opacity-50">
+          + Novo item
+        </button>
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuAberto((v) => !v)}
+            className="flex items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] font-medium text-text-secondary"
+            aria-expanded={menuAberto}
           >
-            Avisar
-          </Link>
-          <button type="button" onClick={() => setAvisarNovidade(null)} aria-label="Fechar" className="relative shrink-0 cursor-pointer text-text-tertiary">✕</button>
+            Mais
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${menuAberto ? "rotate-180" : ""}`} aria-hidden>
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          {menuAberto && (
+            <div className="absolute left-0 top-full z-30 mt-2 w-60 overflow-hidden rounded-2xl border border-divider bg-surface-white py-1.5 shadow-[0_12px_32px_rgba(17,19,24,0.14)]">
+              <button onClick={() => { setMenuAberto(false); setShowImport(true); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">✦ Importar do site</button>
+              <button onClick={() => { setMenuAberto(false); createCategory(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Nova categoria</button>
+              <button disabled={arranging || items.length === 0} onClick={() => { setMenuAberto(false); autoArrange(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">
+                {arranging ? "Organizando…" : "✦ Organizar com a Orbi"}
+              </button>
+              <button onClick={() => { setMenuAberto(false); abrirAjustes(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Título, capa e novidades</button>
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Botões agrupados por intenção: primeiro o que traz conteúdo pra
-          vitrine, depois o que mexe no que já existe. "Renovar vitrine"
-          apaga tudo, então saiu daqui e foi pro fim da página. */}
-      <div className="flex flex-col gap-3">
-        <div>
-          <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Adicionar</p>
-          <div className="flex flex-wrap items-center gap-2">
-            <button onClick={() => setShowImport((v) => !v)} className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background">
-              ✦ Importar do site
-            </button>
-            <button onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50">
-              + Novo item
-            </button>
-            <button onClick={createCategory} className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary">
-              + Categoria
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Organizar</p>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={autoArrange}
-              disabled={arranging || items.length === 0}
-              className={`rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium text-text-secondary ${items.length === 0 ? "opacity-50" : ""}`}
-            >
-              {arranging ? <OrbiWorking label="Organizando…" variant="inline" /> : "✦ Organizar com Orbi"}
-            </button>
-            <button
-              onClick={undo}
-              disabled={history.length === 0 || undoing}
-              className="flex items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary disabled:opacity-40"
-            >
-              {undoing ? "Desfazendo…" : "↺ Desfazer"}
-            </button>
-          </div>
+        <div className="ml-auto">
+          <PreviewVisitante slug={slug} tab="vitrine" soIcone className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-on-background text-white" />
         </div>
       </div>
 
@@ -704,111 +746,43 @@ export function ShowcaseBuilder({
       )}
       {importMsg && <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>}
 
-      {/* Título e subtítulo que aparecem no topo da página de catálogo pro
-          visitante. Em branco, usa o padrão: "[Nome], Catálogo" / "Explore
-          nossas soluções." */}
-      <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
-        <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Título da página de catálogo</p>
-        <HelperText>O que o visitante vê no topo, ao abrir “O que fazemos”. Deixe em branco pra usar o padrão.</HelperText>
-        <input
-          value={catalogTitle}
-          onChange={(e) => setCatalogTitle(e.target.value)}
-          onBlur={saveCatalogTexts}
-          placeholder={`${businessName}, Catálogo`}
-          className="mt-3 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
-        />
-        <input
-          value={catalogSubtitle}
-          onChange={(e) => setCatalogSubtitle(e.target.value)}
-          onBlur={saveCatalogTexts}
-          placeholder="Explore nossas soluções."
-          className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
-        />
-      </div>
-
-      {/* Capa da Vitrine, opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
-      <div className="mt-6 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Capa da Vitrine</p>
-              <span className="rounded-full bg-surface-soft px-2 py-0.5 text-[11px] font-medium text-text-tertiary">opcional</span>
-            </div>
-            <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">
-              Fotos grandes no topo, antes dos itens. Com mais de uma, vira carrossel.
-            </p>
-          </div>
-          <button
-            onClick={() => setShowCoverExample(true)}
-            className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium text-text-secondary"
-          >
-            Ver exemplo
-          </button>
-        </div>
-
-        <div className="mt-4">
-          <GalleryUpload
-            value={coverUrls}
-            businessId={businessId}
-            max={6}
-            emptySlots={1}
-            lockedRatio="banner"
-            emptyLabel={coverUrls.length === 0 ? "Adicionar foto de capa · 1920 x 830 px" : "Adicionar"}
-            onChange={async (urls) => {
-              snapshot();
-              setCoverUrls(urls);
-              await supabase.from("businesses").update({ vitrine_cover_urls: urls }).eq("id", businessId);
-            }}
-          />
-        </div>
-
-        <div className="mt-3 flex items-center justify-between text-[11.5px] text-text-tertiary">
-          <span>{coverUrls.length > 1 ? "Deslize pro lado pra ver todas →" : "Equipe, espaço, bastidores ou produtos"}</span>
-          <span className="tabular-nums">{coverUrls.length}/6</span>
-        </div>
-      </div>
-
-      {/* Faixa opcional "Receba novidades" no topo da Vitrine.
-          Desligada, a captura continua só no fim do catálogo, discreta. */}
-      <div className="mt-4 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
-        <div className="flex items-start gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Botão de novidades</p>
-            <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">
-              Um botão no topo da Vitrine pro cliente deixar o WhatsApp e receber novidades.
-            </p>
-          </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={leadTop}
-            aria-label="Mostrar botão de novidades no topo"
-            onClick={toggleLeadTop}
-            className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors ${leadTop ? "bg-[#25D366]" : "bg-divider"}`}
-          >
-            <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${leadTop ? "left-[22px]" : "left-0.5"}`} />
-          </button>
-        </div>
-
-        {/* Prévia de como aparece pro cliente. */}
-        <div className={`mt-3 flex items-center gap-3 rounded-full border border-divider bg-surface-white py-2 pl-2 pr-4 transition-opacity ${leadTop ? "" : "opacity-40"}`}>
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-            </svg>
+      {/* Estilo: uma linha só, abre as paletas e as vitrines prontas. */}
+      {items.length > 0 && (
+        <button
+          onClick={() => setShowEstilo(true)}
+          className="mt-3 flex items-center gap-3 rounded-[18px] border border-divider bg-surface-white px-4 py-3 text-left"
+        >
+          <span className="flex shrink-0 -space-x-1.5">
+            {(currentBrandColors.length ? currentBrandColors : [{ hex: "#E8E8E3" }, { hex: "#111318" }]).slice(0, 4).map((c, i) => (
+              <span key={`${c.hex}-${i}`} className="h-6 w-6 rounded-full border-2 border-surface-white shadow-[0_0_0_1px_rgba(17,19,24,0.12)]" style={{ backgroundColor: c.hex }} />
+            ))}
           </span>
-          <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">Receba novidades</span>
-          <span className="shrink-0 text-[12.5px] font-semibold text-on-background">Quero →</span>
-        </div>
-        <p className="mt-2 text-[11.5px] text-text-tertiary">
-          {leadTop
-            ? "Ligado: aparece no topo da Vitrine. Quem deixar o número entra em Conversas, na lista \"Pediram pra ser avisados\"."
-            : "Desligado: o convite aparece só no fim da Vitrine, de forma discreta."}
-        </p>
-      </div>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14px] font-medium">Estilo da vitrine</span>
+            <span className="block text-[12px] text-text-tertiary">Cores e vitrines prontas pra se inspirar</span>
+          </span>
+          <span className="shrink-0 text-[13px] font-medium text-text-secondary">Trocar →</span>
+        </button>
+      )}
 
-      {showCoverExample && <CoverExampleModal onClose={() => setShowCoverExample(false)} />}
+      {avisarNovidade && (
+        <div className="orbi-card-light relative mb-4 flex items-center gap-3 overflow-hidden rounded-[22px] p-4">
+          <span className="relative text-[20px]">✦</span>
+          <div className="relative min-w-0 flex-1">
+            <p className="text-[14px] font-semibold leading-tight">
+              {avisarNovidade.quantos} {avisarNovidade.quantos === 1 ? "pessoa pediu" : "pessoas pediram"} pra ser avisada de novidade
+            </p>
+            <p className="mt-0.5 text-[12.5px] text-text-secondary">Quer avisar sobre &quot;{avisarNovidade.titulo}&quot;? A Orbi escreve a mensagem.</p>
+          </div>
+          <Link
+            href={`/admin/conversas?lista=querem_novidades&gancho=${encodeURIComponent(`chegou ${avisarNovidade.titulo}`)}`}
+            className="shrink-0 rounded-full bg-on-background px-3.5 py-2 text-[12.5px] font-semibold text-white"
+          >
+            Avisar
+          </Link>
+          <button type="button" onClick={() => setAvisarNovidade(null)} aria-label="Fechar" className="relative shrink-0 cursor-pointer text-text-tertiary">✕</button>
+        </div>
+      )}
 
       {proposta && (
         <div className="mt-4 rounded-[24px] orbi-gradient p-[1.5px]">
@@ -853,15 +827,13 @@ export function ShowcaseBuilder({
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="min-w-0 flex-1 text-[14px] text-text-secondary">
-          {publishedCount === 0 ? "Nenhum item ativo ainda." : `${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"} na sua vitrine.`}
-          {" "}Toque num item pra editar.
+      {showCoverExample && <CoverExampleModal onClose={() => setShowCoverExample(false)} />}
+
+      {items.length > 0 && (
+        <p className="mt-5 text-[13px] text-text-tertiary">
+          {publishedCount === 0 ? "Nenhum item ativo ainda." : `${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}`} · toque num item pra editar
         </p>
-        {/* Espiada rápida sem trocar de aba: abre a página real num quadro
-            de celular e fecha de volta aqui. */}
-        <PreviewVisitante slug={slug} tab="vitrine" />
-      </div>
+      )}
 
       {items.length === 0 && (
         <div className="mt-6 rounded-[28px] border border-divider bg-surface-white p-6">
@@ -888,9 +860,18 @@ export function ShowcaseBuilder({
         </div>
       )}
 
-      {showInspire && <InspireModal businessId={businessId} inspirePhotos={inspirePhotos} onClose={() => setShowInspire(false)} />}
+      {showInspire && (
+        <InspireModal
+          businessId={businessId}
+          inspirePhotos={inspirePhotos}
+          onClose={() => {
+            setShowInspire(false);
+            gravarFlag(`vitrine_estilo_${businessId}`);
+          }}
+        />
+      )}
 
-      <div className="mt-6 flex flex-col gap-8">
+      <div id="vitrine-itens" className="mt-6 flex scroll-mt-24 flex-col gap-8">
         {sections.map((sec, si) => {
           const isDestaques = sec.name === "Destaques";
           const realCount = sections.filter((s) => s.name !== "Destaques").length;
@@ -968,6 +949,127 @@ export function ShowcaseBuilder({
       </div>
 
       {/* Orbi Insight, um lote de 7 ângulos diferentes pra navegar sem repetir. */}
+      {/* Ajustes da página de catálogo, recolhidos: raramente mudam. */}
+      <div id="vitrine-ajustes" className="mt-10 scroll-mt-24">
+        <button
+          onClick={() => setAjustesAbertos((v) => !v)}
+          className="flex w-full items-center justify-between gap-3 rounded-[18px] border border-divider bg-surface-white px-4 py-3.5 text-left"
+        >
+          <span>
+            <span className="block text-[14px] font-medium">Título, capa e novidades</span>
+            <span className="block text-[12px] text-text-tertiary">Ajustes do topo da vitrine, todos opcionais</span>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${ajustesAbertos ? "rotate-180" : ""}`} aria-hidden>
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+        {ajustesAbertos && (
+          <div className="flex flex-col">
+      {/* Título e subtítulo que aparecem no topo da página de catálogo pro
+          visitante. Em branco, usa o padrão: "[Nome], Catálogo" / "Explore
+          nossas soluções." */}
+      <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
+        <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Título da página de catálogo</p>
+        <HelperText>O que o visitante vê no topo, ao abrir “O que fazemos”. Deixe em branco pra usar o padrão.</HelperText>
+        <input
+          value={catalogTitle}
+          onChange={(e) => setCatalogTitle(e.target.value)}
+          onBlur={saveCatalogTexts}
+          placeholder={`${businessName}, Catálogo`}
+          className="mt-3 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+        />
+        <input
+          value={catalogSubtitle}
+          onChange={(e) => setCatalogSubtitle(e.target.value)}
+          onBlur={saveCatalogTexts}
+          placeholder="Explore nossas soluções."
+          className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+        />
+      </div>
+      {/* Capa da Vitrine, opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
+      <div className="mt-6 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Capa da Vitrine</p>
+              <span className="rounded-full bg-surface-soft px-2 py-0.5 text-[11px] font-medium text-text-tertiary">opcional</span>
+            </div>
+            <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">
+              Fotos grandes no topo, antes dos itens. Com mais de uma, vira carrossel.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowCoverExample(true)}
+            className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium text-text-secondary"
+          >
+            Ver exemplo
+          </button>
+        </div>
+
+        <div className="mt-4">
+          <GalleryUpload
+            value={coverUrls}
+            businessId={businessId}
+            max={6}
+            emptySlots={1}
+            lockedRatio="banner"
+            emptyLabel={coverUrls.length === 0 ? "Adicionar foto de capa · 1920 x 830 px" : "Adicionar"}
+            onChange={async (urls) => {
+              snapshot();
+              setCoverUrls(urls);
+              await supabase.from("businesses").update({ vitrine_cover_urls: urls }).eq("id", businessId);
+            }}
+          />
+        </div>
+
+        <div className="mt-3 flex items-center justify-between text-[11.5px] text-text-tertiary">
+          <span>{coverUrls.length > 1 ? "Deslize pro lado pra ver todas →" : "Equipe, espaço, bastidores ou produtos"}</span>
+          <span className="tabular-nums">{coverUrls.length}/6</span>
+        </div>
+      </div>
+      {/* Faixa opcional "Receba novidades" no topo da Vitrine.
+          Desligada, a captura continua só no fim do catálogo, discreta. */}
+      <div className="mt-4 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Botão de novidades</p>
+            <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">
+              Um botão no topo da Vitrine pro cliente deixar o WhatsApp e receber novidades.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={leadTop}
+            aria-label="Mostrar botão de novidades no topo"
+            onClick={toggleLeadTop}
+            className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors ${leadTop ? "bg-[#25D366]" : "bg-divider"}`}
+          >
+            <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${leadTop ? "left-[22px]" : "left-0.5"}`} />
+          </button>
+        </div>
+
+        {/* Prévia de como aparece pro cliente. */}
+        <div className={`mt-3 flex items-center gap-3 rounded-full border border-divider bg-surface-white py-2 pl-2 pr-4 transition-opacity ${leadTop ? "" : "opacity-40"}`}>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+            </svg>
+          </span>
+          <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">Receba novidades</span>
+          <span className="shrink-0 text-[12.5px] font-semibold text-on-background">Quero →</span>
+        </div>
+        <p className="mt-2 text-[11.5px] text-text-tertiary">
+          {leadTop
+            ? "Ligado: aparece no topo da Vitrine. Quem deixar o número entra em Conversas, na lista \"Pediram pra ser avisados\"."
+            : "Desligado: o convite aparece só no fim da Vitrine, de forma discreta."}
+        </p>
+      </div>
+          </div>
+        )}
+      </div>
+
       {items.length > 0 && (
         <OrbiInsightCard className="mt-6">
           <div className="flex items-start justify-between gap-3">
@@ -1007,6 +1109,56 @@ export function ShowcaseBuilder({
         </OrbiInsightCard>
       )}
 
+      {showEstilo && typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/45 sm:items-center" onClick={() => setShowEstilo(false)}>
+            <div className="w-full max-w-lg rounded-t-[28px] bg-surface-white p-5 pb-8 sm:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-[family-name:var(--font-manrope)] text-[19px] font-semibold">Estilo da vitrine</p>
+                <button onClick={() => setShowEstilo(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-[14px]" aria-label="Fechar">✕</button>
+              </div>
+              <p className="mt-1 text-[13px] text-text-secondary">Toque numa paleta pra aplicar em todos os itens.</p>
+              <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                {currentBrandColors.length > 0 && (
+                  <PaletteChip label="✦ A cara da sua marca" cores={currentBrandColors} loading={applyingPalette === "orbi"} onClick={() => aplicarPaleta("orbi", currentBrandColors)} />
+                )}
+                {VITRINE_THEMES.map((t) => (
+                  <PaletteChip key={t.id} label={t.vibe} cores={t.colors} loading={applyingPalette === t.id} onClick={() => aplicarPaleta(t.id, t.colors)} />
+                ))}
+              </div>
+              <button
+                onClick={() => { setShowEstilo(false); setShowInspire(true); }}
+                className="orbi-gradient mt-4 flex w-full items-center gap-3 rounded-[18px] p-3.5 text-left text-on-background"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-white/40">✦</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14px] font-semibold leading-tight">Ver vitrines prontas</span>
+                  <span className="block text-[12px] opacity-80">Por tipo de negócio, aplica o estilo num toque</span>
+                </span>
+                <span aria-hidden>→</span>
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {avisoDesfazer && typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-x-0 bottom-28 z-[60] flex justify-center px-4">
+            <div className="flex items-center gap-3 rounded-full bg-on-background py-2 pl-4 pr-2 text-[13px] text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <span>{avisoDesfazer}</span>
+              <button
+                onClick={() => { setAvisoDesfazer(null); undo(); }}
+                disabled={undoing}
+                className="rounded-full bg-white/15 px-3 py-1.5 text-[13px] font-semibold"
+              >
+                {undoing ? "Desfazendo…" : "Desfazer"}
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
+
       {/* Ação destrutiva, longe dos botões do dia a dia: apaga itens,
           categorias e capa de uma vez. */}
       {(items.length > 0 || categories.length > 0 || coverUrls.length > 0) && (
@@ -1025,6 +1177,37 @@ export function ShowcaseBuilder({
       )}
     </div>
   );
+}
+
+// Marcadores simples guardados no aparelho (ex.: "já escolheu o estilo",
+// "escondeu o passo a passo"). Lidos com useSyncExternalStore pra funcionar
+// igual no servidor (sempre falso) e no navegador.
+const FLAG_EVENT = "orbi-flag";
+function lerFlag(chave: string): boolean {
+  try {
+    return window.localStorage.getItem(chave) === "1";
+  } catch {
+    return false;
+  }
+}
+function gravarFlag(chave: string) {
+  try {
+    window.localStorage.setItem(chave, "1");
+  } catch {
+    /* sem armazenamento: o passo só não fica marcado */
+  }
+  window.dispatchEvent(new Event(FLAG_EVENT));
+}
+function assinarFlags(cb: () => void) {
+  window.addEventListener(FLAG_EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(FLAG_EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+function useFlag(chave: string): boolean {
+  return useSyncExternalStore(assinarFlags, () => lerFlag(chave), () => false);
 }
 
 const COVER_EXAMPLE_COVERS = [

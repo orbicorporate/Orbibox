@@ -34,7 +34,7 @@ export default async function VitrinePage() {
         Vitrine
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">
-        Toque num item pra editar, nome, foto, formato, cor e mais. Crie como rascunho e publique quando estiver pronto.
+        O que aparece no seu link quando o cliente toca em Vitrine.
       </p>
       <ShowcaseBuilder
         items={items ?? []}
