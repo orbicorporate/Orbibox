@@ -1607,19 +1607,8 @@ function ItemCard({
                 )}
 
                 <div className="mt-6 border-t border-divider pt-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-[15px] font-semibold text-on-background">Diferenciais e conversa</p>
-                      <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">A Orbi pode preencher os dois passos abaixo pra você.</p>
-                    </div>
-                    <button
-                      onClick={onSuggestExtras}
-                      disabled={suggestingExtras}
-                      className={`shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-medium ${suggestingExtras ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
-                    >
-                      {suggestingExtras ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
-                    </button>
-                  </div>
+                  <p className="text-[15px] font-semibold text-on-background">Diferenciais e conversa</p>
+                  <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">Sem ideia? Toque em ✦ Orbi sugere e ela preenche os dois passos.</p>
 
                   {/* Passo 1: diferenciais, numerados na ordem em que aparecem na página. */}
                   <div className="mt-4 rounded-2xl bg-surface-soft/70 p-3.5">
@@ -1664,9 +1653,10 @@ function ItemCard({
                         </div>
                       ))}
                       {(item.highlights?.length ?? 0) < 6 && (
+                        <div className="flex items-center gap-2">
                         <button
                           onClick={() => patch(item.id, { highlights: [...(item.highlights ?? []), ""] })}
-                          className="flex w-full items-center gap-3 rounded-2xl border border-dashed border-text-tertiary/40 bg-surface-white px-3.5 py-3 text-left transition-colors active:bg-surface-soft"
+                          className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-dashed border-text-tertiary/40 bg-surface-white px-3.5 py-3 text-left transition-colors active:bg-surface-soft"
                         >
                           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-on-background text-[15px] leading-none text-white">+</span>
                           <span className="min-w-0">
@@ -1678,6 +1668,14 @@ function ItemCard({
                             )}
                           </span>
                         </button>
+                        <button
+                          onClick={onSuggestExtras}
+                          disabled={suggestingExtras}
+                          className={`shrink-0 rounded-full px-3.5 py-2 text-[12.5px] font-medium ${suggestingExtras ? "bg-surface-white text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
+                        >
+                          {suggestingExtras ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
+                        </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1714,7 +1712,16 @@ function ItemCard({
                       </div>
                     </div>
 
-                    <p className="mt-3 text-[12px] font-medium text-text-secondary">Sua pergunta</p>
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <p className="text-[12px] font-medium text-text-secondary">Sua pergunta</p>
+                      <button
+                          onClick={onSuggestExtras}
+                          disabled={suggestingExtras}
+                          className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${suggestingExtras ? "bg-surface-white text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
+                        >
+                          {suggestingExtras ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
+                        </button>
+                    </div>
                     <div className="mt-1.5">
                       <AutoTextarea
                         value={item.orbi_hook ?? ""}
