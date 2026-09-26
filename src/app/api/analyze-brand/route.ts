@@ -4,6 +4,7 @@ export const maxDuration = 60;
 import { askClaude } from "@/lib/anthropic";
 import { fetchInstagram, fetchSiteResiliente } from "@/lib/siteImport";
 import { jsonrepair } from "jsonrepair";
+import { extrairCoresDaMarca } from "@/lib/brandColors";
 
 const PALETTES = [
   [{ hex: "#1c1b1c", role: "primary" }, { hex: "#B7F34A", role: "accent" }, { hex: "#F7F7F4", role: "background" }],
@@ -35,10 +36,15 @@ export async function POST(req: NextRequest) {
 
     // Site (lido do jeito resiliente) e Instagram em paralelo: o tom de voz
     // e a paleta ficam muito melhores com os dois, e sem site o Instagram basta.
-    const [siteLido, igLido] = await Promise.all([
+    // As cores são MEDIDAS no site (logo, header, rodapé, botões, cores do
+    // tema), nunca tiradas das fotos do conteúdo. Roda junto com a leitura.
+    const [siteLido, igLido, coresMedidas] = await Promise.all([
       website ? fetchSiteResiliente(website).catch(() => null) : Promise.resolve(null),
       instagram ? fetchInstagram(instagram).catch(() => null) : Promise.resolve(null),
+      website ? extrairCoresDaMarca(website).catch(() => null) : Promise.resolve(null),
     ]);
+    const medidas = coresMedidas?.colors ?? [];
+    const temPaletaMedida = medidas.length >= 2;
     const siteText =
       [siteLido?.text ? siteLido.text.slice(0, 3500) : (website ? await fetchSiteText(website) : null), igLido?.text ? `INSTAGRAM:\n${igLido.text.slice(0, 2500)}` : null]
         .filter(Boolean)
@@ -52,11 +58,17 @@ Responda SOMENTE em JSON válido, sem markdown, sem texto antes ou depois, no fo
 - Os quatro valores de personalidade são números entre 0.3 e 0.95 e devem variar entre si conforme a marca.
 - voiceSummary: UMA frase curta (máximo 15 palavras) sobre o tom de voz da marca.
 - font: o nome de UMA fonte do Google Fonts que combine com a marca (ex: "Manrope", "Playfair Display", "Poppins", "DM Sans"). Apenas o nome.
-- palette: 3 a 5 cores hex que representem a marca (a primeira é a cor principal/escura, uma de destaque, e um fundo claro). Se detectar cores reais no site, use-as.`;
+- palette: 3 a 5 cores hex que representem a marca (a primeira é a cor principal, uma de destaque, e um fundo claro).
+- A paleta vem da IDENTIDADE da marca: logotipo, header, rodapé e botões do site. Nunca use cores de fotos ou imagens do conteúdo (produtos, pessoas, paisagens, comida).
+- Se receber "CORES MEDIDAS NO SITE", a paleta deve usar exatamente essas cores, na mesma ordem. Não invente outras.`;
 
     const userMsg = `Nome do negócio: ${name || "(não informado)"}
 Instagram: ${instagram || "(não informado)"}
-${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e Instagram não disponíveis, infira a partir do nome e segmento provável."}`;
+${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e Instagram não disponíveis, infira a partir do nome e segmento provável."}${
+      medidas.length > 0
+        ? `\n\nCORES MEDIDAS NO SITE (logo, header, rodapé, botões):\n${(coresMedidas?.evidencia.length ? coresMedidas.evidencia : medidas.map((c) => c.hex)).join("\n")}`
+        : ""
+    }`;
 
     let personality = { energetica: 0.6, proxima: 0.6, visual: 0.6, direta: 0.6 };
     let voiceSummary = "Tom próximo e direto, pronto para conversar com quem chega.";
@@ -83,10 +95,20 @@ ${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e 
     }
 
     const roles = ["primary", "accent", "background", "detail", "detail", "detail"];
-    const finalColors =
-      palette && palette.length > 0
-        ? palette.map((hex, i) => ({ hex, role: roles[i] ?? "detail" }))
-        : colors;
+    // Prioridade: cores medidas na identidade do site. A sugestão da Orbi só
+    // completa quando o site não deu cores suficientes (ou não há site).
+    let finalColors: { hex: string; role: string }[];
+    if (temPaletaMedida) {
+      finalColors = medidas;
+    } else if (medidas.length === 1) {
+      const extras = (palette ?? []).filter((h) => h.toLowerCase() !== medidas[0].hex.toLowerCase());
+      finalColors = [medidas[0].hex, ...extras].slice(0, 5).map((hex, i) => ({ hex, role: roles[i] ?? "detail" }));
+    } else {
+      finalColors =
+        palette && palette.length > 0
+          ? palette.map((hex, i) => ({ hex, role: roles[i] ?? "detail" }))
+          : colors;
+    }
 
     return NextResponse.json({ personality, colors: finalColors, voiceSummary, font, siteAnalyzed: !!siteText });
   } catch (err) {
