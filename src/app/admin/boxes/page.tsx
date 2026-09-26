@@ -45,8 +45,7 @@ export default async function BoxesPage() {
         </div>
       </div>
       <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-        Cada box é um caminho que o visitante pode seguir quando abre seu link. Ligue os que fazem
-        sentido para o seu negócio e escolha a ordem em que aparecem.
+        Os botões que aparecem quando alguém abre seu link. Ligue os que fazem sentido e escolha a ordem.
       </p>
       <BoxesManager
         businessId={business!.id}

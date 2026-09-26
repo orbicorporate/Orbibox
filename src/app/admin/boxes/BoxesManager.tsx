@@ -94,7 +94,6 @@ export function BoxesManager({
   businessId,
   businessName,
   initialBoxes,
-  slug,
   initialStoryPhotos,
   initialAboutBusiness,
   initialDifferentialsCards,
@@ -339,18 +338,10 @@ export function BoxesManager({
         >
           {arranging ? "Organizando…" : "✦ Sugerir ordem"}
         </button>
-        <Link href={`/${slug}`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] text-text-secondary">
-          Ver resultado ↗
-        </Link>
+        <span className="text-[12.5px] text-text-tertiary">
+          {ativos === 0 ? "Nenhum botão ligado" : `${ativos} ${ativos === 1 ? "botão ligado" : "botões ligados"}`}
+        </span>
       </div>
-
-      <p className="text-[12px] text-text-secondary">
-        A tela inicial (“O que trouxe você aqui hoje?”) sempre aparece primeiro, os caminhos abaixo são as opções que ela oferece.
-        <br />
-        {ativos === 0
-          ? "Nenhum caminho ativo, o visitante só verá a tela inicial."
-          : `${ativos} ${ativos === 1 ? "caminho ativo" : "caminhos ativos"} na sua tela inicial.`}
-      </p>
 
       <SecaoRecolhivel
         titulo="Tela inicial"
