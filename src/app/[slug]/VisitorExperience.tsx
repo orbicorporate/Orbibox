@@ -1889,8 +1889,9 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
                       {/* Sem foto já mostra a tag/o destino dentro do próprio box, a setinha
                           no canto só faz sentido quando tem foto por cima e nada mais avisa. */}
                       {destino && photo && (
-                        <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/25 text-[13px] text-white backdrop-blur-sm">
-                          {isExterno ? "↗" : "›"}
+                        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/30 py-1.5 pl-3 pr-2.5 text-[12px] font-medium text-white backdrop-blur-sm">
+                          {isExterno ? (item.link_kind === "categoria" ? "Ver categoria" : "Ver no site") : "Ver página"}
+                          <span aria-hidden>{isExterno ? "↗" : "›"}</span>
                         </span>
                       )}
                     </div>
