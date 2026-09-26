@@ -21,6 +21,7 @@ export function YoutubeAdder({
   hint = "Cole o link de um vídeo do YouTube ou de um Reels do Instagram, ele entra no mesmo carrossel, junto das fotos, sempre no formato certo (paisagem ou vertical).",
   showList = true,
   compact = false,
+  semTexto = false,
 }: {
   videos: string[];
   onAdd: (url: string) => void;
@@ -31,6 +32,8 @@ export function YoutubeAdder({
   showList?: boolean;
   /** Só a linha de colar o link, sem título nem texto de ajuda. */
   compact?: boolean;
+  /** Esconde a frase de ajuda do modo compacto (quando o contexto já explica). */
+  semTexto?: boolean;
 }) {
   const [url, setUrl] = useState("");
   const [erro, setErro] = useState(false);
@@ -50,8 +53,8 @@ export function YoutubeAdder({
   }
 
   return (
-    <div className={compact ? "mt-3" : "mt-4"}>
-      {compact ? (
+    <div className={semTexto ? "" : compact ? "mt-3" : "mt-4"}>
+      {semTexto ? null : compact ? (
         <p className="text-[12px] text-text-tertiary">Tem vídeo? Cole o link do YouTube ou Reels (até {max}).</p>
       ) : (
         <>
@@ -62,7 +65,7 @@ export function YoutubeAdder({
       {cheio ? (
         <p className="mt-2 text-[13px] text-text-tertiary">Você já adicionou o máximo de {max} vídeos. Remova um pra trocar.</p>
       ) : (
-        <div className={`${compact ? "mt-1.5" : "mt-3"} flex gap-2`}>
+        <div className={`${semTexto ? "" : compact ? "mt-1.5" : "mt-3"} flex gap-2`}>
           <input
             value={url}
             onChange={(e) => { setUrl(e.target.value); setErro(false); }}

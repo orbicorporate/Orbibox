@@ -10,6 +10,7 @@ import { HelperText } from "@/components/ui/HelperText";
 import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
+import { LinhaExpansivel, PromptParaIA } from "@/components/ui/LinhaExpansivel";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { PreviewVisitante } from "@/components/mobile/PreviewVisitante";
 import { RATIOS, RATIO_PIXELS } from "@/components/ui/ImageCropModal";
@@ -1518,11 +1519,18 @@ function ItemCard({
                 <div className="p-5">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[15px] font-semibold text-on-background">Fotos e vídeos</p>
-                  <span className="text-[12px] text-text-tertiary">{item.gallery_urls.length}/6 · opcional</span>
+                  <span className="rounded-full bg-surface-soft px-2.5 py-1 text-[11.5px] font-medium tabular-nums text-text-secondary">
+                    {item.gallery_urls.length}/6
+                  </span>
                 </div>
-                <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">
-                  {`Viram um carrossel na página deste produto. Mesmo formato da capa: ${RATIOS[COVER_RATIO_BY_SIZE[size]].label} (${RATIO_PIXELS[COVER_RATIO_BY_SIZE[size]]}).`}
-                </p>
+                <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">Opcional. Viram um carrossel na página do produto.</p>
+                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-divider px-2.5 py-1 text-[11.5px] text-text-secondary">
+                  <span
+                    className="inline-block rounded-[3px] border-[1.5px] border-current"
+                    style={{ width: 11, height: 11 / RATIOS[COVER_RATIO_BY_SIZE[size]].value }}
+                  />
+                  {RATIOS[COVER_RATIO_BY_SIZE[size]].label.replace(/\s*\(.*\)$/, "")} · {RATIO_PIXELS[COVER_RATIO_BY_SIZE[size]]} · igual à capa
+                </span>
                 <div className="mt-3">
                   <GalleryUpload
                     value={item.gallery_urls}
@@ -1530,22 +1538,46 @@ function ItemCard({
                     lockedRatio={COVER_RATIO_BY_SIZE[size]}
                     lockedReason="Segue o mesmo formato da capa, pra mudar, troque o formato do card lá em cima."
                     emptySlots={1}
-                    emptyLabel="Foto"
+                    emptyLabel="Adicionar foto"
                     onChange={(urls) => save(item.id, { gallery_urls: urls })}
                   />
                 </div>
 
                 {item.gallery_urls.length < 6 && (
-                  <YoutubeAdder
-                    compact
-                    videos={item.gallery_urls.filter((u) => isVideoUrl(u))}
-                    showList={false}
-                    onAdd={(url) => {
-                      if (item.gallery_urls.includes(url)) return;
-                      save(item.id, { gallery_urls: [...item.gallery_urls, url] });
-                    }}
-                    onRemove={(url) => save(item.id, { gallery_urls: item.gallery_urls.filter((u) => u !== url) })}
-                  />
+                  <div className="mt-3 flex flex-col gap-2">
+                    <LinhaExpansivel
+                      destaque
+                      icone={<span className="text-[14px]">✦</span>}
+                      titulo="Criar foto com IA"
+                      subtitulo="Prompt pronto pro ChatGPT, já na medida certa"
+                    >
+                      <PromptParaIA
+                        destino="no + ali em cima"
+                        texto={promptFotoCarrossel(item.title, item.description, RATIOS[COVER_RATIO_BY_SIZE[size]].label.replace(/\s*\(.*\)$/, "").toLowerCase(), RATIO_PIXELS[COVER_RATIO_BY_SIZE[size]])}
+                      />
+                    </LinhaExpansivel>
+                    <LinhaExpansivel
+                      icone={
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                          <path d="M8 5.5v13l11-6.5z" />
+                        </svg>
+                      }
+                      titulo="Adicionar vídeo"
+                      subtitulo="Link do YouTube ou Reels, até 3"
+                    >
+                      <YoutubeAdder
+                        compact
+                        semTexto
+                        videos={item.gallery_urls.filter((u) => isVideoUrl(u))}
+                        showList={false}
+                        onAdd={(url) => {
+                          if (item.gallery_urls.includes(url)) return;
+                          save(item.id, { gallery_urls: [...item.gallery_urls, url] });
+                        }}
+                        onRemove={(url) => save(item.id, { gallery_urls: item.gallery_urls.filter((u) => u !== url) })}
+                      />
+                    </LinhaExpansivel>
+                  </div>
                 )}
 
                 <div className="mt-6 border-t border-divider pt-5">
@@ -2200,4 +2232,15 @@ function AllColorsSheet({
       </div>
     </div>
   );
+}
+
+/** Prompt pra gerar uma foto extra do carrossel, no formato da capa. */
+function promptFotoCarrossel(titulo: string, descricao: string | null | undefined, formato: string, medida: string): string {
+  const nome = titulo?.trim() || "meu produto";
+  const desc = descricao?.trim() ? ` Sobre ele: ${descricao.trim().slice(0, 220)}` : "";
+  return `Criar uma foto no formato ${formato} (${medida}) para o carrossel de "${nome}".${desc}
+
+Estilo fotográfico realista, luz natural suave, composição limpa e sofisticada. Mostre um ângulo, detalhe ou uso diferente do produto, pra complementar a foto de capa. Sem textos, logotipos ou marcas d'água na imagem.
+
+Use como referência de estilo e de produto as fotos que vou anexar.`;
 }
