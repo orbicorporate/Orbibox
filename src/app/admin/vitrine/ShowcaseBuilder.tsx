@@ -423,15 +423,15 @@ export function ShowcaseBuilder({
       detalhe:
         paginasDeProduto.length === 0
           ? "Fotos, diferenciais e uma pergunta pra Orbi"
-          : `${paginasDeProduto.length - paginasIncompletas.length} de ${paginasDeProduto.length} prontas. Fotos, diferenciais e pergunta pra Orbi`,
+          : `${paginasDeProduto.length - paginasIncompletas.length} de ${paginasDeProduto.length} prontas. Toque pra ver quais faltam`,
       feito: paginasDeProduto.length > 0 && paginasIncompletas.length === 0,
-      acao: () => {
-        const alvo = paginasIncompletas[0];
-        if (alvo) router.push(`/admin/vitrine/pagina/${alvo.id}`);
-      },
+      // Abre a lista das páginas aqui mesmo, a pessoa escolhe qual completar.
+      acao: () => setListaPaginas((v) => !v),
+      lista: true,
     },
   ];
   const mostrarGuia = !guiaOculto && passos.some((p) => !p.feito);
+  const [listaPaginas, setListaPaginas] = useState(false);
   const [avisarNovidade, setAvisarNovidade] = useState<{ titulo: string; quantos: number } | null>(null);
 
   // Categorias que já existem em algum item, mesmo que ainda não estejam na
@@ -671,11 +671,11 @@ export function ShowcaseBuilder({
           </div>
           <div className="mt-3 flex flex-col gap-2">
             {passos.map((p, i) => (
+              <div key={i} className={`rounded-2xl ${p.feito ? "" : "bg-surface-soft"}`}>
               <button
-                key={i}
                 onClick={p.acao}
                 disabled={p.feito}
-                className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors ${p.feito ? "bg-transparent" : "bg-surface-soft active:bg-divider/60"}`}
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-divider/60"
               >
                 <span
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ${
@@ -688,8 +688,45 @@ export function ShowcaseBuilder({
                   <span className={`block text-[14px] font-medium ${p.feito ? "text-text-tertiary line-through decoration-text-tertiary/40" : "text-on-background"}`}>{p.titulo}</span>
                   {!p.feito && <span className="block text-[12px] leading-snug text-text-tertiary">{p.detalhe}</span>}
                 </span>
-                {!p.feito && <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>}
+                {!p.feito &&
+                  (p.lista ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${listaPaginas ? "rotate-180" : ""}`} aria-hidden>
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  ) : (
+                    <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>
+                  ))}
               </button>
+              {/* Lista das páginas: a pessoa vê quais faltam e escolhe. */}
+              {p.lista && listaPaginas && !p.feito && (
+                <div className="flex flex-col gap-1 px-2 pb-2">
+                  {paginasDeProduto.length === 0 && (
+                    <p className="px-2 py-2 text-[12.5px] text-text-tertiary">Deixe algum item ativo primeiro, a página dele aparece aqui.</p>
+                  )}
+                  {[...paginasIncompletas, ...paginasDeProduto.filter((x) => !paginasIncompletas.includes(x))].map((it) => {
+                    const pronta = !paginasIncompletas.includes(it);
+                    return (
+                      <Link
+                        key={it.id}
+                        href={`/admin/vitrine/pagina/${it.id}`}
+                        className="flex items-center gap-3 rounded-xl bg-surface-white px-3 py-2.5"
+                      >
+                        <span
+                          className="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-cover bg-center"
+                          style={it.image_url ? { backgroundImage: `url(${it.image_url})` } : { backgroundColor: colorOf(it.box_color).bg }}
+                        />
+                        <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">{it.title}</span>
+                        {pronta ? (
+                          <span className="shrink-0 text-[12px] text-text-tertiary">✓ Pronta</span>
+                        ) : (
+                          <span className="shrink-0 rounded-full bg-on-background px-3 py-1 text-[12px] font-medium text-white">Completar</span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+              </div>
             ))}
           </div>
         </div>
