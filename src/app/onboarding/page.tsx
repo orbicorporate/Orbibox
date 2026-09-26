@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -10,7 +10,7 @@ import { slugify } from "@/lib/utils";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { coresDaOrbi } from "@/lib/orbiCores";
 import { colorOf } from "@/lib/showcase";
-import { AnaliseAoVivo, BrandOrb, VitrineMontando, type Analise, type Descoberta, type ItemMontado } from "./MagicScreens";
+import { AnaliseAoVivo, BrandOrb, EssenciaDaMarca, VitrineMontando, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 
 type Color = { hex: string; role: string };
 type BrandAnalysis = {
@@ -19,19 +19,21 @@ type BrandAnalysis = {
   voiceSummary: string;
   font: string;
   siteAnalyzed?: boolean;
+  resumo?: string;
+  pontosFortes?: PontoForte[];
 };
 
-async function analyzeBrand(name: string, instagram: string, website: string): Promise<BrandAnalysis> {
+async function analyzeBrand(name: string, instagram: string, website: string, descricao: string): Promise<BrandAnalysis> {
   const res = await fetch("/api/analyze-brand", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, instagram, website }),
+    body: JSON.stringify({ name, instagram, website, descricao }),
   });
   if (!res.ok) throw new Error("Falha ao analisar marca.");
   return res.json();
 }
 
-type Step = "dados" | "analisando" | "confirmar" | "montando" | "resultado";
+type Step = "dados" | "analisando" | "essencia" | "confirmar" | "montando" | "resultado";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -66,7 +68,11 @@ export default function OnboardingPage() {
     const ig = instagram.trim().replace(/^.*instagram\.com\//i, "").replace(/[/?].*$/, "").replace(/^@/, "");
     return ig ? `@${ig}` : null;
   }, [website, instagram]);
-  const irParaConfirmar = useCallback(() => setStep("confirmar"), []);
+  const pontosRef = useRef(0);
+  // Essência da marca (resumo + pontos fortes), editável antes do manual.
+  const [resumo, setResumo] = useState("");
+  const [pontos, setPontos] = useState<PontoForte[]>([]);
+  const irParaConfirmar = useCallback(() => setStep(pontosRef.current > 0 ? "essencia" : "confirmar"), []);
   // Veio do painel pra criar outro Orbibox (plano com vários negócios)?
   const novoNegocio = useSyncExternalStore(
     () => () => {},
@@ -101,7 +107,10 @@ export default function OnboardingPage() {
         .catch(() => setDescoberta({ status: "fail" }));
     }
     try {
-      const result = await analyzeBrand(name, instagram, website);
+      const result = await analyzeBrand(name, instagram, website, description);
+      setResumo(result.resumo ?? "");
+      setPontos(result.pontosFortes ?? []);
+      pontosRef.current = (result.pontosFortes ?? []).length;
       setTraits(result.personality);
       setVoice(result.voiceSummary);
       setFont(result.font || "Manrope");
@@ -197,12 +206,23 @@ export default function OnboardingPage() {
       return `https://www.linkedin.com/company/${v.replace(/^@/, "")}`;
     })();
 
+    const pontosValidos = pontos
+      .map((p) => ({ icon: p.icon || "✦", title: p.title.trim(), description: p.description.trim() }))
+      .filter((p) => p.title);
+
     const payload = {
       owner_id: user.id,
       name,
       instagram_handle: instagram || null,
       website_url: website || null,
-      about_business: description.trim() || null,
+      // O que o dono escreveu vem primeiro; o resumo revisado completa.
+      about_business: [description.trim(), resumo.trim()].filter(Boolean).join("\n\n") || null,
+      ...(pontosValidos.length
+        ? {
+            differentials_cards: pontosValidos,
+            differentials: pontosValidos.map((p) => (p.description ? `${p.title}: ${p.description}` : p.title)).join("\n"),
+          }
+        : {}),
       contact_whatsapp: whatsappDigits || null,
       contact_site: siteUrl,
       brand_personality: traits,
@@ -489,6 +509,18 @@ export default function OnboardingPage() {
 
             <Button onClick={goToApp} variant="orbi">Ir para o meu Orbibox →</Button>
           </div>
+        )}
+
+        {step === "essencia" && (
+          <EssenciaDaMarca
+            nome={name}
+            orbColors={orbColors}
+            resumo={resumo}
+            onResumo={setResumo}
+            pontos={pontos}
+            onPontos={setPontos}
+            onContinuar={() => setStep("confirmar")}
+          />
         )}
 
         {step === "confirmar" && (

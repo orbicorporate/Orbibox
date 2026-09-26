@@ -365,3 +365,139 @@ export function VitrineMontando({
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// 3. Essência da marca: resumo em 3 linhas + 3 pontos fortes, editáveis
+// ---------------------------------------------------------------------------
+export type PontoForte = { icon: string; title: string; description: string };
+
+export function EssenciaDaMarca({
+  nome,
+  orbColors,
+  resumo,
+  onResumo,
+  pontos,
+  onPontos,
+  onContinuar,
+}: {
+  nome: string;
+  orbColors: string[] | null;
+  resumo: string;
+  onResumo: (v: string) => void;
+  pontos: PontoForte[];
+  onPontos: (v: PontoForte[]) => void;
+  onContinuar: () => void;
+}) {
+  const marca = nome.trim() || "sua marca";
+  const cor = orbColors?.[0] ?? "#111318";
+
+  // O resumo aparece como se a Orbi estivesse escrevendo; depois vira editável.
+  const [letras, setLetras] = useState(0);
+  const digitando = letras < resumo.length;
+  useEffect(() => {
+    if (!digitando) return;
+    const t = setTimeout(() => setLetras((n) => Math.min(resumo.length, n + 3)), 16);
+    return () => clearTimeout(t);
+  }, [letras, digitando, resumo.length]);
+
+  // Pontos fortes entram um por vez depois do resumo.
+  const [cards, setCards] = useState(0);
+  useEffect(() => {
+    if (digitando || cards >= pontos.length) return;
+    const t = setTimeout(() => setCards((c) => c + 1), cards === 0 ? 350 : 700);
+    return () => clearTimeout(t);
+  }, [digitando, cards, pontos.length]);
+  const pronto = !digitando && cards >= pontos.length;
+
+  // Campo cresce com o texto, sem cortar a última linha.
+  function crescer(el: HTMLTextAreaElement | null) {
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
+
+  function editarPonto(i: number, campo: "title" | "description", v: string) {
+    onPontos(pontos.map((p, k) => (k === i ? { ...p, [campo]: v } : p)));
+  }
+
+  return (
+    <div className="flex flex-col py-4">
+      <div className="flex items-center gap-3">
+        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full">
+          <OrbiOrb size={44} colors={orbColors} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[12.5px] font-medium text-text-tertiary">A Orbi entendeu assim</p>
+          <p className="truncate font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">{marca}</p>
+        </div>
+      </div>
+
+      {/* Resumo em três linhas */}
+      <div className="orbi-linha-entra mt-6 rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+        <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Em três linhas</p>
+        {digitando ? (
+          <p className="mt-2 min-h-[72px] text-[15.5px] leading-relaxed text-on-background">
+            {resumo.slice(0, letras)}
+            <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse" style={{ backgroundColor: cor }} />
+          </p>
+        ) : (
+          <textarea
+            value={resumo}
+            onChange={(e) => { onResumo(e.target.value); crescer(e.target); }}
+            ref={crescer}
+            rows={3}
+            maxLength={360}
+            className="mt-2 w-full resize-none bg-transparent text-[15.5px] leading-relaxed text-on-background outline-none"
+          />
+        )}
+      </div>
+
+      {/* Pontos fortes com check animado */}
+      {cards > 0 && (
+        <p className="orbi-linha-entra mt-6 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Pontos fortes</p>
+      )}
+      <div className="mt-2.5 flex flex-col gap-2.5">
+        {pontos.slice(0, cards).map((p, i) => (
+          <div key={i} className="orbi-card-cai flex items-start gap-3 rounded-[20px] bg-surface-white p-3.5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+            <span className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 32 32" className="absolute inset-0 -rotate-90" aria-hidden>
+                <circle cx="16" cy="16" r="14" fill="none" stroke={cor} strokeOpacity={0.15} strokeWidth="2" />
+                <circle cx="16" cy="16" r="14" fill="none" stroke={cor} strokeWidth="2" strokeLinecap="round" strokeDasharray="88" strokeDashoffset="88" className="orbi-mini-anel" />
+              </svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M5 13l4 4L19 7" strokeDasharray="24" strokeDashoffset="24" className="orbi-mini-check" />
+              </svg>
+            </span>
+            <div className="min-w-0 flex-1">
+              <input
+                value={p.title}
+                onChange={(e) => editarPonto(i, "title", e.target.value)}
+                maxLength={60}
+                className="w-full bg-transparent text-[15px] font-semibold text-on-background outline-none"
+              />
+              <textarea
+                value={p.description}
+                onChange={(e) => editarPonto(i, "description", e.target.value)}
+                maxLength={140}
+                rows={2}
+                className="mt-0.5 w-full resize-none bg-transparent text-[13.5px] leading-snug text-text-secondary outline-none"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {pronto && (
+        <>
+          <p className="orbi-linha-entra mt-3 text-center text-[12px] text-text-tertiary">Toque em qualquer texto pra editar. Isso vai pra sua página e ensina a Orbi.</p>
+          <button
+            onClick={onContinuar}
+            className="orbi-linha-entra orbi-gradient mt-5 w-full rounded-full py-3.5 text-[15px] font-medium text-on-background"
+          >
+            Está certo, continuar →
+          </button>
+        </>
+      )}
+    </div>
+  );
+}

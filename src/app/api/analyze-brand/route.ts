@@ -32,7 +32,7 @@ async function fetchSiteText(url: string): Promise<string | null> {
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, instagram, website } = await req.json();
+    const { name, instagram, website, descricao } = await req.json();
 
     // Site (lido do jeito resiliente) e Instagram em paralelo: o tom de voz
     // e a paleta ficam muito melhores com os dois, e sem site o Instagram basta.
@@ -55,15 +55,18 @@ export async function POST(req: NextRequest) {
 
     const system = `Você é a Orbi, a IA do Orbibox que monta um mini manual de marca a partir do nome, Instagram e (quando disponível) texto extraído do site.
 Responda SOMENTE em JSON válido, sem markdown, sem texto antes ou depois, no formato exato:
-{"personality":{"energetica":0.0,"proxima":0.0,"visual":0.0,"direta":0.0},"voiceSummary":"...","font":"...","palette":["#RRGGBB","#RRGGBB","#RRGGBB"]}
+{"personality":{"energetica":0.0,"proxima":0.0,"visual":0.0,"direta":0.0},"voiceSummary":"...","font":"...","palette":["#RRGGBB","#RRGGBB","#RRGGBB"],"resumo":"...","pontosFortes":[{"icon":"✦","title":"...","description":"..."}]}
 - Os quatro valores de personalidade são números entre 0.3 e 0.95 e devem variar entre si conforme a marca.
 - voiceSummary: UMA frase curta (máximo 15 palavras) sobre o tom de voz da marca.
 - font: o nome de UMA fonte do Google Fonts que combine com a marca (ex: "Manrope", "Playfair Display", "Poppins", "DM Sans"). Apenas o nome.
 - palette: 3 a 5 cores hex que representem a marca (a primeira é a cor principal, uma de destaque, e um fundo claro).
 - A paleta vem da IDENTIDADE da marca: logotipo, header, rodapé e botões do site. Nunca use cores de fotos ou imagens do conteúdo (produtos, pessoas, paisagens, comida).
-- Se receber "CORES MEDIDAS NO SITE", a paleta deve usar exatamente essas cores, na mesma ordem. Não invente outras.`;
+- Se receber "CORES MEDIDAS NO SITE", a paleta deve usar exatamente essas cores, na mesma ordem. Não invente outras.
+- resumo: o negócio em até 3 frases curtas (no máximo 3 linhas no celular, ~240 caracteres): o que é, pra quem, e o que torna especial. Português do Brasil, direto, sem clichês ("excelência", "qualidade incomparável").
+- pontosFortes: EXATAMENTE 3 pontos fortes reais da marca, tirados do conteúdo (produtos, provas, números, diferenciais citados). title com no máximo 5 palavras; description com no máximo 14 palavras explicando. icon: um só símbolo desta lista, o que combinar: ✦ ★ ◆ ⚡ ✓ ☺ ♥ ✿ ⌖ $. Nunca invente número, prêmio ou fato que não esteja no conteúdo; sem conteúdo, use pontos fortes típicos do segmento, de forma honesta e genérica.`;
 
     const userMsg = `Nome do negócio: ${name || "(não informado)"}
+${descricao ? `O dono descreveu assim: ${String(descricao).slice(0, 600)}` : ""}
 Instagram: ${instagram || "(não informado)"}
 ${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e Instagram não disponíveis, infira a partir do nome e segmento provável."}${
       medidas.length > 0
@@ -75,9 +78,11 @@ ${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e 
     let voiceSummary = "Tom próximo e direto, pronto para conversar com quem chega.";
     let font = "Manrope";
     let palette: string[] | null = null;
+    let resumo = "";
+    let pontosFortes: { icon: string; title: string; description: string }[] = [];
 
     try {
-      const raw = await askClaude({ system, messages: [{ role: "user", content: userMsg }], maxTokens: 600 });
+      const raw = await askClaude({ system, messages: [{ role: "user", content: userMsg }], maxTokens: 1100 });
       // Extrai o primeiro bloco {...} da resposta, mesmo que venha com texto ao redor.
       const match = raw.match(/\{[\s\S]*\}/);
       const jsonText = match ? match[0] : raw.trim().replace(/^```json\n?|```$/g, "");
@@ -85,6 +90,17 @@ ${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e 
       if (parsed.personality) personality = parsed.personality;
       if (parsed.voiceSummary) voiceSummary = parsed.voiceSummary;
       if (parsed.font) font = String(parsed.font).slice(0, 60);
+      if (typeof parsed.resumo === "string") resumo = parsed.resumo.trim().slice(0, 360);
+      if (Array.isArray(parsed.pontosFortes)) {
+        pontosFortes = parsed.pontosFortes
+          .filter((p: unknown) => !!p && typeof (p as { title?: unknown }).title === "string")
+          .slice(0, 3)
+          .map((p: { icon?: string; title: string; description?: string }) => ({
+            icon: typeof p.icon === "string" && p.icon.trim() ? p.icon.trim().slice(0, 4) : "✦",
+            title: p.title.trim().slice(0, 60),
+            description: (p.description ?? "").trim().slice(0, 140),
+          }));
+      }
       if (Array.isArray(parsed.palette) && parsed.palette.length > 0) {
         palette = parsed.palette
           .filter((c: unknown) => typeof c === "string" && /^#?[0-9a-fA-F]{6}$/.test(c))
@@ -111,7 +127,7 @@ ${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e 
           : colors;
     }
 
-    return NextResponse.json({ personality, colors: finalColors, voiceSummary, font, siteAnalyzed: !!siteText });
+    return NextResponse.json({ personality, colors: finalColors, voiceSummary, font, resumo, pontosFortes, siteAnalyzed: !!siteText });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Falha ao analisar marca." }, { status: 500 });
