@@ -11,18 +11,6 @@ import { createClient } from "@/lib/supabase/client";
 
 const MENU_ITEMS = [
   {
-    href: "/admin/agent",
-    label: "Configurar sua IA",
-    desc: "Personalidade, tom de voz e o que a Orbi sabe.",
-    bg: "orbi-gradient",
-    fg: "#111318",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4L12 2z" />
-      </svg>
-    ),
-  },
-  {
     href: "/admin/config",
     label: "Configurar sua marca",
     desc: "Logotipo, contatos e o que aparece pro visitante.",
@@ -34,6 +22,18 @@ const MENU_ITEMS = [
         <path d="M4 9v10a1 1 0 001 1h14a1 1 0 001-1V9" />
         <path d="M9 20v-5a1 1 0 011-1h4a1 1 0 011 1v5" />
         <path d="M3 9h18" />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/agent",
+    label: "Configurar sua IA",
+    desc: "Personalidade, tom de voz e o que a Orbi sabe.",
+    bg: "orbi-gradient",
+    fg: "#111318",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4L12 2z" />
       </svg>
     ),
   },
@@ -91,7 +91,7 @@ export function AppHeader({
   }
 
   return (
-    <header className={`sticky top-0 flex items-center justify-between bg-background-main/65 px-6 py-4 backdrop-blur-xl ${menuOpen ? "z-50" : "z-20"}`}>
+    <header className={`sticky top-0 flex items-center justify-between bg-background-main/65 px-6 py-4 backdrop-blur-xl ${menuOpen || sinoOpen ? "z-50" : "z-20"}`}>
       <div className="flex items-center gap-2">
         <BackButton />
         <OrbiOrb size={28} />
@@ -135,11 +135,14 @@ export function AppHeader({
 
         {sinoOpen && (
           <>
-            <button
-              aria-label="Fechar notificações"
-              onClick={() => setSinoOpen(false)}
-              className="fixed inset-0 z-40 cursor-default bg-on-background/10 backdrop-blur-[2px]"
-            />
+            {typeof document !== "undefined" && createPortal(
+              <button
+                aria-label="Fechar notificações"
+                onClick={() => setSinoOpen(false)}
+                className="fixed inset-0 z-40 cursor-default bg-on-background/10 backdrop-blur-[2px]"
+              />,
+              document.body,
+            )}
             <div className="absolute right-0 top-12 z-50 w-[300px] overflow-hidden rounded-[24px] bg-surface-white p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
               <p className="px-2 pb-2 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Pendências</p>
 
@@ -202,11 +205,14 @@ export function AppHeader({
           <>
             {/* Backdrop, clique em qualquer lugar fora do menu fecha. Fica
                 acima de todo o conteúdo da página (z-40) e abaixo do menu. */}
-            <button
-              aria-label="Fechar menu"
-              onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-40 cursor-default bg-on-background/10 backdrop-blur-[2px]"
-            />
+            {typeof document !== "undefined" && createPortal(
+              <button
+                aria-label="Fechar menu"
+                onClick={() => setMenuOpen(false)}
+                className="fixed inset-0 z-40 cursor-default bg-on-background/10 backdrop-blur-[2px]"
+              />,
+              document.body,
+            )}
             <div className="absolute right-0 top-12 z-50 w-[320px] overflow-hidden rounded-[28px] bg-surface-white p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
               <p className="px-2 pb-2 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Configurações</p>
 
