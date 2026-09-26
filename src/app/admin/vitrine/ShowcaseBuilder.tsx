@@ -1770,7 +1770,7 @@ function ItemCard({
                         onClick={() => save(item.id, { title_placement: v })}
                         className={`flex flex-1 flex-col gap-2 rounded-2xl border-2 p-2 ${ativo ? "border-on-background" : "border-divider"}`}
                       >
-                        <TitlePlacementExample kind={v} footer={fc} photo={hasPhoto ? item.image_url : null} title={item.title} price={priceLabel} />
+                        <TitlePlacementExample kind={v} footer={fc} photo={hasPhoto ? item.image_url : null} title={item.title} price={priceLabel} ratio={RATIOS[COVER_RATIO_BY_SIZE[size]].value} />
                         <span className={`mt-auto text-[12.5px] font-medium ${ativo ? "" : "text-text-secondary"}`}>
                           {v === "faixa" ? "Com rodapé" : "Sem rodapé"}
                         </span>
@@ -2130,8 +2130,11 @@ function TitlePlacementExample({
   photo,
   title,
   price,
+  ratio,
 }: {
   kind: "faixa" | "sobre";
+  /** Proporção da foto, a mesma do formato escolhido pro card. */
+  ratio: number;
   footer?: { bg: string; fg: string } | null;
   photo?: string | null;
   title?: string;
@@ -2147,7 +2150,7 @@ function TitlePlacementExample({
   // faixa embaixo, que já mostra a cor escolhida.
   return (
     <span className="block w-full overflow-hidden rounded-xl bg-white text-left shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
-      <span className="relative block h-[84px] w-full">
+      <span className="relative block w-full" style={{ aspectRatio: ratio }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         {kind === "sobre" && (nome || preco) && (
