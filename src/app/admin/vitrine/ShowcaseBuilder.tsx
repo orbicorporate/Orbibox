@@ -7,13 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { HelperText } from "@/components/ui/HelperText";
-import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, galleryRatioOf, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
-import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
-import { LinhaExpansivel, PromptParaIA } from "@/components/ui/LinhaExpansivel";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { PreviewVisitante } from "@/components/mobile/PreviewVisitante";
-import { RATIOS, RATIO_PIXELS } from "@/components/ui/ImageCropModal";
+import { RATIOS } from "@/components/ui/ImageCropModal";
 import { MiniTour } from "@/components/tour/MiniTour";
 import { InspireModal } from "./InspireModal";
 import { VITRINE_THEMES } from "@/lib/vitrineThemes";
@@ -155,7 +153,6 @@ export function ShowcaseBuilder({
   const [arranging, setArranging] = useState(false);
   const [creating, setCreating] = useState(false);
   const [improving, setImproving] = useState<string | null>(null);
-  const [suggestingExtras, setSuggestingExtras] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [showInspire, setShowInspire] = useState(false);
   const [showCoverExample, setShowCoverExample] = useState(false);
@@ -516,23 +513,6 @@ export function ShowcaseBuilder({
       }
     } finally {
       setImproving(null);
-    }
-  }
-
-  async function suggestExtras(item: Item) {
-    setSuggestingExtras(item.id);
-    try {
-      const res = await fetch("/api/suggest-item-extras", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contentItemId: item.id }),
-      });
-      if (res.ok) {
-        const { highlights, orbiHook } = await res.json();
-        await save(item.id, { highlights: highlights?.length ? highlights : null, orbi_hook: orbiHook });
-      }
-    } finally {
-      setSuggestingExtras(null);
     }
   }
 
@@ -965,8 +945,6 @@ export function ShowcaseBuilder({
                   onNewCategory={(name) => { if (!allCategoryNamesRef().includes(name)) saveCategories([...categories, name]); }}
                   onImprove={() => improveWithOrbi(item)}
                   improving={improving === item.id}
-                  onSuggestExtras={() => suggestExtras(item)}
-                  suggestingExtras={suggestingExtras === item.id}
                   onDelete={() => deleteItem(item)}
                   slug={slug}
                   whatsapp={whatsapp}
@@ -1181,8 +1159,6 @@ function ItemCard({
   onNewCategory,
   onImprove,
   improving,
-  onSuggestExtras,
-  suggestingExtras,
   onDelete,
   slug,
   whatsapp,
@@ -1207,8 +1183,6 @@ function ItemCard({
   onNewCategory: (name: string) => void;
   onImprove: () => void;
   improving: boolean;
-  onSuggestExtras: () => void;
-  suggestingExtras: boolean;
   onDelete: () => void;
   slug: string;
   whatsapp?: string | null;
@@ -1520,220 +1494,32 @@ function ItemCard({
                 </div>
 
                 <div className="p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[15px] font-semibold text-on-background">Fotos e vídeos</p>
-                  <span className="rounded-full bg-surface-soft px-2.5 py-1 text-[11.5px] font-medium tabular-nums text-text-secondary">
-                    {item.gallery_urls.length}/6
-                  </span>
-                </div>
-                <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">Opcional. Viram um carrossel na página do produto.</p>
-                {(() => {
-                  const gr = galleryRatioOf(item.gallery_ratio, item.layout_size);
-                  const temFoto = item.gallery_urls.some((u) => !isVideoUrl(u));
-                  return (
-                    <>
-                      <div className="mt-3 flex items-center gap-2">
-                        <div className="inline-flex rounded-full bg-surface-soft p-1">
-                          {(["quadrado", "paisagem"] as const).map((r) => (
-                            <button
-                              key={r}
-                              type="button"
-                              disabled={temFoto && gr !== r}
-                              onClick={() => gr !== r && save(item.id, { gallery_ratio: r })}
-                              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
-                                gr === r ? "bg-surface-white text-on-background shadow-[0_1px_4px_rgba(17,19,24,0.1)]" : "text-text-tertiary disabled:opacity-50"
-                              }`}
-                            >
-                              <span className="inline-block rounded-[3px] border-[1.5px] border-current" style={{ width: r === "quadrado" ? 11 : 16, height: r === "quadrado" ? 11 : 9 }} />
-                              {r === "quadrado" ? "Quadrado" : "Paisagem"}
-                            </button>
-                          ))}
-                        </div>
-                        <span className="text-[11.5px] text-text-tertiary">{RATIO_PIXELS[gr]}</span>
-                      </div>
-                      {temFoto && (
-                        <p className="mt-1.5 text-[11.5px] text-text-tertiary">Pra trocar o formato, remova as fotos antes.</p>
-                      )}
-                      <div className="mt-3">
-                        <GalleryUpload
-                          value={item.gallery_urls}
-                          businessId={businessId}
-                          lockedRatio={gr}
-                          lockedReason="Todas as fotos do carrossel seguem o mesmo formato. Pra mudar, troque o formato ali em cima."
-                          emptySlots={1}
-                          emptyLabel="Adicionar foto"
-                          onChange={(urls) => save(item.id, { gallery_urls: urls })}
-                        />
-                      </div>
-                    </>
-                  );
-                })()}
-
-                {item.gallery_urls.length < 6 && (
-                  <div className="mt-3 flex flex-col gap-2">
-                    <LinhaExpansivel
-                      destaque
-                      icone={<span className="text-[14px]">✦</span>}
-                      titulo="Criar foto com IA"
-                      subtitulo="Prompt pronto pro ChatGPT, já na medida certa"
-                    >
-                      <PromptParaIA
-                        destino="no + ali em cima"
-                        texto={promptFotoCarrossel(item.title, item.description, galleryRatioOf(item.gallery_ratio, item.layout_size), RATIO_PIXELS[galleryRatioOf(item.gallery_ratio, item.layout_size)])}
-                      />
-                    </LinhaExpansivel>
-                    <LinhaExpansivel
-                      icone={
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                          <path d="M8 5.5v13l11-6.5z" />
-                        </svg>
-                      }
-                      titulo="Adicionar vídeo"
-                      subtitulo="Link do YouTube ou Reels, até 3"
-                    >
-                      <YoutubeAdder
-                        compact
-                        semTexto
-                        videos={item.gallery_urls.filter((u) => isVideoUrl(u))}
-                        showList={false}
-                        onAdd={(url) => {
-                          if (item.gallery_urls.includes(url)) return;
-                          save(item.id, { gallery_urls: [...item.gallery_urls, url] });
-                        }}
-                        onRemove={(url) => save(item.id, { gallery_urls: item.gallery_urls.filter((u) => u !== url) })}
-                      />
-                    </LinhaExpansivel>
-                  </div>
-                )}
-
-                <div className="mt-6 border-t border-divider pt-5">
-                  <p className="text-[15px] font-semibold text-on-background">Diferenciais e conversa</p>
-                  <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">Sem ideia? Toque em ✦ Orbi sugere e ela preenche os dois passos.</p>
-
-                  {/* Passo 1: diferenciais, numerados na ordem em que aparecem na página. */}
-                  <div className="mt-4 rounded-2xl bg-surface-soft/70 p-3.5">
-                    <div className="flex items-center gap-2">
-                      <StepNumber n={1} />
-                      <p className="flex-1 text-[14px] font-medium text-on-background">Diferenciais</p>
-                      <span className="text-[12px] text-text-tertiary">{(item.highlights ?? []).length}/6 · opcional</span>
-                    </div>
-                    <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">
-                      Frases curtas que provam valor (tempo de mercado, clientes, certificação). Aparecem com ✓ na página do produto, nesta ordem.
-                    </p>
-                    <div className="mt-3 flex flex-col gap-2">
-                      {(item.highlights ?? []).map((h, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="mt-2.5 w-5 shrink-0 text-right text-[13px] font-medium tabular-nums text-text-tertiary">{i + 1}.</span>
-                          <AutoTextarea
-                            value={h}
-                            onChange={(v) => {
-                              const next = [...(item.highlights ?? [])];
-                              next[i] = v;
-                              patch(item.id, { highlights: next });
-                            }}
-                            onBlur={(v) => {
-                              const next = [...(item.highlights ?? [])];
-                              next[i] = v;
-                              const cleaned = next.filter((x) => x.trim());
-                              save(item.id, { highlights: cleaned.length ? cleaned : null });
-                            }}
-                            placeholder="ex: 18 anos de experiência"
-                            maxLength={90}
-                          />
-                          <button
-                            onClick={() => {
-                              const next = (item.highlights ?? []).filter((_, idx) => idx !== i);
-                              save(item.id, { highlights: next.length ? next : null });
-                            }}
-                            aria-label={`Remover diferencial ${i + 1}`}
-                            className="mt-2 shrink-0 px-1 text-[13px] text-text-tertiary"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                      {(item.highlights?.length ?? 0) < 6 && (
-                        <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => patch(item.id, { highlights: [...(item.highlights ?? []), ""] })}
-                          className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-dashed border-text-tertiary/40 bg-surface-white px-3.5 py-3 text-left transition-colors active:bg-surface-soft"
+                  {(() => {
+                    const fotos = item.gallery_urls.filter((u) => !isVideoUrl(u)).length;
+                    const videos = item.gallery_urls.length - fotos;
+                    const difs = (item.highlights ?? []).filter((h) => h.trim()).length;
+                    const resumo = [
+                      fotos ? `${fotos} ${fotos === 1 ? "foto" : "fotos"}` : null,
+                      videos ? `${videos} ${videos === 1 ? "vídeo" : "vídeos"}` : null,
+                      difs ? `${difs} ${difs === 1 ? "diferencial" : "diferenciais"}` : null,
+                      item.orbi_hook?.trim() ? "pergunta pra Orbi" : null,
+                    ].filter(Boolean);
+                    return (
+                      <>
+                        <p className="text-[13px] leading-snug text-text-secondary">
+                          {resumo.length ? `Tem ${resumo.join(", ")}.` : "Ainda sem fotos, diferenciais nem pergunta pra Orbi."}
+                        </p>
+                        <Link
+                          href={`/admin/vitrine/pagina/${item.id}`}
+                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-on-background py-3 text-[14px] font-medium text-white"
                         >
-                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-on-background text-[15px] leading-none text-white">+</span>
-                          <span className="min-w-0">
-                            <span className="block text-[13.5px] font-medium text-on-background">
-                              {(item.highlights?.length ?? 0) === 0 ? "Adicionar primeiro diferencial" : "Adicionar outro"}
-                            </span>
-                            {(item.highlights?.length ?? 0) === 0 && (
-                              <span className="block text-[11.5px] text-text-tertiary">ex: 18 anos de experiência</span>
-                            )}
-                          </span>
-                        </button>
-                        <button
-                          onClick={onSuggestExtras}
-                          disabled={suggestingExtras}
-                          className={`shrink-0 rounded-full px-3.5 py-2 text-[12.5px] font-medium ${suggestingExtras ? "bg-surface-white text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
-                        >
-                          {suggestingExtras ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
-                        </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Passo 2: a pergunta que abre conversa. */}
-                  <div className="mt-3 rounded-2xl bg-surface-soft/70 p-3.5">
-                    <div className="flex items-center gap-2">
-                      <StepNumber n={2} />
-                      <p className="flex-1 text-[14px] font-medium text-on-background">Pergunta pronta pra Orbi</p>
-                      <span className="text-[12px] text-text-tertiary">opcional</span>
-                    </div>
-                    <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">
-                      Uma pergunta que o cliente toca e a Orbi já responde no chat. Ajuda quem está em dúvida a puxar conversa.
-                    </p>
-
-                    {/* Prévia: exatamente o cartão que aparece na página do
-                        produto, acima do botão de falar com a Orbi. */}
-                    <div className="mt-3 rounded-2xl border border-dashed border-divider bg-background-main p-3">
-                      <p className="text-[10.5px] font-medium uppercase tracking-wide text-text-tertiary">Na página do produto</p>
-                      <div className="mt-2 flex items-center gap-3 rounded-2xl bg-surface-white px-3.5 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-center gap-1.5 text-[11px] font-medium text-text-tertiary">
-                            <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
-                            Pergunte à Orbi
-                          </span>
-                          <span className={`mt-0.5 block text-[13.5px] font-medium ${item.orbi_hook?.trim() ? "text-on-background" : "text-text-tertiary"}`}>
-                            {item.orbi_hook?.trim() || "Quer saber se cabe no seu espaço?"}
-                          </span>
-                        </span>
-                        <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>
-                      </div>
-                      <div className="mt-2 rounded-full orbi-gradient py-2 text-center text-[12px] font-medium text-on-background opacity-60">
-                        ✦ Falar com a Orbi
-                      </div>
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between gap-2">
-                      <p className="text-[12px] font-medium text-text-secondary">Sua pergunta</p>
-                      <button
-                          onClick={onSuggestExtras}
-                          disabled={suggestingExtras}
-                          className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${suggestingExtras ? "bg-surface-white text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}
-                        >
-                          {suggestingExtras ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
-                        </button>
-                    </div>
-                    <div className="mt-1.5">
-                      <AutoTextarea
-                        value={item.orbi_hook ?? ""}
-                        onChange={(v) => patch(item.id, { orbi_hook: v })}
-                        onBlur={(v) => save(item.id, { orbi_hook: v || null })}
-                        placeholder="ex: Quer saber se cabe no seu espaço?"
-                        maxLength={100}
-                      />
-                    </div>
-                    <p className="mt-1.5 text-[11px] text-text-tertiary">Deixe em branco pra não mostrar.</p>
-                  </div>
-                </div>
+                          Editar a página
+                          <span aria-hidden>→</span>
+                        </Link>
+                        <p className="mt-2 text-center text-[11.5px] text-text-tertiary">Abre a página e você edita tocando nela: fotos, textos e diferenciais.</p>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -2081,50 +1867,6 @@ function ItemCard({
   );
 }
 
-function StepNumber({ n }: { n: number }) {
-  return (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-on-background text-[11px] font-semibold text-white">
-      {n}
-    </span>
-  );
-}
-
-/** Campo de texto que cresce com o conteúdo, sem cortar a primeira linha
- * como acontecia com o textarea de uma linha fixa. */
-function AutoTextarea({
-  value,
-  onChange,
-  onBlur,
-  placeholder,
-  maxLength,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  onBlur: (v: string) => void;
-  placeholder?: string;
-  maxLength?: number;
-}) {
-  const ref = useRef<HTMLTextAreaElement>(null);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight + 2}px`;
-  }, [value]);
-  return (
-    <textarea
-      ref={ref}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={(e) => onBlur(e.target.value)}
-      placeholder={placeholder}
-      maxLength={maxLength}
-      rows={1}
-      className="w-full min-w-0 flex-1 resize-none overflow-hidden rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] leading-snug outline-none focus:border-on-background"
-    />
-  );
-}
-
 // Foto do tema "Escritório de Arquitetura" do Inspire-se, usada só como
 // exemplo visual das duas formas de mostrar o nome do card.
 const EXEMPLO_FOTO = "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/arquitetura-01.jpg";
@@ -2268,15 +2010,4 @@ function AllColorsSheet({
       </div>
     </div>
   );
-}
-
-/** Prompt pra gerar uma foto extra do carrossel, no formato da capa. */
-function promptFotoCarrossel(titulo: string, descricao: string | null | undefined, formato: string, medida: string): string {
-  const nome = titulo?.trim() || "meu produto";
-  const desc = descricao?.trim() ? ` Sobre ele: ${descricao.trim().slice(0, 220)}` : "";
-  return `Criar uma foto no formato ${formato} (${medida}) para o carrossel de "${nome}".${desc}
-
-Estilo fotográfico realista, luz natural suave, composição limpa e sofisticada. Mostre um ângulo, detalhe ou uso diferente do produto, pra complementar a foto de capa. Sem textos, logotipos ou marcas d'água na imagem.
-
-Use como referência de estilo e de produto as fotos que vou anexar.`;
 }
