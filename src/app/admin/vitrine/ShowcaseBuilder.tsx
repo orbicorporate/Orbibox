@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { HelperText } from "@/components/ui/HelperText";
-import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, galleryRatioOf, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { LinhaExpansivel, PromptParaIA } from "@/components/ui/LinhaExpansivel";
@@ -34,6 +34,7 @@ type Item = {
   image_url: string | null;
   image_is_placeholder: boolean;
   gallery_urls: string[];
+  gallery_ratio: string | null;
   photo_format: string | null;
   brand_label: string | null;
   position: number;
@@ -254,6 +255,7 @@ export function ShowcaseBuilder({
             image_url: i.image_url,
             image_is_placeholder: i.image_is_placeholder,
             gallery_urls: i.gallery_urls,
+            gallery_ratio: i.gallery_ratio,
             photo_format: i.photo_format,
             brand_label: i.brand_label,
             position: i.position,
@@ -281,6 +283,7 @@ export function ShowcaseBuilder({
               image_url: i.image_url,
               image_is_placeholder: i.image_is_placeholder,
               gallery_urls: i.gallery_urls,
+              gallery_ratio: i.gallery_ratio,
               photo_format: i.photo_format,
               brand_label: i.brand_label,
               position: i.position,
@@ -1524,24 +1527,47 @@ function ItemCard({
                   </span>
                 </div>
                 <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">Opcional. Viram um carrossel na página do produto.</p>
-                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-divider px-2.5 py-1 text-[11.5px] text-text-secondary">
-                  <span
-                    className="inline-block rounded-[3px] border-[1.5px] border-current"
-                    style={{ width: 11, height: 11 / RATIOS[COVER_RATIO_BY_SIZE[size]].value }}
-                  />
-                  {RATIOS[COVER_RATIO_BY_SIZE[size]].label.replace(/\s*\(.*\)$/, "")} · {RATIO_PIXELS[COVER_RATIO_BY_SIZE[size]]} · igual à capa
-                </span>
-                <div className="mt-3">
-                  <GalleryUpload
-                    value={item.gallery_urls}
-                    businessId={businessId}
-                    lockedRatio={COVER_RATIO_BY_SIZE[size]}
-                    lockedReason="Segue o mesmo formato da capa, pra mudar, troque o formato do card lá em cima."
-                    emptySlots={1}
-                    emptyLabel="Adicionar foto"
-                    onChange={(urls) => save(item.id, { gallery_urls: urls })}
-                  />
-                </div>
+                {(() => {
+                  const gr = galleryRatioOf(item.gallery_ratio, item.layout_size);
+                  const temFoto = item.gallery_urls.some((u) => !isVideoUrl(u));
+                  return (
+                    <>
+                      <div className="mt-3 flex items-center gap-2">
+                        <div className="inline-flex rounded-full bg-surface-soft p-1">
+                          {(["quadrado", "paisagem"] as const).map((r) => (
+                            <button
+                              key={r}
+                              type="button"
+                              disabled={temFoto && gr !== r}
+                              onClick={() => gr !== r && save(item.id, { gallery_ratio: r })}
+                              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                                gr === r ? "bg-surface-white text-on-background shadow-[0_1px_4px_rgba(17,19,24,0.1)]" : "text-text-tertiary disabled:opacity-50"
+                              }`}
+                            >
+                              <span className="inline-block rounded-[3px] border-[1.5px] border-current" style={{ width: r === "quadrado" ? 11 : 16, height: r === "quadrado" ? 11 : 9 }} />
+                              {r === "quadrado" ? "Quadrado" : "Paisagem"}
+                            </button>
+                          ))}
+                        </div>
+                        <span className="text-[11.5px] text-text-tertiary">{RATIO_PIXELS[gr]}</span>
+                      </div>
+                      {temFoto && (
+                        <p className="mt-1.5 text-[11.5px] text-text-tertiary">Pra trocar o formato, remova as fotos antes.</p>
+                      )}
+                      <div className="mt-3">
+                        <GalleryUpload
+                          value={item.gallery_urls}
+                          businessId={businessId}
+                          lockedRatio={gr}
+                          lockedReason="Todas as fotos do carrossel seguem o mesmo formato. Pra mudar, troque o formato ali em cima."
+                          emptySlots={1}
+                          emptyLabel="Adicionar foto"
+                          onChange={(urls) => save(item.id, { gallery_urls: urls })}
+                        />
+                      </div>
+                    </>
+                  );
+                })()}
 
                 {item.gallery_urls.length < 6 && (
                   <div className="mt-3 flex flex-col gap-2">
@@ -1553,7 +1579,7 @@ function ItemCard({
                     >
                       <PromptParaIA
                         destino="no + ali em cima"
-                        texto={promptFotoCarrossel(item.title, item.description, RATIOS[COVER_RATIO_BY_SIZE[size]].label.replace(/\s*\(.*\)$/, "").toLowerCase(), RATIO_PIXELS[COVER_RATIO_BY_SIZE[size]])}
+                        texto={promptFotoCarrossel(item.title, item.description, galleryRatioOf(item.gallery_ratio, item.layout_size), RATIO_PIXELS[galleryRatioOf(item.gallery_ratio, item.layout_size)])}
                       />
                     </LinhaExpansivel>
                     <LinhaExpansivel

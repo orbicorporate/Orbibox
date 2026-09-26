@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
-import { COVER_RATIO_BY_SIZE, formatPrice, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, galleryRatioOf, formatPrice, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 
 type Business = {
@@ -25,6 +25,7 @@ type Item = {
   price_max: number | null;
   image_url: string | null;
   gallery_urls: string[];
+  gallery_ratio?: string | null;
   brand_label: string | null;
   target_url: string | null;
   link_kind: string | null;
@@ -62,9 +63,9 @@ export function ProductView({ business, item }: { business: Business; item: Item
   // A capa (image_url) só aparece sozinha quando não há carrossel próprio , 
   // se já existem outras fotos (gallery_urls), elas bastam e a capa não se repete.
   const images = item.gallery_urls.length > 0 ? item.gallery_urls : [item.image_url].filter((u): u is string => !!u);
-  // Carrossel e capa seguem o mesmo formato do card, igual ao recorte
-  // travado no admin, pra página do item ficar coerente com a Vitrine.
-  const ratio = COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
+  // Com carrossel próprio, vale o formato escolhido pra ele (quadrado ou
+  // paisagem); só com a capa, segue o formato da capa.
+  const ratio = item.gallery_urls.length > 0 ? galleryRatioOf(item.gallery_ratio, item.layout_size) : COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
   const aspectRatio = RATIOS[ratio].value;
 
   // Abrir a página do item já conta como interesse, mesmo tipo de clique de sempre.

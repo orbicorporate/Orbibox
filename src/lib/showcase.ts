@@ -29,6 +29,16 @@ export const COVER_RATIO_BY_SIZE: Record<BoxSize, "quadrado" | "retrato" | "pais
   alto: "retrato",
 };
 
+/** Formato das fotos do carrossel na página do produto: quadrado ou
+ * paisagem. Sem escolha salva, segue a capa quando ela já é um desses dois;
+ * capa retrato ou banner cai no quadrado. */
+export type GalleryRatio = "quadrado" | "paisagem";
+export function galleryRatioOf(gallery_ratio: string | null | undefined, layout_size: string | null | undefined): GalleryRatio {
+  if (gallery_ratio === "quadrado" || gallery_ratio === "paisagem") return gallery_ratio;
+  const capa = COVER_RATIO_BY_SIZE[sizeOf(layout_size ?? "")];
+  return capa === "paisagem" ? "paisagem" : "quadrado";
+}
+
 type Swatch = { bg: string; fg: string; label: string };
 
 // Paletas do editor de box, em grupos. "Padrão" é a original (neutros + Orbi).
