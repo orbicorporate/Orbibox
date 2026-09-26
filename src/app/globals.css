@@ -716,7 +716,14 @@ body {
   to { background-position: -120% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .orbi-linha-entra, .orbi-foto-entra, .orbi-card-cai, .orbi-orb-entra, .orbi-shimmer { animation: none; }
+  .orbi-linha-entra, .orbi-foto-entra, .orbi-fosco-entra, .orbi-card-cai, .orbi-orb-entra, .orbi-shimmer { animation: none; }
+}
+
+/* Vitrine pronta: vidro fosco entrando por cima do celular. */
+.orbi-fosco-entra { animation: orbiFoscoEntra 0.9s ease both; }
+@keyframes orbiFoscoEntra {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to { opacity: 1; }
 }
 
 /* Final da análise: esfera cresce, anel se completa, check de concluído. */

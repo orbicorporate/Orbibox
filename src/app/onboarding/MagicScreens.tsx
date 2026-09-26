@@ -262,7 +262,6 @@ export function VitrineMontando({
   alvo,
   orbColors,
   status,
-  itens,
   segundos,
   onContinuar,
 }: {
@@ -284,23 +283,24 @@ export function VitrineMontando({
     return () => clearTimeout(t);
   }, [etapa, status]);
 
-  // Quando chega, os cards caem um por um.
-  const [mostrados, setMostrados] = useState(0);
+  // Os cards reais não aparecem aqui: uma miniatura nunca faz jus à vitrine
+  // de verdade. O celular fica cinza "pensando" e, quando termina, fica fosco
+  // com o aviso de pronto. A pessoa vê o resultado real ao abrir a vitrine.
+  const [pronto, setPronto] = useState(false);
   useEffect(() => {
-    if (status !== "ok" || mostrados >= itens.length) return;
-    const t = setTimeout(() => setMostrados((m) => m + 1), mostrados === 0 ? 300 : 380);
+    if (status !== "ok") return;
+    const t = setTimeout(() => setPronto(true), 700);
     return () => clearTimeout(t);
-  }, [status, mostrados, itens.length]);
+  }, [status]);
 
-  const pronto = status === "ok" && mostrados >= itens.length;
-  const textoEtapa = status === "ok" ? (pronto ? "Pronto" : "Montando sua vitrine") : ETAPAS[etapa](alvo, marca);
+  const textoEtapa = status === "ok" ? "Finalizando sua vitrine" : ETAPAS[etapa](alvo, marca);
 
   return (
     <div className="flex flex-col items-center py-4 text-center">
       {/* Celular */}
       <div className="relative w-[260px] rounded-[40px] bg-on-background p-2.5 shadow-[0_24px_60px_-20px_rgba(17,19,24,0.45)]">
         <div className="relative h-[470px] overflow-hidden rounded-[32px] bg-background-main">
-          <div className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-on-background" />
+          <div className="absolute left-1/2 top-2 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-on-background" />
           <div className="flex h-full flex-col px-3 pb-3 pt-10">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full">
@@ -310,49 +310,53 @@ export function VitrineMontando({
             </div>
 
             <div className="mt-3 grid grid-cols-2 gap-2 overflow-hidden">
-              {status === "pending"
-                ? [0, 1, 2, 3, 4, 5].map((k) => (
-                    <div
-                      key={k}
-                      className={`orbi-shimmer rounded-2xl bg-surface-soft ${k === 0 ? "col-span-2 h-[118px]" : "h-[96px]"}`}
-                      style={{ animationDelay: `${k * 120}ms` }}
-                    />
-                  ))
-                : itens.slice(0, mostrados).map((it, k) => (
-                    <div
-                      key={k}
-                      className={`orbi-card-cai relative overflow-hidden rounded-2xl ${k === 0 ? "col-span-2 h-[118px]" : "h-[96px]"}`}
-                      style={{ backgroundColor: it.bg }}
-                    >
-                      {it.image_url && <Foto src={it.image_url} sizes="240px" />}
-                      <div className={`absolute inset-x-0 bottom-0 p-2 text-left ${it.image_url ? "bg-gradient-to-t from-black/65 to-transparent pt-6" : ""}`}>
-                        <p className="line-clamp-2 text-[11.5px] font-semibold leading-tight" style={{ color: it.image_url ? "#fff" : it.fg }}>
-                          {it.title}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+              {[0, 1, 2, 3, 4, 5, 6].map((k) => (
+                <div
+                  key={k}
+                  className={`orbi-shimmer rounded-2xl bg-surface-soft ${k === 0 ? "col-span-2 h-[118px]" : "h-[96px]"}`}
+                  style={{ animationDelay: `${k * 140}ms` }}
+                />
+              ))}
             </div>
           </div>
+
+          {/* Pronto: vidro fosco por cima com o aviso */}
+          {pronto && (
+            <div className="orbi-fosco-entra absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/45 px-6 backdrop-blur-md">
+              <span style={{ animationDelay: "0.15s" }} className="orbi-check-entra flex h-12 w-12 items-center justify-center rounded-full bg-on-background text-white shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+              <p className="orbi-linha-entra mt-4 font-[family-name:var(--font-manrope)] text-[21px] font-medium leading-tight tracking-[-0.01em]" style={{ animationDelay: "0.35s" }}>
+                Sua vitrine está pronta
+              </p>
+              <p className="orbi-linha-entra mt-1.5 text-[15px] leading-snug text-text-secondary" style={{ animationDelay: "0.6s" }}>
+                Visite e edite à vontade.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="mt-6 flex items-center gap-2">
-        {!pronto && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbi-gradient-start" />}
-        <p key={textoEtapa} className="orbi-linha-entra text-[15px] text-text-secondary">
-          {pronto ? `Essa é a página da ${marca}.` : `${textoEtapa}…`}
-        </p>
-      </div>
-      {pronto && (
+      {!pronto ? (
+        <div className="mt-6 flex items-center gap-2">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbi-gradient-start" />
+          <p key={textoEtapa} className="orbi-linha-entra text-[15px] text-text-secondary">
+            {textoEtapa}…
+          </p>
+        </div>
+      ) : (
         <>
           {segundos != null && (
-            <p className="orbi-linha-entra mt-1 font-[family-name:var(--font-manrope)] text-[20px] font-medium">
-              Levou {segundos} segundos.
+            <p className="orbi-linha-entra mt-6 text-[15px] text-text-secondary" style={{ animationDelay: "0.8s" }}>
+              Montada em {segundos} segundos
             </p>
           )}
           <button
             onClick={onContinuar}
             className="orbi-linha-entra orbi-gradient mt-5 w-full max-w-sm rounded-full py-3.5 text-[15px] font-medium text-on-background"
+            style={{ animationDelay: "1s" }}
           >
             Continuar →
           </button>
