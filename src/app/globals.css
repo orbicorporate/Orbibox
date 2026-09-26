@@ -685,12 +685,12 @@ body {
 }
 
 /* Onboarding mágico: linhas, fotos e cards entrando; esfera trocando de cor. */
-.orbi-linha-entra { animation: orbiLinhaEntra 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.orbi-linha-entra { animation: orbiLinhaEntra 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes orbiLinhaEntra {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.orbi-foto-entra { animation: orbiFotoEntra 0.55s cubic-bezier(0.2, 0.9, 0.25, 1.25) both; }
+.orbi-foto-entra { animation: orbiFotoEntra 0.8s cubic-bezier(0.2, 0.9, 0.25, 1.25) both; }
 @keyframes orbiFotoEntra {
   from { opacity: 0; transform: scale(0.6) translateY(6px); }
   to { opacity: 1; transform: scale(1) translateY(0); }

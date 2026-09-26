@@ -350,7 +350,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center px-6 py-16">
+    <main className={`relative flex min-h-screen justify-center px-6 ${step === "analisando" ? "items-start pb-16 pt-[9vh]" : "items-center py-16"}`}>
       {novoNegocio && step === "dados" ? (
         <Link
           href="/admin"

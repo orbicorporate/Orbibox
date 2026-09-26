@@ -106,7 +106,7 @@ export function AnaliseAoVivo({
   const [reveladas, setReveladas] = useState(1);
   useEffect(() => {
     if (reveladas < linhas.length) {
-      const t = setTimeout(() => setReveladas((r) => r + 1), reveladas === 1 ? 700 : 950);
+      const t = setTimeout(() => setReveladas((r) => r + 1), reveladas === 1 ? 1300 : 1900);
       return () => clearTimeout(t);
     }
   }, [reveladas, linhas.length]);
@@ -120,7 +120,7 @@ export function AnaliseAoVivo({
   const [final, setFinal] = useState(false);
   useEffect(() => {
     if (!terminou) return;
-    const t = setTimeout(() => setFinal(true), 1100);
+    const t = setTimeout(() => setFinal(true), 1800);
     return () => clearTimeout(t);
   }, [terminou]);
   useEffect(() => {
@@ -188,43 +188,43 @@ export function AnaliseAoVivo({
   const paleta = analise.status === "ok" ? analise.paleta : [];
 
   return (
-    <div className="flex flex-col items-center py-8 text-center">
-      <BrandOrb colors={orbColors} size={132} brilho />
-      <p className="mt-6 font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">
+    <div className="flex flex-col items-center pb-8 text-center">
+      <BrandOrb colors={orbColors} size={150} brilho />
+      <p className="mt-7 font-[family-name:var(--font-manrope)] text-[27px] font-medium tracking-[-0.01em]">
         {terminou ? `Essa é a ${marca}` : "Conhecendo sua marca"}
       </p>
 
-      <div className="mt-6 flex w-full max-w-sm flex-col gap-3 text-left">
+      <div className="mt-8 flex w-full max-w-md flex-col gap-5 text-left">
         {visiveis.map((linha, i) => {
           const ultima = i === visiveis.length - 1 && !terminou;
           return (
             <div key={linha.id} className="orbi-linha-entra">
-              <div className="flex items-start gap-2.5">
-                <span className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${ultima ? "animate-pulse bg-orbi-gradient-start" : "bg-on-background"}`} />
-                <p className={`text-[14.5px] leading-snug ${ultima ? "text-on-background" : "text-text-secondary"}`}>{linha.texto}</p>
+              <div className="flex items-start gap-3">
+                <span className={`mt-[9px] h-2 w-2 shrink-0 rounded-full ${ultima ? "animate-pulse bg-orbi-gradient-start" : "bg-on-background"}`} />
+                <p className={`text-[17px] leading-snug ${ultima ? "text-on-background" : "text-text-secondary"}`}>{linha.texto}</p>
               </div>
 
               {linha.tipo === "fotos" && (
-                <div className="mt-2.5 flex gap-1.5 overflow-hidden pl-4">
+                <div className="mt-3 flex gap-2 overflow-hidden pl-5">
                   {imagens.slice(0, 6).map((src, k) => (
                     <div
                       key={`${src}-${k}`}
-                      className="orbi-foto-entra relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-surface-soft"
-                      style={{ animationDelay: `${k * 110}ms` }}
+                      className="orbi-foto-entra relative h-[68px] w-[68px] shrink-0 overflow-hidden rounded-2xl bg-surface-soft"
+                      style={{ animationDelay: `${k * 220}ms` }}
                     >
-                      <Foto src={src} sizes="56px" />
+                      <Foto src={src} sizes="68px" />
                     </div>
                   ))}
                 </div>
               )}
 
               {linha.tipo === "paleta" && (
-                <div className="mt-2.5 flex gap-2 pl-4">
+                <div className="mt-3 flex gap-2.5 pl-5">
                   {paleta.slice(0, 6).map((hex, k) => (
                     <span
                       key={hex + k}
-                      className="orbi-foto-entra h-8 w-8 rounded-full border border-black/5 shadow-sm"
-                      style={{ backgroundColor: hex, animationDelay: `${k * 120}ms` }}
+                      className="orbi-foto-entra h-10 w-10 rounded-full border border-black/5 shadow-sm"
+                      style={{ backgroundColor: hex, animationDelay: `${k * 240}ms` }}
                     />
                   ))}
                 </div>
@@ -233,7 +233,7 @@ export function AnaliseAoVivo({
           );
         })}
         {!terminou && reveladas >= linhas.length && (
-          <div className="flex gap-1 pl-4 pt-1" aria-hidden>
+          <div className="flex gap-1.5 pl-5 pt-1" aria-hidden>
             {[0, 1, 2].map((k) => (
               <span key={k} className="h-1.5 w-1.5 animate-bounce rounded-full bg-text-tertiary" style={{ animationDelay: `${k * 150}ms` }} />
             ))}
