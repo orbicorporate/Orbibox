@@ -1875,19 +1875,30 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
                               {priceLabel}
                             </span>
                           )}
-                          {isExterno ? (
-                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium" style={{ backgroundColor: `${c.fg}22`, color: c.fg }}>
-                              {item.link_kind === "categoria" ? "Ver categoria" : "Entrar no site"} <span aria-hidden>↗</span>
-                            </span>
-                          ) : (
-                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium" style={{ backgroundColor: `${c.fg}22`, color: c.fg }}>
-                              Entrar <span aria-hidden>→</span>
-                            </span>
-                          )}
+
                         </div>
                       )}
                       {/* Sem foto já mostra a tag/o destino dentro do próprio box, a setinha
                           no canto só faz sentido quando tem foto por cima e nada mais avisa. */}
+                      {/* Sem foto: só a setinha no canto, pulsando e acendendo,
+                          pra não disputar espaço com o nome no meio do box. */}
+                      {destino && !photo && (
+                        <span className="orbi-seta-pulsa pointer-events-none absolute right-4 top-4" style={{ color: c.fg }} aria-hidden>
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            {isExterno ? (
+                              <>
+                                <path d="M7 17L17 7" />
+                                <path d="M8 7h9v9" />
+                              </>
+                            ) : (
+                              <>
+                                <path d="M5 12h14" />
+                                <path d="M13 6l6 6-6 6" />
+                              </>
+                            )}
+                          </svg>
+                        </span>
+                      )}
                       {destino && photo && (
                         <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/30 py-1.5 pl-3 pr-2.5 text-[12px] font-medium text-white backdrop-blur-sm">
                           Entrar
