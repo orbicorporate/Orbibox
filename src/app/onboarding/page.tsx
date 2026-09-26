@@ -286,20 +286,22 @@ export default function OnboardingPage() {
     // ligado e o dono decide depois em Boxes. O box de Presentear nasce
     // sempre desligado agora: "para presente" virou uma opção dentro da
     // pergunta de curadoria da Orbi, não um botão à parte na tela inicial.
-    const ativos =
-      siteType === "ecommerce"
-        ? { product: true, campaign: false, content: false, agent: true }
-        : siteType === "institucional" || siteType === "links"
-        ? { product: false, campaign: false, content: true, agent: true }
-        : { product: true, campaign: false, content: true, agent: true };
+    // A vitrine que a Orbi montou (produtos ou serviços importados) é o
+    // primeiro caminho da tela inicial. Sem nada importado, loja virtual
+    // ainda liga a vitrine; serviço sem itens deixa Conhecer na frente.
+    const temVitrine = importados > 0 || siteType === "ecommerce";
+    const conteudoAtivo = siteType !== "ecommerce";
 
-    await supabase.from("smart_boxes").insert([
-      { business_id: business.id, box_type: "hero", title: "Entrada Adaptativa", position: 0 },
-      { business_id: business.id, box_type: "agent", title: "AgentBox Orbi", position: 1, is_active: ativos.agent },
-      { business_id: business.id, box_type: "product", title: "Vitrine de Produtos", position: 2, is_active: ativos.product },
-      { business_id: business.id, box_type: "content", title: "História da Marca", position: 3, is_active: ativos.content },
-      { business_id: business.id, box_type: "campaign", title: "Seleção de Presentes", position: 4, is_active: ativos.campaign },
+    // Todos os boxes levam is_active explícito: num insert em lote, campo
+    // ausente vira nulo (não usa o padrão da coluna) e a linha inteira falha.
+    const { error: boxesErr } = await supabase.from("smart_boxes").insert([
+      { business_id: business.id, box_type: "hero", title: "Entrada Adaptativa", position: 0, is_active: true },
+      { business_id: business.id, box_type: "product", title: "Vitrine de Produtos", position: 1, is_active: temVitrine },
+      { business_id: business.id, box_type: "agent", title: "AgentBox Orbi", position: 2, is_active: true },
+      { business_id: business.id, box_type: "content", title: "História da Marca", position: 3, is_active: conteudoAtivo },
+      { business_id: business.id, box_type: "campaign", title: "Seleção de Presentes", position: 4, is_active: false },
     ]);
+    if (boxesErr) console.error("onboarding: falha ao criar boxes base", boxesErr);
 
     // Boxes de contato prontos: WhatsApp (digitado ou achado no site),
     // Instagram, LinkedIn e site. Entram ativos, o dono só revisa em Boxes.
