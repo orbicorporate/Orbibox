@@ -166,13 +166,17 @@ export function AnaliseAoVivo({
             />
           </svg>
           {/* Check de concluído */}
-          <span
-            className="orbi-check-entra absolute flex h-11 w-11 items-center justify-center rounded-full text-white shadow-[0_6px_18px_rgba(0,0,0,0.18)]"
-            style={{ backgroundColor: cor, right: 10, bottom: 10 }}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M5 13l4 4L19 7" />
-            </svg>
+          <span className="orbi-check-entra absolute flex h-8 w-8 items-center justify-center" style={{ right: 16, bottom: 16 }}>
+            {/* Halo que pulsa em volta, sem parar */}
+            <span className="orbi-check-halo absolute inset-0 rounded-full" style={{ backgroundColor: cor }} />
+            <span
+              className="orbi-check-bate relative flex h-8 w-8 items-center justify-center rounded-full text-white shadow-[0_4px_12px_rgba(0,0,0,0.18)]"
+              style={{ backgroundColor: cor }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </span>
           </span>
         </div>
         <p className="orbi-final-texto mt-8 font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">

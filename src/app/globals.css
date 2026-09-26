@@ -743,6 +743,21 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 .orbi-final-texto { animation: orbiLinhaEntra 0.6s ease-out 2.55s both; }
+/* Check final pulsando: halo que se expande e some, e um leve "batimento". */
+.orbi-check-halo { opacity: 0; animation: orbiCheckHalo 1.6s ease-out 3s infinite; }
+@keyframes orbiCheckHalo {
+  0% { opacity: 0.45; transform: scale(1); }
+  100% { opacity: 0; transform: scale(2); }
+}
+.orbi-check-bate { animation: orbiCheckBate 1.6s ease-in-out 3s infinite; }
+@keyframes orbiCheckBate {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.12); }
+  35% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-check-halo, .orbi-check-bate { animation: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .orbi-final-entra, .orbi-check-entra, .orbi-final-texto { animation: none; }
   .orbi-anel-completa { animation: none; stroke-dashoffset: 0; }
