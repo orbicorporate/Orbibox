@@ -1890,7 +1890,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
                           no canto só faz sentido quando tem foto por cima e nada mais avisa. */}
                       {destino && photo && (
                         <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/30 py-1.5 pl-3 pr-2.5 text-[12px] font-medium text-white backdrop-blur-sm">
-                          {isExterno ? (item.link_kind === "categoria" ? "Ver categoria" : "Ver no site") : "Ver página"}
+                          Entrar
                           <span aria-hidden>{isExterno ? "↗" : "›"}</span>
                         </span>
                       )}
