@@ -753,3 +753,18 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .orbi-mini-anel, .orbi-mini-check { animation: none; stroke-dashoffset: 0; }
 }
+.orbi-check-pulo { animation: orbiCheckPulo 0.5s cubic-bezier(0.2, 0.9, 0.25, 1.6) 0.1s both; }
+@keyframes orbiCheckPulo {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+.orbi-check-risca { animation: orbiMiniAnel 0.35s ease-out 0.45s forwards; }
+.orbi-check-onda { opacity: 0; animation: orbiCheckOnda 0.9s ease-out 0.5s both; }
+@keyframes orbiCheckOnda {
+  0% { opacity: 0.35; transform: scale(1); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-check-pulo, .orbi-check-onda { animation: none; }
+  .orbi-check-risca { animation: none; stroke-dashoffset: 0; }
+}

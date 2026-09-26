@@ -432,9 +432,15 @@ export function EssenciaDaMarca({
         </div>
       </div>
 
-      {/* Resumo em três linhas */}
-      <div className="orbi-linha-entra mt-6 rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
-        <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Em três linhas</p>
+      {/* Resumo do negócio */}
+      <div
+        className="orbi-linha-entra relative mt-6 rounded-[22px] border p-4 shadow-[0_2px_14px_rgba(17,19,24,0.05)]"
+        style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${cor}14 100%)`, borderColor: `${cor}22` }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Resumo do negócio</p>
+          {!digitando && <BotaoEditar cor={cor} alvo="ess-resumo" />}
+        </div>
         {digitando ? (
           <p className="mt-2 min-h-[72px] text-[15.5px] leading-relaxed text-on-background">
             {resumo.slice(0, letras)}
@@ -442,12 +448,13 @@ export function EssenciaDaMarca({
           </p>
         ) : (
           <textarea
+            id="ess-resumo"
             value={resumo}
             onChange={(e) => { onResumo(e.target.value); crescer(e.target); }}
             ref={crescer}
             rows={3}
             maxLength={360}
-            className="mt-2 w-full resize-none bg-transparent text-[15.5px] leading-relaxed text-on-background outline-none"
+            className="-mx-1.5 mt-1.5 w-[calc(100%+12px)] resize-none rounded-xl bg-transparent px-1.5 py-0.5 text-[15.5px] leading-relaxed text-on-background outline-none transition-colors focus:bg-white/80"
           />
         )}
       </div>
@@ -458,30 +465,30 @@ export function EssenciaDaMarca({
       )}
       <div className="mt-2.5 flex flex-col gap-2.5">
         {pontos.slice(0, cards).map((p, i) => (
-          <div key={i} className="orbi-card-cai flex items-start gap-3 rounded-[20px] bg-surface-white p-3.5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
-            <span className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center">
-              <svg width="32" height="32" viewBox="0 0 32 32" className="absolute inset-0 -rotate-90" aria-hidden>
-                <circle cx="16" cy="16" r="14" fill="none" stroke={cor} strokeOpacity={0.15} strokeWidth="2" />
-                <circle cx="16" cy="16" r="14" fill="none" stroke={cor} strokeWidth="2" strokeLinecap="round" strokeDasharray="88" strokeDashoffset="88" className="orbi-mini-anel" />
-              </svg>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <path d="M5 13l4 4L19 7" strokeDasharray="24" strokeDashoffset="24" className="orbi-mini-check" />
-              </svg>
-            </span>
+          <div
+            key={i}
+            className="orbi-card-cai relative flex items-start gap-3 rounded-[20px] border p-3.5 pr-12 shadow-[0_2px_14px_rgba(17,19,24,0.05)]"
+            style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${cor}14 100%)`, borderColor: `${cor}22` }}
+          >
+            <CheckAnimado cor={cor} />
             <div className="min-w-0 flex-1">
               <input
+                id={`ess-ponto-${i}`}
                 value={p.title}
                 onChange={(e) => editarPonto(i, "title", e.target.value)}
                 maxLength={60}
-                className="w-full bg-transparent text-[15px] font-semibold text-on-background outline-none"
+                className="-mx-1.5 w-[calc(100%+12px)] rounded-lg bg-transparent px-1.5 py-0.5 text-[15px] font-semibold text-on-background outline-none transition-colors focus:bg-white/80"
               />
               <textarea
                 value={p.description}
                 onChange={(e) => editarPonto(i, "description", e.target.value)}
                 maxLength={140}
                 rows={2}
-                className="mt-0.5 w-full resize-none bg-transparent text-[13.5px] leading-snug text-text-secondary outline-none"
+                className="-mx-1.5 mt-0.5 w-[calc(100%+12px)] resize-none rounded-lg bg-transparent px-1.5 py-0.5 text-[13.5px] leading-snug text-text-secondary outline-none transition-colors focus:bg-white/80"
               />
+            </div>
+            <div className="absolute right-3 top-3">
+              <BotaoEditar cor={cor} alvo={`ess-ponto-${i}`} />
             </div>
           </div>
         ))}
@@ -489,7 +496,7 @@ export function EssenciaDaMarca({
 
       {pronto && (
         <>
-          <p className="orbi-linha-entra mt-3 text-center text-[12px] text-text-tertiary">Toque em qualquer texto pra editar. Isso vai pra sua página e ensina a Orbi.</p>
+          <p className="orbi-linha-entra mt-3 text-center text-[12px] text-text-tertiary">Toque no lápis ou no texto pra ajustar. Isso vai pra sua página e ensina a Orbi.</p>
           <button
             onClick={onContinuar}
             className="orbi-linha-entra orbi-gradient mt-5 w-full rounded-full py-3.5 text-[15px] font-medium text-on-background"
@@ -499,5 +506,43 @@ export function EssenciaDaMarca({
         </>
       )}
     </div>
+  );
+}
+
+/** Lápis que leva o cursor direto pro campo, deixa claro que dá pra editar. */
+function BotaoEditar({ cor, alvo }: { cor: string; alvo: string }) {
+  return (
+    <button
+      type="button"
+      aria-label="Editar"
+      onClick={() => {
+        const el = document.getElementById(alvo) as HTMLInputElement | HTMLTextAreaElement | null;
+        if (!el) return;
+        el.focus();
+        const fim = el.value.length;
+        el.setSelectionRange(fim, fim);
+      }}
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/85 shadow-[0_1px_4px_rgba(17,19,24,0.08)] transition-transform active:scale-90"
+      style={{ color: cor }}
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+      </svg>
+    </button>
+  );
+}
+
+/** Check que "estala": bolinha cheia na cor da marca surge com um pulo, o
+ * visto se desenha e uma onda se espalha em volta. */
+function CheckAnimado({ cor }: { cor: string }) {
+  return (
+    <span className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center">
+      <span className="orbi-check-onda absolute inset-0 rounded-full" style={{ backgroundColor: cor }} />
+      <span className="orbi-check-pulo absolute inset-0 rounded-full shadow-[0_3px_10px_rgba(0,0,0,0.15)]" style={{ backgroundColor: cor }} />
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" className="relative" aria-hidden>
+        <path d="M5 13l4 4L19 7" strokeDasharray="24" strokeDashoffset="24" className="orbi-check-risca" />
+      </svg>
+    </span>
   );
 }
