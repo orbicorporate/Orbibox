@@ -48,6 +48,22 @@ export async function updateSession(request: NextRequest) {
       .limit(1)
       .maybeSingle();
     if (biz) {
+      // "Criar outro Orbibox" (plano com mais de um negócio): libera o
+      // onboarding de novo, só se o plano ainda comportar mais um.
+      if (isOnboarding && request.nextUrl.searchParams.get("novo") === "1") {
+        const { data: sub } = await supabase.from("subscriptions").select("status, plan_id").eq("owner_id", user.id).maybeSingle();
+        const ativo = !!sub && ["trialing", "active", "comped"].includes(sub.status);
+        if (ativo) {
+          const { data: plano } = await supabase.from("plans").select("max_businesses").eq("id", sub!.plan_id).maybeSingle();
+          const limite = sub!.status === "trialing" ? 999 : plano?.max_businesses ?? 1;
+          const { count } = await supabase.from("businesses").select("id", { count: "exact", head: true }).eq("owner_id", user.id);
+          if ((count ?? 0) < limite) return supabaseResponse;
+        }
+        const url = request.nextUrl.clone();
+        url.pathname = "/admin/planos";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
       const url = request.nextUrl.clone();
       url.pathname = "/admin";
       return NextResponse.redirect(url);

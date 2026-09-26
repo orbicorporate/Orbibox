@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
@@ -43,6 +44,9 @@ export function AppHeader({
   progressPct = 100,
   isMaster = false,
   pendencias = [],
+  negocios = [],
+  negocioAtual,
+  podeCriarNegocio = false,
 }: {
   unseenConversas?: number;
   progressPct?: number;
@@ -51,11 +55,31 @@ export function AppHeader({
    * além de conversa não vista, o objetivo é a pessoa nunca ficar perdida
    * sobre o que fazer, mesmo sumindo dias e voltando depois. */
   pendencias?: { title: string; href: string }[];
+  /** Negócios que a pessoa pode abrir (os dela e os que administra). */
+  negocios?: { id: string; name: string; slug: string }[];
+  negocioAtual?: string;
+  /** Plano permite criar mais um Orbibox (Nióbio). */
+  podeCriarNegocio?: boolean;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sinoOpen, setSinoOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [trocaOpen, setTrocaOpen] = useState(false);
+  const [trocando, setTrocando] = useState<string | null>(null);
+  const atual = negocios.find((n) => n.id === negocioAtual);
+
+  async function trocarPara(id: string) {
+    if (id === negocioAtual) { setTrocaOpen(false); return; }
+    setTrocando(id);
+    const r = await fetch("/api/negocio/trocar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+    if (r.ok) {
+      setTrocaOpen(false);
+      router.push("/admin");
+      router.refresh();
+    }
+    setTrocando(null);
+  }
   const totalSino = unseenConversas + pendencias.length;
 
   async function handleSignOut() {
@@ -71,9 +95,20 @@ export function AppHeader({
       <div className="flex items-center gap-2">
         <BackButton />
         <OrbiOrb size={28} />
-        <span className="font-[family-name:var(--font-manrope)] text-[20px] font-medium tracking-[-0.01em]">
-          Orbibox
-        </span>
+        {/* Nome do negócio aberto; toca pra trocar ou criar outro Orbibox. */}
+        <button
+          type="button"
+          onClick={() => setTrocaOpen(true)}
+          className="flex min-w-0 max-w-[170px] items-center gap-1 text-left"
+          aria-label="Trocar de negócio"
+        >
+          <span className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-medium tracking-[-0.01em]">
+            {atual?.name ?? "Orbibox"}
+          </span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-text-tertiary" aria-hidden>
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
       </div>
       <div className="relative flex items-center gap-2">
         <ProgressBadge pct={progressPct} />
@@ -289,6 +324,60 @@ export function AppHeader({
           </>
         )}
       </div>
+      {trocaOpen && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[70] flex flex-col justify-end bg-black/45" onClick={() => setTrocaOpen(false)}>
+          <div className="mx-auto w-full max-w-[440px] rounded-t-[28px] bg-surface-white px-5 pb-8 pt-4" onClick={(e) => e.stopPropagation()}>
+            <span className="mx-auto mb-4 block h-1.5 w-12 rounded-full bg-divider" />
+            <p className="text-center font-[family-name:var(--font-manrope)] text-[18px] font-medium">Seus Orbibox</p>
+            <div className="mt-4 flex flex-col gap-2">
+              {negocios.map((n) => {
+                const ativo = n.id === negocioAtual;
+                return (
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => trocarPara(n.id)}
+                    disabled={!!trocando}
+                    className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors ${ativo ? "border-on-background" : "border-divider"} disabled:opacity-60`}
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft font-[family-name:var(--font-manrope)] text-[15px] font-semibold">
+                      {n.name.trim().charAt(0).toUpperCase()}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px] font-medium">{n.name}</span>
+                      <span className="block truncate text-[12px] text-text-tertiary">/{n.slug}</span>
+                    </span>
+                    {trocando === n.id ? (
+                      <span className="text-[12px] text-text-tertiary">Abrindo…</span>
+                    ) : ativo ? (
+                      <span className="text-[13px] font-medium">✓</span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+
+            {podeCriarNegocio ? (
+              <Link
+                href="/onboarding?novo=1"
+                onClick={() => setTrocaOpen(false)}
+                className="orbi-gradient mt-4 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-medium text-on-background"
+              >
+                + Criar outro Orbibox
+              </Link>
+            ) : (
+              <Link
+                href="/admin/planos"
+                onClick={() => setTrocaOpen(false)}
+                className="mt-4 block rounded-2xl bg-surface-soft px-4 py-3 text-center text-[13px] text-text-secondary"
+              >
+                Tem mais de uma marca? No plano <span className="font-medium text-on-background">Nióbio</span> você cria vários Orbibox, cada um com seu link e sua IA. Ver planos →
+              </Link>
+            )}
+          </div>
+        </div>,
+        document.body,
+      )}
     </header>
   );
 }

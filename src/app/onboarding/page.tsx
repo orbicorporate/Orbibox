@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -67,6 +67,12 @@ export default function OnboardingPage() {
     return ig ? `@${ig}` : null;
   }, [website, instagram]);
   const irParaConfirmar = useCallback(() => setStep("confirmar"), []);
+  // Veio do painel pra criar outro Orbibox (plano com vários negócios)?
+  const novoNegocio = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("novo") === "1",
+    () => false,
+  );
 
   // O que a Orbi entendeu do site, mostrado na tela de resultado, com o
   // porquê explicado, pra nunca ser uma caixa preta.
@@ -229,6 +235,9 @@ export default function OnboardingPage() {
     }
 
     // A esfera da Orbi já nasce com as cores da marca.
+    // O painel passa a abrir este negócio (importante quando a conta tem vários).
+    document.cookie = `orbi_negocio=${business.id}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+
     await supabase.from("agent_configs").insert({ business_id: business.id, agent_name: "Orbi", objectives: ["vender", "informar"], ...(orbColors ? { orbi_colors: orbColors } : {}) });
     await supabase.from("pulse_metrics").insert({ business_id: business.id, discovery_score: 62, interest_score: 58, conversion_score: 41, relationship_score: 70, overall_score: 58 });
     // O link do site já foi informado no DNA da Marca, a Orbi importa o catálogo agora,
@@ -330,7 +339,7 @@ export default function OnboardingPage() {
   }
 
   function goToApp() {
-    router.push("/admin/apresentacao");
+    router.push(novoNegocio ? "/admin" : "/admin/apresentacao");
     router.refresh();
   }
 
@@ -342,15 +351,25 @@ export default function OnboardingPage() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center px-6 py-16">
-      <button
-        onClick={handleSignOut}
-        className="fixed right-4 top-4 z-10 rounded-full bg-surface-white px-3.5 py-2 text-[12px] font-medium text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.08)]"
-      >
-        Sair
-      </button>
+      {novoNegocio && step === "dados" ? (
+        <Link
+          href="/admin"
+          className="fixed right-4 top-4 z-10 rounded-full bg-surface-white px-3.5 py-2 text-[12px] font-medium text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.08)]"
+        >
+          ← Voltar ao painel
+        </Link>
+      ) : (
+        <button
+          onClick={handleSignOut}
+          className="fixed right-4 top-4 z-10 rounded-full bg-surface-white px-3.5 py-2 text-[12px] font-medium text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.08)]"
+        >
+          Sair
+        </button>
+      )}
       <div className="w-full max-w-lg">
         {step === "dados" && (
           <>
+            {novoNegocio && <p className="mb-2 text-[13px] font-medium text-text-tertiary">Novo Orbibox</p>}
             <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">DNA da Marca</h1>
             <p className="mt-1 text-[15px] text-text-secondary">A Orbi lê seu site (ou seu Instagram, se não tiver site) pra montar o manual da sua marca e trazer seus produtos. Os links e o WhatsApp já viram botões prontos na sua página.</p>
             <form onSubmit={startAnalysis} className="mt-8 flex flex-col gap-4">

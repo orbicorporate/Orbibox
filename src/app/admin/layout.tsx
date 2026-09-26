@@ -9,6 +9,7 @@ import { getBusinessProgress } from "@/lib/progress";
 import { getPendingInsights } from "@/lib/insights";
 import { TourOverlay } from "@/components/tour/TourOverlay";
 import { ReferralCelebration } from "./ReferralCelebration";
+import { getCurrentBusinessId, listMyBusinesses, podeCriarOutroNegocio } from "@/lib/business";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -43,33 +44,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .is("user_id", null);
   }
 
-  let { data: business } = await supabase
-    .from("businesses")
-    .select("id, name, slug, tour_completed_at")
-    .eq("owner_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  // Não é dono de nenhum negócio, mas pode ter sido convidado como
-  // administrador de um, busca pelo vínculo em vez do owner_id.
-  if (!business) {
-    const { data: membership } = await supabase
-      .from("business_admins")
-      .select("business_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (membership) {
-      const { data: memberBusiness } = await supabase
-        .from("businesses")
-        .select("id, name, slug, tour_completed_at")
-        .eq("id", membership.business_id)
-        .maybeSingle();
-      business = memberBusiness;
-    }
-  }
+  // Negócio aberto no painel: o escolhido no seletor (contas com vários),
+  // senão o mais recente, senão um em que a pessoa é administradora.
+  const businessId = await getCurrentBusinessId(user.id);
+  const { data: business } = businessId
+    ? await supabase.from("businesses").select("id, name, slug, tour_completed_at").eq("id", businessId).maybeSingle()
+    : { data: null };
+  const negocios = business ? await listMyBusinesses(user.id) : [];
+  const podeCriar = business ? await podeCriarOutroNegocio(user.id) : false;
 
   if (!business) redirect("/onboarding");
 
@@ -124,6 +106,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         progressPct={headerProgress.pct}
         isMaster={!!isSuper}
         pendencias={headerPendencias}
+        negocios={negocios.map((n) => ({ id: n.id, name: n.name, slug: n.slug }))}
+        negocioAtual={business.id}
+        podeCriarNegocio={podeCriar}
       />
       {celebrateNotif && (
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />
