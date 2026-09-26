@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       website ? extrairCoresDaMarca(website).catch(() => null) : Promise.resolve(null),
     ]);
     const medidas = coresMedidas?.colors ?? [];
+    if (website) console.log("analyze-brand cores", JSON.stringify({ website, cores: coresMedidas?.evidencia, diagnostico: coresMedidas?.diagnostico }));
     const temPaletaMedida = medidas.length >= 2;
     const siteText =
       [siteLido?.text ? siteLido.text.slice(0, 3500) : (website ? await fetchSiteText(website) : null), igLido?.text ? `INSTAGRAM:\n${igLido.text.slice(0, 2500)}` : null]

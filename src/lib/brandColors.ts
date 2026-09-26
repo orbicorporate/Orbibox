@@ -1,4 +1,4 @@
-import sharp from "sharp";
+import sharp, { type Sharp } from "sharp";
 
 /**
  * Mede as cores da MARCA direto do site, olhando só para as peças de
@@ -16,6 +16,8 @@ export type BrandColorResult = {
   /** Linhas legíveis do tipo "#E03131 (logo, botões)", úteis para a Orbi e para debug. */
   evidencia: string[];
   confianca: "alta" | "media" | "baixa";
+  /** O que foi lido e o que falhou, para os logs. */
+  diagnostico: string[];
 };
 
 type Fonte = "logo" | "botao" | "header" | "rodape" | "tema" | "icone" | "link" | "corpo";
@@ -354,12 +356,12 @@ async function coresDaImagem(buf: Buffer): Promise<{ rgb: RGB; fatia: number }[]
     .slice(0, 4);
 }
 
-async function baixar(url: string): Promise<Buffer | null> {
+async function baixar(url: string, ms = 6000, limite = 8_000_000): Promise<Buffer | null> {
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(6000), headers: { "User-Agent": UA } });
+    const res = await fetch(url, { signal: AbortSignal.timeout(ms), headers: { "User-Agent": UA } });
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
-    return buf.length > 8_000_000 ? null : buf;
+    return buf.length > limite ? null : buf;
   } catch {
     return null;
   }
@@ -369,55 +371,183 @@ async function baixar(url: string): Promise<Buffer | null> {
 // Principal
 // ---------------------------------------------------------------------------
 
-export async function extrairCoresDaMarca(siteUrl: string): Promise<BrandColorResult | null> {
-  const pagina = await buscarHtml(siteUrl);
-  if (!pagina) return null;
-  const { html, base } = pagina;
+// ---------------------------------------------------------------------------
+// Print da página: mede só a faixa do topo e a do rodapé
+// ---------------------------------------------------------------------------
 
+/**
+ * Pede um print da página inteira já renderizada (funciona em Wix, Framer,
+ * Webflow e sites que bloqueiam leitura direta) e devolve a URL da imagem.
+ */
+async function urlDoPrint(site: string): Promise<string | null> {
+  try {
+    const alvo = site.startsWith("http") ? site : `https://${site}`;
+    const res = await fetch(`https://r.jina.ai/${alvo}`, {
+      signal: AbortSignal.timeout(30000),
+      headers: { Accept: "application/json", "X-Return-Format": "pageshot", "X-Timeout": "20" },
+    });
+    if (!res.ok) return null;
+    const txt = await res.text();
+    try {
+      const j = JSON.parse(txt);
+      const u = j?.data?.pageshotUrl ?? j?.data?.screenshotUrl;
+      if (typeof u === "string" && u.startsWith("http")) return u;
+    } catch {
+      /* resposta em texto: procura a URL da imagem */
+    }
+    return txt.match(/https?:\/\/[^\s"')]+\.(?:png|jpe?g|webp)[^\s"')]*/i)?.[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Cores de uma faixa do print. Faixa "fotográfica" (header transparente em
+ * cima de uma foto, por exemplo) é descartada: interface tem poucas cores
+ * chapadas, foto espalha em centenas de tons.
+ */
+async function coresDaFaixa(img: Sharp, top: number, altura: number, largura: number): Promise<{ rgb: RGB; fatia: number }[] | null> {
+  const { data, info } = await img
+    .clone()
+    .extract({ left: 0, top, width: largura, height: altura })
+    .resize(320, null, { fit: "inside", kernel: "nearest" })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const baldes = new Map<number, { r: number; g: number; b: number; n: number }>();
+  let total = 0;
+  for (let i = 0; i < data.length; i += info.channels) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    total++;
+    const chave = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+    const bk = baldes.get(chave) ?? { r: 0, g: 0, b: 0, n: 0 };
+    bk.r += r; bk.g += g; bk.b += b; bk.n++;
+    baldes.set(chave, bk);
+  }
+  if (total === 0) return null;
+  const ordenados = [...baldes.values()].sort((a, b) => b.n - a.n);
+  const cobertura = ordenados.slice(0, 12).reduce((s, b) => s + b.n, 0) / total;
+  if (cobertura < 0.6) return null; // parece foto: ignora a faixa inteira
+
+  const grupos: { rgb: RGB; n: number }[] = [];
+  for (const bk of ordenados) {
+    if (bk.n / total < 0.002) break;
+    const rgb: RGB = [Math.round(bk.r / bk.n), Math.round(bk.g / bk.n), Math.round(bk.b / bk.n)];
+    const g = grupos.find((x) => distancia(x.rgb, rgb) < 30);
+    if (g) g.n += bk.n;
+    else grupos.push({ rgb, n: bk.n });
+  }
+  return grupos
+    .map((g) => ({ rgb: g.rgb, fatia: g.n / total }))
+    // Cor chapada pequena (um botão, a logo) conta; neutro precisa de área.
+    .filter((g) => (ehCromatica(g.rgb) ? g.fatia >= 0.012 : g.fatia >= 0.003))
+    .slice(0, 8);
+}
+
+async function medirPrint(site: string, amostras: Amostra[], diag: string[]) {
+  const url = await urlDoPrint(site);
+  if (!url) { diag.push("print: indisponível"); return; }
+  const buf = await baixar(url, 20000, 40_000_000);
+  if (!buf) { diag.push("print: não baixou"); return; }
+  try {
+    const img = sharp(buf, { limitInputPixels: false });
+    const meta = await img.metadata();
+    const W = meta.width ?? 0, H = meta.height ?? 0;
+    if (W < 200 || H < 200) { diag.push("print: pequeno demais"); return; }
+    const escala = W / 1280; // prints costumam vir em ~1280px de largura
+    const topo = Math.min(H, Math.round(130 * escala));
+    const rodapeAlt = Math.min(Math.round(380 * escala), Math.round(H * 0.25));
+
+    const faixaTopo = await coresDaFaixa(img, 0, topo, W);
+    if (faixaTopo) {
+      for (const c of faixaTopo) amostras.push({ rgb: c.rgb, peso: pesoFaixa(c), fonte: "header" });
+      diag.push(`print topo: ${faixaTopo.map((c) => `${toHex(c.rgb)} ${(c.fatia * 100).toFixed(1)}%`).join(", ")}`);
+    } else diag.push("print topo: parece foto, ignorado");
+
+    if (H > topo + rodapeAlt + 200) {
+      const faixaRodape = await coresDaFaixa(img, H - rodapeAlt, rodapeAlt, W);
+      if (faixaRodape) {
+        for (const c of faixaRodape) amostras.push({ rgb: c.rgb, peso: pesoFaixa(c) * 0.8, fonte: "rodape" });
+        diag.push(`print rodapé: ${faixaRodape.map((c) => `${toHex(c.rgb)} ${(c.fatia * 100).toFixed(1)}%`).join(", ")}`);
+      } else diag.push("print rodapé: parece foto, ignorado");
+    }
+  } catch (e) {
+    diag.push(`print: erro ${(e as Error).message}`);
+  }
+}
+
+function pesoFaixa(c: { rgb: RGB; fatia: number }): number {
+  // Cor de marca num header costuma ocupar pouca área (logo, botão), então a
+  // cromática ganha peso alto mesmo pequena. Neutro pesa pela área.
+  return ehCromatica(c.rgb) ? 6 * Math.min(1, 0.5 + c.fatia * 5) : 4 * Math.min(1, 0.4 + c.fatia * 2);
+}
+
+// ---------------------------------------------------------------------------
+// Principal
+// ---------------------------------------------------------------------------
+
+export async function extrairCoresDaMarca(siteUrl: string): Promise<BrandColorResult | null> {
   const amostras: Amostra[] = [];
+  const diag: string[] = [];
   const add = (valor: string, fonte: Fonte, peso: number) => {
     for (const rgb of coresDoValor(valor)) amostras.push({ rgb, peso, fonte });
   };
 
-  // meta theme-color: a cor que o próprio site escolheu para a barra do navegador.
-  for (const m of html.matchAll(/<meta\b[^>]*>/gi)) {
-    const nome = (attr(m[0], "name") || attr(m[0], "property")).toLowerCase();
-    if (nome === "theme-color" || nome === "msapplication-tilecolor") add(attr(m[0], "content"), "tema", 5);
-  }
+  // O print roda em paralelo com a leitura do HTML: se o HTML vier bloqueado
+  // ou vazio (sites de construtor), o print sozinho já resolve.
+  const printPronto = medirPrint(siteUrl, amostras, diag).catch((e) => { diag.push(`print: erro ${(e as Error).message}`); });
 
-  // CSS: blocos <style> + as primeiras folhas de estilo do próprio site.
-  const estilos = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]);
-  const folhas: string[] = [];
-  for (const m of html.matchAll(/<link\b[^>]*>/gi)) {
-    if (!/stylesheet/i.test(attr(m[0], "rel"))) continue;
-    const u = absoluta(attr(m[0], "href"), base);
-    // Fontes e bibliotecas de terceiros não dizem nada da marca.
-    if (!u || /fonts\.googleapis|fontawesome|font-awesome|bootstrap(\.min)?\.css|cdnjs|jsdelivr|unpkg/i.test(u)) continue;
-    folhas.push(u);
-    if (folhas.length >= 5) break;
-  }
-  const baixadas = await Promise.all(folhas.map((u) => buscarTexto(u, 5000, 600_000)));
-  for (const css of [...estilos, ...baixadas]) if (css) lerCss(css, add);
-  lerHtmlInline(html, add);
+  const pagina = await buscarHtml(siteUrl);
+  if (!pagina) diag.push("html: não abriu");
+  else {
+    const { html, base } = pagina;
+    diag.push(`html: ${html.length} caracteres`);
 
-  // Logo: a fonte mais confiável de todas.
-  const { imagens, svgs, icone } = acharLogos(html, base);
-  const leituras: Promise<void>[] = [];
-  const medir = async (buf: Buffer | null, fonte: Fonte, pesoMax: number) => {
-    if (!buf) return;
-    try {
-      for (const c of await coresDaImagem(buf)) amostras.push({ rgb: c.rgb, peso: pesoMax * Math.min(1, 0.35 + c.fatia), fonte });
-    } catch {
-      /* imagem que o sharp não entende: segue sem ela */
+    // meta theme-color: a cor que o próprio site escolheu para a barra do navegador.
+    for (const m of html.matchAll(/<meta\b[^>]*>/gi)) {
+      const nome = (attr(m[0], "name") || attr(m[0], "property")).toLowerCase();
+      if (nome === "theme-color" || nome === "msapplication-tilecolor") add(attr(m[0], "content"), "tema", 5);
     }
-  };
-  imagens.forEach((u) => leituras.push(baixar(u).then((b) => medir(b, "logo", 8))));
-  svgs.forEach((s) => leituras.push(medir(Buffer.from(s), "logo", 8)));
-  if (icone) leituras.push(baixar(icone).then((b) => medir(b, "icone", 3)));
-  await Promise.all(leituras);
 
-  if (amostras.length === 0) return null;
-  return montarPaleta(amostras);
+    // CSS: blocos <style> + as primeiras folhas de estilo do próprio site.
+    const estilos = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]);
+    const folhas: string[] = [];
+    for (const m of html.matchAll(/<link\b[^>]*>/gi)) {
+      if (!/stylesheet/i.test(attr(m[0], "rel"))) continue;
+      const u = absoluta(attr(m[0], "href"), base);
+      // Fontes e bibliotecas de terceiros não dizem nada da marca.
+      if (!u || /fonts\.googleapis|fontawesome|font-awesome|bootstrap(\.min)?\.css|cdnjs|jsdelivr|unpkg/i.test(u)) continue;
+      folhas.push(u);
+      if (folhas.length >= 5) break;
+    }
+    const baixadas = await Promise.all(folhas.map((u) => buscarTexto(u, 5000, 600_000)));
+    const antes = amostras.length;
+    for (const css of [...estilos, ...baixadas]) if (css) lerCss(css, add);
+    lerHtmlInline(html, add);
+    diag.push(`css: ${estilos.length} blocos, ${folhas.length} folhas, ${amostras.length - antes} cores`);
+
+    // Logo: a fonte mais confiável de todas.
+    const { imagens, svgs, icone } = acharLogos(html, base);
+    diag.push(`logo: ${imagens.length} imagens, ${svgs.length} svg, ícone ${icone ? "sim" : "não"}`);
+    const leituras: Promise<void>[] = [];
+    const medir = async (buf: Buffer | null, fonte: Fonte, pesoMax: number) => {
+      if (!buf) return;
+      try {
+        for (const c of await coresDaImagem(buf)) amostras.push({ rgb: c.rgb, peso: pesoMax * Math.min(1, 0.35 + c.fatia), fonte });
+      } catch {
+        /* imagem que o sharp não entende: segue sem ela */
+      }
+    };
+    imagens.forEach((u) => leituras.push(baixar(u).then((b) => medir(b, "logo", 8))));
+    svgs.forEach((s) => leituras.push(medir(Buffer.from(s), "logo", 8)));
+    if (icone) leituras.push(baixar(icone).then((b) => medir(b, "icone", 3)));
+    await Promise.all(leituras);
+  }
+
+  await printPronto;
+  if (amostras.length === 0) return { colors: [], evidencia: [], confianca: "baixa", diagnostico: diag };
+  return { ...montarPaleta(amostras), diagnostico: diag };
 }
 
 type Grupo = { rgb: RGB; melhorPeso: number; score: number; porFonte: Map<Fonte, number> };
@@ -447,48 +577,46 @@ function agrupar(amostras: Amostra[], raio: number): Grupo[] {
   return grupos.sort((a, b) => b.score - a.score);
 }
 
-function montarPaleta(amostras: Amostra[]): BrandColorResult {
+function montarPaleta(amostras: Amostra[]): Omit<BrandColorResult, "diagnostico"> {
   const cromaticas = agrupar(amostras.filter((a) => ehCromatica(a.rgb)), 70).filter((g) => g.score >= 3);
   const neutras = amostras.filter((a) => !ehCromatica(a.rgb));
-  const escuras = agrupar(neutras.filter((a) => hsl(a.rgb).l < 0.3 && a.fonte !== "corpo"), 40).filter((g) => g.score >= 3);
-  const claras = agrupar(neutras.filter((a) => hsl(a.rgb).l > 0.9), 25);
+  // Neutros em três faixas: escuros (preto, grafite), médios (cinza) e claros (fundos).
+  const escuras = agrupar(neutras.filter((a) => hsl(a.rgb).l < 0.3 && a.fonte !== "corpo"), 45).filter((g) => g.score >= 1.5);
+  const medias = agrupar(neutras.filter((a) => hsl(a.rgb).l >= 0.3 && hsl(a.rgb).l <= 0.82 && a.fonte !== "corpo" && a.fonte !== "link"), 45).filter((g) => g.score >= 1.5);
+  const claras = agrupar(neutras.filter((a) => hsl(a.rgb).l > 0.82), 22);
 
   const marca = cromaticas.slice(0, 3);
-  const escura = escuras[0];
-  // Fundo: um claro que o site realmente usa (header/rodapé/corpo); branco se não houver.
+  // Fundo: um claro que o site realmente usa (topo/rodapé/corpo); branco se não houver.
   const fundo = claras.find((g) => g.porFonte.has("corpo") || g.porFonte.has("header") || g.porFonte.has("rodape") || g.porFonte.has("tema"));
 
   const escolhidas: { g: Grupo | null; hex: string }[] = [];
   const push = (g: Grupo | null | undefined, hex?: string) => {
     if (!g && !hex) return;
     const h = hex ?? toHex(g!.rgb);
-    if (!escolhidas.some((e) => e.hex === h)) escolhidas.push({ g: g ?? null, hex: h });
+    if (!escolhidas.some((e) => e.hex === h || (e.g && g && distancia(e.g.rgb, g.rgb) < 30))) escolhidas.push({ g: g ?? null, hex: h });
   };
 
-  if (marca.length > 0) {
-    push(marca[0]);                              // cor principal da marca
-    push(marca[1] ?? escura);                    // destaque (2ª cor da marca ou o escuro do site)
-    push(fundo, fundo ? undefined : "#FFFFFF");  // fundo claro
-    if (marca[1]) push(escura);
-    push(marca[2]);
-  } else if (escura) {
-    // Marca preto e branco: é isso mesmo, não inventamos cor.
-    push(escura);
-    push(escuras[1]);
-    push(fundo, fundo ? undefined : "#FFFFFF");
-  }
+  // Ordem: cor principal, o escuro da marca, o fundo claro, depois o resto.
+  push(marca[0] ?? escuras[0]);
+  push(marca[0] ? escuras[0] ?? marca[1] : escuras[1]);
+  push(fundo, fundo ? undefined : "#FFFFFF");
+  push(marca[1]);
+  push(medias[0]);
+  push(escuras[1]);
+  push(marca[2]);
 
   const roles = ["primary", "accent", "background", "detail", "detail"];
   const colors = escolhidas.slice(0, 5).map((e, i) => ({ hex: e.hex, role: roles[i] }));
 
   const evidencia = escolhidas
+    .slice(0, 5)
     .filter((e) => e.g)
     .map((e) => `${e.hex} (${[...e.g!.porFonte.keys()].map((f) => ROTULO[f]).join(", ")})`);
 
-  const principal = marca[0] ?? escura;
-  const confiavel = principal && ["logo", "botao", "header", "rodape", "tema"].filter((f) => principal.porFonte.has(f as Fonte)).length;
+  const principal = marca[0] ?? escuras[0];
+  const fontesFortes = principal ? (["logo", "botao", "header", "rodape", "tema"] as Fonte[]).filter((f) => principal.porFonte.has(f)).length : 0;
   const confianca: BrandColorResult["confianca"] =
-    !principal ? "baixa" : principal.porFonte.has("logo") || (confiavel ?? 0) >= 2 ? "alta" : "media";
+    !principal ? "baixa" : principal.porFonte.has("logo") || fontesFortes >= 2 ? "alta" : "media";
 
-  return { colors, evidencia, confianca };
+  return { colors: principal ? colors : [], evidencia, confianca };
 }
