@@ -13,62 +13,79 @@ export function GuiaPassos({ titulo, passos, chave }: { titulo: string; passos: 
   const oculto = useFlag(`guia_off_${chave}`);
   if (oculto || passos.every((p) => p.feito)) return null;
   const proximo = passos.findIndex((p) => !p.feito);
-  const feitos = passos.filter((p) => p.feito).length;
+  const feitos = passos.filter((p) => p.feito);
   return (
     <div>
-      <div className="flex items-center justify-between gap-2 px-1">
-        <p className="text-[14px] font-semibold">
-          {titulo} <span className="ml-1 font-normal text-text-tertiary">{feitos}/{passos.length}</span>
+      <div className="flex items-baseline justify-between gap-2 px-0.5">
+        <p className="text-[13.5px] font-semibold">
+          {titulo} <span className="ml-1 text-[12.5px] font-normal text-text-tertiary">{feitos.length} de {passos.length}</span>
         </p>
         <button onClick={() => gravarFlag(`guia_off_${chave}`)} className="text-[12px] text-text-tertiary">Ocultar</button>
       </div>
-      <div className="mt-2.5 flex flex-col gap-2">
-        {passos.map((p, i) => (
-          <PassoLinha key={i} passo={p} n={i + 1} destaque={i === proximo} />
-        ))}
+      <div className="mt-2 flex flex-col gap-1.5">
+        {passos.map((p, i) => (p.feito ? null : <PassoLinha key={i} passo={p} n={i + 1} destaque={i === proximo} />))}
       </div>
+      {/* Os feitos viram uma linha discreta, sem ocupar espaço de cartão. */}
+      {feitos.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 px-0.5">
+          {feitos.map((p) => (
+            <button key={p.titulo} onClick={p.onClick} className="inline-flex items-center gap-1 text-[12px] text-text-tertiary">
+              <CheckMini /> {p.titulo}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-/** Um passo: o próximo a fazer ganha a borda em degradê da Orbi; os
- * demais ficam brancos e leves; os feitos, só riscados. */
-export function PassoLinha({ passo: p, n, destaque, fim }: { passo: Passo; n: number; destaque: boolean; fim?: React.ReactNode }) {
-  const conteudo = (
-    <span className="flex w-full items-center gap-3 px-3.5 py-3">
-      <span
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ${
-          p.feito ? "orbi-gradient text-on-background" : destaque ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"
-        }`}
-      >
-        {p.feito ? "✓" : n}
-      </span>
-      <span className="min-w-0 flex-1">
-        {destaque && !p.feito && <span className="block text-[10.5px] font-semibold uppercase tracking-wide text-text-tertiary">Próximo passo</span>}
-        <span className={`block text-[14.5px] font-medium leading-snug ${p.feito ? "text-text-tertiary line-through decoration-text-tertiary/40" : "text-on-background"}`}>{p.titulo}</span>
-        {!p.feito && <span className="mt-0.5 block text-[12px] leading-snug text-text-tertiary">{p.detalhe}</span>}
-      </span>
-      {!p.feito &&
-        (fim ?? (
-          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] ${destaque ? "orbi-gradient text-on-background" : "bg-surface-soft text-text-tertiary"}`} aria-hidden>
-            →
-          </span>
-        ))}
+function CheckMini() {
+  return (
+    <span className="orbi-gradient flex h-3.5 w-3.5 items-center justify-center rounded-full">
+      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#111318" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M20 6L9 17l-5-5" />
+      </svg>
     </span>
   );
+}
+
+/** Um passo pendente: o próximo ganha um fio em degradê da Orbi, os demais
+ * ficam brancos com borda fina. Feito, vira só uma linha riscada. */
+export function PassoLinha({ passo: p, n, destaque, fim }: { passo: Passo; n: number; destaque: boolean; fim?: React.ReactNode }) {
   if (p.feito) {
     return (
-      <button onClick={p.onClick} className="w-full rounded-[18px] text-left">
-        {conteudo}
+      <button onClick={p.onClick} className="flex w-full items-center gap-2 px-1 py-1 text-left text-[12.5px] text-text-tertiary">
+        <CheckMini /> <span className="line-through decoration-text-tertiary/40">{p.titulo}</span>
       </button>
     );
   }
+  const conteudo = (
+    <span className="flex w-full items-center gap-3 px-3.5 py-2.5">
+      <span
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11.5px] font-semibold ${
+          destaque ? "bg-on-background text-white" : "bg-surface-soft text-text-tertiary"
+        }`}
+      >
+        {n}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={`block text-[14px] font-medium leading-snug ${destaque ? "text-on-background" : "text-text-secondary"}`}>{p.titulo}</span>
+        <span className="block text-[12px] leading-snug text-text-tertiary">{p.detalhe}</span>
+      </span>
+      {fim ?? (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 ${destaque ? "text-on-background" : "text-text-tertiary"}`} aria-hidden>
+          <path d="M5 12h14" />
+          <path d="M13 6l6 6-6 6" />
+        </svg>
+      )}
+    </span>
+  );
   return destaque ? (
-    <button onClick={p.onClick} className="orbi-gradient w-full rounded-[18px] p-[1.5px] text-left shadow-[0_6px_20px_rgba(120,220,160,0.18)] transition-transform active:scale-[0.99]">
-      <span className="block rounded-[16.5px] bg-surface-white">{conteudo}</span>
+    <button onClick={p.onClick} className="orbi-gradient w-full rounded-2xl p-px text-left shadow-[0_2px_12px_rgba(120,220,160,0.12)] transition-transform active:scale-[0.99]">
+      <span className="block rounded-[15px] bg-surface-white">{conteudo}</span>
     </button>
   ) : (
-    <button onClick={p.onClick} className="w-full rounded-[18px] border border-divider bg-surface-white text-left shadow-[0_1px_3px_rgba(17,19,24,0.04)] transition-transform active:scale-[0.99]">
+    <button onClick={p.onClick} className="w-full rounded-2xl border border-divider/80 bg-surface-white/70 text-left transition-transform active:scale-[0.99]">
       {conteudo}
     </button>
   );

@@ -81,6 +81,7 @@ export function ShowcaseBuilder({
   introSeen = false,
   inspirePhotos = {},
   initialLeadTop = false,
+  siteSalvo = null,
 }: {
   items: Item[];
   slug: string;
@@ -95,6 +96,8 @@ export function ShowcaseBuilder({
   introSeen?: boolean;
   inspirePhotos?: Record<string, InspireThemeData>;
   initialLeadTop?: boolean;
+  /** Site informado no cadastro: já vem preenchido na importação. */
+  siteSalvo?: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -237,7 +240,7 @@ export function ShowcaseBuilder({
     setApplyingPalette(null);
     mostrarAviso("Paleta aplicada");
   }
-  const [importUrl, setImportUrl] = useState("");
+  const [importUrl, setImportUrl] = useState(siteSalvo ?? "");
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [proposta, setProposta] = useState<{ siteType: string; motivo: string | null; imported: number; semFoto: number } | null>(null);
@@ -668,12 +671,12 @@ export function ShowcaseBuilder({
       {mostrarGuia && (
         <div className="mb-5">
           <div className="flex items-center justify-between gap-2 px-1">
-            <p className="text-[14px] font-semibold">
-              Monte sua vitrine em 3 passos <span className="ml-1 font-normal text-text-tertiary">{passos.filter((p) => p.feito).length}/3</span>
+            <p className="text-[13.5px] font-semibold">
+              Monte sua vitrine em 3 passos <span className="ml-1 text-[12.5px] font-normal text-text-tertiary">{passos.filter((p) => p.feito).length} de 3</span>
             </p>
             <button onClick={esconderGuia} className="text-[12px] text-text-tertiary">Ocultar</button>
           </div>
-          <div className="mt-2.5 flex flex-col gap-2">
+          <div className="mt-2 flex flex-col gap-1.5">
             {passos.map((p, i) => (
               <div key={i}>
               <PassoLinha

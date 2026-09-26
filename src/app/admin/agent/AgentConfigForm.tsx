@@ -140,7 +140,7 @@ export function AgentConfigForm({ config, businessId, businessName, slug, knowle
       />
 
       <div id="ia-ensine" className="scroll-mt-24">
-        <ComoOrbiAprende businessId={businessId} businessName={businessName} orbiColors={orbiColors} gapsPendentes={gapsPendentes} baseFeita={knowledge.historia} onDone={() => router.refresh()} />
+        <ComoOrbiAprende businessId={businessId} businessName={businessName} orbiColors={orbiColors} gapsPendentes={gapsPendentes} baseFeita={knowledge.historia} siteSalvo={(business as { contact_site?: string | null; website_url?: string | null }).contact_site || (business as { website_url?: string | null }).website_url || null} onDone={() => router.refresh()} />
       </div>
 
       <Secao

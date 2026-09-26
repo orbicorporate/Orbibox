@@ -19,9 +19,11 @@ type ResultadoImport = {
   opportunities?: Topico[];
 };
 
-export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPendentes = 0, baseFeita = false, onDone }: { businessId: string; businessName: string; orbiColors?: string[] | null; gapsPendentes?: number; baseFeita?: boolean; onDone?: () => void }) {
+export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPendentes = 0, baseFeita = false, siteSalvo = null, onDone }: { businessId: string; businessName: string; orbiColors?: string[] | null; gapsPendentes?: number; baseFeita?: boolean; siteSalvo?: string | null; onDone?: () => void }) {
   const router = useRouter();
-  const [url, setUrl] = useState("");
+  // O site já veio do cadastro: não pede de novo, só oferece ler outra vez.
+  const [url, setUrl] = useState(siteSalvo ?? "");
+  const dominio = (siteSalvo ?? "").replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
   const [importando, setImportando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [site, setSite] = useState<"idle" | "form">("idle");
@@ -114,8 +116,16 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
         <Passo
           n={1}
           feito={feito}
-          titulo="Importe seu site"
-          desc={feito ? "Base do negócio já registrada. Toque pra reforçar." : "O jeito mais rápido: ela lê em segundos."}
+          titulo={dominio ? "Ler seu site" : "Importe seu site"}
+          desc={
+            dominio
+              ? feito
+                ? `Ela já leu ${dominio} no cadastro. Toque pra ler de novo.`
+                : `${dominio}, do seu cadastro. Toque pra ela ler.`
+              : feito
+              ? "Base do negócio já registrada. Toque pra reforçar."
+              : "O jeito mais rápido: ela lê em segundos."
+          }
           onClick={() => setSite((s) => (s === "form" ? "idle" : "form"))}
         >
           {temAnalise && (
@@ -139,7 +149,7 @@ export function ComoOrbiAprende({ businessId, businessName, orbiColors, gapsPend
                   className="min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 py-2 text-[13.5px] outline-none focus:border-on-background"
                 />
                 <button onClick={importar} disabled={importando || !url.trim()} className="shrink-0 rounded-full bg-button-primary px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-40">
-                  {importando ? "Lendo…" : "Ler"}
+                  {importando ? "Lendo…" : dominio && url.trim() === (siteSalvo ?? "").trim() ? "Ler de novo" : "Ler"}
                 </button>
               </div>
               {erro && <p className="mt-1.5 text-[12px] text-red-600">{erro}</p>}
