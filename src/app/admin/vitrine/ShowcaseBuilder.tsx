@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gravarFlag, useFlag } from "@/lib/useFlag";
+import { PassoLinha } from "@/components/ui/GuiaPassos";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -665,42 +666,29 @@ export function ShowcaseBuilder({
       {/* Passo a passo pra quem acabou de chegar: some sozinho quando os três
           estão feitos (ou quando a pessoa esconde). */}
       {mostrarGuia && (
-        <div className="mb-4 rounded-[22px] border border-divider bg-surface-white p-4">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[14px] font-semibold">Monte sua vitrine em 3 passos</p>
+        <div className="mb-5">
+          <div className="flex items-center justify-between gap-2 px-1">
+            <p className="text-[14px] font-semibold">
+              Monte sua vitrine em 3 passos <span className="ml-1 font-normal text-text-tertiary">{passos.filter((p) => p.feito).length}/3</span>
+            </p>
             <button onClick={esconderGuia} className="text-[12px] text-text-tertiary">Ocultar</button>
           </div>
-          <div className="mt-3 flex flex-col gap-2">
+          <div className="mt-2.5 flex flex-col gap-2">
             {passos.map((p, i) => (
-              <div key={i} className={`rounded-2xl ${p.feito ? "" : "bg-surface-soft"}`}>
-              <button
-                onClick={p.acao}
-                disabled={p.feito}
-                className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-divider/60"
-              >
-                <span
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ${
-                    p.feito ? "orbi-gradient text-on-background" : "border border-on-background/20 bg-surface-white text-on-background"
-                  }`}
-                >
-                  {p.feito ? "✓" : i + 1}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className={`block text-[14px] font-medium ${p.feito ? "text-text-tertiary line-through decoration-text-tertiary/40" : "text-on-background"}`}>{p.titulo}</span>
-                  {!p.feito && <span className="block text-[12px] leading-snug text-text-tertiary">{p.detalhe}</span>}
-                </span>
-                {!p.feito &&
-                  (p.lista ? (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${listaPaginas ? "rotate-180" : ""}`} aria-hidden>
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
-                  ) : (
-                    <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>
-                  ))}
-              </button>
+              <div key={i}>
+              <PassoLinha
+                passo={{ titulo: p.titulo, detalhe: p.detalhe, feito: p.feito, onClick: p.acao }}
+                n={i + 1}
+                destaque={i === passos.findIndex((x) => !x.feito)}
+                fim={p.lista ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${listaPaginas ? "rotate-180" : ""}`} aria-hidden>
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                ) : undefined}
+              />
               {/* Lista das páginas: a pessoa vê quais faltam e escolhe. */}
               {p.lista && listaPaginas && !p.feito && (
-                <div className="flex flex-col gap-1 px-2 pb-2">
+                <div className="mt-1.5 flex flex-col gap-1.5 pl-3">
                   {paginasDeProduto.length === 0 && (
                     <p className="px-2 py-2 text-[12.5px] text-text-tertiary">Deixe algum item ativo primeiro, a página dele aparece aqui.</p>
                   )}
@@ -710,7 +698,7 @@ export function ShowcaseBuilder({
                       <Link
                         key={it.id}
                         href={`/admin/vitrine/pagina/${it.id}`}
-                        className="flex items-center gap-3 rounded-xl bg-surface-white px-3 py-2.5"
+                        className="flex items-center gap-3 rounded-2xl border border-divider bg-surface-white px-3 py-2.5"
                       >
                         <span
                           className="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-cover bg-center"

@@ -12,35 +12,65 @@ export type Passo = { titulo: string; detalhe: string; feito: boolean; onClick: 
 export function GuiaPassos({ titulo, passos, chave }: { titulo: string; passos: Passo[]; chave: string }) {
   const oculto = useFlag(`guia_off_${chave}`);
   if (oculto || passos.every((p) => p.feito)) return null;
+  const proximo = passos.findIndex((p) => !p.feito);
+  const feitos = passos.filter((p) => p.feito).length;
   return (
-    <div className="rounded-[22px] border border-divider bg-surface-white p-4">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[14px] font-semibold">{titulo}</p>
+    <div>
+      <div className="flex items-center justify-between gap-2 px-1">
+        <p className="text-[14px] font-semibold">
+          {titulo} <span className="ml-1 font-normal text-text-tertiary">{feitos}/{passos.length}</span>
+        </p>
         <button onClick={() => gravarFlag(`guia_off_${chave}`)} className="text-[12px] text-text-tertiary">Ocultar</button>
       </div>
-      <div className="mt-3 flex flex-col gap-2">
+      <div className="mt-2.5 flex flex-col gap-2">
         {passos.map((p, i) => (
-          <button
-            key={i}
-            onClick={p.onClick}
-            className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors ${p.feito ? "" : "bg-surface-soft active:bg-divider/60"}`}
-          >
-            <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ${
-                p.feito ? "orbi-gradient text-on-background" : "border border-on-background/20 bg-surface-white text-on-background"
-              }`}
-            >
-              {p.feito ? "✓" : i + 1}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className={`block text-[14px] font-medium ${p.feito ? "text-text-tertiary line-through decoration-text-tertiary/40" : "text-on-background"}`}>{p.titulo}</span>
-              {!p.feito && <span className="block text-[12px] leading-snug text-text-tertiary">{p.detalhe}</span>}
-            </span>
-            {!p.feito && <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>}
-          </button>
+          <PassoLinha key={i} passo={p} n={i + 1} destaque={i === proximo} />
         ))}
       </div>
     </div>
+  );
+}
+
+/** Um passo: o próximo a fazer ganha a borda em degradê da Orbi; os
+ * demais ficam brancos e leves; os feitos, só riscados. */
+export function PassoLinha({ passo: p, n, destaque, fim }: { passo: Passo; n: number; destaque: boolean; fim?: React.ReactNode }) {
+  const conteudo = (
+    <span className="flex w-full items-center gap-3 px-3.5 py-3">
+      <span
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ${
+          p.feito ? "orbi-gradient text-on-background" : destaque ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"
+        }`}
+      >
+        {p.feito ? "✓" : n}
+      </span>
+      <span className="min-w-0 flex-1">
+        {destaque && !p.feito && <span className="block text-[10.5px] font-semibold uppercase tracking-wide text-text-tertiary">Próximo passo</span>}
+        <span className={`block text-[14.5px] font-medium leading-snug ${p.feito ? "text-text-tertiary line-through decoration-text-tertiary/40" : "text-on-background"}`}>{p.titulo}</span>
+        {!p.feito && <span className="mt-0.5 block text-[12px] leading-snug text-text-tertiary">{p.detalhe}</span>}
+      </span>
+      {!p.feito &&
+        (fim ?? (
+          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] ${destaque ? "orbi-gradient text-on-background" : "bg-surface-soft text-text-tertiary"}`} aria-hidden>
+            →
+          </span>
+        ))}
+    </span>
+  );
+  if (p.feito) {
+    return (
+      <button onClick={p.onClick} className="w-full rounded-[18px] text-left">
+        {conteudo}
+      </button>
+    );
+  }
+  return destaque ? (
+    <button onClick={p.onClick} className="orbi-gradient w-full rounded-[18px] p-[1.5px] text-left shadow-[0_6px_20px_rgba(120,220,160,0.18)] transition-transform active:scale-[0.99]">
+      <span className="block rounded-[16.5px] bg-surface-white">{conteudo}</span>
+    </button>
+  ) : (
+    <button onClick={p.onClick} className="w-full rounded-[18px] border border-divider bg-surface-white text-left shadow-[0_1px_3px_rgba(17,19,24,0.04)] transition-transform active:scale-[0.99]">
+      {conteudo}
+    </button>
   );
 }
 
