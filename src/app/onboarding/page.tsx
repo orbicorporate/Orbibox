@@ -10,7 +10,7 @@ import { slugify } from "@/lib/utils";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { coresDaOrbi } from "@/lib/orbiCores";
 import { colorOf } from "@/lib/showcase";
-import { AnaliseAoVivo, BrandOrb, EssenciaDaMarca, VitrineMontando, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
+import { AnaliseAoVivo, BrandOrb, ContatoDaMarca, EssenciaDaMarca, VitrineMontando, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 
 type Color = { hex: string; role: string };
 type BrandAnalysis = {
@@ -33,7 +33,7 @@ async function analyzeBrand(name: string, instagram: string, website: string, de
   return res.json();
 }
 
-type Step = "dados" | "analisando" | "essencia" | "confirmar" | "montando" | "resultado";
+type Step = "dados" | "analisando" | "essencia" | "contato" | "confirmar" | "montando" | "resultado";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -46,6 +46,7 @@ export default function OnboardingPage() {
   const [bizId, setBizId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [whatsapp, setWhatsapp] = useState("");
+  const [endereco, setEndereco] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -72,7 +73,7 @@ export default function OnboardingPage() {
   // Essência da marca (resumo + pontos fortes), editável antes do manual.
   const [resumo, setResumo] = useState("");
   const [pontos, setPontos] = useState<PontoForte[]>([]);
-  const irParaConfirmar = useCallback(() => setStep(pontosRef.current > 0 ? "essencia" : "confirmar"), []);
+  const irParaConfirmar = useCallback(() => setStep(pontosRef.current > 0 ? "essencia" : "contato"), []);
   // Veio do painel pra criar outro Orbibox (plano com vários negócios)?
   const novoNegocio = useSyncExternalStore(
     () => () => {},
@@ -224,6 +225,7 @@ export default function OnboardingPage() {
           }
         : {}),
       contact_whatsapp: whatsappDigits || null,
+      address: endereco.trim() || null,
       contact_site: siteUrl,
       brand_personality: traits,
       brand_colors: colors,
@@ -308,6 +310,7 @@ export default function OnboardingPage() {
     }
     const contatos: { title: string; config: { [k: string]: string } }[] = [];
     if (waFinal) contatos.push({ title: "Fale no WhatsApp", config: { label: "Fale no WhatsApp", subtitle: "Atendimento rápido", icon: "__wadisc__", color: "transparent", action: "whatsapp", url: "" } });
+    if (endereco.trim()) contatos.push({ title: "Como chegar", config: { label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", color: "transparent", action: "endereco", url: endereco.trim() } });
     if (instagramUrl) contatos.push({ title: "Instagram", config: { label: "Instagram", subtitle: "Siga a gente", icon: "@", color: "#111318", action: "link", url: instagramUrl } });
     if (linkedinUrl) contatos.push({ title: "LinkedIn", config: { label: "LinkedIn", subtitle: "Conheça a empresa", icon: "👤\uFE0E", color: "#111318", action: "link", url: linkedinUrl } });
     if (siteUrl) contatos.push({ title: "Nosso site", config: { label: "Nosso site", subtitle: siteUrl.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""), icon: "➜", color: "#111318", action: "link", url: siteUrl } });
@@ -391,12 +394,11 @@ export default function OnboardingPage() {
           <>
             {novoNegocio && <p className="mb-2 text-[13px] font-medium text-text-tertiary">Novo Orbibox</p>}
             <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">DNA da Marca</h1>
-            <p className="mt-1 text-[15px] text-text-secondary">A Orbi lê seu site (ou seu Instagram, se não tiver site) pra montar o manual da sua marca e trazer seus produtos. Os links e o WhatsApp já viram botões prontos na sua página.</p>
+            <p className="mt-1 text-[15px] text-text-secondary">A Orbi lê seu site (ou seu Instagram, se não tiver site) pra montar o manual da sua marca e trazer seus produtos. Os links já viram botões prontos na sua página.</p>
             <form onSubmit={startAnalysis} className="mt-8 flex flex-col gap-4">
               <input required placeholder="Nome do negócio" value={name} onChange={(e) => setName(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <input placeholder="@seuinstagram (opcional)" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <input placeholder="seusite.com.br (opcional, de onde vêm seus produtos)" value={website} onChange={(e) => setWebsite(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
-              <input placeholder="WhatsApp com DDD (opcional)" inputMode="tel" autoComplete="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <input placeholder="LinkedIn da empresa (opcional)" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <textarea
                 placeholder="Em poucas palavras, o que vocês fazem? (a Orbi usa isso pra conversar com seus clientes, mesmo sem site)"
@@ -519,6 +521,18 @@ export default function OnboardingPage() {
             onResumo={setResumo}
             pontos={pontos}
             onPontos={setPontos}
+            onContinuar={() => setStep("contato")}
+          />
+        )}
+
+        {step === "contato" && (
+          <ContatoDaMarca
+            nome={name}
+            orbColors={orbColors}
+            whatsapp={whatsapp}
+            onWhatsapp={setWhatsapp}
+            endereco={endereco}
+            onEndereco={setEndereco}
             onContinuar={() => setStep("confirmar")}
           />
         )}

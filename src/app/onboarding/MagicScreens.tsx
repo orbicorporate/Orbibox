@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import { homeCardShellClass, homeCardShellStyle, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
 
 /**
  * As duas telas "mágicas" do onboarding:
@@ -432,12 +433,7 @@ export function EssenciaDaMarca({
 
   return (
     <div className="relative flex flex-col py-2">
-      {/* Fundo: manchas bem suaves na paleta do cliente */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: comAlfa(cor, 0.16) }} />
-        <div className="absolute -left-32 top-[38%] h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: comAlfa(cor2, 0.12) }} />
-        <div className="absolute -bottom-28 right-[-10%] h-96 w-96 rounded-full blur-3xl" style={{ backgroundColor: comAlfa(cor, 0.12) }} />
-      </div>
+      <FundoDaMarca cor={cor} cor2={cor2} />
 
       <div className="relative z-[1] flex flex-col">
         <div className="flex items-start gap-4">
@@ -538,6 +534,148 @@ export function EssenciaDaMarca({
             </button>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+/** Fundo com manchas bem suaves na paleta do cliente. */
+function FundoDaMarca({ cor, cor2 }: { cor: string; cor2: string }) {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: comAlfa(cor, 0.16) }} />
+      <div className="absolute -left-32 top-[38%] h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: comAlfa(cor2, 0.12) }} />
+      <div className="absolute -bottom-28 right-[-10%] h-96 w-96 rounded-full blur-3xl" style={{ backgroundColor: comAlfa(cor, 0.12) }} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 4. Contato: WhatsApp e endereço (opcionais), já viram boxes prontos
+// ---------------------------------------------------------------------------
+export function formatarWhatsapp(v: string): string {
+  let d = v.replace(/\D/g, "");
+  if (d.startsWith("55") && d.length > 11) d = d.slice(2);
+  d = d.slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+export function ContatoDaMarca({
+  nome,
+  orbColors,
+  whatsapp,
+  onWhatsapp,
+  endereco,
+  onEndereco,
+  onContinuar,
+}: {
+  nome: string;
+  orbColors: string[] | null;
+  whatsapp: string;
+  onWhatsapp: (v: string) => void;
+  endereco: string;
+  onEndereco: (v: string) => void;
+  onContinuar: () => void;
+}) {
+  const cor = orbColors?.[0] ?? "#111318";
+  const cor2 = orbColors?.[1] ?? cor;
+  const corForte = luminancia(cor) > 0.55 ? misturar(cor, "#000000", 0.4) : cor;
+  const corBotao = misturar(corForte, "#000000", 0.28);
+
+  const waOk = whatsapp.replace(/\D/g, "").length >= 10;
+  const endOk = endereco.trim().length >= 6;
+  const algum = waOk || endOk;
+
+  const campo =
+    "w-full rounded-2xl border border-white/80 bg-white/75 px-4 py-3.5 text-[16px] text-on-background shadow-[0_4px_24px_rgba(17,19,24,0.05)] outline-none backdrop-blur-xl transition-colors placeholder:text-text-tertiary focus:bg-white";
+
+  return (
+    <div className="relative flex flex-col py-2">
+      <FundoDaMarca cor={cor} cor2={cor2} />
+      <div className="relative z-[1] flex flex-col">
+        <div className="flex items-start gap-4">
+          <div className="mt-1 h-14 w-14 shrink-0 overflow-hidden rounded-full">
+            <OrbiOrb size={56} colors={orbColors} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[14px] text-text-tertiary">{nome.trim() || "Sua marca"}</p>
+            <p className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold leading-tight tracking-[-0.02em] text-on-background">Como te encontram</p>
+            <p className="mt-0.5 text-[15px] text-text-secondary">Opcional. O que preencher vira botão pronto na sua página.</p>
+          </div>
+        </div>
+
+        <label className="orbi-linha-entra mt-7 block">
+          <span className="mb-1.5 flex items-center gap-2 px-1 text-[13px] font-medium text-on-background">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366" aria-hidden>
+              <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.2z" />
+            </svg>
+            WhatsApp da empresa
+          </span>
+          <input
+            value={whatsapp}
+            onChange={(e) => onWhatsapp(formatarWhatsapp(e.target.value))}
+            placeholder="(11) 99999-9999"
+            inputMode="tel"
+            autoComplete="tel"
+            className={campo}
+          />
+        </label>
+
+        <label className="orbi-linha-entra mt-4 block" style={{ animationDelay: "0.1s" }}>
+          <span className="mb-1.5 flex items-center gap-2 px-1 text-[13px] font-medium text-on-background">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={corForte} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+              <circle cx="12" cy="9.5" r="2.5" />
+            </svg>
+            Endereço
+          </span>
+          <input
+            value={endereco}
+            onChange={(e) => onEndereco(e.target.value)}
+            placeholder="Rua, número, bairro, cidade"
+            autoComplete="street-address"
+            maxLength={200}
+            className={campo}
+          />
+          <span className="mt-1.5 block px-1 text-[12px] text-text-tertiary">Deixe em branco se atende só online.</span>
+        </label>
+
+        {/* Prévia ao vivo: os boxes do jeito que vão aparecer na página */}
+        {algum && (
+          <div className="mt-7">
+            <p className="px-1 text-[12px] font-medium uppercase tracking-[0.14em] text-text-tertiary">Na sua página</p>
+            <div className="mt-2.5 flex flex-col gap-2.5">
+              {waOk && (
+                <div key="wa" className={`orbi-card-cai ${homeCardShellClass("largo", false, false, "transparent")}`} style={homeCardShellStyle("transparent")}>
+                  <HomeOptionCardContent layout="largo" icon="__wadisc__" color="transparent" orbiColors={orbColors} title="Fale no WhatsApp" description="Atendimento rápido" />
+                </div>
+              )}
+              {endOk && (
+                <div key="end" className={`orbi-card-cai ${homeCardShellClass("largo", false, false, "transparent")}`} style={homeCardShellStyle("transparent")}>
+                  <HomeOptionCardContent layout="largo" icon="__pin__" color="transparent" orbiColors={orbColors} title="Como chegar" description={endereco.trim()} addressIndicator="▸" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={onContinuar}
+          className="relative mt-8 w-full rounded-full py-4 text-[16px] font-medium text-white transition-transform active:scale-[0.98]"
+          style={{
+            background: `linear-gradient(135deg, ${corForte} 0%, ${corBotao} 100%)`,
+            boxShadow: `0 10px 26px ${comAlfa(corBotao, 0.32)}`,
+          }}
+        >
+          {algum ? "Continuar" : "Pular por agora"}
+          <svg className="absolute right-6 top-1/2 -translate-y-1/2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M5 12h14" />
+            <path d="M13 6l6 6-6 6" />
+          </svg>
+        </button>
       </div>
     </div>
   );
