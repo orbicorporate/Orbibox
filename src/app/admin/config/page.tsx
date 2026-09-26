@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { loadConfigData } from "./loadConfigData";
 import { SignOutButton } from "./SignOutButton";
+import { ExcluirOrbibox } from "./ExcluirOrbibox";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
 
 type Pendencias = { marca: number; contatos: number; orbi: number };
@@ -45,7 +46,7 @@ const ITEMS = [
 ];
 
 export default async function ConfigMenuPage() {
-  const { businessId, business } = await loadConfigData();
+  const { businessId, business, isOwner } = await loadConfigData();
 
   // Quantos campos de cada seção ainda estão vazios. Vira a tag vermelha
   // no menu, pra pessoa saber o que falta sem abrir tudo.
@@ -126,6 +127,7 @@ export default async function ConfigMenuPage() {
         </Link>
         <SignOutButton />
       </div>
+      {isOwner && <ExcluirOrbibox id={business.id} nome={business.name} />}
       {/* businessId disponível caso precise no futuro */}
       <span className="hidden">{businessId}</span>
     </div>
