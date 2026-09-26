@@ -37,11 +37,19 @@ export default async function AgentPage() {
           </p>
           <p className="mt-3 text-[13px] font-medium text-text-secondary">Experimente agora, de graça:</p>
           {businessId && <OrbiTrial businessId={businessId} address={bizData?.address ?? null} products={trialProducts ?? []} agentName={cfg?.agent_name ?? "Orbi"} orbiColors={trialColors} />}
+          {/* Convite pra assinar: escuro, com um brilho que passa de tempos em
+              tempos e o diamante pulando, pra chamar atenção sem gritar. */}
           <Link
             href="/admin/planos"
-            className="mt-3 inline-flex items-center justify-center text-[13px] font-medium underline"
+            className="orbi-ativar group relative mt-3 flex items-center gap-3 overflow-hidden rounded-full bg-on-background py-3 pl-3 pr-5 text-white transition-transform active:scale-[0.98]"
           >
-            Ver planos e ativar de vez
+            <span className="orbi-ativar-brilho pointer-events-none absolute inset-y-0 -left-1/3 w-1/3" aria-hidden />
+            <span className="orbi-ativar-gema relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[17px]" aria-hidden>💎</span>
+            <span className="relative min-w-0 flex-1">
+              <span className="block text-[14.5px] font-semibold leading-tight">Ativar a Orbi de vez</span>
+              <span className="block text-[11.5px] text-white/60">Plano Nióbio · atende 24h na sua página</span>
+            </span>
+            <span className="relative shrink-0 text-[16px] transition-transform group-hover:translate-x-1" aria-hidden>→</span>
           </Link>
         </div>
       </div>
