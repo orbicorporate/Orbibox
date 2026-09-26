@@ -537,10 +537,10 @@ function BotaoEditar({ cor, alvo }: { cor: string; alvo: string }) {
  * visto se desenha e uma onda se espalha em volta. */
 function CheckAnimado({ cor }: { cor: string }) {
   return (
-    <span className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center">
+    <span className="relative mt-[3px] flex h-6 w-6 shrink-0 items-center justify-center">
       <span className="orbi-check-onda absolute inset-0 rounded-full" style={{ backgroundColor: cor }} />
       <span className="orbi-check-pulo absolute inset-0 rounded-full shadow-[0_3px_10px_rgba(0,0,0,0.15)]" style={{ backgroundColor: cor }} />
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" className="relative" aria-hidden>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" className="relative" aria-hidden>
         <path d="M5 13l4 4L19 7" strokeDasharray="24" strokeDashoffset="24" className="orbi-check-risca" />
       </svg>
     </span>
