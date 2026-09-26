@@ -676,7 +676,7 @@ export function ShowcaseBuilder({
             </p>
             <button onClick={esconderGuia} className="text-[12px] text-text-tertiary">Ocultar</button>
           </div>
-          <div className="mt-2 flex flex-col gap-1.5">
+          <div className="mt-3 flex flex-col gap-2.5">
             {passos.map((p, i) => (
               <div key={i}>
               <PassoLinha

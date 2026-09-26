@@ -15,21 +15,21 @@ export function GuiaPassos({ titulo, passos, chave }: { titulo: string; passos: 
   const proximo = passos.findIndex((p) => !p.feito);
   const feitos = passos.filter((p) => p.feito);
   return (
-    <div>
+    <div className="mb-4">
       <div className="flex items-baseline justify-between gap-2 px-0.5">
         <p className="text-[13.5px] font-semibold">
           {titulo} <span className="ml-1 text-[12.5px] font-normal text-text-tertiary">{feitos.length} de {passos.length}</span>
         </p>
         <button onClick={() => gravarFlag(`guia_off_${chave}`)} className="text-[12px] text-text-tertiary">Ocultar</button>
       </div>
-      <div className="mt-2 flex flex-col gap-1.5">
+      <div className="mt-3 flex flex-col gap-2.5">
         {passos.map((p, i) => (p.feito ? null : <PassoLinha key={i} passo={p} n={i + 1} destaque={i === proximo} />))}
       </div>
       {/* Os feitos viram uma linha discreta, sem ocupar espaço de cartão. */}
       {feitos.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 px-0.5">
+        <div className="mt-3.5 flex flex-col gap-2.5 px-1">
           {feitos.map((p) => (
-            <button key={p.titulo} onClick={p.onClick} className="inline-flex items-center gap-1 text-[12px] text-text-tertiary">
+            <button key={p.titulo} onClick={p.onClick} className="inline-flex items-center gap-2 text-left text-[12.5px] text-text-tertiary">
               <CheckMini /> {p.titulo}
             </button>
           ))}
@@ -60,9 +60,9 @@ export function PassoLinha({ passo: p, n, destaque, fim }: { passo: Passo; n: nu
     );
   }
   const conteudo = (
-    <span className="flex w-full items-center gap-3 px-3.5 py-2.5">
+    <span className="flex w-full items-center gap-3.5 px-4 py-4">
       <span
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11.5px] font-semibold ${
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold ${
           destaque ? "bg-on-background text-white" : "bg-surface-soft text-text-tertiary"
         }`}
       >
@@ -70,7 +70,7 @@ export function PassoLinha({ passo: p, n, destaque, fim }: { passo: Passo; n: nu
       </span>
       <span className="min-w-0 flex-1">
         <span className={`block text-[14px] font-medium leading-snug ${destaque ? "text-on-background" : "text-text-secondary"}`}>{p.titulo}</span>
-        <span className="block text-[12px] leading-snug text-text-tertiary">{p.detalhe}</span>
+        <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">{p.detalhe}</span>
       </span>
       {fim ?? (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 ${destaque ? "text-on-background" : "text-text-tertiary"}`} aria-hidden>
