@@ -82,7 +82,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
       title: "Personalize a cor da sua Orbi",
       description: "Escolha as cores da esfera de acordo com a paleta da sua marca, deixa tudo mais consistente com sua identidade.",
       ctaLabel: "Configurar cores",
-      href: "/admin/agent#cores-orbi",
+      href: "/admin/config/marca#cores",
     });
   }
   if (!business.logo_url) {
@@ -90,7 +90,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
       title: "Adicione seu logotipo",
       description: "Deixa a página com a cara da sua marca, aparece no avatar, no chat e em vários lugares.",
       ctaLabel: "Enviar logotipo",
-      href: "/admin/config",
+      href: "/admin/config/marca#logo",
     });
   }
   if (!business.contact_whatsapp) {
@@ -98,7 +98,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
       title: "Configure seu WhatsApp",
       description: "Sem WhatsApp cadastrado, os visitantes não conseguem falar direto com você.",
       ctaLabel: "Adicionar WhatsApp",
-      href: "/admin/config",
+      href: "/admin/config/marca#contatos",
     });
   }
   if (!business.address) {

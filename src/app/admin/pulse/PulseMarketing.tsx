@@ -208,7 +208,7 @@ export function PulseMarketing({ businessId, slug, shareReady = true, sobreFeito
       {/* Próxima etapa: se ainda não contou sobre o negócio, convida a fazer,
           pra a Orbi ficar mais inteligente e os textos mais certeiros. */}
       {!sobreFeito && (
-        <Link href="/admin/config/orbi" className="mt-5 flex items-center gap-3.5 rounded-[22px] border border-divider bg-surface-white p-4 shadow-[0_4px_16px_rgba(17,19,24,0.05)]">
+        <Link href="/admin/agent#o-que-sabe" className="mt-5 flex items-center gap-3.5 rounded-[22px] border border-divider bg-surface-white p-4 shadow-[0_4px_16px_rgba(17,19,24,0.05)]">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E7EAFC] text-[20px]">💡</span>
           <span className="min-w-0 flex-1">
             <span className="block text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Próxima etapa</span>

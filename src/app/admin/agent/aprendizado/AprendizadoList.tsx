@@ -50,7 +50,7 @@ export function AprendizadoList({ initialGaps }: { initialGaps: Gap[] }) {
           )}
           <div className="mt-4 flex gap-2">
             <Link
-              href="/admin/config/orbi"
+              href="/admin/agent#o-que-sabe"
               onClick={() => marcar(g.id, "resolvido")}
               className="flex-1 rounded-full bg-button-primary py-2.5 text-center text-[13.5px] font-semibold text-white"
             >

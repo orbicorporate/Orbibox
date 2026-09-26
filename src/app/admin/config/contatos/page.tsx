@@ -1,14 +1,6 @@
-import Link from "next/link";
-import { loadConfigData } from "../loadConfigData";
-import { ConfigForm } from "../ConfigForm";
+import { redirect } from "next/navigation";
 
-export default async function ConfigSectionPage() {
-  const { business } = await loadConfigData();
-  return (
-    <div className="flex flex-col">
-      <Link href="/admin/config" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Configurações</Link>
-      <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[30px] font-medium tracking-[-0.02em]">Contatos</h1>
-      <ConfigForm business={business} section="contatos" />
-    </div>
-  );
+// Contatos agora ficam dentro de "Sua marca", numa seção que abre sozinha.
+export default function ConfigContatosPage() {
+  redirect("/admin/config/marca#contatos");
 }

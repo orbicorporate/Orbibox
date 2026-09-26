@@ -4,10 +4,10 @@ export type ProgressKey = "marca" | "vitrine" | "boxes" | "whatsapp" | "capa" | 
 
 // Cada passo do checklist: rótulo curto, o que faz, e pra onde leva.
 export const PROGRESS_STEPS: { key: ProgressKey; label: string; href: string }[] = [
-  { key: "marca", label: "Configurar sua marca", href: "/admin/config" },
+  { key: "marca", label: "Configurar sua marca", href: "/admin/config/marca" },
   { key: "vitrine", label: "Preencher a Vitrine", href: "/admin/vitrine" },
   { key: "boxes", label: "Adicionar botões (Boxes)", href: "/admin/boxes" },
-  { key: "whatsapp", label: "Colocar seu WhatsApp", href: "/admin/config" },
+  { key: "whatsapp", label: "Colocar seu WhatsApp", href: "/admin/config/marca#contatos" },
   { key: "capa", label: "Adicionar a capa da Vitrine", href: "/admin/vitrine" },
   { key: "orbi", label: "Ativar a Orbi (IA)", href: "/admin/agent" },
 ];

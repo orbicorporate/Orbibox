@@ -8,6 +8,10 @@ import { HelperText } from "@/components/ui/HelperText";
 import { ChipGroup, CLASSES, FAIXAS_ETARIAS, PAGAMENTOS, ATENDIMENTOS } from "./ChipGroup";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
+import { GuiaPassos, Secao, rolarAte } from "@/components/ui/GuiaPassos";
+import { OrbiColorsPanel } from "@/app/admin/agent/OrbiColorsPanel";
+import { HeroBackgroundPanel } from "@/app/admin/agent/HeroBackgroundPanel";
+import { gravarFlag, useFlag } from "@/lib/useFlag";
 
 type Business = {
   id: string;
@@ -34,13 +38,24 @@ type Business = {
   vitrine_cover_urls: unknown;
 };
 
-const TIPO_LABEL: Record<string, string> = {
-  ecommerce: "Loja virtual",
-  institucional: "Site institucional",
-  links: "Página de links",
-};
+type SecaoMarca = "logo" | "cores" | "compartilhamento" | "contatos";
 
-export function ConfigForm({ business, section }: { business: Business; section: "marca" | "contatos" | "orbi" }) {
+export function ConfigForm({
+  business,
+  section,
+  orbiColors = null,
+  heroGradient = null,
+  heroStyle = null,
+  embutido = false,
+}: {
+  business: Business;
+  section: "marca" | "contatos" | "orbi";
+  orbiColors?: string[] | null;
+  heroGradient?: string[] | null;
+  heroStyle?: string | null;
+  /** Dentro de outra tela (ex.: Sua IA): sem os atalhos que levam pra ela. */
+  embutido?: boolean;
+}) {
   const supabase = createClient();
   const [b, setB] = useState(business);
   const [logoGallery, setLogoGallery] = useState<string[]>(parseLogoGallery(business.logo_gallery));
@@ -57,9 +72,27 @@ export function ConfigForm({ business, section }: { business: Business; section:
   // cards longos e, uma vez configurados, quase nunca mudam.
   // Quem chega pelo link "#compartilhamento" (vindo do modal de compartilhar)
   // quer editar agora, então a seção já abre expandida nesse caso.
-  const [shareAberto, setShareAberto] = useState(
-    () => typeof window !== "undefined" && window.location.hash === "#compartilhamento",
-  );
+  // Seções da Marca: começam fechadas, menos a do logotipo quando ainda não
+  // tem logo, e a que vier no link (#compartilhamento, #contatos, #cores).
+  const [abertos, setAbertos] = useState<Record<SecaoMarca, boolean>>(() => {
+    const hash = typeof window !== "undefined" ? window.location.hash.replace("#", "") : "";
+    return {
+      logo: !business.logo_url || hash === "logo",
+      cores: hash === "cores" || hash === "cores-orbi" || hash === "fundo-pagina",
+      compartilhamento: hash === "compartilhamento",
+      contatos: hash === "contatos",
+    };
+  });
+  const coresVistas = useFlag(`marca_cores_${business.id}`);
+  function alternar(sec: SecaoMarca) {
+    setAbertos((a) => ({ ...a, [sec]: !a[sec] }));
+    if (sec === "cores") gravarFlag(`marca_cores_${business.id}`);
+  }
+  function abrirERolar(sec: SecaoMarca) {
+    setAbertos((a) => ({ ...a, [sec]: true }));
+    if (sec === "cores") gravarFlag(`marca_cores_${business.id}`);
+    rolarAte(`marca-${sec}`);
+  }
   // Vale a mesma cascata que o OpenGraph usa em /[slug]: uma capa própria,
   // a da vitrine ou o logo já rendem um preview decente, e a descrição cai
   // no "sobre" quando não há uma específica. Só fica pendente quando não há
@@ -72,9 +105,6 @@ export function ConfigForm({ business, section }: { business: Business; section:
   );
   const temDescricaoCompartilhamento = !!(b.share_description?.trim() || b.about_business?.trim());
   const compartilhamentoPronto = temCapaCompartilhamento && temDescricaoCompartilhamento;
-  // Logotipo começa recolhido (já tem logo) ou aberto (ainda não tem, pra
-  // incentivar a subir). Recolhível pra economizar espaço.
-  const [logoOpen, setLogoOpen] = useState(!business.logo_url);
 
   async function saveLogo(url: string | null) {
     setB((p) => ({ ...p, logo_url: url }));
@@ -161,81 +191,113 @@ export function ConfigForm({ business, section }: { business: Business; section:
   const campo = "mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background";
   const rotulo = "mt-7 text-[13px] uppercase tracking-wide text-text-tertiary";
 
+  const camposContato = (
+    <div className="flex flex-col">
+      <HelperText>Aparecem como botões para o visitante. Deixe vazio o que não quiser mostrar.</HelperText>
+
+      <p className={rotulo}>WhatsApp</p>
+      <input
+        value={b.contact_whatsapp ?? ""}
+        onChange={(e) => set("contact_whatsapp", e.target.value)}
+        onBlur={(e) => save("contact_whatsapp", e.target.value)}
+        placeholder="(11) 99999-9999"
+        inputMode="tel"
+        className={campo}
+      />
+
+      <p className={rotulo}>Telefone para ligar</p>
+      <input
+        value={b.contact_phone ?? ""}
+        onChange={(e) => set("contact_phone", e.target.value)}
+        onBlur={(e) => save("contact_phone", e.target.value)}
+        placeholder="(11) 3333-3333"
+        inputMode="tel"
+        className={campo}
+      />
+
+      <p className={rotulo}>E-mail</p>
+      <input
+        value={b.contact_email ?? ""}
+        onChange={(e) => set("contact_email", e.target.value)}
+        onBlur={(e) => save("contact_email", e.target.value)}
+        placeholder="contato@seunegocio.com.br"
+        inputMode="email"
+        className={campo}
+      />
+
+      <p className={rotulo}>Site</p>
+      <input
+        value={b.contact_site ?? ""}
+        onChange={(e) => set("contact_site", e.target.value)}
+        onBlur={(e) => save("contact_site", e.target.value)}
+        placeholder="https://seusite.com.br"
+        className={campo}
+      />
+
+      <p className={rotulo}>Endereço</p>
+      <input
+        value={b.address ?? ""}
+        onChange={(e) => set("address", e.target.value)}
+        onBlur={(e) => save("address", e.target.value)}
+        placeholder="Rua, número, bairro, cidade, aparece na página Sobre e abre no mapa"
+        className={campo}
+      />
+
+    </div>
+  );
+
   return (
-    <div className="mt-6 flex flex-col pb-4">
-      {section === "marca" && (<>
-      {/* Logotipo, super indicado: usado como avatar da tela inicial e vira
-          sugestão de ícone em qualquer box. Recolhível pra economizar espaço. */}
-      <div className="rounded-[24px] orbi-gradient p-[1.5px]">
-        <div className="rounded-[23px] bg-surface-white">
-          <button type="button" onClick={() => setLogoOpen((v) => !v)} className="flex w-full cursor-pointer items-center gap-3 p-5 text-left">
-            {b.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={b.logo_url} alt="Logotipo" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
-            ) : (
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[18px]">🏷️</span>
-            )}
-            <span className="min-w-0 flex-1">
-              <span className="block font-[family-name:var(--font-manrope)] text-[16px] font-medium">
-                Logotipo <span className="orbi-gradient-text">★ recomendado</span>
-              </span>
-              <span className="mt-0.5 block text-[12.5px] text-text-tertiary">
-                {b.logo_url ? "Toque pra trocar" : "Toque pra subir seu logotipo"}
-              </span>
-            </span>
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary transition-transform ${logoOpen ? "rotate-180" : ""}`}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
-            </span>
-          </button>
-          {logoOpen && (
-            <div className="px-5 pb-5">
-              <HelperText>
-                Fica disponível como avatar da tela inicial e, a partir de agora, também vira sugestão pronta na biblioteca de ícones de qualquer box, inclusive os que você criar depois.
-              </HelperText>
-              <div className="mt-4">
-                <ImageUpload
-                  value={b.logo_url}
-                  businessId={b.id}
-                  lockedRatio="quadrado"
-                  promptKind="avatar"
-                  onChange={saveLogo}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+    <div className={`${embutido ? "" : "mt-6"} flex flex-col pb-4`}>
+      {section === "marca" && (
+      <div className="flex flex-col gap-3">
+        <GuiaPassos
+          titulo="Sua marca em 3 passos"
+          chave={`marca_${b.id}`}
+          passos={[
+            { titulo: "Logotipo", detalhe: "Aparece na sua página e vira ícone dos boxes", feito: !!b.logo_url, onClick: () => abrirERolar("logo") },
+            { titulo: "Cores e fundo da página", detalhe: "A esfera da Orbi e a primeira tela do seu link", feito: coresVistas || !!heroGradient, onClick: () => abrirERolar("cores") },
+            { titulo: "Como seu link aparece no WhatsApp", detalhe: "A capa e o texto de quando alguém compartilha", feito: compartilhamentoPronto, onClick: () => abrirERolar("compartilhamento") },
+          ]}
+        />
 
-      {/* Capa e descrição do link: um card só, que abre por dentro. A pessoa
-          clica no cabeçalho e a configuração inteira aparece dentro da mesma
-          moldura, em vez de surgir solta embaixo. */}
-      <div id="compartilhamento" className="mt-6 scroll-mt-20 rounded-[24px] orbi-gradient p-[1.5px]">
-        <div className="rounded-[23px] bg-surface-white">
-          <button
-            type="button"
-            aria-expanded={shareAberto}
-            onClick={() => setShareAberto((v) => !v)}
-            className="flex w-full cursor-pointer items-start gap-3.5 p-5 text-left"
-          >
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#DEF3E3] text-[20px]">🔗</span>
-            <span className="min-w-0 flex-1">
-              <span className="flex flex-wrap items-center gap-2">
-                <span className="font-[family-name:var(--font-manrope)] text-[16.5px] font-semibold leading-tight">
-                  Capa e descrição do link
-                </span>
-                <StatusTag preenchido={compartilhamentoPronto} />
-              </span>
-              <span className="mt-1 block text-[13px] leading-snug text-text-secondary">
-                {compartilhamentoPronto
-                  ? "Toque pra revisar como seu link aparece."
-                  : "É a primeira impressão de quem recebe seu link no WhatsApp."}
-              </span>
-            </span>
-            <span className={`mt-1 shrink-0 text-text-tertiary transition-transform ${shareAberto ? "rotate-90" : ""}`}>→</span>
-          </button>
+        <Secao
+          id="marca-logo"
+          aberto={abertos.logo}
+          onToggle={() => alternar("logo")}
+          icone={b.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={b.logo_url} alt="" className="h-full w-full object-cover" />
+          ) : <span className="text-[18px]">🏷️</span>}
+          titulo="Logotipo"
+          descricao={b.logo_url ? "Toque pra trocar" : "Aparece na sua página e vira ícone dos boxes"}
+          status={<StatusTag preenchido={!!b.logo_url} />}
+        >
+          <ImageUpload value={b.logo_url} businessId={b.id} lockedRatio="quadrado" promptKind="avatar" onChange={saveLogo} />
+        </Secao>
 
-          {shareAberto && (
-            <div className="border-t border-divider px-5 pb-5 pt-1">
+        <Secao
+          id="marca-cores"
+          aberto={abertos.cores}
+          onToggle={() => alternar("cores")}
+          icone={<span className="h-full w-full" style={{ background: `linear-gradient(135deg, ${(orbiColors ?? ["#7FE84A", "#8B2BFF"])[0]}, ${(orbiColors ?? ["#7FE84A", "#8B2BFF"])[1]})` }} />}
+          titulo="Cores e fundo da página"
+          descricao="A esfera da Orbi e a primeira tela do seu link"
+        >
+          <OrbiColorsPanel businessId={b.id} initialOrbiColors={orbiColors} embutido />
+          <div className="my-5 border-t border-divider" />
+          <HeroBackgroundPanel businessId={b.id} orbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={heroStyle} embutido />
+        </Secao>
+
+        <Secao
+          id="marca-compartilhamento"
+          aberto={abertos.compartilhamento}
+          onToggle={() => alternar("compartilhamento")}
+          icone={<span className="text-[18px]">🔗</span>}
+          titulo="Como seu link aparece no WhatsApp"
+          descricao="A capa e o texto de quando alguém compartilha"
+          status={<StatusTag preenchido={compartilhamentoPronto} />}
+        >
+          <span id="compartilhamento" />
         {/* Preview estilo card de link do WhatsApp */}
         <div className="mt-4 overflow-hidden rounded-[18px] border border-divider bg-surface-white">
           <div className="aspect-[1200/630] w-full bg-surface-soft">
@@ -310,95 +372,38 @@ export function ConfigForm({ business, section }: { business: Business; section:
           <p className="text-[12px] text-text-tertiary">{(b.share_description ?? "").length}/90</p>
         </div>
       </div>
-            </div>
-          )}
-        </div>
+        </Secao>
+
+        <Secao
+          id="marca-contatos"
+          aberto={abertos.contatos}
+          onToggle={() => alternar("contatos")}
+          icone={<span className="text-[18px]">📞</span>}
+          titulo="Contatos"
+          descricao="WhatsApp, telefone, e-mail, site e endereço"
+          status={<StatusTag preenchido={!!(b.contact_whatsapp || b.contact_phone || b.contact_email)} />}
+        >
+          <span id="contatos" />
+          {camposContato}
+        </Secao>
+
+        <Link href="/admin/agent" className="mt-3 flex items-center gap-3 rounded-[18px] px-1 py-2 text-[13.5px] text-text-secondary">
+          <span className="orbi-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] text-on-background">✦</span>
+          <span className="min-w-0 flex-1">Próximo: configurar sua IA</span>
+          <span aria-hidden>→</span>
+        </Link>
       </div>
-
-
-      {b.site_type && (
-        <div className="mt-4 rounded-[22px] bg-surface-soft p-5">
-          <p className="text-[14px] text-text-secondary">
-            A Orbi classificou seu site como{" "}
-            <span className="font-medium text-on-background">{TIPO_LABEL[b.site_type] ?? b.site_type}</span>.
-          </p>
-        </div>
       )}
 
-      {/* Próxima etapa: configurar a IA (personalidade + entrevista) */}
-      <Link href="/admin/agent" className="mt-6 flex items-center gap-3.5 rounded-[24px] orbi-gradient p-[1.5px]">
-        <span className="flex w-full items-center gap-3.5 rounded-[23px] bg-surface-white p-4">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface-soft text-[20px]">✦</span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Próxima etapa</span>
-            <span className="mt-0.5 block text-[15px] font-semibold">Já configurou sua IA?</span>
-            <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">Deixe a Orbi conhecer seu negócio pra atender e criar melhor.</span>
-          </span>
-          <span className="text-text-tertiary">→</span>
-        </span>
-      </Link>
-      </>)}
-
-      {section === "contatos" && (<>
-      <HelperText>Aparecem como botões para o visitante. Deixe vazio o que não quiser mostrar.</HelperText>
-
-      <p className={rotulo}>WhatsApp</p>
-      <input
-        value={b.contact_whatsapp ?? ""}
-        onChange={(e) => set("contact_whatsapp", e.target.value)}
-        onBlur={(e) => save("contact_whatsapp", e.target.value)}
-        placeholder="(11) 99999-9999"
-        inputMode="tel"
-        className={campo}
-      />
-
-      <p className={rotulo}>Telefone para ligar</p>
-      <input
-        value={b.contact_phone ?? ""}
-        onChange={(e) => set("contact_phone", e.target.value)}
-        onBlur={(e) => save("contact_phone", e.target.value)}
-        placeholder="(11) 3333-3333"
-        inputMode="tel"
-        className={campo}
-      />
-
-      <p className={rotulo}>E-mail</p>
-      <input
-        value={b.contact_email ?? ""}
-        onChange={(e) => set("contact_email", e.target.value)}
-        onBlur={(e) => save("contact_email", e.target.value)}
-        placeholder="contato@seunegocio.com.br"
-        inputMode="email"
-        className={campo}
-      />
-
-      <p className={rotulo}>Site</p>
-      <input
-        value={b.contact_site ?? ""}
-        onChange={(e) => set("contact_site", e.target.value)}
-        onBlur={(e) => save("contact_site", e.target.value)}
-        placeholder="https://seusite.com.br"
-        className={campo}
-      />
-
-      <p className={rotulo}>Endereço</p>
-      <input
-        value={b.address ?? ""}
-        onChange={(e) => set("address", e.target.value)}
-        onBlur={(e) => save("address", e.target.value)}
-        placeholder="Rua, número, bairro, cidade, aparece na página Sobre e abre no mapa"
-        className={campo}
-      />
-
-      </>)}
+      {section === "contatos" && camposContato}
 
       {section === "orbi" && (<>
-      <HelperText>O texto que ela usa pra responder seus visitantes. Escreva do seu jeito ou corrija o que ela já escreveu.</HelperText>
+      {!embutido && <HelperText>O texto que ela usa pra responder seus visitantes. Escreva do seu jeito ou corrija o que ela já escreveu.</HelperText>}
 
       {/* Ensinar a Orbi acontece na página Sua IA, que tem o fluxo
           guiado (ler o site, entrevista de 5 perguntas). Aqui é só o texto
           final, pra revisar e ajustar. Este atalho liga as duas pontas. */}
-      <Link
+      {!embutido && <Link
         href="/admin/agent"
         className="mt-5 flex items-center gap-3.5 rounded-[22px] border border-divider bg-surface-white p-4"
       >
@@ -410,9 +415,9 @@ export function ConfigForm({ business, section }: { business: Business; section:
           </span>
         </span>
         <span className="shrink-0 text-text-tertiary">→</span>
-      </Link>
+      </Link>}
 
-      <p className={rotulo}>Sobre o negócio</p>
+      <p className={embutido ? "text-[13px] uppercase tracking-wide text-text-tertiary" : rotulo}>Sobre o negócio</p>
       <AutoTextarea
         value={b.about_business ?? ""}
         onChange={(v) => set("about_business", v)}
@@ -497,7 +502,7 @@ export function ConfigForm({ business, section }: { business: Business; section:
 
       {/* Fecha o ciclo: a pessoa acabou de preencher na mão, e aqui lembra
           que a Orbi faz isso sozinha lendo o site, deixando mais afiado. */}
-      <Link
+      {!embutido && <Link
         href="/admin/agent"
         className="mt-8 flex items-center gap-3.5 rounded-[22px] orbi-gradient p-[1.5px]"
       >
@@ -511,7 +516,7 @@ export function ConfigForm({ business, section }: { business: Business; section:
           </span>
           <span className="shrink-0 text-text-tertiary">→</span>
         </span>
-      </Link>
+      </Link>}
       </>)}
 
       {/* Aviso flutuante: o "Salvo" antigo ficava no fim da página e quem

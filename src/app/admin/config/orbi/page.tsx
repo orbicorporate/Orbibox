@@ -1,14 +1,6 @@
-import Link from "next/link";
-import { loadConfigData } from "../loadConfigData";
-import { ConfigForm } from "../ConfigForm";
+import { redirect } from "next/navigation";
 
-export default async function ConfigSectionPage() {
-  const { business } = await loadConfigData();
-  return (
-    <div className="flex flex-col">
-      <Link href="/admin/config" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Configurações</Link>
-      <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[30px] font-medium tracking-[-0.02em]">O que a Orbi sabe</h1>
-      <ConfigForm business={business} section="orbi" />
-    </div>
-  );
+// "O que a Orbi sabe" agora mora em Sua IA, no passo "Revise o que ela sabe".
+export default function ConfigOrbiPage() {
+  redirect("/admin/agent#o-que-sabe");
 }

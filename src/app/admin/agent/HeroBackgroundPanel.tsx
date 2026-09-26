@@ -18,11 +18,14 @@ export function HeroBackgroundPanel({
   orbiColors: orbiColorsProp,
   initialHeroGradient,
   initialHeroStyle,
+  embutido = false,
 }: {
   businessId: string;
   orbiColors: string[] | null;
   initialHeroGradient: string[] | null;
   initialHeroStyle?: string | null;
+  /** Sem o cartão e o cabeçalho que abre/fecha: mostra direto os controles. */
+  embutido?: boolean;
 }) {
   const supabase = createClient();
   const orbiColors = orbiColorsProp && orbiColorsProp.length >= 2 ? orbiColorsProp : DEFAULT_ORBI;
@@ -53,6 +56,45 @@ export function HeroBackgroundPanel({
       <OrbiParticleSphere key={orbiColors.join("-")} size={56} colors={orbiColors} className="relative rounded-full" />
     </span>
   );
+
+  if (embutido) {
+    return (
+      <div>
+        <p className="text-[14px] font-semibold">Fundo da página</p>
+        <p className="text-[12px] leading-snug text-text-tertiary">A primeira tela que o visitante vê ao abrir seu link.</p>
+        <div className="mt-3 flex items-start gap-4">
+          {previaCelular}
+          <div className="min-w-0 flex-1">
+            <div className="grid grid-cols-2 gap-2">
+              {HERO_STYLES.map((e) => (
+                <button
+                  key={e.id}
+                  type="button"
+                  onClick={() => pickHeroStyle(e.id)}
+                  className={`flex cursor-pointer flex-col items-center rounded-2xl border-2 p-1.5 transition-colors ${heroStyle === e.id ? "border-on-background" : "border-transparent bg-surface-soft"}`}
+                >
+                  <span className="h-7 w-full overflow-hidden rounded-lg" style={{ background: heroBackground(e.id, heroGradient[0], heroGradient[1]) }} />
+                  <span className="mt-1 text-[11px] font-medium leading-tight">{e.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 flex items-stretch gap-2.5">
+          <ColorChip label="Cor 1" hex={heroGradient[0]} onOpen={() => setOpenPicker("hero1")} />
+          <ColorChip label="Cor 2" hex={heroGradient[1]} onOpen={() => setOpenPicker("hero2")} />
+        </div>
+        {openPicker && (
+          <ColorPickerSheet
+            current={openPicker === "hero1" ? heroGradient[0] : heroGradient[1]}
+            onSelect={(hex) => pickHeroColor(openPicker === "hero1" ? 0 : 1, hex)}
+            onClose={() => setOpenPicker(null)}
+            preview={previaCelular}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div id="fundo-pagina" className="scroll-mt-6 rounded-[24px] border border-divider bg-surface-white">

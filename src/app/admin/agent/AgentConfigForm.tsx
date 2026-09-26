@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
-import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage } from "@/components/orbi/OrbiInsightCard";
 import { ComoOrbiAprende } from "./ComoOrbiAprende";
-import { SecaoRecolhivel } from "@/components/ui/SecaoRecolhivel";
-import { OrbiColorsPanel } from "./OrbiColorsPanel";
-import { HeroBackgroundPanel } from "./HeroBackgroundPanel";
+import { StatusTag } from "@/components/ui/SecaoRecolhivel";
+import { GuiaPassos, Secao, rolarAte } from "@/components/ui/GuiaPassos";
+import { gravarFlag, useFlag } from "@/lib/useFlag";
+import { ConfigForm } from "@/app/admin/config/ConfigForm";
+import { useEffect, useRef } from "react";
 
 type Config = { id: string; agent_name: string; tone_formal_informal: number; tone_reserved_energetic: number; tone_concise_detailed: number; objectives: string[]; orbi_colors: string[] | null; suggested_questions: string[]; curation_question: string | null; curation_options: string[]; };
 type Knowledge = { catalogo: boolean; historia: boolean; politicas: boolean; diferenciais: boolean };
@@ -21,26 +22,44 @@ const SLIDERS = [
   { key: "tone_concise_detailed", from: "Direto", to: "Inspiracional" },
 ] as const;
 
-// Cada item aponta pra onde a pessoa preenche (manualmente ou "Importar do site").
-const KNOWLEDGE: { key: keyof Knowledge; label: string; href: string }[] = [
-  { key: "catalogo", label: "Catálogo de Produtos", href: "/admin/vitrine" },
-  { key: "historia", label: "História da Marca", href: "/admin/config" },
-  { key: "politicas", label: "Políticas de Envio", href: "/admin/config" },
-  { key: "diferenciais", label: "Estilo e Curadoria", href: "/admin/config" },
-];
+type SecaoIA = "sabe" | "jeito" | "mais";
+type BusinessConhecimento = Parameters<typeof ConfigForm>[0]["business"];
 
-export function AgentConfigForm({ config, businessId, businessName, slug, heroGradient, heroStyle, knowledge, gapsPendentes = 0 }: { config: Config; businessId: string; businessName: string; slug: string; heroGradient: string[] | null; heroStyle?: string | null; knowledge: Knowledge; gapsPendentes?: number }) {
+export function AgentConfigForm({ config, businessId, businessName, slug, knowledge, gapsPendentes = 0, business }: { config: Config; businessId: string; businessName: string; slug: string; knowledge: Knowledge; gapsPendentes?: number; business: BusinessConhecimento }) {
   const supabase = createClient();
   const router = useRouter();
   const [state, setState] = useState(config);
-  const [editandoNome, setEditandoNome] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [buildingAbout, setBuildingAbout] = useState(false);
   const [aboutBuilt, setAboutBuilt] = useState(false);
   const [buildError, setBuildError] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const jeitoVisto = useFlag(`ia_jeito_${businessId}`);
 
-  const knowledgeComplete = Object.values(knowledge).every(Boolean);
+  // Quem chega por #o-que-sabe (vindo de outro lugar do app) já cai com a
+  // seção aberta.
+  const [abertos, setAbertos] = useState<Record<SecaoIA, boolean>>(() => {
+    const hash = typeof window !== "undefined" ? window.location.hash.replace("#", "") : "";
+    return { sabe: hash === "o-que-sabe", jeito: hash === "jeito", mais: false };
+  });
+  function alternar(sec: SecaoIA) {
+    setAbertos((a) => ({ ...a, [sec]: !a[sec] }));
+    if (sec === "jeito") gravarFlag(`ia_jeito_${businessId}`);
+  }
+  function abrirERolar(sec: SecaoIA, id: string) {
+    setAbertos((a) => ({ ...a, [sec]: true }));
+    if (sec === "jeito") gravarFlag(`ia_jeito_${businessId}`);
+    rolarAte(id);
+  }
+
+  // O aviso de salvo some sozinho.
+  useEffect(() => {
+    if (!saved) return;
+    const t = setTimeout(() => setSaved(false), 1800);
+    return () => clearTimeout(t);
+  }, [saved]);
+
+  const sabeTudo = knowledge.historia && knowledge.diferenciais && knowledge.politicas;
 
   async function buildAboutPage() {
     setBuildingAbout(true);
@@ -64,256 +83,203 @@ export function AgentConfigForm({ config, businessId, businessName, slug, heroGr
     }
   }
 
-  function set(key: (typeof SLIDERS)[number]["key"], v: number) { setState((s) => ({ ...s, [key]: v })); setSaved(false); }
+  // Salva sozinho: cada mudança espera um instante (pra não gravar a cada
+  // movimento do slider) e grava só o que mudou.
+  function salvarDepois(next: Config) {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      const { error } = await supabase.from("agent_configs").update({
+        agent_name: next.agent_name?.trim() || "Orbi",
+        tone_formal_informal: next.tone_formal_informal,
+        tone_reserved_energetic: next.tone_reserved_energetic,
+        tone_concise_detailed: next.tone_concise_detailed,
+        suggested_questions: next.suggested_questions.map((q) => q.trim()).filter(Boolean),
+        curation_question: next.curation_question?.trim() || null,
+        curation_options: (next.curation_options ?? []).map((o) => o.trim()).filter(Boolean),
+      }).eq("id", next.id);
+      if (!error) setSaved(true);
+    }, 700);
+  }
 
-  // Cores da esfera da Orbi, a edição agora fica em Configurações, junto do
-  // logotipo. Aqui só lemos o valor (pra usar na esfera de "IA trabalhando").
+  function mudar(patch: Partial<Config>) {
+    const next = { ...state, ...patch };
+    setState(next);
+    salvarDepois(next);
+  }
+
   const orbiColors: string[] = state.orbi_colors && state.orbi_colors.length >= 2
     ? state.orbi_colors
     : ["#7FE84A", "#8B2BFF"];
-
-  async function save() {
-    setSaving(true);
-    const { error } = await supabase.from("agent_configs").update({
-      agent_name: state.agent_name,
-      tone_formal_informal: state.tone_formal_informal,
-      tone_reserved_energetic: state.tone_reserved_energetic,
-      tone_concise_detailed: state.tone_concise_detailed,
-      objectives: state.objectives,
-      suggested_questions: state.suggested_questions.map((q) => q.trim()).filter(Boolean),
-      curation_question: state.curation_question?.trim() || null,
-      curation_options: (state.curation_options ?? []).map((o) => o.trim()).filter(Boolean),
-    }).eq("id", state.id);
-    setSaving(false);
-    if (!error) setSaved(true);
-  }
+  const nome = state.agent_name?.trim() || "Orbi";
 
   const casual = state.tone_formal_informal > 50;
-  const preview = casual
-    ? `Olá! Notei que você gosta de tons neutros. Que tal conhecer nossa nova coleção? É perfeita para manter a elegância fresca nos dias quentes ✦`
-    : `Boa tarde. Com base no seu interesse, recomendo conhecer nossa nova coleção, ideal para a estação.`;
+  const proativa = state.tone_reserved_energetic > 50;
+  const inspira = state.tone_concise_detailed > 50;
+  // Prévia que muda com os três ajustes, pra pessoa sentir o efeito.
+  const preview = [
+    casual ? "Oi! Que bom te ver por aqui ✦" : "Olá, tudo bem?",
+    inspira
+      ? `Pra esse momento, eu iria direto nos queridinhos da ${businessName}: combinam com o que você procura e têm aquele toque especial.`
+      : `Recomendo os mais pedidos da ${businessName}, atendem bem o que você procura.`,
+    proativa ? "Quer que eu separe as opções pra você?" : "",
+  ].filter(Boolean).join(" ");
+  const tomResumo = [casual ? "descontraída" : "formal", proativa ? "proativa" : "reativa", inspira ? "inspiradora" : "direta"].join(", ");
+
+  const campo = "w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background";
 
   return (
-    <div className="mt-6 flex flex-col gap-7 pb-8">
-      {/* Como a Orbi aprende: você ensina (entrevista) ou ela aprende sozinha */}
-      <ComoOrbiAprende businessId={businessId} businessName={businessName} orbiColors={orbiColors} gapsPendentes={gapsPendentes} baseFeita={knowledge.historia} onDone={() => router.refresh()} />
+    <div className="mt-5 flex flex-col gap-3 pb-8">
+      <GuiaPassos
+        titulo="Sua IA em 3 passos"
+        chave={`ia_${businessId}`}
+        passos={[
+          { titulo: "Ensine a Orbi", detalhe: "Ela lê seu site ou faz 5 perguntas", feito: knowledge.historia, onClick: () => rolarAte("ia-ensine") },
+          { titulo: "Revise o que ela sabe", detalhe: "Sobre o negócio, diferenciais e políticas", feito: sabeTudo, onClick: () => abrirERolar("sabe", "o-que-sabe") },
+          { titulo: "Jeito de falar", detalhe: "Nome e tom da conversa", feito: jeitoVisto, onClick: () => abrirERolar("jeito", "ia-jeito") },
+        ]}
+      />
 
-      {/* Perfil da agente */}
-      <div className="flex items-center gap-4 rounded-[28px] bg-surface-white p-5 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
-        <OrbiParticleSphere size={64} colors={orbiColors} vivid className="shrink-0 rounded-full" />
-        <div className="min-w-0 flex-1">
-          {editandoNome ? (
-            <>
-              <div className="flex items-center gap-2">
-                <input
-                  value={state.agent_name}
-                  onChange={(e) => { setState((s) => ({ ...s, agent_name: e.target.value })); setSaved(false); }}
-                  placeholder="Orbi"
-                  autoFocus
-                  onKeyDown={(e) => { if (e.key === "Enter") setEditandoNome(false); }}
-                  className="min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 py-1.5 font-[family-name:var(--font-manrope)] text-[18px] font-medium outline-none focus:border-on-background"
-                />
-                <button onClick={() => setEditandoNome(false)} className="shrink-0 rounded-full bg-button-primary px-3.5 py-1.5 text-[12px] font-semibold text-white">OK</button>
-              </div>
-              <p className="mt-1.5 text-[11.5px] leading-snug text-text-tertiary">Use o nome da sua marca (ex: {businessName}, Nina, Léo) ou deixe Orbi. É como ela se apresenta.</p>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-2">
-                <p className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">{state.agent_name?.trim() || "Orbi"}</p>
-                <button onClick={() => setEditandoNome(true)} className="rounded-full bg-surface-soft px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
-                  ✎ Renomear
-                </button>
-              </div>
-              <p className="mt-1 flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">
-                <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" /> Ativa
-              </p>
-              <p className="mt-1 text-[12px] text-text-secondary">Agente Especialista de Conversão e Curadoria</p>
-            </>
-          )}
-        </div>
+      <div id="ia-ensine" className="scroll-mt-24">
+        <ComoOrbiAprende businessId={businessId} businessName={businessName} orbiColors={orbiColors} gapsPendentes={gapsPendentes} baseFeita={knowledge.historia} onDone={() => router.refresh()} />
       </div>
 
-      {/* Cores da esfera: identidade da Orbi, mora aqui junto do nome e do
-          tom. O fundo da página fica em Identidade e marca. */}
-      <OrbiColorsPanel businessId={businessId} initialOrbiColors={orbiColors} />
+      <Secao
+        id="o-que-sabe"
+        aberto={abertos.sabe}
+        onToggle={() => alternar("sabe")}
+        icone={<span className="text-[18px]">📖</span>}
+        titulo="O que ela sabe"
+        descricao="O texto que ela usa pra responder. Corrija ou complete."
+        status={<StatusTag preenchido={sabeTudo} />}
+      >
+        <ConfigForm business={business} section="orbi" embutido />
+      </Secao>
 
-      {/* Fundo logo abaixo: a esfera fica em cima dele, então escolher os
-          dois na mesma tela é o que faz sentido pra quem está ajustando. */}
-      <HeroBackgroundPanel businessId={businessId} orbiColors={orbiColors} initialHeroGradient={heroGradient} initialHeroStyle={heroStyle} />
+      <Secao
+        id="ia-jeito"
+        aberto={abertos.jeito}
+        onToggle={() => alternar("jeito")}
+        icone={<OrbiParticleSphere size={44} colors={orbiColors} className="rounded-full" />}
+        titulo="Jeito de falar"
+        descricao={`${nome}, ${tomResumo}`}
+      >
+        <p className="text-[13px] font-medium text-text-secondary">Nome</p>
+        <input
+          value={state.agent_name}
+          onChange={(e) => mudar({ agent_name: e.target.value })}
+          placeholder="Orbi"
+          className={`mt-1.5 ${campo}`}
+        />
+        <p className="mt-1.5 text-[11.5px] leading-snug text-text-tertiary">É como ela se apresenta. Pode ser o nome da marca ou um nome próprio.</p>
 
-      {/* Ajuste de comportamento */}
-      <div>
-        <p className="px-1 text-[15px] font-semibold">Ajuste de Comportamento</p>
-        <div className="mt-4 flex flex-col gap-5 rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
-          {SLIDERS.map((s) => (
-            <div key={s.key}>
+        <p className="mt-5 text-[13px] font-medium text-text-secondary">Tom</p>
+        <div className="mt-2 flex flex-col gap-4">
+          {SLIDERS.map((sl) => (
+            <div key={sl.key}>
               <div className="flex justify-between text-[11px] uppercase tracking-wide text-text-tertiary">
-                <span>{s.from}</span><span>{s.to}</span>
+                <span>{sl.from}</span><span>{sl.to}</span>
               </div>
-              <input type="range" min={0} max={100} value={state[s.key]} onChange={(e) => set(s.key, Number(e.target.value))} className="mt-2 w-full accent-[#111318]" />
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={state[sl.key]}
+                onChange={(e) => mudar({ [sl.key]: Number(e.target.value) } as Partial<Config>)}
+                className="mt-1.5 w-full accent-[#111318]"
+              />
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Preview de interação */}
-      <div>
-        <p className="px-1 text-[15px] font-semibold">Preview de Interação</p>
-        <div className="mt-4 flex flex-col gap-3 rounded-[28px] bg-surface-white p-6 shadow-[0_2px_16px_rgba(17,19,24,0.05)]">
-          <div className="self-end rounded-2xl bg-surface-soft px-4 py-2 text-[13px]">Oi, procuro algo pro verão.</div>
-          <div className="max-w-[85%] rounded-2xl bg-on-background px-4 py-3 text-[13px] leading-relaxed text-white">{preview}</div>
+        <p className="mt-5 text-[13px] font-medium text-text-secondary">Assim ela responde</p>
+        <div className="mt-2 flex flex-col gap-2 rounded-2xl bg-surface-soft p-3.5">
+          <div className="self-end rounded-2xl bg-surface-white px-3.5 py-2 text-[13px]">Oi, estou procurando uma indicação.</div>
+          <div className="max-w-[88%] rounded-2xl bg-on-background px-3.5 py-2.5 text-[13px] leading-relaxed text-white">{preview}</div>
         </div>
-      </div>
+      </Secao>
 
-      {/* Base de conhecimento */}
-      <div>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-[14px] font-medium">Base de Conhecimento Ativa</p>
-          {/* O texto em si mora em Configurações; aqui é só o status. */}
-          <Link href="/admin/config/orbi" className="text-[12.5px] font-medium text-text-secondary underline">
-            Ler e ajustar o texto
-          </Link>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {KNOWLEDGE.map((k) => {
-            const cheio = knowledge[k.key];
-            return cheio ? (
-              <span key={k.key} className="inline-flex items-center gap-1.5 rounded-full bg-[#DEF3E3] px-3 py-1.5 text-[12px] font-medium text-[#1F7A3D]">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-                {k.label}
-              </span>
-            ) : (
-              <Link
-                key={k.key}
-                href={k.href}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#FDE7E7] px-3 py-1.5 text-[12px] font-medium text-[#C0392B]"
-              >
-                {k.label} · ainda não configurado
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Quando tudo estiver preenchido, a Orbi já pode costurar a página
-          Sobre inteira com esse material, sem precisar escrever do zero. */}
-      {knowledgeComplete && (
-        <div className="rounded-[28px] orbi-gradient p-[1.5px]">
-          <div className="rounded-[27px] bg-surface-white p-5">
-            <p className="text-[14px] font-medium"><span className="orbi-gradient-text">✦</span> Base de conhecimento completa</p>
-            <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-              {aboutBuilt
-                ? `Pronto, a página Sobre de ${businessName} já está montada com essas informações.`
-                : `A Orbi já pode montar a página Sobre completa de ${businessName} juntando tudo isso, história, diferenciais e o que o catálogo mostra.`}
-            </p>
-            {buildError && <p className="mt-2 text-[13px] text-red-600">{buildError}</p>}
-            {buildingAbout ? (
-              <div className="mt-4"><OrbiWorking label="Montando sua página Sobre…" colors={orbiColors} /></div>
-            ) : (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {!aboutBuilt ? (
-                <button
-                  onClick={buildAboutPage}
-                  className="rounded-full bg-button-primary px-5 py-2.5 text-[13px] font-medium text-white"
-                >
-                  ✦ Montar página Sobre
-                </button>
-              ) : (
-                <button
-                  onClick={buildAboutPage}
-                  className="rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[13px] text-text-secondary"
-                >
-                  Montar de novo
-                </button>
-              )}
-              <Link
-                href={`/${slug}?tab=conhecer`}
-                target="_blank"
-                className="rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[13px] font-medium"
-              >
-                Ver página Sobre ↗
-              </Link>
-            </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Perguntas sugeridas no chat */}
-      <SecaoRecolhivel
-        titulo="Perguntas sugeridas no chat"
-        descricao={`Os 4 botões que aparecem no início da conversa. Opcional: em branco, a ${state.agent_name} sugere sozinha com base no seu catálogo.`}
-        preenchido={state.suggested_questions.some((q) => (q ?? "").trim())}
-        opcional
+      <Secao
+        id="ia-mais"
+        aberto={abertos.mais}
+        onToggle={() => alternar("mais")}
+        icone={<span className="text-[18px]">⚙️</span>}
+        titulo="Mais ajustes"
+        descricao="Perguntas do chat, pergunta de curadoria e página Sobre"
       >
-        <div className="flex flex-col gap-2">
+        <p className="text-[14px] font-semibold">Perguntas sugeridas no chat</p>
+        <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Os botões do início da conversa. Em branco, a {nome} sugere sozinha.</p>
+        <div className="mt-2.5 flex flex-col gap-2">
           {[0, 1, 2, 3].map((i) => (
             <input
               key={i}
               value={state.suggested_questions[i] ?? ""}
               onChange={(e) => {
-                setSaved(false);
-                setState((s) => {
-                  const next = [...s.suggested_questions];
-                  next[i] = e.target.value;
-                  return { ...s, suggested_questions: next };
-                });
+                const next = [...state.suggested_questions];
+                next[i] = e.target.value;
+                mudar({ suggested_questions: next });
               }}
-              placeholder={`Sugestão ${i + 1} (ex: ${["Quais os valores?", "Como funciona?", "Vocês entregam?", "Quero falar com alguém"][i]})`}
-              className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              placeholder={`ex: ${["Quais os valores?", "Como funciona?", "Vocês entregam?", "Quero falar com alguém"][i]}`}
+              className={campo}
             />
           ))}
         </div>
-      </SecaoRecolhivel>
 
-      {/* Pergunta da curadoria (Orbi recomenda) */}
-      <SecaoRecolhivel
-        titulo="✦ Pergunta da curadoria"
-        descricao={`Na sua página, a ${state.agent_name} pergunta algo e recomenda produtos que combinam com a resposta. Opcional: em branco, ela cria a pergunta sozinha analisando seu catálogo.`}
-        preenchido={!!(state.curation_question ?? "").trim()}
-        opcional
-      >
+        <p className="mt-6 text-[14px] font-semibold">✦ Pergunta da curadoria</p>
+        <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Ela pergunta algo e recomenda o que combina com a resposta. Em branco, cria sozinha.</p>
         <input
           value={state.curation_question ?? ""}
-          onChange={(e) => { setSaved(false); setState((s) => ({ ...s, curation_question: e.target.value })); }}
-          placeholder="Ex: O que você procura hoje?"
-          className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+          onChange={(e) => mudar({ curation_question: e.target.value })}
+          placeholder="ex: O que você procura hoje?"
+          className={`mt-2.5 ${campo}`}
         />
-        <p className="mt-3 text-[12px] font-medium text-text-tertiary">Respostas (2 a 4)</p>
-        <div className="mt-1.5 flex flex-col gap-2">
+        <div className="mt-2 flex flex-col gap-2">
           {[0, 1, 2, 3].map((i) => (
             <input
               key={i}
               value={state.curation_options?.[i] ?? ""}
               onChange={(e) => {
-                setSaved(false);
-                setState((s) => {
-                  const next = [...(s.curation_options ?? [])];
-                  next[i] = e.target.value;
-                  return { ...s, curation_options: next };
-                });
+                const next = [...(state.curation_options ?? [])];
+                next[i] = e.target.value;
+                mudar({ curation_options: next });
               }}
               placeholder={`Resposta ${i + 1}${i < 2 ? "" : " (opcional)"}`}
-              className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              className={campo}
             />
           ))}
         </div>
-      </SecaoRecolhivel>
 
-      {/* Orbi Insight */}
-      <OrbiInsightCard>
-        <OrbiInsightHeader />
-        <OrbiInsightMessage>
-          {state.agent_name} está pronta para performar com abordagens {casual ? "próximas e inspiradoras" : "precisas e consultivas"} para os visitantes de {businessName}.
-        </OrbiInsightMessage>
-      </OrbiInsightCard>
+        <p className="mt-6 text-[14px] font-semibold">Página Sobre</p>
+        <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">
+          {aboutBuilt
+            ? `Pronto, a página Sobre de ${businessName} foi montada.`
+            : sabeTudo
+            ? "A Orbi junta o que ela sabe numa página Sobre completa."
+            : "Complete \"O que ela sabe\" pra Orbi montar a página Sobre."}
+        </p>
+        {buildError && <p className="mt-2 text-[13px] text-red-600">{buildError}</p>}
+        {buildingAbout ? (
+          <div className="mt-3"><OrbiWorking label="Montando sua página Sobre…" colors={orbiColors} /></div>
+        ) : (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              onClick={buildAboutPage}
+              disabled={!sabeTudo}
+              className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white disabled:opacity-40"
+            >
+              {aboutBuilt ? "Montar de novo" : "✦ Montar página Sobre"}
+            </button>
+            <Link href={`/${slug}?tab=conhecer`} target="_blank" className="rounded-full border border-divider bg-surface-white px-4 py-2 text-[13px] font-medium">
+              Ver página Sobre ↗
+            </Link>
+          </div>
+        )}
+      </Secao>
 
-      <button onClick={save} disabled={saving} className="rounded-full bg-button-primary py-4 text-[13px] font-medium uppercase tracking-wide text-white disabled:opacity-50">
-        {saving ? "Salvando…" : saved ? "✓ Personalidade salva" : "Salvar personalidade"}
-      </button>
+      {saved && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-28 z-50 flex justify-center">
+          <span className="orbi-green-gradient flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold text-white shadow-lg">✓ Salvo</span>
+        </div>
+      )}
     </div>
   );
 }

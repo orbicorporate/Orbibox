@@ -10,8 +10,8 @@ const ITEMS = [
   {
     key: "marca" as const,
     href: "/admin/config/marca",
-    label: "Identidade e marca",
-    desc: "Logotipo e a capa que aparece quando alguém abre seu link.",
+    label: "Sua marca",
+    desc: "Logotipo, cores, fundo da página e como o link aparece no WhatsApp.",
     bg: "#E7EAFC", fg: "#4453D6",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -21,7 +21,7 @@ const ITEMS = [
   },
   {
     key: "contatos" as const,
-    href: "/admin/config/contatos",
+    href: "/admin/config/marca#contatos",
     label: "Contatos",
     desc: "WhatsApp, telefone, e-mail, site e endereço que o visitante vê.",
     bg: "#DEF3E3", fg: "#1F9E4C",
@@ -33,9 +33,9 @@ const ITEMS = [
   },
   {
     key: "orbi" as const,
-    href: "/admin/config/orbi",
-    label: "O que a Orbi sabe",
-    desc: "Leia e ajuste o texto que ela usa pra responder seus visitantes.",
+    href: "/admin/agent",
+    label: "Sua IA",
+    desc: "O que a Orbi sabe sobre o negócio e o jeito dela falar.",
     bg: "orbi-gradient", fg: "#111318",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -62,7 +62,7 @@ export default async function ConfigMenuPage() {
   );
   const temDescricaoLink = !!(business.share_description?.trim() || business.about_business?.trim());
   const pendencias: Pendencias = {
-    marca: [business.logo_url].filter(vazio).length + (temCapaLink ? 0 : 1) + (temDescricaoLink ? 0 : 1),
+    marca: [business.logo_url].filter(vazio).length + (temCapaLink && temDescricaoLink ? 0 : 1),
     contatos: [business.contact_whatsapp, business.contact_phone, business.contact_email, business.address].filter(vazio).length,
     orbi: [business.about_business, business.differentials, business.policies].filter(vazio).length,
   };

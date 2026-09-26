@@ -15,9 +15,12 @@ type PickerKey = "primaria" | "secundaria" | "detalhe";
 export function OrbiColorsPanel({
   businessId,
   initialOrbiColors,
+  embutido = false,
 }: {
   businessId: string;
   initialOrbiColors: string[] | null;
+  /** Sem o cartão e o cabeçalho que abre/fecha: mostra direto os controles. */
+  embutido?: boolean;
 }) {
   const supabase = createClient();
   const [orbiColors, setOrbiColors] = useState<string[]>(
@@ -42,6 +45,43 @@ export function OrbiColorsPanel({
     const next = [orbiColors[0], orbiColors[1]];
     setOrbiColors(next);
     await supabase.from("agent_configs").upsert({ business_id: businessId, orbi_colors: next }, { onConflict: "business_id" });
+  }
+
+  const seletor = openPicker && (
+    <ColorPickerSheet
+      current={
+        openPicker === "primaria" ? orbiColors[0]
+        : openPicker === "secundaria" ? orbiColors[1]
+        : orbiDetail
+      }
+      onSelect={(hex) => {
+        if (openPicker === "primaria") pickOrbiColor(0, hex);
+        else if (openPicker === "secundaria") pickOrbiColor(1, hex);
+        else pickOrbiColor(2, hex);
+      }}
+      onClose={() => setOpenPicker(null)}
+      preview={<OrbiParticleSphere key={orbiColors.join("-")} size={124} colors={orbiColors} className="rounded-full" />}
+    />
+  );
+
+  if (embutido) {
+    return (
+      <div>
+        <div className="flex items-center gap-3">
+          <OrbiParticleSphere key={orbiColors.join("-")} size={56} colors={orbiColors} className="shrink-0 rounded-full" />
+          <div>
+            <p className="text-[14px] font-semibold">Cores da esfera</p>
+            <p className="text-[12px] leading-snug text-text-tertiary">A Orbi aparece com elas na sua página.</p>
+          </div>
+        </div>
+        <div className="mt-3 flex items-stretch gap-2.5">
+          <ColorChip label="Primária" hex={orbiColors[0]} onOpen={() => setOpenPicker("primaria")} />
+          <ColorChip label="Secundária" hex={orbiColors[1]} onOpen={() => setOpenPicker("secundaria")} />
+          <ColorChip label="Detalhe (opcional)" hex={orbiDetail} onOpen={() => setOpenPicker("detalhe")} onRemove={orbiDetail ? clearOrbiDetail : undefined} />
+        </div>
+        {seletor}
+      </div>
+    );
   }
 
   return (

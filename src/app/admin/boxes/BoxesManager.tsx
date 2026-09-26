@@ -5,7 +5,6 @@ import { useState, useEffect, type CSSProperties, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { ImageUpload } from "@/components/ui/ImageUpload";
-import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
@@ -399,31 +398,21 @@ export function BoxesManager({
                       <span className="text-[11px] font-medium">Logotipo</span>
                     </button>
                   </div>
-                  <Link href="/admin/agent#cores-orbi" className="mt-2 inline-block rounded-full bg-surface-soft px-3.5 py-1.5 text-[11.5px] font-semibold text-text-secondary">
-                    ✦ Configurar cor
-                  </Link>
+                  {/* Cor e logotipo se trocam em Sua marca, um lugar só. */}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Link href="/admin/config/marca#cores" className="inline-block rounded-full bg-surface-soft px-3.5 py-1.5 text-[11.5px] font-semibold text-text-secondary">
+                      ✦ Configurar cor
+                    </Link>
+                    <Link href="/admin/config/marca#logo" className="inline-block rounded-full bg-surface-soft px-3.5 py-1.5 text-[11.5px] font-semibold text-text-secondary">
+                      {availableLogo ? "Trocar logotipo" : "Enviar logotipo"}
+                    </Link>
+                  </div>
                   {!availableLogo && (
-                    <p className="mt-2 text-[11px] text-text-tertiary">Envie um logotipo abaixo pra poder usar essa opção.</p>
+                    <p className="mt-2 text-[11px] text-text-tertiary">Envie um logotipo em Sua marca pra poder usar essa opção.</p>
                   )}
                 </>
               );
             })()}
-            <div className="mt-3">
-              <ImageUpload
-                value={logoUrl}
-                businessId={businessId}
-                lockedRatio="quadrado"
-                promptKind="avatar"
-                promptSubject={businessName}
-                emptyPreview={<OrbiOrb size={72} colors={orbiColors} />}
-                onChange={async (url) => {
-                  setLogoUrl(url);
-                  await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);
-                  if (url) setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url));
-                  else if (heroAvatar === "logo") saveHeroAvatar("sphere");
-                }}
-              />
-            </div>
           </div>
         </div>
       </SecaoRecolhivel>

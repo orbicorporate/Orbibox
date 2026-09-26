@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { gravarFlag, useFlag } from "@/lib/useFlag";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -1216,36 +1217,6 @@ export function ShowcaseBuilder({
   );
 }
 
-// Marcadores simples guardados no aparelho (ex.: "já escolheu o estilo",
-// "escondeu o passo a passo"). Lidos com useSyncExternalStore pra funcionar
-// igual no servidor (sempre falso) e no navegador.
-const FLAG_EVENT = "orbi-flag";
-function lerFlag(chave: string): boolean {
-  try {
-    return window.localStorage.getItem(chave) === "1";
-  } catch {
-    return false;
-  }
-}
-function gravarFlag(chave: string) {
-  try {
-    window.localStorage.setItem(chave, "1");
-  } catch {
-    /* sem armazenamento: o passo só não fica marcado */
-  }
-  window.dispatchEvent(new Event(FLAG_EVENT));
-}
-function assinarFlags(cb: () => void) {
-  window.addEventListener(FLAG_EVENT, cb);
-  window.addEventListener("storage", cb);
-  return () => {
-    window.removeEventListener(FLAG_EVENT, cb);
-    window.removeEventListener("storage", cb);
-  };
-}
-function useFlag(chave: string): boolean {
-  return useSyncExternalStore(assinarFlags, () => lerFlag(chave), () => false);
-}
 
 const COVER_EXAMPLE_COVERS = [
   "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box-images/inspire/sorveteria-03.jpg",

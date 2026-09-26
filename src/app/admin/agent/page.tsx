@@ -4,6 +4,7 @@ import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { AgentConfigForm } from "./AgentConfigForm";
 import { OrbiTrial } from "./OrbiTrial";
+import { loadConfigData } from "@/app/admin/config/loadConfigData";
 
 export default async function AgentPage() {
   const supabase = await createClient();
@@ -47,17 +48,10 @@ export default async function AgentPage() {
     );
   }
 
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("id, name, slug, about_business, differentials, policies, hero_gradient, hero_style")
-    .eq("id", businessId!)
-    .single();
+  const { business } = await loadConfigData();
   const { data: config } = await supabase.from("agent_configs").select("*").eq("business_id", business!.id).maybeSingle();
   const orbiColors = Array.isArray(config?.orbi_colors) && config.orbi_colors.length >= 2
     ? (config.orbi_colors as string[])
-    : null;
-  const heroGradient = Array.isArray(business!.hero_gradient) && business!.hero_gradient.length >= 2
-    ? (business!.hero_gradient as string[])
     : null;
   const { count: catalogCount } = await supabase
     .from("content_items")
@@ -75,15 +69,14 @@ export default async function AgentPage() {
   return (
     <div className="flex flex-col">
       <h1 data-tour="orbi-ai" className="mt-2 font-[family-name:var(--font-manrope)] text-[27px] font-semibold leading-tight tracking-[-0.02em]">Sua IA</h1>
-      <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">Defina como a Orbi interage com seus visitantes.</p>
+      <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">O que a Orbi sabe e como ela conversa com quem visita seu link.</p>
       {config && (
         <AgentConfigForm
           config={{ ...config, orbi_colors: orbiColors, suggested_questions: Array.isArray(config!.suggested_questions) ? (config!.suggested_questions as string[]) : [], curation_options: Array.isArray(config!.curation_options) ? (config!.curation_options as string[]) : [] }}
           businessId={business!.id}
           businessName={business!.name}
           slug={business!.slug}
-          heroGradient={heroGradient}
-          heroStyle={(business as { hero_style?: string }).hero_style ?? null}
+          business={business!}
           knowledge={{
             catalogo: (catalogCount ?? 0) > 0,
             historia: !!business!.about_business?.trim(),

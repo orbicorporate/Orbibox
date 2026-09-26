@@ -13,7 +13,7 @@ const MENU_ITEMS = [
   {
     href: "/admin/config",
     label: "Configurar sua marca",
-    desc: "Logotipo, contatos e o que aparece pro visitante.",
+    desc: "Logotipo, cores, contatos e como o link aparece.",
     bg: "#E7EAFC",
     fg: "#4453D6",
     icon: (
