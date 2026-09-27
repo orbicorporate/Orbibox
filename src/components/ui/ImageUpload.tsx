@@ -197,20 +197,28 @@ export function ImageUpload({
           <button
             type="button"
             onClick={() => setShowFotos(true)}
-            className="flex w-full items-center gap-3 rounded-2xl border border-divider bg-surface-white px-3.5 py-3 text-left"
+            className="orbi-gradient group w-full rounded-[20px] p-[1.5px] text-left shadow-[0_6px_22px_rgba(120,220,160,0.22)] transition-transform active:scale-[0.99]"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-soft text-on-background" aria-hidden>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="16" rx="3" />
-                <circle cx="9" cy="10" r="2" />
-                <path d="M21 16l-5-5-8 9" />
-              </svg>
+            <span className="flex w-full items-center gap-3.5 rounded-[18.5px] bg-surface-white px-3.5 py-3.5">
+              {/* Mini colagem de fotos, pra já dizer do que se trata. */}
+              <span className="relative h-12 w-14 shrink-0" aria-hidden>
+                <span className="absolute left-0 top-1.5 h-9 w-9 -rotate-12 rounded-lg bg-gradient-to-br from-[#C7F284] to-[#6FD8C4] shadow-sm" />
+                <span className="absolute right-0 top-0.5 h-9 w-9 rotate-12 rounded-lg bg-gradient-to-br from-[#9EC5FF] to-[#B69CFF] shadow-sm" />
+                <span className="absolute left-1/2 top-1 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-lg bg-on-background text-white shadow-md transition-transform group-hover:-translate-y-0.5">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="3" />
+                    <circle cx="9" cy="10" r="2" />
+                    <path d="M21 16l-5-5-8 9" />
+                  </svg>
+                </span>
+                <span className="orbi-gradient absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] text-on-background ring-2 ring-surface-white">✦</span>
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-semibold text-on-background">Buscar foto pronta</span>
+                <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">A Orbi entende o tema e escolhe fotos profissionais</span>
+              </span>
+              <span className="shrink-0 rounded-full bg-on-background px-3.5 py-2 text-[12.5px] font-semibold text-white">Buscar</span>
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-medium text-on-background">Buscar foto pronta</span>
-              <span className="block text-[12px] text-text-tertiary">A Orbi procura num banco de imagens</span>
-            </span>
-            <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>
           </button>
 
           <div className={`rounded-2xl border bg-surface-white ${showPrompt ? "border-on-background/15" : "border-divider"}`}>
