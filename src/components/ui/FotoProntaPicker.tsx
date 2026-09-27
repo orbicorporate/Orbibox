@@ -32,6 +32,8 @@ export function FotoProntaPicker({
   // Mostra 9 de cada vez; foto que não carrega some da grade.
   const [mostrar, setMostrar] = useState(9);
   const [quebradas, setQuebradas] = useState<Set<string>>(new Set());
+  // Outras cenas que a Orbi sugere pro mesmo tema: um toque e busca.
+  const [sugestoes, setSugestoes] = useState<string[]>([]);
 
   async function buscar(termo: string) {
     setCarregando(true);
@@ -51,6 +53,7 @@ export function FotoProntaPicker({
       } else {
         setBusca(j.busca ?? termo);
         setFotos(j.fotos ?? []);
+        setSugestoes(j.sugestoes ?? []);
       }
     } catch {
       setErro("Falha de conexão. Tenta de novo.");
@@ -74,6 +77,7 @@ export function FotoProntaPicker({
         if (!ok) setErro(j.error ?? "Não consegui buscar agora.");
         setBusca(j.busca ?? "");
         setFotos(j.fotos ?? []);
+        setSugestoes(j.sugestoes ?? []);
       })
       .catch(() => vivo && setErro("Falha de conexão. Tenta de novo."))
       .finally(() => vivo && setCarregando(false));
@@ -104,7 +108,7 @@ export function FotoProntaPicker({
         <div className="flex items-center justify-between gap-2 px-5 pt-5">
           <div>
             <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold">Fotos prontas</p>
-            <p className="text-[12.5px] text-text-tertiary">A Orbi buscou pra você. Toque numa pra usar.</p>
+            <p className="text-[12.5px] text-text-tertiary">A Orbi entendeu o tema e escolheu estas. Toque numa pra usar.</p>
           </div>
           <button onClick={onFechar} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[14px]" aria-label="Fechar">
             ✕
@@ -121,18 +125,32 @@ export function FotoProntaPicker({
           <input
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar outra coisa (em inglês acha mais)"
+            placeholder="Descreva a foto (ex: caminhão à noite)"
             className="min-w-0 flex-1 rounded-full border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
           <button type="submit" className="shrink-0 rounded-full bg-button-primary px-4 text-[13px] font-medium text-white">
             Buscar
           </button>
         </form>
+        {sugestoes.length > 0 && !carregando && (
+          <div className="no-scrollbar mt-2.5 flex gap-1.5 overflow-x-auto px-5">
+            {sugestoes.map((sg) => (
+              <button
+                key={sg}
+                type="button"
+                onClick={() => { setBusca(sg); buscar(sg); }}
+                className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12.5px] font-medium text-text-secondary"
+              >
+                ✦ {sg}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="mt-3 flex-1 overflow-y-auto px-5 pb-5">
           {carregando ? (
             <div className="py-10">
-              <OrbiWorking label="Procurando fotos…" />
+              <OrbiWorking label="Entendendo o tema e escolhendo fotos…" />
             </div>
           ) : (
             <>
