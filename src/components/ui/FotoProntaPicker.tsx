@@ -29,9 +29,14 @@ export function FotoProntaPicker({
   const [carregando, setCarregando] = useState(true);
   const [baixando, setBaixando] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  // Mostra 9 de cada vez; foto que não carrega some da grade.
+  const [mostrar, setMostrar] = useState(9);
+  const [quebradas, setQuebradas] = useState<Set<string>>(new Set());
 
   async function buscar(termo: string) {
     setCarregando(true);
+    setMostrar(9);
+    setQuebradas(new Set());
     setErro(null);
     try {
       const r = await fetch("/api/fotos-prontas", {
@@ -136,7 +141,7 @@ export function FotoProntaPicker({
                 <p className="py-8 text-center text-[13px] text-text-tertiary">Nada encontrado. Tenta outras palavras.</p>
               )}
               <div className="grid grid-cols-3 gap-1.5">
-                {(fotos ?? []).map((f) => (
+                {(fotos ?? []).filter((f) => !quebradas.has(f.id)).slice(0, mostrar).map((f) => (
                   <button
                     key={f.id}
                     onClick={() => escolher(f)}
@@ -144,15 +149,27 @@ export function FotoProntaPicker({
                     className="relative aspect-square overflow-hidden rounded-xl bg-surface-soft disabled:opacity-60"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={f.thumb} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <img
+                      src={f.thumb}
+                      alt=""
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={() => setQuebradas((q) => new Set(q).add(f.id))}
+                      className="h-full w-full object-cover"
+                    />
                     {baixando === f.id && (
                       <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-[12px] font-medium text-white">Abrindo…</span>
                     )}
                   </button>
                 ))}
               </div>
+              {fotos && fotos.filter((f) => !quebradas.has(f.id)).length > mostrar && (
+                <button onClick={() => setMostrar((m) => m + 9)} className="mt-3 w-full rounded-full border border-divider py-2.5 text-[13px] font-medium">
+                  Ver mais fotos
+                </button>
+              )}
               {fotos && fotos.length > 0 && (
-                <p className="mt-3 text-center text-[11px] text-text-tertiary">Fotos de {fotos[0].fonte}, livres pra uso comercial.</p>
+                <p className="mt-3 text-center text-[11px] text-text-tertiary">Fotos livres pra uso comercial.</p>
               )}
             </>
           )}
