@@ -106,7 +106,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         progressPct={headerProgress.pct}
         isMaster={!!isSuper}
         pendencias={headerPendencias}
-        negocios={negocios.map((n) => ({ id: n.id, name: n.name, slug: n.slug }))}
+        negocios={negocios.map((n) => ({ id: n.id, name: n.name, slug: n.slug, dono: n.dono }))}
         negocioAtual={business.id}
         podeCriarNegocio={podeCriar}
       />

@@ -56,7 +56,7 @@ export function AppHeader({
    * sobre o que fazer, mesmo sumindo dias e voltando depois. */
   pendencias?: { title: string; href: string }[];
   /** Negócios que a pessoa pode abrir (os dela e os que administra). */
-  negocios?: { id: string; name: string; slug: string }[];
+  negocios?: { id: string; name: string; slug: string; dono?: boolean }[];
   negocioAtual?: string;
   /** Plano permite criar mais um Orbibox (Nióbio). */
   podeCriarNegocio?: boolean;
@@ -66,6 +66,40 @@ export function AppHeader({
   const [sinoOpen, setSinoOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [trocaOpen, setTrocaOpen] = useState(false);
+  // Excluir um Orbibox pela lista: 1º confirma a intenção, 2º digita o nome.
+  const [excluir, setExcluir] = useState<{ id: string; name: string; etapa: 1 | 2 } | null>(null);
+  const [textoExcluir, setTextoExcluir] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
+  const [erroExcluir, setErroExcluir] = useState<string | null>(null);
+  const normNome = (t: string) => t.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  function fecharExcluir() {
+    setExcluir(null);
+    setTextoExcluir("");
+    setErroExcluir(null);
+  }
+
+  async function confirmarExcluir() {
+    if (!excluir) return;
+    setExcluindo(true);
+    setErroExcluir(null);
+    const r = await fetch("/api/negocio/excluir", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: excluir.id, confirmacao: textoExcluir }),
+    });
+    const d = await r.json().catch(() => ({}));
+    setExcluindo(false);
+    if (!r.ok) {
+      setErroExcluir(d.error ?? "Não consegui excluir agora.");
+      return;
+    }
+    fecharExcluir();
+    setTrocaOpen(false);
+    // Sobrou outro Orbibox: abre o painel. Não sobrou: começa do zero.
+    router.push(d.restantes > 0 ? "/admin" : "/onboarding");
+    router.refresh();
+  }
   const [trocando, setTrocando] = useState<string | null>(null);
   const atual = negocios.find((n) => n.id === negocioAtual);
 
@@ -339,12 +373,12 @@ export function AppHeader({
               {negocios.map((n) => {
                 const ativo = n.id === negocioAtual;
                 return (
+                  <div key={n.id} className="relative">
                   <button
-                    key={n.id}
                     type="button"
                     onClick={() => trocarPara(n.id)}
                     disabled={!!trocando}
-                    className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors ${ativo ? "border-on-background" : "border-divider"} disabled:opacity-60`}
+                    className={`flex w-full items-center gap-3 rounded-2xl border py-3 pl-4 text-left transition-colors ${n.dono ? "pr-12" : "pr-4"} ${ativo ? "border-on-background" : "border-divider"} disabled:opacity-60`}
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft font-[family-name:var(--font-manrope)] text-[15px] font-semibold">
                       {n.name.trim().charAt(0).toUpperCase()}
@@ -359,6 +393,17 @@ export function AppHeader({
                       <span className="text-[13px] font-medium">✓</span>
                     ) : null}
                   </button>
+                  {n.dono && (
+                    <button
+                      type="button"
+                      onClick={() => setExcluir({ id: n.id, name: n.name, etapa: 1 })}
+                      aria-label={`Excluir ${n.name}`}
+                      className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-red-50 text-[11px] font-bold text-red-500 transition-colors hover:bg-red-100"
+                    >
+                      ✕
+                    </button>
+                  )}
+                  </div>
                 );
               })}
             </div>
@@ -379,6 +424,53 @@ export function AppHeader({
               >
                 Tem mais de uma marca? No plano <span className="font-medium text-on-background">Nióbio</span> você cria vários Orbibox, cada um com seu link e sua IA. Ver planos →
               </Link>
+            )}
+
+            {/* Confirmação em dois níveis, por cima da lista. */}
+            {excluir && (
+              <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/40 px-4 pb-8 sm:items-center" onClick={(e) => { e.stopPropagation(); if (!excluindo) fecharExcluir(); }}>
+                <div className="w-full max-w-[420px] rounded-[24px] bg-surface-white p-5" onClick={(e) => e.stopPropagation()}>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-[18px] text-red-600">!</span>
+                  {excluir.etapa === 1 ? (
+                    <>
+                      <p className="mt-3 text-[17px] font-semibold">Excluir “{excluir.name}”?</p>
+                      <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
+                        Apaga de vez a página, o link, a Orbi e tudo que ela aprendeu, a vitrine, os boxes, as conversas, os contatos e as métricas. Não dá pra desfazer.
+                      </p>
+                      <div className="mt-4 flex gap-2">
+                        <button type="button" onClick={fecharExcluir} className="flex-1 rounded-full border border-divider py-3 text-[14px] font-medium">Cancelar</button>
+                        <button type="button" onClick={() => setExcluir({ ...excluir, etapa: 2 })} className="flex-1 rounded-full bg-red-600 py-3 text-[14px] font-medium text-white">Quero excluir</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mt-3 text-[17px] font-semibold">Última confirmação</p>
+                      <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
+                        Digite <span className="font-semibold text-on-background">{excluir.name}</span> pra excluir.
+                      </p>
+                      <input
+                        value={textoExcluir}
+                        onChange={(e) => setTextoExcluir(e.target.value)}
+                        placeholder={excluir.name}
+                        autoFocus
+                        className="mt-3 w-full rounded-2xl border border-divider px-4 py-3 text-[15px] outline-none focus:border-red-500"
+                      />
+                      {erroExcluir && <p className="mt-2 text-[12.5px] text-red-600">{erroExcluir}</p>}
+                      <div className="mt-4 flex gap-2">
+                        <button type="button" onClick={fecharExcluir} disabled={excluindo} className="flex-1 rounded-full border border-divider py-3 text-[14px] font-medium">Cancelar</button>
+                        <button
+                          type="button"
+                          onClick={confirmarExcluir}
+                          disabled={excluindo || normNome(textoExcluir) !== normNome(excluir.name)}
+                          className="flex-1 rounded-full bg-red-600 py-3 text-[14px] font-medium text-white disabled:opacity-40"
+                        >
+                          {excluindo ? "Excluindo…" : "Excluir de vez"}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>,
