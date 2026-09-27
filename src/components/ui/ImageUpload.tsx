@@ -3,6 +3,9 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropModal";
+import { FotoProntaPicker } from "./FotoProntaPicker";
+
+type Marca = { name: string; brand_colors: unknown; about_business: string | null; brand_voice_summary: string | null };
 
 /**
  * Envia a foto para o armazenamento do Supabase e devolve a URL pública.
@@ -48,13 +51,42 @@ export function ImageUpload({
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showFotos, setShowFotos] = useState(false);
+  // Dados da marca pro prompt da capa ficar com a cara dela (cores, tom).
+  const [marca, setMarca] = useState<Marca | null>(null);
+
+  async function abrirPrompt() {
+    const abrir = !showPrompt;
+    setShowPrompt(abrir);
+    if (abrir && !marca) {
+      const { data } = await supabase.from("businesses").select("name, brand_colors, about_business, brand_voice_summary").eq("id", businessId).maybeSingle();
+      if (data) setMarca(data as Marca);
+    }
+  }
 
   const ratio = lockedRatio ?? "quadrado";
   const medida = RATIO_PIXELS[ratio];
   const isAvatar = promptKind === "avatar";
   const promptTexto = isAvatar
     ? `Criar um avatar/logotipo redondo em ${medida}, sofisticado e minimalista, para representar "${promptSubject || "minha marca"}". Fundo limpo, boa leitura em tamanho pequeno. Use como referência de estilo as imagens que vou anexar.`
-    : `Criar uma capa em ${medida}, sofisticada e minimalista, com o objetivo de "${promptSubject || "apresentar isso da melhor forma"}". Use como referência de estilo as imagens que vou anexar.`;
+    : promptCapa();
+
+  function promptCapa() {
+    const cores = Array.isArray(marca?.brand_colors)
+      ? (marca!.brand_colors as { hex?: string }[]).map((c) => c?.hex).filter(Boolean).slice(0, 5).join(", ")
+      : "";
+    const linhas = [
+      `Crie uma imagem de capa em ${medida} para "${promptSubject || "meu negócio"}"${marca?.name ? `, da marca ${marca.name}` : ""}.`,
+      "",
+      "Use a foto que estou anexando como base (produto, ambiente ou logotipo) e deixe a imagem com a cara da marca:",
+      cores ? `- Cores da marca: ${cores}` : "",
+      marca?.brand_voice_summary ? `- Tom da marca: ${marca.brand_voice_summary.slice(0, 160)}` : "",
+      marca?.about_business ? `- Sobre a marca: ${marca.about_business.replace(/\s+/g, " ").slice(0, 220)}` : "",
+      "",
+      "Estilo fotográfico, moderno e limpo, luz natural, composição com respiro. Sem textos, letras ou marcas d'água.",
+    ];
+    return linhas.filter((l, i, arr) => l !== "" || (arr[i - 1] !== "" && i > 0)).join("\n").trim();
+  }
 
   function handlePick(file: File) {
     setError(null);
@@ -159,41 +191,73 @@ export function ImageUpload({
         {fileInput}
         {error && <p className="text-[12px] text-red-600">{error}</p>}
 
-        {(
-          <div className={`rounded-2xl ${showPrompt ? "border border-divider bg-surface-white p-3.5" : ""}`}>
-            <button
-              type="button"
-              onClick={() => setShowPrompt((v) => !v)}
-              className={`flex w-full items-center gap-2.5 text-left ${showPrompt ? "" : "rounded-2xl border border-divider bg-surface-white px-3.5 py-3"}`}
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl orbi-gradient text-[13px] text-on-background">✦</span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[13.5px] font-medium text-on-background">Criar a capa com IA</span>
-                <span className="block text-[11.5px] text-text-tertiary">Prompt pronto pro ChatGPT, já na medida certa</span>
-              </span>
-              <span className={`shrink-0 text-[12px] text-text-tertiary transition-transform ${showPrompt ? "rotate-180" : ""}`}>▾</span>
-            </button>
+        {/* Sem foto própria: a Orbi busca uma pronta ou monta o prompt pra
+            criar uma capa com a cara da marca no ChatGPT. */}
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => setShowFotos(true)}
+            className="flex w-full items-center gap-3 rounded-2xl border border-divider bg-surface-white px-3.5 py-3 text-left"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-soft text-on-background" aria-hidden>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="16" rx="3" />
+                <circle cx="9" cy="10" r="2" />
+                <path d="M21 16l-5-5-8 9" />
+              </svg>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14px] font-medium text-on-background">Buscar foto pronta</span>
+              <span className="block text-[12px] text-text-tertiary">A Orbi procura num banco de imagens</span>
+            </span>
+            <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>
+          </button>
 
+          <div className={`rounded-2xl border bg-surface-white ${showPrompt ? "border-on-background/15" : "border-divider"}`}>
+            <button type="button" onClick={abrirPrompt} className="flex w-full items-center gap-3 px-3.5 py-3 text-left">
+              <span className="orbi-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[14px] text-on-background">✦</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[14px] font-medium text-on-background">Criar com a cara da marca</span>
+                <span className="block text-[12px] text-text-tertiary">Prompt pronto pro ChatGPT, com suas cores</span>
+              </span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${showPrompt ? "rotate-180" : ""}`} aria-hidden>
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
             {showPrompt && (
-              <div className="mt-3">
+              <div className="px-3.5 pb-3.5">
                 <div className="rounded-xl bg-surface-soft p-3">
-                  <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{promptTexto}</p>
+                  <p className="select-text whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{promptTexto}</p>
                 </div>
-                <ol className="mt-3 flex flex-col gap-1 text-[12px] text-text-secondary">
-                  <li><span className="font-medium text-on-background">1.</span> Copie o prompt</li>
-                  <li><span className="font-medium text-on-background">2.</span> Cole no ChatGPT e anexe fotos suas de referência</li>
-                  <li><span className="font-medium text-on-background">3.</span> Baixe a imagem gerada e envie aqui em cima</li>
+                <ol className="mt-3 flex flex-col gap-1 text-[12.5px] text-text-secondary">
+                  <li>1. Copie o prompt</li>
+                  <li>2. Abra o ChatGPT e anexe uma foto do produto ou o seu logo</li>
+                  <li>3. Baixe a imagem que ele criar e envie aqui em cima</li>
                 </ol>
-                <button
-                  type="button"
-                  onClick={copyPrompt}
-                  className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white"
-                >
-                  {copied ? "✓ Copiado" : "Copiar prompt"}
-                </button>
+                <div className="mt-3 flex gap-2">
+                  <button type="button" onClick={copyPrompt} className="flex-1 rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
+                    {copied ? "✓ Copiado" : "Copiar prompt"}
+                  </button>
+                  <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-full border border-divider px-4 py-2.5 text-[13px] font-medium">
+                    Abrir ChatGPT ↗
+                  </a>
+                </div>
               </div>
             )}
           </div>
+        </div>
+
+        {showFotos && (
+          <FotoProntaPicker
+            businessId={businessId}
+            assunto={promptSubject || ""}
+            formato={ratio}
+            onFechar={() => setShowFotos(false)}
+            onEscolher={(file) => {
+              setShowFotos(false);
+              setPendingFile(file);
+            }}
+          />
         )}
 
         {pendingFile && (
