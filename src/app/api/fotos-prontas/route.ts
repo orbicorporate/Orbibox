@@ -19,7 +19,9 @@ export const maxDuration = 40;
 export type FotoPronta = { id: string; thumb: string; full: string; autor: string; fonte: string; alt?: string };
 
 type Orientacao = "landscape" | "portrait" | "square";
-type Plano = { cenas: string[]; sugestoes: string[] };
+type Plano = { assunto: string; palavras: string[]; cenas: string[]; sugestoes: string[] };
+
+const semAcento = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 async function buscaPexels(q: string, orientacao: Orientacao, key: string): Promise<FotoPronta[]> {
   const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=20&orientation=${orientacao}&size=large`;
@@ -71,12 +73,19 @@ Exemplo: associação de proteção veicular, item "Roubo de caminhão" →
 cenas: "semi truck parked at night", "truck on highway at dusk", "security camera parking lot night", "truck driver in cab", "fleet of trucks yard"
 sugestões: "Caminhão à noite", "Estrada com caminhão", "Pátio com segurança"
 
+Quando a pessoa DIGITA um pedido, ele manda: o assunto é exatamente o que ela digitou.
+- Todas as cenas precisam ter esse assunto visível, com o nome dele na busca. Só varia o jeito de mostrar (ângulo, ambiente, acompanhamentos).
+- Exemplo: pedido "açaí" → cenas: "acai bowl", "acai bowl with banana and granola", "acai cup top view", "acai smoothie bowl fruits", "purple acai bowl table". Nunca "blueberries", "dessert" ou "berries" sozinhos: parecido não serve.
+- Palavras que já são usadas em inglês (açaí, sushi, pizza, brigadeiro) ficam como estão, sem acento.
+
 Regras:
+- assunto: o assunto principal, curto, em inglês (ex.: "acai bowl", "semi truck").
+- palavras: 2 a 6 palavras-chave em inglês e português, sem acento e em minúsculas, que uma foto certa teria na descrição (ex.: "acai", "acai bowl", "açai" vira "acai"). Servem pra filtrar.
 - cenas: 5 buscas em inglês, 2 a 5 palavras, cada uma uma cena diferente e concreta. A primeira é a mais fiel ao item; as outras variam ângulo, ambiente e emoção, sempre dentro do tema.
 - Respeite o setor: se o negócio é de caminhões, não traga carros de passeio; se é comida japonesa, não traga pizza.
 - Evite cenas negativas pesadas (acidente com feridos, crime violento); prefira a versão aspiracional ou de segurança.
 - Nada de marcas, logos ou nomes próprios.
-- sugestões: 3 ideias curtas em português (2 a 4 palavras) de outras cenas que a pessoa pode tocar pra buscar.`,
+- sugestões: 3 ideias curtas em português (2 a 4 palavras) de outras cenas que a pessoa pode tocar pra buscar. Se houve pedido, todas mantêm o assunto dele (ex.: pedido "açaí" → "Açaí com granola", "Açaí no copo", "Tigela de açaí vista de cima").`,
     messages: [
       {
         role: "user",
@@ -86,28 +95,38 @@ Regras:
     schema: {
       type: "object",
       properties: {
+        assunto: { type: "string" },
+        palavras: { type: "array", items: { type: "string" }, maxItems: 6 },
         cenas: { type: "array", items: { type: "string" }, minItems: 3, maxItems: 5 },
         sugestoes: { type: "array", items: { type: "string" }, maxItems: 3 },
       },
-      required: ["cenas", "sugestoes"],
+      required: ["assunto", "palavras", "cenas", "sugestoes"],
     },
   });
   if (!data || !Array.isArray(data.cenas) || data.cenas.length === 0) return null;
-  return { cenas: data.cenas.map((c) => String(c).trim()).filter(Boolean).slice(0, 5), sugestoes: (data.sugestoes ?? []).map(String).slice(0, 3) };
+  return {
+    assunto: String(data.assunto ?? "").trim(),
+    palavras: (data.palavras ?? []).map((p) => semAcento(String(p)).trim()).filter((p) => p.length >= 3).slice(0, 6),
+    cenas: data.cenas.map((c) => String(c).trim()).filter(Boolean).slice(0, 5),
+    sugestoes: (data.sugestoes ?? []).map(String).slice(0, 3),
+  };
 }
 
 /** A Orbi lê a descrição de cada foto e devolve só as que combinam, em ordem. */
-async function escolherMelhores(fotos: FotoPronta[], contexto: string): Promise<FotoPronta[]> {
+async function escolherMelhores(fotos: FotoPronta[], contexto: string, assunto: string, estrito: boolean): Promise<FotoPronta[]> {
   const comAlt = fotos.filter((f) => (f.alt ?? "").trim());
-  if (comAlt.length < 6) return fotos;
+  if (comAlt.length < (estrito ? 1 : 6)) return fotos;
   const lista = comAlt.map((f, i) => `${i}: ${f.alt!.slice(0, 140)}`).join("\n");
   try {
     const { data } = await askClaudeJSON<{ escolhidas: number[] }>({
       model: AI_MODEL_RAPIDO,
       maxTokens: 400,
-      system:
-        "Você escolhe fotos para a capa de um item de um pequeno negócio. Recebe o contexto e uma lista numerada com a descrição de cada foto. Devolva os números das fotos que combinam de verdade com o contexto, da mais adequada para a menos. Descarte as que fogem do tema, do setor ou que ficariam estranhas como capa. Máximo de 27.",
-      messages: [{ role: "user", content: `Contexto: ${contexto}\n\nFotos:\n${lista}` }],
+      system: `Você escolhe fotos para a capa de um item de um pequeno negócio. Recebe o contexto e uma lista numerada com a descrição de cada foto. Devolva os números das fotos que combinam de verdade, da mais adequada para a menos. Descarte as que fogem do tema, do setor ou que ficariam estranhas como capa. Máximo de 27.${
+        estrito
+          ? " A pessoa pediu um assunto específico: a foto PRECISA mostrar esse assunto. Descarte qualquer foto em que ele não apareça, mesmo que seja parecida ou do mesmo setor (ex.: pediu açaí, mirtilo ou sobremesa qualquer não serve). Se nenhuma servir, devolva lista vazia."
+          : ""
+      }`,
+      messages: [{ role: "user", content: `Assunto principal: ${assunto || "-"}\nContexto: ${contexto}\n\nFotos:\n${lista}` }],
       schema: {
         type: "object",
         properties: { escolhidas: { type: "array", items: { type: "integer" } } },
@@ -115,7 +134,7 @@ async function escolherMelhores(fotos: FotoPronta[], contexto: string): Promise<
       },
     });
     const idx = (data?.escolhidas ?? []).filter((n) => Number.isInteger(n) && n >= 0 && n < comAlt.length);
-    if (idx.length < 3) return fotos;
+    if (!estrito && idx.length < 3) return fotos;
     const vistos = new Set<number>();
     return idx.filter((n) => (vistos.has(n) ? false : (vistos.add(n), true))).map((n) => comAlt[n]);
   } catch {
@@ -154,10 +173,22 @@ export async function POST(req: NextRequest) {
     const key = process.env.PEXELS_API_KEY;
     let listas = key ? await Promise.all(cenas.map((t) => buscaPexels(t, orientacao, key).catch(() => []))) : [];
     if (listas.every((l) => l.length === 0)) listas = await Promise.all(cenas.map((t) => buscaOpenverse(t).catch(() => [])));
-    const candidatas = intercalar(listas, 80);
+    let candidatas = intercalar(listas, 80);
+
+    // Com pedido digitado, a busca é estrita: primeiro um filtro pelas
+    // palavras-chave na descrição da foto, depois a Orbi confere uma a uma.
+    const estrito = !!pedido;
+    const palavras = [...(plano?.palavras ?? []), ...(pedido ? [semAcento(pedido)] : [])].filter(Boolean);
+    if (estrito && palavras.length) {
+      const batem = candidatas.filter((f) => {
+        const alt = semAcento(f.alt ?? "");
+        return palavras.some((p) => alt.includes(p));
+      });
+      if (batem.length >= 3) candidatas = batem;
+    }
 
     const contexto = `Negócio: ${biz.name} (${sobre.slice(0, 200)}). Item: ${assunto || "-"}. ${pedido ? `Pedido: ${pedido}.` : ""} Cenas buscadas: ${cenas.join("; ")}.`;
-    const fotos = (await escolherMelhores(candidatas, contexto)).slice(0, 27);
+    const fotos = (await escolherMelhores(candidatas, contexto, plano?.assunto || pedido, estrito)).slice(0, 27);
 
     return NextResponse.json({ busca: pedido, cenas, sugestoes: plano?.sugestoes ?? [], fotos });
   } catch (e) {
