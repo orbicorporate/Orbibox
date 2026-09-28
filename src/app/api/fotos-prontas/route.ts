@@ -34,6 +34,25 @@ async function buscaPexels(q: string, orientacao: Orientacao, key: string): Prom
   return (j.photos ?? []).map((p) => ({ id: `px-${p.id}`, thumb: p.src.medium, full: p.src.large2x, autor: p.photographer, fonte: "Pexels", alt: `${p.alt ?? ""} ${slug(p.url)}`.trim() }));
 }
 
+// Pixabay: acervo grande (bom em comida e produtos), aceita busca em
+// português e permite guardar a foto no nosso armazenamento.
+async function buscaPixabay(q: string, orientacao: Orientacao, key: string, lang: "en" | "pt"): Promise<FotoPronta[]> {
+  const ori = orientacao === "landscape" ? "horizontal" : orientacao === "portrait" ? "vertical" : "all";
+  const url = `https://pixabay.com/api/?key=${encodeURIComponent(key)}&q=${encodeURIComponent(q.slice(0, 100))}&lang=${lang}&image_type=photo&orientation=${ori}&safesearch=true&min_width=1200&per_page=25&order=popular`;
+  const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) return [];
+  const j = (await r.json()) as { hits?: { id: number; tags?: string; pageURL?: string; user?: string; webformatURL: string; largeImageURL: string }[] };
+  const slug = (u?: string) => (u ?? "").replace(/^.*\/photos\//, "").replace(/-\d+\/?$/, "").replace(/-/g, " ");
+  return (j.hits ?? []).map((p) => ({
+    id: `pb-${p.id}`,
+    thumb: p.webformatURL,
+    full: p.largeImageURL,
+    autor: p.user ?? "",
+    fonte: "Pixabay",
+    alt: `${p.tags ?? ""} ${slug(p.pageURL)}`.trim(),
+  }));
+}
+
 // Openverse mistura foto profissional com foto de celular: pede só
 // fotografia, tamanho grande e conteúdo seguro, e descarta o que for
 // pequeno demais pra virar capa.
@@ -178,10 +197,19 @@ export async function POST(req: NextRequest) {
     ].filter((c, i, arr) => arr.findIndex((x) => x.toLowerCase() === c.toLowerCase()) === i).slice(0, 6);
 
     const orientacao: Orientacao = formato === "quadrado" ? "square" : formato === "retrato" ? "portrait" : "landscape";
-    const key = process.env.PEXELS_API_KEY;
-    let listas = key ? await Promise.all(cenas.map((t) => buscaPexels(t, orientacao, key).catch(() => []))) : [];
+    // Dois bancos ao mesmo tempo (Pexels e Pixabay), resultados intercalados.
+    // O Pixabay ainda recebe o pedido em português, do jeito que foi digitado.
+    const kPexels = process.env.PEXELS_API_KEY;
+    const kPixabay = process.env.PIXABAY_API_KEY;
+    const buscas: Promise<FotoPronta[]>[] = [];
+    for (const t of cenas) {
+      if (kPexels) buscas.push(buscaPexels(t, orientacao, kPexels).catch(() => []));
+      if (kPixabay) buscas.push(buscaPixabay(t, orientacao, kPixabay, "en").catch(() => []));
+    }
+    if (kPixabay && pedido) buscas.unshift(buscaPixabay(pedido, orientacao, kPixabay, "pt").catch(() => []));
+    let listas = await Promise.all(buscas);
     if (listas.every((l) => l.length === 0)) listas = await Promise.all(cenas.map((t) => buscaOpenverse(t).catch(() => [])));
-    let candidatas = intercalar(listas, 80);
+    let candidatas = intercalar(listas, 120);
 
     // Com pedido digitado, a busca é estrita: primeiro um filtro pelas
     // palavras-chave na descrição da foto, depois a Orbi confere uma a uma.
