@@ -24,11 +24,14 @@ type Plano = { assunto: string; palavras: string[]; cenas: string[]; sugestoes: 
 const semAcento = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 async function buscaPexels(q: string, orientacao: Orientacao, key: string): Promise<FotoPronta[]> {
-  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=20&orientation=${orientacao}&size=large`;
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=25&orientation=${orientacao}&size=large`;
   const r = await fetch(url, { headers: { Authorization: key }, signal: AbortSignal.timeout(8000) });
   if (!r.ok) return [];
-  const j = (await r.json()) as { photos?: { id: number; photographer: string; alt?: string; src: { medium: string; large2x: string } }[] };
-  return (j.photos ?? []).map((p) => ({ id: `px-${p.id}`, thumb: p.src.medium, full: p.src.large2x, autor: p.photographer, fonte: "Pexels", alt: p.alt ?? "" }));
+  const j = (await r.json()) as { photos?: { id: number; url?: string; photographer: string; alt?: string; src: { medium: string; large2x: string } }[] };
+  // A descrição (alt) às vezes vem vazia; o endereço da foto no Pexels traz
+  // o assunto no nome (ex.: /photo/acai-bowl-with-banana-123/), então junta os dois.
+  const slug = (u?: string) => (u ?? "").replace(/^.*\/photo\//, "").replace(/-\d+\/?$/, "").replace(/-/g, " ");
+  return (j.photos ?? []).map((p) => ({ id: `px-${p.id}`, thumb: p.src.medium, full: p.src.large2x, autor: p.photographer, fonte: "Pexels", alt: `${p.alt ?? ""} ${slug(p.url)}`.trim() }));
 }
 
 // Openverse mistura foto profissional com foto de celular: pede só
@@ -123,7 +126,7 @@ async function escolherMelhores(fotos: FotoPronta[], contexto: string, assunto: 
       maxTokens: 400,
       system: `Você escolhe fotos para a capa de um item de um pequeno negócio. Recebe o contexto e uma lista numerada com a descrição de cada foto. Devolva os números das fotos que combinam de verdade, da mais adequada para a menos. Descarte as que fogem do tema, do setor ou que ficariam estranhas como capa. Máximo de 27.${
         estrito
-          ? " A pessoa pediu um assunto específico: a foto PRECISA mostrar esse assunto. Descarte qualquer foto em que ele não apareça, mesmo que seja parecida ou do mesmo setor (ex.: pediu açaí, mirtilo ou sobremesa qualquer não serve). Se nenhuma servir, devolva lista vazia."
+          ? " A pessoa pediu um assunto específico: a foto PRECISA mostrar o assunto principal (ex.: açaí). Descarte fotos em que ele não aparece, mesmo parecidas (pediu açaí: mirtilo ou sobremesa qualquer não serve). Detalhes do pedido (no copo, com granola, vista de cima) só servem pra ordenar: fotos do assunto sem esses detalhes continuam valendo, só vêm depois."
           : ""
       }`,
       messages: [{ role: "user", content: `Assunto principal: ${assunto || "-"}\nContexto: ${contexto}\n\nFotos:\n${lista}` }],
@@ -167,7 +170,12 @@ export async function POST(req: NextRequest) {
     } catch {
       /* sem IA: busca literal */
     }
-    const cenas = plano?.cenas.length ? plano.cenas : [pedido || assunto || biz.name];
+    // Com pedido, também busca o assunto puro (ex.: "acai bowl"), que é onde
+    // o banco tem mais fotos certas; os detalhes vêm nas outras buscas.
+    const cenas = [
+      ...(pedido && plano?.assunto ? [plano.assunto] : []),
+      ...(plano?.cenas.length ? plano.cenas : [pedido || assunto || biz.name]),
+    ].filter((c, i, arr) => arr.findIndex((x) => x.toLowerCase() === c.toLowerCase()) === i).slice(0, 6);
 
     const orientacao: Orientacao = formato === "quadrado" ? "square" : formato === "retrato" ? "portrait" : "landscape";
     const key = process.env.PEXELS_API_KEY;
@@ -178,6 +186,7 @@ export async function POST(req: NextRequest) {
     // Com pedido digitado, a busca é estrita: primeiro um filtro pelas
     // palavras-chave na descrição da foto, depois a Orbi confere uma a uma.
     const estrito = !!pedido;
+    let comPalavra: FotoPronta[] | null = null;
     const palavras = [...(plano?.palavras ?? []), ...(pedido ? [semAcento(pedido)] : [])].filter(Boolean);
     if (estrito && palavras.length) {
       const batem = candidatas.filter((f) => {
@@ -185,10 +194,18 @@ export async function POST(req: NextRequest) {
         return palavras.some((p) => alt.includes(p));
       });
       if (batem.length >= 3) candidatas = batem;
+      comPalavra = batem;
     }
 
     const contexto = `Negócio: ${biz.name} (${sobre.slice(0, 200)}). Item: ${assunto || "-"}. ${pedido ? `Pedido: ${pedido}.` : ""} Cenas buscadas: ${cenas.join("; ")}.`;
-    const fotos = (await escolherMelhores(candidatas, contexto, plano?.assunto || pedido, estrito)).slice(0, 27);
+    let fotos = await escolherMelhores(candidatas, contexto, plano?.assunto || pedido, estrito);
+    // Nunca volta vazio se há fotos com o assunto na descrição: a conferência
+    // da Orbi pode ter sido rigorosa demais com os detalhes.
+    if (estrito && fotos.length < 6 && comPalavra && comPalavra.length > fotos.length) {
+      const ids = new Set(fotos.map((f) => f.id));
+      fotos = [...fotos, ...comPalavra.filter((f) => !ids.has(f.id))];
+    }
+    fotos = fotos.slice(0, 27);
 
     return NextResponse.json({ busca: pedido, cenas, sugestoes: plano?.sugestoes ?? [], fotos });
   } catch (e) {
