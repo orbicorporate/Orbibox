@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { galleryRatioOf, formatPrice, isVideoUrl, youtubeId, instagramReelId, type GalleryRatio } from "@/lib/showcase";
 import { ImageCropModal, RATIOS, RATIO_PIXELS } from "@/components/ui/ImageCropModal";
 import { PromptParaIA } from "@/components/ui/LinhaExpansivel";
+import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 
 type Business = {
@@ -67,14 +68,21 @@ function crescer(el: HTMLTextAreaElement | null) {
   el.style.height = `${el.scrollHeight}px`;
 }
 
-function promptFoto(titulo: string, descricao: string, ratio: GalleryRatio) {
+type MarcaPrompt = { cores: string; tom: string };
+
+function promptFoto(titulo: string, descricao: string, ratio: GalleryRatio, negocio: string, marca: MarcaPrompt | null) {
   const nome = titulo.trim() || "meu produto";
-  const desc = descricao.trim() ? ` Sobre ele: ${descricao.trim().slice(0, 220)}` : "";
-  return `Criar uma foto no formato ${ratio} (${RATIO_PIXELS[ratio]}) para a página de "${nome}".${desc}
-
-Estilo fotográfico realista, luz natural suave, composição limpa e sofisticada. Mostre um ângulo, detalhe ou uso diferente do produto. Sem textos, logotipos ou marcas d'água na imagem.
-
-Use como referência de estilo e de produto as fotos que vou anexar.`;
+  const linhas = [
+    `Crie uma foto no formato ${ratio} (${RATIO_PIXELS[ratio]}) para a página de "${nome}", da marca ${negocio}.`,
+    descricao.trim() ? `Sobre o item: ${descricao.trim().slice(0, 220)}` : "",
+    "",
+    "Use a foto que estou anexando como base (o produto real) e deixe a imagem com a cara da marca:",
+    marca?.cores ? `- Cores da marca: ${marca.cores}` : "",
+    marca?.tom ? `- Tom da marca: ${marca.tom.slice(0, 160)}` : "",
+    "",
+    "Estilo fotográfico realista, luz natural suave, composição limpa. Mostre um ângulo, detalhe ou uso diferente do produto. Sem textos, logotipos ou marcas d'água.",
+  ];
+  return linhas.filter((l, i, arr) => l !== "" || (i > 0 && arr[i - 1] !== "")).join("\n").trim();
 }
 
 export function ProductPageEditor({ business, item }: { business: Business; item: Item }) {
@@ -99,6 +107,21 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const [enviando, setEnviando] = useState(false);
   const [erroFoto, setErroFoto] = useState<string | null>(null);
   const [sugerindo, setSugerindo] = useState(false);
+  const [fotosProntas, setFotosProntas] = useState(false);
+  const [marca, setMarca] = useState<MarcaPrompt | null>(null);
+
+  // Cores e tom da marca pro prompt, buscados só quando a pessoa abre ele.
+  async function abrirIA() {
+    const abrir = painel !== "ia";
+    setPainel(abrir ? "ia" : null);
+    if (abrir && !marca) {
+      const { data } = await supabase.from("businesses").select("brand_colors, brand_voice_summary").eq("id", business.id).maybeSingle();
+      const cores = Array.isArray(data?.brand_colors)
+        ? (data!.brand_colors as { hex?: string }[]).map((c) => c?.hex).filter(Boolean).slice(0, 5).join(", ")
+        : "";
+      setMarca({ cores, tom: (data?.brand_voice_summary as string | null) ?? "" });
+    }
+  }
   const inputRef = useRef<HTMLInputElement>(null);
   const trilhoRef = useRef<HTMLDivElement>(null);
 
@@ -250,7 +273,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
                   )}
                   {soCapa ? (
                     <span className="absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1.5 text-[11.5px] font-medium text-white backdrop-blur">
-                      Capa do card · some quando você adicionar fotos
+                      Capa do card · adicione fotos abaixo
                     </span>
                   ) : (
                     <>
@@ -273,29 +296,14 @@ export function ProductPageEditor({ business, item }: { business: Business; item
               );
             })}
 
-            {/* Último slide: adicionar */}
-            {midias.length < MAX_MIDIAS && (
+            {/* Sem nenhuma foto: um espaço vazio no formato certo. */}
+            {slides.length === 0 && (
               <div
-                className={`flex shrink-0 snap-center flex-col items-center justify-center gap-2.5 rounded-[22px] border-2 border-dashed border-on-background/15 bg-surface-soft/60 p-5 ${slides.length ? "w-[70%]" : "w-full"}`}
-                style={{ aspectRatio: slides.length ? undefined : aspect, alignSelf: "stretch", minHeight: slides.length ? undefined : 0 }}
+                className="flex w-full shrink-0 flex-col items-center justify-center gap-1 rounded-[22px] border-2 border-dashed border-on-background/15 bg-surface-soft/60 p-5 text-center"
+                style={{ aspectRatio: aspect }}
               >
-                {enviando ? (
-                  <span className="text-[13px] text-text-tertiary">Enviando…</span>
-                ) : (
-                  <>
-                    <button onClick={() => inputRef.current?.click()} className="flex w-full max-w-[220px] items-center justify-center gap-2 rounded-full bg-on-background py-3 text-[14px] font-medium text-white">
-                      + Foto
-                    </button>
-                    <button onClick={() => setPainel(painel === "video" ? null : "video")} className="flex w-full max-w-[220px] items-center justify-center gap-2 rounded-full border border-divider bg-surface-white py-3 text-[14px] font-medium">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M8 5.5v13l11-6.5z" /></svg>
-                      Vídeo
-                    </button>
-                    <button onClick={() => setPainel(painel === "ia" ? null : "ia")} className="flex w-full max-w-[220px] items-center justify-center gap-2 rounded-full orbi-gradient py-3 text-[14px] font-medium text-on-background">
-                      ✦ Criar com IA
-                    </button>
-                    <span className="text-[11.5px] text-text-tertiary">{RATIO_PIXELS[formato]}</span>
-                  </>
-                )}
+                <span className="text-[14px] font-medium text-text-secondary">{enviando ? "Enviando…" : "Suas fotos aparecem aqui"}</span>
+                <span className="text-[11.5px] text-text-tertiary">{RATIO_PIXELS[formato]}</span>
               </div>
             )}
           </div>
@@ -324,6 +332,56 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             </div>
           </div>
 
+          {/* Adicionar fotos: sempre à vista, logo abaixo do carrossel. */}
+          {midias.length < MAX_MIDIAS && (
+            <div className="mt-4 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => setFotosProntas(true)}
+                className="orbi-gradient w-full rounded-[20px] p-[1.5px] text-left shadow-[0_6px_22px_rgba(120,220,160,0.22)] transition-transform active:scale-[0.99]"
+              >
+                <span className="flex w-full items-center gap-3 rounded-[18.5px] bg-surface-white px-3.5 py-3">
+                  <span className="orbi-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-on-background" aria-hidden>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="16" rx="3" />
+                      <circle cx="9" cy="10" r="2" />
+                      <path d="M21 16l-5-5-8 9" />
+                    </svg>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[14.5px] font-semibold">Buscar foto pronta</span>
+                    <span className="block text-[12px] leading-snug text-text-secondary">A Orbi entende o tema e escolhe fotos profissionais</span>
+                  </span>
+                  <span className="shrink-0 rounded-full bg-on-background px-3.5 py-2 text-[12.5px] font-semibold text-white">Buscar</span>
+                </span>
+              </button>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => inputRef.current?.click()}
+                  disabled={enviando}
+                  className="flex flex-col items-center gap-1 rounded-2xl border border-divider bg-surface-white py-3 text-[12.5px] font-medium disabled:opacity-50"
+                >
+                  <span className="text-[17px] leading-none">+</span>
+                  {enviando ? "Enviando…" : "Enviar foto"}
+                </button>
+                <button
+                  onClick={() => setPainel(painel === "video" ? null : "video")}
+                  className={`flex flex-col items-center gap-1 rounded-2xl border bg-surface-white py-3 text-[12.5px] font-medium ${painel === "video" ? "border-on-background" : "border-divider"}`}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M8 5.5v13l11-6.5z" /></svg>
+                  Vídeo
+                </button>
+                <button
+                  onClick={abrirIA}
+                  className={`flex flex-col items-center gap-1 rounded-2xl border bg-surface-white py-3 text-[12.5px] font-medium ${painel === "ia" ? "border-on-background" : "border-divider"}`}
+                >
+                  <span className="text-[14px] leading-none">✦</span>
+                  Criar com IA
+                </button>
+              </div>
+            </div>
+          )}
+
           {erroFoto && <p className="mt-2 text-[12.5px] text-red-600">{erroFoto}</p>}
 
           {painel === "video" && (
@@ -346,7 +404,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
 
           {painel === "ia" && (
             <div className="mt-3 rounded-2xl border border-divider bg-surface-white p-3.5">
-              <PromptParaIA destino="no + Foto" texto={promptFoto(titulo, descricao, formato)} />
+              <PromptParaIA destino="em Enviar foto" texto={promptFoto(titulo, descricao, formato, business.name, marca)} />
             </div>
           )}
 
@@ -485,6 +543,19 @@ export function ProductPageEditor({ business, item }: { business: Business; item
           <p className="mt-2 text-center text-[11.5px] text-text-tertiary">Esses botões aparecem sozinhos, com os contatos do negócio.</p>
         </div>
       </main>
+
+      {fotosProntas && (
+        <FotoProntaPicker
+          businessId={business.id}
+          assunto={titulo}
+          formato={formato}
+          onFechar={() => setFotosProntas(false)}
+          onEscolher={(file) => {
+            setFotosProntas(false);
+            setArquivo(file);
+          }}
+        />
+      )}
 
       {arquivo && (
         <ImageCropModal
