@@ -486,9 +486,12 @@ export function ShowcaseBuilder({
     await saveCategories(next);
   }
 
+  // Move dentro da própria seção (categoria), que é o que a pessoa vê.
   async function move(item: Item, dir: -1 | 1) {
-    const idx = ordered.findIndex((i) => i.id === item.id);
-    const swap = ordered[idx + dir];
+    const cat = item.brand_label?.trim() || "";
+    const irmaos = ordered.filter((i) => (i.brand_label?.trim() || "") === cat);
+    const idx = irmaos.findIndex((i) => i.id === item.id);
+    const swap = irmaos[idx + dir];
     if (!swap) return;
     snapshot();
     patch(item.id, { position: swap.position });
@@ -960,8 +963,8 @@ export function ShowcaseBuilder({
                   patch={patch}
                   save={save}
                   move={move}
-                  idx={ordered.findIndex((i) => i.id === item.id)}
-                  total={ordered.length}
+                  idx={sec.items.findIndex((i) => i.id === item.id)}
+                  total={sec.items.length}
                   businessId={businessId}
                   brandColors={brandColors}
                   paletteTab={paletteTab}
@@ -1510,6 +1513,29 @@ function ItemCard({
         >
           ✕
         </button>
+
+        {/* Setinhas pra subir e descer o box dentro da seção. */}
+        {!editing && total > 1 && (
+          <div className="absolute bottom-3 left-3 flex overflow-hidden rounded-full bg-surface-white/95 shadow backdrop-blur" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => move(item, -1)}
+              disabled={idx <= 0}
+              className="flex h-8 w-8 items-center justify-center text-[14px] text-on-background disabled:opacity-25"
+              aria-label="Subir box"
+            >
+              ↑
+            </button>
+            <span className="my-1.5 w-px bg-divider" />
+            <button
+              onClick={() => move(item, 1)}
+              disabled={idx >= total - 1}
+              className="flex h-8 w-8 items-center justify-center text-[14px] text-on-background disabled:opacity-25"
+              aria-label="Descer box"
+            >
+              ↓
+            </button>
+          </div>
+        )}
 
         {/* Tag preta de editar: deixa explícito que o box é editável, sem
             depender do usuário descobrir que o card inteiro é clicável. */}
