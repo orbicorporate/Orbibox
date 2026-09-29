@@ -1516,20 +1516,20 @@ function ItemCard({
 
         {/* Setinhas pra subir e descer o box dentro da seção. */}
         {!editing && total > 1 && (
-          <div className="absolute bottom-3 left-3 flex overflow-hidden rounded-full bg-surface-white/95 shadow backdrop-blur" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute left-12 top-3 flex h-7 overflow-hidden rounded-full bg-surface-white/95 shadow backdrop-blur" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => move(item, -1)}
               disabled={idx <= 0}
-              className="flex h-8 w-8 items-center justify-center text-[14px] text-on-background disabled:opacity-25"
+              className="flex h-7 w-7 items-center justify-center text-[13px] text-on-background disabled:opacity-25"
               aria-label="Subir box"
             >
               ↑
             </button>
-            <span className="my-1.5 w-px bg-divider" />
+            <span className="my-1 w-px bg-divider" />
             <button
               onClick={() => move(item, 1)}
               disabled={idx >= total - 1}
-              className="flex h-8 w-8 items-center justify-center text-[14px] text-on-background disabled:opacity-25"
+              className="flex h-7 w-7 items-center justify-center text-[13px] text-on-background disabled:opacity-25"
               aria-label="Descer box"
             >
               ↓
