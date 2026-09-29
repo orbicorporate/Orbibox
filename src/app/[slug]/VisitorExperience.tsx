@@ -19,6 +19,7 @@ import { heroBackground } from "@/lib/heroStyle";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
+import { IconeRede, nomeDaRede, redeDoLink, type Rede } from "@/lib/redesSociais";
 import { homeCardShellClass, homeCardShellStyle, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
 import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
@@ -196,8 +197,8 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; onClick: () => void };
-  const options: Option[] = boxList
+  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; onClick: () => void };
+  const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
       if (hasAiChat) return true;
@@ -244,7 +245,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick };
+        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
@@ -252,6 +253,10 @@ export function VisitorExperience({
       return { key: b.id, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || base.d, color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
+  // Redes sociais saem da grade de boxes e viram uma fileira de bolinhas
+  // logo abaixo, na ordem em que estão nos Smart Boxes.
+  const options = todasOpcoes.filter((o) => !o.rede);
+  const redes = todasOpcoes.filter((o) => o.rede);
 
   async function chooseIntent(value: Intent, prefill?: string) {
     if (value === "duvida" && !hasAiChat) return;
@@ -639,7 +644,7 @@ export function VisitorExperience({
                   );
                 });
               })()}
-              {options.length === 0 && (
+              {todasOpcoes.length === 0 && (
                 <div className="col-span-2 rounded-[24px] bg-surface-white p-5 text-center shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
                   <p className="text-[14px] font-medium">Ainda não tem nada por aqui</p>
                   <p className="mt-1 text-[14px] leading-relaxed text-text-tertiary">
@@ -648,6 +653,23 @@ export function VisitorExperience({
                 </div>
               )}
             </div>
+
+            {redes.length > 0 && (
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+                {redes.map((o) => (
+                  <button
+                    key={o.key}
+                    type="button"
+                    onClick={o.onClick}
+                    aria-label={o.t || nomeDaRede(o.rede as Rede)}
+                    title={o.t || nomeDaRede(o.rede as Rede)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-divider/80 bg-surface-white text-on-background shadow-[0_2px_10px_rgba(17,19,24,0.05)] transition-transform active:scale-95"
+                  >
+                    <IconeRede rede={o.rede as Rede} size={19} />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {hasAiChat && content.length >= 3 && (
               <div className="mt-6 w-full">

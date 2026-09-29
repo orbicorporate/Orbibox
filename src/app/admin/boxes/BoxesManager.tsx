@@ -1,5 +1,6 @@
 "use client";
 
+import { IconeRede, nomeDaRede, redeDoLink } from "@/lib/redesSociais";
 import Link from "next/link";
 import { useState, useEffect, type CSSProperties, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -977,6 +978,14 @@ function BoxEditor({
               placeholder={cfg.action === "whatsapp" ? "https://wa.me/55... (vazio usa o WhatsApp de Configurações)" : "https://..."}
               className="rounded-2xl border border-divider px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
             />
+          )}
+          {cfg.action === "link" && redeDoLink(cfg.url) && (
+            <p className="flex items-center gap-2 text-[12px] text-text-tertiary">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-divider text-on-background">
+                <IconeRede rede={redeDoLink(cfg.url)!} size={13} />
+              </span>
+              Link de {nomeDaRede(redeDoLink(cfg.url)!)}: aparece como bolinha abaixo dos boxes, junto com as outras redes.
+            </p>
           )}
 
           {cfg.action === "avaliar" && (
