@@ -180,6 +180,13 @@ export function ProductPageEditor({ business, item }: { business: Business; item
     irPara(j);
   }
 
+  function paraPrimeira(i: number) {
+    if (i <= 0) return;
+    const nova = [midias[i], ...midias.filter((_, k) => k !== i)];
+    salvarMidias(nova);
+    irPara(0);
+  }
+
   function irPara(i: number) {
     requestAnimationFrame(() => {
       const el = trilhoRef.current;
@@ -284,12 +291,6 @@ export function ProductPageEditor({ business, item }: { business: Business; item
                       >
                         ✕
                       </button>
-                      {midias.length > 1 && (
-                        <span className="absolute inset-x-3 bottom-3 flex justify-between">
-                          <button onClick={() => mover(i, -1)} className={`flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur ${i === 0 ? "invisible" : ""}`} aria-label="Mover pra esquerda">‹</button>
-                          <button onClick={() => mover(i, 1)} className={`flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur ${i === midias.length - 1 ? "invisible" : ""}`} aria-label="Mover pra direita">›</button>
-                        </span>
-                      )}
                     </>
                   )}
                 </div>
@@ -331,6 +332,60 @@ export function ProductPageEditor({ business, item }: { business: Business; item
               ))}
             </div>
           </div>
+
+          {/* Ordem das fotos: miniaturas numeradas; toque numa pra escolher e
+              use os botões pra mudar a posição. A 1ª é a que abre a página. */}
+          {midias.length > 1 && (
+            <div className="mt-4 rounded-2xl border border-divider bg-surface-white p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[13px] font-semibold">Ordem das fotos</p>
+                <p className="text-[11.5px] text-text-tertiary">A 1ª é a que aparece primeiro</p>
+              </div>
+              <div className="no-scrollbar mt-2.5 flex gap-2 overflow-x-auto pb-0.5">
+                {midias.map((src, i) => {
+                  const yt = youtubeId(src);
+                  return (
+                    <button
+                      key={`${src}-${i}`}
+                      onClick={() => irPara(i)}
+                      className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 ${i === ativo ? "border-on-background" : "border-transparent"}`}
+                    >
+                      {instagramReelId(src) && !yt ? (
+                        <span className="flex h-full w-full items-center justify-center bg-on-background text-[10px] text-white/70">Reels</span>
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={yt ? `https://img.youtube.com/vi/${yt}/mqdefault.jpg` : src} alt="" className="h-full w-full object-cover" />
+                      )}
+                      <span className="absolute left-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-black/65 px-1 text-[10px] font-semibold text-white">{i + 1}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-2.5 flex gap-1.5">
+                <button
+                  onClick={() => mover(ativo, -1)}
+                  disabled={ativo <= 0}
+                  className="flex-1 rounded-full bg-surface-soft py-2 text-[12.5px] font-medium disabled:opacity-35"
+                >
+                  ‹ Antes
+                </button>
+                <button
+                  onClick={() => mover(ativo, 1)}
+                  disabled={ativo >= midias.length - 1}
+                  className="flex-1 rounded-full bg-surface-soft py-2 text-[12.5px] font-medium disabled:opacity-35"
+                >
+                  Depois ›
+                </button>
+                <button
+                  onClick={() => paraPrimeira(ativo)}
+                  disabled={ativo <= 0}
+                  className="flex-1 rounded-full bg-on-background py-2 text-[12.5px] font-medium text-white disabled:opacity-35"
+                >
+                  Tornar 1ª
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Adicionar fotos: sempre à vista, logo abaixo do carrossel. */}
           {midias.length < MAX_MIDIAS && (
