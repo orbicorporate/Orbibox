@@ -48,8 +48,8 @@ export function ColorPickerSheet({
   preview?: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50" onClick={onClose}>
-      <div className="max-h-[80vh] overflow-y-auto rounded-t-[28px] bg-surface-white p-5" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-end bg-black/50 sm:justify-center sm:p-6" onClick={onClose}>
+      <div className="max-h-[80vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-surface-white p-5 sm:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" aria-label="Fechar" />
 
         {/* Prévia ao vivo: muda na hora conforme a pessoa toca nas cores */}
@@ -61,15 +61,15 @@ export function ColorPickerSheet({
         )}
 
         <p className="text-center text-[13px] font-medium text-text-secondary">Toque numa cor pra ver na hora</p>
-        <div className="mt-3 grid grid-cols-10 gap-1.5 pb-2">
+        <div className="mt-3 grid grid-cols-8 gap-2 pb-2">
           {ORBI_SPHERE_COLORS.map((c) => (
             <button
               key={c.hex}
               onClick={() => onSelect(c.hex)}
               aria-label={c.label}
               title={c.label}
-              className={`aspect-square rounded-full border-2 transition-transform ${current?.toLowerCase() === c.hex.toLowerCase() ? "scale-110 border-on-background" : "border-transparent"}`}
-              style={{ backgroundColor: c.hex }}
+              className={`aspect-square rounded-full border-2 transition-transform hover:scale-105 ${current?.toLowerCase() === c.hex.toLowerCase() ? "scale-110 border-on-background" : "border-transparent"}`}
+              style={{ backgroundColor: c.hex, boxShadow: "inset 0 0 0 1px rgba(17,19,24,0.08)" }}
             />
           ))}
         </div>
