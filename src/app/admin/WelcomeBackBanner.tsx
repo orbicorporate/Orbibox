@@ -38,37 +38,63 @@ export function WelcomeBackBanner({
 
   if (!mostrar) return null;
 
+  const lista = pendencias.slice(0, 3);
+  const resto = pendencias.length - lista.length;
+
   return (
-    <div className="apr-pop mt-5 overflow-hidden rounded-[22px] border border-divider bg-surface-white p-4">
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full orbi-gradient text-[15px]">👋</span>
-        <div className="min-w-0">
-          <p className="text-[14px] font-semibold leading-tight">Que bom te ver de novo, {businessName}!</p>
-          <p className="mt-0.5 text-[12.5px] text-text-tertiary">Aqui vai um resumo rápido do que falta cuidar.</p>
-        </div>
-      </div>
+    <div className="apr-pop relative mt-5 overflow-hidden rounded-[24px] border border-divider/80 bg-surface-white px-5 pb-4 pt-5 shadow-[0_4px_24px_rgba(17,19,24,0.05)]">
+      {/* Um véu bem leve em degradê no canto, a assinatura da Orbi sem pesar. */}
+      <span className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full orbi-gradient opacity-[0.18] blur-2xl" aria-hidden />
+
+      <button
+        type="button"
+        onClick={() => setMostrar(false)}
+        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-text-tertiary transition-colors hover:bg-surface-soft"
+        aria-label="Fechar"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+
+      <p className="relative text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary">Bem-vindo de volta</p>
+      <p className="relative mt-1 pr-8 font-[family-name:var(--font-manrope)] text-[19px] font-semibold leading-snug tracking-[-0.01em]">
+        Que bom te ver, {businessName}
+      </p>
+      <p className="relative mt-0.5 text-[13px] text-text-secondary">
+        {pendencias.length === 0
+          ? "Tudo em dia por aqui."
+          : `${pendencias.length === 1 ? "Falta 1 coisa" : `Faltam ${pendencias.length} coisas`} pra deixar seu Orbibox completo.`}
+      </p>
 
       {pendencias.length > 0 ? (
-        <div className="mt-3 flex flex-col gap-2">
-          {pendencias.slice(0, 3).map((p) => (
+        <div className="relative mt-3">
+          {lista.map((p, i) => (
             <Link
               key={p.href + p.title}
               href={p.href}
-              className="flex items-center justify-between rounded-2xl bg-surface-soft px-3.5 py-2.5"
+              className={`group flex items-center gap-3 py-3 ${i > 0 ? "border-t border-divider/70" : ""}`}
             >
-              <span className="text-[13px] font-medium">{p.title}</span>
-              <span className="text-text-tertiary">›</span>
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-on-background/15 text-[11px] font-semibold text-text-secondary">
+                {i + 1}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[14px] text-on-background">{p.title}</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary transition-transform group-hover:translate-x-0.5" aria-hidden>
+                <path d="M9 6l6 6-6 6" />
+              </svg>
             </Link>
           ))}
-          {pendencias.length > 3 && (
-            <Link href="/admin/pendencias" className="text-center text-[12.5px] font-medium text-text-secondary underline">
-              +{pendencias.length - 3} outra(s) pendência(s)
+          {resto > 0 && (
+            <Link href="/admin/pendencias" className="mt-1 flex items-center justify-end gap-1 border-t border-divider/70 pt-3 text-[12.5px] font-medium text-text-secondary">
+              Ver todas ({pendencias.length})
+              <span aria-hidden>→</span>
             </Link>
           )}
         </div>
       ) : (
-        <p className="mt-3 rounded-2xl bg-[#E4F7EA] px-3.5 py-2.5 text-[13px] font-medium text-[#1F7A45]">
-          ✓ Seu Orbibox está completo, é só continuar divulgando e acompanhando o Pulse.
+        <p className="relative mt-3 flex items-center gap-2 text-[13px] text-text-secondary">
+          <span className="orbi-gradient flex h-5 w-5 items-center justify-center rounded-full text-[10px] text-on-background">✓</span>
+          Seu Orbibox está completo. É só divulgar e acompanhar o Pulse.
         </p>
       )}
     </div>
