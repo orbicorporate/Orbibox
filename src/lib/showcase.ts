@@ -188,15 +188,20 @@ export function titleFontSize(title: string, size: BoxSize): string {
 }
 
 // Agrupa itens em seções por categoria, preservando a ordem de position.
-export function groupByCategory<T extends { brand_label: string | null; position: number }>(items: T[]) {
+/**
+ * Agrupa os itens da Vitrine em seções, igual no painel e na página:
+ * - itens sem categoria vêm primeiro, numa seção sem título (name = "");
+ * - depois as categorias, na ordem definida pelo dono (vitrine_categories),
+ *   e por fim as que só existem nos itens, na ordem em que aparecem.
+ */
+export function groupByCategory<T extends { brand_label: string | null; position: number }>(items: T[], ordem: string[] = []) {
   const ordered = [...items].sort((a, b) => a.position - b.position);
-  const map = new Map<string, T[]>();
-  for (const it of ordered) {
-    const key = it.brand_label?.trim() || "Destaques";
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(it);
-  }
-  return [...map.entries()].map(([name, list]) => ({ name, items: list }));
+  const semCategoria = ordered.filter((i) => !i.brand_label?.trim());
+  const nomes = Array.from(new Set([...ordem.map((n) => n.trim()).filter(Boolean), ...ordered.map((i) => i.brand_label?.trim() ?? "").filter(Boolean)]));
+  const secoes = nomes
+    .map((name) => ({ name, items: ordered.filter((i) => i.brand_label?.trim() === name) }))
+    .filter((s) => s.items.length > 0);
+  return [...(semCategoria.length ? [{ name: "", items: semCategoria }] : []), ...secoes];
 }
 
 export type PriceType = "sem" | "exato" | "a_partir" | "faixa" | "media" | "consulta";

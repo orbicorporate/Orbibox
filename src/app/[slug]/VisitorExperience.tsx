@@ -29,6 +29,7 @@ type Business = {
   id: string;
   name: string;
   slug: string;
+  vitrine_categories?: string[] | null;
   brand_voice_summary: string | null;
   brand_colors: { hex: string; role: string }[] | unknown;
   contact_whatsapp: string | null;
@@ -1763,14 +1764,17 @@ function VitrineCoverBleed({ business }: { business: Business }) {
 }
 
 function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
-  const sections = groupByCategory(content);
+  const sections = groupByCategory(content, business.vitrine_categories ?? []);
+  // Chips e títulos só pras categorias de verdade; itens sem categoria
+  // aparecem no topo, sem título.
+  const nomeadas = sections.filter((s) => s.name);
   const [active, setActive] = useState<string | null>(null);
 
   const visible = active ? sections.filter((s) => s.name === active) : sections;
 
   return (
     <>
-      {sections.length > 1 && (
+      {sections.length > 1 && nomeadas.length > 0 && (
         <div className="mt-5 flex gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
             onClick={() => setActive(null)}
@@ -1778,7 +1782,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
           >
             Tudo
           </button>
-          {sections.map((s) => (
+          {nomeadas.map((s) => (
             <button
               key={s.name}
               onClick={() => setActive(s.name)}
@@ -1792,13 +1796,14 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
 
       <div className="mt-6 flex flex-col gap-8">
         {visible.map((sec, si) => (
-          <div key={sec.name}>
-            {sections.length > 1 && (
+          <div key={sec.name || "_sem"}>
+            {sections.length > 1 && sec.name && (
               <h3 className="mb-3 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h3>
             )}
             {/* Mesmo cartão grande da edição, o que você vê ao editar é o que o
-                visitante vê aqui, sem surpresa. */}
-            <div className="flex flex-wrap gap-5">
+                visitante vê aqui, sem surpresa. items-start: card sem rodapé
+                não estica até a altura do vizinho. */}
+            <div className="flex flex-wrap items-start gap-5">
               {sec.items.map((item) => {
                 const c = colorOf(item.box_color);
                 const fc = item.footer_color ? colorOf(item.footer_color) : null;

@@ -444,9 +444,10 @@ export function ShowcaseBuilder({
   const itemCategoryNames = Array.from(new Set(ordered.map((i) => i.brand_label?.trim()).filter((v): v is string => !!v)));
   const allCategoryNames = Array.from(new Set([...categories, ...itemCategoryNames]));
   const uncategorized = ordered.filter((i) => !i.brand_label?.trim());
+  // Mesma ordem da página pública: sem categoria no topo, depois as categorias.
   const sections = [
-    ...allCategoryNames.map((name) => ({ name, items: ordered.filter((i) => (i.brand_label?.trim() ?? "") === name) })),
     ...(uncategorized.length > 0 ? [{ name: "Destaques", items: uncategorized }] : []),
+    ...allCategoryNames.map((name) => ({ name, items: ordered.filter((i) => (i.brand_label?.trim() ?? "") === name) })),
   ];
 
   function patch(id: string, fields: Partial<Item>) {
@@ -904,16 +905,26 @@ export function ShowcaseBuilder({
         {sections.map((sec, si) => {
           const isDestaques = sec.name === "Destaques";
           const realCount = sections.filter((s) => s.name !== "Destaques").length;
+          const catIdx = si - (sections[0]?.name === "Destaques" ? 1 : 0);
           return (
           <div key={sec.name}>
+            {/* Itens sem categoria: sem título quando não existe nenhuma
+                categoria; com categorias, aparecem como "Sem categoria", sem
+                renomear nem excluir (não é uma categoria de verdade). */}
+            {!(isDestaques && realCount === 0) && (
             <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
+              {isDestaques ? (
+                <p className="text-[13px] text-text-tertiary">Sem categoria · aparecem no topo da Vitrine, sem título</p>
+              ) : (
+                <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
+              )}
+              {!isDestaques && (
               <div className="flex shrink-0 items-center gap-1.5">
                 {!isDestaques && (
                   <>
                     <button
                       onClick={() => moveCategory(sec.name, -1)}
-                      disabled={si === 0}
+                      disabled={catIdx === 0}
                       aria-label="Subir categoria"
                       className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-text-secondary disabled:opacity-30"
                     >
@@ -921,7 +932,7 @@ export function ShowcaseBuilder({
                     </button>
                     <button
                       onClick={() => moveCategory(sec.name, 1)}
-                      disabled={si >= realCount - 1}
+                      disabled={catIdx >= realCount - 1}
                       aria-label="Descer categoria"
                       className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-text-secondary disabled:opacity-30"
                     >
@@ -932,9 +943,13 @@ export function ShowcaseBuilder({
                 <button onClick={() => renameCategory(sec.name)} aria-label="Renomear categoria" className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-text-secondary">✎</button>
                 <button onClick={() => deleteCategory(sec.name)} aria-label="Excluir categoria" className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-soft text-[12px] text-red-600">×</button>
               </div>
+              )}
             </div>
+            )}
 
-            <div className="flex flex-wrap gap-5">
+            {/* items-start: cada card tem a altura dele; sem isso, um card sem
+                rodapé esticava até a altura do vizinho e sobrava branco embaixo. */}
+            <div className="flex flex-wrap items-start gap-5">
               {sec.items.map((item) => (
                 <ItemCard
                   key={item.id}
@@ -1908,7 +1923,7 @@ function ItemCard({
                   uma vez e trocar com um toque. */}
               <div className="mt-2.5 flex flex-wrap gap-2">
                 {[{ v: null as string | null, t: "Sem categoria" }, ...categories.map((name) => ({ v: name as string | null, t: name }))].map(({ v, t }) => {
-                  const ativo = (item.brand_label ?? null) === v;
+                  const ativo = (item.brand_label?.trim() || null) === v;
                   return (
                     <button
                       key={t + (v ?? "")}
