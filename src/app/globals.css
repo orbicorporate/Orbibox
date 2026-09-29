@@ -815,3 +815,62 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .orbi-ativar-brilho, .orbi-ativar-gema { animation: none; }
 }
+
+/* Bolinhas de redes sociais na Home: entram em sequência com um pulinho,
+   depois cada uma "respira" com um anel na cor da rede e um brilho que
+   atravessa, alternando entre elas pra nunca piscar tudo junto. */
+.orbi-rede {
+  position: relative;
+  overflow: visible;
+  opacity: 0;
+  animation: orbiRedeEntra 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 90ms + 150ms);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.orbi-rede:hover { transform: translateY(-2px) scale(1.06); }
+.orbi-rede:active { transform: scale(0.94); }
+@keyframes orbiRedeEntra {
+  0% { opacity: 0; translate: 0 10px; scale: 0.6; }
+  100% { opacity: 1; translate: 0 0; scale: 1; }
+}
+.orbi-rede-anel {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 0 var(--cor);
+  animation: orbiRedeAnel 3.6s ease-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.7s + 1.2s);
+  pointer-events: none;
+}
+@keyframes orbiRedeAnel {
+  0% { box-shadow: 0 0 0 0 var(--cor); opacity: 0.55; }
+  35% { box-shadow: 0 0 0 9px var(--cor); opacity: 0; }
+  100% { box-shadow: 0 0 0 9px var(--cor); opacity: 0; }
+}
+.orbi-rede-brilho {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.orbi-rede-brilho::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -60%;
+  width: 45%;
+  height: 140%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: rotate(12deg);
+  animation: orbiRedeBrilho 3.6s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.7s + 1.2s);
+}
+@keyframes orbiRedeBrilho {
+  0% { left: -60%; }
+  30%, 100% { left: 130%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-rede { animation: none; opacity: 1; }
+  .orbi-rede-anel, .orbi-rede-brilho::after { animation: none; display: none; }
+}

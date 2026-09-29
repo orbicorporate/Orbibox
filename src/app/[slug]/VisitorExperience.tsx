@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
@@ -19,7 +19,7 @@ import { heroBackground } from "@/lib/heroStyle";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
-import { IconeRede, nomeDaRede, redeDoLink, type Rede } from "@/lib/redesSociais";
+import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, nomeDaRede, redeDoLink, type Rede } from "@/lib/redesSociais";
 import { homeCardShellClass, homeCardShellStyle, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
 import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
@@ -655,19 +655,28 @@ export function VisitorExperience({
             </div>
 
             {redes.length > 0 && (
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
-                {redes.map((o) => (
-                  <button
-                    key={o.key}
-                    type="button"
-                    onClick={o.onClick}
-                    aria-label={o.t || nomeDaRede(o.rede as Rede)}
-                    title={o.t || nomeDaRede(o.rede as Rede)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full border border-divider/80 bg-surface-white text-on-background shadow-[0_2px_10px_rgba(17,19,24,0.05)] transition-transform active:scale-95"
-                  >
-                    <IconeRede rede={o.rede as Rede} size={19} />
-                  </button>
-                ))}
+              <div className="mt-7 flex flex-col items-center">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Siga a gente</p>
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+                  {redes.map((o, i) => {
+                    const r = o.rede as Rede;
+                    return (
+                      <button
+                        key={o.key}
+                        type="button"
+                        onClick={o.onClick}
+                        aria-label={o.t || nomeDaRede(r)}
+                        title={o.t || nomeDaRede(r)}
+                        style={{ "--i": i, "--cor": COR_DA_REDE[r], background: FUNDO_DA_REDE[r], boxShadow: `0 6px 18px -6px ${COR_DA_REDE[r]}99` } as CSSProperties}
+                        className="orbi-rede flex h-12 w-12 items-center justify-center rounded-full text-white"
+                      >
+                        <span className="orbi-rede-anel" aria-hidden />
+                        <span className="orbi-rede-brilho" aria-hidden />
+                        <span className="relative"><IconeRede rede={r} size={21} /></span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

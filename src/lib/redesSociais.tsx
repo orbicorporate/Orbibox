@@ -18,6 +18,33 @@ const NOMES: Record<Rede, string> = {
   behance: "Behance",
 };
 
+/** Cor oficial de cada rede (o Instagram usa o degradê dele). */
+export const FUNDO_DA_REDE: Record<Rede, string> = {
+  instagram: "radial-gradient(circle at 30% 107%, #FDF497 0%, #FDF497 5%, #FD5949 45%, #D6249F 60%, #285AEB 90%)",
+  linkedin: "#0A66C2",
+  facebook: "#1877F2",
+  tiktok: "#111111",
+  youtube: "#FF0033",
+  x: "#111111",
+  pinterest: "#E60023",
+  threads: "#111111",
+  spotify: "#1DB954",
+  behance: "#1769FF",
+};
+/** Cor do anel que "respira" em volta (a principal da marca). */
+export const COR_DA_REDE: Record<Rede, string> = {
+  instagram: "#E1306C",
+  linkedin: "#0A66C2",
+  facebook: "#1877F2",
+  tiktok: "#25F4EE",
+  youtube: "#FF0033",
+  x: "#555555",
+  pinterest: "#E60023",
+  threads: "#555555",
+  spotify: "#1DB954",
+  behance: "#1769FF",
+};
+
 export function nomeDaRede(r: Rede) {
   return NOMES[r];
 }
