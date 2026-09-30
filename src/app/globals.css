@@ -874,3 +874,53 @@ body {
   .orbi-rede { animation: none; opacity: 1; }
   .orbi-rede-anel, .orbi-rede-brilho::after { animation: none; display: none; }
 }
+
+/* ───────────── Modo Órbita (Home em órbita + transição) ───────────── */
+.orbita-portal { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+.orbita-portal-ceu {
+  position: absolute; inset: 0; overflow: hidden;
+  background:
+    radial-gradient(70% 45% at 20% 12%, color-mix(in srgb, var(--o3) 28%, transparent), transparent 72%),
+    radial-gradient(65% 45% at 85% 88%, color-mix(in srgb, var(--o2) 26%, transparent), transparent 72%),
+    radial-gradient(55% 35% at 50% 44%, rgba(255,255,255,.95), transparent 70%),
+    linear-gradient(170deg, color-mix(in srgb, var(--o1) 12%, #FFFDF9) 0%, #FFFEFB 50%, color-mix(in srgb, var(--o2) 12%, #FFFDF9) 100%);
+}
+.orbita-portal-aneis { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.orbita-portal-galaxia { position: absolute; left: 50%; top: 44%; width: 360px; height: 360px; margin: -180px 0 0 -180px; transform: rotate(-22deg) scaleY(.38); }
+.orbita-portal-galaxia i {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 10%, color-mix(in srgb, var(--o1) 45%, #fff) 16%, transparent 26%, transparent 52%, color-mix(in srgb, var(--o2) 40%, #fff) 64%, transparent 76%);
+  -webkit-mask: radial-gradient(circle, #000 0, rgba(0,0,0,.6) 30%, transparent 66%);
+  mask: radial-gradient(circle, #000 0, rgba(0,0,0,.6) 30%, transparent 66%);
+  filter: blur(11px); opacity: .42; animation: orbitaGira 14s linear infinite;
+}
+.orbita-portal-galaxia i + i { inset: 18%; opacity: .22; animation-duration: 10s; animation-direction: reverse; filter: blur(8px); }
+.orbita-portal-galaxia b { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: radial-gradient(circle, #fff 0, rgba(255,255,255,.7) 30%, color-mix(in srgb, var(--o1) 18%, transparent) 60%, transparent 75%); filter: blur(2px); }
+.orbita-portal-estrela { position: absolute; border-radius: 50%; background: #fff; box-shadow: 0 0 0 .4px color-mix(in srgb, var(--o1) 55%, #b8a888), 0 0 5px 1px color-mix(in srgb, var(--o1) 35%, #fff); animation: orbitaPisca 3s ease-in-out infinite; }
+.orbita-portal-cometa { position: absolute; left: -20%; top: 18%; width: 70px; height: 1px; border-radius: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--o1) 45%, #fff) 75%, #fff); transform: rotate(16deg); animation: orbitaCometa 1.8s cubic-bezier(.35,.1,.25,1) .15s both; }
+.orbita-portal-cometa::after { content: ""; position: absolute; right: -1px; top: 50%; width: 3px; height: 3px; margin-top: -1.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px 2px color-mix(in srgb, var(--o1) 40%, #fff); }
+@keyframes orbitaGira { to { transform: rotate(360deg); } }
+@keyframes orbitaPisca { 0%, 100% { opacity: .15; transform: scale(.6); } 50% { opacity: .85; transform: scale(1); } }
+@keyframes orbitaCometa { 0% { transform: translate(0,0) rotate(16deg); opacity: 0; } 20% { opacity: .8; } 100% { transform: translate(480px,140px) rotate(16deg); opacity: 0; } }
+
+/* Esfera fluida do centro: uma bola só, degradê da paleta, respiração leve. */
+.orbita-esfera { position: absolute; border-radius: 50%; pointer-events: none; }
+.orbita-esfera-halo { position: absolute; inset: -4px; border-radius: 50%; background: radial-gradient(circle, var(--o1), transparent 70%); opacity: .35; filter: blur(6px); animation: orbitaMorfa 9s ease-in-out infinite; }
+.orbita-esfera-vidro {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 34% 26%, rgba(255,255,255,.7), rgba(255,255,255,0) 34%), radial-gradient(circle at 72% 78%, color-mix(in srgb, var(--o3) 80%, transparent), transparent 62%), linear-gradient(155deg, color-mix(in srgb, var(--o1) 85%, #fff), color-mix(in srgb, var(--o2) 90%, #000 4%));
+  box-shadow: inset 0 -8px 16px color-mix(in srgb, var(--o2) 60%, #000 10%), 0 12px 24px -12px color-mix(in srgb, var(--o1) 80%, #000);
+  animation: orbitaRespira 8s ease-in-out infinite;
+}
+@keyframes orbitaMorfa { 0%, 100% { border-radius: 46% 54% 58% 42% / 44% 48% 52% 56%; } 50% { border-radius: 58% 42% 46% 54% / 52% 40% 60% 48%; } }
+@keyframes orbitaRespira { 0%, 100% { border-radius: 50%; } 50% { border-radius: 53% 47% 49% 51% / 48% 52% 48% 52%; } }
+
+.orbita-planeta { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; will-change: transform, opacity; transition: box-shadow .4s; }
+.orbita-planeta.frente { box-shadow: 0 0 0 3px #fff, 0 0 0 5px color-mix(in srgb, var(--o1) 70%, transparent), 0 14px 30px -10px rgba(17,19,24,.45) !important; }
+.orbita-lua { position: absolute; left: 0; top: 0; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #fff; will-change: transform, opacity; box-shadow: 0 6px 14px -6px rgba(17,19,24,.45); }
+.orbita-legenda-troca { animation: orbitaLegenda .5s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes orbitaLegenda { from { opacity: 0; transform: translateY(8px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+.orbita-entra > * { animation: orbitaLegenda .7s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .orbita-portal-galaxia i, .orbita-portal-estrela, .orbita-portal-cometa, .orbita-esfera-halo, .orbita-esfera-vidro, .orbita-legenda-troca, .orbita-entra > * { animation: none; }
+}

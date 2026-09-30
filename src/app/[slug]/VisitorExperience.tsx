@@ -25,6 +25,8 @@ import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
+import { OrbitHome } from "./OrbitHome";
+import { guardarModoHome, useModoHomeDoVisitante, type ModoHome } from "@/lib/modoHome";
 
 type Business = {
   id: string;
@@ -51,6 +53,7 @@ type Business = {
   catalog_title: string | null;
   catalog_subtitle: string | null;
   vitrine_lead_top?: boolean | null;
+  home_mode?: string | null;
 };
 
 type ContentItem = {
@@ -136,6 +139,15 @@ export function VisitorExperience({
   // Box de endereço expande direto na Home (sem navegar pra outra tela) , 
   // guarda qual box está expandido agora (ou null se nenhum).
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
+  // Modo Órbita x Modo Box. O dono define o padrão da página; o visitante
+  // pode trocar e a escolha dele vale só no aparelho dele.
+  const [modoPadrao, setModoPadrao] = useState<ModoHome>(business.home_mode === "orbita" ? "orbita" : "grade");
+  const escolhaVisitante = useModoHomeDoVisitante(business.slug);
+  const modo: ModoHome = escolhaVisitante ?? modoPadrao;
+  async function tornarPadrao(novo: ModoHome) {
+    setModoPadrao(novo);
+    await supabase.from("businesses").update({ home_mode: novo }).eq("id", business.id);
+  }
 
   useEffect(() => {
     // Detecta origem e dispositivo do visitante, antes era fixo "direct/web",
@@ -197,7 +209,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; onClick: () => void };
+  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; onClick: () => void };
   const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -245,12 +257,12 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
       const fallbackLabel = b.box_type === "content" ? `Sobre a ${business.name}` : base.t;
-      return { key: b.id, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || base.d, color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick: () => chooseIntent(base.k) };
+      return { key: b.id, interno: true, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || base.d, color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
   // Redes sociais saem da grade de boxes e viram uma fileira de bolinhas
@@ -386,6 +398,28 @@ export function VisitorExperience({
           um vazio enorme no topo. */}
       <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
         {intent === null && (
+          <SeletorModo
+            modo={modo}
+            onTrocar={(m) => guardarModoHome(business.slug, m)}
+            padrao={showOwnerControls ? modoPadrao : null}
+            onTornarPadrao={() => tornarPadrao(modo)}
+          />
+        )}
+
+        {intent === null && modo === "orbita" && (
+          <OrbitHome
+            itens={options}
+            redes={redes.map((o) => ({ key: o.key, t: o.t, rede: o.rede as Rede, onClick: o.onClick }))}
+            nome={business.name}
+            pergunta={business.hero_question}
+            logoUrl={business.logo_url}
+            cores={orbiColors ?? heroGradient}
+            agentName={agentName}
+            onPerguntar={hasAiChat ? () => chooseIntent("duvida") : undefined}
+          />
+        )}
+
+        {intent === null && modo === "grade" && (
           <div className="flex flex-col items-center text-center">
             {business.hero_avatar === "particle" || business.hero_avatar === "sphere" ? (
               <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="mb-8 rounded-full" />
@@ -2014,5 +2048,72 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
       </div>
       <BarraContato business={business} sessionId={sessionId} onOrbi={onOrbi} />
     </>
+  );
+}
+
+/** Troca clara entre os dois jeitos de ver a tela inicial. Pro dono (fora do
+ * modo visitante) mostra também qual é o padrão da página e deixa tornar o
+ * modo atual o padrão com um toque. */
+function SeletorModo({
+  modo,
+  onTrocar,
+  padrao,
+  onTornarPadrao,
+}: {
+  modo: ModoHome;
+  onTrocar: (m: ModoHome) => void;
+  padrao: ModoHome | null;
+  onTornarPadrao: () => void;
+}) {
+  const opcoes: { v: ModoHome; rotulo: string; icone: React.ReactNode }[] = [
+    {
+      v: "orbita",
+      rotulo: "Modo Órbita",
+      icone: (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+          <ellipse cx="12" cy="12" rx="10" ry="5.5" transform="rotate(-18 12 12)" />
+          <circle cx="12" cy="12" r="2.6" />
+        </svg>
+      ),
+    },
+    {
+      v: "grade",
+      rotulo: "Modo Box",
+      icone: (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+          <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
+          <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
+          <rect x="3.5" y="13.5" width="17" height="7" rx="2" />
+        </svg>
+      ),
+    },
+  ];
+  return (
+    <div className="mb-6 flex flex-col items-center gap-2">
+      <div role="radiogroup" aria-label="Como ver esta página" className="flex rounded-full bg-on-background/[0.06] p-1">
+        {opcoes.map((o) => (
+          <button
+            key={o.v}
+            type="button"
+            role="radio"
+            aria-checked={modo === o.v}
+            onClick={() => onTrocar(o.v)}
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] transition-all duration-300 ${modo === o.v ? "bg-surface-white text-on-background shadow-[0_1px_6px_rgba(17,19,24,0.12)]" : "text-text-tertiary"}`}
+          >
+            {o.icone}
+            {o.rotulo}
+          </button>
+        ))}
+      </div>
+      {padrao && (
+        padrao === modo ? (
+          <p className="text-[12px] text-text-tertiary">Padrão da sua página</p>
+        ) : (
+          <button type="button" onClick={onTornarPadrao} className="text-[12px] text-text-secondary underline underline-offset-2">
+            Deixar o {modo === "orbita" ? "Modo Órbita" : "Modo Box"} como padrão
+          </button>
+        )
+      )}
+    </div>
   );
 }

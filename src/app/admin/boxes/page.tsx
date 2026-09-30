@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { BoxesManager } from "./BoxesManager";
+import { HomeModePicker } from "./HomeModePicker";
 import { parseLogoGallery } from "@/lib/logoGallery";
 import { PreviewVisitante } from "@/components/mobile/PreviewVisitante";
 
@@ -12,7 +13,7 @@ export default async function BoxesPage() {
   const [{ data: business }, access] = await Promise.all([
     supabase
       .from("businesses")
-      .select("id, name, slug, story_photos, story_photo_format, about_business, differentials, differentials_cards, hero_question, hero_avatar, logo_url, logo_gallery, brand_colors, address")
+      .select("id, name, slug, story_photos, story_photo_format, about_business, differentials, differentials_cards, hero_question, hero_avatar, home_mode, logo_url, logo_gallery, brand_colors, address")
       .eq("id", businessId!)
       .single(),
     businessId ? getAccessInfoForBusiness(businessId) : Promise.resolve(null),
@@ -47,6 +48,7 @@ export default async function BoxesPage() {
       <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
         Os botões que aparecem quando alguém abre seu link. Ligue os que fazem sentido e escolha a ordem.
       </p>
+      <HomeModePicker businessId={business!.id} inicial={business!.home_mode ?? null} />
       <BoxesManager
         businessId={business!.id}
         businessName={business!.name}
