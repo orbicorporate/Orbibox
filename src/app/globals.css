@@ -918,6 +918,17 @@ body {
 .orbita-planeta { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; will-change: transform, opacity; transition: box-shadow .4s; }
 .orbita-planeta.frente { box-shadow: 0 0 0 3px #fff, 0 0 0 5px color-mix(in srgb, var(--o1) 70%, transparent), 0 14px 30px -10px rgba(17,19,24,.45) !important; }
 .orbita-lua { position: absolute; left: 0; top: 0; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #fff; will-change: transform, opacity; box-shadow: 0 6px 14px -6px rgba(17,19,24,.45); }
+/* Planetas e luas como esferas: brilho especular no alto à esquerda,
+   sombra de volume embaixo à direita e um aro de luz, por cima do ícone. */
+.orbita-planeta::after, .orbita-lua::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255,255,255,.85) 0%, rgba(255,255,255,.28) 14%, rgba(255,255,255,0) 34%),
+    radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 52%, rgba(0,0,0,.10) 72%, rgba(0,0,0,.30) 100%),
+    radial-gradient(circle at 72% 82%, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 22%);
+  box-shadow: inset -5px -7px 14px rgba(0,0,0,.20), inset 3px 4px 8px rgba(255,255,255,.55), inset 0 0 0 1px rgba(255,255,255,.35);
+}
+.orbita-lua::after { box-shadow: inset -3px -4px 8px rgba(0,0,0,.22), inset 2px 2px 5px rgba(255,255,255,.5); }
 .orbita-legenda-troca { animation: orbitaLegenda .5s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes orbitaLegenda { from { opacity: 0; transform: translateY(8px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 .orbita-entra > * { animation: orbitaLegenda .7s cubic-bezier(.2,.8,.2,1) both; }
