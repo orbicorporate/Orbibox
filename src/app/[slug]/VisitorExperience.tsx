@@ -578,23 +578,30 @@ export function VisitorExperience({
                         toque, sem precisar abrir o editor completo. */}
                     {showOwnerControls && colorPickerBox === o.key && (
                       <div
-                        className="absolute right-2.5 top-11 z-20 flex flex-wrap gap-2 rounded-2xl bg-white p-3 shadow-[0_8px_24px_rgba(17,19,24,0.18)]"
-                        style={{ width: 224 }}
+                        className="absolute right-2.5 top-11 z-20 grid grid-cols-7 gap-1.5 rounded-2xl bg-white p-3 shadow-[0_8px_24px_rgba(17,19,24,0.18)]"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
                           type="button"
                           onClick={() => setBoxColor(o.key, null)}
-                          className="flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white"
+                          className="flex h-[26px] w-[26px] items-center justify-center rounded-full border border-divider bg-surface-white"
                           aria-label="Branco padrão"
                         >
                           {!o.color && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111318" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
                         </button>
                         {[
-                          "#FFFFFF", "#000000", "#C0392B", "#C2650A", "#1F7A3D", "#0E7490", "#1D4ED8", "#6D28D9", "#B0309E",
-                          // Cores premium: tons mais profundos/acinzentados, acabamento joia.
-                          "#1B2A4A", "#6E1F3A", "#0B6B4F", "#B8860B", "#C97064", "#3A3F44", "#0F4C5C", "#5B2A6E",
-                          "#4A3728", "#B76E79", "#5C6B73",
+                          // Linha 1: neutros, do branco ao preto.
+                          "#F1EDE4", "#D9D4C7", "#B9B3A6", "#9A968C", "#5C6B73", "#3A3F44", "#000000",
+                          // Linha 2: vivos quentes.
+                          "#C0392B", "#E5482F", "#C2650A", "#E8902A", "#F2B705", "#B8860B", "#8A6A2B",
+                          // Linha 3: vivos frios.
+                          "#1F7A3D", "#3FA34D", "#0B6B4F", "#0E7490", "#1FA2C9", "#1D4ED8", "#3B82F6",
+                          // Linha 4: roxos e rosas.
+                          "#6D28D9", "#8B5CF6", "#5B2A6E", "#B0309E", "#E0457B", "#B76E79", "#C97064",
+                          // Linha 5: premium, tons profundos com acabamento joia.
+                          "#1B2A4A", "#14213D", "#0F4C5C", "#2E4034", "#6E1F3A", "#4A3728", "#6E5A3D",
+                          // Linha 6: pastéis.
+                          "#F6C6C0", "#F7D9B5", "#F3E7A6", "#CFE8C4", "#C4E4EC", "#C9D6F2", "#DCCDF0",
                         ].map((c) => {
                           const isWhite = c === "#FFFFFF";
                           return (
@@ -602,7 +609,7 @@ export function VisitorExperience({
                               key={c}
                               type="button"
                               onClick={() => setBoxColor(o.key, c)}
-                              className={`flex h-7 w-7 items-center justify-center rounded-full ${isWhite ? "border border-divider" : ""}`}
+                              className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${isWhite || c.startsWith("#F") ? "border border-divider" : ""}`}
                               style={{ backgroundColor: c }}
                               aria-label={`Cor ${c}`}
                             >
