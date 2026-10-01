@@ -22,6 +22,7 @@ import type { InspireThemeData } from "@/lib/inspirePhotos";
 import { useDialogs } from "@/hooks/useDialogs";
 import { whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
+import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -800,7 +801,7 @@ export function ShowcaseBuilder({
 
       {avisarNovidade && (
         <div className="orbi-card-light relative mb-4 flex items-center gap-3 overflow-hidden rounded-[22px] p-4">
-          <span className="relative text-[20px]">✦</span>
+          <OrbiSimbolo size={36} className="relative" />
           <div className="relative min-w-0 flex-1">
             <p className="text-[14px] font-semibold leading-tight">
               {avisarNovidade.quantos} {avisarNovidade.quantos === 1 ? "pessoa pediu" : "pessoas pediram"} pra ser avisada de novidade

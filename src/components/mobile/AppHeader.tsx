@@ -8,6 +8,7 @@ import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { BackButton } from "./BackButton";
 import { ProgressBadge } from "@/components/ProgressBadge";
 import { createClient } from "@/lib/supabase/client";
+import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 
 const MENU_ITEMS = [
   {
@@ -263,9 +264,7 @@ export function AppHeader({
                       style={item.bg === "orbi-gradient" ? undefined : { backgroundColor: item.bg, color: item.fg }}
                     >
                       {item.bg === "orbi-gradient" ? (
-                        <span className="orbi-gradient flex h-11 w-11 items-center justify-center rounded-2xl" style={{ color: item.fg }}>
-                          {item.icon}
-                        </span>
+<OrbiSimbolo size={44} />
                       ) : (
                         item.icon
                       )}

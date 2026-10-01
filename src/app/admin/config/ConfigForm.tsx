@@ -12,6 +12,7 @@ import { GuiaPassos, Secao, rolarAte } from "@/components/ui/GuiaPassos";
 import { OrbiColorsPanel } from "@/app/admin/agent/OrbiColorsPanel";
 import { HeroBackgroundPanel } from "@/app/admin/agent/HeroBackgroundPanel";
 import { gravarFlag, useFlag } from "@/lib/useFlag";
+import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 
 type Business = {
   id: string;
@@ -388,7 +389,7 @@ export function ConfigForm({
         </Secao>
 
         <Link href="/admin/agent" className="mt-3 flex items-center gap-3 rounded-[18px] px-1 py-2 text-[13.5px] text-text-secondary">
-          <span className="orbi-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] text-on-background">✦</span>
+          <OrbiSimbolo size={32} />
           <span className="min-w-0 flex-1">Próximo: configurar sua IA</span>
           <span aria-hidden>→</span>
         </Link>
@@ -407,7 +408,7 @@ export function ConfigForm({
         href="/admin/agent"
         className="mt-5 flex items-center gap-3.5 rounded-[22px] border border-divider bg-surface-white p-4"
       >
-        <span className="orbi-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-[16px] text-on-background">✦</span>
+        <OrbiSimbolo size={40} />
         <span className="min-w-0 flex-1">
           <span className="block text-[14.5px] font-semibold leading-tight">Deixa a Orbi preencher sozinha</span>
           <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">
@@ -507,7 +508,7 @@ export function ConfigForm({
         className="mt-8 flex items-center gap-3.5 rounded-[22px] orbi-gradient p-[1.5px]"
       >
         <span className="flex w-full items-center gap-3.5 rounded-[21px] bg-surface-white p-4">
-          <span className="orbi-gradient flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[17px] text-on-background">✦</span>
+          <OrbiSimbolo size={44} />
           <span className="min-w-0 flex-1">
             <span className="block text-[14.5px] font-semibold leading-tight">Quer calibrar ainda mais?</span>
             <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">

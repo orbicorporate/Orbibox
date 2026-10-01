@@ -3,6 +3,7 @@ import { loadConfigData } from "./loadConfigData";
 import { SignOutButton } from "./SignOutButton";
 import { ExcluirOrbibox } from "./ExcluirOrbibox";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
+import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 
 type Pendencias = { marca: number; contatos: number; orbi: number };
 
@@ -86,7 +87,7 @@ export default async function ConfigMenuPage() {
               style={item.bg === "orbi-gradient" ? undefined : { backgroundColor: item.bg, color: item.fg }}
             >
               {item.bg === "orbi-gradient" ? (
-                <span className="orbi-gradient flex h-11 w-11 items-center justify-center rounded-2xl" style={{ color: item.fg }}>{item.icon}</span>
+                <OrbiSimbolo size={44} />
               ) : item.icon}
             </span>
             <span className="min-w-0 flex-1">

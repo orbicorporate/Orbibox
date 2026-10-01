@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { VoucherPlanoOrbi } from "./VoucherPlanoOrbi";
+import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 
 type VoucherSimples = { id: string; title: string };
 
@@ -36,7 +37,7 @@ export function DivulgarVoucherButton({ vouchers, orbiColors }: { vouchers: Vouc
           onClick={() => setEscolhendo(true)}
           className="orbi-card-light relative mt-4 flex w-full cursor-pointer items-center gap-3.5 overflow-hidden rounded-[24px] p-5 text-left"
         >
-          <span className="orbi-gradient relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-[19px] text-on-background">✦</span>
+          <OrbiSimbolo size={48} className="relative" />
           <span className="relative min-w-0 flex-1">
             <span className="block font-[family-name:var(--font-manrope)] text-[17px] font-semibold leading-tight">
               Como divulgar meus vouchers

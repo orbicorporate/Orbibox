@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { PROGRESS_STEPS, type ProgressKey } from "@/lib/progress";
+import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 
 // Ícone + cor de cada passo, pastel de fundo com o traço numa cor mais forte,
 // no mesmo espírito de referências como Wix/Shopify onboarding.
@@ -119,9 +120,7 @@ export function ProgressCard({ done, pct }: { done: Record<string, boolean>; pct
                 style={cfg.bg === "orbi-gradient" ? undefined : { backgroundColor: cfg.bg, color: cfg.fg }}
               >
                 {cfg.bg === "orbi-gradient" ? (
-                  <span className="orbi-gradient flex h-9 w-9 items-center justify-center rounded-xl" style={{ color: cfg.fg }}>
-                    {cfg.icon}
-                  </span>
+<OrbiSimbolo size={36} />
                 ) : (
                   cfg.icon
                 )}
@@ -180,9 +179,7 @@ function Tag({ href, label, feito, bg, fg, icon }: { href: string; label: string
         style={feito ? { backgroundColor: "#1F7A45", color: "#fff" } : bg === "orbi-gradient" ? undefined : { backgroundColor: bg, color: fg }}
       >
         {feito ? <TagCheck /> : bg === "orbi-gradient" ? (
-          <span className="orbi-gradient flex h-5 w-5 items-center justify-center rounded-full" style={{ color: fg }}>
-            {icon}
-          </span>
+<OrbiSimbolo size={20} />
         ) : (
           icon
         )}

@@ -996,3 +996,8 @@ body {
 .sistema-vidro :is([class*="p-[1.5px]"], [class*="p-[2px]"]) > .bg-surface-white {
   background-image: linear-gradient(150deg, rgba(255,255,255,.97), rgba(255,255,255,.9));
 }
+
+/* Símbolo da Orbi boiando de leve, igual à flutuante. */
+@keyframes orbi-simbolo-boia { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.orbi-simbolo { animation: orbi-simbolo-boia 3.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .orbi-simbolo { animation: none; } }

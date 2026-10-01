@@ -5,6 +5,7 @@ import { getCurrentBusinessId } from "@/lib/business";
 import { getBusinessProgress } from "@/lib/progress";
 import { getPendingInsights, type Insight } from "@/lib/insights";
 import { ProgressTags, type ProgressExtra } from "@/components/ProgressWidgets";
+import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 
 // Cada pendência cai numa dessas 4 categorias, pra lista parar de ser um
 // amontoado de itens soltos e virar algo mais didático: primeiro o básico
@@ -168,9 +169,7 @@ function insightMeta(insight: Insight): { categoria: Categoria; bg: string; fg: 
 function IconChip({ bg, fg, icon }: { bg: string; fg: string; icon: ReactNode }) {
   if (bg === "orbi-gradient") {
     return (
-      <span className="orbi-gradient flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl" style={{ color: fg }}>
-        {icon}
-      </span>
+<OrbiSimbolo size={44} />
     );
   }
   return (

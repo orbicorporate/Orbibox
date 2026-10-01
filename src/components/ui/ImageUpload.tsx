@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropModal";
 import { FotoProntaPicker } from "./FotoProntaPicker";
+import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 
 type Marca = { name: string; brand_colors: unknown; about_business: string | null; brand_voice_summary: string | null };
 
@@ -211,7 +212,7 @@ export function ImageUpload({
                     <path d="M21 16l-5-5-8 9" />
                   </svg>
                 </span>
-                <span className="orbi-gradient absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] text-on-background ring-2 ring-surface-white">✦</span>
+                <OrbiSimbolo size={20} className="absolute -bottom-1 -right-1" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[15px] font-semibold text-on-background">Buscar foto pronta</span>
@@ -223,7 +224,7 @@ export function ImageUpload({
 
           <div className={`rounded-2xl border bg-surface-white ${showPrompt ? "border-on-background/15" : "border-divider"}`}>
             <button type="button" onClick={abrirPrompt} className="flex w-full items-center gap-3 px-3.5 py-3 text-left">
-              <span className="orbi-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[14px] text-on-background">✦</span>
+              <OrbiSimbolo size={36} />
               <span className="min-w-0 flex-1">
                 <span className="block text-[14px] font-medium text-on-background">Criar com a cara da marca</span>
                 <span className="block text-[12px] text-text-tertiary">Prompt pronto pro ChatGPT, com suas cores</span>
