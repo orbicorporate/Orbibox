@@ -50,10 +50,10 @@ export function GiftArt({
       <div className="absolute inset-0" style={{ background: giftGradient(artTheme) }} />
       {artUrl && (
         <div
-          className="absolute inset-y-0 right-0 w-[64%]"
+          className="absolute inset-y-0 right-0 w-[44%]"
           style={{
-            WebkitMaskImage: "linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 30%, rgba(0,0,0,.85) 62%, #000 80%)",
-            maskImage: "linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 30%, rgba(0,0,0,.85) 62%, #000 80%)",
+            WebkitMaskImage: "linear-gradient(90deg, transparent 0%, rgba(0,0,0,.5) 28%, #000 60%)",
+            maskImage: "linear-gradient(90deg, transparent 0%, rgba(0,0,0,.5) 28%, #000 60%)",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
