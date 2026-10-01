@@ -118,7 +118,12 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
             </p>
 
             {gifts.length === 0 ? (
-              <p className="mt-4 text-[13.5px] text-text-tertiary">Nenhum gift ainda.</p>
+              <div className="mt-4 rounded-2xl border border-dashed border-divider px-4 py-5 text-center">
+                <p className="text-[14px] font-medium">Nenhum gift ainda</p>
+                <p className="mx-auto mt-1 max-w-[260px] text-[12.5px] leading-snug text-text-secondary">
+                  Assim que um cliente montar um gift, ele aparece bem aqui. Recebeu o pagamento? É só tocar em Liberar.
+                </p>
+              </div>
             ) : (
               <div className="mt-4 flex flex-col gap-2">
                 {gifts.map((g) => {
