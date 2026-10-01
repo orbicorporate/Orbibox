@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { AbrirChatGPT } from "@/components/ui/AbrirChatGPT";
 
 type TopItem = { title: string; image_url: string | null; clicks: number };
 
@@ -406,6 +407,7 @@ export function PulseRecomendacao({
                 <button onClick={copiar} className="flex-1 rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
                   {copiado ? "✓ Copiado!" : tipo === "arte" ? "Copiar prompt" : "Copiar texto"}
                 </button>
+                {tipo === "arte" && <AbrirChatGPT className="py-3 text-[14px]" />}
                 <button
                   onClick={() => tipo && gerar(tipo, false)}
                   disabled={loading}

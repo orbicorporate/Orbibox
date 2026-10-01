@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { AbrirChatGPT } from "@/components/ui/AbrirChatGPT";
+import { PassosPrompt } from "@/components/ui/PassosPrompt";
 
 /**
  * Linha de ação que abre pra baixo: ícone, título, subtítulo e uma setinha.
@@ -61,14 +63,13 @@ export function PromptParaIA({ texto, destino }: { texto: string; destino: strin
       <div className="rounded-xl bg-surface-soft p-3">
         <p className="select-text whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{texto}</p>
       </div>
-      <ol className="mt-3 flex flex-col gap-1 text-[12px] text-text-secondary">
-        <li>1. Copie o prompt</li>
-        <li>2. Cole no ChatGPT e anexe fotos reais como referência</li>
-        <li>3. Baixe a imagem e envie {destino}</li>
-      </ol>
-      <button type="button" onClick={copiar} className="mt-3 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
-        {copiado ? "✓ Copiado" : "Copiar prompt"}
-      </button>
+      <PassosPrompt anexo="+ fotos de referência" destino={`a imagem ${destino}`} />
+      <div className="mt-3 flex gap-2">
+        <button type="button" onClick={copiar} className="flex-1 rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
+          {copiado ? "✓ Copiado" : "Copiar prompt"}
+        </button>
+        <AbrirChatGPT />
+      </div>
     </div>
   );
 }

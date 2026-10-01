@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatFone } from "@/lib/utils";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { NovaTag, TagChip, type Tag } from "./Etiquetas";
+import { AbrirChatGPT } from "@/components/ui/AbrirChatGPT";
 
 type ListaResumo = { id: string; name: string; motivo: string; kind: string; remind_after_days: number | null; total: number; vencidos: number };
 type Membro = { lead_id: string; name: string | null; whatsapp: string; contacted_at: string | null; vencido: boolean };
@@ -354,8 +355,11 @@ Aqui está a lista:
           onClick={copiarPromptGpt}
           className="shrink-0 cursor-pointer rounded-full bg-surface-soft px-3 py-1.5 text-[11.5px] font-semibold text-text-secondary"
         >
-          {promptCopiado ? "Prompt copiado ✓" : "✦ Organizar no ChatGPT"}
+          {promptCopiado ? "Prompt copiado ✓" : "Copiar prompt pro ChatGPT"}
         </button>
+      </div>
+      <div className="mt-1.5 flex justify-end">
+        <AbrirChatGPT compacto />
       </div>
       <p className="mt-0.5 text-[11.5px] text-text-tertiary">Um por linha: nome e telefone. Ex: Marina, 11 98888-7777</p>
       <textarea value={bruto} onChange={(e) => setBruto(e.target.value)} rows={5} placeholder={"Marina, 11 98888-7777\nJoão Pedro - (11) 97777-6666"} className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13.5px] leading-relaxed outline-none focus:border-on-background" />

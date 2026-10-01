@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropModal";
 import { FotoProntaPicker } from "./FotoProntaPicker";
 import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
+import { AbrirChatGPT } from "@/components/ui/AbrirChatGPT";
+import { PassosPrompt } from "@/components/ui/PassosPrompt";
 
 type Marca = { name: string; brand_colors: unknown; about_business: string | null; brand_voice_summary: string | null };
 
@@ -238,18 +240,12 @@ export function ImageUpload({
                 <div className="rounded-xl bg-surface-soft p-3">
                   <p className="select-text whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{promptTexto}</p>
                 </div>
-                <ol className="mt-3 flex flex-col gap-1 text-[12.5px] text-text-secondary">
-                  <li>1. Copie o prompt</li>
-                  <li>2. Abra o ChatGPT e anexe uma foto do produto ou o seu logo</li>
-                  <li>3. Baixe a imagem que ele criar e envie aqui em cima</li>
-                </ol>
+                <PassosPrompt />
                 <div className="mt-3 flex gap-2">
                   <button type="button" onClick={copyPrompt} className="flex-1 rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
                     {copied ? "✓ Copiado" : "Copiar prompt"}
                   </button>
-                  <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-full border border-divider px-4 py-2.5 text-[13px] font-medium">
-                    Abrir ChatGPT ↗
-                  </a>
+                  <AbrirChatGPT />
                 </div>
               </div>
             )}
