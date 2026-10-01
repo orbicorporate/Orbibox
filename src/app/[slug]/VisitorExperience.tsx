@@ -221,6 +221,12 @@ export function VisitorExperience({
       if (b.box_type === "custom" && cfg.action === "gift" && !giftEnabled) return false;
       return true;
     })
+    // "Presentear" é um só: se o box fixo de campanha está ativo, um box
+    // personalizado de gift (atalho antigo) seria repetido, então sai.
+    .filter((b) => {
+      const cfg = (b.config ?? {}) as CustomConfig;
+      return !(b.box_type === "custom" && cfg.action === "gift" && boxList.some((x) => x.box_type === "campaign" && x.is_active));
+    })
     .sort((a, b) => a.position - b.position)
     .map((b): Option | null => {
       const cfg = (b.config ?? {}) as CustomConfig;
