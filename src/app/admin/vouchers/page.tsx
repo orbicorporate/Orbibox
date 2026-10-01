@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { BeneficiosVoucher } from "./BeneficiosVoucher";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { VouchersManager } from "./VouchersManager";
@@ -162,34 +163,17 @@ export default async function VouchersPage() {
           {/* Card de venda com benefícios visuais */}
           <div className="orbi-gradient rounded-[24px] p-[2px]">
             <div className="rounded-[22px] bg-surface-white p-5">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-soft px-3 py-1 text-[12px] font-bold uppercase tracking-wide text-text-secondary">
-                🎟️ Recurso Nióbio
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-soft px-3 py-1 text-[11.5px] font-medium uppercase tracking-[0.1em] text-text-secondary">
+                Recurso Nióbio
               </span>
               <p className="mt-3 font-[family-name:var(--font-manrope)] text-[19px] font-semibold leading-tight">
                 Transforme visitantes em clientes com vouchers inteligentes
               </p>
               <p className="mt-2 text-[14.5px] leading-relaxed text-text-secondary">
-                Não é um voucherzinho comum. É um sistema completo de promoção com controle total, que atrai gente nova e
-                faz ela vir até você.
+                Um sistema de promoção com controle total, que atrai gente nova e faz ela vir até você.
               </p>
 
-              <div className="mt-4 flex flex-col gap-3">
-                {[
-                  { icon: "🧲", t: "Atrai cliente novo", d: "A oferta aparece na página e no chat da Orbi." },
-                  { icon: "🔐", t: "Código único por pessoa", d: "Ninguém repete nem usa o voucher de outro." },
-                  { icon: "📦", t: "Estoque sob controle", d: "Você define quantos são. Acabou, fecha sozinho." },
-                  { icon: "📱", t: "Valida no seu celular", d: "Digita o código do cliente e confirma na hora." },
-                  { icon: "📇", t: "Cada resgate vira contato", d: "Monta uma lista de clientes pra vender de novo." },
-                ].map((b, bi) => (
-                  <div key={b.t} className="flex animate-[fadeInUp_0.5s_ease] items-start gap-3" style={{ animationDelay: `${bi * 90}ms`, animationFillMode: "backwards" }}>
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[17px]">{b.icon}</span>
-                    <div>
-                      <p className="text-[14px] font-semibold">{b.t}</p>
-                      <p className="mt-0.5 text-[13.5px] leading-relaxed text-text-secondary">{b.d}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <BeneficiosVoucher />
             </div>
           </div>
 
