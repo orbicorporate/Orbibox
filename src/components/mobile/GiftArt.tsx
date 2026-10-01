@@ -51,10 +51,18 @@ export function GiftArt({
           {/* Com foto: a própria foto, bem desfocada, vira o fundo do card;
               do lado direito ela aparece nítida; do esquerdo um painel de
               vidro fosco com borda curva segura o texto. */}
+          {/* Fundo inteiro: a foto bem desfocada, pra o vidro ter o que refratar. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={artUrl} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={artUrl} alt="" className="absolute inset-y-0 right-0 h-full w-[46%] object-cover" />
+          {/* Foto nítida à direita. A borda esquerda dela se dissolve debaixo
+              do vidro, então nunca aparece uma linha reta atrás dele. */}
+          <div
+            className="absolute inset-y-0 right-0 w-[58%]"
+            style={{ WebkitMaskImage: "linear-gradient(90deg, transparent 0%, #000 34%)", maskImage: "linear-gradient(90deg, transparent 0%, #000 34%)" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={artUrl} alt="" className="h-full w-full object-cover object-right" />
+          </div>
           <svg width="0" height="0" className="absolute" aria-hidden>
             <defs>
               <clipPath id={clipId} clipPathUnits="objectBoundingBox">
@@ -62,14 +70,27 @@ export function GiftArt({
               </clipPath>
             </defs>
           </svg>
+          {/* Painel de vidro na cor escolhida, com reflexo. */}
           <div className="absolute inset-y-0 left-0 w-[66%]" style={{ clipPath: `url(#${clipId})` }}>
+            {/* O "fosco": a foto desfocada dentro do próprio painel (backdrop-filter
+                vaza num retângulo fora do recorte curvo). */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={artUrl} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-150 object-cover blur-2xl" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(160deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.04) 45%, rgba(0,0,0,.08) 100%), rgba(38,30,24,.28)" }} />
+            <div className="absolute inset-0 opacity-[.82]" style={{ background: giftGradient(artTheme) }} />
+            <div
+              className="absolute inset-0"
+              style={{
+                background: [
+                  "linear-gradient(118deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,.08) 26%, rgba(255,255,255,0) 40%)",
+                  "linear-gradient(118deg, rgba(255,255,255,0) 52%, rgba(255,255,255,.14) 60%, rgba(255,255,255,0) 68%)",
+                  "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.16) 100%)",
+                ].join(", "),
+              }}
+            />
           </div>
           {/* Fio de luz na borda curva do vidro */}
           <svg className="pointer-events-none absolute inset-y-0 left-0 h-full w-[66%]" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
-            <path d="M100,0 C87,30 87,70 100,100" fill="none" stroke="rgba(255,255,255,.55)" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+            <path d="M100,0 C87,30 87,70 100,100" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
           </svg>
         </>
       ) : (
