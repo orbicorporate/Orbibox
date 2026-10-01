@@ -51,6 +51,34 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   gift: "Abre o gift card",
 };
 
+/** Explicação curta de onde o cliente vai parar e de onde aquilo vem, pros
+ * boxes de ação fixa. Sem isso, "Abre o gift card" soa como se já
+ * existisse um gift pronto. */
+const ACAO_EXPLICA: Partial<Record<NonNullable<BoxConfig["action"]>, { titulo: string; texto: string; href?: string; link?: string }>> = {
+  gift: {
+    titulo: "Abre a tela de presentear",
+    texto: "Seu cliente escolhe um valor, escreve uma mensagem pra quem vai ganhar e combina o pagamento com você no WhatsApp. Você confirma e o gift card é liberado.",
+    href: "/admin/gift",
+    link: "Ver valores e pedidos de gift card →",
+  },
+  cupom: {
+    titulo: "Abre seus vouchers",
+    texto: "O cliente vê as ofertas ativas e pega um código só dele, que você valida na hora de atender.",
+    href: "/admin/vouchers",
+    link: "Gerenciar vouchers →",
+  },
+  endereco: {
+    titulo: "Mostra o endereço",
+    texto: "Com atalho pro Waze e Google Maps.",
+    href: "/admin/config",
+    link: "Alterar endereço →",
+  },
+  avaliar: {
+    titulo: "Leva pra avaliação no Google",
+    texto: "Abre direto a tela de deixar estrelas no seu perfil do Google.",
+  },
+};
+
 /** Descrição do box personalizado, específica pra cada atalho pronto
  * (WhatsApp, avaliação, endereço, gift), já que eles nascem de um botão
  * dedicado e não são um "caminho livre" como um box de link qualquer.
@@ -912,8 +940,16 @@ function BoxEditor({
               casos a gente só diz o que ele faz. */}
           {acaoFixa ? (
             <div className="rounded-2xl bg-surface-soft px-4 py-3">
-              <p className="text-[12px] text-text-tertiary">Ao tocar, o botão</p>
-              <p className="mt-0.5 text-[13.5px] font-semibold">{ACTION_LABEL[cfg.action!]}</p>
+              <p className="text-[12px] text-text-tertiary">Quando o cliente toca</p>
+              <p className="mt-0.5 text-[14px] font-medium">{ACAO_EXPLICA[cfg.action!]?.titulo ?? ACTION_LABEL[cfg.action!]}</p>
+              {ACAO_EXPLICA[cfg.action!] && (
+                <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">{ACAO_EXPLICA[cfg.action!]!.texto}</p>
+              )}
+              {ACAO_EXPLICA[cfg.action!]?.href && (
+                <Link href={ACAO_EXPLICA[cfg.action!]!.href!} className="mt-2 inline-block text-[12.5px] font-medium underline underline-offset-2">
+                  {ACAO_EXPLICA[cfg.action!]!.link}
+                </Link>
+              )}
             </div>
           ) : (
             <>
