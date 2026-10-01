@@ -303,11 +303,6 @@ export function BoxesManager({
     setCreating(true);
   }
 
-  function novoBoxGift() {
-    setDraftLabel("Presentear"); setDraft({ label: "Presentear", subtitle: "Monte um vale-presente", icon: "🎁", action: "gift", url: "", color: "transparent" });
-    setCreating(true);
-  }
-
   function novoBoxWhatsapp() {
     setDraftLabel("Fale no WhatsApp"); setDraft({ label: "Fale no WhatsApp", subtitle: "Atendimento rápido", icon: "__wadisc__", action: "whatsapp", url: "", color: "transparent" });
     setCreating(true);
@@ -423,7 +418,12 @@ export function BoxesManager({
           const isHero = false;
           const isCustom = box.box_type === "custom";
           const cfg = box.config as BoxConfig | null;
-          const m = META[box.box_type] ?? { name: cfg?.label || box.title || "Box livre", explica: (cfg?.action && CUSTOM_EXPLICA[cfg.action]) || CUSTOM_EXPLICA_GENERICA, icon: cfg?.icon || "◆" };
+          const mBase = META[box.box_type] ?? { name: cfg?.label || box.title || "Box livre", explica: (cfg?.action && CUSTOM_EXPLICA[cfg.action]) || CUSTOM_EXPLICA_GENERICA, icon: cfg?.icon || "◆" };
+          // "Presentear" é a porta do Gift Card: com ele ativo, abre o
+          // vale-presente; sem ele, mostra a vitrine pra quem vai presentear.
+          const m = box.box_type === "campaign"
+            ? { ...mBase, explica: giftEnabled ? "Abre o Gift Card: o cliente monta um vale-presente e combina o pagamento com você." : "Mostra sua vitrine pra quem vai comprar pra outra pessoa. Ative o Gift Card e ele vira vale-presente." }
+            : mBase;
           // O box "Sobre" já sugere o nome da marca, o dono usa, ajusta ou desativa.
           const suggestedName = box.box_type === "content" ? `Sobre a ${businessName}` : m.name;
           const label = cfg?.label ?? (isCustom ? box.title ?? "" : suggestedName);
@@ -528,6 +528,11 @@ export function BoxesManager({
               </div>
 
               <p className="mt-3 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>
+              {box.box_type === "campaign" && (
+                <Link href="/admin/gift" className="mt-1.5 inline-block text-[12.5px] text-text-secondary underline underline-offset-2">
+                  {giftEnabled ? "Ver gift cards →" : "Ativar Gift Card →"}
+                </Link>
+              )}
 
               {!isHero && !m.assinatura && (
                 <button
@@ -833,31 +838,6 @@ export function BoxesManager({
             />
           )}
 
-          {/* Box de gift, atalho pronto. Só faz sentido se o gift estiver
-              ativo; senão leva pra ferramenta pra configurar primeiro. */}
-          {giftEnabled ? (
-            <button
-              onClick={novoBoxGift}
-              className="flex items-center gap-3 rounded-[22px] border border-divider bg-surface-white p-4 text-left"
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EDE6FC] text-[20px]">🎁</span>
-              <span>
-                <span className="block text-[14px] font-semibold">🎁 Box de gift · presente pronto</span>
-                <span className="block text-[12.5px] text-text-tertiary">O cliente monta um vale-presente e combina o pagamento com você.</span>
-              </span>
-            </button>
-          ) : (
-            <Link
-              href="/admin/gift"
-              className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EDE6FC] text-[20px]">🎁</span>
-              <span>
-                <span className="block text-[14px] font-semibold">🎁 Box de gift <span className="rounded-full bg-gradient-to-r from-[#6D28D9] to-[#B0309E] bg-clip-text text-transparent">novidade</span></span>
-                <span className="block text-[12.5px] text-text-tertiary">Deixe seus clientes darem vale-presentes. Toque pra ativar.</span>
-              </span>
-            </Link>
-          )}
         </div>
       )}
     </div>
