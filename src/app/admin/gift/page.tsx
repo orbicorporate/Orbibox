@@ -10,7 +10,7 @@ export default async function GiftPage() {
 
   const [{ data: settings }, { data: gifts }] = await Promise.all([
     supabase.from("gift_settings").select("*").eq("business_id", businessId!).maybeSingle(),
-    supabase.from("gift_cards").select("id, code, value_cents, from_name, to_name, message, status, created_at").eq("business_id", businessId!).order("created_at", { ascending: false }).limit(100),
+    supabase.from("gift_cards").select("id, code, value_cents, from_name, to_name, message, status, created_at, used_at").eq("business_id", businessId!).order("created_at", { ascending: false }).limit(100),
   ]);
 
   const semGifts = (gifts ?? []).length === 0;

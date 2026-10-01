@@ -4,11 +4,12 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GiftArt } from "@/components/mobile/GiftArt";
+import { ValidarGift } from "./ValidarGift";
 import { GIFT_THEMES, type GiftTheme } from "@/lib/giftThemes";
 import type { Database } from "@/lib/supabase/types";
 
 type Settings = Database["public"]["Tables"]["gift_settings"]["Row"];
-type Gift = { id: string; code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; created_at: string };
+type Gift = { id: string; code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; created_at: string; used_at?: string | null };
 
 function brl(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -61,6 +62,10 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
 
   return (
     <div className="mt-5 flex flex-col gap-4">
+      {(enabled || gifts.length > 0) && (
+        <ValidarGift businessId={businessId} onUsado={(id, usedAt) => setGifts((prev) => prev.map((g) => (g.id === id ? { ...g, status: "used", used_at: usedAt } : g)))} />
+      )}
+
       {/* Liga/desliga */}
       <div className="flex items-center justify-between rounded-[22px] border border-divider bg-surface-white p-5">
         <div className="min-w-0">
@@ -136,7 +141,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
                           <span className="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style={{ color: st.cor, backgroundColor: st.fundo }}>{st.label}</span>
                         </div>
                         <p className="mt-0.5 truncate text-[12px] text-text-tertiary">
-                          {g.to_name ? `Para ${g.to_name}` : "Sem destinatário"}{g.from_name ? ` · de ${g.from_name}` : ""} · {g.code}
+                          {g.to_name ? `Para ${g.to_name}` : "Sem destinatário"}{g.from_name ? ` · de ${g.from_name}` : ""} · {g.code}{g.status === "used" && g.used_at ? ` · usado ${new Date(g.used_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}` : ""}
                         </p>
                       </div>
                       {g.status === "pending" && (

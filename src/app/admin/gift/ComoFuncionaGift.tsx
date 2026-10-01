@@ -69,7 +69,7 @@ const PASSOS = [
   { t: "Ative o box Presentear", d: "Ele aparece na sua página." },
   { t: "O cliente monta o gift", d: "Valor, mensagem e pra quem é." },
   { t: "Recebeu? Toque em Liberar", d: "Acertem no WhatsApp. O pedido fica em Gifts a liberar, logo abaixo." },
-  { t: "Quem ganha usa o código", d: "Mostra na compra e você confirma." },
+  { t: "Quem ganha usa o código", d: "Você digita em Validar gift e marca como usado." },
 ];
 
 export function ComoFuncionaGift() {
