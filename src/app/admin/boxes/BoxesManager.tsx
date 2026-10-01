@@ -812,7 +812,7 @@ export function BoxesManager({
           {hasVouchers ? (
             <DestaqueVidro
               cores={["#FF5A4D", "#FF3B6E"]}
-              icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5),0_10px_22px_-10px_rgba(255,59,110,.7)]">🎟️</span>}
+              icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5)]">🎟️</span>}
               titulo="Box de vouchers"
               tag="Atrai clientes"
               subtitulo="Ofertas com código único"
@@ -823,7 +823,7 @@ export function BoxesManager({
           ) : (
             <DestaqueVidro
               cores={["#FF5A4D", "#FF3B6E"]}
-              icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5),0_10px_22px_-10px_rgba(255,59,110,.7)]">🎟️</span>}
+              icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5)]">🎟️</span>}
               titulo="Box de vouchers"
               tag="Novidade"
               subtitulo="Ofertas com código único"
@@ -1290,7 +1290,6 @@ function OrbiBoxCard({ cores, tag, texto, acao, href, onClick }: { cores: string
       cores={[c1, cores?.[1] ?? "#6EE7D8"]}
       icone={
         <>
-          <span className="absolute inset-[-6px] rounded-full opacity-60 blur-md" style={{ background: `radial-gradient(circle, ${c1}, transparent 70%)` }} aria-hidden />
           <span className="relative h-14 w-14 overflow-hidden rounded-full"><OrbiParticleSphere size={56} colors={cores ?? undefined} vivid className="rounded-full" /></span>
         </>
       }
