@@ -911,6 +911,7 @@ function BoxEditor({
   const [cfg, setCfg] = useState<BoxConfig>(initial);
   const [colorModalOpen, setColorModalOpen] = useState(false);
   const [showAllIcons, setShowAllIcons] = useState(false);
+  const [novoIconeAberto, setNovoIconeAberto] = useState(false);
   const color = cfg.color || "#111318";
   const animated = isAnimatedIcon(cfg.icon);
   // Ações que vêm prontas do atalho de criação e não se troca por outra:
@@ -1137,14 +1138,14 @@ function BoxEditor({
         ))}
       </div>
 
-      {/* Logotipo: mostra todos os que já foram enviados (em Configurações ou
-          em qualquer outro box) como sugestão pronta, sempre a biblioteca
-          inteira, em todo box, novo ou existente. */}
+      {/* Ícones da marca ou logo: biblioteca de tudo que já foi enviado (em
+          Configurações ou em qualquer box), disponível em todo box, e o
+          cadastro de um novo fica ali mesmo, como mais uma bolinha. */}
       {(() => {
         const gallery = Array.from(new Set([...(logoUrl ? [logoUrl] : []), ...(logoGallery ?? [])]));
-        return gallery.length > 0 ? (
+        return (
           <div className="flex flex-col gap-2">
-            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Logotipos já enviados</p>
+            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícones da marca ou logo</p>
             <div className="flex flex-wrap gap-2">
               {gallery.map((url) => (
                 <button
@@ -1156,31 +1157,42 @@ function BoxEditor({
                   <img src={url} alt="" className="h-full w-full object-cover" />
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => setNovoIconeAberto((v) => !v)}
+                aria-expanded={novoIconeAberto}
+                aria-label="Cadastrar ícone da marca ou logo"
+                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 border-dashed text-[20px] ${novoIconeAberto ? "border-on-background text-on-background" : "border-divider text-text-tertiary"}`}
+              >
+                +
+              </button>
             </div>
+            {gallery.length === 0 && !novoIconeAberto && (
+              <p className="text-[12px] text-text-secondary">Cadastre o logo ou os ícones da sua marca pra usar nos boxes.</p>
+            )}
+            {novoIconeAberto && (
+              <div className="rounded-2xl border border-divider p-3">
+                <p className="mb-2 text-[12px] text-text-secondary">Envie um ícone da marca ou o logo. Ele fica salvo aqui e aparece pra escolher em todos os boxes.</p>
+                <ImageUpload
+                  value={null}
+                  businessId={businessId}
+                  lockedRatio="quadrado"
+                  promptKind="avatar"
+                  onChange={(url) => {
+                    if (!url) return;
+                    const next = { ...cfg, logo_url: url, icon: "__logo__" };
+                    setCfg(next);
+                    onSave(next);
+                    onNewLogo?.(url);
+                    setNovoIconeAberto(false);
+                  }}
+                />
+              </div>
+            )}
           </div>
-        ) : null;
+        );
       })()}
 
-      <details className="self-start">
-        <summary className="cursor-pointer list-none text-[12px] font-medium text-text-secondary underline">
-          ＋ Enviar um novo logotipo
-        </summary>
-        <div className="mt-2">
-          <ImageUpload
-            value={null}
-            businessId={businessId}
-            lockedRatio="quadrado"
-            promptKind="avatar"
-            onChange={(url) => {
-              if (!url) return;
-              const next = { ...cfg, logo_url: url, icon: "__logo__" };
-              setCfg(next);
-              onSave(next);
-              onNewLogo?.(url);
-            }}
-          />
-        </div>
-      </details>
       <div className="flex flex-wrap gap-1.5">
         {(showAllIcons ? ICON_CHOICES : ICON_CHOICES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (
           <button
