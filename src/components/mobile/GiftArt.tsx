@@ -8,8 +8,9 @@ import { giftGradient } from "@/lib/giftThemes";
  * marca d'água por cima, pra ninguém usar um gift que não foi acertado
  * com a loja.
  *
- * O fundo é a foto que a loja subiu (art_url), quando existe. Sem foto,
- * cai num dos 4 degradês prontos (art_theme), que a loja escolhe.
+ * O fundo é sempre um dos degradês prontos (art_theme). A foto da loja
+ * (art_url), quando existe, entra quadrada no fim do card, dissolvendo
+ * no degradê.
  *
  * O véu escuro por cima é sempre aplicado, nunca opcional: garante que o
  * valor e o código fiquem legíveis mesmo se a loja subir uma foto ruim
@@ -43,41 +44,40 @@ export function GiftArt({
 
   return (
     <div className="relative aspect-[1.6/1] w-full overflow-hidden rounded-[22px] text-white shadow-[0_12px_36px_rgba(17,19,24,0.2)]">
-      {/* Fundo: foto da loja ou um dos 4 degradês prontos */}
-      {artUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={artUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      ) : (
-        <div className="absolute inset-0" style={{ background: giftGradient(artTheme) }} />
+      {/* Fundo é sempre o degradê do tema. A foto da loja, quando existe,
+          entra estilizada no fim do card: ocupa a lateral direita e se
+          dissolve no degradê, sem disputar espaço com o valor. */}
+      <div className="absolute inset-0" style={{ background: giftGradient(artTheme) }} />
+      {artUrl && (
+        <div
+          className="absolute inset-y-0 right-0 w-[64%]"
+          style={{
+            WebkitMaskImage: "linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 30%, rgba(0,0,0,.85) 62%, #000 80%)",
+            maskImage: "linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 30%, rgba(0,0,0,.85) 62%, #000 80%)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={artUrl} alt="" className="h-full w-full object-cover" />
+        </div>
       )}
-      {/* Véu escuro pra o texto ficar legível, sempre ligado por padrão.
-          Mais forte sobre foto da loja (imprevisível), mais leve sobre os
-          degradês prontos (já pensados pra contraste). */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: artUrl
-            ? "linear-gradient(180deg, rgba(0,0,0,0.32) 0%, rgba(0,0,0,0.18) 40%, rgba(0,0,0,0.65) 100%)"
-            : "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.5) 100%)",
-        }}
-      />
+      {/* Véu suave embaixo pra o texto ficar legível em qualquer foto. */}
+      <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.42) 100%)" }} />
 
       <div className="relative flex h-full flex-col justify-between p-5">
         <div className="flex items-start justify-between">
           <span className="rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide backdrop-blur-sm">Gift Card</span>
-          <span className="text-[11px] font-medium opacity-90">{negocio}</span>
+          {!artUrl && <span className="text-[11px] font-medium opacity-90">{negocio}</span>}
         </div>
 
-        <div>
+        <div className={artUrl ? "max-w-[62%]" : undefined}>
+          {artUrl && <p className="mb-1 text-[11px] font-medium opacity-90">{negocio}</p>}
           {paraQuem && <p className="text-[12px] opacity-85">Para {paraQuem}</p>}
-          <p className="font-[family-name:var(--font-manrope)] text-[38px] font-bold leading-none tracking-[-0.02em]">{valor}</p>
+          <p className="font-[family-name:var(--font-manrope)] text-[38px] font-bold leading-none tracking-[-0.02em] [text-shadow:0_1px_12px_rgba(0,0,0,.18)]">{valor}</p>
           {mensagem && <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-snug opacity-90">&ldquo;{mensagem}&rdquo;</p>}
-          <div className="mt-2 flex items-center justify-between">
-            {deQuem && <p className="text-[11.5px] opacity-85">de {deQuem}</p>}
-            <p className="ml-auto font-mono text-[11px] tracking-wider opacity-75">{codigo}</p>
-          </div>
+          {deQuem && <p className="mt-2 text-[11.5px] opacity-85">de {deQuem}</p>}
         </div>
       </div>
+      <p className="absolute bottom-4 right-4 rounded-full bg-black/30 px-2.5 py-1 font-mono text-[10.5px] tracking-wider backdrop-blur-sm">{codigo}</p>
 
       {/* Marca d'água de bloqueado: faixas + carimbo. Some quando liberado. */}
       {bloqueado && (

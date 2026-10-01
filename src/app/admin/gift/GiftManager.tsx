@@ -83,16 +83,16 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
             <p className="text-[15px] font-semibold">Arte do gift card</p>
             <p className="mt-0.5 text-[13px] leading-relaxed text-text-secondary">
-              A imagem de fundo do cartão. O valor, o nome e o código entram por cima, com um véu escuro automático pra garantir a leitura. Sem foto, usamos um dos degradês abaixo.
+              Escolha um degradê e, se quiser, uma foto do seu produto. Ela entra no fim do card, se misturando com o degradê.
             </p>
             <div className="mt-4">
               <GiftArt valorCents={10000} paraQuem="Maria" deQuem="João" mensagem="Feliz aniversário!" negocio="Sua loja" codigo="GIFT-EXEMPL" artUrl={artUrl} artTheme={artTheme} bloqueado={false} />
             </div>
             <div className="mt-3">
-              <ImageUpload value={artUrl} onChange={(url) => { setArtUrl(url); salvar({ art_url: url }); }} businessId={businessId} />
+              <ImageUpload value={artUrl} onChange={(url) => { setArtUrl(url); salvar({ art_url: url }); }} businessId={businessId} lockedRatio="quadrado" lockedReason="No gift a foto entra quadrada, no fim do card, se misturando com o degradê." />
             </div>
 
-            <p className="mt-5 text-[13px] font-semibold">{artUrl ? "Degradê de reserva (se você remover a foto)" : "Degradê"}</p>
+            <p className="mt-5 text-[13px] font-semibold">Degradê</p>
             <div className="mt-2 flex gap-2.5">
               {(Object.keys(GIFT_THEMES) as GiftTheme[]).map((t) => (
                 <button
