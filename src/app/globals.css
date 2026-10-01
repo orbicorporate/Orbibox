@@ -916,7 +916,21 @@ body {
 @keyframes orbitaRespira { 0%, 100% { border-radius: 50%; } 50% { border-radius: 53% 47% 49% 51% / 48% 52% 48% 52%; } }
 
 .orbita-planeta { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; will-change: transform, opacity; transition: box-shadow .4s; }
-.orbita-planeta.frente { box-shadow: 0 0 26px 2px color-mix(in srgb, var(--o1) 55%, transparent), 0 16px 32px -10px rgba(17,19,24,.45) !important; }
+.orbita-planeta.frente { box-shadow: 0 16px 32px -10px rgba(17,19,24,.45) !important; }
+/* Planeta da frente: um aro fininho em volta, com um traço de luz girando. */
+.orbita-planeta::before {
+  content: ""; position: absolute; inset: -6px; border-radius: 9999px; padding: 1.5px; pointer-events: none;
+  background:
+    conic-gradient(from 0deg, transparent 0%, transparent 52%, color-mix(in srgb, var(--o1) 90%, white) 78%, #fff 92%, transparent 100%),
+    color-mix(in srgb, var(--o1) 30%, transparent);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0; transition: opacity .4s;
+  animation: orbitaAro 2.6s linear infinite;
+}
+.orbita-planeta.frente::before { opacity: 1; }
+@keyframes orbitaAro { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .orbita-planeta::before { animation: none; } }
 .orbita-lua { position: absolute; left: 0; top: 0; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #fff; will-change: transform, opacity; box-shadow: 0 6px 14px -6px rgba(17,19,24,.45); }
 /* Planetas e luas como esferas: brilho especular no alto à esquerda,
    sombra de volume embaixo à direita e um aro de luz, por cima do ícone. */
