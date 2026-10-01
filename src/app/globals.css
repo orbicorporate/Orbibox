@@ -924,3 +924,70 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .orbita-portal-galaxia i, .orbita-portal-estrela, .orbita-portal-cometa, .orbita-esfera-halo, .orbita-esfera-vidro, .orbita-legenda-troca, .orbita-entra > * { animation: none; }
 }
+
+/* ───────────── Vidro Prisma (glassmorphism do painel) ─────────────
+   Mesma linguagem do protótipo Prisma: um campo de cor pintado, com
+   manchas pastel que derivam devagar, e as superfícies brancas do painel
+   viram painéis de vidro fosco por cima dele (degradê translúcido, borda
+   de luz e sombra macia). Aplicado por classe no painel inteiro, então
+   todo card bg-surface-white ganha o efeito sem mexer componente a
+   componente.
+   O desfoque (backdrop-filter) só entra em camadas que flutuam (fixed e
+   o que está dentro delas): backdrop-filter num card comum transformaria
+   o card em "containing block" e quebraria modais fixed abertos dentro
+   dele. Nos cards normais o fundo atrás já é uma mancha desfocada, então
+   o vidro translúcido lê como fosco do mesmo jeito. */
+.prisma-campo { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; background: #EEF1F2; }
+.prisma-campo i { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .85; }
+.prisma-campo i:nth-child(1) { width: 80vmax; height: 80vmax; left: -35vmax; top: -30vmax; background: #A6CBEA; animation: prismaDeriva1 34s ease-in-out infinite alternate; }
+.prisma-campo i:nth-child(2) { width: 70vmax; height: 70vmax; right: -38vmax; top: 18vh; background: #CBBDF0; animation: prismaDeriva2 40s ease-in-out infinite alternate; }
+.prisma-campo i:nth-child(3) { width: 64vmax; height: 64vmax; left: -10vmax; bottom: -38vmax; background: #AEE0D2; animation: prismaDeriva1 46s ease-in-out infinite alternate-reverse; }
+.prisma-campo i:nth-child(4) { width: 40vmax; height: 40vmax; right: -6vmax; top: -10vmax; background: #F1CBBA; opacity: .7; animation: prismaDeriva2 38s ease-in-out infinite alternate-reverse; }
+.prisma-campo i:nth-child(5) { width: 36vmax; height: 36vmax; left: 30%; top: 45%; background: color-mix(in srgb, var(--orbi-gradient-start) 55%, #fff); opacity: .35; animation: prismaDeriva1 52s ease-in-out infinite alternate; }
+.prisma-campo::after { content: ""; position: absolute; inset: 0; opacity: .07; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+@keyframes prismaDeriva1 { to { transform: translate(14%, 10%) scale(1.12); } }
+@keyframes prismaDeriva2 { to { transform: translate(-12%, -8%) scale(.92); } }
+
+.sistema-vidro {
+  --vidro-a: rgba(255,255,255,.66);
+  --vidro-b: rgba(255,255,255,.34);
+  --vidro-borda: inset 0 1px 0 rgba(255,255,255,.95), inset 0 0 0 1px rgba(255,255,255,.55);
+  --vidro-sombra: 0 24px 48px -32px rgba(36,56,74,.32), 0 2px 10px -6px rgba(36,56,74,.18);
+}
+.sistema-vidro .bg-surface-white {
+  background-color: transparent;
+  background-image: linear-gradient(150deg, var(--vidro-a), var(--vidro-b));
+  --tw-inset-shadow: var(--vidro-borda);
+}
+.sistema-vidro .bg-surface-white:not([class*="shadow"]) { box-shadow: var(--vidro-borda), var(--vidro-sombra); }
+.sistema-vidro .bg-surface-soft { background-color: rgba(255,255,255,.38); }
+.sistema-vidro .border-divider { border-color: rgba(255,255,255,.7); }
+/* Campos de texto: um pouco mais sólidos, pra digitar com conforto. */
+.sistema-vidro :is(input, textarea, select).bg-surface-white { background-image: linear-gradient(150deg, rgba(255,255,255,.82), rgba(255,255,255,.62)); }
+/* Camadas que flutuam (folhas, modais, menus, header): vidro com desfoque de verdade. */
+.sistema-vidro :is(.fixed, .sticky) :is(.bg-surface-white, .bg-surface-white\/70, .bg-surface-white\/80, .bg-surface-white\/85, .bg-surface-white\/90, .bg-surface-white\/95),
+.sistema-vidro :is(.fixed, .sticky):is(.bg-surface-white, .bg-surface-white\/70, .bg-surface-white\/80, .bg-surface-white\/85, .bg-surface-white\/90, .bg-surface-white\/95) {
+  background-color: rgba(246,249,251,.6);
+  background-image: linear-gradient(150deg, rgba(255,255,255,.7), rgba(255,255,255,.4));
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+}
+@media (prefers-reduced-motion: reduce) { .prisma-campo i { animation: none; } }
+
+/* Card da Orbi no painel: vidro com borda em degradê das cores da Orbi e brilho atrás. */
+.vidro-orbi { position: relative; isolation: isolate; border-radius: 24px; overflow: hidden;
+  background: linear-gradient(150deg, rgba(255,255,255,.72), rgba(255,255,255,.36));
+  -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%);
+  box-shadow: 0 26px 50px -30px color-mix(in srgb, var(--vo1) 60%, rgba(36,56,74,.4)), 0 2px 10px -6px rgba(36,56,74,.18); }
+.vidro-orbi::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(220px 140px at 12% 50%, color-mix(in srgb, var(--vo1) 38%, transparent), transparent 70%),
+              radial-gradient(260px 160px at 100% 0%, color-mix(in srgb, var(--vo2) 30%, transparent), transparent 70%); }
+.vidro-orbi::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: linear-gradient(120deg, var(--vo1), rgba(255,255,255,.9) 40%, var(--vo2) 75%, rgba(255,255,255,.9));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.vidro-orbi-brilho { position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.55) 50%, transparent 65%);
+  transform: translateX(-120%); animation: vidroOrbiBrilho 5.5s ease-in-out 1.2s infinite; }
+@keyframes vidroOrbiBrilho { 0% { transform: translateX(-120%); } 30%, 100% { transform: translateX(120%); } }
+@media (prefers-reduced-motion: reduce) { .vidro-orbi-brilho { animation: none; opacity: 0; } }

@@ -755,42 +755,28 @@ export function BoxesManager({
               Nióbio: reativa se estiver off. Titânio: leva pro teste (2 grátis). */}
           {hasAiChat ? (
             orbiDesativada ? (
-              <button
+              <OrbiBoxCard
+                cores={orbiColors}
                 onClick={reativarOrbi}
-                className="orbi-gradient flex items-center gap-3 rounded-[22px] p-[1.5px] text-left"
-              >
-                <span className="flex flex-1 items-center gap-3 rounded-[21px] bg-surface-white p-4">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="rounded-full" /></span>
-                  <span>
-                    <span className="block text-[14px] font-semibold">✦ Box da Orbi · IA que conversa</span>
-                    <span className="block text-[12.5px] text-text-tertiary">Está desativada. Toque pra reativar a assistente de IA na sua página.</span>
-                  </span>
-                </span>
-              </button>
+                tag="Desativada"
+                texto="Toque pra reativar a assistente de IA na sua página."
+                acao="Reativar"
+              />
             ) : (
-              <div className="orbi-gradient flex items-center gap-3 rounded-[22px] p-[1.5px]">
-                <span className="flex flex-1 items-center gap-3 rounded-[21px] bg-surface-white p-4">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="rounded-full" /></span>
-                  <span>
-                    <span className="block text-[14px] font-semibold">✦ Box da Orbi · IA que conversa</span>
-                    <span className="block text-[12.5px] text-text-tertiary">Ativa na sua página. A IA tira dúvidas, recomenda produtos e captura contatos.</span>
-                  </span>
-                </span>
-              </div>
+              <OrbiBoxCard
+                cores={orbiColors}
+                tag="Ativa"
+                texto="Na sua página agora: tira dúvidas, recomenda produtos e captura contatos."
+              />
             )
           ) : (
-            <Link
+            <OrbiBoxCard
+              cores={orbiColors}
               href="/admin/agent"
-              className="orbi-gradient flex items-center gap-3 rounded-[22px] p-[1.5px] text-left"
-            >
-              <span className="flex flex-1 items-center gap-3 rounded-[21px] bg-surface-white p-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="rounded-full" /></span>
-                <span>
-                  <span className="block text-[14px] font-semibold">✦ Box da Orbi · IA que conversa <span className="orbi-gradient-text">novidade</span></span>
-                  <span className="block text-[12.5px] text-text-tertiary">Uma IA que atende seus clientes 24h, recomenda produtos e capta contato. Toque pra experimentar grátis.</span>
-                </span>
-              </span>
-            </Link>
+              tag="Novidade"
+              texto="Atende seus clientes 24h, recomenda produtos e capta contatos."
+              acao="Experimentar grátis"
+            />
           )}
 
           <button
@@ -1297,4 +1283,56 @@ function ColorPickerModal({
       </div>
     </div>
   );
+}
+
+/** Destaque da Box da Orbi no painel: vidro fosco com borda em degradê nas
+ * cores da Orbi, brilho que passa de tempos em tempos, a esfera com halo,
+ * uma etiqueta de estado e, quando tem, o convite em forma de botão. */
+function OrbiBoxCard({
+  cores,
+  tag,
+  texto,
+  acao,
+  href,
+  onClick,
+}: {
+  cores: string[] | null;
+  tag: string;
+  texto: string;
+  acao?: string;
+  href?: string;
+  onClick?: () => void;
+}) {
+  const c1 = cores?.[0] ?? "#B7F34A";
+  const c2 = cores?.[1] ?? "#6EE7D8";
+  const miolo = (
+    <>
+      <span className="vidro-orbi-brilho" aria-hidden />
+      <span className="relative z-[2] flex items-center gap-4 p-4">
+        <span className="relative flex h-14 w-14 shrink-0 items-center justify-center">
+          <span className="absolute inset-[-6px] rounded-full opacity-60 blur-md" style={{ background: `radial-gradient(circle, ${c1}, transparent 70%)` }} aria-hidden />
+          <span className="relative h-14 w-14 overflow-hidden rounded-full"><OrbiParticleSphere size={56} colors={cores ?? undefined} vivid className="rounded-full" /></span>
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="text-[15px] font-semibold tracking-[-0.01em]">Box da Orbi</span>
+            <span className="rounded-full px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-[0.08em] text-on-background" style={{ background: `linear-gradient(120deg, color-mix(in srgb, ${c1} 55%, white), color-mix(in srgb, ${c2} 55%, white))` }}>
+              {tag}
+            </span>
+          </span>
+          <span className="mt-0.5 block text-[12px] text-text-tertiary">IA que conversa com seus clientes</span>
+          <span className="mt-1.5 block text-[13px] leading-snug text-text-secondary">{texto}</span>
+          {acao && (
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-on-background px-3.5 py-1.5 text-[12.5px] font-medium text-white">
+              ✦ {acao} <span aria-hidden>→</span>
+            </span>
+          )}
+        </span>
+      </span>
+    </>
+  );
+  const estilo = { "--vo1": c1, "--vo2": c2 } as CSSProperties;
+  if (href) return <Link href={href} className="vidro-orbi block text-left" style={estilo}>{miolo}</Link>;
+  if (onClick) return <button type="button" onClick={onClick} className="vidro-orbi block w-full text-left" style={estilo}>{miolo}</button>;
+  return <div className="vidro-orbi" style={estilo}>{miolo}</div>;
 }
