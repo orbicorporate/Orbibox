@@ -810,31 +810,27 @@ export function BoxesManager({
             </span>
           </button>
           {hasVouchers ? (
-            <button
+            <DestaqueVidro
+              cores={["#FF5A4D", "#FF3B6E"]}
+              icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5),0_10px_22px_-10px_rgba(255,59,110,.7)]">🎟️</span>}
+              titulo="Box de vouchers"
+              tag="Atrai clientes"
+              subtitulo="Ofertas com código único"
+              texto="Coloca suas ofertas na página, com estoque controlado e captura de contato."
+              acao="Criar box"
               onClick={novoBoxVoucher}
-              className="flex items-center gap-3 rounded-[22px] bg-gradient-to-r from-[#FF5A4D] to-[#FF3B6E] p-[2px] text-left shadow-[0_4px_20px_rgba(255,59,110,0.25)]"
-            >
-              <span className="flex flex-1 items-center gap-3 rounded-[20px] bg-surface-white p-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF5A4D] to-[#FF3B6E] text-[20px]">🎟️</span>
-                <span>
-                  <span className="block text-[14px] font-semibold">🎟️ Box de vouchers · atrai clientes</span>
-                  <span className="block text-[12.5px] text-text-tertiary">Coloca suas ofertas na página. Código único, estoque controlado, captura contato.</span>
-                </span>
-              </span>
-            </button>
+            />
           ) : (
-            <Link
+            <DestaqueVidro
+              cores={["#FF5A4D", "#FF3B6E"]}
+              icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5),0_10px_22px_-10px_rgba(255,59,110,.7)]">🎟️</span>}
+              titulo="Box de vouchers"
+              tag="Novidade"
+              subtitulo="Ofertas com código único"
+              texto="Trazem gente nova pra sua página e capturam o contato de quem resgata."
+              acao="Ver como funciona"
               href="/admin/vouchers"
-              className="flex items-center gap-3 rounded-[22px] bg-gradient-to-r from-[#FF5A4D] to-[#FF3B6E] p-[2px] text-left shadow-[0_4px_20px_rgba(255,59,110,0.25)]"
-            >
-              <span className="flex flex-1 items-center gap-3 rounded-[20px] bg-surface-white p-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF5A4D] to-[#FF3B6E] text-[20px]">🎟️</span>
-                <span>
-                  <span className="block text-[14px] font-semibold">🎟️ Box de vouchers <span className="rounded-full bg-gradient-to-r from-[#FF5A4D] to-[#FF3B6E] bg-clip-text text-transparent">novidade</span></span>
-                  <span className="block text-[12.5px] text-text-tertiary">Ofertas com código único que trazem gente nova. Toque pra ver como funciona.</span>
-                </span>
-              </span>
-            </Link>
+            />
           )}
 
           {/* Box de gift, atalho pronto. Só faz sentido se o gift estiver
@@ -1285,42 +1281,68 @@ function ColorPickerModal({
   );
 }
 
-/** Destaque da Box da Orbi no painel: vidro fosco com borda em degradê nas
- * cores da Orbi, brilho que passa de tempos em tempos, a esfera com halo,
- * uma etiqueta de estado e, quando tem, o convite em forma de botão. */
-function OrbiBoxCard({
+/** Destaque da Box da Orbi no painel: usa o card de vidro genérico com a
+ * esfera da Orbi como ícone. */
+function OrbiBoxCard({ cores, tag, texto, acao, href, onClick }: { cores: string[] | null; tag: string; texto: string; acao?: string; href?: string; onClick?: () => void }) {
+  const c1 = cores?.[0] ?? "#B7F34A";
+  return (
+    <DestaqueVidro
+      cores={[c1, cores?.[1] ?? "#6EE7D8"]}
+      icone={
+        <>
+          <span className="absolute inset-[-6px] rounded-full opacity-60 blur-md" style={{ background: `radial-gradient(circle, ${c1}, transparent 70%)` }} aria-hidden />
+          <span className="relative h-14 w-14 overflow-hidden rounded-full"><OrbiParticleSphere size={56} colors={cores ?? undefined} vivid className="rounded-full" /></span>
+        </>
+      }
+      titulo="Box da Orbi"
+      tag={tag}
+      subtitulo="IA que conversa com seus clientes"
+      texto={texto}
+      acao={acao}
+      href={href}
+      onClick={onClick}
+    />
+  );
+}
+
+/** Card de destaque em vidro fosco: borda em degradê nas cores dadas,
+ * brilho colorido atrás, reflexo que passa de tempos em tempos, ícone
+ * grande, etiqueta de estado e, quando tem, a ação em forma de botão. */
+function DestaqueVidro({
   cores,
+  icone,
+  titulo,
   tag,
+  subtitulo,
   texto,
   acao,
   href,
   onClick,
 }: {
-  cores: string[] | null;
+  cores: [string, string];
+  icone: ReactNode;
+  titulo: string;
   tag: string;
+  subtitulo: string;
   texto: string;
   acao?: string;
   href?: string;
   onClick?: () => void;
 }) {
-  const c1 = cores?.[0] ?? "#B7F34A";
-  const c2 = cores?.[1] ?? "#6EE7D8";
+  const [c1, c2] = cores;
   const miolo = (
     <>
       <span className="vidro-orbi-brilho" aria-hidden />
       <span className="relative z-[2] flex items-center gap-4 p-4">
-        <span className="relative flex h-14 w-14 shrink-0 items-center justify-center">
-          <span className="absolute inset-[-6px] rounded-full opacity-60 blur-md" style={{ background: `radial-gradient(circle, ${c1}, transparent 70%)` }} aria-hidden />
-          <span className="relative h-14 w-14 overflow-hidden rounded-full"><OrbiParticleSphere size={56} colors={cores ?? undefined} vivid className="rounded-full" /></span>
-        </span>
+        <span className="relative flex h-14 w-14 shrink-0 items-center justify-center">{icone}</span>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
-            <span className="text-[15px] font-semibold tracking-[-0.01em]">Box da Orbi</span>
-            <span className="rounded-full px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-[0.08em] text-on-background" style={{ background: `linear-gradient(120deg, color-mix(in srgb, ${c1} 55%, white), color-mix(in srgb, ${c2} 55%, white))` }}>
+            <span className="text-[15px] font-semibold tracking-[-0.01em]">{titulo}</span>
+            <span className="rounded-full px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-[0.08em] text-on-background" style={{ background: `linear-gradient(120deg, color-mix(in srgb, ${c1} 35%, white), color-mix(in srgb, ${c2} 35%, white))` }}>
               {tag}
             </span>
           </span>
-          <span className="mt-0.5 block text-[12px] text-text-tertiary">IA que conversa com seus clientes</span>
+          <span className="mt-0.5 block text-[12px] text-text-tertiary">{subtitulo}</span>
           <span className="mt-1.5 block text-[13px] leading-snug text-text-secondary">{texto}</span>
           {acao && (
             <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-on-background px-3.5 py-1.5 text-[12.5px] font-medium text-white">

@@ -991,3 +991,9 @@ body {
   transform: translateX(-120%); animation: vidroOrbiBrilho 5.5s ease-in-out 1.2s infinite; }
 @keyframes vidroOrbiBrilho { 0% { transform: translateX(-120%); } 30%, 100% { transform: translateX(120%); } }
 @media (prefers-reduced-motion: reduce) { .vidro-orbi-brilho { animation: none; opacity: 0; } }
+/* Cards com moldura em degradê (wrapper colorido de 1,5 a 2px com miolo
+   branco): o miolo continua quase sólido, senão a cor da moldura vaza por
+   trás do vidro e o card inteiro fica tingido e apagado. */
+.sistema-vidro :is([class*="p-[1.5px]"], [class*="p-[2px]"]) > .bg-surface-white {
+  background-image: linear-gradient(150deg, rgba(255,255,255,.97), rgba(255,255,255,.9));
+}
