@@ -75,22 +75,45 @@ export function GiftArt({
             {/* O "fosco": a foto desfocada dentro do próprio painel (backdrop-filter
                 vaza num retângulo fora do recorte curvo). */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={artUrl} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-150 object-cover blur-2xl" />
-            <div className="absolute inset-0 opacity-[.82]" style={{ background: giftGradient(artTheme) }} />
+            <img src={artUrl} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-125 object-cover blur-xl" />
+            {/* Tinta do vidro na cor escolhida, translúcida: dá pra ver a foto
+                fosca por trás, como vidro de verdade. */}
+            <div className="absolute inset-0 opacity-[.58]" style={{ background: giftGradient(artTheme) }} />
+            <div className="absolute inset-0 bg-black/[.10]" />
+            {/* Reflexo: luz larga e macia vindo do alto, sem listras. */}
             <div
               className="absolute inset-0"
               style={{
                 background: [
-                  "linear-gradient(118deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,.08) 26%, rgba(255,255,255,0) 40%)",
-                  "linear-gradient(118deg, rgba(255,255,255,0) 52%, rgba(255,255,255,.14) 60%, rgba(255,255,255,0) 68%)",
-                  "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.16) 100%)",
+                  "radial-gradient(120% 70% at 18% -10%, rgba(255,255,255,.34) 0%, rgba(255,255,255,.10) 38%, rgba(255,255,255,0) 62%)",
+                  "linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.12) 100%)",
+                ].join(", "),
+              }}
+            />
+            {/* Chanfro: luz por dentro das bordas do vidro. */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: [
+                  "linear-gradient(90deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 7%)",
+                  "linear-gradient(180deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 10%)",
+                  "linear-gradient(0deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,0) 9%)",
                 ].join(", "),
               }}
             />
           </div>
-          {/* Fio de luz na borda curva do vidro */}
+          {/* Borda curva do vidro: fio de luz nítido + brilho macio por dentro. */}
           <svg className="pointer-events-none absolute inset-y-0 left-0 h-full w-[66%]" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
-            <path d="M100,0 C87,30 87,70 100,100" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+            <defs>
+              <filter id={`${clipId}-b`} x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6" /></filter>
+              <linearGradient id={`${clipId}-g`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#fff" stopOpacity=".85" />
+                <stop offset=".5" stopColor="#fff" stopOpacity=".45" />
+                <stop offset="1" stopColor="#fff" stopOpacity=".75" />
+              </linearGradient>
+            </defs>
+            <path d="M97,0 C84,30 84,70 97,100" fill="none" stroke="rgba(255,255,255,.35)" strokeWidth="5" filter={`url(#${clipId}-b)`} />
+            <path d="M100,0 C87,30 87,70 100,100" fill="none" stroke={`url(#${clipId}-g)`} strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
           </svg>
         </>
       ) : (
@@ -100,7 +123,7 @@ export function GiftArt({
         </>
       )}
       {/* Borda de vidro do card inteiro */}
-      <div className="pointer-events-none absolute inset-0 rounded-[22px]" style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,.38), inset 0 1px 0 rgba(255,255,255,.5)" }} />
+      <div className="pointer-events-none absolute inset-0 rounded-[22px]" style={{ boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,.42), inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 4px rgba(255,255,255,.06)" }} />
 
       <div className="relative flex h-full flex-col justify-between p-5">
         <div className="flex items-start justify-between">
