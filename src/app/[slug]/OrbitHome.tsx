@@ -247,7 +247,13 @@ export function OrbitHome({
                     : { background: "#fff" }
               }
             >
-              <HomeIcon icon={o.icon} boxLogo={o.boxLogo} color={o.color} orbiColors={cores} businessLogo={logoUrl} cupom={o.cupom} />
+              {/* O ícone é ampliado até o próprio disco dele cobrir o planeta
+                  inteiro: a esfera fica cheia, sem aro nem borda em volta. */}
+              <span className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-full">
+                <span className={`orbita-icone flex items-center justify-center ${["__logo__", "__orb__", "__orbcheck__", "__orbwa__", "__wadisc__", "__google__"].includes(o.icon) ? "scale-[1.4]" : ""}`}>
+                  <HomeIcon icon={o.icon} boxLogo={o.boxLogo} color={o.color} orbiColors={cores} businessLogo={logoUrl} cupom={o.cupom} />
+                </span>
+              </span>
             </button>
           );
         })}
