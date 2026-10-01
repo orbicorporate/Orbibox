@@ -144,11 +144,7 @@ export function GiftArt({
       {/* Marca d'água de bloqueado: faixas + carimbo. Some quando liberado. */}
       {bloqueado && (
         <>
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{ background: "repeating-linear-gradient(45deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 2px, transparent 2px, transparent 14px)" }}
-          />
+          {/* Sem listras: o carimbo e o código escondido já deixam claro que ainda não vale. */}
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="-rotate-[14deg] rounded-xl border-2 border-white/70 bg-black/25 px-4 py-1.5 text-[13px] font-bold uppercase tracking-[0.15em] backdrop-blur-[1px]">
               A liberar
