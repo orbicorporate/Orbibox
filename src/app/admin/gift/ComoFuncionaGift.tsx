@@ -41,15 +41,18 @@ const DESENHOS = [
     <path d="M84 30v40" stroke={COR} strokeWidth="1.6" strokeDasharray="3 3" />
     <path d="M92 58l14-14 4 4-14 14-6 2z" fill="#fff" stroke={TRACO} strokeWidth="1.8" strokeLinejoin="round" />
   </svg>,
-  // 3. pagamento no WhatsApp
+  // 3. pagou no WhatsApp → toca em Liberar no pedido
   <svg key="3" viewBox="0 0 120 100" className="h-[84px] w-full" aria-hidden>
-    <rect x="12" y="16" width="62" height="26" rx="12" fill="#fff" stroke={TRACO} strokeWidth="1.8" />
-    <path d="M24 42l-4 8 10-8" fill="#fff" stroke={TRACO} strokeWidth="1.8" strokeLinejoin="round" />
-    <rect x="22" y="25" width="38" height="4" rx="2" fill={TRACO} opacity=".2" />
-    <rect x="22" y="32" width="24" height="4" rx="2" fill={TRACO} opacity=".2" />
-    <rect x="46" y="50" width="62" height="26" rx="12" fill="#25D366" />
-    <path d="M96 76l4 8-10-8" fill="#25D366" />
-    <text x="58" y="68" fontSize="11" fontWeight="700" fill="#fff" fontFamily="system-ui">Pago ✓</text>
+    <rect x="10" y="10" width="46" height="20" rx="10" fill="#25D366" />
+    <path d="M18 30l-3 6 8-6" fill="#25D366" />
+    <text x="33" y="24" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#fff" fontFamily="system-ui">Pago ✓</text>
+    <rect x="10" y="44" width="100" height="40" rx="10" fill="#fff" stroke={TRACO} strokeWidth="1.8" />
+    <circle cx="25" cy="64" r="7" fill={SUAVE} stroke={COR} strokeWidth="1.5" />
+    <rect x="37" y="57" width="20" height="4" rx="2" fill={TRACO} opacity=".35" />
+    <rect x="37" y="65" width="14" height="4" rx="2" fill={TRACO} opacity=".15" />
+    <rect x="61" y="54" width="44" height="20" rx="10" fill="#1F9E4C" />
+    <text x="83" y="67.5" textAnchor="middle" fontSize="9" fontWeight="700" fill="#fff" fontFamily="system-ui">Liberar</text>
+    
   </svg>,
   // 4. quem recebe usa o código
   <svg key="4" viewBox="0 0 120 100" className="h-[84px] w-full" aria-hidden>
@@ -65,7 +68,7 @@ const DESENHOS = [
 const PASSOS = [
   { t: "Ative o box Presentear", d: "Ele aparece na sua página." },
   { t: "O cliente monta o gift", d: "Valor, mensagem e pra quem é." },
-  { t: "Vocês combinam o pagamento", d: "No WhatsApp. Depois você libera aqui." },
+  { t: "Recebeu? Toque em Liberar", d: "Acertem no WhatsApp. O pedido fica em Gifts a liberar, logo abaixo." },
   { t: "Quem ganha usa o código", d: "Mostra na compra e você confirma." },
 ];
 
