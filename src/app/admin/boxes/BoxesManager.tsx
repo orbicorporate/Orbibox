@@ -155,7 +155,19 @@ export function BoxesManager({
   hasAiChat: boolean;
 }) {
   const supabase = createClient();
-  const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
+  // "Presentear" é um só. Boxes de gift criados pelo atalho antigo repetem
+  // o box fixo de campanha; quando os dois existem, o antigo é removido
+  // (some da lista na hora e é apagado no banco).
+  const temCampanha = initialBoxes.some((b) => b.box_type === "campaign");
+  const giftsRepetidos = temCampanha
+    ? initialBoxes.filter((b) => b.box_type === "custom" && (b.config as { action?: string } | null)?.action === "gift")
+    : [];
+  const [boxes, setBoxes] = useState<Box[]>(() => initialBoxes.filter((b) => !giftsRepetidos.includes(b)));
+  useEffect(() => {
+    if (giftsRepetidos.length === 0) return;
+    supabase.from("smart_boxes").delete().in("id", giftsRepetidos.map((b) => b.id)).then(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [storyPhotos, setStoryPhotos] = useState<string[]>(initialStoryPhotos);
   const [aboutBusiness, setAboutBusiness] = useState(initialAboutBusiness);
   const [cards, setCards] = useState<DifferentialCard[]>(initialDifferentialsCards);
