@@ -1228,7 +1228,11 @@ function StoryView({
       {business.about_business && (
         <div className="mt-6">
           <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Sobre nós</p>
-          <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">{business.about_business}</p>
+          <div className="mt-2 flex flex-col gap-3.5 text-[14.5px] leading-[1.7] text-text-secondary">
+            {paragrafosSobre(business.about_business).map((p, i) => (
+              <p key={i} className={i === 0 ? "text-[15.5px] leading-[1.6] text-on-background" : undefined}>{p}</p>
+            ))}
+          </div>
         </div>
       )}
 
@@ -2129,4 +2133,17 @@ function SeletorModo({
       )}
     </div>
   );
+}
+
+/** Quebra o texto do "Sobre" em parágrafos. Respeita as quebras que o dono
+ * escreveu; se veio tudo num bloco só (comum quando a Orbi importa do site),
+ * agrupa de 2 em 2 frases pra leitura respirar no celular. */
+function paragrafosSobre(texto: string): string[] {
+  const blocos = texto.split(/\n\s*\n|\n/).map((b) => b.trim()).filter(Boolean);
+  if (blocos.length > 1) return blocos;
+  const frases = texto.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g)?.map((f) => f.trim()).filter(Boolean) ?? [texto];
+  if (frases.length <= 2) return [texto.trim()];
+  const out: string[] = [];
+  for (let i = 0; i < frases.length; i += 2) out.push(frases.slice(i, i + 2).join(" "));
+  return out;
 }
