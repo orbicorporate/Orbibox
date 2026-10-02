@@ -219,7 +219,6 @@ export function ProductPageEditor({ business, item }: { business: Business; item
     router.refresh();
   }
 
-  const temFoto = midias.some((u) => !isVideoUrl(u));
   const aspect = RATIOS[formato].value;
   // Sem carrossel próprio, a página mostra a capa do card, então o editor também.
   const slides = midias.length > 0 ? midias : item.image_url ? [item.image_url] : [];
@@ -314,18 +313,19 @@ export function ProductPageEditor({ business, item }: { business: Business; item
               {slides.length > 1 &&
                 slides.map((_, i) => <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === ativo ? "bg-on-background" : "bg-on-background/25"}`} />)}
             </div>
-            {/* Formato das fotos: só dá pra trocar antes de ter foto, pra não misturar recortes. */}
+            {/* Formato das fotos: troca a qualquer momento. As fotos já enviadas
+                se ajustam ao novo formato (centralizadas) e as próximas já
+                saem recortadas nele. */}
             <div className="inline-flex rounded-full bg-surface-soft p-1">
               {(["quadrado", "paisagem"] as const).map((r) => (
                 <button
                   key={r}
-                  disabled={temFoto && formato !== r}
                   onClick={() => {
                     if (formato === r) return;
                     setFormato(r);
                     salvar({ gallery_ratio: r });
                   }}
-                  className={`rounded-full px-3 py-1 text-[12px] font-medium ${formato === r ? "bg-surface-white text-on-background shadow-[0_1px_4px_rgba(17,19,24,0.1)]" : "text-text-tertiary disabled:opacity-40"}`}
+                  className={`rounded-full px-3 py-1 text-[12px] font-medium ${formato === r ? "bg-surface-white text-on-background shadow-[0_1px_4px_rgba(17,19,24,0.1)]" : "text-text-tertiary"}`}
                 >
                   {r === "quadrado" ? "Quadrado" : "Paisagem"}
                 </button>
