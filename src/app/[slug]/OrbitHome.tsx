@@ -239,9 +239,11 @@ export function OrbitHome({
               type="button"
               onClick={() => tocarPlaneta(i)}
               aria-label={o.t}
-              className="orbita-planeta shadow-[0_10px_22px_-10px_rgba(17,19,24,0.45)]"
+              className={o.icon.startsWith("__orb") ? "orbita-planeta orbita-planeta-orbi" : "orbita-planeta shadow-[0_10px_22px_-10px_rgba(17,19,24,0.45)]"}
               style={
-                custom
+                o.icon.startsWith("__orb")
+                  ? { background: "transparent" }
+                  : custom
                   ? { background: `linear-gradient(135deg, color-mix(in srgb, ${o.color} 78%, white), ${o.color} 55%, color-mix(in srgb, ${o.color} 85%, black))` }
                   : o.cupom
                     ? { background: "linear-gradient(135deg,#E0335A,#B3123A)" }

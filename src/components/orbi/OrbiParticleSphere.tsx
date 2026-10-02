@@ -78,8 +78,12 @@ export function OrbiParticleSphere({
     // "um extra"), só decorativa, dá aquele efeito de areia fina bem cheia.
     // Todos os pontos (principais e micro) saem na metade do tamanho de base
     // (aplicado mais abaixo, no cálculo do raio de cada frame).
-    const N = size < 80 ? 700 : 1400;
-    const M = Math.round(N * 4.2);
+    // Quantidade proporcional ao tamanho: numa esfera de 20 a 44px milhares
+    // de pontos nem aparecem e só pesam (havia ~3.600 por esfera pequena,
+    // várias na mesma tela). As grandes continuam com a areia fina cheia.
+    const N = size < 40 ? 260 : size < 80 ? 520 : size < 140 ? 800 : 1400;
+    const M = Math.round(N * (size < 80 ? 1.6 : 4.2));
+    const pequena = size < 80;
     const TOTAL = N + M;
 
     function fibSphere(n: number) {
@@ -241,8 +245,26 @@ export function OrbiParticleSphere({
     const start = performance.now();
     let running = true;
 
+    // Só anima quando está visível na tela e a aba está aberta; esferas
+    // pequenas rodam a ~30 quadros por segundo (ninguém nota a diferença).
+    let visivel = true;
+    let ultimo = 0;
+    const io = typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(([e]) => {
+          visivel = e.isIntersecting;
+          if (visivel && running && !raf) raf = requestAnimationFrame(frame);
+        })
+      : null;
+    io?.observe(canvas);
+    const aoTrocarAba = () => { if (!document.hidden && running && !raf) raf = requestAnimationFrame(frame); };
+    document.addEventListener("visibilitychange", aoTrocarAba);
+
     function frame(now: number) {
+      raf = 0;
       if (!running || !ctx) return;
+      if (!visivel || document.hidden) return;
+      if (pequena && now - ultimo < 32) { raf = requestAnimationFrame(frame); return; }
+      ultimo = now;
       const time = (now - start) / 1000;
       ctx.clearRect(0, 0, size, size);
       if (bg !== "transparent") {
@@ -300,7 +322,7 @@ export function OrbiParticleSphere({
           : (0.95 + depth * 0.05) * (isMicro[i] ? microAlpha : 1);
         ctx.beginPath();
         // Glow suave só nos pontos bem da frente, mais discreto que antes.
-        if (vivid && depth > 0.6) {
+        if (vivid && !pequena && depth > 0.6) {
           ctx.shadowBlur = 4 * depth;
           ctx.shadowColor = `rgba(${Math.min(255, (r * b) | 0)},${Math.min(255, (g * b) | 0)},${Math.min(255, (b0 * b) | 0)},1)`;
         } else {
@@ -326,6 +348,8 @@ export function OrbiParticleSphere({
     return () => {
       running = false;
       cancelAnimationFrame(raf);
+      io?.disconnect();
+      document.removeEventListener("visibilitychange", aoTrocarAba);
     };
   }, [size, bg, variant, holdCheck, colorA, colorB, colorC, vivid]);
 
