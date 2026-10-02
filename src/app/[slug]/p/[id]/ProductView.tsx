@@ -81,18 +81,13 @@ export function ProductView({ business, item }: { business: Business; item: Item
   return (
     <main className="mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
       {/* Voltar, fora da imagem, igual qualquer app, não sobrepõe a foto.
-          Usa o histórico de verdade quando existe (ex: veio da Vitrine ou
-          de uma busca), então volta pra tela de onde a pessoa realmente
-          saiu, não sempre pro início do site; só cai pro início quando não
-          há de onde voltar (link direto, aba nova). "Ver vitrine" sempre
+          Voltar leva sempre pra vitrine: voltar pelo histórico caía na
+          tela inicial, porque a vitrine aberta não fica no endereço. "Ver vitrine" sempre
           leva pro catálogo, útil sobretudo pra quem chegou aqui por uma
           recomendação da Orbi no chat e quer continuar olhando produtos. */}
       <div className="flex items-center justify-between gap-2 px-4 pt-4">
         <button
-          onClick={() => {
-            if (typeof window !== "undefined" && window.history.length > 1) router.back();
-            else router.push(`/${business.slug}`);
-          }}
+          onClick={() => router.push(`/${business.slug}?tab=vitrine`)}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px]"
           aria-label="Voltar"
         >
