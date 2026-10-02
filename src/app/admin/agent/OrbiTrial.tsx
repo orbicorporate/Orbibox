@@ -22,7 +22,7 @@ function inline(text: string) {
 }
 
 // Renderiza a mensagem da Orbi com negrito + cards de produto + card de endereço.
-function renderMsg(text: string, products: Product[], address: string | null) {
+function renderMsg(text: string, products: Product[], address: string | null, slug: string | null) {
   const ids: string[] = [];
   let showAddress = false;
   const cleaned = text
@@ -53,7 +53,15 @@ function renderMsg(text: string, products: Product[], address: string | null) {
         </a>
       )}
       {cards.map((p) => (
-        <div key={p.id} className="mt-1 flex items-center gap-3.5 rounded-2xl bg-surface-white p-2.5 shadow-[0_2px_12px_rgba(17,19,24,0.08)] ring-1 ring-black/5">
+        // Abre o produto como o cliente veria, numa aba nova, pra o teste
+        // da conversa continuar aberto aqui.
+        <a
+          key={p.id}
+          href={(p.link_kind ?? "produto") === "produto" ? (slug ? `/${slug}/p/${p.id}` : `/admin/vitrine/pagina/${p.id}`) : (p.target_url || (slug ? `/${slug}` : "#"))}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 flex items-center gap-3.5 rounded-2xl bg-surface-white p-2.5 shadow-[0_2px_12px_rgba(17,19,24,0.08)] ring-1 ring-black/5 active:scale-[.99]"
+        >
           {p.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={p.image_url} alt={p.title} className="shrink-0 rounded-xl object-cover" style={{ height: 72, width: 72 }} />
@@ -65,7 +73,7 @@ function renderMsg(text: string, products: Product[], address: string | null) {
             <span className="block text-[13px] text-text-secondary">{formatPrice(p) || "Ver detalhes"}</span>
           </span>
           <span className="shrink-0 pr-1 text-[18px] text-text-tertiary">→</span>
-        </div>
+        </a>
       ))}
     </>
   );
@@ -78,6 +86,11 @@ export function OrbiTrial({ businessId, address, products, agentName, orbiColors
   const [remaining, setRemaining] = useState<number | null>(null);
   const [blocked, setBlocked] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [slug, setSlug] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.from("businesses").select("slug").eq("id", businessId).maybeSingle().then(({ data }) => setSlug(data?.slug ?? null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businessId]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -185,7 +198,7 @@ export function OrbiTrial({ businessId, address, products, agentName, orbiColors
 
         {messages.map((m, i) => (
           <div key={i} className={`max-w-[88%] rounded-2xl px-5 py-4 text-[16px] leading-[1.6] ${m.role === "agent" ? "flex flex-col gap-3 bg-gradient-to-br from-orbi-gradient-start/15 via-surface-white to-orbi-gradient-end/10 shadow-[0_2px_12px_rgba(17,19,24,0.06)]" : "ml-auto bg-on-background text-white"}`}>
-            {m.role === "agent" ? renderMsg(m.content, products, address) : m.content}
+            {m.role === "agent" ? renderMsg(m.content, products, address, slug) : m.content}
           </div>
         ))}
         {sending && (

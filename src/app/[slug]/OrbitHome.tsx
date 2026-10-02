@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { HomeIcon, isCustomBoxColor } from "@/components/orbi/HomeOptionCard";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, nomeDaRede, type Rede } from "@/lib/redesSociais";
 import { abrirEmOrbita, reduzMovimento } from "@/lib/orbitPortal";
+import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 
 export type OrbitaItem = {
   key: string;
@@ -323,7 +324,7 @@ export function OrbitHome({
           className="mt-4 flex h-[54px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white/85 pl-2 pr-2 text-left shadow-[0_14px_30px_-20px_rgba(16,18,22,.5)] backdrop-blur"
           style={estiloCores}
         >
-          <span className="relative h-9 w-9 shrink-0"><span className="orbita-esfera inset-0"><span className="orbita-esfera-vidro" /></span></span>
+          <OrbiParticleSphere size={36} colors={cores} vivid className="shrink-0 rounded-full" />
           <span className="flex-1 text-[14px] text-text-tertiary">Pergunte o que quiser…</span>
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-on-background text-white" aria-hidden>↑</span>
         </button>
