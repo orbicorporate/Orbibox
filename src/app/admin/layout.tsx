@@ -10,6 +10,7 @@ import { getPendingInsights } from "@/lib/insights";
 import { TourOverlay } from "@/components/tour/TourOverlay";
 import { ReferralCelebration } from "./ReferralCelebration";
 import { getCurrentBusinessId, listMyBusinesses, podeCriarOutroNegocio } from "@/lib/business";
+import { AbrirInternoNoApp } from "@/components/AbrirInternoNoApp";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -116,6 +117,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       )}
       <main className="admin-zoom flex-1 px-6 pb-32 pt-5">{children}</main>
       <BottomNav />
+      <AbrirInternoNoApp />
       <AdminOrbiFloating
         businessId={business.id}
         hasAiChat={adminAccess.hasAiChat}
