@@ -48,3 +48,37 @@ function assinar(cb: () => void) {
 export function useModoHomeDoVisitante(slug: string): ModoHome | null {
   return useSyncExternalStore(assinar, () => ler(slug), () => null);
 }
+
+/* ---------- Vitrine: o visitante pode ver o catálogo em órbita também ---------- */
+const EVENTO_V = "orbibox-modo-vitrine";
+const chaveV = (slug: string) => `orbibox-modo-vitrine:${slug}`;
+
+function lerV(slug: string): ModoHome {
+  try {
+    const v = window.localStorage.getItem(chaveV(slug));
+    return v === "orbita" ? "orbita" : "grade";
+  } catch {
+    return "grade";
+  }
+}
+
+export function guardarModoVitrine(slug: string, modo: ModoHome) {
+  try {
+    window.localStorage.setItem(chaveV(slug), modo);
+  } catch {}
+  window.dispatchEvent(new Event(EVENTO_V));
+}
+
+function assinarV(cb: () => void) {
+  window.addEventListener(EVENTO_V, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(EVENTO_V, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+
+/** Como o visitante quer ver a vitrine neste aparelho. Padrão: Modo Box. */
+export function useModoVitrine(slug: string): ModoHome {
+  return useSyncExternalStore(assinarV, () => lerV(slug), () => "grade");
+}

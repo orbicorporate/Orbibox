@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { OrbiFloatingButton } from "./OrbiFloatingButton";
@@ -25,8 +25,8 @@ import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
-import { OrbitHome } from "./OrbitHome";
-import { guardarModoHome, useModoHomeDoVisitante, type ModoHome } from "@/lib/modoHome";
+import { OrbitHome, type OrbitaItem } from "./OrbitHome";
+import { guardarModoHome, guardarModoVitrine, useModoHomeDoVisitante, useModoVitrine, type ModoHome } from "@/lib/modoHome";
 
 type Business = {
   id: string;
@@ -1853,9 +1853,54 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
   const [active, setActive] = useState<string | null>(null);
 
   const visible = active ? sections.filter((s) => s.name === active) : sections;
+  const router = useRouter();
+  const modo = useModoVitrine(business.slug);
+
+  // Para onde cada produto leva. Mesma regra dos cards da grade.
+  const destinoDe = (item: ContentItem) => {
+    const destino = item.link_kind === "nenhum"
+      ? null
+      : item.link_kind === "categoria"
+        ? item.target_url
+        : item.target_url && item.link_kind === "externo"
+          ? item.target_url
+          : `/${business.slug}/p/${item.id}`;
+    const isExterno = item.link_kind === "categoria" || item.link_kind === "externo";
+    const kind: "categoria" | "produto" | "link" = item.link_kind === "categoria" ? "categoria" : item.link_kind === "produto" ? "produto" : "link";
+    return { destino, isExterno, kind };
+  };
+
+  // Modo Órbita da vitrine: os produtos da categoria escolhida viram planetas
+  // com a foto. Até 12 por vez para a órbita não ficar apertada.
+  const LIMITE_ORBITA = 12;
+  const clicaveis = visible.flatMap((sec) => sec.items).filter((item) => !!destinoDe(item).destino);
+  const planetas: OrbitaItem[] = clicaveis.slice(0, LIMITE_ORBITA).map((item) => {
+    const { destino, isExterno, kind } = destinoDe(item);
+    return {
+      key: item.id,
+      t: item.title,
+      d: item.description?.trim() || "",
+      icon: "◆",
+      imagem: item.image_url || null,
+      preco: formatPrice(item) || null,
+      interno: !isExterno,
+      onClick: () => {
+        if (!destino) return;
+        trackClick({ businessId: business.id, kind: isExterno ? kind : "produto", contentItemId: item.id, sessionId, targetUrl: destino });
+        if (isExterno) window.open(destino, "_blank", "noopener,noreferrer");
+        else router.push(destino);
+      },
+    };
+  });
+  const emOrbita = modo === "orbita" && planetas.length >= 2;
 
   return (
     <>
+      {clicaveis.length >= 2 && (
+        <div className="relative z-[80] mt-5 flex justify-center">
+          <SeletorModo modo={modo} onTrocar={(m) => guardarModoVitrine(business.slug, m)} padrao={null} onTornarPadrao={() => {}} />
+        </div>
+      )}
       {sections.length > 1 && nomeadas.length > 0 && (
         <div className="mt-5 flex gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
@@ -1876,6 +1921,27 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
         </div>
       )}
 
+      {emOrbita ? (
+        <div className="mt-2">
+          <OrbitHome
+            itens={planetas}
+            redes={[]}
+            nome={business.name}
+            pergunta={null}
+            logoUrl={business.logo_url}
+            cores={orbiColors && orbiColors.length ? orbiColors : ["#B7F34A", "#6EE7D8", "#B7F34A"]}
+            agentName=""
+            semCabecalho
+            rotuloAbrir="Ver produto"
+          />
+          {clicaveis.length > LIMITE_ORBITA && (
+            <p className="mt-2 text-center text-[13px] text-text-tertiary">
+              Mostrando {LIMITE_ORBITA} de {clicaveis.length}. Escolha uma categoria acima para ver as outras.
+            </p>
+          )}
+          <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} onOrbi={onOrbi} orbiColors={orbiColors} /></div>
+        </div>
+      ) : (
       <div className="mt-6 flex flex-col gap-8">
         {visible.map((sec, si) => (
           <div key={sec.name || "_sem"}>
@@ -2063,6 +2129,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
           </div>
         ))}
       </div>
+      )}
       <BarraContato business={business} sessionId={sessionId} onOrbi={onOrbi} />
     </>
   );
