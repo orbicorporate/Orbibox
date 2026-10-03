@@ -60,6 +60,20 @@ export async function POST(req: NextRequest) {
       .eq("status", "published")
       .limit(15);
 
+    // Respostas que o time já ensinou (perguntas que a Orbi não sabia).
+    let ensinadas = "";
+    try {
+      const { createServiceClient } = await import("@/lib/supabase/service");
+      const { data: aprendidas } = await createServiceClient()
+        .from("orbi_learnings")
+        .select("pergunta, sugestao")
+        .eq("business_id", businessId)
+        .eq("status", "ensinado")
+        .order("updated_at", { ascending: false })
+        .limit(40);
+      ensinadas = (aprendidas ?? []).filter((a) => a.sugestao).map((a) => `- Pergunta: ${a.pergunta}\n  Resposta do time: ${a.sugestao}`).join("\n");
+    } catch { /* sem aprendizados, segue normal */ }
+
     const agentName = agentConfig?.agent_name ?? "Orbi";
     const toneDesc = agentConfig
       ? [
@@ -78,6 +92,7 @@ Seu tom de voz é: ${toneDesc}.
 Objetivos da conversa: ${agentConfig?.objectives?.join(", ") || "ajudar o visitante"}.
 ${business?.brand_voice_summary ? `Tom da marca: ${business.brand_voice_summary}` : ""}\n${business?.about_business ? `Sobre o negócio: ${business.about_business}` : ""}\n${business?.differentials ? `Diferenciais: ${business.differentials}` : ""}\n${business?.policies ? `Políticas (entrega, trocas, horários): ${business.policies}` : ""}\n${business?.payment_methods?.length ? `Formas de pagamento aceitas: ${business.payment_methods.map(rotuloPagamento).join(", ")}` : ""}\n${business?.service_modes?.length ? `Como atende: ${business.service_modes.map(rotuloAtendimento).join(", ")}` : ""}\n${business?.address ? `Endereço: ${business.address}` : ""}
 ${catalog ? `Catálogo disponível:\n${catalog}` : "O catálogo ainda não tem produtos publicados."}
+${ensinadas ? `Respostas que o time já deu pra perguntas comuns (use como verdade, com suas palavras):\n${ensinadas}` : ""}
 
 Regras:
 - Se a pessoa perguntar onde fica, o endereço, como chegar, ou localização, e houver um endereço no contexto acima, responda com o endereço e escreva a marcação [[endereco]] numa linha própria, ela vira um card com botões de Waze e Google Maps. Se não houver endereço no contexto, diga que pode passar pelo WhatsApp.
@@ -134,14 +149,21 @@ Regras:
     // IA extra): procura sinais na própria resposta. Só no atendimento real.
     if (!trialMode && message && typeof message === "string") {
       const r = reply.toLowerCase();
-      const naoSoube = /não (tenho|sei|possuo|consigo)|nao (tenho|sei|possuo|consigo)|não encontrei|nao encontrei|não tenho essa inforda|infelizmente não|não disponho|recomendo (falar|entrar em contato).*(equipe|whatsapp)/.test(r)
+      const naoSoube = (/não (tenho|sei|possuo|consigo)|nao (tenho|sei|possuo|consigo)|não encontrei|nao encontrei|não tenho essa inform|infelizmente não|não disponho|recomendo (falar|entrar em contato).*(equipe|whatsapp)/.test(r)
+        // "um especialista vai te retornar com a informação certinha": ela empurrou pro time porque não sabia
+        || /(retornar|te passar|confirmar).{0,40}informaç|informação (certinha|exata|correta)|vou confirmar com (a equipe|o time)/.test(r))
         && !/whatsapp (dela|logo abaixo)/.test(r); // ignora quando é só o fluxo de captar contato
       if (naoSoube) {
         try {
           const { createServiceClient } = await import("@/lib/supabase/service");
           const svc = createServiceClient();
           // Evita duplicar: se já existe um gap muito parecido pendente, só incrementa.
-          const perguntaLimpa = message.trim().slice(0, 200);
+          // Se a última mensagem foi só o WhatsApp (ex: "15 99999-0000"), a
+          // dúvida de verdade é a pergunta anterior do visitante.
+          const soContato = (t: string) => t.replace(/[\s()+.-]/g, "").replace(/\D/g, "").length >= 8 && t.replace(/[\d\s()+.-]/g, "").length < 6;
+          const anteriores = ((history ?? []) as { role: string; content: string }[]).filter((m) => m.role !== "agent").map((m) => m.content);
+          const pergunta = soContato(message) ? ([...anteriores].reverse().find((t) => !soContato(t)) ?? message) : message;
+          const perguntaLimpa = pergunta.trim().slice(0, 200);
           const { data: existente } = await svc
             .from("orbi_learnings")
             .select("id, vezes")

@@ -1032,3 +1032,16 @@ body {
 @keyframes orbi-simbolo-boia { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
 .orbi-simbolo { animation: orbi-simbolo-boia 3.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .orbi-simbolo { animation: none; } }
+
+/* ───────── Assistente proativo (Próxima ação, campanhas de datas) ─────────
+   Folha que sobe de baixo com a curva de gaveta do iOS; cartão da próxima
+   ação troca com um fade curto subindo 6px. Só transform e opacity. */
+@keyframes folhaSobe { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes veuEntra { from { opacity: 0; } to { opacity: 1; } }
+@keyframes acaoEntra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.folha-sobe { animation: folhaSobe .42s cubic-bezier(.32,.72,0,1) both; }
+.veu-entra { animation: veuEntra .2s ease-out both; }
+.acao-entra { animation: acaoEntra .24s cubic-bezier(.23,1,.32,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .folha-sobe, .acao-entra { animation: veuEntra .15s ease-out both; }
+}

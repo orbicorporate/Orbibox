@@ -9,6 +9,9 @@ import { InsightRotator } from "./InsightRotator";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 import { QRCodeButton } from "@/components/ui/QRCodeButton";
 import { WelcomeBackBanner } from "./WelcomeBackBanner";
+import { ProximaAcao } from "./ProximaAcao";
+import { proximaData } from "@/lib/datasComemorativas";
+import { getAccessInfo } from "@/lib/plans";
 
 const METRICS = [
   { key: "discovery", label: "Visitas", explica: "Pessoas que abriram seu link", icon: "◎", href: "/admin/pulse" },
@@ -43,6 +46,19 @@ export default async function HojePage() {
     supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", business!.id).eq("is_active", true),
   ]);
   const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
+
+  // Próxima ação: o que dá pra resolver agora, num toque.
+  const [giftsRes, perguntasRes, vouchersRes, acesso] = await Promise.all([
+    supabase.from("gift_cards").select("id, value_cents, from_name, to_name").eq("business_id", business!.id).eq("status", "pending").order("created_at", { ascending: true }).limit(5),
+    supabase.from("orbi_learnings").select("id, pergunta, vezes").eq("business_id", business!.id).eq("status", "pendente").order("vezes", { ascending: false }).limit(3),
+    supabase.from("vouchers").select("id, title, quantity_total, quantity_claimed").eq("business_id", business!.id).eq("is_active", true),
+    getAccessInfo(business!.owner_id),
+  ]);
+  const dataProxima = proximaData();
+  const vouchersBaixos = (vouchersRes.data ?? [])
+    .map((v) => ({ id: v.id, title: v.title, quantity_total: v.quantity_total, restam: v.quantity_total - v.quantity_claimed }))
+    .filter((v) => v.restam <= 3)
+    .slice(0, 2);
   const activeBoxes = activeBoxesRes.count ?? 0;
   const progress = await getBusinessProgress(business!.id);
 
@@ -161,6 +177,16 @@ export default async function HojePage() {
           QR Code
         </QRCodeButton>
       </div>
+
+      <ProximaAcao
+        businessId={business!.id}
+        hasVouchers={acesso.hasVouchers}
+        gifts={giftsRes.data ?? []}
+        perguntas={perguntasRes.data ?? []}
+        data={dataProxima ? { id: dataProxima.id, nome: dataProxima.nome, dias: dataProxima.dias, clima: dataProxima.clima } : null}
+        vouchersBaixos={vouchersBaixos}
+        pendencia={insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
+      />
 
       <WelcomeBackBanner businessName={business!.name} pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))} />
 
