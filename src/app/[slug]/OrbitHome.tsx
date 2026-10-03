@@ -21,6 +21,10 @@ export type OrbitaItem = {
    * não ganha a transição em órbita, a pessoa vai sair da página mesmo. */
   interno: boolean;
   onClick: () => void;
+  /** Foto que preenche o planeta inteiro (produtos da vitrine). */
+  imagem?: string | null;
+  /** Preço mostrado na legenda do planeta da frente. */
+  preco?: string | null;
 };
 export type OrbitaRede = { key: string; t: string; rede: Rede; onClick: () => void };
 
@@ -43,6 +47,8 @@ export function OrbitHome({
   cores,
   agentName,
   onPerguntar,
+  semCabecalho = false,
+  rotuloAbrir = "Abrir",
 }: {
   itens: OrbitaItem[];
   redes: OrbitaRede[];
@@ -52,6 +58,9 @@ export function OrbitHome({
   cores: string[];
   agentName: string;
   onPerguntar?: () => void;
+  /** Esconde nome e pergunta do topo (a vitrine já tem o próprio título). */
+  semCabecalho?: boolean;
+  rotuloAbrir?: string;
 }) {
   const N = itens.length;
   const PASSO = N > 0 ? (Math.PI * 2) / N : 1;
@@ -191,14 +200,18 @@ export function OrbitHome({
 
   return (
     <div className="orbita-entra flex w-full flex-col items-center text-center" style={estiloCores}>
-      <p className="text-[12px] uppercase tracking-[0.14em] text-text-tertiary">{nome}</p>
-      <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-[1.15] tracking-[-0.02em]">
-        {pergunta?.trim() || "O que trouxe você aqui hoje?"}
-      </h1>
+      {!semCabecalho && (
+        <>
+          <p className="text-[12px] uppercase tracking-[0.14em] text-text-tertiary">{nome}</p>
+          <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-[1.15] tracking-[-0.02em]">
+            {pergunta?.trim() || "O que trouxe você aqui hoje?"}
+          </h1>
+        </>
+      )}
 
       <div
         ref={cenaRef}
-        className="relative mt-2 h-[330px] w-full touch-pan-y select-none"
+        className={`relative h-[330px] w-full touch-pan-y select-none ${semCabecalho ? "-mt-14" : "mt-2"}`}
         onPointerDown={(e) => {
           const s = estado.current;
           s.arrastando = true;
@@ -252,11 +265,18 @@ export function OrbitHome({
             >
               {/* O ícone é ampliado até o próprio disco dele cobrir o planeta
                   inteiro: a esfera fica cheia, sem aro nem borda em volta. */}
+              {o.imagem ? (
+                <span className="absolute inset-0 overflow-hidden rounded-full bg-surface-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={o.imagem} alt="" draggable={false} className="h-full w-full object-cover" />
+                </span>
+              ) : (
               <span className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-full">
                 <span className={`orbita-icone flex items-center justify-center ${["__logo__", "__orb__", "__orbcheck__", "__orbwa__", "__wadisc__", "__google__"].includes(o.icon) ? "scale-[1.4]" : ""}`}>
                   <HomeIcon icon={o.icon} boxLogo={o.boxLogo} color={o.color} orbiColors={cores} businessLogo={logoUrl} cupom={o.cupom} />
                 </span>
               </span>
+              )}
             </button>
           );
         })}
@@ -303,12 +323,15 @@ export function OrbitHome({
             <p className="mx-auto mt-1 line-clamp-2 max-w-[30ch] text-[14px] leading-snug text-text-secondary">
               {itemFrente.ai ? `Fale com a ${agentName}, nossa IA.` : itemFrente.d}
             </p>
+            {itemFrente.preco && (
+              <p className="mt-1 font-[family-name:var(--font-manrope)] text-[15px] font-medium text-text-secondary">{itemFrente.preco}</p>
+            )}
             <button
               type="button"
               onClick={() => abrir(frente)}
               className="mt-3.5 inline-flex h-10 items-center gap-1.5 rounded-full bg-on-background px-5 text-[14px] font-medium text-white"
             >
-              Abrir <span aria-hidden>›</span>
+              {rotuloAbrir} <span aria-hidden>›</span>
             </button>
             <div className="mt-3 flex justify-center gap-1.5" aria-hidden>
               {itens.map((o, i) => (
