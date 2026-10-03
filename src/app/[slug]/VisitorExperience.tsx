@@ -25,8 +25,9 @@ import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
-import { OrbitHome, type OrbitaItem } from "./OrbitHome";
+import { OrbitHome } from "./OrbitHome";
 import { guardarModoHome, guardarModoVitrine, useModoHomeDoVisitante, useModoVitrine, type ModoHome } from "@/lib/modoHome";
+import { VitrineCoverflow, type CoverflowItem } from "./VitrineCoverflow";
 
 type Business = {
   id: string;
@@ -1870,20 +1871,21 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
     return { destino, isExterno, kind };
   };
 
-  // Modo Órbita da vitrine: os produtos da categoria escolhida viram planetas
-  // com a foto. Até 12 por vez para a órbita não ficar apertada.
-  const LIMITE_ORBITA = 12;
+  // Modo Órbita da vitrine: os produtos da categoria escolhida viram uma
+  // galeria 3D (coverflow), cada card na proporção da foto.
+  const PROPORCAO = { quadrado: 1, retrato: 4 / 5, paisagem: 16 / 9, banner: 1920 / 830 } as const;
   const clicaveis = visible.flatMap((sec) => sec.items).filter((item) => !!destinoDe(item).destino);
-  const planetas: OrbitaItem[] = clicaveis.slice(0, LIMITE_ORBITA).map((item) => {
+  const galeria: CoverflowItem[] = clicaveis.map((item) => {
     const { destino, isExterno, kind } = destinoDe(item);
+    const size = sizeOf(item.layout_size);
     return {
       key: item.id,
-      t: item.title,
-      d: item.description?.trim() || "",
-      icon: "◆",
+      titulo: item.title,
+      descricao: item.description?.trim() || "",
       imagem: item.image_url || null,
       preco: formatPrice(item) || null,
-      interno: !isExterno,
+      ratio: PROPORCAO[COVER_RATIO_BY_SIZE[size]],
+      destaque: size === "destaque",
       onClick: () => {
         if (!destino) return;
         trackClick({ businessId: business.id, kind: isExterno ? kind : "produto", contentItemId: item.id, sessionId, targetUrl: destino });
@@ -1892,7 +1894,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
       },
     };
   });
-  const emOrbita = modo === "orbita" && planetas.length >= 2;
+  const emOrbita = modo === "orbita" && galeria.length >= 2;
 
   return (
     <>
@@ -1922,23 +1924,8 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
       )}
 
       {emOrbita ? (
-        <div className="mt-2">
-          <OrbitHome
-            itens={planetas}
-            redes={[]}
-            nome={business.name}
-            pergunta={null}
-            logoUrl={business.logo_url}
-            cores={orbiColors && orbiColors.length ? orbiColors : ["#B7F34A", "#6EE7D8", "#B7F34A"]}
-            agentName=""
-            semCabecalho
-            rotuloAbrir="Ver produto"
-          />
-          {clicaveis.length > LIMITE_ORBITA && (
-            <p className="mt-2 text-center text-[13px] text-text-tertiary">
-              Mostrando {LIMITE_ORBITA} de {clicaveis.length}. Escolha uma categoria acima para ver as outras.
-            </p>
-          )}
+        <div className="mt-4">
+          <VitrineCoverflow key={active ?? "_tudo"} itens={galeria} />
           <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} onOrbi={onOrbi} orbiColors={orbiColors} /></div>
         </div>
       ) : (
