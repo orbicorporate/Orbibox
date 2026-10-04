@@ -1886,6 +1886,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
       preco: formatPrice(item) || null,
       ratio: PROPORCAO[COVER_RATIO_BY_SIZE[size]],
       destaque: size === "destaque",
+      temPagina: !isExterno && (item.link_kind ?? "produto") === "produto",
       onClick: () => {
         if (!destino) return;
         trackClick({ businessId: business.id, kind: isExterno ? kind : "produto", contentItemId: item.id, sessionId, targetUrl: destino });

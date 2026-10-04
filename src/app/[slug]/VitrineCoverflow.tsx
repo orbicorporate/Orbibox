@@ -11,6 +11,8 @@ export type CoverflowItem = {
   /** Proporção de reserva enquanto a foto não carrega (largura / altura). */
   ratio: number;
   destaque?: boolean;
+  /** Só produto com página própria ganha o botão "Entrar". */
+  temPagina?: boolean;
   onClick: () => void;
 };
 
@@ -21,7 +23,7 @@ export type CoverflowItem = {
  * usa as setas ou toca num vizinho pra trazer pra frente; tocar no da
  * frente abre o produto.
  */
-export function VitrineCoverflow({ itens, rotuloAbrir = "Ver produto" }: { itens: CoverflowItem[]; rotuloAbrir?: string }) {
+export function VitrineCoverflow({ itens, rotuloAbrir = "Entrar" }: { itens: CoverflowItem[]; rotuloAbrir?: string }) {
   const palco = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLButtonElement | null)[]>([]);
   const capsRef = useRef<(HTMLSpanElement | null)[]>([]);
@@ -188,13 +190,13 @@ export function VitrineCoverflow({ itens, rotuloAbrir = "Ver produto" }: { itens
         <div key={atual.key} className="acao-entra mx-auto mt-5 max-w-[34ch] text-center" aria-live="polite">
           {atual.preco && <p className="font-[family-name:var(--font-manrope)] text-[15px] font-medium text-text-secondary">{atual.preco}</p>}
           {atual.descricao && <p className="mt-1 line-clamp-3 text-[13.5px] leading-relaxed text-text-secondary">{atual.descricao}</p>}
-          <button
+          {atual.temPagina && <button
             type="button"
             onClick={atual.onClick}
             className="mt-4 inline-flex min-h-[46px] items-center gap-1.5 rounded-full bg-on-background px-6 text-[14px] font-medium text-white transition-transform active:scale-[.97]"
           >
             {rotuloAbrir} <span aria-hidden>›</span>
-          </button>
+          </button>}
         </div>
       )}
     </div>
