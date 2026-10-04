@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { HomeIcon, isCustomBoxColor } from "@/components/orbi/HomeOptionCard";
+import { isAnimatedIcon } from "@/lib/showcase";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, nomeDaRede, type Rede } from "@/lib/redesSociais";
 import { abrirEmOrbita, reduzMovimento } from "@/lib/orbitPortal";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
@@ -252,9 +253,11 @@ export function OrbitHome({
               type="button"
               onClick={() => tocarPlaneta(i)}
               aria-label={o.t}
-              className={o.icon.startsWith("__orb") ? "orbita-planeta orbita-planeta-orbi" : "orbita-planeta shadow-[0_10px_22px_-10px_rgba(17,19,24,0.45)]"}
+              // Ícone animado (pin, folha, presente, esfera da Orbi...) já é um
+              // objeto em si: aparece solto, sem bola de fundo nem sombreado.
+              className={isAnimatedIcon(o.icon) && !o.imagem ? "orbita-planeta orbita-planeta-orbi" : "orbita-planeta shadow-[0_10px_22px_-10px_rgba(17,19,24,0.45)]"}
               style={
-                o.icon.startsWith("__orb")
+                isAnimatedIcon(o.icon) && !o.imagem
                   ? { background: "transparent" }
                   : custom
                   ? { background: `linear-gradient(135deg, color-mix(in srgb, ${o.color} 78%, white), ${o.color} 55%, color-mix(in srgb, ${o.color} 85%, black))` }
@@ -271,8 +274,8 @@ export function OrbitHome({
                   <img src={o.imagem} alt="" draggable={false} className="h-full w-full object-cover" />
                 </span>
               ) : (
-              <span className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-full">
-                <span className={`orbita-icone flex items-center justify-center ${["__logo__", "__orb__", "__orbcheck__", "__orbwa__", "__wadisc__", "__google__"].includes(o.icon) ? "scale-[1.4]" : ""}`}>
+              <span className={`absolute inset-0 flex items-center justify-center rounded-full ${isAnimatedIcon(o.icon) ? "" : "overflow-hidden"}`}>
+                <span className={`orbita-icone flex items-center justify-center ${o.icon === "__logo__" ? "scale-[1.4]" : isAnimatedIcon(o.icon) ? "scale-[1.2]" : ""}`}>
                   <HomeIcon icon={o.icon} boxLogo={o.boxLogo} color={o.color} orbiColors={cores} businessLogo={logoUrl} cupom={o.cupom} />
                 </span>
               </span>
