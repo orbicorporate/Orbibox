@@ -94,7 +94,7 @@ export function WelcomeBackBanner({
       ) : (
         <p className="relative mt-3 flex items-center gap-2 text-[13px] text-text-secondary">
           <span className="orbi-gradient flex h-5 w-5 items-center justify-center rounded-full text-[10px] text-on-background">✓</span>
-          Seu Orbibox está completo. É só divulgar e acompanhar o Pulse.
+          Seu Orbibox está completo. É só divulgar e acompanhar os Resultados.
         </p>
       )}
     </div>

@@ -33,7 +33,7 @@ const META: Record<string, { name: string; explica: string; icon: string; fixo?:
     icon: "◈",
     fixo: true,
   },
-  product: { name: "O que fazemos", explica: "Mostra seus produtos e serviços na vitrine que você montou.", icon: "▤" },
+  product: { name: "O que fazemos", explica: "Mostra seus produtos e serviços no catálogo que você montou.", icon: "▤" },
   content: { name: "Conhecer", explica: "Conta sobre a marca, texto e fotos, usando o tom de voz do seu DNA.", icon: "◫" },
   campaign: { name: "Presentear", explica: "Uma seleção pensada para quem vai comprar para outra pessoa.", icon: "◇" },
   // O box da IA usa as partículas como assinatura fixa, é o "wow" do produto.
@@ -42,7 +42,7 @@ const META: Record<string, { name: string; explica: string; icon: string; fixo?:
 };
 
 const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
-  vitrine: "Abre a Vitrine",
+  vitrine: "Abre o Catálogo",
   zara: "Abre a Orbi",
   whatsapp: "Abre o WhatsApp",
   avaliar: "Avaliar no Google",
@@ -471,11 +471,11 @@ export function BoxesManager({
           const isHero = false;
           const isCustom = box.box_type === "custom";
           const cfg = box.config as BoxConfig | null;
-          const mBase = META[box.box_type] ?? { name: cfg?.label || box.title || "Box livre", explica: (cfg?.action && CUSTOM_EXPLICA[cfg.action]) || CUSTOM_EXPLICA_GENERICA, icon: cfg?.icon || "◆" };
+          const mBase = META[box.box_type] ?? { name: cfg?.label || box.title || "Botão livre", explica: (cfg?.action && CUSTOM_EXPLICA[cfg.action]) || CUSTOM_EXPLICA_GENERICA, icon: cfg?.icon || "◆" };
           // "Presentear" é a porta do Gift Card: com ele ativo, abre o
           // vale-presente; sem ele, mostra a vitrine pra quem vai presentear.
           const m = box.box_type === "campaign"
-            ? { ...mBase, explica: giftEnabled ? "Abre o Gift Card: o cliente monta um vale-presente e combina o pagamento com você." : "Mostra sua vitrine pra quem vai comprar pra outra pessoa. Ative o Gift Card e ele vira vale-presente." }
+            ? { ...mBase, explica: giftEnabled ? "Abre o Gift Card: o cliente monta um vale-presente e combina o pagamento com você." : "Mostra seu catálogo pra quem vai comprar pra outra pessoa. Ative o Gift Card e ele vira vale-presente." }
             : mBase;
           // O box "Sobre" já sugere o nome da marca, o dono usa, ajusta ou desativa.
           const suggestedName = box.box_type === "content" ? `Sobre a ${businessName}` : m.name;
@@ -534,7 +534,7 @@ export function BoxesManager({
                     <>
                       <p className="text-[15px] font-medium">Vouchers</p>
                       <p className="mt-1 text-[13px] text-text-secondary">Resgate agora e aproveite</p>
-                      <p className="mt-1 text-[11px] text-text-tertiary">Nome e texto fixos do box de vouchers.</p>
+                      <p className="mt-1 text-[11px] text-text-tertiary">Nome e texto fixos do botão de vouchers.</p>
                     </>
                   ) : (
                     <>
@@ -543,7 +543,7 @@ export function BoxesManager({
                           defaultValue={label}
                           onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || suggestedName })}
                           placeholder={suggestedName}
-                          aria-label="Título do box"
+                          aria-label="Título do botão"
                           className="w-full border-b border-divider bg-transparent py-0.5 pr-5 text-[15px] font-medium outline-none focus:border-on-background"
                         />
                         <span className="pointer-events-none absolute right-0 top-1.5 text-[12px] text-text-tertiary">✎</span>
@@ -553,7 +553,7 @@ export function BoxesManager({
                           defaultValue={cfg?.subtitle ?? ""}
                           onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), subtitle: e.target.value })}
                           placeholder={isCustom ? "Texto de apoio (opcional)" : "Texto de apoio, em branco usa o padrão"}
-                          aria-label="Texto de apoio do box"
+                          aria-label="Texto de apoio do botão"
                           className="w-full border-b border-divider bg-transparent py-0.5 pr-5 text-[13px] text-text-secondary outline-none focus:border-on-background"
                         />
                         <span className="pointer-events-none absolute right-0 top-1.5 text-[11px] text-text-tertiary">✎</span>
@@ -780,7 +780,7 @@ export function BoxesManager({
 
       {creating ? (
         <div className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4">
-          <p className="text-[14px] font-medium">Nova Box personalizada</p>
+          <p className="text-[14px] font-medium">Novo botão personalizado</p>
           <input
             value={draftLabel}
             onChange={(e) => { setDraftLabel(e.target.value); setCreateError(null); }}
@@ -802,7 +802,7 @@ export function BoxesManager({
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-white/40 text-[20px]">＋</span>
             <span>
-              <span className="block text-[14px] font-semibold">Criar Box personalizada</span>
+              <span className="block text-[14px] font-semibold">Criar botão personalizado</span>
               <span className="block text-[12.5px] opacity-80">Você escolhe o que ela faz, o nome, a cor e o ícone.</span>
             </span>
           </button>
@@ -843,7 +843,7 @@ export function BoxesManager({
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiContactDisc size={40} /></span>
             <span>
-              <span className="block text-[14px] font-medium">Box de WhatsApp</span>
+              <span className="block text-[14px] font-medium">Botão de WhatsApp</span>
               <span className="block text-[12.5px] text-text-tertiary">Abre a conversa direto, com sua mensagem pronta.</span>
             </span>
           </button>
@@ -853,7 +853,7 @@ export function BoxesManager({
           >
             <span className="h-10 w-10 shrink-0 overflow-hidden rounded-full"><OrbiGoogleIcon size={40} /></span>
             <span>
-              <span className="block text-[14px] font-medium">Box de avaliação no Google</span>
+              <span className="block text-[14px] font-medium">Botão de avaliação no Google</span>
               <span className="block text-[12.5px] text-text-tertiary">O cliente toca e já dá as estrelas.</span>
             </span>
           </button>
@@ -863,7 +863,7 @@ export function BoxesManager({
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={28} /></span>
             <span>
-              <span className="block text-[14px] font-medium">Box de endereço</span>
+              <span className="block text-[14px] font-medium">Botão de endereço</span>
               <span className="block text-[12.5px] text-text-tertiary">Sai pronto com Waze e Google Maps.</span>
             </span>
           </button>
@@ -871,18 +871,18 @@ export function BoxesManager({
             <DestaqueVidro
               cores={["#FF5A4D", "#FF3B6E"]}
               icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5)]">🎟️</span>}
-              titulo="Box de vouchers"
+              titulo="Botão de vouchers"
               tag="Atrai clientes"
               subtitulo="Ofertas com código único"
               texto="Coloca suas ofertas na página, com estoque controlado e captura de contato."
-              acao="Criar box"
+              acao="Criar botão"
               onClick={novoBoxVoucher}
             />
           ) : (
             <DestaqueVidro
               cores={["#FF5A4D", "#FF3B6E"]}
               icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5)]">🎟️</span>}
-              titulo="Box de vouchers"
+              titulo="Botão de vouchers"
               tag="Novidade"
               subtitulo="Ofertas com código único"
               texto="Trazem gente nova pra sua página e capturam o contato de quem resgata."
@@ -1008,7 +1008,7 @@ function BoxEditor({
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-divider text-on-background">
                 <IconeRede rede={redeDoLink(cfg.url)!} size={13} />
               </span>
-              Link de {nomeDaRede(redeDoLink(cfg.url)!)}: aparece como bolinha abaixo dos boxes, junto com as outras redes.
+              Link de {nomeDaRede(redeDoLink(cfg.url)!)}: aparece como bolinha abaixo dos botões, junto com as outras redes.
             </p>
           )}
 
@@ -1082,7 +1082,7 @@ function BoxEditor({
           Como funciona o formato? <span className="inline-block transition-transform group-open:rotate-180">▾</span>
         </summary>
         <p className="mt-1.5 text-[12px] leading-relaxed text-text-tertiary">
-          No automático, a Orbi decide o melhor formato pra não deixar espaço vazio na tela. Em &quot;Metade&quot;, se não houver outro box pra formar par ao lado, ele vira linha toda de qualquer forma, pra nunca sobrar espaço.
+          No automático, a Orbi decide o melhor formato pra não deixar espaço vazio na tela. Em &quot;Metade&quot;, se não houver outro botão pra formar par ao lado, ele vira linha toda de qualquer forma, pra nunca sobrar espaço.
         </p>
       </details>
 
@@ -1191,11 +1191,11 @@ function BoxEditor({
               </button>
             </div>
             {gallery.length === 0 && !novoIconeAberto && (
-              <p className="text-[12px] text-text-secondary">Cadastre o logo ou os ícones da sua marca pra usar nos boxes.</p>
+              <p className="text-[12px] text-text-secondary">Cadastre o logo ou os ícones da sua marca pra usar nos botões.</p>
             )}
             {novoIconeAberto && (
               <div className="rounded-2xl border border-divider p-3">
-                <p className="mb-2 text-[12px] text-text-secondary">Envie um ícone da marca ou o logo. Ele fica salvo aqui e aparece pra escolher em todos os boxes.</p>
+                <p className="mb-2 text-[12px] text-text-secondary">Envie um ícone da marca ou o logo. Ele fica salvo aqui e aparece pra escolher em todos os botões.</p>
                 <ImageUpload
                   value={null}
                   businessId={businessId}
@@ -1239,7 +1239,7 @@ function BoxEditor({
 
       {onDelete && (
         <button onClick={onDelete} className="mt-1 self-start text-[12px] text-red-600">
-          Excluir esta Box
+          Excluir este botão
         </button>
       )}
 
@@ -1334,7 +1334,7 @@ function OrbiBoxCard({ cores, tag, texto, acao, href, onClick }: { cores: string
           <span className="relative h-14 w-14 overflow-hidden rounded-full"><OrbiParticleSphere size={56} colors={cores ?? undefined} vivid className="rounded-full" /></span>
         </>
       }
-      titulo="Box da Orbi"
+      titulo="Botão da Orbi"
       tag={tag}
       subtitulo="IA que conversa com seus clientes"
       texto={texto}

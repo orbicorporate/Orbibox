@@ -298,7 +298,7 @@ export function VitrineMontando({
     return () => clearTimeout(t);
   }, [status]);
 
-  const textoEtapa = status === "ok" ? "Finalizando sua vitrine" : ETAPAS[etapa](alvo, marca);
+  const textoEtapa = status === "ok" ? "Finalizando seu catálogo" : ETAPAS[etapa](alvo, marca);
 
   return (
     <div className="flex flex-col items-center py-4 text-center">
@@ -334,7 +334,7 @@ export function VitrineMontando({
                 </svg>
               </span>
               <p className="orbi-linha-entra mt-4 font-[family-name:var(--font-manrope)] text-[21px] font-medium leading-tight tracking-[-0.01em]" style={{ animationDelay: "0.35s" }}>
-                Sua vitrine está pronta
+                Seu catálogo está pronto
               </p>
               <p className="orbi-linha-entra mt-1.5 text-[15px] leading-snug text-text-secondary" style={{ animationDelay: "0.6s" }}>
                 Visite e edite à vontade.

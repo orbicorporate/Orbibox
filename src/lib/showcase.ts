@@ -4,7 +4,7 @@ export type BoxSize = "destaque" | "largo" | "medio" | "alto";
 export type BoxStyle = "cor" | "foto" | "foto_mat";
 
 export const SIZE_LABEL: Record<BoxSize, string> = {
-  destaque: "Destaque",
+  destaque: "Grande",
   largo: "Largo",
   medio: "Pequeno",
   alto: "Alto",

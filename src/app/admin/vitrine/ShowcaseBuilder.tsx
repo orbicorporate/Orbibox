@@ -253,7 +253,7 @@ export function ShowcaseBuilder({
 
   // Histórico de estados anteriores da vitrine, permite desfazer a última
   // ação (edição, exclusão, criação, reorganização, importação, etc.) e
-  // também dá segurança pra "Renovar vitrine", que apaga tudo de uma vez.
+  // também dá segurança pra "Renovar catálogo", que apaga tudo de uma vez.
   type Snapshot = { items: Item[]; categories: string[]; coverUrls: string[] };
   const [history, setHistory] = useState<Snapshot[]>([]);
   const [undoing, setUndoing] = useState(false);
@@ -360,8 +360,8 @@ export function ShowcaseBuilder({
     if (items.length === 0 && categories.length === 0 && coverUrls.length === 0) return;
     if (
       !(await confirm({
-        title: "Renovar vitrine",
-        message: "Isso apaga todos os itens, categorias e a capa da sua vitrine, pra você recomeçar do zero. Dá pra desfazer logo em seguida se mudar de ideia.",
+        title: "Renovar catálogo",
+        message: "Isso apaga todos os itens, categorias e a capa do seu catálogo, pra você recomeçar do zero. Dá pra desfazer logo em seguida se mudar de ideia.",
         confirmLabel: "Renovar",
         danger: true,
       }))
@@ -422,7 +422,7 @@ export function ShowcaseBuilder({
     },
     {
       titulo: "Escolha o estilo",
-      detalhe: "Cores da vitrine e ideias prontas pro seu tipo de negócio",
+      detalhe: "Cores do catálogo e ideias prontas pro seu tipo de negócio",
       feito: estiloOk,
       acao: () => setShowEstilo(true),
     },
@@ -522,7 +522,7 @@ export function ShowcaseBuilder({
       updates.map((u) => supabase.from("content_items").update({ layout_size: u.layout_size, position: u.position }).eq("id", u.id))
     );
     setArranging(false);
-    mostrarAviso("Vitrine organizada pela Orbi");
+    mostrarAviso("Catálogo organizado pela Orbi");
   }
 
   async function createItem(brandLabel: string | null = null) {
@@ -684,7 +684,7 @@ export function ShowcaseBuilder({
         <div className="mb-5">
           <div className="flex items-center justify-between gap-2 px-1">
             <p className="text-[13.5px] font-semibold">
-              Monte sua vitrine em 3 passos <span className="ml-1 text-[12.5px] font-normal text-text-tertiary">{passos.filter((p) => p.feito).length} de 3</span>
+              Monte seu catálogo em 3 passos <span className="ml-1 text-[12.5px] font-normal text-text-tertiary">{passos.filter((p) => p.feito).length} de 3</span>
             </p>
             <button onClick={esconderGuia} className="text-[12px] text-text-tertiary">Ocultar</button>
           </div>
@@ -799,7 +799,7 @@ export function ShowcaseBuilder({
             ))}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[14px] font-medium">Estilo da vitrine</span>
+            <span className="block text-[14px] font-medium">Estilo do catálogo</span>
             <span className="block text-[12px] text-text-tertiary">Cores e vitrines prontas pra se inspirar</span>
           </span>
           <span className="shrink-0 text-[13px] font-medium text-text-secondary">Trocar →</span>
@@ -839,11 +839,11 @@ export function ShowcaseBuilder({
             {proposta.motivo && <p className="mt-1 text-[13px] text-text-secondary">{proposta.motivo}</p>}
             <p className="mt-3 text-[14px] leading-relaxed text-text-secondary">
               {proposta.siteType === "ecommerce"
-                ? `Montei ${proposta.imported} boxes de categoria que levam direto para as páginas do seu site.`
+                ? `Montei ${proposta.imported} cards de categoria que levam direto para as páginas do seu site.`
                 : proposta.siteType === "links"
-                ? `Montei ${proposta.imported} boxes de navegação apontando para o seu site e contatos.`
-                : `Montei ${proposta.imported} boxes com os serviços que encontrei, usando as fotos do próprio site.`}
-              {proposta.semFoto > 0 && ` ${proposta.semFoto} ${proposta.semFoto === 1 ? "box ficou" : "boxes ficaram"} sem foto, em cor neutra.`}
+                ? `Montei ${proposta.imported} cards de navegação apontando para o seu site e contatos.`
+                : `Montei ${proposta.imported} cards com os serviços que encontrei, usando as fotos do próprio site.`}
+              {proposta.semFoto > 0 && ` ${proposta.semFoto} ${proposta.semFoto === 1 ? "card ficou" : "cards ficaram"} sem foto, em cor neutra.`}
             </p>
             {proposta.semFoto > 0 && (
               <div className="mt-3 flex items-center gap-3 rounded-[18px] bg-surface-soft p-3">
@@ -880,7 +880,7 @@ export function ShowcaseBuilder({
         <div className="mt-6 rounded-[28px] border border-divider bg-surface-white p-6">
           <p className="text-[15px] font-medium">✦ Comece importando seu catálogo</p>
           <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-            Cole o link do seu site e a Orbi organiza seus produtos ou serviços na Vitrine automaticamente, muito
+            Cole o link do seu site e a Orbi organiza seus produtos ou serviços no Catálogo automaticamente, muito
             mais rápido do que criar item por item.
           </p>
           <button
@@ -925,7 +925,7 @@ export function ShowcaseBuilder({
             {!(isDestaques && realCount === 0) && (
             <div className="mb-3 flex items-center justify-between gap-2">
               {isDestaques ? (
-                <p className="text-[13px] text-text-tertiary">Sem categoria · aparecem no topo da Vitrine, sem título</p>
+                <p className="text-[13px] text-text-tertiary">Sem categoria · aparecem no topo do Catálogo, sem título</p>
               ) : (
                 <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
               )}
@@ -1012,7 +1012,7 @@ export function ShowcaseBuilder({
         >
           <span>
             <span className="block text-[14px] font-medium">Título, capa e novidades</span>
-            <span className="block text-[12px] text-text-tertiary">Ajustes do topo da vitrine, todos opcionais</span>
+            <span className="block text-[12px] text-text-tertiary">Ajustes do topo do catálogo, todos opcionais</span>
           </span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${ajustesAbertos ? "rotate-180" : ""}`} aria-hidden>
             <path d="M6 9l6 6 6-6" />
@@ -1041,12 +1041,12 @@ export function ShowcaseBuilder({
           className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
         />
       </div>
-      {/* Capa da Vitrine, opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
+      {/* Capa do Catálogo, opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
       <div className="mt-6 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Capa da Vitrine</p>
+              <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Capa do Catálogo</p>
               <span className="rounded-full bg-surface-soft px-2 py-0.5 text-[11px] font-medium text-text-tertiary">opcional</span>
             </div>
             <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">
@@ -1089,7 +1089,7 @@ export function ShowcaseBuilder({
           <div className="min-w-0 flex-1">
             <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Botão de novidades</p>
             <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">
-              Um botão no topo da Vitrine pro cliente deixar o WhatsApp e receber novidades.
+              Um botão no topo do Catálogo pro cliente deixar o WhatsApp e receber novidades.
             </p>
           </div>
           <button
@@ -1117,8 +1117,8 @@ export function ShowcaseBuilder({
         </div>
         <p className="mt-2 text-[11.5px] text-text-tertiary">
           {leadTop
-            ? "Ligado: aparece no topo da Vitrine. Quem deixar o número entra em Conversas, na lista \"Pediram pra ser avisados\"."
-            : "Desligado: o convite aparece só no fim da Vitrine, de forma discreta."}
+            ? "Ligado: aparece no topo do Catálogo. Quem deixar o número entra em Conversas, na lista \"Pediram pra ser avisados\"."
+            : "Desligado: o convite aparece só no fim do Catálogo, de forma discreta."}
         </p>
       </div>
           </div>
@@ -1138,13 +1138,13 @@ export function ShowcaseBuilder({
           <OrbiInsightMessage>
             {insights?.[insightIdx] ??
               (publishedCount === 0
-                ? "Nenhum item está ativo, os visitantes ainda não veem nada na sua vitrine. Publique pelo menos um."
-                : `Você tem ${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}. Toque abaixo pra Orbi analisar sua vitrine de verdade.`)}
+                ? "Nenhum item está ativo, os visitantes ainda não veem nada no seu catálogo. Publique pelo menos um."
+                : `Você tem ${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}. Toque abaixo pra Orbi analisar seu catálogo de verdade.`)}
           </OrbiInsightMessage>
           <div className="mt-5 flex flex-wrap items-center gap-2">
             {!insights ? (
               <button onClick={generateInsights} disabled={generatingInsight} className={`${orbiInsightCtaClass} !mt-0 disabled:opacity-60`}>
-                {generatingInsight ? "Analisando sua vitrine…" : "Gerar insights"} <OrbiSparkleMini />
+                {generatingInsight ? "Analisando seu catálogo…" : "Gerar insights"} <OrbiSparkleMini />
               </button>
             ) : (
               <>
@@ -1169,7 +1169,7 @@ export function ShowcaseBuilder({
           <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/45 sm:items-center" onClick={() => setShowEstilo(false)}>
             <div className="w-full max-w-lg rounded-t-[28px] bg-surface-white p-5 pb-8 sm:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between gap-2">
-                <p className="font-[family-name:var(--font-manrope)] text-[19px] font-semibold">Estilo da vitrine</p>
+                <p className="font-[family-name:var(--font-manrope)] text-[19px] font-semibold">Estilo do catálogo</p>
                 <button onClick={() => setShowEstilo(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-[14px]" aria-label="Fechar">✕</button>
               </div>
               <p className="mt-1 text-[13px] text-text-secondary">Toque numa paleta pra aplicar em todos os itens.</p>
@@ -1226,7 +1226,7 @@ export function ShowcaseBuilder({
             onClick={renovarVitrine}
             className="mt-2 cursor-pointer rounded-full border border-red-200 bg-surface-white px-4 py-2 text-[13px] font-medium text-red-600"
           >
-            Renovar vitrine
+            Renovar catálogo
           </button>
         </div>
       )}
@@ -1283,7 +1283,7 @@ function CoverExampleModal({ onClose }: { onClose: () => void }) {
             <div className="relative overflow-hidden rounded-[18px] shadow-[0_10px_30px_rgba(0,0,0,0.18)] ring-2 ring-[#8FC7B5]" style={{ aspectRatio: 1920 / 830 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={COVER_EXAMPLE_COVERS[idx]} alt="Capa" className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500" />
-              <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">✦ Capa da Vitrine</div>
+              <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">✦ Capa do Catálogo</div>
               <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
                 {COVER_EXAMPLE_COVERS.map((_, i) => (
                   <span key={i} className={`h-1.5 rounded-full transition-all ${i === idx ? "w-4 bg-white" : "w-1.5 bg-white/60"}`} />
@@ -1409,7 +1409,7 @@ function ItemCard({
   }
   const size = sizeOf(item.layout_size);
   const c = colorOf(item.box_color);
-  // Cor do rodapé é independente da "Cor do box" (essa é só pro estado sem
+  // Cor do rodapé é independente da "Cor do card" (essa é só pro estado sem
   // foto). Sem escolha, o rodapé fica branco puro, como sempre foi.
   const fc = item.footer_color ? colorOf(item.footer_color) : null;
   const hasPhoto = !!item.image_url && !imgFailed;
@@ -1508,7 +1508,7 @@ function ItemCard({
               className="mt-1 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium"
               style={{ backgroundColor: `${c.fg}1A`, color: c.fg }}
             >
-              ＋ Editar box
+              ＋ Editar item
             </span>
           </div>
         )}
@@ -1529,7 +1529,7 @@ function ItemCard({
               onClick={() => move(item, -1)}
               disabled={idx <= 0}
               className="flex h-7 w-7 items-center justify-center text-[13px] text-on-background disabled:opacity-25"
-              aria-label="Subir box"
+              aria-label="Subir item"
             >
               ↑
             </button>
@@ -1538,7 +1538,7 @@ function ItemCard({
               onClick={() => move(item, 1)}
               disabled={idx >= total - 1}
               className="flex h-7 w-7 items-center justify-center text-[13px] text-on-background disabled:opacity-25"
-              aria-label="Descer box"
+              aria-label="Descer item"
             >
               ↓
             </button>
@@ -1633,8 +1633,8 @@ function ItemCard({
               active={showIntroTour}
               onDone={() => onIntroDone?.()}
               steps={[
-                { id: "item-formato", title: "Formato do card", body: "Escolha como esse item aparece na grade da Vitrine, de destaque, largo, médio ou alto. Dá pra mudar quando quiser." },
-                { id: "item-capa", title: "Foto de capa", body: "É a imagem que aparece no card, dentro da Vitrine. Segue o formato escolhido acima." },
+                { id: "item-formato", title: "Formato do card", body: "Escolha como esse item aparece na grade do Catálogo: grande, largo, pequeno ou alto. Dá pra mudar quando quiser." },
+                { id: "item-capa", title: "Foto de capa", body: "É a imagem que aparece no card, dentro do Catálogo. Segue o formato escolhido acima." },
                 { id: "item-destino", title: "Página própria do produto", body: "Ative \"Abrir uma página exclusiva\" pra esse item ganhar sua própria página, com carrossel de fotos, descrição e preço, ótimo pra apresentar bem antes da venda." },
               ]}
             />
@@ -1693,7 +1693,7 @@ function ItemCard({
                   value={item.image_url}
                   businessId={businessId}
                   lockedRatio={COVER_RATIO_BY_SIZE[size]}
-                  lockedReason="Segue o formato do box escolhido acima, pra mudar, troque o formato."
+                  lockedReason="Segue o formato do card escolhido acima, pra mudar, troque o formato."
                   promptSubject={item.title}
                   onChange={(url) => save(item.id, { image_url: url, image_is_placeholder: false, box_style: url ? "foto" : "cor" })}
                 />
@@ -1757,7 +1757,7 @@ function ItemCard({
 
             <div>
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
-                Cor do box{item.image_url ? " · aparece se remover a foto" : ""}
+                Cor do card{item.image_url ? " · aparece se remover a foto" : ""}
               </p>
               <div className="mt-2 flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 {brandColors.length > 0 && (
@@ -1781,7 +1781,7 @@ function ItemCard({
 
             {/* Com foto, primeiro decide onde vai o nome. Só existe rodapé no
                 modo "faixa", então a cor dele só aparece nesse caso, usando a
-                mesma paleta já escolhida em "Cor do box" (sem abas repetidas). */}
+                mesma paleta já escolhida em "Cor do card" (sem abas repetidas). */}
             {item.image_url && (
               <div>
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do card</p>
@@ -1885,7 +1885,7 @@ function ItemCard({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="text-[14px] font-medium text-on-background">Agendar exibição dessa box</span>
+                    <span className="text-[14px] font-medium text-on-background">Agendar exibição desse item</span>
                     {(item.starts_at || item.ends_at) && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10.5px] font-medium text-text-secondary">
                         <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
@@ -1899,7 +1899,7 @@ function ItemCard({
                           item.starts_at && `De ${new Date(item.starts_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}`,
                           item.ends_at && `até ${new Date(item.ends_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}`,
                         ].filter(Boolean).join(" ")
-                      : "Entra e sai da Vitrine sozinho"}
+                      : "Entra e sai do Catálogo sozinho"}
                   </span>
                 </span>
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary transition-transform ${scheduleOpen ? "rotate-180" : ""}`}>
@@ -1910,7 +1910,7 @@ function ItemCard({
               </button>
               {scheduleOpen && (
               <>
-              <HelperText>Publica e some da Vitrine sozinho nas datas escolhidas, bom pra promoção por tempo limitado.</HelperText>
+              <HelperText>Publica e some do Catálogo sozinho nas datas escolhidas, bom pra promoção por tempo limitado.</HelperText>
               <div className="mt-3 flex flex-col gap-2.5">
                 <div>
                   <p className="text-[12px] font-medium text-text-tertiary">Começa em</p>
@@ -1942,7 +1942,7 @@ function ItemCard({
 
             <div>
               <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Categoria</p>
-              <p className="mt-1 text-[12px] leading-snug text-text-tertiary">Cada categoria vira uma seção com título na Vitrine.</p>
+              <p className="mt-1 text-[12px] leading-snug text-text-tertiary">Cada categoria vira uma seção com título no Catálogo.</p>
               {/* Chips em vez de lista suspensa: dá pra ver todas as opções de
                   uma vez e trocar com um toque. */}
               <div className="mt-2.5 flex flex-wrap gap-2">
@@ -1979,7 +1979,7 @@ function ItemCard({
 
             <div data-tour="item-destino">
               <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Ao tocar no card…</p>
-              <HelperText>Escolha o que acontece quando o cliente toca neste item na sua vitrine.</HelperText>
+              <HelperText>Escolha o que acontece quando o cliente toca neste item no seu catálogo.</HelperText>
               <div className="mt-4 flex flex-col gap-2.5">
                 {/* Página própria */}
                 <div
@@ -2025,7 +2025,7 @@ function ItemCard({
                     Não abrir nada (só mostrar)
                   </span>
                   <div className="w-full" onClick={(e) => e.stopPropagation()}>
-                    <HelperText className="mt-1">O card fica só como vitrine, sem ser clicável. Bom pra destacar algo que não precisa de página nem link.</HelperText>
+                    <HelperText className="mt-1">O card fica só de exposição, sem ser clicável. Bom pra destacar algo que não precisa de página nem link.</HelperText>
                   </div>
                 </div>
               </div>
@@ -2076,7 +2076,7 @@ function ItemCard({
       )}
       {allColorsFor && (
         <AllColorsSheet
-          title={allColorsFor === "box" ? "Cor do box" : "Cor do rodapé"}
+          title={allColorsFor === "box" ? "Cor do card" : "Cor do rodapé"}
           current={allColorsFor === "box" ? item.box_color : item.footer_color}
           brandColors={brandColors}
           allowWhite={allColorsFor === "footer"}

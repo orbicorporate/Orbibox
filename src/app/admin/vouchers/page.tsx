@@ -103,8 +103,8 @@ export default async function VouchersPage() {
             <div className="mt-4 flex flex-col gap-4">
               {[
                 { n: "1", t: "Você cria o voucher", d: "Desconto, quantidade disponível e validade, você decide tudo aqui embaixo." },
-                { n: "2", t: "Coloca o box \"Vouchers\" na página inicial", d: "Sem isso, o voucher existe mas ninguém vê. É o botão logo abaixo." },
-                { n: "3", t: "O cliente resgata", d: "Toca no box, deixa nome e WhatsApp, e recebe um código único na hora." },
+                { n: "2", t: "Coloca o botão \"Vouchers\" na página inicial", d: "Sem isso, o voucher existe mas ninguém vê. É o botão logo abaixo." },
+                { n: "3", t: "O cliente resgata", d: "Toca no botão, deixa nome e WhatsApp, e recebe um código único na hora." },
                 { n: "4", t: "Você confirma no atendimento", d: "Ele mostra o código, você digita em \"Resgatar código\" e pronto." },
               ].map((s) => (
                 <div key={s.n} className="flex items-start gap-3.5">

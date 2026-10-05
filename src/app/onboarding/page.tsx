@@ -296,11 +296,11 @@ export default function OnboardingPage() {
     // Todos os boxes levam is_active explícito: num insert em lote, campo
     // ausente vira nulo (não usa o padrão da coluna) e a linha inteira falha.
     const { error: boxesErr } = await supabase.from("smart_boxes").insert([
-      { business_id: business.id, box_type: "hero", title: "Entrada Adaptativa", position: 0, is_active: true },
-      { business_id: business.id, box_type: "product", title: "Vitrine de Produtos", position: 1, is_active: temVitrine },
-      { business_id: business.id, box_type: "agent", title: "AgentBox Orbi", position: 2, is_active: true },
-      { business_id: business.id, box_type: "content", title: "História da Marca", position: 3, is_active: conteudoAtivo },
-      { business_id: business.id, box_type: "campaign", title: "Seleção de Presentes", position: 4, is_active: false },
+      { business_id: business.id, box_type: "hero", title: "Tela inicial", position: 0, is_active: true },
+      { business_id: business.id, box_type: "product", title: "O que fazemos", position: 1, is_active: temVitrine },
+      { business_id: business.id, box_type: "agent", title: "Pergunte o que quiser", position: 2, is_active: true },
+      { business_id: business.id, box_type: "content", title: "Conhecer", position: 3, is_active: conteudoAtivo },
+      { business_id: business.id, box_type: "campaign", title: "Presentear", position: 4, is_active: false },
     ]);
     if (boxesErr) console.error("onboarding: falha ao criar boxes base", boxesErr);
 
@@ -329,8 +329,8 @@ export default function OnboardingPage() {
     if (importados > 0) {
       oportunidades.unshift({
         business_id: business.id,
-        title: "Revise sua vitrine",
-        description: `A Orbi importou ${importados} ${importados === 1 ? "item" : "itens"} do seu site. Ajuste formato, cor e imagem de cada box.`,
+        title: "Revise seu catálogo",
+        description: `A Orbi importou ${importados} ${importados === 1 ? "item" : "itens"} do seu site. Confira fotos, preços e nomes.`,
         category: "descoberta",
         impact_score: 92,
       });
@@ -338,7 +338,7 @@ export default function OnboardingPage() {
       oportunidades.unshift({
         business_id: business.id,
         title: "Importe seu catálogo",
-        description: "Cole o link do seu site na Vitrine, a Orbi transforma seus produtos em boxes automaticamente.",
+        description: "Cole o link do seu site no Catálogo e a Orbi transforma seus produtos em cards automaticamente.",
         category: "descoberta",
         impact_score: 92,
       });
@@ -446,7 +446,7 @@ export default function OnboardingPage() {
                   Quase lá
                 </h1>
                 <p className="text-center text-[14px] text-text-secondary">
-                  {importSummary.fetchError} Você pode tentar de novo, ou seguir e importar depois pela Vitrine.
+                  {importSummary.fetchError} Você pode tentar de novo, ou seguir e importar depois pelo Catálogo.
                 </p>
                 <button
                   type="button"
@@ -472,9 +472,9 @@ export default function OnboardingPage() {
                 </div>
                 <p className="text-[14px] leading-relaxed text-text-secondary">
                   {importSummary.siteType === "ecommerce" ? (
-                    <>Organizei sua vitrine em <b>{importSummary.imported} categorias</b>, não em produto por produto, pra não ficar longo demais. Cada uma leva o visitante direto pra página certa no seu site.</>
+                    <>Organizei seu catálogo em <b>{importSummary.imported} categorias</b>, não em produto por produto, pra não ficar longo demais. Cada uma leva o visitante direto pra página certa no seu site.</>
                   ) : (
-                    <>Criei <b>{importSummary.imported} {importSummary.imported === 1 ? "box" : "boxes"}</b> na sua vitrine, um pra cada serviço ou produto que encontrei.</>
+                    <>Criei <b>{importSummary.imported} {importSummary.imported === 1 ? "item" : "itens"}</b> no seu catálogo, um pra cada serviço ou produto que encontrei.</>
                   )}
                 </p>
               </>
@@ -482,14 +482,14 @@ export default function OnboardingPage() {
               <>
                 <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">Tudo pronto</h1>
                 <p className="text-center text-[14px] text-text-secondary">
-                  Você não passou site nem Instagram, então a vitrine começa vazia, monta ela do seu jeito quando quiser.
+                  Você não passou site nem Instagram, então o catálogo começa vazio. Monte do seu jeito quando quiser.
                 </p>
               </>
             ) : (
               <>
                 <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">Tudo pronto</h1>
                 <p className="text-center text-[14px] text-text-secondary">
-                  Não encontrei itens claros pra importar, sem problema, você adiciona na Vitrine quando quiser.
+                  Não encontrei itens claros pra importar, sem problema, você adiciona no Catálogo quando quiser.
                 </p>
               </>
             )}

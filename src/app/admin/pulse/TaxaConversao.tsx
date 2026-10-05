@@ -28,10 +28,10 @@ function contexto(taxa: number, visitas: number) {
       titulo: "Excelente. Sua página convence.",
       resumo: "A maioria de quem entra faz alguma ação. Pra manter esse nível:",
       passos: [
-        ["Vitrine em dia", "Mantenha produtos e preços sempre atualizados."],
+        ["Catálogo em dia", "Mantenha produtos e preços sempre atualizados."],
         ["Contatos certos", "Confira de vez em quando se o WhatsApp e os contatos estão corretos."],
       ] as [string, string][],
-      link: { label: "Revisar Vitrine", href: "/admin/vitrine" },
+      link: { label: "Revisar Catálogo", href: "/admin/vitrine" },
     };
   }
   if (taxa >= 35) {
@@ -41,11 +41,11 @@ function contexto(taxa: number, visitas: number) {
       titulo: "Está num bom caminho.",
       resumo: "Boa parte age ao entrar. Pra subir mais, faça isto:",
       passos: [
-        ["Destaque o que importa", "Em Boxes, arraste WhatsApp ou Vitrine pra primeira posição."],
+        ["Destaque o que importa", "Em Botões, coloque WhatsApp ou Catálogo na primeira posição."],
         ["Convide para a ação", "Use um nome claro, como \"Falar agora no WhatsApp\"."],
-        ["Simplifique a escolha", "Oculte os boxes que você não usa, pra evitar distrações."],
+        ["Simplifique a escolha", "Desligue os botões que você não usa, pra evitar distrações."],
       ] as [string, string][],
-      link: { label: "Organizar Boxes", href: "/admin/boxes" },
+      link: { label: "Organizar Botões", href: "/admin/boxes" },
     };
   }
   if (taxa >= 15) {
@@ -57,9 +57,9 @@ function contexto(taxa: number, visitas: number) {
       passos: [
         ["Teste os 3 segundos", "Abra sua página: dá pra entender o que fazer num relance?"],
         ["Um botão principal", "Deixe uma ação no topo (ex: WhatsApp) com nome claro."],
-        ["Menos boxes", "Menos opções na tela deixam a decisão mais fácil."],
+        ["Menos botões", "Menos opções na tela deixam a decisão mais fácil."],
       ] as [string, string][],
-      link: { label: "Ajustar Boxes", href: "/admin/boxes" },
+      link: { label: "Ajustar Botões", href: "/admin/boxes" },
     };
   }
   return {
@@ -68,8 +68,8 @@ function contexto(taxa: number, visitas: number) {
     titulo: "Vale ajustar a página.",
     resumo: "Quase ninguém age ao entrar. Provavelmente falta um caminho claro. Comece por aqui:",
     passos: [
-      ["Uma ação no topo", "Garanta um box de ação em primeiro (WhatsApp ou Vitrine)."],
-      ["Vitrine com conteúdo", "Preencha com pelo menos alguns produtos ou serviços."],
+      ["Uma ação no topo", "Deixe um botão de ação em primeiro (WhatsApp ou Catálogo)."],
+      ["Catálogo com conteúdo", "Preencha com pelo menos alguns produtos ou serviços."],
       ["Primeira tela limpa", "Deixe só uma ação óbvia, sem poluição."],
     ] as [string, string][],
     link: { label: "Revisar minha página", href: "/admin/boxes" },

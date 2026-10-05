@@ -68,7 +68,7 @@ export default async function ConversasPage() {
   return (
     <div className="flex flex-col">
       <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
-        Talks
+        Conversas
       </h1>
       <HelperText className="mt-2">
         Trate seus visitantes com a inteligência da Orbi. Ela entende o que eles gostam e o que gostariam de receber, te dá a mensagem pronta, a temperatura do lead e o motivo de agir. Isso não é venda, é troca real que deixa seu lead feliz.

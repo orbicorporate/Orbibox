@@ -16,7 +16,7 @@ import { getAccessInfo } from "@/lib/plans";
 const METRICS = [
   { key: "discovery", label: "Visitas", explica: "Pessoas que abriram seu link", icon: "◎", href: "/admin/pulse" },
   { key: "interest", label: "Interesses", explica: "Escolheram uma opção na tela inicial", icon: "♡", href: "/admin/pulse" },
-  { key: "conversion", label: "Talks reais", explica: "Trocaram mensagem de verdade com a Orbi", icon: "▤", href: "/admin/conversas" },
+  { key: "conversion", label: "Conversas reais", explica: "Trocaram mensagem de verdade com a Orbi", icon: "▤", href: "/admin/conversas" },
   { key: "relationship", label: "Ações", explica: "Cliques em produtos, links e WhatsApp", icon: "☞", href: "/admin/pulse" },
 ] as const;
 
@@ -203,7 +203,7 @@ export default async function HojePage() {
 
       {activeBoxes === 0 && (
         <p className="mx-auto mt-3 max-w-[280px] text-center text-[12px] leading-relaxed text-red-600">
-          ⚠ Ainda não dá pra divulgar, sua página está sem nenhuma Box ativa, então quem abrir o link não vê nada.{" "}
+          ⚠ Ainda não dá pra divulgar, sua página está sem nenhum botão ligado, então quem abrir o link não vê nada.{" "}
           <Link href="/admin/boxes" className="underline">Resolver agora</Link>
         </p>
       )}

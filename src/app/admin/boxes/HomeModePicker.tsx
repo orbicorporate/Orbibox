@@ -31,7 +31,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
     {
       v: "orbita",
       titulo: "Modo Órbita",
-      texto: "Seus boxes giram em volta do seu logo, um de cada vez, com transições animadas.",
+      texto: "Seus botões giram em volta do seu logo, um de cada vez, com transições animadas.",
       desenho: (
         <svg viewBox="0 0 120 64" className="h-16 w-full" aria-hidden>
           <ellipse cx="60" cy="34" rx="46" ry="14" fill="none" stroke="currentColor" strokeOpacity=".25" strokeDasharray="1.5 4" />
@@ -46,8 +46,8 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
     },
     {
       v: "grade",
-      titulo: "Modo Box",
-      texto: "Todos os boxes visíveis de uma vez, em cards, no tamanho que você escolheu.",
+      titulo: "Modo Grade",
+      texto: "Todos os botões visíveis de uma vez, em cards, no tamanho que você escolheu.",
       desenho: (
         <svg viewBox="0 0 120 64" className="h-16 w-full" aria-hidden>
           <rect x="22" y="6" width="36" height="24" rx="6" fill="currentColor" fillOpacity=".3" />
@@ -82,7 +82,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
           </button>
         ))}
       </div>
-      {salvo && <p className="mt-2 text-[11.5px] text-text-tertiary">Salvo. Quem abrir sua página agora vê o {modo === "orbita" ? "Modo Órbita" : "Modo Box"} primeiro.</p>}
+      {salvo && <p className="mt-2 text-[11.5px] text-text-tertiary">Salvo. Quem abrir sua página agora vê o {modo === "orbita" ? "Modo Órbita" : "Modo Grade"} primeiro.</p>}
     </div>
   );
 }

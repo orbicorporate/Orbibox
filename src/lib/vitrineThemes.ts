@@ -36,7 +36,7 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     name: "Moda",
     vibe: "Editorial, atemporal",
     exampleBusiness: "Ateliê Norte",
-    description: "Vitrine editorial com fotos das peças. Pra boutique, brechó, ateliê, loja de roupa.",
+    description: "Catálogo editorial com fotos das peças. Pra boutique, brechó, ateliê, loja de roupa.",
     bg: "#F5F1EA",
     colors: [
       { hex: "#EFE8DC", role: "Fundo" },
@@ -78,7 +78,7 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     name: "Loja",
     vibe: "Clean, versátil",
     exampleBusiness: "Studio Bem",
-    description: "Vitrine organizada de produtos com muito respiro. Pra loja de artigos, presentes, papelaria, decoração.",
+    description: "Catálogo organizado de produtos com muito respiro. Pra loja de artigos, presentes, papelaria, decoração.",
     bg: "#F1F0EC",
     colors: [
       { hex: "#EEEDE7", role: "Fundo" },
@@ -305,7 +305,7 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     name: "Algodão",
     vibe: "Suave, acolhedor",
     exampleBusiness: "Marina Ateliê",
-    description: "Areia clarinha com rosa-nude e marrom-claro. Pra quem quer uma vitrine macia, quente e sem peso.",
+    description: "Areia clarinha com rosa-nude e marrom-claro. Pra quem quer um catálogo macio, quente e sem peso.",
     bg: "#FAF6F2",
     colors: [
       { hex: "#F8F2EC", role: "Fundo" },
@@ -319,7 +319,7 @@ export const VITRINE_THEMES: VitrineTheme[] = [
     name: "Orvalho",
     vibe: "Fresco, luminoso",
     exampleBusiness: "Studio Azul",
-    description: "Branco frio com azul-gelo e prata. Pra quem quer uma vitrine limpa, moderna e com ar de novo.",
+    description: "Branco frio com azul-gelo e prata. Pra quem quer um catálogo limpo, moderno e com ar de novo.",
     bg: "#F5F8FA",
     colors: [
       { hex: "#F2F6F9", role: "Fundo" },

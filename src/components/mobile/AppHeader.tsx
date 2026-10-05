@@ -176,7 +176,7 @@ export function AppHeader({
                       className="flex items-center justify-between gap-3 rounded-2xl px-3 py-3 active:bg-surface-soft"
                     >
                       <span className="text-[13.5px] font-medium">
-                        {unseenConversas} {unseenConversas === 1 ? "conversa nova" : "conversas novas"} em Talks
+                        {unseenConversas} {unseenConversas === 1 ? "conversa nova" : "conversas novas"} em Conversas
                       </span>
                       <span className="text-text-tertiary">›</span>
                     </Link>
@@ -398,7 +398,7 @@ export function AppHeader({
                     <>
                       <p className="mt-3 text-[17px] font-semibold">Excluir “{excluir.name}”?</p>
                       <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-                        Apaga de vez a página, o link, a Orbi e tudo que ela aprendeu, a vitrine, os boxes, as conversas, os contatos e as métricas. Não dá pra desfazer.
+                        Apaga de vez a página, o link, a Orbi e tudo que ela aprendeu, o catálogo, os botões, as conversas, os contatos e as métricas. Não dá pra desfazer.
                       </p>
                       <div className="mt-4 flex gap-2">
                         <button type="button" onClick={fecharExcluir} className="flex-1 rounded-full border border-divider py-3 text-[14px] font-medium">Cancelar</button>

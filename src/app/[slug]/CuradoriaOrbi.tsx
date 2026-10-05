@@ -85,7 +85,7 @@ export function CuradoriaOrbi({
       const map = new Map(products.map((p) => [p.id, p]));
       setCurados((d.ids ?? []).map((id: string) => map.get(id)).filter(Boolean));
     } catch {
-      setFrase("Não consegui montar agora, mas dá uma olhada na vitrine abaixo!");
+      setFrase("Não consegui montar agora, mas dá uma olhada no catálogo abaixo!");
     } finally {
       setCurating(false);
     }

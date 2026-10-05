@@ -24,8 +24,8 @@ const STATUS_LABEL: Record<string, string> = {
 // Features detalhadas por plano, mais rico que só o banco, pra vender melhor.
 const FEATURES: Record<string, { label: string; highlight?: boolean }[]> = {
   titanio: [
-    { label: "1 Vitrine + 1 página de negócio" },
-    { label: "Boxes ilimitados (WhatsApp, mapa, links…)" },
+    { label: "1 catálogo + 1 página de negócio" },
+    { label: "Botões ilimitados (WhatsApp, mapa, links…)" },
     { label: "Catálogo com fotos e categorias" },
     { label: "QR Code da sua página" },
     { label: "Análises de visitas (Pulse)" },

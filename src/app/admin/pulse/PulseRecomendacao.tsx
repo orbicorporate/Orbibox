@@ -77,7 +77,7 @@ export function PulseRecomendacao({
           <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-text-secondary">Recomendação da Orbi</span>
         </div>
         <p className="relative mt-4 font-[family-name:var(--font-manrope)] text-[18px] font-medium leading-snug text-on-background">
-          Ninguém clicou num item da vitrine nesse período ainda.
+          Ninguém clicou num item do catálogo nesse período ainda.
         </p>
         <p className="relative mt-2 text-[14px] leading-relaxed text-text-secondary">
           Assim que alguém tocar num produto ou serviço, a Orbi te mostra aqui qual foi o mais procurado e escreve textos prontos pra você divulgar. Experimente ampliar o período aí em cima, ou compartilhe seu link pra trazer as primeiras visitas.

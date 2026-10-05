@@ -39,7 +39,7 @@ export default async function BoxesPage() {
     <div className="flex flex-col">
       <div className="flex items-start justify-between gap-3">
         <h1 data-tour="boxes" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
-          Smart Boxes
+          Botões
         </h1>
         <div className="mt-2 shrink-0">
           <PreviewVisitante slug={business!.slug} />

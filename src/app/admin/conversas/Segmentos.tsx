@@ -12,7 +12,7 @@ const SEGMENTOS = [
   { id: "voucher_nao_usado", label: "Pegaram voucher e não usaram", criterio: "Resgataram um voucher mas ainda não passaram na loja", cor: "#C0392B", fundo: "#FDE7E7", icone: "🎟️" },
   { id: "quentes", label: "Quentes sem fechar", criterio: "Pediram preço, perguntaram como comprar ou voltaram várias vezes", cor: "#C2650A", fundo: "#FDEEDF", icone: "🔥" },
   { id: "sumiram", label: "Conversaram e sumiram", criterio: "Falaram com a Orbi e ficaram mais de 3 dias sem voltar", cor: "#1D4ED8", fundo: "#E2EAFE", icone: "◷" },
-  { id: "querem_novidades", label: "Pediram pra ser avisados", criterio: "Deixaram o WhatsApp na vitrine pra receber novidades", cor: "#1F7A3D", fundo: "#DEF3E3", icone: "✦" },
+  { id: "querem_novidades", label: "Pediram pra ser avisados", criterio: "Deixaram o WhatsApp no catálogo pra receber novidades", cor: "#1F7A3D", fundo: "#DEF3E3", icone: "✦" },
   { id: "todos", label: "Todos os contatos", criterio: "Todo mundo que já teve algum contato com você", cor: "#555960", fundo: "#ECEDE9", icone: "◎" },
 ] as const;
 

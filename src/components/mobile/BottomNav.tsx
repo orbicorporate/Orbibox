@@ -15,11 +15,11 @@ function TalkIcon() {
 }
 
 const TABS: { href: string; label: string; icon: ReactNode; glow?: boolean }[] = [
-  { href: "/admin", label: "Today", icon: "◈" },
-  { href: "/admin/boxes", label: "Boxes", icon: "▣" },
-  { href: "/admin/vitrine", label: "Vitrine", icon: "◫", glow: true },
-  { href: "/admin/conversas", label: "Talks", icon: <TalkIcon /> },
-  { href: "/admin/pulse", label: "Pulse", icon: "◔" },
+  { href: "/admin", label: "Início", icon: "◈" },
+  { href: "/admin/boxes", label: "Botões", icon: "▣" },
+  { href: "/admin/vitrine", label: "Catálogo", icon: "◫", glow: true },
+  { href: "/admin/conversas", label: "Conversas", icon: <TalkIcon /> },
+  { href: "/admin/pulse", label: "Resultados", icon: "◔" },
 ];
 
 export function BottomNav() {

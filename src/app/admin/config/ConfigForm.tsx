@@ -258,7 +258,7 @@ export function ConfigForm({
           titulo="Sua marca em 3 passos"
           chave={`marca_${b.id}`}
           passos={[
-            { titulo: "Logotipo", detalhe: "Aparece na sua página e vira ícone dos boxes", feito: !!b.logo_url, onClick: () => abrirERolar("logo") },
+            { titulo: "Logotipo", detalhe: "Aparece na sua página e vira ícone dos botões", feito: !!b.logo_url, onClick: () => abrirERolar("logo") },
             { titulo: "Cores e fundo da página", detalhe: "A esfera da Orbi e a primeira tela do seu link", feito: coresVistas || !!heroGradient, onClick: () => abrirERolar("cores") },
             { titulo: "Como seu link aparece no WhatsApp", detalhe: "A capa e o texto de quando alguém compartilha", feito: compartilhamentoPronto, onClick: () => abrirERolar("compartilhamento") },
           ]}
@@ -273,7 +273,7 @@ export function ConfigForm({
             <img src={b.logo_url} alt="" className="h-full w-full object-cover" />
           ) : <span className="text-[18px]">🏷️</span>}
           titulo="Logotipo"
-          descricao={b.logo_url ? "Toque pra trocar" : "Aparece na sua página e vira ícone dos boxes"}
+          descricao={b.logo_url ? "Toque pra trocar" : "Aparece na sua página e vira ícone dos botões"}
           status={<StatusTag preenchido={!!b.logo_url} />}
         >
           <ImageUpload value={b.logo_url} businessId={b.id} lockedRatio="quadrado" promptKind="avatar" onChange={saveLogo} />
@@ -328,7 +328,7 @@ export function ConfigForm({
       <div className="mt-5">
         <p className="text-[15px] font-semibold">Capa do link</p>
         <HelperText>
-          A imagem que aparece quando alguém cola seu link no WhatsApp, Instagram ou qualquer outro app. Sem escolher uma aqui, usa automaticamente a capa da Vitrine ou o logotipo.
+          A imagem que aparece quando alguém cola seu link no WhatsApp, Instagram ou qualquer outro app. Sem escolher uma aqui, usa automaticamente a capa do Catálogo ou o logotipo.
         </HelperText>
         <div className="mt-4">
           <ImageUpload
@@ -342,7 +342,7 @@ export function ConfigForm({
         {!b.share_image_url && (
           <p className={`mt-3 rounded-xl px-3 py-2 text-[12.5px] ${temCapaCompartilhamento ? "bg-surface-soft text-text-tertiary" : "bg-[#FDE7E7] text-[#C0392B]"}`}>
             {(b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && (b.vitrine_cover_urls as string[])[0]))
-              ? "Está usando a capa da Vitrine, que já funciona bem. Envie uma própria se quiser caprichar."
+              ? "Está usando a capa do Catálogo, que já funciona bem. Envie uma própria se quiser caprichar."
               : b.logo_url
               ? "Está usando o logotipo, que já funciona. Envie uma capa se quiser caprichar."
               : "Ainda não tem nenhuma imagem, o link fica sem capa."}

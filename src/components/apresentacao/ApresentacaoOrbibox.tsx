@@ -226,7 +226,7 @@ function vitrineSlide(inspire: InspireParaApresentacao, temaId: string, nome: st
   const Cena = fotos.length >= 4
     ? function CenaVitrineReal() { return <CenaVitrineFotos temaId={temaId} nome={nome} photos={fotos} titleStyle={inspire[temaId].titleStyle} />; }
     : function CenaVitrineIlustrada() { return <CenaVitrine tema={fallback[temaId] ?? "cafe"} />; };
-  return { rotulo: "Vitrine", titulo, frase, checks, cor, cena: Cena, duracaoMs: 9000 };
+  return { rotulo: "Catálogo", titulo, frase, checks, cor, cena: Cena, duracaoMs: 9000 };
 }
 
 /** Slide de detalhe do produto, logo depois do Portfólio: mostra a página
@@ -264,7 +264,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       "#B0309E", ["Mostre opções, fotos e preços", "Facilite para o seu cliente"],
     ),
     vitrineSlide(
-      inspire, "fitness", "Fit Store", "Vitrine de produtos",
+      inspire, "fitness", "Fit Store", "Catálogo de produtos",
       "Produtos, fotos e preços que a Orbi já conhece de cor.",
       "#2F5D50", ["Organize seus produtos em um só lugar", "A IA ajuda o cliente a escolher"],
     ),

@@ -68,7 +68,7 @@ export function CampaignsManager({ businessId, initialCampaigns, contentOptions 
         </div>
       ) : (
         <div className="rounded-[28px] border border-divider bg-surface-white p-5 text-[14px] text-text-secondary">
-          Publique itens na Vitrine para a Orbi sugerir o que movimentar.
+          Publique itens no Catálogo para a Orbi sugerir o que movimentar.
         </div>
       )}
 

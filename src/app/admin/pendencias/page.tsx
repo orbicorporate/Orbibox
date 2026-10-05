@@ -151,7 +151,9 @@ function GiftIcon() {
 // língua visual.
 function insightMeta(insight: Insight): { categoria: Categoria; bg: string; fg: string; icon: ReactNode } {
   const t = insight.title.toLowerCase();
-  if (t.includes("box")) return { categoria: "comece", bg: "#FDEEDF", fg: "#C2650A", icon: <BoxIcon /> };
+  if (t.includes("botão") || t.includes("box")) return { categoria: "comece", bg: "#FDEEDF", fg: "#C2650A", icon: <BoxIcon /> };
+  if (t.includes("foto") && (t.includes("catálogo") || t.includes("vitrine"))) return { categoria: "confianca", bg: "#F3E4EE", fg: "#A23B82", icon: <CameraIcon /> };
+  if (t.includes("descri") && t.includes("catálogo")) return { categoria: "confianca", bg: "#F3E4EE", fg: "#A23B82", icon: <TextIcon /> };
   if (t.includes("catálogo")) return { categoria: "comece", bg: "#FCEADC", fg: "#C2650A", icon: <GridIcon /> };
   if (t.includes("foto") && t.includes("vitrine")) return { categoria: "confianca", bg: "#F3E4EE", fg: "#A23B82", icon: <CameraIcon /> };
   if (t.includes("descri")) return { categoria: "confianca", bg: "#F3E4EE", fg: "#A23B82", icon: <TextIcon /> };
@@ -280,7 +282,7 @@ export default async function PendenciasPage() {
         <div className="mt-6 rounded-[24px] bg-[#E4F7EA] p-5 text-center">
           <p className="text-[15px] font-semibold text-[#1F7A45]">✓ Tudo em dia por aqui</p>
           <p className="mt-1 text-[12.5px] text-[#1F7A45]/80">
-            Seu Orbibox está completo. Agora é acompanhar o Pulse e continuar divulgando.
+            Seu Orbibox está completo. Agora é acompanhar os Resultados e continuar divulgando.
           </p>
         </div>
       )}

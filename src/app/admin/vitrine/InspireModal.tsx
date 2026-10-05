@@ -80,7 +80,7 @@ function ThemePreview({ theme, photos, titleStyle }: { theme: VitrineTheme; phot
         <div className="h-7 w-7 rounded-full" style={{ backgroundColor: theme.colors[1].hex }} />
         <div>
           <p className="text-[13px] font-semibold" style={{ color: theme.colors[1].hex }}>{theme.exampleBusiness}</p>
-          <p className="text-[9px] uppercase tracking-wide" style={{ color: theme.colors[1].hex, opacity: 0.5 }}>Vitrine de exemplo</p>
+          <p className="text-[9px] uppercase tracking-wide" style={{ color: theme.colors[1].hex, opacity: 0.5 }}>Catálogo de exemplo</p>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2.5 [grid-auto-flow:dense]">

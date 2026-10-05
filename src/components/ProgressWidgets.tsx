@@ -147,8 +147,8 @@ export function ProgressCard({ done, pct }: { done: Record<string, boolean>; pct
 // ProgressCard) é longo demais e força uma pílula por linha.
 const SHORT_LABELS: Record<ProgressKey, string> = {
   marca: "Marca",
-  vitrine: "Vitrine",
-  boxes: "Boxes",
+  vitrine: "Catálogo",
+  boxes: "Botões",
   whatsapp: "WhatsApp",
   capa: "Capa",
   orbi: "Orbi IA",

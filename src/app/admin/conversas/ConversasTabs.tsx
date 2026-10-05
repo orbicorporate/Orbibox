@@ -62,7 +62,7 @@ export function ConversasTabs(props: ComponentProps<typeof ConversasList>) {
         <div className="mt-4 rounded-[24px] border border-dashed border-divider bg-surface-white p-5">
           <p className="text-[15px] font-semibold">Ainda sem conversas pelo link</p>
           <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-            Sem problema, o Talks funciona mesmo assim. Em &quot;Listas suas&quot; você importa os clientes que já
+            Sem problema, Conversas funciona mesmo assim. Em &quot;Listas suas&quot; você importa os clientes que já
             tem e a Orbi escreve mensagens pra eles também.
           </p>
           <button type="button" onClick={() => setAba("minhas")} className="mt-3 cursor-pointer rounded-full bg-on-background px-4 py-2.5 text-[13.5px] font-semibold text-white">

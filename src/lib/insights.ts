@@ -45,27 +45,27 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   const insightsQueue: Insight[] = [];
   if (activeBoxes === 0) {
     insightsQueue.push({
-      title: "Ative pelo menos uma Box antes de divulgar",
-      description: "Sem nenhuma Box ativa, quem abre seu link não vê nenhuma opção, a página fica vazia. Ative ou crie uma Box pra poder compartilhar.",
-      ctaLabel: "Configurar Boxes",
+      title: "Ligue pelo menos um botão antes de divulgar",
+      description: "Sem nenhum botão ligado, quem abre seu link não vê nenhuma opção. Ligue ou crie um botão pra poder compartilhar.",
+      ctaLabel: "Abrir Botões",
       href: "/admin/boxes",
     });
   }
   if (!hasItems) {
     insightsQueue.push({
       title: "Importe seu catálogo",
-      description: "Cole o link do seu site na Vitrine, a Orbi transforma seus produtos em boxes automaticamente.",
-      ctaLabel: "Abrir Vitrine",
+      description: "Cole o link do seu site no Catálogo e a Orbi transforma seus produtos em cards automaticamente.",
+      ctaLabel: "Abrir Catálogo",
       href: "/admin/vitrine",
     });
   }
   if (hasItems && itemsWithoutPhoto > 0) {
     insightsQueue.push({
-      title: "Capriche nas fotos da Vitrine",
+      title: "Capriche nas fotos do Catálogo",
       description: itemsWithoutPhoto === items.length
         ? "Nenhum item tem foto ainda, fotos bonitas fazem toda diferença na primeira impressão."
         : `${itemsWithoutPhoto} ${itemsWithoutPhoto === 1 ? "item ainda não tem" : "itens ainda não têm"} foto de verdade, capriche pra ficar mais convidativo.`,
-      ctaLabel: "Editar Vitrine",
+      ctaLabel: "Editar Catálogo",
       href: "/admin/vitrine",
     });
   }
@@ -104,7 +104,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   if (!business.address) {
     insightsQueue.push({
       title: "Adicione seu endereço",
-      description: "Ganha um box pronto na tela inicial, com botões pro Waze e Google Maps.",
+      description: "Ganha um botão pronto na tela inicial, com botões pro Waze e Google Maps.",
       ctaLabel: "Adicionar endereço",
       href: "/admin/boxes",
     });
@@ -127,11 +127,11 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   }
   if (hasItems && itemsWithoutDescription > 0) {
     insightsQueue.push({
-      title: "Capriche nas descrições da Vitrine",
+      title: "Capriche nas descrições do Catálogo",
       description: itemsWithoutDescription === items.length
         ? "Nenhum item tem descrição ainda, um texto curto e bom ajuda o visitante a entender o que está comprando."
         : `${itemsWithoutDescription} ${itemsWithoutDescription === 1 ? "item ainda não tem" : "itens ainda não têm"} descrição, um texto curto já faz diferença.`,
-      ctaLabel: "Editar Vitrine",
+      ctaLabel: "Editar Catálogo",
       href: "/admin/vitrine",
     });
   }
@@ -142,8 +142,8 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   if (insightsQueue.length === 0 && activeBoxes > 0 && hasItems) {
     insightsQueue.push({
       title: "Hora de divulgar mais",
-      description: "Sua página está completa. Vá no Pulse: a Orbi sugere temas, pesquisa hashtags em alta e já escreve o texto pronto pra postar.",
-      ctaLabel: "Ir pro Pulse",
+      description: "Sua página está completa. Vá em Resultados, aba Marketing: a Orbi sugere temas, pesquisa hashtags em alta e já escreve o texto pronto pra postar.",
+      ctaLabel: "Abrir Marketing",
       href: "/admin/pulse",
     });
   }

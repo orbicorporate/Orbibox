@@ -77,7 +77,7 @@ const CANAIS: Canal[] = [
     passos: [
       "Comece pequeno: impulsione um post que já foi bem, mandando pro link do Orbibox.",
       "Público: comece pela sua cidade/região e o interesse do seu produto.",
-      "Olhe o Pulse: se o link recebe cliques mas ninguém age, ajuste a vitrine antes de gastar mais.",
+      "Olhe os Resultados: se o link recebe cliques mas ninguém age, ajuste o catálogo antes de gastar mais.",
     ],
     geraLabel: "✦ Gerar ideias de anúncio",
     geraKind: "anuncio",

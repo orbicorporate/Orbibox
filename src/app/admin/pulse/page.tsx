@@ -144,7 +144,10 @@ export default async function PulsePage({
 
   return (
     <div className="flex flex-col">
-      <p data-tour="pulse" className="mt-2 text-center text-[13px] uppercase tracking-wide text-text-tertiary">Orbi Pulse</p>
+      <h1 data-tour="pulse" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
+        Resultados
+      </h1>
+      <p className="mt-1 text-[14px] text-text-secondary">Quem visitou seu link, o que tocou e o que fazer agora.</p>
 
       <PulseTabs
         visitantes={
@@ -168,11 +171,11 @@ export default async function PulsePage({
               <div className="mt-8 rounded-[28px] border border-divider bg-surface-white p-6">
                 <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Ainda sem cliques</p>
                 <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-                  Assim que alguém abrir seu link e tocar num box ou num contato, os números aparecem aqui,
+                  Assim que alguém abrir seu link e tocar num botão ou num contato, os números aparecem aqui,
                   separados por tipo de ação.
                 </p>
                 <Link href="/admin/vitrine" className="mt-5 inline-flex rounded-full bg-button-primary px-6 py-3 text-[14px] font-medium text-white">
-                  Revisar vitrine →
+                  Revisar catálogo →
                 </Link>
               </div>
             ) : (

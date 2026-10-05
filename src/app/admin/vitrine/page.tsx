@@ -31,10 +31,10 @@ export default async function VitrinePage() {
   return (
     <div className="flex flex-col">
       <h1 data-tour="vitrine" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
-        Vitrine
+        Catálogo
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">
-        O que aparece no seu link quando o cliente toca em Vitrine.
+        Seus produtos e serviços, do jeito que o cliente vê no seu link.
       </p>
       <ShowcaseBuilder
         items={items ?? []}

@@ -82,7 +82,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
     <main className="mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
       {/* Voltar, fora da imagem, igual qualquer app, não sobrepõe a foto.
           Voltar leva sempre pra vitrine: voltar pelo histórico caía na
-          tela inicial, porque a vitrine aberta não fica no endereço. "Ver vitrine" sempre
+          tela inicial, porque a vitrine aberta não fica no endereço. "Ver catálogo" sempre
           leva pro catálogo, útil sobretudo pra quem chegou aqui por uma
           recomendação da Orbi no chat e quer continuar olhando produtos. */}
       <div className="flex items-center justify-between gap-2 px-4 pt-4">
@@ -97,7 +97,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
           href={`/${business.slug}?tab=vitrine`}
           className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface-soft px-3.5 py-2 text-[13px] font-medium text-text-secondary"
         >
-          <span aria-hidden>⊞</span> Ver vitrine
+          <span aria-hidden>⊞</span> Ver catálogo
         </Link>
       </div>
 

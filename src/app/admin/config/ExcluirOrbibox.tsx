@@ -48,7 +48,7 @@ export function ExcluirOrbibox({ id, nome }: { id: string; nome: string }) {
     <div className="mt-8 rounded-[22px] border border-red-200 bg-red-50 p-4">
       <p className="text-[15px] font-semibold text-red-700">Excluir “{nome}”?</p>
       <p className="mt-1.5 text-[13px] leading-relaxed text-red-700/90">
-        Apaga de vez a página, o link, a Orbi e tudo que ela aprendeu, a vitrine, os boxes, as conversas, os contatos, os vouchers e as métricas deste Orbibox. Não dá pra desfazer. Seu plano e seus outros Orbibox continuam.
+        Apaga de vez a página, o link, a Orbi e tudo que ela aprendeu, o catálogo, os botões, as conversas, os contatos, os vouchers e as métricas deste Orbibox. Não dá pra desfazer. Seu plano e seus outros Orbibox continuam.
       </p>
       <p className="mt-3 text-[12.5px] text-red-700">Pra confirmar, digite o nome: <span className="font-semibold">{nome}</span></p>
       <input
