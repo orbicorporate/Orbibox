@@ -49,7 +49,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // senão o mais recente, senão um em que a pessoa é administradora.
   const businessId = await getCurrentBusinessId(user.id);
   const { data: business } = businessId
-    ? await supabase.from("businesses").select("id, name, slug, tour_completed_at").eq("id", businessId).maybeSingle()
+    ? await supabase.from("businesses").select("id, name, slug, tour_completed_at, logo_url").eq("id", businessId).maybeSingle()
     : { data: null };
   const negocios = business ? await listMyBusinesses(user.id) : [];
   const podeCriar = business ? await podeCriarOutroNegocio(user.id) : false;
@@ -110,6 +110,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         pendencias={headerPendencias}
         negocios={negocios.map((n) => ({ id: n.id, name: n.name, slug: n.slug, dono: n.dono }))}
         negocioAtual={business.id}
+        logoUrl={business.logo_url ?? null}
         podeCriarNegocio={podeCriar}
       />
       {celebrateNotif && (

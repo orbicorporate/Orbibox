@@ -8,36 +8,17 @@ import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { BackButton } from "./BackButton";
 import { ProgressBadge } from "@/components/ProgressBadge";
 import { createClient } from "@/lib/supabase/client";
-import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 
+/** Ícones de linha, finos e neutros, todos no mesmo estilo. */
+const ICONES = {
+  marca: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3.5 9.5 5 4.5h14l1.5 5" /><path d="M4.5 9.5V19a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V9.5" /><path d="M3.5 9.5h17" /><path d="M10 20v-4.5h4V20" /></svg>,
+  ia: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3.5l1.6 4.9 4.9 1.6-4.9 1.6L12 16.5l-1.6-4.9L5.5 10l4.9-1.6L12 3.5Z" /><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7.7-1.8Z" /></svg>,
+  voucher: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5V14a2 2 0 0 0 0-4V7.5Z" /><path d="M9.5 14.5l5-5" /><circle cx="9.75" cy="9.75" r=".6" fill="currentColor" /><circle cx="14.25" cy="14.25" r=".6" fill="currentColor" /></svg>,
+  gift: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="9" width="16" height="11" rx="1.5" /><path d="M3 9h18" /><path d="M12 9v11" /><path d="M12 9c-1.5-3.5-5-4-5-1.5C7 9 12 9 12 9Zm0 0c1.5-3.5 5-4 5-1.5C17 9 12 9 12 9Z" /></svg>,
+};
 const MENU_ITEMS = [
-  {
-    href: "/admin/config",
-    label: "Sua marca",
-    desc: "Logo, cores e contatos",
-    bg: "#E7EAFC",
-    fg: "#4453D6",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9l1.5-5h15L21 9" />
-        <path d="M4 9v10a1 1 0 001 1h14a1 1 0 001-1V9" />
-        <path d="M9 20v-5a1 1 0 011-1h4a1 1 0 011 1v5" />
-        <path d="M3 9h18" />
-      </svg>
-    ),
-  },
-  {
-    href: "/admin/agent",
-    label: "Sua IA",
-    desc: "Tom de voz e o que sabe",
-    bg: "orbi-gradient",
-    fg: "#111318",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4L12 2z" />
-      </svg>
-    ),
-  },
+  { href: "/admin/config", label: "Sua marca", desc: "Logo, cores e contatos", icon: ICONES.marca, marca: true },
+  { href: "/admin/agent", label: "Sua IA", desc: "Tom de voz e o que sabe", icon: ICONES.ia, marca: false },
 ] as const;
 
 export function AppHeader({
@@ -48,6 +29,7 @@ export function AppHeader({
   negocios = [],
   negocioAtual,
   podeCriarNegocio = false,
+  logoUrl = null,
 }: {
   unseenConversas?: number;
   progressPct?: number;
@@ -61,6 +43,8 @@ export function AppHeader({
   negocioAtual?: string;
   /** Plano permite criar mais um Orbibox (Nióbio). */
   podeCriarNegocio?: boolean;
+  /** Logo cadastrado da marca, vira o ícone de "Sua marca". */
+  logoUrl?: string | null;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -262,12 +246,12 @@ export function AppHeader({
                     onClick={() => setMenuOpen(false)}
                     className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-surface-soft p-4 text-left transition-transform active:scale-[.97]"
                   >
-                    <span
-                      className="flex h-11 w-11 items-center justify-center rounded-2xl"
-                      style={item.bg === "orbi-gradient" ? undefined : { backgroundColor: item.bg, color: item.fg }}
-                    >
-                      {item.bg === "orbi-gradient" ? <OrbiSimbolo size={44} /> : item.icon}
-                    </span>
+                    {item.marca && logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={logoUrl} alt="" className="h-11 w-11 rounded-full bg-white object-cover ring-1 ring-black/5" />
+                    ) : (
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-white text-on-background ring-1 ring-black/5">{item.icon}</span>
+                    )}
                     <span>
                       <span className="block text-[15px] font-semibold leading-tight">{item.label}</span>
                       <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">{item.desc}</span>
@@ -282,7 +266,7 @@ export function AppHeader({
                   style={{ backgroundImage: "url(/vouchers-promo-bg.webp)" }}
                 >
                   <span className="flex items-start justify-between gap-2">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/85 text-[20px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]" aria-hidden>🎟️</span>
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-on-background ring-1 ring-black/5">{ICONES.voucher}</span>
                     <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1F7A45]">Novo</span>
                   </span>
                   <span>
@@ -296,7 +280,7 @@ export function AppHeader({
                   onClick={() => setMenuOpen(false)}
                   className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-surface-soft p-4 text-left transition-transform active:scale-[.97]"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EDE6FC] text-[20px]" aria-hidden>🎁</span>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-white text-on-background ring-1 ring-black/5">{ICONES.gift}</span>
                   <span>
                     <span className="block text-[15px] font-semibold leading-tight">Gift Cards</span>
                     <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">Vale-presentes</span>
