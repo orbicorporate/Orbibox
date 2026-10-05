@@ -11,6 +11,7 @@ import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { coresDaOrbi } from "@/lib/orbiCores";
 import { colorOf } from "@/lib/showcase";
 import { SEGMENTOS, segmentoPorId } from "@/lib/segmentos";
+import { registrarFunil } from "@/lib/funil";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 import { AnaliseAoVivo, BrandOrb, ContatoDaMarca, EssenciaDaMarca, VitrineMontando, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 
@@ -161,6 +162,7 @@ export default function OnboardingPage() {
       // A tela ao vivo mostra isso e, quando terminar, vai pra confirmação.
       setAnalise({ status: "ok", voice: result.voiceSummary, font: result.font || "Manrope", paleta: unicas.map((c) => c.hex), orbColors: coresDaOrbi(unicas) });
     } catch {
+      registrarFunil("onb_analise_erro", { meta: { tem_site: !!website.trim(), tem_instagram: !!instagram.trim() } });
       setError("A Orbi não conseguiu ler sua marca agora. Confira se o site ou o @ estão certos e tente de novo. Se preferir, apague o site e siga só com o nome e a descrição.");
       setStep("dados");
     }
@@ -292,6 +294,7 @@ export default function OnboardingPage() {
     }
 
     setSlugCriado(slug);
+    registrarFunil("onb_criou", { businessId: business.id, meta: { segmento, tem_site: !!website.trim(), tem_instagram: !!instagram.trim() } });
     // A esfera da Orbi já nasce com as cores da marca.
     // O painel passa a abrir este negócio (importante quando a conta tem vários).
     document.cookie = `orbi_negocio=${business.id}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
@@ -420,6 +423,10 @@ export default function OnboardingPage() {
     router.push(destino);
     router.refresh();
   }
+  useEffect(() => {
+    registrarFunil(`onb_${step}`, { umaVez: true, meta: step === "dados" ? { novo_negocio: novoNegocio } : undefined });
+  }, [step, novoNegocio]);
+
   const linkPublico = slugCriado && typeof window !== "undefined" ? `${window.location.origin}/${slugCriado}` : null;
 
   async function handleSignOut() {

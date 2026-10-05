@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { registrarFunil } from "@/lib/funil";
 
 /**
  * Botão de compartilhar de verdade, abre a folha nativa do celular
@@ -32,6 +33,7 @@ export function ShareOrbiboxButton({
   const [asking, setAsking] = useState(false);
 
   async function doShare() {
+    registrarFunil("compartilhou", { meta: { url } });
     if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
       try {
         await navigator.share({ title, url });

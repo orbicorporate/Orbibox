@@ -30,6 +30,7 @@ export default async function MasterLayout({ children }: { children: React.React
           <Link href="/master/negocios" className="shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-text-secondary hover:bg-surface-soft">Negócios</Link>
           <Link href="/master/afiliados" className="shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-text-secondary hover:bg-surface-soft">Embaixadores</Link>
           <Link href="/master/inspire" className="shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-text-secondary hover:bg-surface-soft">Inspire-se</Link>
+          <Link href="/master/funil" className="shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-text-secondary hover:bg-surface-soft">Funil</Link>
         </nav>
       </header>
       <main className="flex-1 px-6 py-6">{children}</main>
