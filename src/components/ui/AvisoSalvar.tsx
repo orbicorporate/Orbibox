@@ -14,12 +14,26 @@ export function avisarErroSalvar(texto = "Não conseguimos salvar. Confira sua i
   ouvintes.forEach((fn) => fn(a));
 }
 
+// Quem quer saber que algo foi salvo com sucesso (ex: a prévia ao vivo, que
+// recarrega pra mostrar a mudança).
+const ouvintesSalvo = new Set<() => void>();
+export function aoSalvar(fn: () => void) {
+  ouvintesSalvo.add(fn);
+  return () => {
+    ouvintesSalvo.delete(fn);
+  };
+}
+export function avisarSalvo() {
+  ouvintesSalvo.forEach((fn) => fn());
+}
+
 // Ajuda pra chamadas do Supabase: avisa se veio erro e devolve true se deu certo.
 export function conferirSalvo(res: { error: unknown } | null | undefined, texto?: string): boolean {
   if (!res || res.error) {
     avisarErroSalvar(texto);
     return false;
   }
+  avisarSalvo();
   return true;
 }
 

@@ -1,3 +1,4 @@
+import { PreviewAoVivo } from "@/components/mobile/PreviewAoVivo";
 import { createClient } from "@/lib/supabase/server";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
@@ -68,6 +69,7 @@ export default async function BoxesPage() {
         giftEnabled={!!giftCfg?.enabled}
         hasAiChat={access?.hasAiChat ?? false}
       />
+      <PreviewAoVivo slug={business!.slug} />
     </div>
   );
 }

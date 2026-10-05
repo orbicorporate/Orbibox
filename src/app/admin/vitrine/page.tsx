@@ -1,3 +1,4 @@
+import { PreviewAoVivo } from "@/components/mobile/PreviewAoVivo";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getInspirePhotos } from "@/lib/inspirePhotos";
@@ -52,6 +53,7 @@ export default async function VitrinePage() {
         siteSalvo={business!.contact_site || business!.website_url || null}
         inspirePhotos={inspirePhotos}
       />
+      <PreviewAoVivo slug={business!.slug} tab="vitrine" />
     </div>
   );
 }
