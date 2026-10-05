@@ -10,6 +10,8 @@ import { getAccessInfoForBusiness } from "@/lib/plans";
 import { PulseDateFilter } from "./PulseDateFilter";
 import { PulseMarketing } from "./PulseMarketing";
 import { rangeFromParams, buildSeries } from "./date-range";
+import { calcularResumoSemanal } from "@/lib/resumoSemanal";
+import { ResumoSemana } from "./ResumoSemana";
 
 export default async function PulsePage({
   searchParams,
@@ -24,7 +26,7 @@ export default async function PulsePage({
   const businessId = await getCurrentBusinessId(user!.id);
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, slug, share_image_url, share_description, vitrine_cover_url, vitrine_cover_urls, logo_url, about_business, differentials")
+    .select("id, slug, resumo_semanal, share_image_url, share_description, vitrine_cover_url, vitrine_cover_urls, logo_url, about_business, differentials")
     .eq("id", businessId!)
     .single();
 
@@ -119,6 +121,8 @@ export default async function PulsePage({
   // Já contou sobre o negócio? (pra sugerir a próxima etapa)
   const sobreFeito = !!bAny.about_business?.trim() || !!bAny.differentials?.trim();
 
+  const resumoSemana = await calcularResumoSemanal(supabase, business!.id);
+
   // Quantos por cento das visitas resultaram em alguma ação.
   const taxa = visitas > 0 ? Math.min(100, Math.round((totalCliques / visitas) * 100)) : 0;
 
@@ -148,6 +152,8 @@ export default async function PulsePage({
         Resultados
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">Quem visitou seu link, o que tocou e o que fazer agora.</p>
+
+      <ResumoSemana resumo={resumoSemana} businessId={business!.id} emailLigado={business!.resumo_semanal ?? true} />
 
       <PulseTabs
         visitantes={
