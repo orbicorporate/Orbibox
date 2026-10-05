@@ -10,6 +10,7 @@ import { slugify } from "@/lib/utils";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { coresDaOrbi } from "@/lib/orbiCores";
 import { colorOf } from "@/lib/showcase";
+import { SEGMENTOS, segmentoPorId } from "@/lib/segmentos";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 import { AnaliseAoVivo, BrandOrb, ContatoDaMarca, EssenciaDaMarca, VitrineMontando, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 
@@ -73,6 +74,7 @@ export default function OnboardingPage() {
   const [instagram, setInstagram] = useState("");
   const [website, setWebsite] = useState("");
   const [description, setDescription] = useState("");
+  const [segmento, setSegmento] = useState<string | null>(null);
   const [bizId, setBizId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [whatsapp, setWhatsapp] = useState("");
@@ -264,6 +266,7 @@ export default function OnboardingPage() {
       brand_voice_summary: voice,
       brand_font: font,
       onboarding_status: "ready",
+      ...(segmentoPorId(segmento) ? { hero_question: segmentoPorId(segmento)!.pergunta } : {}),
     };
     // Rede de segurança: se dois cadastros colidirem ao mesmo tempo, tenta de novo com sufixo único.
     let business: { id: string } | null = null;
@@ -322,16 +325,34 @@ export default function OnboardingPage() {
     // A vitrine que a Orbi montou (produtos ou serviços importados) é o
     // primeiro caminho da tela inicial. Sem nada importado, loja virtual
     // ainda liga a vitrine; serviço sem itens deixa Conhecer na frente.
+    const seg = segmentoPorId(segmento);
     const temVitrine = importados > 0 || siteType === "ecommerce";
     const conteudoAtivo = siteType !== "ecommerce";
+    // Ramo de serviço: "Conhecer" vem antes do catálogo na tela inicial.
+    const posCatalogo = seg?.servico ? 3 : 1;
+    const posConhecer = seg?.servico ? 1 : 3;
+    // Sem nada importado, o catálogo já nasce com as categorias do ramo.
+    if (seg && importados === 0) {
+      await supabase.from("businesses").update({ vitrine_categories: seg.categorias }).eq("id", business.id);
+    }
+    // Primeiro voucher sugerido fica guardado como rascunho neste aparelho:
+    // aparece pronto em Vouchers, é só revisar e publicar.
+    if (seg?.voucher) {
+      try {
+        localStorage.setItem(`orbi_voucher_rascunho_${business.id}`, JSON.stringify({
+          title: seg.voucher.title, description: "", discountType: seg.voucher.discountType, discountValue: String(seg.voucher.discountValue),
+          quantityTotal: String(seg.voucher.quantity), expiresHours: String(seg.voucher.horas), imageUrl: null, badge: "Primeira visita", color: "cherry", sugestao: true,
+        }));
+      } catch { /* sem storage */ }
+    }
 
     // Todos os boxes levam is_active explícito: num insert em lote, campo
     // ausente vira nulo (não usa o padrão da coluna) e a linha inteira falha.
     const { error: boxesErr } = await supabase.from("smart_boxes").insert([
       { business_id: business.id, box_type: "hero", title: "Tela inicial", position: 0, is_active: true },
-      { business_id: business.id, box_type: "product", title: "O que fazemos", position: 1, is_active: temVitrine },
+      { business_id: business.id, box_type: "product", title: "O que fazemos", position: posCatalogo, is_active: temVitrine },
       { business_id: business.id, box_type: "agent", title: "Pergunte o que quiser", position: 2, is_active: true },
-      { business_id: business.id, box_type: "content", title: "Conhecer", position: 3, is_active: conteudoAtivo },
+      { business_id: business.id, box_type: "content", title: "Conhecer", position: posConhecer, is_active: conteudoAtivo },
       { business_id: business.id, box_type: "campaign", title: "Presentear", position: 4, is_active: false },
     ]);
     if (boxesErr) console.error("onboarding: falha ao criar boxes base", boxesErr);
@@ -433,6 +454,22 @@ export default function OnboardingPage() {
             <p className="mt-1 text-[15px] text-text-secondary">A Orbi lê seu site (ou seu Instagram, se não tiver site) pra montar o manual da sua marca e trazer seus produtos. Os links já viram botões prontos na sua página.</p>
             <form onSubmit={startAnalysis} className="mt-8 flex flex-col gap-4">
               <input required placeholder="Nome do negócio" value={name} onChange={(e) => setName(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              <div>
+                <p className="mb-2 text-[13px] text-text-secondary">Que tipo de negócio? <span className="text-text-tertiary">(a página já começa com a cara do seu ramo)</span></p>
+                <div className="flex flex-wrap gap-2">
+                  {[...SEGMENTOS.map((sg) => ({ id: sg.id, rotulo: sg.rotulo })), { id: "outro", rotulo: "Outro" }].map((sg) => (
+                    <button
+                      key={sg.id}
+                      type="button"
+                      onClick={() => setSegmento(segmento === sg.id ? null : sg.id)}
+                      aria-pressed={segmento === sg.id}
+                      className={`rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors ${segmento === sg.id ? "bg-on-background text-white" : "bg-surface-white text-text-secondary ring-1 ring-divider"}`}
+                    >
+                      {sg.rotulo}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <input placeholder="@seuinstagram (opcional)" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <input placeholder="seusite.com.br (opcional, de onde vêm seus produtos)" value={website} onChange={(e) => setWebsite(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               <input placeholder="LinkedIn da empresa (opcional)" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
@@ -555,6 +592,23 @@ export default function OnboardingPage() {
                   Ensinar a Orbi agora →
                 </button>
               </div>
+            )}
+
+            {segmentoPorId(segmento)?.voucher && (
+              <button
+                type="button"
+                onClick={() => goToApp("/admin/vouchers")}
+                className="flex items-center gap-3 rounded-2xl bg-surface-white p-4 text-left ring-1 ring-black/[0.07]"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FCE4E8] text-[#C8102E]">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z" /><path d="m9 15 6-6" /></svg>
+                </span>
+                <span className="min-w-0 flex-1 text-[13.5px] leading-snug">
+                  <span className="block font-medium">Um voucher já está pronto pra você</span>
+                  <span className="text-text-secondary">&ldquo;{segmentoPorId(segmento)!.voucher!.title}&rdquo;. Revise e publique quando quiser.</span>
+                </span>
+                <span className="text-text-tertiary">→</span>
+              </button>
             )}
 
             <Button onClick={() => goToApp("/admin")} variant="orbi">Abrir meu painel →</Button>

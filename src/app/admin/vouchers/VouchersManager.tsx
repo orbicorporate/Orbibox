@@ -25,6 +25,8 @@ const VALIDADES: { horas: string; rotulo: string }[] = [
 type RascunhoVoucher = {
   title: string; description: string; discountType: "percent" | "fixed"; discountValue: string;
   quantityTotal: string; expiresHours: string; imageUrl: string | null; badge: string; color: VoucherColor;
+  /** Veio pronto do cadastro, sugerido pelo ramo do negócio. */
+  sugestao?: boolean;
 };
 const chaveRascunho = (id: string) => `orbi_voucher_rascunho_${id}`;
 function lerRascunho(id: string): string | null {
@@ -70,6 +72,13 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
     () => null,
   );
   const temRascunho = !!rascunhoBruto && !rascunhoDescartado && !creating;
+  const ehSugestao = (() => {
+    try {
+      return !!(JSON.parse(rascunhoBruto ?? "{}") as RascunhoVoucher).sugestao;
+    } catch {
+      return false;
+    }
+  })();
   function retomarRascunho() {
     try {
       const r = JSON.parse(rascunhoBruto ?? "") as RascunhoVoucher;
@@ -283,11 +292,11 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
       {temRascunho && (
         <div className="flex items-center gap-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.07]">
           <span className="min-w-0 flex-1 text-[13.5px] leading-snug">
-            <span className="block font-semibold">Você tem um voucher guardado</span>
-            <span className="text-text-secondary">Continue de onde parou.</span>
+            <span className="block font-semibold">{ehSugestao ? "A Orbi deixou um voucher pronto" : "Você tem um voucher guardado"}</span>
+            <span className="text-text-secondary">{ehSugestao ? "Pensado pro seu ramo. Revise e publique." : "Continue de onde parou."}</span>
           </span>
           <button type="button" onClick={apagarRascunho} className="text-[12.5px] text-text-tertiary underline">Apagar</button>
-          <button type="button" onClick={retomarRascunho} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Continuar</button>
+          <button type="button" onClick={retomarRascunho} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">{ehSugestao ? "Ver" : "Continuar"}</button>
         </div>
       )}
 
