@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +10,7 @@ import { slugify } from "@/lib/utils";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { coresDaOrbi } from "@/lib/orbiCores";
 import { colorOf } from "@/lib/showcase";
+import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 import { AnaliseAoVivo, BrandOrb, ContatoDaMarca, EssenciaDaMarca, VitrineMontando, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 
 type Color = { hex: string; role: string };
@@ -35,6 +36,35 @@ async function analyzeBrand(name: string, instagram: string, website: string, de
 
 type Step = "dados" | "analisando" | "essencia" | "contato" | "confirmar" | "montando" | "resultado";
 
+// Só as telas em que a pessoa faz algo contam como passo. As telas de
+// "a Orbi está trabalhando" ficam de fora pra contagem não andar sozinha.
+const PASSO: Partial<Record<Step, number>> = { dados: 1, essencia: 2, contato: 3, confirmar: 4 };
+const TOTAL_PASSOS = 4;
+
+// A análise devolve a personalidade com chaves técnicas. Aqui viram duas
+// pontas em português, sem porcentagem, que é como a pessoa pensa a marca.
+const PERSONALIDADE: Record<string, [string, string]> = {
+  energetica: ["Calma", "Energética"],
+  proxima: ["Formal", "Próxima"],
+  visual: ["Mais texto", "Mais visual"],
+  direta: ["Detalhista", "Direta"],
+};
+
+function IndicadorPasso({ passo }: { passo: number }) {
+  return (
+    <div className="fixed left-4 top-4 z-10 flex items-center gap-2.5 rounded-full bg-surface-white px-3.5 py-2 shadow-[0_2px_10px_rgba(17,19,24,0.08)]">
+      <span className="text-[12px] font-medium text-text-secondary">
+        Passo {passo} de {TOTAL_PASSOS}
+      </span>
+      <span className="flex gap-1" aria-hidden>
+        {Array.from({ length: TOTAL_PASSOS }, (_, i) => (
+          <span key={i} className={`h-1.5 rounded-full transition-all ${i < passo ? "w-4 bg-on-background" : "w-1.5 bg-divider"}`} />
+        ))}
+      </span>
+    </div>
+  );
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -50,13 +80,14 @@ export default function OnboardingPage() {
   const [linkedin, setLinkedin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [slugCriado, setSlugCriado] = useState<string | null>(null);
+  const [maisAjustes, setMaisAjustes] = useState(false);
 
   // Estado editável do mini manual de marca
   const [traits, setTraits] = useState<Record<string, number>>({});
   const [voice, setVoice] = useState("");
   const [font, setFont] = useState("Manrope");
   const [colors, setColors] = useState<Color[]>([]);
-  const [newColor, setNewColor] = useState("#111318");
 
   // Telas mágicas: o que a leitura rápida achou, o resultado da análise,
   // e a vitrine sendo montada.
@@ -133,8 +164,8 @@ export default function OnboardingPage() {
     }
   }
 
-  function addColor() {
-    const hex = newColor.match(/^#?[0-9a-fA-F]{6}$/) ? (newColor.startsWith("#") ? newColor : `#${newColor}`) : null;
+  function addColor(escolhida: string) {
+    const hex = escolhida.match(/^#?[0-9a-fA-F]{6}$/) ? (escolhida.startsWith("#") ? escolhida : `#${escolhida}`) : null;
     if (!hex) return;
     setColors((prev) =>
       prev.some((c) => c.hex.toLowerCase() === hex.toLowerCase()) ? prev : [...prev, { hex, role: "detail" }]
@@ -257,6 +288,7 @@ export default function OnboardingPage() {
       return;
     }
 
+    setSlugCriado(slug);
     // A esfera da Orbi já nasce com as cores da marca.
     // O painel passa a abrir este negócio (importante quando a conta tem vários).
     document.cookie = `orbi_negocio=${business.id}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
@@ -364,10 +396,11 @@ export default function OnboardingPage() {
     setStep("resultado");
   }
 
-  function goToApp() {
-    router.push(novoNegocio ? "/admin" : "/admin/apresentacao");
+  function goToApp(destino: string = "/admin") {
+    router.push(destino);
     router.refresh();
   }
+  const linkPublico = slugCriado && typeof window !== "undefined" ? `${window.location.origin}/${slugCriado}` : null;
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -392,6 +425,7 @@ export default function OnboardingPage() {
           Sair
         </button>
       )}
+      {PASSO[step] && <IndicadorPasso passo={PASSO[step]!} />}
       <div className="w-full max-w-lg">
         {step === "dados" && (
           <>
@@ -440,84 +474,96 @@ export default function OnboardingPage() {
           <div className="flex flex-col gap-5 py-2">
             <div className="mx-auto"><OrbiOrb size={88} colors={orbColors} /></div>
 
+            <div className="text-center">
+              <h1 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.01em]">
+                Sua página está no ar
+              </h1>
+              <p className="mt-1.5 text-[14px] text-text-secondary">
+                Esse é o seu link. Mande pros clientes, coloque na bio do Instagram e no WhatsApp.
+              </p>
+            </div>
+
+            {linkPublico && (
+              <div className="rounded-[22px] bg-surface-white p-4 shadow-[0_10px_24px_-14px_rgba(17,19,24,0.3)] ring-1 ring-black/[0.07]">
+                <p className="truncate text-center font-[family-name:var(--font-manrope)] text-[16px] font-medium">
+                  {linkPublico.replace(/^https?:\/\//, "")}
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <ShareOrbiboxButton
+                    url={linkPublico}
+                    title={name}
+                    className="w-full rounded-full bg-on-background py-3 text-[14px] font-medium text-white"
+                  >
+                    Compartilhar
+                  </ShareOrbiboxButton>
+                  <a
+                    href={linkPublico}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center rounded-full border border-divider bg-surface-white py-3 text-[14px] font-medium"
+                  >
+                    Ver como cliente
+                  </a>
+                </div>
+              </div>
+            )}
+
             {importSummary.fetchError ? (
-              <>
-                <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">
-                  Quase lá
-                </h1>
-                <p className="text-center text-[14px] text-text-secondary">
-                  {importSummary.fetchError} Você pode tentar de novo, ou seguir e importar depois pelo Catálogo.
+              <div className="rounded-2xl bg-surface-soft p-4 text-center">
+                <p className="text-[14px] font-medium">Os produtos ainda não vieram</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+                  {importSummary.fetchError} Tente de novo agora ou importe depois pelo Catálogo.
                 </p>
                 <button
                   type="button"
                   onClick={tentarDeNovo}
                   disabled={retrying}
-                  className="mx-auto rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[14px] font-medium disabled:opacity-60"
+                  className="mt-3 rounded-full border border-divider bg-surface-white px-5 py-2.5 text-[14px] font-medium disabled:opacity-60"
                 >
                   {retrying ? "Lendo de novo…" : "Tentar de novo"}
                 </button>
-              </>
+              </div>
             ) : importSummary.imported > 0 ? (
-              <>
-                <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">
-                  Entendi seu negócio
-                </h1>
-                <div className="rounded-2xl bg-surface-soft p-4">
-                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
-                    {importSummary.siteType === "ecommerce" ? "Loja virtual" : importSummary.siteType === "institucional" ? "Site institucional" : "Página de links"}
-                  </p>
-                  <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-                    {importSummary.motivo ?? "Analisei a estrutura do seu site para chegar nessa conclusão."}
-                  </p>
-                </div>
-                <p className="text-[14px] leading-relaxed text-text-secondary">
+              <div className="rounded-2xl bg-surface-soft p-4">
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
+                  {importSummary.siteType === "ecommerce" ? "Loja virtual" : importSummary.siteType === "institucional" ? "Site institucional" : "Página de links"}
+                </p>
+                <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
                   {importSummary.siteType === "ecommerce" ? (
-                    <>Organizei seu catálogo em <b>{importSummary.imported} categorias</b>, não em produto por produto, pra não ficar longo demais. Cada uma leva o visitante direto pra página certa no seu site.</>
+                    <>Seu catálogo ficou com <b className="font-medium text-on-background">{importSummary.imported} categorias</b>, cada uma levando direto pra página certa do seu site.</>
                   ) : (
-                    <>Criei <b>{importSummary.imported} {importSummary.imported === 1 ? "item" : "itens"}</b> no seu catálogo, um pra cada serviço ou produto que encontrei.</>
+                    <>Seu catálogo ficou com <b className="font-medium text-on-background">{importSummary.imported} {importSummary.imported === 1 ? "item" : "itens"}</b>, um pra cada produto ou serviço que encontrei.</>
                   )}
                 </p>
-              </>
-            ) : !website.trim() && !instagram.trim() ? (
-              <>
-                <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">Tudo pronto</h1>
-                <p className="text-center text-[14px] text-text-secondary">
-                  Você não passou site nem Instagram, então o catálogo começa vazio. Monte do seu jeito quando quiser.
-                </p>
-              </>
+              </div>
             ) : (
-              <>
-                <h1 className="text-center font-[family-name:var(--font-manrope)] text-[22px] font-medium">Tudo pronto</h1>
-                <p className="text-center text-[14px] text-text-secondary">
-                  Não encontrei itens claros pra importar, sem problema, você adiciona no Catálogo quando quiser.
+              <div className="rounded-2xl bg-surface-soft p-4">
+                <p className="text-[14px] leading-relaxed text-text-secondary">
+                  {!website.trim() && !instagram.trim()
+                    ? "Seu catálogo começa vazio. Adicione seus produtos ou serviços quando quiser, leva poucos minutos."
+                    : "Não encontrei produtos claros pra trazer. Sem problema, você adiciona no Catálogo quando quiser."}
                 </p>
-              </>
+              </div>
             )}
 
-            <div className="rounded-2xl border border-divider p-4">
-              {description.trim() || (importSummary.siteType && !importSummary.fetchError) ? (
-                <>
-                  <p className="text-[13px] font-medium">✦ A Orbi já está pronta pra atender</p>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
-                    Ela já sabe o que seu negócio faz, recomenda produtos ou serviços, conversa com quem visita seu link e
-                    pode direcionar pra você quando o cliente precisar de atendimento humano de verdade.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-[13px] font-medium">✦ A Orbi ainda não conhece seu negócio</p>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
-                    Sem site nem descrição, ela não sabe o que responder pros seus clientes ainda. Leva 30 segundos pra
-                    resolver, vale a pena antes de compartilhar seu link.
-                  </p>
-                  <Link href="/admin/boxes" className="mt-3 inline-block text-[13px] font-medium underline">
-                    Contar sobre o negócio →
-                  </Link>
-                </>
-              )}
-            </div>
+            {!(description.trim() || (importSummary.siteType && !importSummary.fetchError)) && (
+              <div className="rounded-2xl border border-divider p-4">
+                <p className="text-[13px] font-medium">✦ Conte à Orbi o que você faz</p>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">
+                  Sem site nem descrição, ela ainda não sabe o que responder pros seus clientes. Leva 30 segundos.
+                </p>
+                <button type="button" onClick={() => goToApp("/admin/agent")} className="mt-3 text-[13px] font-medium underline">
+                  Ensinar a Orbi agora →
+                </button>
+              </div>
+            )}
 
-            <Button onClick={goToApp} variant="orbi">Ir para o meu Orbibox →</Button>
+            <Button onClick={() => goToApp("/admin")} variant="orbi">Abrir meu painel →</Button>
+            {!novoNegocio && (
+              <button type="button" onClick={() => goToApp("/admin/apresentacao")} className="-mt-2 text-center text-[13px] text-text-secondary underline">
+                Ver em 1 minuto tudo que a Orbi faz
+              </button>
+            )}
           </div>
         )}
 
@@ -549,27 +595,17 @@ export default function OnboardingPage() {
           <>
             {/* A esfera já com as cores da marca; muda ao vivo se a pessoa editar a paleta. */}
             <div className="mb-4 flex justify-center"><BrandOrb colors={orbColors} size={88} /></div>
-            <div className="flex items-center gap-2"><OrbBadge state="done" label="Mini manual da marca" /></div>
+            <div className="flex items-center gap-2"><OrbBadge state="done" label="Sua marca" /></div>
             <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[24px] font-medium">{name || "Sua marca"}</h1>
-            <p className="mt-1 text-[13px] text-text-tertiary">A Orbi sugeriu isto, ajuste tudo como quiser antes de confirmar.</p>
+            <p className="mt-1 text-[14px] leading-relaxed text-text-secondary">
+              É assim que a Orbi vai vestir e falar pela sua marca. Se estiver bom, é só criar. Tudo dá pra mudar depois em Sua marca.
+            </p>
 
-            {/* Personalidade */}
-            <p className="mt-6 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Personalidade</p>
-            <div className="mt-3 flex flex-col gap-4">
-              {Object.entries(traits).map(([trait, value]) => (
-                <div key={trait}>
-                  <div className="flex justify-between text-[13px] text-text-secondary capitalize"><span>{trait}</span><span>{Math.round(value * 100)}%</span></div>
-                  <input type="range" min={0} max={100} value={Math.round(value * 100)} onChange={(e) => setTraits((p) => ({ ...p, [trait]: Number(e.target.value) / 100 }))} className="mt-1 w-full accent-[#111318]" />
-                </div>
-              ))}
-            </div>
-
-            {/* Paleta editável, toque na cor pra trocar, × pra remover */}
-            <p className="mt-7 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Paleta de cores</p>
-            <p className="mt-1 text-[12px] text-text-tertiary">Toque numa cor para trocar. Use × para remover.</p>
-            <div className="mt-3 flex flex-wrap items-start gap-4">
+            {/* Cores: toque pra trocar, × pra remover */}
+            <p className="mt-7 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Cores</p>
+            <div className="mt-3 flex flex-wrap items-start gap-3.5">
               {colors.map((c, i) => (
-                <div key={i} className="relative flex flex-col items-center gap-1">
+                <div key={i} className="relative">
                   <label className="relative block h-12 w-12 cursor-pointer">
                     <span className="block h-12 w-12 rounded-full border border-divider shadow-[inset_0_0_0_2px_rgba(255,255,255,0.7)]" style={{ backgroundColor: c.hex }} />
                     <input
@@ -577,10 +613,9 @@ export default function OnboardingPage() {
                       value={c.hex}
                       onChange={(e) => updateColor(i, e.target.value)}
                       className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                      aria-label={`Editar cor ${c.hex}`}
+                      aria-label={`Trocar cor ${i + 1}`}
                     />
                   </label>
-                  <span className="text-[10px] uppercase text-text-tertiary">{c.hex}</span>
                   <button
                     type="button"
                     onClick={() => removeColor(i)}
@@ -591,43 +626,79 @@ export default function OnboardingPage() {
                   </button>
                 </div>
               ))}
-              {/* Adicionar nova cor: escolhe no picker e confirma */}
-              <div className="flex flex-col items-center gap-1">
-                <div className="flex items-center gap-2">
-                  <label className="relative block h-12 w-12 cursor-pointer">
-                    <span className="block h-12 w-12 rounded-full border-2 border-dashed border-divider" style={{ backgroundColor: newColor }} />
-                    <input
-                      type="color"
-                      value={newColor}
-                      onChange={(e) => setNewColor(e.target.value)}
-                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                      aria-label="Escolher nova cor"
-                    />
-                  </label>
-                  <button type="button" onClick={addColor} className="rounded-full bg-on-background px-3 py-2 text-[12px] font-medium text-white">
-                    + Adicionar
-                  </button>
-                </div>
-                <span className="text-[10px] text-text-tertiary">nova cor</span>
-              </div>
+              <AdicionarCor onEscolher={addColor} />
             </div>
+            <p className="mt-2 text-[12px] text-text-tertiary">Toque numa cor pra trocar.</p>
 
-            {/* Tipografia */}
-            <p className="mt-7 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Tipografia sugerida</p>
-            <div className="mt-2 flex items-center gap-3">
-              <input value={font} onChange={(e) => setFont(e.target.value)} className="flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background" />
-            </div>
-            <p className="mt-1 text-[12px] text-text-tertiary">Fonte do Google Fonts que combina com a marca. Você pode trocar.</p>
-
-            {/* Tom de voz */}
-            <p className="mt-7 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Tom de voz</p>
+            {/* Jeito de falar */}
+            <p className="mt-7 text-[13px] font-medium uppercase tracking-wide text-text-tertiary">Jeito de falar</p>
             <textarea value={voice} onChange={(e) => setVoice(e.target.value)} rows={3} className="mt-2 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] text-text-secondary outline-none focus:border-on-background" />
 
-            {error && <p className="mt-3 text-[13px] text-red-600">{error}</p>}
-            <Button className="mt-7 w-full" onClick={confirmAndCreate} disabled={saving}>{saving ? "Criando seu Orbibox…" : "Confirmar e continuar"}</Button>
+            {/* Detalhes finos, recolhidos: quase ninguém precisa mexer aqui agora. */}
+            <button
+              type="button"
+              onClick={() => setMaisAjustes((v) => !v)}
+              aria-expanded={maisAjustes}
+              className="mt-5 flex w-full items-center justify-between rounded-2xl bg-surface-soft px-4 py-3 text-left text-[14px] font-medium"
+            >
+              <span>Mais ajustes <span className="font-normal text-text-tertiary">(opcional)</span></span>
+              <span className={`text-text-tertiary transition-transform ${maisAjustes ? "rotate-180" : ""}`}>⌄</span>
+            </button>
+            {maisAjustes && (
+              <div className="mt-4 flex flex-col gap-5">
+                {Object.entries(traits).map(([trait, value]) => {
+                  const pontas = PERSONALIDADE[trait] ?? [trait, trait];
+                  return (
+                    <div key={trait}>
+                      <div className="flex justify-between text-[13px] text-text-secondary"><span>{pontas[0]}</span><span>{pontas[1]}</span></div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={Math.round(value * 100)}
+                        onChange={(e) => setTraits((p) => ({ ...p, [trait]: Number(e.target.value) / 100 }))}
+                        aria-label={`${pontas[0]} ou ${pontas[1]}`}
+                        className="mt-1 w-full accent-[#111318]"
+                      />
+                    </div>
+                  );
+                })}
+                <div>
+                  <p className="text-[13px] text-text-secondary">Fonte</p>
+                  <input value={font} onChange={(e) => setFont(e.target.value)} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background" style={{ fontFamily: font }} />
+                  <p className="mt-1 text-[12px] text-text-tertiary">Nome de uma fonte do Google Fonts. A Orbi já escolheu uma que combina.</p>
+                </div>
+              </div>
+            )}
+
+            {error && <p role="alert" className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-[13px] text-red-700 ring-1 ring-red-100">{error}</p>}
+            <Button className="mt-7 w-full" onClick={confirmAndCreate} disabled={saving}>{saving ? "Criando sua página…" : "Criar minha página"}</Button>
           </>
         )}
       </div>
     </main>
+  );
+}
+
+// Círculo "+" que abre o seletor de cor. Só adiciona quando a pessoa
+// confirma a escolha (evento nativo "change"), não a cada arrastada.
+function AdicionarCor({ onEscolher }: { onEscolher: (hex: string) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const cb = useRef(onEscolher);
+  useEffect(() => {
+    cb.current = onEscolher;
+  });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const fn = () => cb.current(el.value);
+    el.addEventListener("change", fn);
+    return () => el.removeEventListener("change", fn);
+  }, []);
+  return (
+    <label className="relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-2 border-dashed border-divider text-[20px] text-text-tertiary" title="Adicionar cor">
+      +
+      <input ref={ref} type="color" defaultValue="#111318" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" aria-label="Adicionar cor" />
+    </label>
   );
 }

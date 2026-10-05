@@ -261,6 +261,16 @@ const ETAPAS = [
   () => "Escrevendo as descrições",
   (_: string, marca: string) => `Aplicando as cores da ${marca}`,
 ];
+// Depois das etapas principais, a importação ainda pode levar um tempo
+// (site grande, muitas fotos). Essas frases giram pra tela nunca parecer
+// travada.
+const ETAPAS_LONGAS = [
+  "Organizando por categoria",
+  "Conferindo preços e nomes",
+  "Ajustando as fotos pro celular",
+  "Sites com muitos produtos levam um pouco mais",
+  "Quase lá",
+];
 
 export function VitrineMontando({
   nome,
@@ -280,13 +290,22 @@ export function VitrineMontando({
 }) {
   const marca = nome.trim() || "sua marca";
 
-  // Enquanto a importação roda, as etapas avançam (sem passar da última).
+  // Enquanto a importação roda, as etapas avançam rápido no começo e depois
+  // passam a girar frases de "ainda trabalhando", com um contador de tempo.
   const [etapa, setEtapa] = useState(0);
+  const [decorrido, setDecorrido] = useState(0);
   useEffect(() => {
-    if (status !== "pending" || etapa >= ETAPAS.length - 1) return;
-    const t = setTimeout(() => setEtapa((e) => e + 1), 2800);
+    if (status !== "pending") return;
+    const t = setTimeout(() => setEtapa((e) => e + 1), etapa < ETAPAS.length - 1 ? 2800 : 8000);
     return () => clearTimeout(t);
   }, [etapa, status]);
+  useEffect(() => {
+    if (status !== "pending") return;
+    const t = setInterval(() => setDecorrido((d) => d + 1), 1000);
+    return () => clearInterval(t);
+  }, [status]);
+  // Barra que sempre anda mas nunca chega a 100% antes de terminar de verdade.
+  const pct = status === "ok" ? 100 : Math.round(8 + 87 * (1 - Math.exp(-decorrido / 40)));
 
   // Os cards reais não aparecem aqui: uma miniatura nunca faz jus à vitrine
   // de verdade. O celular fica cinza "pensando" e, quando termina, fica fosco
@@ -298,7 +317,12 @@ export function VitrineMontando({
     return () => clearTimeout(t);
   }, [status]);
 
-  const textoEtapa = status === "ok" ? "Finalizando seu catálogo" : ETAPAS[etapa](alvo, marca);
+  const textoEtapa =
+    status === "ok"
+      ? "Finalizando seu catálogo"
+      : etapa < ETAPAS.length
+        ? ETAPAS[etapa](alvo, marca)
+        : ETAPAS_LONGAS[Math.min(etapa - ETAPAS.length, ETAPAS_LONGAS.length - 1)];
 
   return (
     <div className="flex flex-col items-center py-4 text-center">
@@ -345,17 +369,25 @@ export function VitrineMontando({
       </div>
 
       {!pronto ? (
-        <div className="mt-6 flex items-center gap-2">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbi-gradient-start" />
-          <p key={textoEtapa} className="orbi-linha-entra text-[15px] text-text-secondary">
-            {textoEtapa}…
+        <div className="mt-6 flex w-full max-w-[260px] flex-col items-center">
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbi-gradient-start" />
+            <p key={textoEtapa} className="orbi-linha-entra text-[15px] text-text-secondary">
+              {textoEtapa}…
+            </p>
+          </div>
+          <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-surface-soft" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+            <div className="orbi-gradient h-full rounded-full transition-[width] duration-1000 ease-out" style={{ width: `${pct}%` }} />
+          </div>
+          <p className="mt-2.5 text-[12px] leading-snug text-text-tertiary">
+            {decorrido < 20 ? "Leva de 30 segundos a 2 minutos." : "Pode deixar esta tela aberta, a Orbi segue trabalhando."}
           </p>
         </div>
       ) : (
         <>
           {segundos != null && (
             <p className="orbi-linha-entra mt-6 text-[15px] text-text-secondary" style={{ animationDelay: "0.8s" }}>
-              Montada em {segundos} segundos
+              Pronto em {segundos} segundos
             </p>
           )}
           <button
