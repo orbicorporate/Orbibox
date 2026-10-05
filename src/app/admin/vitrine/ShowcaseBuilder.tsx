@@ -665,7 +665,7 @@ export function ShowcaseBuilder({
   }
 
   async function deleteItem(item: Item) {
-    if (!(await confirm({ title: "Excluir item", message: `Excluir "${item.title}"? Essa ação não pode ser desfeita.`, confirmLabel: "Excluir", danger: true }))) return;
+    // Sem "tem certeza?": o aviso que aparece embaixo tem Desfazer.
     snapshot();
     setEditingId(null);
     setItems((p) => p.filter((i) => i.id !== item.id));
@@ -697,12 +697,14 @@ export function ShowcaseBuilder({
     const ids = ordered.filter((i) => (i.brand_label?.trim() || "Destaques") === name).map((i) => i.id);
     const msg = ids.length === 0
       ? `Excluir a categoria "${name}"? Ela está vazia.`
-      : `Excluir a categoria "${name}" e ${ids.length === 1 ? "seu 1 item" : `seus ${ids.length} itens`}? Essa ação não pode ser desfeita.`;
-    if (!(await confirm({ title: "Excluir categoria", message: msg, confirmLabel: "Excluir", danger: true }))) return;
+      : `Excluir a categoria "${name}" e ${ids.length === 1 ? "seu 1 item" : `seus ${ids.length} itens`}? Dá pra desfazer logo depois.`;
+    // Categoria vazia sai sem perguntar; com itens, confirma (apaga junto).
+    if (ids.length > 0 && !(await confirm({ title: "Excluir categoria", message: msg, confirmLabel: "Excluir", danger: true }))) return;
     snapshot();
     setItems((p) => p.filter((i) => !ids.includes(i.id)));
     if (ids.length > 0) await Promise.all(ids.map((id) => supabase.from("content_items").delete().eq("id", id)));
     if (categories.includes(name)) await saveCategories(categories.filter((c) => c !== name));
+    mostrarAviso(`Categoria "${name}" excluída`);
   }
 
   return (
@@ -1433,6 +1435,11 @@ function ItemCard({
   const [justSaved, setJustSaved] = useState(false);
   const [allColorsFor, setAllColorsFor] = useState<"box" | "footer" | null>(null);
   const [scheduleOpen, setScheduleOpen] = useState(!!(item.starts_at || item.ends_at));
+  // Formato, cores, posição e agendamento ficam em "Mais opções": quem está
+  // começando vê só nome, foto, preço e categoria.
+  const [avancado, setAvancado] = useState(false);
+  const mostrarAvancado = avancado || !!showIntroTour;
+  const cAv = `${mostrarAvancado ? "" : "hidden "}order-[91]`;
   const [lastUrl, setLastUrl] = useState(item.image_url);
   if (item.image_url !== lastUrl) {
     setLastUrl(item.image_url);
@@ -1695,14 +1702,14 @@ function ItemCard({
               </button>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className={`${cAv} flex items-center gap-2`}>
               <span className="text-[12px] uppercase tracking-wide text-text-tertiary">Posição</span>
               <button onClick={() => move(item, -1)} disabled={idx <= 0} className="ml-auto h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30" aria-label="Mover para trás">←</button>
               <span className="text-[13px] text-text-secondary">{idx + 1} de {total}</span>
               <button onClick={() => move(item, 1)} disabled={idx === total - 1} className="h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30" aria-label="Mover para frente">→</button>
             </div>
 
-            <div data-tour="item-formato">
+            <div data-tour="item-formato" className={cAv}>
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
               <div className="mt-2 flex gap-2">
                 {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {
@@ -1786,7 +1793,7 @@ function ItemCard({
               </div>
             )}
 
-            <div>
+            <div className={cAv}>
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
                 Cor do card{item.image_url ? " · aparece se remover a foto" : ""}
               </p>
@@ -1814,7 +1821,7 @@ function ItemCard({
                 modo "faixa", então a cor dele só aparece nesse caso, usando a
                 mesma paleta já escolhida em "Cor do card" (sem abas repetidas). */}
             {item.image_url && (
-              <div>
+              <div className={cAv}>
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do card</p>
                 <div className="mt-2 flex gap-2">
                   {(["faixa", "sobre"] as const).map((v) => {
@@ -1900,7 +1907,7 @@ function ItemCard({
               )}
             </div>
 
-            <div>
+            <div className={item.starts_at || item.ends_at ? "order-[91]" : cAv}>
               {/* Agendamento recolhido num botão claro; já abre sozinho se o
                   item tem data marcada, pra não esconder algo ativo. */}
               <button
@@ -2082,6 +2089,19 @@ function ItemCard({
               )}
             </div>
 
+            <button
+              type="button"
+              onClick={() => setAvancado((v) => !v)}
+              aria-expanded={mostrarAvancado}
+              className="order-[90] flex w-full items-center justify-between rounded-2xl bg-surface-soft px-4 py-3 text-left text-[14px] font-medium"
+            >
+              <span>
+                Mais opções <span className="font-normal text-text-tertiary">(formato, cores, nome na foto, posição, agendar)</span>
+              </span>
+              <span className={`text-text-tertiary transition-transform ${mostrarAvancado ? "rotate-180" : ""}`}>⌄</span>
+            </button>
+
+            <div className="order-[100] flex flex-col gap-4">
             {item.status === "published" ? (
               <button
                 onClick={async () => {
@@ -2127,6 +2147,7 @@ function ItemCard({
             <button onClick={onDelete} className="block w-full rounded-full py-3 text-center text-[13px] font-medium text-red-600">
               Excluir item
             </button>
+            </div>
           </div>
         )}
         </div>

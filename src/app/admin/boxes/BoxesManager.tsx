@@ -1,6 +1,6 @@
 "use client";
 
-import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { avisarErroSalvar, conferirSalvo, excluirComDesfazer } from "@/components/ui/AvisoSalvar";
 import { IconeRede, nomeDaRede, redeDoLink } from "@/lib/redesSociais";
 import Link from "next/link";
 import { useState, useEffect, type CSSProperties, type ReactNode } from "react";
@@ -251,7 +251,11 @@ export function BoxesManager({
   async function removeCustom(box: Box) {
     setEditingId(null);
     setBoxes((p) => p.filter((b) => b.id !== box.id));
-    if (!conferirSalvo(await supabase.from("smart_boxes").delete().eq("id", box.id), "Não conseguimos excluir. Tente de novo.")) setBoxes((p) => [...p, box]);
+    excluirComDesfazer({
+      texto: `Botão "${box.title ?? "sem nome"}" excluído`,
+      restaurar: () => setBoxes((p) => [...p, box]),
+      executar: () => Promise.resolve(supabase.from("smart_boxes").delete().eq("id", box.id)),
+    });
   }
 
   async function saveStoryPhotos(urls: string[]) {

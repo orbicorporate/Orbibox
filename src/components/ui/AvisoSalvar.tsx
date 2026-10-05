@@ -37,7 +37,67 @@ export function conferirSalvo(res: { error: unknown } | null | undefined, texto?
   return true;
 }
 
+// Exclusão com "Desfazer": some da tela na hora, mas só apaga de verdade
+// depois de alguns segundos. Se a pessoa tocar em Desfazer, volta tudo e
+// nada foi apagado. Se sair da página antes, apaga na hora (não fica perdido).
+type Pendente = { id: number; texto: string; executar: () => Promise<unknown>; restaurar: () => void; timer: ReturnType<typeof setTimeout> | null };
+const pendentes = new Map<number, Pendente>();
+const ouvintesDesfazer = new Set<(p: Pendente | null) => void>();
+const ESPERA_MS = 6000;
+
+async function concluir(id: number) {
+  const p = pendentes.get(id);
+  if (!p) return;
+  pendentes.delete(id);
+  if (p.timer) clearTimeout(p.timer);
+  ouvintesDesfazer.forEach((fn) => fn(null));
+  try {
+    const r = (await p.executar()) as { error?: unknown } | undefined;
+    if (r && r.error) {
+      p.restaurar();
+      avisarErroSalvar("Não conseguimos excluir. Tente de novo.");
+    }
+  } catch {
+    p.restaurar();
+    avisarErroSalvar("Não conseguimos excluir. Tente de novo.");
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", () => {
+    for (const id of Array.from(pendentes.keys())) void concluir(id);
+  });
+}
+
+export function excluirComDesfazer({ texto, executar, restaurar }: { texto: string; executar: () => Promise<unknown>; restaurar: () => void }) {
+  // Uma exclusão por vez no aviso: a anterior é concluída antes.
+  for (const id of Array.from(pendentes.keys())) void concluir(id);
+  const id = ++seq;
+  const p: Pendente = { id, texto, executar, restaurar, timer: null };
+  p.timer = setTimeout(() => void concluir(id), ESPERA_MS);
+  pendentes.set(id, p);
+  ouvintesDesfazer.forEach((fn) => fn(p));
+}
+
+function desfazer(id: number) {
+  const p = pendentes.get(id);
+  if (!p) return;
+  if (p.timer) clearTimeout(p.timer);
+  pendentes.delete(id);
+  p.restaurar();
+  ouvintesDesfazer.forEach((fn) => fn(null));
+}
+
 export function AvisoSalvarHost() {
+  const [pendente, setPendente] = useState<Pendente | null>(null);
+  useEffect(() => {
+    const fn = (p: Pendente | null) => setPendente(p);
+    ouvintesDesfazer.add(fn);
+    return () => {
+      ouvintesDesfazer.delete(fn);
+    };
+  }, []);
+
   const [aviso, setAviso] = useState<Aviso | null>(null);
 
   useEffect(() => {
@@ -54,6 +114,18 @@ export function AvisoSalvarHost() {
     return () => clearTimeout(t);
   }, [aviso]);
 
+  if (pendente) {
+    return (
+      <div role="status" className="fixed inset-x-0 bottom-28 z-[90] flex justify-center px-6">
+        <div className="flex w-full max-w-[400px] items-center gap-3 rounded-2xl bg-[#1a1b1f] py-2.5 pl-4 pr-2 text-[13.5px] text-white shadow-[0_12px_30px_-10px_rgba(0,0,0,0.5)]">
+          <span className="min-w-0 flex-1 truncate">{pendente.texto}</span>
+          <button type="button" onClick={() => desfazer(pendente.id)} className="shrink-0 rounded-full bg-white/15 px-3.5 py-1.5 text-[13px] font-semibold">
+            Desfazer
+          </button>
+        </div>
+      </div>
+    );
+  }
   if (!aviso) return null;
   return (
     <div role="alert" className="fixed inset-x-0 bottom-28 z-[90] flex justify-center px-6">

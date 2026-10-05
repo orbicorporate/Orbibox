@@ -1,5 +1,6 @@
 "use client";
 
+import { excluirComDesfazer } from "@/components/ui/AvisoSalvar";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -65,12 +66,11 @@ export function TemperaturaTag({ valor }: { valor: number | null }) {
 const STATUS_LABEL: Record<string, string> = { novo: "Novo", conversando: "Conversando", fechou: "Fechou", perdeu: "Perdeu" };
 
 export function ConversasList({ conversations, businessId, orbiColors }: { conversations: Conversa[]; businessId: string; orbiColors?: string[] | null }) {
-  const { confirm, DialogRenderer } = useDialogs();
+  const { DialogRenderer } = useDialogs();
   const [lista, setLista] = useState<Conversa[]>(conversations);
   const [openId, setOpenId] = useState<string | null>(null);
   const [filtro, setFiltro] = useState<"todos" | "quentes" | "contato">("todos");
   const [periodo, setPeriodo] = useState<(typeof PERIODOS)[number]["key"]>("todos");
-  const [excluindo, setExcluindo] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [analisando, setAnalisando] = useState<Set<string>>(new Set());
   const [copiado, setCopiado] = useState<string | null>(null);
@@ -165,14 +165,18 @@ export function ConversasList({ conversations, businessId, orbiColors }: { conve
     }
   }
 
-  async function excluir(id: string) {
-    if (!(await confirm({ title: "Excluir conversa", message: "Excluir esta conversa? Essa ação não pode ser desfeita.", confirmLabel: "Excluir", danger: true }))) return;
-    setExcluindo(id);
-    const supabase = createClient();
-    await supabase.from("messages").delete().eq("conversation_id", id);
-    await supabase.from("conversations").delete().eq("id", id);
+  function excluir(id: string) {
+    const antes = lista;
     setLista((prev) => prev.filter((c) => c.id !== id));
-    setExcluindo(null);
+    excluirComDesfazer({
+      texto: "Conversa excluída",
+      restaurar: () => setLista(antes),
+      executar: async () => {
+        const supabase = createClient();
+        await supabase.from("messages").delete().eq("conversation_id", id);
+        return supabase.from("conversations").delete().eq("id", id);
+      },
+    });
   }
 
   if (conversations.length === 0) {
@@ -338,8 +342,8 @@ export function ConversasList({ conversations, businessId, orbiColors }: { conve
                       ))}
                     </div>
 
-                    <button type="button" onClick={() => excluir(c.id)} disabled={excluindo === c.id} className="mt-1 cursor-pointer self-start text-[13px] font-medium text-red-600 disabled:opacity-50">
-                      {excluindo === c.id ? "Excluindo…" : "Excluir conversa"}
+                    <button type="button" onClick={() => excluir(c.id)} className="mt-1 cursor-pointer self-start text-[13px] font-medium text-red-600 disabled:opacity-50">
+                      Excluir conversa
                     </button>
                   </div>
                 )}

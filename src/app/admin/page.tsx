@@ -12,6 +12,7 @@ import { WelcomeBackBanner } from "./WelcomeBackBanner";
 import { ProximaAcao } from "./ProximaAcao";
 import { proximaData } from "@/lib/datasComemorativas";
 import { getAccessInfo } from "@/lib/plans";
+import { Marcos } from "./Marcos";
 
 const METRICS = [
   { key: "discovery", label: "Visitas", explica: "Pessoas que abriram seu link", icon: "◎", href: "/admin/pulse" },
@@ -130,6 +131,11 @@ export default async function HojePage() {
     realConvs = new Set((msgRows ?? []).map((m) => m.conversation_id)).size;
   }
 
+  const { count: resgates } = await supabase
+    .from("voucher_redemptions")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", business!.id);
+
   const values: Record<string, number> = {
     discovery: visits ?? 0,
     interest: interested ?? 0,
@@ -193,6 +199,8 @@ export default async function HojePage() {
           QR Code
         </QRCodeButton>
       </div>
+
+      <Marcos businessId={business!.id} contagem={{ visitas: visits ?? 0, acoes: actions ?? 0, conversas: realConvs, resgates: resgates ?? 0 }} />
 
       <ProximaAcao
         businessId={business!.id}
