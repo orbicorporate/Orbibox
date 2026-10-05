@@ -1,5 +1,6 @@
 "use client";
 
+import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { IconeRede, nomeDaRede, redeDoLink } from "@/lib/redesSociais";
 import Link from "next/link";
 import { useState, useEffect, type CSSProperties, type ReactNode } from "react";
@@ -178,7 +179,7 @@ export function BoxesManager({
 
   async function saveHeroAvatar(value: string) {
     setHeroAvatar(value);
-    await supabase.from("businesses").update({ hero_avatar: value }).eq("id", businessId);
+    conferirSalvo(await supabase.from("businesses").update({ hero_avatar: value }).eq("id", businessId));
   }
   const [aboutImportUrl, setAboutImportUrl] = useState("");
   const [importingAbout, setImportingAbout] = useState(false);
@@ -204,17 +205,24 @@ export function BoxesManager({
 
   async function toggleActive(box: Box) {
     if (META[box.box_type]?.fixo) return;
-    const { error } = await supabase.from("smart_boxes").update({ is_active: !box.is_active }).eq("id", box.id);
-    if (!error) setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, is_active: !b.is_active } : b)));
+    const c = (box.config ?? {}) as BoxConfig;
+    if (!box.is_active && box.box_type === "custom" && (c.action === "link" || c.action === "avaliar") && !c.url?.trim()) {
+      avisarErroSalvar("Esse botão ainda não tem link. Abra, cole o link e depois ligue.");
+      setEditingId(box.id);
+      return;
+    }
+    const res = await supabase.from("smart_boxes").update({ is_active: !box.is_active }).eq("id", box.id);
+    if (conferirSalvo(res)) setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, is_active: !b.is_active } : b)));
   }
 
   async function autoArrange() {
     setArranging(true);
     const priority: Record<string, number> = { hero: 0, product: 1, content: 2, campaign: 3, agent: 4, custom: 5 };
     const sorted = [...boxes].sort((a, b) => (priority[a.box_type] ?? 9) - (priority[b.box_type] ?? 9));
-    await Promise.all(sorted.map((b, i) => supabase.from("smart_boxes").update({ position: i, auto_arranged: true }).eq("id", b.id)));
-    setBoxes(sorted.map((b, i) => ({ ...b, position: i, auto_arranged: true })));
+    const rs = await Promise.all(sorted.map((b, i) => supabase.from("smart_boxes").update({ position: i, auto_arranged: true }).eq("id", b.id)));
     setArranging(false);
+    if (!conferirSalvo(rs.find((r) => r.error) ?? { error: null })) return;
+    setBoxes(sorted.map((b, i) => ({ ...b, position: i, auto_arranged: true })));
   }
 
   async function move(box: Box, dir: -1 | 1) {
@@ -222,40 +230,41 @@ export function BoxesManager({
     const idx = ordered.findIndex((b) => b.id === box.id);
     const swap = ordered[idx + dir];
     if (!swap) return;
-    await Promise.all([
+    const rs = await Promise.all([
       supabase.from("smart_boxes").update({ position: swap.position }).eq("id", box.id),
       supabase.from("smart_boxes").update({ position: box.position }).eq("id", swap.id),
     ]);
+    if (!conferirSalvo(rs.find((r) => r.error) ?? { error: null }, "Não conseguimos mudar a ordem. Tente de novo.")) return;
     setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, position: swap.position } : b.id === swap.id ? { ...b, position: box.position } : b)));
   }
 
   async function saveConfig(box: Box, cfg: BoxConfig) {
     setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, title: cfg.label ?? b.title, config: cfg } : b)));
-    await supabase.from("smart_boxes").update({ title: cfg.label || box.title, config: cfg }).eq("id", box.id);
+    conferirSalvo(await supabase.from("smart_boxes").update({ title: cfg.label || box.title, config: cfg }).eq("id", box.id));
   }
 
   async function saveSchedule(box: Box, startsAt: string | null, endsAt: string | null) {
     setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, starts_at: startsAt, ends_at: endsAt } : b)));
-    await supabase.from("smart_boxes").update({ starts_at: startsAt, ends_at: endsAt }).eq("id", box.id);
+    conferirSalvo(await supabase.from("smart_boxes").update({ starts_at: startsAt, ends_at: endsAt }).eq("id", box.id));
   }
 
   async function removeCustom(box: Box) {
     setEditingId(null);
     setBoxes((p) => p.filter((b) => b.id !== box.id));
-    await supabase.from("smart_boxes").delete().eq("id", box.id);
+    if (!conferirSalvo(await supabase.from("smart_boxes").delete().eq("id", box.id), "Não conseguimos excluir. Tente de novo.")) setBoxes((p) => [...p, box]);
   }
 
   async function saveStoryPhotos(urls: string[]) {
     setStoryPhotos(urls);
-    await supabase.from("businesses").update({ story_photos: urls }).eq("id", businessId);
+    conferirSalvo(await supabase.from("businesses").update({ story_photos: urls }).eq("id", businessId));
   }
 
   async function saveAboutBusiness(value: string) {
-    await supabase.from("businesses").update({ about_business: value || null }).eq("id", businessId);
+    conferirSalvo(await supabase.from("businesses").update({ about_business: value || null }).eq("id", businessId));
   }
 
   async function saveHeroQuestion(value: string) {
-    await supabase.from("businesses").update({ hero_question: value || null }).eq("id", businessId);
+    conferirSalvo(await supabase.from("businesses").update({ hero_question: value || null }).eq("id", businessId));
   }
 
   async function importAbout(url: string) {
@@ -291,13 +300,17 @@ export function BoxesManager({
     setCards(next);
     // Mantém o texto simples que alimenta a Orbi sincronizado, sem trabalho extra pro dono.
     const plainText = next.map((c) => (c.description ? `${c.title}: ${c.description}` : c.title)).join("\n");
-    await supabase.from("businesses").update({ differentials_cards: next, differentials: plainText || null }).eq("id", businessId);
+    conferirSalvo(await supabase.from("businesses").update({ differentials_cards: next, differentials: plainText || null }).eq("id", businessId));
   }
 
   async function createCustom() {
     const nome = draftLabel.trim();
     if (!nome) {
       setCreateError("Dê um nome pro botão antes de criar.");
+      return;
+    }
+    if ((draft.action === "link" || draft.action === "avaliar") && !draft.url?.trim()) {
+      setCreateError(draft.action === "avaliar" ? "Cole o link da sua avaliação no Google antes de criar." : "Cole o link pra onde o botão leva antes de criar.");
       return;
     }
     setCreateError(null);

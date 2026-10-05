@@ -1,5 +1,6 @@
 "use client";
 
+import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -109,7 +110,8 @@ export function ConfigForm({
 
   async function saveLogo(url: string | null) {
     setB((p) => ({ ...p, logo_url: url }));
-    await supabase.from("businesses").update({ logo_url: url }).eq("id", b.id);
+    const res = await supabase.from("businesses").update({ logo_url: url }).eq("id", b.id);
+    if (!conferirSalvo(res, "Não conseguimos salvar o logo. Tente de novo.")) return;
     if (url) {
       const next = await addToLogoGallery(supabase, b.id, logoGallery, url);
       setLogoGallery(next);
@@ -118,7 +120,7 @@ export function ConfigForm({
 
   async function saveShareImage(url: string | null) {
     setB((p) => ({ ...p, share_image_url: url }));
-    await supabase.from("businesses").update({ share_image_url: url }).eq("id", b.id);
+    conferirSalvo(await supabase.from("businesses").update({ share_image_url: url }).eq("id", b.id));
   }
 
   async function generateShareDescription() {
@@ -149,8 +151,8 @@ export function ConfigForm({
 
   async function save(key: CampoEditavel, value: string) {
     const patch: Partial<Record<CampoEditavel, string | null>> = { [key]: value.trim() || null };
-    await supabase.from("businesses").update(patch).eq("id", b.id);
-    setSaved(true);
+    const res = await supabase.from("businesses").update(patch).eq("id", b.id);
+    if (conferirSalvo(res)) setSaved(true);
   }
 
   // Diferenciais viram até 4 linhas separadas. No banco continua sendo um
@@ -172,8 +174,8 @@ export function ConfigForm({
   async function salvarDiferenciais() {
     const texto = listaDiferenciais.map((d) => d.trim()).filter(Boolean).join("\n");
     setB((p) => ({ ...p, differentials: texto || null }));
-    await supabase.from("businesses").update({ differentials: texto || null }).eq("id", b.id);
-    setSaved(true);
+    const res = await supabase.from("businesses").update({ differentials: texto || null }).eq("id", b.id);
+    if (conferirSalvo(res)) setSaved(true);
   }
 
   // Marca/desmarca uma opção de um dos grupos de chips.
@@ -185,8 +187,9 @@ export function ConfigForm({
     const next = atual.includes(id) ? atual.filter((x) => x !== id) : [...atual, id];
     setB((p) => ({ ...p, [campoLista]: next }));
     const patch: Partial<Record<typeof campoLista, string[]>> = { [campoLista]: next };
-    await supabase.from("businesses").update(patch).eq("id", b.id);
-    setSaved(true);
+    const res = await supabase.from("businesses").update(patch).eq("id", b.id);
+    if (conferirSalvo(res)) setSaved(true);
+    else setB((p) => ({ ...p, [campoLista]: atual }));
   }
 
   const campo = "mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background";

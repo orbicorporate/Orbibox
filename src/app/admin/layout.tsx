@@ -11,6 +11,7 @@ import { TourOverlay } from "@/components/tour/TourOverlay";
 import { ReferralCelebration } from "./ReferralCelebration";
 import { getCurrentBusinessId, listMyBusinesses, podeCriarOutroNegocio } from "@/lib/business";
 import { AbrirInternoNoApp } from "@/components/AbrirInternoNoApp";
+import { AvisoSalvarHost } from "@/components/ui/AvisoSalvar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -117,6 +118,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />
       )}
       <main className="admin-zoom flex-1 px-6 pb-32 pt-5">{children}</main>
+      <AvisoSalvarHost />
       <BottomNav />
       <AbrirInternoNoApp />
       <AdminOrbiFloating

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import { erroDeAuth } from "@/lib/authErros";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -15,6 +16,17 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
+  const [reenvio, setReenvio] = useState<"idle" | "enviando" | "ok" | "erro">("idle");
+
+  async function reenviar() {
+    setReenvio("enviando");
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
+    setReenvio(error ? "erro" : "ok");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +42,7 @@ export default function SignupPage() {
     });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(erroDeAuth(error.message));
       return;
     }
     if (!data.session) {
@@ -55,19 +67,37 @@ export default function SignupPage() {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
         <div className="w-full max-w-sm text-center">
-          <h1 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium">
-            Confirme seu e-mail ✦
-          </h1>
-          <p className="mt-3 text-[15px] text-text-secondary">
-            Enviamos um link de confirmação para <strong>{email}</strong>. Clique nele para
-            ativar sua conta e depois volte aqui para entrar.
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-surface-soft">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <rect x="3" y="5" width="18" height="14" rx="3" />
+              <path d="m4 7 8 6 8-6" />
+            </svg>
+          </div>
+          <h1 className="mt-5 font-[family-name:var(--font-manrope)] text-[24px] font-medium">Falta só confirmar</h1>
+          <p className="mt-3 text-[15px] leading-relaxed text-text-secondary">
+            Mandamos um link para <strong className="font-medium text-on-background">{email}</strong>. Abra o e-mail e toque
+            no botão de confirmar. Você já cai direto na criação da sua página.
           </p>
-          <Link
-            href="/login"
-            className="mt-6 inline-block text-[13px] text-on-background underline"
+          <p className="mt-4 rounded-2xl bg-surface-soft px-4 py-3 text-[13px] leading-snug text-text-secondary">
+            Não chegou em 1 minuto? Olhe a pasta de spam ou promoções.
+          </p>
+          <button
+            type="button"
+            onClick={reenviar}
+            disabled={reenvio === "enviando" || reenvio === "ok"}
+            className="mt-5 w-full rounded-full border border-divider bg-surface-white px-5 py-3 text-[14px] font-medium disabled:opacity-60"
           >
-            Já confirmei, ir para o login
-          </Link>
+            {reenvio === "enviando" ? "Enviando…" : reenvio === "ok" ? "Enviamos de novo ✓" : "Enviar o e-mail de novo"}
+          </button>
+          {reenvio === "erro" && <p className="mt-2 text-[13px] text-red-600">Não deu pra reenviar agora. Espere um minuto e tente de novo.</p>}
+          <div className="mt-5 flex justify-center gap-5 text-[13px]">
+            <button type="button" onClick={() => { setCheckEmail(false); setReenvio("idle"); }} className="text-text-secondary underline">
+              Corrigir e-mail
+            </button>
+            <Link href="/login" className="text-on-background underline">
+              Já confirmei, entrar
+            </Link>
+          </div>
         </div>
       </main>
     );

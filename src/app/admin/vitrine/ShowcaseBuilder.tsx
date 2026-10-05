@@ -1,5 +1,7 @@
 "use client";
 
+import { parsePreco, precoParaCampo } from "@/lib/preco";
+import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -108,7 +110,7 @@ export function ShowcaseBuilder({
   async function toggleLeadTop() {
     const next = !leadTop;
     setLeadTop(next);
-    await supabase.from("businesses").update({ vitrine_lead_top: next }).eq("id", businessId);
+    conferirSalvo(await supabase.from("businesses").update({ vitrine_lead_top: next }).eq("id", businessId));
   }
 
   // Âncora de rolagem: ao salvar algo que muda o layout (trocar categoria
@@ -149,10 +151,10 @@ export function ShowcaseBuilder({
   }
 
   async function saveCatalogTexts() {
-    await supabase.from("businesses").update({
+    conferirSalvo(await supabase.from("businesses").update({
       catalog_title: catalogTitle.trim() || null,
       catalog_subtitle: catalogSubtitle.trim() || null,
-    }).eq("id", businessId);
+    }).eq("id", businessId));
   }
   // Aba de paleta ativa no editor de cor. "Marca" só existe se a Orbi já
   // extraiu cores no DNA da marca (onboarding), senão começa no Padrão.
@@ -464,12 +466,13 @@ export function ShowcaseBuilder({
     }
     snapshot();
     patch(id, fields);
-    await supabase.from("content_items").update(fields).eq("id", id);
+    const res = await supabase.from("content_items").update(fields).eq("id", id);
+    conferirSalvo(res);
   }
 
   async function saveCategories(next: string[]) {
     setCategories(next);
-    await supabase.from("businesses").update({ vitrine_categories: next }).eq("id", businessId);
+    conferirSalvo(await supabase.from("businesses").update({ vitrine_categories: next }).eq("id", businessId));
   }
 
   // Move uma categoria pra cima/baixo na ordem em que aparecem na vitrine.
@@ -635,7 +638,11 @@ export function ShowcaseBuilder({
     snapshot();
     setEditingId(null);
     setItems((p) => p.filter((i) => i.id !== item.id));
-    await supabase.from("content_items").delete().eq("id", item.id);
+    const res = await supabase.from("content_items").delete().eq("id", item.id);
+    if (!conferirSalvo(res, "Não conseguimos excluir. Tente de novo.")) {
+      setItems((p) => [...p, item]);
+      return;
+    }
     mostrarAviso(`"${item.title}" excluído`);
   }
 
@@ -1850,23 +1857,13 @@ function ItemCard({
                 </p>
               ) : (
                 <div className="mt-2 flex gap-2">
-                  <input
-                    value={item.price ?? ""}
-                    onChange={(e) => patch(item.id, { price: e.target.value ? Number(e.target.value) : null })}
-                    onBlur={(e) => save(item.id, { price: e.target.value ? Number(e.target.value) : null })}
-                    inputMode="decimal"
+                  <PrecoCampo
+                    valor={item.price}
+                    onSalvar={(v) => save(item.id, { price: v })}
                     placeholder={item.price_type === "faixa" ? "De" : "Sem preço"}
-                    className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
                   />
                   {item.price_type === "faixa" && (
-                    <input
-                      value={item.price_max ?? ""}
-                      onChange={(e) => patch(item.id, { price_max: e.target.value ? Number(e.target.value) : null })}
-                      onBlur={(e) => save(item.id, { price_max: e.target.value ? Number(e.target.value) : null })}
-                      inputMode="decimal"
-                      placeholder="Até"
-                      className="w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
-                    />
+                    <PrecoCampo valor={item.price_max} onSalvar={(v) => save(item.id, { price_max: v })} placeholder="Até" />
                   )}
                 </div>
               )}
@@ -2232,6 +2229,46 @@ function AllColorsSheet({
           </label>
         </div>
       </div>
+    </div>
+  );
+}
+
+
+// Campo de preço que aceita vírgula ("12,50") e "R$". Guarda o texto enquanto a
+// pessoa digita e só converte pra número ao sair do campo.
+function PrecoCampo({ valor, onSalvar, placeholder }: { valor: number | null | undefined; onSalvar: (v: number | null) => void; placeholder: string }) {
+  const [texto, setTexto] = useState(precoParaCampo(valor));
+  const [focado, setFocado] = useState(false);
+  const [invalido, setInvalido] = useState(false);
+  const mostrado = focado ? texto : precoParaCampo(valor);
+  return (
+    <div className="relative w-full">
+      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[14px] text-text-tertiary">R$</span>
+      <input
+        value={mostrado}
+        onFocus={() => {
+          setTexto(precoParaCampo(valor));
+          setFocado(true);
+        }}
+        onChange={(e) => {
+          setTexto(e.target.value.replace(/[^\d.,]/g, ""));
+          setInvalido(false);
+        }}
+        onBlur={() => {
+          setFocado(false);
+          const v = parsePreco(texto);
+          if (texto.trim() && v === null) {
+            setInvalido(true);
+            return;
+          }
+          if (v !== (valor ?? null)) onSalvar(v);
+        }}
+        inputMode="decimal"
+        placeholder={placeholder}
+        aria-invalid={invalido}
+        className={`w-full rounded-2xl border py-2.5 pl-10 pr-4 text-[14px] outline-none focus:border-on-background ${invalido ? "border-red-400" : "border-divider"}`}
+      />
+      {invalido && <p className="mt-1 text-[11px] text-red-500">Use só números, ex: 49,90</p>}
     </div>
   );
 }

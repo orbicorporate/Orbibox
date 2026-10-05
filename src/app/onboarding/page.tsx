@@ -93,6 +93,7 @@ export default function OnboardingPage() {
 
   async function startAnalysis(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
     setStep("analisando");
     setDescoberta({ status: "pending" });
     setAnalise({ status: "pending" });
@@ -127,7 +128,7 @@ export default function OnboardingPage() {
       // A tela ao vivo mostra isso e, quando terminar, vai pra confirmação.
       setAnalise({ status: "ok", voice: result.voiceSummary, font: result.font || "Manrope", paleta: unicas.map((c) => c.hex), orbColors: coresDaOrbi(unicas) });
     } catch {
-      setError("Não foi possível analisar sua marca agora. Tente novamente.");
+      setError("A Orbi não conseguiu ler sua marca agora. Confira se o site ou o @ estão certos e tente de novo. Se preferir, apague o site e siga só com o nome e a descrição.");
       setStep("dados");
     }
   }
@@ -409,6 +410,11 @@ export default function OnboardingPage() {
                 rows={2}
                 className="resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
               />
+              {error && (
+                <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-[13px] leading-snug text-red-700 ring-1 ring-red-100">
+                  {error}
+                </p>
+              )}
               <Button type="submit" variant="orbi">✦ Analisar com Orbi</Button>
             </form>
           </>

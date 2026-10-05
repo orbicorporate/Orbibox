@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { ModoHome } from "@/lib/modoHome";
+import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 
 /**
  * Escolha do dono: como a tela inicial abre para quem chega. O visitante
@@ -15,9 +16,14 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
 
   async function escolher(novo: ModoHome) {
     if (novo === modo) return;
+    const anterior = modo;
     setModo(novo);
     setSalvo(false);
-    await supabase.from("businesses").update({ home_mode: novo }).eq("id", businessId);
+    const res = await supabase.from("businesses").update({ home_mode: novo }).eq("id", businessId);
+    if (!conferirSalvo(res)) {
+      setModo(anterior);
+      return;
+    }
     setSalvo(true);
   }
 

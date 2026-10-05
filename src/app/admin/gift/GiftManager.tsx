@@ -1,5 +1,6 @@
 "use client";
 
+import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -33,13 +34,15 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
 
   async function salvar(patch: Partial<Settings>) {
     setSaved(false);
-    await supabase.from("gift_settings").upsert({
+    const res = await supabase.from("gift_settings").upsert({
       business_id: businessId,
       enabled, art_url: artUrl, art_theme: artTheme, min_value_cents: parseInt(minValue, 10) * 100 || 2000,
       ...patch,
     }, { onConflict: "business_id" });
+    if (!conferirSalvo(res)) return false;
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
+    return true;
   }
 
   async function mudarTema(t: GiftTheme) {
@@ -50,11 +53,12 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
   async function toggle() {
     const v = !enabled;
     setEnabled(v);
-    await salvar({ enabled: v });
+    if (!(await salvar({ enabled: v }))) setEnabled(!v);
   }
 
   async function mudarStatus(id: string, status: "paid" | "canceled") {
-    await supabase.from("gift_cards").update({ status, ...(status === "paid" ? { paid_at: new Date().toISOString() } : {}) }).eq("id", id);
+    const res = await supabase.from("gift_cards").update({ status, ...(status === "paid" ? { paid_at: new Date().toISOString() } : {}) }).eq("id", id);
+    if (!conferirSalvo(res)) return;
     setGifts((prev) => prev.map((g) => g.id === id ? { ...g, status } : g));
   }
 
