@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       },
       payment_method_collection: "always", // sempre pede cartão, mesmo em trial
       metadata: { owner_id: user.id, plan_id: planId, billing_cycle: billingCycle },
-      success_url: `${origin}/admin?checkout=success`,
+      success_url: `${origin}/admin/planos?checkout=success`,
       cancel_url: `${origin}/admin/planos?checkout=canceled`,
     });
 

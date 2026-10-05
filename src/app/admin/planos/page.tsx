@@ -2,13 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getAccessInfo, getAllPlans } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { PlanosClient } from "./PlanosClient";
+import { ConfirmandoPagamento } from "./ConfirmandoPagamento";
 
 export default async function PlanosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ blocked?: string }>;
+  searchParams: Promise<{ blocked?: string; checkout?: string }>;
 }) {
-  const { blocked } = await searchParams;
+  const { blocked, checkout } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -41,6 +42,29 @@ export default async function PlanosPage({
         </p>
       ) : (
         <p className="mt-1 text-[14px] text-text-secondary">Escolha o plano que faz sentido pro seu negócio.</p>
+      )}
+
+      {checkout === "success" && (() => {
+        const st = access.subscription?.status;
+        if (st === "active" || st === "trialing") {
+          const fimTeste = st === "trialing" && access.subscription?.trial_ends_at
+            ? new Date(access.subscription.trial_ends_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })
+            : null;
+          return (
+            <div className="mt-4 rounded-2xl bg-[#E7F6EC] px-4 py-3.5 ring-1 ring-[#BFE6CC]">
+              <p className="text-[15px] font-semibold text-[#14632F]">Assinatura confirmada 🎉</p>
+              <p className="mt-0.5 text-[13.5px] leading-snug text-[#1F7A3D]">
+                {fimTeste ? `Seu teste grátis vai até ${fimTeste}. A primeira cobrança só acontece depois disso, e dá pra cancelar antes.` : "Tudo liberado. Obrigado por assinar o Orbibox."}
+              </p>
+            </div>
+          );
+        }
+        return <ConfirmandoPagamento />;
+      })()}
+      {checkout === "canceled" && (
+        <p className="mt-4 rounded-2xl bg-surface-soft px-4 py-3 text-[14px] text-text-secondary">
+          Você saiu do pagamento antes de terminar. Nada foi cobrado. Quando quiser, é só escolher o plano de novo.
+        </p>
       )}
 
       {/* Medidor de uso da IA no mês */}
