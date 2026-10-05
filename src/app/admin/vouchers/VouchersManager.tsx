@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -8,9 +8,32 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { VOUCHER_THEMES, voucherGradient, CHERRY_GRADIENT, CHERRY_SHADOW, type VoucherColor } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
+import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
+
+// Opções de validade em linguagem de gente. O banco continua guardando horas.
+const VALIDADES: { horas: string; rotulo: string }[] = [
+  { horas: "24", rotulo: "1 dia" },
+  { horas: "48", rotulo: "2 dias" },
+  { horas: "168", rotulo: "7 dias" },
+  { horas: "720", rotulo: "30 dias" },
+  { horas: "", rotulo: "Sem prazo" },
+];
+
+type RascunhoVoucher = {
+  title: string; description: string; discountType: "percent" | "fixed"; discountValue: string;
+  quantityTotal: string; expiresHours: string; imageUrl: string | null; badge: string; color: VoucherColor;
+};
+const chaveRascunho = (id: string) => `orbi_voucher_rascunho_${id}`;
+function lerRascunho(id: string): string | null {
+  try {
+    return window.localStorage.getItem(chaveRascunho(id));
+  } catch {
+    return null;
+  }
+}
 
 function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
   return v.discount_type === "percent" ? `${v.discount_value}% off` : `R$ ${v.discount_value} off`;
@@ -38,11 +61,42 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const [badge, setBadge] = useState("");
   const [color, setColor] = useState<VoucherColor>("cherry");
 
+  // Rascunho guardado quando um plano sem vouchers tentou criar: depois de
+  // assinar, a pessoa volta e continua de onde parou.
+  const [rascunhoDescartado, setRascunhoDescartado] = useState(false);
+  const rascunhoBruto = useSyncExternalStore(
+    () => () => {},
+    () => lerRascunho(businessId),
+    () => null,
+  );
+  const temRascunho = !!rascunhoBruto && !rascunhoDescartado && !creating;
+  function retomarRascunho() {
+    try {
+      const r = JSON.parse(rascunhoBruto ?? "") as RascunhoVoucher;
+      setTitle(r.title ?? ""); setDescription(r.description ?? ""); setDiscountType(r.discountType ?? "percent");
+      setDiscountValue(r.discountValue ?? ""); setQuantityTotal(r.quantityTotal ?? ""); setExpiresHours(r.expiresHours ?? "48");
+      setImageUrl(r.imageUrl ?? null); setBadge(r.badge ?? ""); setColor(r.color ?? "cherry");
+      setCreating(true);
+    } catch {
+      setRascunhoDescartado(true);
+    }
+  }
+  function apagarRascunho() {
+    try {
+      window.localStorage.removeItem(chaveRascunho(businessId));
+    } catch {}
+    setRascunhoDescartado(true);
+  }
+
   async function createVoucher(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !discountValue || !quantityTotal || saving) return;
     // Titânio montou o voucher pra ver como é, na hora de salvar, pede o upgrade.
     if (!canSave) {
+      try {
+        const r: RascunhoVoucher = { title, description, discountType, discountValue, quantityTotal, expiresHours, imageUrl, badge, color };
+        window.localStorage.setItem(chaveRascunho(businessId), JSON.stringify(r));
+      } catch {}
       setShowUpgrade(true);
       return;
     }
@@ -64,7 +118,11 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         })
         .select()
         .single();
+      if (error || !data) {
+        avisarErroSalvar("Não conseguimos criar o voucher. Confira sua internet e tente de novo.");
+      }
       if (!error && data) {
+        apagarRascunho();
         setVouchers((p) => [data as Voucher, ...p]);
         setCreating(false);
         setTitle("");
@@ -82,13 +140,15 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   }
 
   async function toggleActive(v: Voucher) {
-    const { data } = await supabase.from("vouchers").update({ is_active: !v.is_active }).eq("id", v.id).select().single();
+    const res = await supabase.from("vouchers").update({ is_active: !v.is_active }).eq("id", v.id).select().single();
+    const data = res.data;
+    if (!conferirSalvo(res)) return;
     if (data) setVouchers((p) => p.map((x) => (x.id === v.id ? (data as Voucher) : x)));
   }
 
   async function deleteVoucher(v: Voucher) {
     if (!(await confirm({ title: "Excluir voucher", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
-    await supabase.from("vouchers").delete().eq("id", v.id);
+    if (!conferirSalvo(await supabase.from("vouchers").delete().eq("id", v.id), "Não conseguimos excluir. Tente de novo.")) return;
     setVouchers((p) => p.filter((x) => x.id !== v.id));
   }
 
@@ -100,8 +160,8 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           <div className="w-full max-w-[340px] rounded-[24px] bg-surface-white p-6 text-center" onClick={(e) => e.stopPropagation()}>
             <p className="text-[16px] font-semibold">Vouchers são do plano Nióbio 💎</p>
             <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-              Você montou seu voucher, pra ele valer de verdade na sua página, com código único e controle de estoque,
-              é só ativar o Nióbio. Seu voucher fica salvo assim que assinar.
+              Pra ele valer de verdade na sua página, com código único e controle de estoque, é só ativar o Nióbio.
+              Deixamos seu voucher guardado neste aparelho: depois de assinar, volte aqui e toque em Continuar.
             </p>
             <Link href="/admin/planos" className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-button-primary py-3 text-[14px] font-medium text-white">
               Assinar Nióbio
@@ -190,7 +250,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               </div>
 
               <p className="mt-3 text-[12px] text-text-tertiary">
-                {v.expires_hours ? `Código expira em ${v.expires_hours}h se não for usado` : "Código sem validade"}
+                {v.expires_hours ? `Código vale por ${v.expires_hours % 24 === 0 ? `${v.expires_hours / 24} ${v.expires_hours === 24 ? "dia" : "dias"}` : `${v.expires_hours} horas`} depois do resgate` : "Código sem prazo"}
               </p>
 
               {/* Quem resgatou, botão bem visível pro painel completo, com nome, WhatsApp e filtros */}
@@ -220,9 +280,25 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         )}
       </div>
 
+      {temRascunho && (
+        <div className="flex items-center gap-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.07]">
+          <span className="min-w-0 flex-1 text-[13.5px] leading-snug">
+            <span className="block font-semibold">Você tem um voucher guardado</span>
+            <span className="text-text-secondary">Continue de onde parou.</span>
+          </span>
+          <button type="button" onClick={apagarRascunho} className="text-[12.5px] text-text-tertiary underline">Apagar</button>
+          <button type="button" onClick={retomarRascunho} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Continuar</button>
+        </div>
+      )}
+
       {creating ? (
         <form onSubmit={createVoucher} className="flex flex-col gap-3 rounded-[24px] border border-divider bg-surface-white p-5">
           <p className="text-[15px] font-semibold">Novo voucher</p>
+          {!canSave && (
+            <p className="rounded-2xl bg-surface-soft px-3.5 py-2.5 text-[12.5px] leading-snug text-text-secondary">
+              Pode montar à vontade pra ver como fica. Publicar vouchers é do plano Nióbio, e o que você montar fica guardado.
+            </p>
+          )}
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -288,7 +364,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               placeholder={discountType === "percent" ? "Ex: 10" : "Ex: 15"}
               type="number"
               min="0"
-              className="flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+              className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
             />
           </div>
           <div>
@@ -303,15 +379,25 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             />
           </div>
           <div>
-            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Validade do código após resgate (em horas)</p>
-            <input
-              value={expiresHours}
-              onChange={(e) => setExpiresHours(e.target.value)}
-              placeholder="Deixe em branco pra sem validade"
-              type="number"
-              min="1"
-              className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
-            />
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Prazo pra usar depois de resgatar</p>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {VALIDADES.map((v) => (
+                <button
+                  key={v.rotulo}
+                  type="button"
+                  onClick={() => setExpiresHours(v.horas)}
+                  aria-pressed={expiresHours === v.horas}
+                  className={`rounded-full px-3.5 py-2 text-[13px] font-medium ${expiresHours === v.horas ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                >
+                  {v.rotulo}
+                </button>
+              ))}
+              {!VALIDADES.some((v) => v.horas === expiresHours) && (
+                <span className="rounded-full bg-button-primary px-3.5 py-2 text-[13px] font-medium text-white">
+                  {Number(expiresHours) % 24 === 0 ? `${Number(expiresHours) / 24} dias` : `${expiresHours} horas`}
+                </span>
+              )}
+            </div>
             <p className="mt-1 text-[12px] text-text-tertiary">
               Se a pessoa resgatar e não aparecer dentro desse prazo, a vaga volta pro estoque.
             </p>
@@ -325,7 +411,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               disabled={saving || !title.trim() || !discountValue || !quantityTotal}
               className="flex-1 rounded-full bg-button-primary px-4 py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
             >
-              {saving ? "Criando…" : "Criar voucher"}
+              {saving ? "Criando…" : canSave ? "Criar voucher" : "Criar voucher 💎"}
             </button>
           </div>
         </form>

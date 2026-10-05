@@ -27,6 +27,7 @@ type Business = {
   address: string | null;
   about_business: string | null;
   differentials: string | null;
+  differentials_cards?: unknown;
   policies: string | null;
   customer_classes: string[] | null;
   customer_ages: string[] | null;
@@ -171,10 +172,22 @@ export function ConfigForm({
     });
   }
 
+  // Diferenciais vivem em dois campos: o texto (que a Orbi lê) e os cards
+  // (que aparecem na página, em Conhecer). Salvar aqui atualiza os dois,
+  // mantendo ícone e descrição dos cards que já existiam com o mesmo título.
   async function salvarDiferenciais() {
-    const texto = listaDiferenciais.map((d) => d.trim()).filter(Boolean).join("\n");
-    setB((p) => ({ ...p, differentials: texto || null }));
-    const res = await supabase.from("businesses").update({ differentials: texto || null }).eq("id", b.id);
+    const linhas = listaDiferenciais.map((d) => d.trim()).filter(Boolean);
+    const texto = linhas.join("\n");
+    const anteriores = (Array.isArray(b.differentials_cards) ? b.differentials_cards : []) as { icon?: string; title?: string; description?: string }[];
+    const cards = linhas.map((l) => {
+      const i = l.indexOf(": ");
+      const title = (i > 0 ? l.slice(0, i) : l).trim();
+      const description = i > 0 ? l.slice(i + 2).trim() : "";
+      const antigo = anteriores.find((c) => c?.title?.trim().toLowerCase() === title.toLowerCase());
+      return { icon: antigo?.icon || "✦", title, description: description || antigo?.description || "" };
+    });
+    setB((p) => ({ ...p, differentials: texto || null, differentials_cards: cards }));
+    const res = await supabase.from("businesses").update({ differentials: texto || null, differentials_cards: cards }).eq("id", b.id);
     if (conferirSalvo(res)) setSaved(true);
   }
 

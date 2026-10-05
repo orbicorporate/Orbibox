@@ -355,9 +355,8 @@ export default function OnboardingPage() {
       );
     }
 
-    const oportunidades = [
-      { business_id: business.id, title: "Configure o tom de voz da Orbi", description: "Defina como a assistente deve conversar com seus visitantes.", category: "relacionamento", impact_score: 65 },
-    ];
+    // O tom de voz já vem da análise da marca, então não entra como pendência.
+    const oportunidades: { business_id: string; title: string; description: string; category: string; impact_score: number }[] = [];
     if (importados > 0) {
       oportunidades.unshift({
         business_id: business.id,

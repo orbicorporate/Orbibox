@@ -114,8 +114,8 @@ export default async function HojePage() {
     },
     {
       title: "Acompanhe seus resultados",
-      description: "O Pulse mostra quantas pessoas visitaram, o que elas mais tocaram e as conversas recentes. Vale dar uma olhada pra entender o que está funcionando.",
-      ctaLabel: "Abrir Pulse",
+      description: "Em Resultados você vê quantas pessoas visitaram, o que elas mais tocaram e as conversas recentes. Vale dar uma olhada pra entender o que está funcionando.",
+      ctaLabel: "Abrir Resultados",
       href: "/admin/pulse",
     },
   ];
@@ -137,6 +137,22 @@ export default async function HojePage() {
     relationship: actions ?? 0,
   };
 
+  // Frase de boas-vindas que diz a verdade sobre o momento do negócio, em
+  // vez de um "está indo bem" fixo que aparecia até com zero visitas.
+  const totalVisitas = visits ?? 0;
+  const saudacao =
+    activeBoxes === 0
+      ? "Ligue um botão pra sua página aparecer."
+      : progress.pct < 100
+        ? "Falta pouco pra sua página ficar completa."
+        : totalVisitas === 0
+          ? "Sua página está pronta. Agora é divulgar."
+          : `${totalVisitas.toLocaleString("pt-BR")} ${totalVisitas === 1 ? "visita" : "visitas"} no seu link até agora.`;
+  // Um guia só: enquanto o checklist está aberto, ele é o guia e o card de
+  // próxima ação mostra só o que é urgente de verdade (presente, pergunta,
+  // voucher acabando). Com o checklist completo, a pendência volta pro card.
+  const checklistAberto = progress.pct < 100;
+
   return (
     <div className="relative flex flex-col">
       {/* Saudação dentro de um halo circular, nome do negócio, não do usuário
@@ -150,7 +166,7 @@ export default async function HojePage() {
           <h1 className="whitespace-nowrap font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">
             Olá, {business!.name}
           </h1>
-          <p className="mt-1 text-[14px] text-text-secondary">Seu negócio está indo bem hoje.</p>
+          <p className="mt-1 text-[14px] text-text-secondary">{saudacao}</p>
         </div>
       </div>
       <div className="mx-auto -mt-2 flex items-center gap-2">
@@ -185,14 +201,14 @@ export default async function HojePage() {
         perguntas={perguntasRes.data ?? []}
         data={dataProxima ? { id: dataProxima.id, nome: dataProxima.nome, dias: dataProxima.dias, clima: dataProxima.clima } : null}
         vouchersBaixos={vouchersBaixos}
-        pendencia={insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
+        pendencia={!checklistAberto && insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
       />
 
       <WelcomeBackBanner businessName={business!.name} pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))} />
 
       <ProgressCard done={progress.done} pct={progress.pct} />
 
-      {insightsQueue.length > 0 && (
+      {!checklistAberto && insightsQueue.length > 0 && (
         <Link
           href="/admin/pendencias"
           className="mx-auto mt-3 flex items-center gap-1.5 rounded-full bg-surface-soft px-4 py-2 text-[12.5px] font-medium text-text-secondary active:opacity-60"
@@ -244,8 +260,8 @@ export default async function HojePage() {
       {/* Insight Orbi com botão "Novo insight" pra rodar outra dica. Começa
           por uma dica ainda pendente se houver (insightsQueue), senão gira. */}
       <InsightRotator
-        tips={insightsQueue.length > 0 ? [...insightsQueue, ...growthTips] : growthTips}
-        startIndex={insightsQueue.length > 0 ? 0 : new Date().getDate() % growthTips.length}
+        tips={growthTips}
+        startIndex={new Date().getDate() % growthTips.length}
         shareUrl={shareUrl}
         shareTitle={`${business!.name}, Orbibox`}
         shareReady={shareReady}

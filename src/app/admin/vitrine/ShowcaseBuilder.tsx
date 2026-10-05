@@ -525,6 +525,22 @@ export function ShowcaseBuilder({
     mostrarAviso("Catálogo organizado pela Orbi");
   }
 
+  // "+ Novo item" cria o rascunho na hora (o editor precisa de um id pra
+  // subir foto). Se a pessoa fechar sem mexer em nada, o rascunho vazio é
+  // apagado sozinho, pra não acumular "Novo item" esquecido na lista.
+  const editandoAntes = useRef<string | null>(null);
+  useEffect(() => {
+    const anterior = editandoAntes.current;
+    editandoAntes.current = editingId;
+    if (!anterior || anterior === editingId) return;
+    const it = items.find((i) => i.id === anterior);
+    const intocado =
+      it && it.status === "draft" && it.title === "Novo item" && !it.image_url && !it.description?.trim() && it.price == null && (it.box_color ?? "neutro") === "neutro";
+    if (!intocado) return;
+    setItems((p) => p.filter((i) => i.id !== anterior));
+    supabase.from("content_items").delete().eq("id", anterior).then(() => {});
+  }, [editingId, items, supabase]);
+
   async function createItem(brandLabel: string | null = null) {
     setCreating(true);
     snapshot();
@@ -2051,16 +2067,42 @@ function ItemCard({
               )}
             </div>
 
-            <button
-              onClick={async () => {
-                await save(item.id, { title: item.title, description: item.description, price: item.price, price_max: item.price_max, brand_label: item.brand_label });
-                setJustSaved(true);
-                setTimeout(() => { setJustSaved(false); onToggleEdit(); }, 700);
-              }}
-              className={`block w-full rounded-full py-3 text-center text-[14px] font-medium text-white transition-colors ${justSaved ? "bg-orbi-gradient-start" : "bg-button-primary"}`}
-            >
-              {justSaved ? "✓ Salvo" : "Salvar"}
-            </button>
+            {item.status === "published" ? (
+              <button
+                onClick={async () => {
+                  await save(item.id, { title: item.title, description: item.description, price: item.price, price_max: item.price_max, brand_label: item.brand_label });
+                  setJustSaved(true);
+                  setTimeout(() => { setJustSaved(false); onToggleEdit(); }, 700);
+                }}
+                className={`block w-full rounded-full py-3 text-center text-[14px] font-medium text-white transition-colors ${justSaved ? "bg-orbi-gradient-start" : "bg-button-primary"}`}
+              >
+                {justSaved ? "✓ Salvo" : "Salvar"}
+              </button>
+            ) : (
+              <>
+                {/* Rascunho: o caminho principal é publicar, com um botão claro,
+                    em vez de depender da pílula pequena de status no card. */}
+                <button
+                  onClick={async () => {
+                    await save(item.id, { title: item.title, description: item.description, price: item.price, price_max: item.price_max, brand_label: item.brand_label });
+                    onTogglePublish();
+                  }}
+                  className="block w-full rounded-full bg-button-primary py-3 text-center text-[14px] font-medium text-white"
+                >
+                  Publicar no catálogo
+                </button>
+                <button
+                  onClick={async () => {
+                    await save(item.id, { title: item.title, description: item.description, price: item.price, price_max: item.price_max, brand_label: item.brand_label });
+                    setJustSaved(true);
+                    setTimeout(() => { setJustSaved(false); onToggleEdit(); }, 700);
+                  }}
+                  className="-mt-1 block w-full rounded-full py-2.5 text-center text-[13px] font-medium text-text-secondary"
+                >
+                  {justSaved ? "✓ Guardado como rascunho" : "Guardar como rascunho (ninguém vê ainda)"}
+                </button>
+              </>
+            )}
 
             {(item.link_kind ?? "produto") === "produto" && (
               <Link href={`/${slug}/p/${item.id}`} target="_blank" className="block rounded-full border border-divider py-3 text-center text-[13px] font-medium">

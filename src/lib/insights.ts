@@ -69,7 +69,11 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
       href: "/admin/vitrine",
     });
   }
-  if (!toneConfigured) {
+  // Plano sem a Orbi conversando (ex: Titânio): não adianta pedir pra
+  // configurar o tom de voz dela, só gera uma pendência que não dá pra resolver.
+  const { getAccessInfoForBusiness } = await import("@/lib/plans");
+  const acesso = await getAccessInfoForBusiness(businessId);
+  if (!toneConfigured && acesso.hasAiChat) {
     insightsQueue.push({
       title: "Configure o tom de voz da Orbi",
       description: "Defina como a assistente deve conversar com seus visitantes.",
