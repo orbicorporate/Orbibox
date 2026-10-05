@@ -232,7 +232,7 @@ export function AppHeader({
               />,
               document.body,
             )}
-            <div className="absolute right-0 top-12 z-50 w-[320px] overflow-hidden rounded-[28px] bg-surface-white p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
+            <div className="absolute right-0 top-12 z-50 w-[320px] overflow-hidden rounded-[28px] bg-[#F3F3F0] p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
               <p className="px-2 pb-2 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Configurações</p>
 
               {/* Grade 2x2: as quatro coisas mais usadas, cada uma num bloco
@@ -244,13 +244,13 @@ export function AppHeader({
                     key={item.href}
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
-                    className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-surface-soft p-4 text-left transition-transform active:scale-[.97]"
+                    className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97]"
                   >
                     {item.marca && logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={logoUrl} alt="" className="h-11 w-11 rounded-full bg-white object-cover ring-1 ring-black/5" />
                     ) : (
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-white text-on-background ring-1 ring-black/5">{item.icon}</span>
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-on-background">{item.icon}</span>
                     )}
                     <span>
                       <span className="block text-[15px] font-semibold leading-tight">{item.label}</span>
@@ -262,7 +262,7 @@ export function AppHeader({
                 <Link
                   href="/admin/vouchers"
                   onClick={() => setMenuOpen(false)}
-                  className="relative flex min-h-[136px] flex-col justify-between overflow-hidden rounded-[22px] bg-cover bg-center p-4 text-left transition-transform active:scale-[.97]"
+                  className="relative flex min-h-[136px] flex-col justify-between overflow-hidden rounded-[22px] bg-cover bg-center p-4 text-left shadow-[0_10px_24px_-12px_rgba(31,122,69,0.35)] ring-1 ring-[#1F7A45]/15 transition-transform active:scale-[.97]"
                   style={{ backgroundImage: "url(/vouchers-promo-bg.webp)" }}
                 >
                   <span className="flex items-start justify-between gap-2">
@@ -278,9 +278,9 @@ export function AppHeader({
                 <Link
                   href="/admin/gift"
                   onClick={() => setMenuOpen(false)}
-                  className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-surface-soft p-4 text-left transition-transform active:scale-[.97]"
+                  className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97]"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-white text-on-background ring-1 ring-black/5">{ICONES.gift}</span>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-on-background">{ICONES.gift}</span>
                   <span>
                     <span className="block text-[15px] font-semibold leading-tight">Gift Cards</span>
                     <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">Vale-presentes</span>
@@ -310,7 +310,7 @@ export function AppHeader({
               <button
                 onClick={handleSignOut}
                 disabled={signingOut}
-                className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-red-50/70 text-left active:bg-red-50 disabled:opacity-50"
+                className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-red-50 text-left ring-1 ring-red-100 active:bg-red-100 disabled:opacity-50"
               >
                 <span className="flex shrink-0 items-center justify-center text-red-600">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
