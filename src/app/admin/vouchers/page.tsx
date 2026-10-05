@@ -11,7 +11,8 @@ import Link from "next/link";
 
 type BoxConfigShape = { action?: string };
 
-export default async function VouchersPage() {
+export default async function VouchersPage({ searchParams }: { searchParams: Promise<{ novo?: string }> }) {
+  const { novo } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
@@ -215,7 +216,7 @@ export default async function VouchersPage() {
         <DivulgarVoucherButton vouchers={(vouchers ?? []).map((v) => ({ id: v.id, title: v.title }))} />
       )}
 
-      <VouchersManager businessId={business!.id} initialVouchers={vouchers ?? []} canSave={canSave} redemptionsByVoucher={redemptionsByVoucher} />
+      <VouchersManager abrirNovo={novo === "1"} businessId={business!.id} initialVouchers={vouchers ?? []} canSave={canSave} redemptionsByVoucher={redemptionsByVoucher} />
     </div>
   );
 }

@@ -41,11 +41,11 @@ function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
   return v.discount_type === "percent" ? `${v.discount_value}% off` : `R$ ${v.discount_value} off`;
 }
 
-export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {} }: { businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]> }) {
+export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {}, abrirNovo = false }: { businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]>; abrirNovo?: boolean }) {
   const supabase = createClient();
   const { confirm, DialogRenderer } = useDialogs();
   const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(abrirNovo);
   // Fechada por padrão: quem entra normalmente quer criar um voucher novo ou
   // ver o painel, não rolar a lista inteira.
   const [listaAberta, setListaAberta] = useState(false);

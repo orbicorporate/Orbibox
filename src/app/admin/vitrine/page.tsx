@@ -6,7 +6,8 @@ import { ShowcaseBuilder } from "./ShowcaseBuilder";
 
 type BrandColor = { hex: string; role?: string };
 
-export default async function VitrinePage() {
+export default async function VitrinePage({ searchParams }: { searchParams: Promise<{ novo?: string }> }) {
+  const { novo } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
@@ -38,6 +39,7 @@ export default async function VitrinePage() {
         Seus produtos e serviços, do jeito que o cliente vê no seu link.
       </p>
       <ShowcaseBuilder
+        abrirNovo={novo === "1"}
         items={items ?? []}
         slug={business!.slug}
         businessId={business!.id}

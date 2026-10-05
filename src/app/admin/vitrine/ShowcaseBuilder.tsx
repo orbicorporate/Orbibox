@@ -85,6 +85,7 @@ export function ShowcaseBuilder({
   inspirePhotos = {},
   initialLeadTop = false,
   siteSalvo = null,
+  abrirNovo = false,
 }: {
   items: Item[];
   slug: string;
@@ -101,6 +102,8 @@ export function ShowcaseBuilder({
   initialLeadTop?: boolean;
   /** Site informado no cadastro: já vem preenchido na importação. */
   siteSalvo?: string | null;
+  /** Veio de um atalho "Adicionar item agora": já abre um item novo. */
+  abrirNovo?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -560,6 +563,18 @@ export function ShowcaseBuilder({
       }, 80);
     }
   }
+
+  const novoJaAberto = useRef(false);
+  useEffect(() => {
+    if (!abrirNovo || novoJaAberto.current) return;
+    novoJaAberto.current = true;
+    const t = setTimeout(() => {
+      createItem();
+      router.replace("/admin/vitrine");
+    }, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abrirNovo]);
 
   async function createCategory() {
     const nome = await prompt({ title: "Nome da nova categoria", placeholder: "Ex: Bebidas" });

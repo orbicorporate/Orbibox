@@ -1,11 +1,19 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiTrial } from "@/app/admin/agent/OrbiTrial";
+import { AjudaOrbi } from "@/components/orbi/AjudaOrbi";
 
 type Product = { id: string; title: string; price: number | null; price_type: string; price_max: number | null; image_url: string | null; link_kind: string | null; target_url: string | null };
 
+/**
+ * A Orbi flutuante do painel virou a ajuda: toca nela e pergunta como fazer
+ * qualquer coisa. Embaixo da ajuda fica o atalho de sempre: ajustar a Orbi
+ * (quem tem o plano com IA) ou testá-la grátis (quem ainda não tem).
+ */
 export function AdminOrbiFloating({
   businessId,
   hasAiChat,
@@ -21,42 +29,35 @@ export function AdminOrbiFloating({
   address: string | null;
   products: Product[];
 }) {
-  const router = useRouter();
   const pathname = usePathname();
+  const [aberto, setAberto] = useState(false);
 
-  // Não aparece em telas onde atraparia botões de ação ou seria redundante:
-  // a própria config da Orbi, e a de vouchers (que tem o "Novo voucher" no rodapé).
-  if (pathname?.startsWith("/admin/agent") || pathname?.startsWith("/admin/vouchers")) {
-    return null;
-  }
+  // Na própria tela da Orbi a flutuante seria redundante.
+  if (pathname?.startsWith("/admin/agent")) return null;
 
-  // Nióbio: já tem a Orbi ativa, então a flutuante é um atalho rápido pra
-  // configurar/ajustar a personalidade dela (leva pro AgentBox).
-  if (hasAiChat) {
-    return (
+  const extra = hasAiChat ? (
+    <Link href="/admin/agent" onClick={() => setAberto(false)} className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-[14px] ring-1 ring-black/[0.05]">
+      <span>Ajustar o jeito da {agentName} falar com seus clientes</span>
+      <span className="text-text-tertiary">›</span>
+    </Link>
+  ) : (
+    <div className="rounded-2xl bg-white p-3 ring-1 ring-black/[0.05]">
+      <OrbiTrial businessId={businessId} agentName={agentName} orbiColors={orbiColors} address={address} products={products} />
+    </div>
+  );
+
+  return (
+    <>
       <button
-        onClick={() => router.push("/admin/agent")}
-        aria-label={`Configurar a ${agentName}`}
+        onClick={() => setAberto(true)}
+        aria-label={`Ajuda da ${agentName}`}
         className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center transition-transform active:scale-95"
         style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.22))" }}
       >
         <OrbiParticleSphere size={56} colors={orbiColors ?? undefined} vivid className="rounded-full" />
+        <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-on-background text-[11px] font-bold text-white ring-2 ring-white">?</span>
       </button>
-    );
-  }
-
-  // Titânio/trial: a flutuante abre o teste grátis. O próprio OrbiTrial já
-  // renderiza o botão-gatilho; aqui só o posicionamos flutuante no canto.
-  return (
-    <div className="fixed bottom-28 right-4 z-40">
-      <OrbiTrial
-        businessId={businessId}
-        agentName={agentName}
-        orbiColors={orbiColors}
-        address={address}
-        products={products}
-        floating
-      />
-    </div>
+      <AjudaOrbi aberto={aberto} onFechar={() => setAberto(false)} orbiColors={orbiColors} extra={extra} />
+    </>
   );
 }
