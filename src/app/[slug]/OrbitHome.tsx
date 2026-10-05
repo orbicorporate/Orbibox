@@ -44,6 +44,7 @@ export function OrbitHome({
   redes,
   nome,
   pergunta,
+  descricao,
   logoUrl,
   cores,
   agentName,
@@ -55,6 +56,8 @@ export function OrbitHome({
   redes: OrbitaRede[];
   nome: string;
   pergunta: string | null;
+  /** Frase curta sobre o negócio, embaixo do nome. */
+  descricao?: string | null;
   logoUrl: string | null;
   cores: string[];
   agentName: string;
@@ -204,6 +207,7 @@ export function OrbitHome({
       {!semCabecalho && (
         <>
           <p className="text-[12px] uppercase tracking-[0.14em] text-text-tertiary">{nome}</p>
+          {descricao && <p className="mt-1.5 max-w-[320px] text-[13.5px] leading-snug text-text-secondary">{descricao}</p>}
           <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-[1.15] tracking-[-0.02em]">
             {pergunta?.trim() || "O que trouxe você aqui hoje?"}
           </h1>

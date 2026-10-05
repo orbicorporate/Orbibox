@@ -39,6 +39,7 @@ export async function generateMetadata({
   return {
     title: b.name,
     description: descricao,
+    manifest: `/${slug}/manifest.webmanifest`,
     openGraph: {
       title: tituloPreview,
       description: descricao,

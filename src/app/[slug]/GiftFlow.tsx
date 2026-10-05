@@ -159,21 +159,35 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
           </button>
         </>
       ) : (
-        <div className="mt-5 rounded-[24px] bg-surface-soft p-5 text-center">
-          <p className="text-[15px] font-semibold">Quase lá 🎁</p>
-          <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-            Seu gift está reservado. Libere pelo WhatsApp: a loja combina o pagamento com você e, assim que confirmar, a arte fica pronta pra você enviar.
-          </p>
-          {whatsapp ? (
-            <button onClick={liberarPorWhatsapp} className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] py-3.5 text-[15px] font-semibold text-white">
+        <div className="mt-5 rounded-[24px] bg-surface-soft p-5">
+          <p className="text-center text-[15px] font-semibold">Seu gift está reservado 🎁</p>
+          <ol className="mt-4 flex flex-col gap-3">
+            {[
+              ["Libere pelo WhatsApp", "Abre uma conversa com a loja já com o código do gift."],
+              ["A loja combina o pagamento", "Pix, cartão ou como vocês preferirem."],
+              ["Envie o presente", "Com o pagamento confirmado, abra o seu gift e mande pra quem vai receber."],
+            ].map(([t, d], i) => (
+              <li key={t} className="flex gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-background text-[12px] font-semibold text-white">{i + 1}</span>
+                <span className="text-[13.5px] leading-snug">
+                  <span className="block font-medium">{t}</span>
+                  <span className="text-text-secondary">{d}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          {whatsapp && (
+            <button onClick={liberarPorWhatsapp} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] py-3.5 text-[15px] font-semibold text-white">
               Liberar gift pelo WhatsApp
             </button>
-          ) : (
-            <p className="mt-4 text-[13px] text-text-tertiary">Este negócio não configurou um WhatsApp de contato.</p>
           )}
-          <a href={`/gift/${criado.code}`} target="_blank" rel="noreferrer" className="mt-3 block text-[12.5px] font-medium text-text-secondary underline">
-            Ver meu gift (código {criado.code})
+          <a href={`/gift/${criado.code}`} target="_blank" rel="noreferrer" className="mt-3 block rounded-full border border-divider bg-surface-white py-3 text-center text-[14px] font-medium">
+            Abrir meu gift (código {criado.code})
           </a>
+          <p className="mt-3 text-center text-[12px] text-text-tertiary">Guarde esse código. Ele também fica no link acima.</p>
+          <button onClick={onBack} className="mt-2 block w-full py-2 text-center text-[13px] text-text-secondary underline">
+            Voltar ao início
+          </button>
         </div>
       )}
     </div>

@@ -55,7 +55,18 @@ type Business = {
   catalog_subtitle: string | null;
   vitrine_lead_top?: boolean | null;
   home_mode?: string | null;
+  share_description?: string | null;
 };
+
+// Uma frase curta que diz o que é o negócio, pra quem chega sem saber.
+// Usa a descrição de compartilhamento ou a primeira frase do "sobre".
+function fraseDoNegocio(b: Business): string | null {
+  const fonte = b.share_description?.trim() || b.about_business?.trim() || "";
+  if (!fonte) return null;
+  const primeira = fonte.split(/(?<=[.!?])\s|\n/)[0].trim();
+  const texto = primeira.length >= 20 ? primeira : fonte;
+  return texto.length > 110 ? `${texto.slice(0, 110).replace(/\s+\S*$/, "")}…` : texto;
+}
 
 type ContentItem = {
   id: string;
@@ -98,7 +109,7 @@ export function VisitorExperience({
   isOwner,
   hasAiChat,
   hasVouchers,
-  giftEnabled = false,
+  giftEnabled: giftLigado = false,
   suggestedQuestions = [],
 }: {
   business: Business;
@@ -113,6 +124,9 @@ export function VisitorExperience({
   suggestedQuestions?: string[];
 }) {
   const supabase = createClient();
+  // Gift sem WhatsApp vira beco sem saída (o pagamento é combinado por lá),
+  // então só aparece pro visitante quando o negócio tem número.
+  const giftEnabled = giftLigado && !!business.contact_whatsapp;
   const searchParams = useSearchParams();
   const [intent, setIntent] = useState<Intent | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -140,7 +154,7 @@ export function VisitorExperience({
   // Box de endereço expande direto na Home (sem navegar pra outra tela) , 
   // guarda qual box está expandido agora (ou null se nenhum).
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
-  // Modo Órbita x Modo Box. O dono define o padrão da página; o visitante
+  // Modo Órbita x Modo Grade. O dono define o padrão da página; o visitante
   // pode trocar e a escolha dele vale só no aparelho dele.
   const [modoPadrao, setModoPadrao] = useState<ModoHome>(business.home_mode === "orbita" ? "orbita" : "grade");
   const escolhaVisitante = useModoHomeDoVisitante(business.slug);
@@ -277,10 +291,37 @@ export function VisitorExperience({
   const options = todasOpcoes.filter((o) => !o.rede);
   const redes = todasOpcoes.filter((o) => o.rede);
 
+  // Cada tela interna (catálogo, chat, vouchers, sobre) entra no histórico do
+  // navegador. Assim o "voltar" do celular volta pra tela inicial em vez de
+  // sair da página, que é o que o visitante espera.
+  const empilhou = useRef(false);
+  useEffect(() => {
+    const aoVoltar = () => {
+      empilhou.current = false;
+      setIntent(null);
+    };
+    window.addEventListener("popstate", aoVoltar);
+    return () => window.removeEventListener("popstate", aoVoltar);
+  }, []);
+  function voltarAoInicio() {
+    if (empilhou.current) {
+      window.history.back();
+    } else {
+      setIntent(null);
+    }
+  }
+
   async function chooseIntent(value: Intent, prefill?: string) {
     if (value === "duvida" && !hasAiChat) return;
     setOrbiPrefill(prefill);
     setIntent(value);
+    if (!empilhou.current) {
+      window.history.pushState({ orbiTela: value }, "");
+      empilhou.current = true;
+    } else {
+      window.history.replaceState({ orbiTela: value }, "");
+    }
+    window.scrollTo({ top: 0 });
     if (sessionId) {
       await supabase.from("visitor_sessions").update({ intent: value }).eq("id", sessionId);
     }
@@ -343,6 +384,12 @@ export function VisitorExperience({
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, title: trimmed, config: nextCfg } : b)));
     await supabase.from("smart_boxes").update({ title: trimmed, config: nextCfg }).eq("id", key);
   }
+
+  const frase = fraseDoNegocio(business);
+  // WhatsApp sempre à mão na tela inicial: se o dono tem número mas não ligou
+  // um botão de WhatsApp, aparece um atalho discreto embaixo dos botões.
+  const temBotaoWhats = boxList.some((b) => b.is_active && b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "whatsapp");
+  const whatsAtalho = !temBotaoWhats && business.contact_whatsapp ? whatsappLink(business.contact_whatsapp, `Olá! Vim pelo ${business.name}.`) : null;
 
   const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
     ? (business.hero_gradient as string[])
@@ -418,12 +465,24 @@ export function VisitorExperience({
             itens={options}
             redes={redes.map((o) => ({ key: o.key, t: o.t, rede: o.rede as Rede, onClick: o.onClick }))}
             nome={business.name}
+            descricao={frase}
             pergunta={business.hero_question}
             logoUrl={business.logo_url}
             cores={orbiColors ?? heroGradient}
             agentName={agentName}
             onPerguntar={hasAiChat ? () => chooseIntent("duvida") : undefined}
           />
+        )}
+        {intent === null && modo === "orbita" && whatsAtalho && (
+          <a
+            href={whatsAtalho}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", sessionId })}
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-[14px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(37,211,102,0.7)]"
+          >
+            Falar no WhatsApp
+          </a>
         )}
 
         {intent === null && modo === "grade" && (
@@ -441,6 +500,7 @@ export function VisitorExperience({
             <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
               {business.name}
             </p>
+            {frase && <p className="mt-1.5 max-w-[320px] text-[14px] leading-snug text-text-secondary">{frase}</p>}
             <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-[1.1] tracking-[-0.02em]">
               {business.hero_question?.trim() ? (
                 business.hero_question
@@ -702,6 +762,19 @@ export function VisitorExperience({
               )}
             </div>
 
+            {whatsAtalho && (
+              <a
+                href={whatsAtalho}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", sessionId })}
+                className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-[14px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(37,211,102,0.7)]"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.2Z" /></svg>
+                Falar no WhatsApp
+              </a>
+            )}
+
             {redes.length > 0 && (
               <div className="mt-7 flex flex-col items-center">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Siga a gente</p>
@@ -738,14 +811,14 @@ export function VisitorExperience({
 
         {intent === "presentear" && giftEnabled && (
           <div className="w-full">
-            <GiftFlow businessId={business.id} businessName={business.name} whatsapp={business.contact_whatsapp} onBack={() => setIntent(null)} />
+            <GiftFlow businessId={business.id} businessName={business.name} whatsapp={business.contact_whatsapp} onBack={voltarAoInicio} />
           </div>
         )}
 
         {((intent === "comprar") || (intent === "presentear" && !giftEnabled)) && (
           <div className="w-full">
             <VitrineCoverBleed business={business} />
-            <button onClick={() => setIntent(null)} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
+            <button onClick={voltarAoInicio} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
             <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">
               {intent === "presentear" ? "Para presentear" : (business.catalog_title || `${business.name}, Catálogo`)}
             </h2>
@@ -797,7 +870,7 @@ export function VisitorExperience({
         {intent === "conhecer" && (
           <StoryView
             business={business}
-            onBack={() => setIntent(null)}
+            onBack={voltarAoInicio}
             onCatalog={() => chooseIntent("comprar")}
             onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined}
             sessionId={sessionId}
@@ -805,11 +878,11 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && sessionId && (
-          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} initialInput={orbiPrefill} onBack={() => setIntent(null)} />
+          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} initialInput={orbiPrefill} onBack={voltarAoInicio} />
         )}
 
         {intent === "cupom" && (
-          <VoucherFlow business={business} sessionId={sessionId} orbiColors={orbiColors} onBack={() => setIntent(null)} />
+          <VoucherFlow business={business} sessionId={sessionId} orbiColors={orbiColors} onBack={voltarAoInicio} />
         )}
       </div>
 
@@ -864,8 +937,16 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
   const supabase = createClient();
   const [vouchers, setVouchers] = useState<VoucherPublic[] | null>(null);
   const [claiming, setClaiming] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  // Nome e WhatsApp ficam lembrados neste aparelho: quem pega um segundo
+  // voucher não precisa digitar tudo de novo.
+  const chaveVisitante = `orbi_visitante_${business.id}`;
+  const [name, setName] = useState(() => {
+    try { return (JSON.parse(localStorage.getItem(chaveVisitante) ?? "{}") as { nome?: string }).nome ?? ""; } catch { return ""; }
+  });
+  const [whatsapp, setWhatsapp] = useState(() => {
+    try { return (JSON.parse(localStorage.getItem(chaveVisitante) ?? "{}") as { whatsapp?: string }).whatsapp ?? ""; } catch { return ""; }
+  });
+  const [deixouWhats, setDeixouWhats] = useState(false);
   const [result, setResult] = useState<{ code: string; title: string; expiresAt: string | null; color: string | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [meusVouchers, setMeusVouchers] = useState<MeuVoucher[]>([]);
@@ -913,6 +994,22 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
         return;
       }
       trackClick({ businessId: business.id, kind: "cupom", sessionId });
+      try { localStorage.setItem(chaveVisitante, JSON.stringify({ nome: name.trim(), whatsapp: whatsapp.trim() })); } catch { /* ignora */ }
+      // Quem deixou o WhatsApp no resgate já entra na lista de quem quer
+      // novidades. Um pedido só, em vez de perguntar o número duas vezes.
+      if (whatsapp.replace(/\D/g, "").length >= 10) {
+        setDeixouWhats(true);
+        supabase.rpc("upsert_lead", {
+          p_business_id: business.id,
+          p_whatsapp: whatsapp.trim(),
+          p_name: name.trim() || null,
+          p_source: "voucher",
+          p_session_id: sessionId,
+          p_interest: data.title ?? null,
+        }).then(() => {
+          try { localStorage.setItem(`orbi_lead_${business.id}`, "1"); } catch { /* ignora */ }
+        });
+      }
       setResult({ code: data.code, title: data.title, expiresAt: data.expires_at, color: vouchercor });
       guardarMeuVoucher({ code: data.code, title: data.title, expiresAt: data.expires_at ?? null, claimedAt: new Date().toISOString() });
       setClaiming(null);
@@ -926,17 +1023,6 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
       <button onClick={onBack} className="mb-3 text-[14px] text-text-tertiary hover:underline">← voltar</button>
       <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">Vouchers</h2>
       <p className="mt-1 text-[14px] text-text-secondary">Vantagens exclusivas pra você.</p>
-
-      {!result && (
-        <LeadCapture
-          businessId={business.id}
-          businessName={business.name}
-          sessionId={sessionId}
-          orbiColors={orbiColors}
-          contexto="voucher"
-          className="mt-4"
-        />
-      )}
 
       {result ? (
         <div className="relative mt-6">
@@ -968,6 +1054,16 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
             </div>
             <button onClick={() => setResult(null)} className="mt-4 text-[12.5px] underline opacity-80">Ver outros vouchers</button>
           </div>
+          {!deixouWhats && (
+            <LeadCapture
+              businessId={business.id}
+              businessName={business.name}
+              sessionId={sessionId}
+              orbiColors={orbiColors}
+              contexto="voucher"
+              className="mt-5"
+            />
+          )}
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-4">
@@ -995,7 +1091,7 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
                       />
                     </div>
                     <div>
-                      <p className="text-[12px] text-text-tertiary">Seu WhatsApp (opcional)</p>
+                      <p className="text-[12px] text-text-tertiary">Seu WhatsApp (opcional, pra receber novos vouchers)</p>
                       <input
                         value={whatsapp}
                         onChange={(e) => setWhatsapp(e.target.value)}
@@ -2150,7 +2246,7 @@ function SeletorModo({
     },
     {
       v: "grade",
-      rotulo: "Modo Box",
+      rotulo: "Modo Grade",
       icone: (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
           <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
@@ -2182,7 +2278,7 @@ function SeletorModo({
           <p className="text-[12px] text-text-tertiary">Padrão da sua página</p>
         ) : (
           <button type="button" onClick={onTornarPadrao} className="text-[12px] text-text-secondary underline underline-offset-2">
-            Deixar o {modo === "orbita" ? "Modo Órbita" : "Modo Box"} como padrão
+            Deixar o {modo === "orbita" ? "Modo Órbita" : "Modo Grade"} como padrão
           </button>
         )
       )}
