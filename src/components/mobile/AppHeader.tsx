@@ -13,8 +13,8 @@ import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 const MENU_ITEMS = [
   {
     href: "/admin/config",
-    label: "Configurar sua marca",
-    desc: "Logotipo, cores, contatos e como o link aparece.",
+    label: "Sua marca",
+    desc: "Logo, cores e contatos",
     bg: "#E7EAFC",
     fg: "#4453D6",
     icon: (
@@ -28,8 +28,8 @@ const MENU_ITEMS = [
   },
   {
     href: "/admin/agent",
-    label: "Configurar sua IA",
-    desc: "Personalidade, tom de voz e o que a Orbi sabe.",
+    label: "Sua IA",
+    desc: "Tom de voz e o que sabe",
     bg: "orbi-gradient",
     fg: "#111318",
     icon: (
@@ -251,90 +251,70 @@ export function AppHeader({
             <div className="absolute right-0 top-12 z-50 w-[320px] overflow-hidden rounded-[28px] bg-surface-white p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
               <p className="px-2 pb-2 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Configurações</p>
 
-              <div className="flex flex-col gap-1">
+              {/* Grade 2x2: as quatro coisas mais usadas, cada uma num bloco
+                  do mesmo tamanho. Vouchers leva a arte 3D de fundo pra se
+                  destacar sem precisar de um card enorme. */}
+              <div className="grid grid-cols-2 gap-2">
                 {MENU_ITEMS.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3.5 rounded-2xl px-3 py-3.5 text-left active:bg-surface-soft"
+                    className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-surface-soft p-4 text-left transition-transform active:scale-[.97]"
                   >
                     <span
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
+                      className="flex h-11 w-11 items-center justify-center rounded-2xl"
                       style={item.bg === "orbi-gradient" ? undefined : { backgroundColor: item.bg, color: item.fg }}
                     >
-                      {item.bg === "orbi-gradient" ? (
-<OrbiSimbolo size={44} />
-                      ) : (
-                        item.icon
-                      )}
+                      {item.bg === "orbi-gradient" ? <OrbiSimbolo size={44} /> : item.icon}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-semibold">{item.label}</span>
-                      <span className="mt-0.5 block text-[13px] leading-snug text-text-tertiary">{item.desc}</span>
+                    <span>
+                      <span className="block text-[15px] font-semibold leading-tight">{item.label}</span>
+                      <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">{item.desc}</span>
                     </span>
                   </Link>
                 ))}
-              </div>
 
-              {/* Vouchers ganha destaque de propósito, é a ferramenta com
-                  maior impacto comercial direto (fecha venda na hora), então
-                  precisa parecer maior e mais chamativa que as configurações
-                  comuns acima, não só uma cor diferente. Fundo é a arte 3D do
-                  ticket de desconto, não gradiente CSS. */}
-              <Link
-                href="/admin/vouchers"
-                onClick={() => setMenuOpen(false)}
-                className="relative mt-2 block overflow-hidden rounded-[22px] bg-cover bg-center p-5"
-                style={{ backgroundImage: "url(/vouchers-promo-bg.webp)" }}
-              >
-                <span className="relative flex items-center">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/60 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-[#1F7A45]">
-                    ★ Mais clientes hoje
+                <Link
+                  href="/admin/vouchers"
+                  onClick={() => setMenuOpen(false)}
+                  className="relative flex min-h-[136px] flex-col justify-between overflow-hidden rounded-[22px] bg-cover bg-center p-4 text-left transition-transform active:scale-[.97]"
+                  style={{ backgroundImage: "url(/vouchers-promo-bg.webp)" }}
+                >
+                  <span className="flex items-start justify-between gap-2">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/85 text-[20px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]" aria-hidden>🎟️</span>
+                    <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1F7A45]">Novo</span>
                   </span>
-                </span>
+                  <span>
+                    <span className="block text-[15px] font-semibold leading-tight">Vouchers</span>
+                    <span className="mt-1 block text-[12.5px] leading-snug text-on-background/65">Mais clientes hoje</span>
+                  </span>
+                </Link>
 
-                <span className="relative mt-3.5 flex items-center gap-3">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-[22px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]">🎟️</span>
-                  <span className="block font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-none tracking-[-0.01em] text-on-background">Vouchers</span>
-                </span>
-
-                <span className="relative mt-4 block max-w-[80%] text-[13.5px] leading-relaxed text-on-background/75">
-                  Crie ofertas com
-                  <br />
-                  estoque controlado.
-                </span>
-
-                <span className="relative mt-4 inline-flex items-center gap-2 rounded-full bg-[#14301F] px-5 py-2.5 text-[14px] font-semibold text-white">
-                  Experimentar <span aria-hidden>→</span>
-                </span>
-              </Link>
-
-              {/* Gift Cards, atalho discreto abaixo do destaque de Vouchers */}
-              <Link
-                href="/admin/gift"
-                onClick={() => setMenuOpen(false)}
-                className="mt-2 flex items-center gap-3 rounded-2xl border border-divider bg-surface-white px-4 py-3.5"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EDE6FC] text-[16px]">🎁</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[14.5px] font-semibold">Gift Cards</span>
-                  <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">Seus clientes montam vale-presentes pra dar.</span>
-                </span>
-                <span className="shrink-0 text-text-tertiary">→</span>
-              </Link>
+                <Link
+                  href="/admin/gift"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-surface-soft p-4 text-left transition-transform active:scale-[.97]"
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EDE6FC] text-[20px]" aria-hidden>🎁</span>
+                  <span>
+                    <span className="block text-[15px] font-semibold leading-tight">Gift Cards</span>
+                    <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">Vale-presentes</span>
+                  </span>
+                </Link>
+              </div>
 
               {/* Atalho pro painel de gestão, só pros masters */}
               {isMaster && (
                 <Link
                   href="/master"
                   onClick={() => setMenuOpen(false)}
-                  className="mt-2 flex items-center gap-3 rounded-2xl border border-[#E7D3A0] bg-[#FBF6E9] px-4 py-3.5"
+                  className="mt-2 flex items-center gap-3 rounded-[20px] border border-[#E7D3A0] bg-[#FBF6E9] px-4 py-3"
                 >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#C9962E] to-[#F0CB6A] text-[15px] text-white">★</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-[14px] font-bold text-[#8A6A1E]">Painel Master</span>
-                    <span className="block text-[12px] text-[#8A6A1E]/70">Gestão, financeiro e negócios do Orbibox.</span>
+                    <span className="block text-[12px] text-[#8A6A1E]/70">Gestão e financeiro</span>
                   </span>
                   <span className="text-[#8A6A1E]/60">→</span>
                 </Link>
@@ -346,16 +326,16 @@ export function AppHeader({
               <button
                 onClick={handleSignOut}
                 disabled={signingOut}
-                className="mt-2 flex w-full items-center gap-3 rounded-2xl px-3 py-3.5 text-left active:bg-surface-soft disabled:opacity-50"
+                className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-red-50/70 text-left active:bg-red-50 disabled:opacity-50"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
+                <span className="flex shrink-0 items-center justify-center text-red-600">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
                     <path d="M16 17l5-5-5-5" />
                     <path d="M21 12H9" />
                   </svg>
                 </span>
-                <span className="text-[14.5px] font-semibold text-red-600">
+                <span className="text-[14px] font-medium text-red-600">
                   {signingOut ? "Saindo…" : "Sair da conta"}
                 </span>
               </button>
