@@ -7,24 +7,29 @@ export default async function IndiquePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: code } = await supabase.rpc("get_or_create_referral_code");
-  const { data: referrals } = await supabase
-    .from("referrals")
-    .select("status, created_at, credited_at")
-    .eq("referrer_user_id", user.id)
-    .order("created_at", { ascending: false });
+  const [{ data: code }, { data: indicacoes }, { data: banco }, { data: sub }] = await Promise.all([
+    supabase.rpc("get_or_create_referral_code"),
+    supabase.rpc("minhas_indicacoes"),
+    supabase.from("referral_bonus_bank").select("meses").eq("user_id", user.id).maybeSingle(),
+    supabase.from("subscriptions").select("status").eq("owner_id", user.id).maybeSingle(),
+  ]);
 
-  const list = referrals ?? [];
-  const assinaram = list.filter((r) => r.status === "pending" || r.status === "credited").length;
-  const mesesGanhos = list.filter((r) => r.status === "credited").length;
-  const naCarencia = list.filter((r) => r.status === "pending").length;
+  const amigos = (indicacoes ?? []).map((i) => ({
+    nome: i.nome,
+    estado:
+      i.status === "credited" ? ("assinou" as const)
+      : i.status === "reversed" ? ("parou" as const)
+      : i.assinatura === "trialing" ? ("testando" as const)
+      : i.assinatura === "canceled" ? ("parou" as const)
+      : ("conta" as const),
+  }));
 
   return (
     <ReferralPanel
       code={(code as string) ?? ""}
-      assinaram={assinaram}
-      mesesGanhos={mesesGanhos}
-      naCarencia={naCarencia}
+      amigos={amigos}
+      mesesGuardados={banco?.meses ?? 0}
+      statusPlano={sub?.status ?? null}
     />
   );
 }

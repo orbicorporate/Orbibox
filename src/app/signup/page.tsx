@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +16,13 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
+  // Veio por convite (/r/CODIGO): mostra o presente e guarda o código na
+  // conta, pra indicação valer mesmo se confirmar o e-mail em outro aparelho.
+  const convite = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("convite"),
+    () => null,
+  );
   const [reenvio, setReenvio] = useState<"idle" | "enviando" | "ok" | "erro">("idle");
 
   async function reenviar() {
@@ -36,7 +43,7 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, ...(convite ? { ref_code: convite } : {}) },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -112,6 +119,11 @@ export default function SignupPage() {
         <p className="mt-1 text-[15px] text-text-secondary">
           A web que se adapta a quem entra.
         </p>
+        {convite && (
+          <p className="mt-4 rounded-2xl bg-on-background px-4 py-3 text-[14px] font-medium text-white">
+            🎁 Convite aceito: você vai testar 7 dias grátis.
+          </p>
+        )}
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
           <input
             required

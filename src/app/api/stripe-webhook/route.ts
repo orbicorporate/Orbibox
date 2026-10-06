@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendEmail } from "@/lib/email";
 import { paymentFailedEmail } from "@/lib/email-templates";
+import { consumirMesesGuardados, creditarIndicacao } from "@/lib/indicacao";
 
 // Necessário pra ler o corpo raw e validar a assinatura do webhook.
 export const runtime = "nodejs";
@@ -69,19 +70,8 @@ async function upsertFromSubscription(subscription: Stripe.Subscription, ownerId
       { onConflict: "owner_id" }
     );
 
-  // Indicação: quando o indicado assina o plano ANUAL e fica ativo, inicia a
-  // carência de 7 dias. Depois disso o crédito (1 mês pros dois) é liberado , 
-  // se não houver reembolso nesse meio-tempo.
-  const cycle = billingCycleFromSubscription(subscription);
-  const status = mapStripeStatus(subscription.status);
-  if (cycle === "yearly" && (status === "active" || status === "trialing")) {
-    await supabase.rpc("referral_mark_subscribed", {
-      p_user_id: ownerId,
-      p_stripe_subscription_id: subscription.id,
-    });
-  }
-  // Sempre que um webhook chega, tenta liberar créditos cuja carência venceu.
-  await supabase.rpc("process_referral_credits");
+  // A indicação agora é creditada no invoice.paid (primeira fatura paga de
+  // verdade, plano mensal ou anual), não mais aqui.
 }
 
 async function notifyPaymentFailed(ownerId: string) {
@@ -206,6 +196,9 @@ export async function POST(req: NextRequest) {
             typeof session.subscription === "string" ? session.subscription : session.subscription.id;
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           await upsertFromSubscription(subscription, session.client_reference_id ?? undefined);
+          // Os meses grátis guardados já viraram dias de teste nesse checkout.
+          const dono = subscription.metadata?.owner_id ?? session.client_reference_id;
+          if (dono) await consumirMesesGuardados(dono);
         }
         break;
       }
@@ -250,6 +243,8 @@ export async function POST(req: NextRequest) {
           const subscription = await stripe.subscriptions.retrieve(id);
           const ownerId = subscription.metadata?.owner_id;
           if (ownerId) await registrarComissaoEmbaixador(invoice, ownerId);
+          // Primeira fatura paga de verdade do amigo indicado: 1 mês grátis pra quem indicou.
+          if (ownerId && (invoice.amount_paid ?? 0) > 0) await creditarIndicacao(ownerId);
         }
         break;
       }

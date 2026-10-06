@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe";
+import { DIAS_TESTE_INDICADO } from "@/lib/indicacao";
 
 const TRIAL_DAYS = 3;
 
@@ -51,6 +52,14 @@ export async function POST(req: NextRequest) {
 
     const alreadyUsedTrial = !!existing?.trial_ends_at;
 
+    // Quem chegou por convite testa mais dias; meses ganhos indicando e ainda
+    // não usados (a pessoa não tinha assinatura) entram como dias extras.
+    const [{ data: indicado }, { data: banco }] = await Promise.all([
+      supabase.from("referrals").select("id").eq("referred_user_id", user.id).maybeSingle(),
+      supabase.from("referral_bonus_bank").select("meses").eq("user_id", user.id).maybeSingle(),
+    ]);
+    const diasTeste = (alreadyUsedTrial ? 0 : indicado ? DIAS_TESTE_INDICADO : TRIAL_DAYS) + 30 * (banco?.meses ?? 0);
+
     const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://orbibox-orbi-app.vercel.app";
 
     const session = await stripe.checkout.sessions.create({
@@ -60,7 +69,7 @@ export async function POST(req: NextRequest) {
       customer_email: existing?.stripe_customer_id ? undefined : user.email ?? undefined,
       client_reference_id: user.id,
       subscription_data: {
-        trial_period_days: alreadyUsedTrial ? undefined : TRIAL_DAYS,
+        trial_period_days: diasTeste > 0 ? Math.min(diasTeste, 730) : undefined,
         metadata: { owner_id: user.id, plan_id: planId, billing_cycle: billingCycle },
       },
       payment_method_collection: "always", // sempre pede cartão, mesmo em trial

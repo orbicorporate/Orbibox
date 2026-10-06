@@ -27,7 +27,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   {
     const { cookies } = await import("next/headers");
     const jar = await cookies();
-    const ref = jar.get("orbi_ref")?.value;
+    // Cookie do link (mesmo aparelho) ou código salvo na conta no cadastro
+    // (confirmou o e-mail em outro aparelho).
+    const ref = jar.get("orbi_ref")?.value ?? (user.user_metadata?.ref_code as string | undefined);
     if (ref) {
       await supabase.rpc("register_referral", { p_code: ref });
       jar.delete("orbi_ref");

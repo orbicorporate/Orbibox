@@ -13,6 +13,7 @@ import { ProximaAcao } from "./ProximaAcao";
 import { proximaData } from "@/lib/datasComemorativas";
 import { getAccessInfo } from "@/lib/plans";
 import { Marcos } from "./Marcos";
+import { ConviteCard } from "./ConviteCard";
 
 const METRICS = [
   { key: "discovery", label: "Visitas", explica: "Pessoas que abriram seu link", icon: "◎", href: "/admin/pulse" },
@@ -211,6 +212,8 @@ export default async function HojePage() {
         vouchersBaixos={vouchersBaixos}
         pendencia={!checklistAberto && insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
       />
+
+      {(!acesso.subscription || acesso.subscription.status === "trialing") && <ConviteCard />}
 
       <WelcomeBackBanner businessName={business!.name} pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))} />
 

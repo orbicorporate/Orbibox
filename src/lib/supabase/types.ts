@@ -209,15 +209,24 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["orbi_learnings"]["Insert"]>
         Relationships: []
       }
+      referral_bonus_bank: { Row: { user_id: string; meses: number; updated_at: string }; Insert: { user_id: string; meses?: number; updated_at?: string }; Update: Partial<Database["public"]["Tables"]["referral_bonus_bank"]["Insert"]>; Relationships: [] }
       referrals: {
-        Row: { id: string; referrer_user_id: string; referred_user_id: string; code: string; status: string; subscribed_at: string | null; credit_after: string | null; credited_at: string | null; stripe_subscription_id: string | null; created_at: string; updated_at: string }
-        Insert: { id?: string; referrer_user_id: string; referred_user_id: string; code: string; status?: string; subscribed_at?: string | null; credit_after?: string | null; credited_at?: string | null; stripe_subscription_id?: string | null; created_at?: string; updated_at?: string }
+        Row: { id: string; referrer_user_id: string; referred_user_id: string; code: string; status: string; subscribed_at: string | null; credit_after: string | null; credited_at: string | null; stripe_subscription_id: string | null; aplicado_como: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; aplicado_como?: string | null; referrer_user_id: string; referred_user_id: string; code: string; status?: string; subscribed_at?: string | null; credit_after?: string | null; credited_at?: string | null; stripe_subscription_id?: string | null; created_at?: string; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["referrals"]["Insert"]>
         Relationships: []
       }
     }
     Views: { [_ in never]: never }
     Functions: {
+      referral_public_info: {
+        Args: { p_code: string }
+        Returns: { nome: string; logo_url: string | null }[]
+      }
+      minhas_indicacoes: {
+        Args: Record<string, never>
+        Returns: { nome: string; status: string; assinatura: string | null; created_at: string; credited_at: string | null }[]
+      }
       get_or_create_referral_code: {
         Args: Record<string, never>
         Returns: string

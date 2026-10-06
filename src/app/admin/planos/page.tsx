@@ -67,6 +67,11 @@ export default async function PlanosPage({
         </p>
       )}
 
+      <a href="/admin/indique" className="mt-4 flex items-center justify-between rounded-2xl bg-[#111318] px-4 py-3.5 text-white">
+        <span className="text-[14px] font-medium">Indique amigos e ganhe 1 mês grátis por amigo</span>
+        <span className="text-white/60" aria-hidden>→</span>
+      </a>
+
       {/* Medidor de uso da IA no mês */}
       {u && (u.conteudo_limite > 0 || u.chat_limite > 0) && (
         <div className="mt-5 rounded-[22px] border border-divider bg-surface-white p-5">
