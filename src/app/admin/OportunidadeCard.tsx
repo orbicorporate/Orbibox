@@ -31,8 +31,7 @@ export function OportunidadeCard({ o, shareUrl, shareTitle, shareReady }: { o: O
           </p>
         ))}
       </div>
-      {o.pergunta && <p className={`relative mt-4 text-[14.5px] font-medium ${escuro ? "text-white" : ""}`}>{o.pergunta}</p>}
-      <div className="relative mt-4 flex flex-wrap items-center gap-x-4 gap-y-3">
+      <div className="relative mt-5 flex flex-wrap items-center gap-x-4 gap-y-3">
         {o.cta.share ? (
           <ShareOrbiboxButton url={shareUrl} title={shareTitle} shareReady={shareReady} className={botao}>
             {o.cta.rotulo} <span aria-hidden>→</span>

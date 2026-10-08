@@ -78,7 +78,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         >
           <span>
             {teste.dias === 0 ? "Último dia do seu teste grátis." : `Teste grátis: ${teste.dias === 1 ? "falta 1 dia" : `faltam ${teste.dias} dias`}.`}{" "}
-            <span className={teste.dias <= 2 ? "font-medium underline underline-offset-2" : "text-text-tertiary"}>Veja o que seu Orbibox já fez</span>
+            <span className={teste.dias <= 2 ? "font-medium underline underline-offset-2" : "text-text-tertiary"}>Ver resultados</span>
           </span>
           <span aria-hidden>→</span>
         </Link>

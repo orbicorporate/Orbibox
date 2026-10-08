@@ -178,13 +178,10 @@ export async function calcularOportunidade(
     return {
       tom: "oportunidade",
       selo: "A Orbi encontrou uma oportunidade",
-      titulo: `“${topTitulo}” foi o mais procurado da semana`,
-      dados: [
-        `${topQtd} toques nele nos últimos 7 dias.`,
-        origemForte ? `A maioria de quem chegou veio do ${origemForte}.` : "É o que mais desperta interesse na sua página agora.",
-      ],
-      pergunta: "Quer criar uma promoção pra esse público?",
-      cta: ctx.hasVouchers ? { rotulo: "Criar campanha", href: "/admin/vouchers?novo=1" } : { rotulo: "Criar um post sobre ele", href: "/admin/content" },
+      titulo: `“${topTitulo.trim()}” é o mais procurado`,
+      dados: [`${topQtd} toques em 7 dias${origemForte ? `, a maioria vindo do ${origemForte}` : ""}.`],
+      pergunta: "",
+      cta: ctx.hasVouchers ? { rotulo: "Criar promoção pra ele", href: "/admin/vouchers?novo=1" } : { rotulo: "Criar um post sobre ele", href: "/admin/content" },
     };
   }
 
