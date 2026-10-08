@@ -27,6 +27,8 @@ import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
 import { LogoEditor } from "./LogoEditor";
+import { PaletaPanel } from "./PaletaPanel";
+import { NOBRES, coresDaMarca } from "@/lib/paletasNobres";
 import { guardarModoHome, guardarModoVitrine, useModoHomeDoVisitante, useModoVitrine, type ModoHome } from "@/lib/modoHome";
 import { VitrineCoverflow, type CoverflowItem } from "./VitrineCoverflow";
 import { descontoLongo, descontoGrande } from "@/lib/voucherDesconto";
@@ -141,6 +143,10 @@ export function VisitorExperience({
   const [colorPickerBox, setColorPickerBox] = useState<string | null>(null);
   // Menu recolhido de opções do card (cor, formato, ordem), aberto pelo lapinho.
   const [menuBox, setMenuBox] = useState<string | null>(null);
+  // Paleta da página inteira (prévia ao vivo) e grade completa de cores no seletor do card.
+  const [paletaAberta, setPaletaAberta] = useState(false);
+  const [originaisPaleta, setOriginaisPaleta] = useState<Record<string, string | null>>({});
+  const [todasCores, setTodasCores] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   // "Modo visitante", o dono liga isso pra ver a Home exatamente como o
   // visitante vê, sem os controles de edição no meio, sem precisar sair da
@@ -380,6 +386,36 @@ export function VisitorExperience({
     setColorPickerBox(null);
   }
 
+  // Prévia ao vivo da paleta: pinta os cards só na tela, sem salvar.
+  function previaCores(mapa: Record<string, string | null>) {
+    setBoxList((prev) => prev.map((b) => {
+      if (!(b.id in mapa)) return b;
+      const cfg = (b.config ?? {}) as CustomConfig;
+      return { ...b, config: { ...cfg, color: mapa[b.id] ?? undefined } };
+    }));
+  }
+
+  async function aplicarPaleta(mapa: Record<string, string>) {
+    await Promise.all(
+      Object.entries(mapa).map(([id, cor]) => {
+        const box = boxList.find((b) => b.id === id);
+        if (!box) return null;
+        const cfg = (box.config ?? {}) as CustomConfig;
+        return supabase.from("smart_boxes").update({ config: { ...cfg, color: cor } }).eq("id", id);
+      }),
+    );
+    setBoxList((prev) => prev.map((b) => (b.id in mapa ? { ...b, config: { ...((b.config ?? {}) as CustomConfig), color: mapa[b.id] } } : b)));
+  }
+
+  function abrirPaleta() {
+    const orig: Record<string, string | null> = {};
+    for (const o of options) orig[o.key] = o.color ?? null;
+    setOriginaisPaleta(orig);
+    setColorPickerBox(null);
+    setMenuBox(null);
+    setPaletaAberta(true);
+  }
+
   function startEditTitle(key: string, current: string) {
     setEditingBoxId(key);
     setTitleDraft(current);
@@ -434,6 +470,17 @@ export function VisitorExperience({
           sem os controles de edição (lápis, setinhas, formato) no meio , 
           só na tela inicial. Escondido nos overlays (chat, catálogo, sobre)
           porque senão fica borrado atrás do fundo semitransparente deles. */}
+      {paletaAberta && (
+        <PaletaPanel
+          chaves={options.map((o) => o.key)}
+          originais={originaisPaleta}
+          coresMarca={coresDaMarca(business.brand_colors)}
+          logoUrl={logoAtual}
+          onPreview={previaCores}
+          onApply={aplicarPaleta}
+          onClose={() => setPaletaAberta(false)}
+        />
+      )}
       {editandoLogo && (
         <LogoEditor
           businessId={business.id}
@@ -638,6 +685,10 @@ export function VisitorExperience({
                                 <span className="h-4 w-4 shrink-0 rounded-full border border-black/10" style={{ background: o.color || "conic-gradient(from 0deg, #C0392B, #C2650A, #1F7A3D, #1D4ED8, #6D28D9, #C0392B)" }} />
                                 Cor do card
                               </button>
+                              <button type="button" onClick={abrirPaleta} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                                <span className="orbi-gradient flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px]">✦</span>
+                                Paleta da página
+                              </button>
                               <button type="button" onClick={() => { setMenuBox(null); toggleLayout(o.key, largo); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                 {largo ? (
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0"><rect x="5" y="5" width="14" height="14" rx="2.5" /></svg>
@@ -664,47 +715,71 @@ export function VisitorExperience({
                         toque, sem precisar abrir o editor completo. */}
                     {showOwnerControls && colorPickerBox === o.key && (
                       <div
-                        className="absolute right-2.5 top-11 z-20 grid grid-cols-7 gap-1.5 rounded-2xl bg-white p-3 shadow-[0_8px_24px_rgba(17,19,24,0.18)]"
+                        className="absolute right-2.5 top-11 z-20 w-[268px] rounded-2xl bg-white p-3 text-on-background shadow-[0_8px_24px_rgba(17,19,24,0.18)]"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button
-                          type="button"
-                          onClick={() => setBoxColor(o.key, null)}
-                          className="flex h-[26px] w-[26px] items-center justify-center rounded-full border border-divider bg-surface-white"
-                          aria-label="Branco padrão"
-                        >
-                          {!o.color && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111318" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
+                        <p className="px-0.5 pb-2 text-[11px] font-medium uppercase tracking-wide text-text-tertiary">Cores nobres</p>
+                        <div className="grid grid-cols-8 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setBoxColor(o.key, null)}
+                            className="flex h-[26px] w-[26px] items-center justify-center rounded-full border border-divider bg-surface-white"
+                            aria-label="Branco padrão"
+                            title="Branco padrão"
+                          >
+                            {!o.color && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111318" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
+                          </button>
+                          {NOBRES.map((c) => {
+                            const claro = ["#F1EDE4", "#D9D4C7", "#D8C8A0"].includes(c.hex);
+                            return (
+                              <button
+                                key={c.hex}
+                                type="button"
+                                onClick={() => setBoxColor(o.key, c.hex)}
+                                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${claro ? "border border-divider" : ""}`}
+                                style={{ backgroundColor: c.hex }}
+                                aria-label={c.nome}
+                                title={c.nome}
+                              >
+                                {o.color?.toLowerCase() === c.hex.toLowerCase() && (
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={claro ? "#111318" : "#fff"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <button type="button" onClick={abrirPaleta} className="orbi-gradient mt-3 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-[13px] font-medium text-on-background">
+                          <span>✦ Paleta da página inteira</span>
+                          <span aria-hidden>→</span>
                         </button>
-                        {[
-                          // Linha 1: neutros, do branco ao preto.
-                          "#F1EDE4", "#D9D4C7", "#B9B3A6", "#9A968C", "#5C6B73", "#3A3F44", "#000000",
-                          // Linha 2: vivos quentes.
-                          "#C0392B", "#E5482F", "#C2650A", "#E8902A", "#F2B705", "#B8860B", "#8A6A2B",
-                          // Linha 3: vivos frios.
-                          "#1F7A3D", "#3FA34D", "#0B6B4F", "#0E7490", "#1FA2C9", "#1D4ED8", "#3B82F6",
-                          // Linha 4: roxos e rosas.
-                          "#6D28D9", "#8B5CF6", "#5B2A6E", "#B0309E", "#E0457B", "#B76E79", "#C97064",
-                          // Linha 5: premium, tons profundos com acabamento joia.
-                          "#1B2A4A", "#14213D", "#0F4C5C", "#2E4034", "#6E1F3A", "#4A3728", "#6E5A3D",
-                          // Linha 6: pastéis.
-                          "#F6C6C0", "#F7D9B5", "#F3E7A6", "#CFE8C4", "#C4E4EC", "#C9D6F2", "#DCCDF0",
-                        ].map((c) => {
-                          const isWhite = c === "#FFFFFF";
-                          return (
-                            <button
-                              key={c}
-                              type="button"
-                              onClick={() => setBoxColor(o.key, c)}
-                              className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${isWhite || c.startsWith("#F") ? "border border-divider" : ""}`}
-                              style={{ backgroundColor: c }}
-                              aria-label={`Cor ${c}`}
-                            >
-                              {o.color === c && (
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isWhite ? "#111318" : "#fff"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                              )}
-                            </button>
-                          );
-                        })}
+                        <button type="button" onClick={() => setTodasCores((v) => !v)} className="mt-2 w-full text-center text-[12px] text-text-tertiary underline underline-offset-2">
+                          {todasCores ? "Esconder outras cores" : "Ver outras cores"}
+                        </button>
+                        {todasCores && (
+                          <div className="mt-2 grid grid-cols-8 gap-1.5">
+                            {[
+                              "#000000", "#5C6B73", "#9A968C", "#B9B3A6",
+                              "#C0392B", "#E5482F", "#C2650A", "#E8902A", "#F2B705", "#B8860B", "#8A6A2B",
+                              "#1F7A3D", "#3FA34D", "#0B6B4F", "#0E7490", "#1FA2C9", "#1D4ED8", "#3B82F6",
+                              "#6D28D9", "#8B5CF6", "#5B2A6E", "#B0309E", "#E0457B", "#B76E79", "#C97064",
+                              "#14213D", "#2E4034", "#4A3728", "#6E5A3D",
+                              "#F6C6C0", "#F7D9B5", "#F3E7A6", "#CFE8C4", "#C4E4EC", "#C9D6F2", "#DCCDF0",
+                            ].map((c) => (
+                              <button
+                                key={c}
+                                type="button"
+                                onClick={() => setBoxColor(o.key, c)}
+                                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${c.startsWith("#F") ? "border border-divider" : ""}`}
+                                style={{ backgroundColor: c }}
+                                aria-label={`Cor ${c}`}
+                              >
+                                {o.color === c && (
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                     {largo ? (
