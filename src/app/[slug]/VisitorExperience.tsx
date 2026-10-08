@@ -27,6 +27,7 @@ import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
 import { LogoEditor } from "./LogoEditor";
+import { BotaoSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { PaletaPanel } from "./PaletaPanel";
 import { NOBRES, coresDaMarca } from "@/lib/paletasNobres";
 import { guardarModoHome, guardarModoVitrine, useModoHomeDoVisitante, useModoVitrine, type ModoHome } from "@/lib/modoHome";
@@ -175,7 +176,7 @@ export function VisitorExperience({
   const modo: ModoHome = escolhaVisitante ?? modoPadrao;
   async function tornarPadrao(novo: ModoHome) {
     setModoPadrao(novo);
-    await supabase.from("businesses").update({ home_mode: novo }).eq("id", business.id);
+    conferirSalvo(await supabase.from("businesses").update({ home_mode: novo }).eq("id", business.id));
   }
 
   useEffect(() => {
@@ -358,10 +359,11 @@ export function VisitorExperience({
     const boxB = boxList.find((b) => b.id === options[swapIdx].key);
     if (!boxA || !boxB) return;
     setBoxList((prev) => prev.map((b) => (b.id === boxA.id ? { ...b, position: boxB.position } : b.id === boxB.id ? { ...b, position: boxA.position } : b)));
-    await Promise.all([
+    const [r1, r2] = await Promise.all([
       supabase.from("smart_boxes").update({ position: boxB.position }).eq("id", boxA.id),
       supabase.from("smart_boxes").update({ position: boxA.position }).eq("id", boxB.id),
     ]);
+    conferirSalvo(r1.error ? r1 : r2);
   }
 
   // Troca o formato direto na Home, o dono vê o card mudar de tamanho na
@@ -374,7 +376,7 @@ export function VisitorExperience({
     const nextLayout: "largo" | "medio" = currentlyLargo ? "medio" : "largo";
     const nextCfg: CustomConfig = { ...cfg, layout: nextLayout };
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: nextCfg } : b)));
-    await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key);
+    conferirSalvo(await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key));
   }
 
   // Troca a cor do box direto na tela inicial, sem abrir o editor. Salva na
@@ -385,7 +387,7 @@ export function VisitorExperience({
     const cfg = (box.config ?? {}) as CustomConfig;
     const nextCfg: CustomConfig = { ...cfg, color: cor ?? undefined };
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: nextCfg } : b)));
-    await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key);
+    conferirSalvo(await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key));
     setColorPickerBox(null);
   }
 
@@ -397,7 +399,7 @@ export function VisitorExperience({
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: nextCfg } : b)));
     setMenuBox(null);
     setEnderecoIconeAberto(false);
-    await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key);
+    conferirSalvo(await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key));
   }
 
   // Prévia ao vivo da paleta: pinta os cards só na tela, sem salvar.
@@ -410,7 +412,7 @@ export function VisitorExperience({
   }
 
   async function aplicarPaleta(mapa: Record<string, string>) {
-    await Promise.all(
+    const res = await Promise.all(
       Object.entries(mapa).map(([id, cor]) => {
         const box = boxList.find((b) => b.id === id);
         if (!box) return null;
@@ -418,6 +420,7 @@ export function VisitorExperience({
         return supabase.from("smart_boxes").update({ config: { ...cfg, color: cor } }).eq("id", id);
       }),
     );
+    conferirSalvo(res.find((r) => r && r.error) ?? { error: null });
     setBoxList((prev) => prev.map((b) => (b.id in mapa ? { ...b, config: { ...((b.config ?? {}) as CustomConfig), color: mapa[b.id] } } : b)));
   }
 
@@ -444,7 +447,7 @@ export function VisitorExperience({
     if (cfg.label === trimmed) return;
     const nextCfg: CustomConfig = { ...cfg, label: trimmed };
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, title: trimmed, config: nextCfg } : b)));
-    await supabase.from("smart_boxes").update({ title: trimmed, config: nextCfg }).eq("id", key);
+    conferirSalvo(await supabase.from("smart_boxes").update({ title: trimmed, config: nextCfg }).eq("id", key));
   }
 
   const frase = fraseDoNegocio(business);
@@ -502,6 +505,9 @@ export function VisitorExperience({
           onClose={() => setEditandoLogo(false)}
           onSaved={(url) => { setLogoAtual(url); setEditandoLogo(false); }}
         />
+      )}
+      {isOwner && intent === null && !previewMode && (
+        <div className="fixed right-4 top-[60px] z-20"><BotaoSalvar /></div>
       )}
       {isOwner && intent === null && !previewMode && (
         <div className="fixed right-4 top-4 z-20 flex items-center gap-2">

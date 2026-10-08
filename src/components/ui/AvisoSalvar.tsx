@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Aviso global e discreto pra quando um salvamento falha. Qualquer tela do
 // painel chama avisarErroSalvar() e a pessoa fica sabendo na hora, em vez de
@@ -9,9 +9,11 @@ type Aviso = { id: number; texto: string };
 const ouvintes = new Set<(a: Aviso) => void>();
 let seq = 0;
 
+const ouvintesErro = new Set<() => void>();
 export function avisarErroSalvar(texto = "Não conseguimos salvar. Confira sua internet e tente de novo.") {
   const a = { id: ++seq, texto };
   ouvintes.forEach((fn) => fn(a));
+  ouvintesErro.forEach((fn) => fn());
 }
 
 // Quem quer saber que algo foi salvo com sucesso (ex: a prévia ao vivo, que
@@ -138,5 +140,63 @@ export function AvisoSalvarHost() {
         <span>{aviso.texto}</span>
       </button>
     </div>
+  );
+}
+
+/**
+ * Botão "Salvar" discreto. Tudo já salva sozinho; ele existe pra pessoa ter
+ * a certeza: ao tocar, confirma o campo que está sendo digitado (o que
+ * dispara o salvamento dele), espera os envios terminarem e mostra "Salvo".
+ * Também acende "Salvo" sozinho toda vez que um salvamento automático conclui.
+ */
+export function BotaoSalvar({ className = "" }: { className?: string }) {
+  const [estado, setEstado] = useState<"ocioso" | "salvando" | "salvo">("ocioso");
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const falhou = useRef(false);
+
+  const mostrarSalvo = useCallback(() => {
+    setEstado("salvo");
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setEstado("ocioso"), 2800);
+  }, []);
+
+  useEffect(() => {
+    const aoErrar = () => { falhou.current = true; };
+    ouvintesErro.add(aoErrar);
+    const sair = aoSalvar(mostrarSalvo);
+    return () => {
+      ouvintesErro.delete(aoErrar);
+      sair();
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [mostrarSalvo]);
+
+  async function salvar() {
+    if (estado === "salvando") return;
+    falhou.current = false;
+    setEstado("salvando");
+    // Tirar o foco do campo em edição faz ele salvar o que foi digitado.
+    (document.activeElement as HTMLElement | null)?.blur?.();
+    await new Promise((r) => setTimeout(r, 800));
+    if (falhou.current) setEstado("ocioso"); // o aviso de erro já está na tela
+    else mostrarSalvo();
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={salvar}
+      aria-live="polite"
+      title="Tudo salva sozinho. Toque pra ter certeza."
+      className={`inline-flex items-center gap-1.5 rounded-full bg-surface-white/80 px-3 py-1.5 text-[12px] font-medium shadow-[0_1px_6px_rgba(17,19,24,0.1)] ring-1 ring-black/[0.05] backdrop-blur transition-colors ${estado === "salvo" ? "text-[#1F7A45]" : "text-text-secondary"} ${className}`}
+    >
+      {estado === "salvando" ? (
+        <><span className="h-3 w-3 animate-spin rounded-full border-[1.5px] border-current/30 border-t-current" />Salvando…</>
+      ) : estado === "salvo" ? (
+        <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M20 6L9 17l-5-5" /></svg>Salvo</>
+      ) : (
+        <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 4h11l3 3v13H5z" /><path d="M8 4v5h7V4" /><path d="M8 20v-6h8v6" /></svg>Salvar</>
+      )}
+    </button>
   );
 }

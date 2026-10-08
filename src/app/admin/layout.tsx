@@ -11,7 +11,7 @@ import { TourOverlay } from "@/components/tour/TourOverlay";
 import { ReferralCelebration } from "./ReferralCelebration";
 import { getCurrentBusinessId, listMyBusinesses, podeCriarOutroNegocio } from "@/lib/business";
 import { AbrirInternoNoApp } from "@/components/AbrirInternoNoApp";
-import { AvisoSalvarHost } from "@/components/ui/AvisoSalvar";
+import { AvisoSalvarHost, BotaoSalvar } from "@/components/ui/AvisoSalvar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -126,7 +126,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {celebrateNotif && (
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />
       )}
-      <main className="admin-zoom flex-1 px-6 pb-32 pt-5">{children}</main>
+      <main className="admin-zoom flex-1 px-6 pb-32 pt-5">
+        {/* Botão salvar discreto, sempre à vista logo abaixo do topo. */}
+        <div className="pointer-events-none sticky top-[84px] z-20 h-0">
+          <div className="pointer-events-auto flex justify-end"><BotaoSalvar className="-translate-y-1" /></div>
+        </div>
+        {children}
+      </main>
       <AvisoSalvarHost />
       <BottomNav />
       <AbrirInternoNoApp />
