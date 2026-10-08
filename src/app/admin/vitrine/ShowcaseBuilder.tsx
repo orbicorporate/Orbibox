@@ -1841,30 +1841,34 @@ function ItemCard({
                   })}
                 </div>
 
-                {(item.title_placement ?? "faixa") === "faixa" && (
-                  <div className="mt-4">
-                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor do rodapé</p>
-                    <p className="mt-1 text-[11px] text-text-tertiary">
-                      {`Branco ou uma cor da paleta escolhida acima (${paletteTab === "Marca" ? "Marca" : paletteTab}).`}
-                    </p>
-                    <div className="mt-2.5 flex flex-wrap gap-2.5">
-                      <button
-                        onClick={() => save(item.id, { footer_color: null })}
-                        aria-label="Branco"
-                        title="Branco"
-                        className={`h-10 w-10 rounded-full border bg-white ${!item.footer_color ? "border-2 border-on-background" : "border-divider"}`}
-                      />
-                      {paletteTab === "Marca"
-                        ? brandColors.map((bc, i) => (
-                            <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { footer_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.footer_color?.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: bc.hex }} />
-                          ))
-                        : Object.entries(PALETTE_GROUPS.find((g) => g.name === paletteTab)?.colors ?? {}).map(([key, cc]) => (
-                            <button key={key} onClick={() => save(item.id, { footer_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.footer_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
-                          ))}
-                      <MoreColorsButton onClick={() => setAllColorsFor("footer")} />
-                    </div>
-                  </div>
-                )}
+              </div>
+            )}
+
+            {/* Cor da faixa de baixo do card: fica à vista (não escondida em
+                "Mais opções") e mostra na hora como o rodapé fica. */}
+            {item.image_url && (item.title_placement ?? "faixa") === "faixa" && (
+              <div>
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor da faixa do card</p>
+                <div className="mt-2 flex items-center justify-between gap-3 rounded-2xl px-4 py-3 transition-colors" style={{ backgroundColor: fc?.bg ?? "#FFFFFF", boxShadow: "inset 0 0 0 1px rgba(17,19,24,0.08)" }}>
+                  <span className="min-w-0 truncate font-[family-name:var(--font-manrope)] text-[16px] font-medium" style={fc ? { color: fc.fg } : undefined}>{item.title || "Nome do item"}</span>
+                  {priceLabel && <span className="shrink-0 text-[14px] font-medium" style={fc ? { color: fc.fg } : undefined}>{priceLabel}</span>}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2.5">
+                  <button
+                    onClick={() => save(item.id, { footer_color: null })}
+                    aria-label="Branco"
+                    title="Branco"
+                    className={`h-10 w-10 rounded-full border bg-white ${!item.footer_color ? "border-2 border-on-background" : "border-divider"}`}
+                  />
+                  {(brandColors.length > 0
+                    ? brandColors.map((bc, i) => (
+                        <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { footer_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.footer_color?.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: bc.hex }} />
+                      ))
+                    : Object.entries(PALETTE_GROUPS[0]?.colors ?? {}).map(([key, cc]) => (
+                        <button key={key} onClick={() => save(item.id, { footer_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.footer_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
+                      )))}
+                  <MoreColorsButton onClick={() => setAllColorsFor("footer")} />
+                </div>
               </div>
             )}
 
