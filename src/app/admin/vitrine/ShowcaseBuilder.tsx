@@ -1435,8 +1435,8 @@ function ItemCard({
   const [justSaved, setJustSaved] = useState(false);
   const [allColorsFor, setAllColorsFor] = useState<"box" | "footer" | null>(null);
   const [scheduleOpen, setScheduleOpen] = useState(!!(item.starts_at || item.ends_at));
-  // Formato, cores, posição e agendamento ficam em "Mais opções": quem está
-  // começando vê só nome, foto, preço e categoria.
+  // Cores, posição e agendamento ficam em "Mais opções". O formato do card
+  // continua sempre à vista: é o que mais muda a cara do catálogo.
   const [avancado, setAvancado] = useState(false);
   const mostrarAvancado = avancado || !!showIntroTour;
   const cAv = `${mostrarAvancado ? "" : "hidden "}order-[91]`;
@@ -1709,7 +1709,7 @@ function ItemCard({
               <button onClick={() => move(item, 1)} disabled={idx === total - 1} className="h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30" aria-label="Mover para frente">→</button>
             </div>
 
-            <div data-tour="item-formato" className={cAv}>
+            <div data-tour="item-formato">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
               <div className="mt-2 flex gap-2">
                 {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {
@@ -2096,7 +2096,7 @@ function ItemCard({
               className="order-[90] flex w-full items-center justify-between rounded-2xl bg-surface-soft px-4 py-3 text-left text-[14px] font-medium"
             >
               <span>
-                Mais opções <span className="font-normal text-text-tertiary">(formato, cores, nome na foto, posição, agendar)</span>
+                Mais opções <span className="font-normal text-text-tertiary">(cores, nome na foto, posição, agendar)</span>
               </span>
               <span className={`text-text-tertiary transition-transform ${mostrarAvancado ? "rotate-180" : ""}`}>⌄</span>
             </button>
