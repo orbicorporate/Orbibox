@@ -94,7 +94,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -147,6 +147,7 @@ export function VisitorExperience({
   const [paletaAberta, setPaletaAberta] = useState(false);
   const [originaisPaleta, setOriginaisPaleta] = useState<Record<string, string | null>>({});
   const [todasCores, setTodasCores] = useState(false);
+  const [enderecoIconeAberto, setEnderecoIconeAberto] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   // "Modo visitante", o dono liga isso pra ver a Home exatamente como o
   // visitante vê, sem os controles de edição no meio, sem precisar sair da
@@ -242,7 +243,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; onClick: () => void };
+  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; onClick: () => void };
   const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -296,7 +297,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: !!cfg.icone, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
@@ -306,7 +307,9 @@ export function VisitorExperience({
     .filter((o): o is Option => o !== null);
   // Redes sociais saem da grade de boxes e viram uma fileira de bolinhas
   // logo abaixo, na ordem em que estão nos Smart Boxes.
-  const options = todasOpcoes.filter((o) => !o.rede);
+  // WhatsApp, site e endereço podem virar ícone na fileira de baixo (o dono escolhe).
+  const options = todasOpcoes.filter((o) => !o.rede && !(o.comoIcone && o.atalho));
+  const atalhos = todasOpcoes.filter((o) => !o.rede && o.comoIcone && !!o.atalho);
   const redes = todasOpcoes.filter((o) => o.rede);
 
   // Cada tela interna (catálogo, chat, vouchers, sobre) entra no histórico do
@@ -384,6 +387,17 @@ export function VisitorExperience({
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: nextCfg } : b)));
     await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key);
     setColorPickerBox(null);
+  }
+
+  // Vira ícone na fileira de baixo (ou volta a ser card) direto na página.
+  async function definirIcone(key: string, icone: boolean) {
+    const box = boxList.find((b) => b.id === key);
+    if (!box) return;
+    const nextCfg: CustomConfig = { ...((box.config ?? {}) as CustomConfig), icone };
+    setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: nextCfg } : b)));
+    setMenuBox(null);
+    setEnderecoIconeAberto(false);
+    await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key);
   }
 
   // Prévia ao vivo da paleta: pinta os cards só na tela, sem salvar.
@@ -529,7 +543,7 @@ export function VisitorExperience({
 
         {intent === null && modo === "orbita" && (
           <OrbitHome
-            itens={options}
+            itens={todasOpcoes.filter((o) => !o.rede)}
             redes={redes.map((o) => ({ key: o.key, t: o.t, rede: o.rede as Rede, onClick: o.onClick }))}
             nome={business.name}
             descricao={frase}
@@ -685,6 +699,12 @@ export function VisitorExperience({
                                 <span className="h-4 w-4 shrink-0 rounded-full border border-black/10" style={{ background: o.color || "conic-gradient(from 0deg, #C0392B, #C2650A, #1F7A3D, #1D4ED8, #6D28D9, #C0392B)" }} />
                                 Cor do card
                               </button>
+                              {o.atalho && (
+                                <button type="button" onClick={() => definirIcone(o.key, true)} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[8px]" aria-hidden>●</span>
+                                  Virar ícone embaixo
+                                </button>
+                              )}
                               <button type="button" onClick={abrirPaleta} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                 <span className="orbi-gradient flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px]">✦</span>
                                 Paleta da página
@@ -873,6 +893,59 @@ export function VisitorExperience({
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.2Z" /></svg>
                 Falar no WhatsApp
               </a>
+            )}
+
+            {atalhos.length > 0 && (
+              <div className="mt-7 flex flex-col items-center">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Fale com a gente</p>
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+                  {atalhos.map((o, i) => {
+                    const cor = o.atalho === "whatsapp" ? "#25D366" : o.atalho === "endereco" ? "#EA4335" : "#111318";
+                    const clique = o.atalho === "endereco" ? () => setEnderecoIconeAberto((v) => !v) : o.onClick;
+                    return (
+                      <div key={o.key} className="relative">
+                        <button
+                          type="button"
+                          onClick={clique}
+                          aria-label={o.t}
+                          title={o.t}
+                          aria-expanded={o.atalho === "endereco" ? enderecoIconeAberto : undefined}
+                          style={{ "--i": i, "--cor": cor, background: cor, boxShadow: `0 6px 18px -6px ${cor}99` } as CSSProperties}
+                          className="orbi-rede flex h-12 w-12 items-center justify-center rounded-full text-white"
+                        >
+                          <span className="orbi-rede-anel" aria-hidden />
+                          <span className="orbi-rede-brilho" aria-hidden />
+                          <span className="relative">
+                            {o.atalho === "whatsapp" ? (
+                              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.2Z" /></svg>
+                            ) : o.atalho === "endereco" ? (
+                              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11Z" /><circle cx="12" cy="10" r="2.6" /></svg>
+                            ) : (
+                              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3c2.6 2.6 3.8 5.6 3.8 9S14.6 18.4 12 21c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3Z" /></svg>
+                            )}
+                          </span>
+                        </button>
+                        {showOwnerControls && (
+                          <button type="button" onClick={() => definirIcone(o.key, false)} aria-label="Voltar a ser card" title="Voltar a ser card" className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-surface-white text-[10px] text-text-secondary shadow ring-1 ring-black/10">↩</button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {enderecoIconeAberto && (() => {
+                  const end = atalhos.find((o) => o.atalho === "endereco")?.address;
+                  if (!end) return null;
+                  return (
+                    <div className="mt-3 w-full max-w-[320px] rounded-2xl bg-surface-white p-4 text-center shadow-[0_2px_12px_rgba(17,19,24,0.08)]">
+                      <p className="text-[13.5px] leading-snug text-text-secondary">{end}</p>
+                      <div className="mt-3 flex gap-2">
+                        <a href={`https://waze.com/ul?q=${encodeURIComponent(end)}&navigate=yes`} target="_blank" rel="noopener noreferrer" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId })} className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Waze</a>
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(end)}`} target="_blank" rel="noopener noreferrer" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId })} className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Google Maps</a>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
             )}
 
             {redes.length > 0 && (
