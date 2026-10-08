@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     const { data: item } = await supabase
       .from("content_items")
-      .select("id, title, description, type, business_id")
+      .select("id, title, description, type, business_id, image_url, gallery_urls, price, brand_label")
       .eq("id", contentItemId)
       .maybeSingle();
 
@@ -30,37 +30,79 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Item não encontrado." }, { status: 404 });
     }
 
-    const { data: business } = await supabase
-      .from("businesses")
-      .select("name, about_business, differentials, brand_voice_summary")
-      .eq("id", item.business_id)
-      .maybeSingle();
+    const [{ data: business }, { data: irmaos }] = await Promise.all([
+      supabase
+        .from("businesses")
+        .select("name, about_business, differentials, brand_voice_summary, website_url, instagram_handle, site_analysis, brand_personality, address")
+        .eq("id", item.business_id)
+        .maybeSingle(),
+      supabase.from("content_items").select("title").eq("business_id", item.business_id).eq("status", "published").neq("id", item.id).limit(12),
+    ]);
 
-    const system = `Você é a Orbi, a camada de inteligência do Orbibox. Sua tarefa aqui tem duas partes curtas pra a página própria de um item (produto, serviço ou categoria):
+    // A foto do item: a Orbi olha de verdade pra sugerir o que se vê nela.
+    let imagem: { media_type: string; data: string } | null = null;
+    const fotoUrl = item.image_url || item.gallery_urls?.[0] || null;
+    if (fotoUrl && /^https?:\/\//.test(fotoUrl)) {
+      try {
+        const r = await fetch(fotoUrl, { signal: AbortSignal.timeout(8000) });
+        const mt = (r.headers.get("content-type") ?? "").split(";")[0];
+        if (r.ok && /^image\/(jpeg|png|webp|gif)$/.test(mt)) {
+          const buf = Buffer.from(await r.arrayBuffer());
+          if (buf.length < 4_500_000) imagem = { media_type: mt, data: buf.toString("base64") };
+        }
+      } catch {
+        // sem foto legível, segue só com o texto
+      }
+    }
 
-1) DIFERENCIAL: até 3 linhas curtas de prova social ou credibilidade (tipo "18 anos de experiência", "+500 clientes atendidos", "Entrega em todo o Brasil"), uma por linha, cada uma começando com "DIFERENCIAL: ". REGRA MAIS IMPORTANTE: só escreva uma linha se existir uma base real e específica no contexto do negócio abaixo (tempo de mercado, número concreto, alcance, certificação etc). Nunca invente número, tempo ou dado que não esteja no contexto. Se a descrição do item (abaixo) já menciona esse mesmo dado, não repita, escreva sobre outro ângulo real ou pule. Se não houver nenhuma base específica o bastante, não escreva nenhuma linha DIFERENCIAL.
+    const cortar = (v: unknown, n: number) => {
+      const t = typeof v === "string" ? v : v ? JSON.stringify(v) : "";
+      return t.length > n ? `${t.slice(0, n)}…` : t;
+    };
 
-2) PERGUNTA: uma pergunta curta, natural, que a Orbi faria pra puxar conversa sobre ESSE item específico (baseada no título/descrição dele), do tipo que aparece antes do botão de contato pra incentivar a pessoa a continuar conversando. Sempre gere essa, mesmo sem contexto extra do negócio, mas mantenha coerente com o item. Máximo 80 caracteres, sem aspas.
+    const system = `Você é a Orbi, a inteligência de uma marca, e escreve a página própria de um item (produto, serviço ou categoria) como uma redatora criativa de verdade, não como um formulário. Duas partes:
 
-Contexto do negócio (não invente além disso):
+1) DIFERENCIAL: de 2 a 4 linhas curtas (até 60 caracteres cada) que fazem o cliente querer esse item. Cada linha começa com "DIFERENCIAL: " e olha de um ângulo diferente: o que se VÊ na foto (ingredientes, texturas, cores, cenário, acabamento, porte, embalagem), a ocasião ideal de uso, pra quem é, o jeito de fazer, o sentimento que entrega, o que está no site ou na descrição. Seja específico e sensorial: prefira "Fruta fresca da estação, espremida na hora" a "Ótima qualidade". Nada de clichê vazio ("qualidade", "excelência", "o melhor", "atendimento diferenciado").
+REGRA DE HONESTIDADE: tudo que for fato (anos de mercado, número de clientes, prêmios, entrega, certificação, preço, promoção) só pode aparecer se estiver escrito no contexto abaixo. Já o que a foto mostra e o que o título e a descrição dizem você pode e deve usar com liberdade. Nunca invente número, data ou prova social. Não repita o que a descrição do item já diz com as mesmas palavras.
+
+2) PERGUNTA: uma pergunta curta e natural que a Orbi faria pra puxar conversa sobre ESSE item, ligada à ocasião ou à escolha (ex.: "É pra comemorar algo ou pra um programa a dois?"), nunca genérica como "Posso ajudar?". Máximo 80 caracteres, sem aspas.
+
+Escreva no tom da marca${business?.brand_voice_summary ? ` (${cortar(business.brand_voice_summary, 300)})` : ""}, em português do Brasil, sem emoji.
+
+Contexto da marca (fonte dos fatos):
 Marca: ${business?.name ?? ""}
-Sobre o negócio: ${business?.about_business || "(sem informação)"}
-Diferenciais: ${business?.differentials || "(nenhum informado)"}
-${business?.brand_voice_summary ? `Tom de voz: ${business.brand_voice_summary}` : ""}
+Sobre o negócio: ${cortar(business?.about_business, 700) || "(sem informação)"}
+Diferenciais já informados: ${cortar(business?.differentials, 500) || "(nenhum)"}
+Site: ${business?.website_url || "(não informado)"}
+Instagram: ${business?.instagram_handle ? `@${business.instagram_handle.replace(/^@/, "")}` : "(não informado)"}
+O que a Orbi leu do site: ${cortar(business?.site_analysis, 1200) || "(nada)"}
+Personalidade da marca: ${cortar(business?.brand_personality, 300) || "(nada)"}
+Endereço: ${business?.address || "(não informado)"}
+Outros itens da vitrine: ${(irmaos ?? []).map((x) => x.title).join(", ") || "(nenhum)"}
 
-Responda só com linhas nesse formato, sem nada antes ou depois (zero a três linhas DIFERENCIAL, sempre uma linha PERGUNTA):
+Responda só com linhas neste formato, sem nada antes ou depois:
 DIFERENCIAL: <texto>
 DIFERENCIAL: <texto>
 PERGUNTA: <texto>`;
 
-    const userMsg = `Item: ${item.title}
+    const texto = `Item: ${item.title}
 Tipo: ${item.type}
-Descrição: ${item.description || "(nenhuma)"}`;
+Categoria: ${item.brand_label || "(sem categoria)"}
+Preço: ${item.price != null ? `R$ ${item.price}` : "(não informado)"}
+Descrição: ${item.description || "(nenhuma)"}
+${imagem ? "A foto do item está anexada: descreva o que ela mostra nos diferenciais." : "(sem foto legível)"}`;
 
     const raw = await askClaude({
       system,
-      messages: [{ role: "user", content: userMsg }],
-      maxTokens: 260,
+      messages: [
+        {
+          role: "user",
+          content: imagem
+            ? [{ type: "image", source: { type: "base64", media_type: imagem.media_type, data: imagem.data } }, { type: "text", text: texto }]
+            : texto,
+        },
+      ],
+      maxTokens: 400,
     });
 
     const strip = (s: string) => s.trim().replace(/^"|"$/g, "");
@@ -68,7 +110,7 @@ Descrição: ${item.description || "(nenhuma)"}`;
     const highlights = [...raw.matchAll(/DIFERENCIAL:\s*(.*)/gi)]
       .map((m) => strip(m[1] ?? ""))
       .filter(Boolean)
-      .slice(0, 3);
+      .slice(0, 4);
     const hook = raw.match(/PERGUNTA:\s*(.*)/i)?.[1] ?? "";
     const orbiHook = strip(hook) || null;
 

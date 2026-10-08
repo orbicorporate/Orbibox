@@ -3,7 +3,8 @@
 
 import { AI_MODEL, ANTHROPIC_API_URL, ANTHROPIC_VERSION } from "@/lib/aiModel";
 
-type Message = { role: "user" | "assistant"; content: string };
+type ContentBlock = { type: "text"; text: string } | { type: "image"; source: { type: "base64"; media_type: string; data: string } };
+type Message = { role: "user" | "assistant"; content: string | ContentBlock[] };
 
 export async function askClaude({
   system,
