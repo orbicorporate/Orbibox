@@ -65,7 +65,9 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
 
   const currentPlanId = access.subscription?.plan_id ?? null;
   const currentStatus = access.subscription?.status ?? null;
-  const inGoodStanding = currentStatus === "active" || currentStatus === "trialing" || currentStatus === "comped";
+  // Teste sem cartão não é um plano escolhido: os dois planos ficam abertos pra assinar.
+  const semCartao = access.testeSemCartao;
+  const inGoodStanding = !semCartao && (currentStatus === "active" || currentStatus === "trialing" || currentStatus === "comped");
 
   // Ordena: Nióbio (premium) primeiro, pra dar destaque.
   const ordered = [...plans].sort((a, b) => b.monthly_price_cents - a.monthly_price_cents);
@@ -104,7 +106,18 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
 
   return (
     <div className="mt-6 flex flex-col gap-5">
-      {currentStatus && (
+      {semCartao && (
+        <div className="animate-[fadeInUp_0.4s_ease] rounded-[20px] border border-divider bg-surface-white p-4">
+          <p className="text-[13px] text-text-secondary">Agora</p>
+          <p className="mt-0.5 text-[16px] font-semibold">{access.testeAcabou ? "Seu teste grátis terminou" : "Teste grátis com tudo liberado"}</p>
+          {!access.testeAcabou && access.trialEndsAt && (
+            <p className="mt-1 text-[13px] text-text-secondary">
+              Até {new Date(access.trialEndsAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}, sem cartão. Se assinar antes, os dias que faltam continuam grátis.
+            </p>
+          )}
+        </div>
+      )}
+      {currentStatus && !semCartao && (
         <div className="animate-[fadeInUp_0.4s_ease] rounded-[20px] border border-divider bg-surface-white p-4">
           <p className="text-[13px] text-text-secondary">Seu plano atual</p>
           <p className="mt-0.5 text-[16px] font-semibold">
@@ -215,10 +228,10 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
 
       <div className="mt-1 flex flex-col items-center gap-1.5 text-center">
         <p className="flex items-center gap-1.5 text-[12px] font-medium text-text-secondary">
-          🎁 3 dias de teste grátis com acesso completo
+          {semCartao && !access.testeAcabou ? "🎁 Os dias de teste que faltam continuam grátis" : "Cancele quando quiser"}
         </p>
         <p className="text-[11px] text-text-tertiary">
-          Pede cartão no cadastro. A cobrança só acontece depois do período de teste, cancele quando quiser.
+          {semCartao && !access.testeAcabou ? "A primeira cobrança só acontece quando o teste terminar." : "Sem fidelidade. A assinatura renova sozinha e você controla tudo por aqui."}
         </p>
       </div>
     </div>

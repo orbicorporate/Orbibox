@@ -83,9 +83,24 @@ export async function updateSession(request: NextRequest) {
   if (user && isAdmin && path !== "/admin/planos") {
     const { data: subscription } = await supabase
       .from("subscriptions")
-      .select("status")
+      .select("status, trial_ends_at, stripe_subscription_id")
       .eq("owner_id", user.id)
       .maybeSingle();
+
+    // Teste grátis sem cartão acabou: a tela de planos mostra o que o
+    // Orbibox fez no período antes de pedir a assinatura.
+    if (
+      subscription?.status === "trialing" &&
+      !subscription.stripe_subscription_id &&
+      subscription.trial_ends_at &&
+      new Date(subscription.trial_ends_at).getTime() < Date.now()
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/planos";
+      url.search = "";
+      url.searchParams.set("fim", "1");
+      return NextResponse.redirect(url);
+    }
 
     if (subscription && ["past_due", "canceled", "incomplete"].includes(subscription.status)) {
       const url = request.nextUrl.clone();

@@ -117,11 +117,11 @@ export default function SignupPage() {
           Criar meu Orbibox <span className="orbi-gradient-text">✦</span>
         </h1>
         <p className="mt-1 text-[15px] text-text-secondary">
-          A web que se adapta a quem entra.
+          Em menos de um minuto sua marca ganha inteligência própria. 7 dias grátis, sem cartão.
         </p>
         {convite && (
           <p className="mt-4 rounded-2xl bg-on-background px-4 py-3 text-[14px] font-medium text-white">
-            🎁 Convite aceito: você vai testar 7 dias grátis.
+            🎁 Convite aceito: você vai testar 14 dias grátis, sem cartão.
           </p>
         )}
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">

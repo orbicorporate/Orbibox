@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe";
-import { DIAS_TESTE_INDICADO } from "@/lib/indicacao";
-
-const TRIAL_DAYS = 3;
+import { DIAS_TESTE, DIAS_TESTE_INDICADO } from "@/lib/indicacao";
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,6 +48,13 @@ export async function POST(req: NextRequest) {
       .eq("owner_id", user.id)
       .maybeSingle();
 
+    // Teste sem cartão em andamento: os dias que faltam continuam valendo no
+    // Stripe, assinar antes não faz a pessoa perder dias. Já acabou ou já
+    // passou pelo Stripe antes: sem teste novo.
+    const restanteSemCartao =
+      existing && !existing.stripe_subscription_id && existing.status === "trialing" && existing.trial_ends_at
+        ? Math.ceil((new Date(existing.trial_ends_at).getTime() - Date.now()) / 86400000)
+        : null;
     const alreadyUsedTrial = !!existing?.trial_ends_at;
 
     // Quem chegou por convite testa mais dias; meses ganhos indicando e ainda
@@ -58,7 +63,8 @@ export async function POST(req: NextRequest) {
       supabase.from("referrals").select("id").eq("referred_user_id", user.id).maybeSingle(),
       supabase.from("referral_bonus_bank").select("meses").eq("user_id", user.id).maybeSingle(),
     ]);
-    const diasTeste = (alreadyUsedTrial ? 0 : indicado ? DIAS_TESTE_INDICADO : TRIAL_DAYS) + 30 * (banco?.meses ?? 0);
+    const diasBase = restanteSemCartao != null ? Math.max(0, restanteSemCartao) : alreadyUsedTrial ? 0 : indicado ? DIAS_TESTE_INDICADO : DIAS_TESTE;
+    const diasTeste = diasBase + 30 * (banco?.meses ?? 0);
 
     const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://orbibox-orbi-app.vercel.app";
 

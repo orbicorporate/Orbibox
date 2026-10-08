@@ -4,6 +4,7 @@ import { SignOutButton } from "./SignOutButton";
 import { ExcluirOrbibox } from "./ExcluirOrbibox";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
 import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
+import { ObjetivoForm } from "./ObjetivoForm";
 
 type Pendencias = { marca: number; contatos: number; orbi: number };
 
@@ -107,6 +108,13 @@ export default async function ConfigMenuPage() {
           </Link>
         ))}
       </div>
+
+      <ObjetivoForm
+        businessId={business.id}
+        objetivo={business.objetivo ?? null}
+        conversao={business.conversao ?? null}
+        servico={["agendar", "orcamento"].includes(business.conversao ?? "")}
+      />
 
       <p className="mt-8 text-[13px] uppercase tracking-wide text-text-tertiary">Conta</p>
       <div className="mt-2.5 flex flex-col gap-3">

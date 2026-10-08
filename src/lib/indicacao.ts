@@ -4,11 +4,14 @@ import { createServiceClient } from "@/lib/supabase/service";
 // Indicação: cada amigo que paga a primeira mensalidade (plano mensal ou
 // anual) dá 1 mês grátis pra quem indicou. Como o mês entra depende de onde
 // a pessoa está:
-// - testando grátis: o teste ganha mais 30 dias no Stripe;
+// - testando grátis: o teste ganha mais 30 dias (no Stripe ou, sem cartão, no banco);
 // - já assinante: crédito de 1 mês no saldo do Stripe, abatido na próxima fatura;
 // - sem assinatura ainda: o mês fica guardado e vira dias extras de teste
 //   quando ela assinar.
-export const DIAS_TESTE_INDICADO = 7;
+/** Teste grátis sem cartão, contado da criação do primeiro Orbibox. */
+export const DIAS_TESTE = 7;
+/** Quem chega por convite testa o dobro. */
+export const DIAS_TESTE_INDICADO = 14;
 const DIA_S = 24 * 60 * 60;
 
 type Aplicado = "teste_estendido" | "credito_fatura" | "guardado";
@@ -17,9 +20,16 @@ async function aplicarMesGratis(userId: string): Promise<Aplicado> {
   const supabase = createServiceClient();
   const { data: sub } = await supabase
     .from("subscriptions")
-    .select("status, stripe_subscription_id, stripe_customer_id, plan_id, billing_cycle")
+    .select("status, stripe_subscription_id, stripe_customer_id, plan_id, billing_cycle, trial_ends_at")
     .eq("owner_id", userId)
     .maybeSingle();
+
+  // Testando sem cartão: o teste ganha 30 dias direto no banco.
+  if (sub && !sub.stripe_subscription_id && sub.status === "trialing") {
+    const base = Math.max(sub.trial_ends_at ? new Date(sub.trial_ends_at).getTime() : 0, Date.now());
+    await supabase.from("subscriptions").update({ trial_ends_at: new Date(base + 30 * DIA_S * 1000).toISOString(), updated_at: new Date().toISOString() }).eq("owner_id", userId);
+    return "teste_estendido";
+  }
 
   if (sub?.stripe_subscription_id && sub.status === "trialing") {
     const s = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);

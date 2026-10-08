@@ -1,130 +1,58 @@
-import Link from "next/link";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getBusinessProgress } from "@/lib/progress";
 import { getPendingInsights } from "@/lib/insights";
-import { ProgressCard } from "@/components/ProgressWidgets";
-import { InsightRotator } from "./InsightRotator";
-import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
-import { QRCodeButton } from "@/components/ui/QRCodeButton";
-import { WelcomeBackBanner } from "./WelcomeBackBanner";
-import { ProximaAcao } from "./ProximaAcao";
 import { proximaData } from "@/lib/datasComemorativas";
 import { getAccessInfo } from "@/lib/plans";
-import { Marcos } from "./Marcos";
-import { ConviteCard } from "./ConviteCard";
+import { calcularOportunidade, calcularSemana } from "@/lib/copiloto";
+import { HomeView } from "./HomeView";
 
-const METRICS = [
-  { key: "discovery", label: "Visitas", explica: "Pessoas que abriram seu link", icon: "◎", href: "/admin/pulse" },
-  { key: "interest", label: "Interesses", explica: "Escolheram uma opção na tela inicial", icon: "♡", href: "/admin/pulse" },
-  { key: "conversion", label: "Conversas reais", explica: "Trocaram mensagem de verdade com a Orbi", icon: "▤", href: "/admin/conversas" },
-  { key: "relationship", label: "Ações", explica: "Cliques em produtos, links e WhatsApp", icon: "☞", href: "/admin/pulse" },
-] as const;
+// Saudação pela hora de Brasília, onde está quem usa o painel.
+function saudacaoDoMomento(): string {
+  const hora = Number(new Intl.DateTimeFormat("pt-BR", { hour: "numeric", hour12: false, timeZone: "America/Sao_Paulo" }).format(new Date()));
+  return hora < 5 ? "Boa noite" : hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+}
 
 export default async function HojePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("*")
-    .eq("id", businessId!)
-    .limit(1)
-    .single();
+  const { data: business } = await supabase.from("businesses").select("*").eq("id", businessId!).limit(1).single();
+  const b = business!;
 
-
-  // Tudo que depende só do business roda em paralelo, antes eram 6 idas ao banco em fila.
-  const [visitsRes, convRowsRes, interestedRes, actionsRes, activeBoxesRes] = await Promise.all([
-    supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
-    supabase.from("conversations").select("id").eq("business_id", business!.id),
-    supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id).not("intent", "is", null),
-    // "Ações" = cliques de verdade (produto, link, WhatsApp…), mesma fonte do Pulse,
-    // não a tabela de campanhas (isso não tinha nada a ver com o que o visitante faz).
-    supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", business!.id),
-    supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", business!.id).eq("is_active", true),
+  const [visitsRes, convRowsRes, actionsRes, activeBoxesRes, giftsRes, perguntasRes, vouchersRes, acesso, perfilRes, agenteRes, resgatesRes] = await Promise.all([
+    supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", b.id),
+    supabase.from("conversations").select("id").eq("business_id", b.id),
+    supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", b.id),
+    supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", b.id).eq("is_active", true),
+    supabase.from("gift_cards").select("id, value_cents, from_name, to_name").eq("business_id", b.id).eq("status", "pending").order("created_at", { ascending: true }).limit(5),
+    supabase.from("orbi_learnings").select("id, pergunta, vezes").eq("business_id", b.id).eq("status", "pendente").order("vezes", { ascending: false }).limit(3),
+    supabase.from("vouchers").select("id, title, quantity_total, quantity_claimed").eq("business_id", b.id).eq("is_active", true),
+    getAccessInfo(b.owner_id),
+    supabase.from("profiles").select("full_name").eq("id", user!.id).maybeSingle(),
+    supabase.from("agent_configs").select("orbi_colors").eq("business_id", b.id).maybeSingle(),
+    supabase.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("business_id", b.id),
   ]);
-  const visits = visitsRes.count, interested = interestedRes.count, actions = actionsRes.count;
-
-  // Próxima ação: o que dá pra resolver agora, num toque.
-  const [giftsRes, perguntasRes, vouchersRes, acesso] = await Promise.all([
-    supabase.from("gift_cards").select("id, value_cents, from_name, to_name").eq("business_id", business!.id).eq("status", "pending").order("created_at", { ascending: true }).limit(5),
-    supabase.from("orbi_learnings").select("id, pergunta, vezes").eq("business_id", business!.id).eq("status", "pendente").order("vezes", { ascending: false }).limit(3),
-    supabase.from("vouchers").select("id, title, quantity_total, quantity_claimed").eq("business_id", business!.id).eq("is_active", true),
-    getAccessInfo(business!.owner_id),
-  ]);
-  const dataProxima = proximaData();
-  const vouchersBaixos = (vouchersRes.data ?? [])
-    .map((v) => ({ id: v.id, title: v.title, quantity_total: v.quantity_total, restam: v.quantity_total - v.quantity_claimed }))
-    .filter((v) => v.restam <= 3)
-    .slice(0, 2);
   const activeBoxes = activeBoxesRes.count ?? 0;
-  const progress = await getBusinessProgress(business!.id);
 
-  // Insight sempre atual, em vez de uma tabela fixa que nunca se atualizava
-  // sozinha, verifica o estado de verdade do negócio a cada carregamento e
-  // sugere o próximo passo que ainda falta, em ordem de prioridade. Assim
-  // que a pessoa resolve um, o próximo já aparece, nunca fica preso num
-  // insight antigo, e nunca sobra sem sugestão nenhuma. Mesma lista usada
-  // no sino do header e na página /admin/pendencias, por isso vem de
-  // getPendingInsights em vez de calculada aqui.
-  const insightsQueue: { title: string; description: string; ctaLabel: string; href: string; share?: boolean }[] = await getPendingInsights(business!.id);
-  // Sem nenhum pendente: alterna entre dicas de divulgação, pra nunca ficar
-  // sem sugestão, e pra não repetir sempre a mesma quando já está tudo pronto.
-  // URL pública de verdade, NUNCA usa o host da requisição sozinho, porque
-  // se a pessoa está acessando o painel por uma URL específica de deploy
-  // (não o domínio principal), essa URL fica protegida pelo Vercel e mostra
-  // "Protected Deployment" pra quem recebe o link. VERCEL_PROJECT_PRODUCTION_URL
-  // é o domínio estável de produção, sempre o certo pra compartilhar.
-  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL || (await headers()).get("host") || "orbibox-orbi-app.vercel.app";
-  const proto = host.includes("localhost") ? "http" : "https";
-  const shareUrl = `${proto}://${host}/${business!.slug}`;
+  const [progress, insightsQueue, semana] = await Promise.all([
+    getBusinessProgress(b.id),
+    getPendingInsights(b.id),
+    calcularSemana(supabase, b.id),
+  ]);
 
-  // "Pronto pra compartilhar" = tem uma descrição de link E uma imagem que vai
-  // servir de capa (a própria de compartilhamento, ou a capa da Vitrine, ou o
-  // logo como último recurso). Sem isso, o botão pergunta antes de compartilhar.
-  const temCapaCompartilhar =
-    !!business!.share_image_url ||
-    !!business!.vitrine_cover_url ||
-    (Array.isArray(business!.vitrine_cover_urls) && (business!.vitrine_cover_urls as string[]).length > 0) ||
-    !!business!.logo_url;
-  const shareReady = !!business!.share_description?.trim() && temCapaCompartilhar;
-  const growthTips: { title: string; description: string; ctaLabel: string; href: string; share?: boolean }[] = [
-    {
-      title: "Divulgue seu link",
-      description: "Sua página está pronta. Agora é espalhar: cole o link nos stories, na bio do Instagram e mande nos seus contatos de WhatsApp.",
-      ctaLabel: "Compartilhar Orbibox",
-      href: `/${business!.slug}`,
-      share: true,
-    },
-    {
-      title: "Poste em grupos de WhatsApp",
-      description: "Grupos de bairro, de clientes ou de parceiros trazem visitas rápido. Mande seu link com uma frase curta, tipo \"acabei de montar meu catálogo online, dá uma olhada\".",
-      ctaLabel: "Compartilhar Orbibox",
-      href: `/${business!.slug}`,
-      share: true,
-    },
-    {
-      title: "Use o link na bio do Instagram",
-      description: "A bio é o único link clicável do seu perfil no Instagram, e o mais visto. Troque o link que está lá pelo do seu Orbibox, assim tudo o que você faz fica a um toque de distância.",
-      ctaLabel: "Compartilhar Orbibox",
-      href: `/${business!.slug}`,
-      share: true,
-    },
-    {
-      title: "Acompanhe seus resultados",
-      description: "Em Resultados você vê quantas pessoas visitaram, o que elas mais tocaram e as conversas recentes. Vale dar uma olhada pra entender o que está funcionando.",
-      ctaLabel: "Abrir Resultados",
-      href: "/admin/pulse",
-    },
-  ];
+  const oportunidade = await calcularOportunidade(supabase, {
+    businessId: b.id,
+    slug: b.slug,
+    criadoEm: b.created_at,
+    botoesAtivos: activeBoxes,
+    hasVouchers: acesso.hasVouchers,
+    hasAiChat: acesso.hasAiChat,
+    pendencia: insightsQueue[0] ?? null,
+  });
 
-  // "Conversas reais" só conta quem de fato trocou mensagem com a Orbi, não
-  // toda vez que alguém abriu o chat e fechou sem digitar nada (isso inflava
-  // o número e não batia com o que aparecia no Pulse/Conversas).
+  // Conversas reais (com mensagem do visitante), pros marcos.
   const convIds = (convRowsRes.data ?? []).map((c) => c.id);
   let realConvs = 0;
   if (convIds.length > 0) {
@@ -132,151 +60,55 @@ export default async function HojePage() {
     realConvs = new Set((msgRows ?? []).map((m) => m.conversation_id)).size;
   }
 
-  const { count: resgates } = await supabase
-    .from("voucher_redemptions")
-    .select("id", { count: "exact", head: true })
-    .eq("business_id", business!.id);
+  const dataProxima = proximaData();
+  const vouchersBaixos = (vouchersRes.data ?? [])
+    .map((v) => ({ id: v.id, title: v.title, quantity_total: v.quantity_total, restam: v.quantity_total - v.quantity_claimed }))
+    .filter((v) => v.restam <= 3)
+    .slice(0, 2);
 
-  const values: Record<string, number> = {
-    discovery: visits ?? 0,
-    interest: interested ?? 0,
-    conversion: realConvs,
-    relationship: actions ?? 0,
-  };
+  // Link público sempre pelo domínio de produção (URLs de deploy são protegidas).
+  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL || (await headers()).get("host") || "orbibox-orbi-app.vercel.app";
+  const proto = host.includes("localhost") ? "http" : "https";
+  const shareUrl = `${proto}://${host}/${b.slug}`;
+  const temCapa = !!b.share_image_url || !!b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls.length > 0) || !!b.logo_url;
+  const shareReady = !!b.share_description?.trim() && temCapa;
+  const shareTitle = `${b.name}, Orbibox`;
 
-  // Frase de boas-vindas que diz a verdade sobre o momento do negócio, em
-  // vez de um "está indo bem" fixo que aparecia até com zero visitas.
-  const totalVisitas = visits ?? 0;
-  const saudacao =
-    activeBoxes === 0
-      ? "Ligue um botão pra sua página aparecer."
-      : progress.pct < 100
-        ? "Falta pouco pra sua página ficar completa."
-        : totalVisitas === 0
-          ? "Sua página está pronta. Agora é divulgar."
-          : `${totalVisitas.toLocaleString("pt-BR")} ${totalVisitas === 1 ? "visita" : "visitas"} no seu link até agora.`;
-  // Um guia só: enquanto o checklist está aberto, ele é o guia e o card de
-  // próxima ação mostra só o que é urgente de verdade (presente, pergunta,
-  // voucher acabando). Com o checklist completo, a pendência volta pro card.
-  const checklistAberto = progress.pct < 100;
+  const nomeCompleto = perfilRes.data?.full_name || (user!.user_metadata?.full_name as string | undefined) || "";
+  const primeiroNome = nomeCompleto.trim().split(/\s+/)[0] || null;
+  const orbiColors = Array.isArray(agenteRes.data?.orbi_colors) && agenteRes.data.orbi_colors.length >= 2 ? (agenteRes.data.orbi_colors as string[]) : null;
+
+  const numeros = [
+    { rotulo: "Visitas", n: semana.visitas, antes: semana.visitasAntes, href: "/admin/pulse" },
+    { rotulo: "Conversas", n: semana.conversas, antes: semana.conversasAntes, href: "/admin/conversas" },
+    { rotulo: "Contatos", n: semana.contatos, antes: semana.contatosAntes, href: "/admin/conversas" },
+    { rotulo: "Conversões", n: semana.conversoes, antes: semana.conversoesAntes, href: "/admin/pulse" },
+  ];
 
   return (
-    <div className="relative flex flex-col">
-      {/* Saudação dentro de um halo circular, nome do negócio, não do usuário
-          que abriu o painel, já que mais gente da equipe também vai entrar. */}
-      <div className="relative mx-auto mt-6 flex h-64 w-64 items-center justify-center">
-        <div className="orbi-halo absolute inset-0" aria-hidden>
-          <span className="orbi-halo__dot" />
-        </div>
-
-        <div className="absolute left-1/2 top-1/2 w-[90vw] max-w-[420px] -translate-x-1/2 -translate-y-1/2 text-center">
-          <h1 className="whitespace-nowrap font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">
-            Olá, {business!.name}
-          </h1>
-          <p className="mt-1 text-[14px] text-text-secondary">{saudacao}</p>
-        </div>
-      </div>
-      <div className="mx-auto -mt-2 flex items-center gap-2">
-        <ShareOrbiboxButton
-          url={shareUrl}
-          title={`${business!.name}, Orbibox`}
-          shareReady={shareReady}
-          className="flex items-center gap-1.5 rounded-full bg-on-background px-4 py-2 text-[13px] font-medium text-white"
-        >
-          ↗ Compartilhar Orbibox
-        </ShareOrbiboxButton>
-        <Link
-          href={`/${business!.slug}`}
-          target="_blank"
-          className="rounded-full border border-divider bg-surface-white px-3 py-2 text-[12px] text-text-secondary"
-        >
-          Ver
-        </Link>
-        <QRCodeButton
-          url={shareUrl}
-          businessName={business!.name}
-          className="rounded-full border border-divider bg-surface-white px-3 py-2 text-[12px] text-text-secondary"
-        >
-          QR Code
-        </QRCodeButton>
-      </div>
-
-      <Marcos businessId={business!.id} contagem={{ visitas: visits ?? 0, acoes: actions ?? 0, conversas: realConvs, resgates: resgates ?? 0 }} />
-
-      <ProximaAcao
-        businessId={business!.id}
-        hasVouchers={acesso.hasVouchers}
-        gifts={giftsRes.data ?? []}
-        perguntas={perguntasRes.data ?? []}
-        data={dataProxima ? { id: dataProxima.id, nome: dataProxima.nome, dias: dataProxima.dias, clima: dataProxima.clima } : null}
-        vouchersBaixos={vouchersBaixos}
-        pendencia={!checklistAberto && insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
-      />
-
-      {(!acesso.subscription || acesso.subscription.status === "trialing") && <ConviteCard />}
-
-      <WelcomeBackBanner businessName={business!.name} pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))} />
-
-      <ProgressCard done={progress.done} pct={progress.pct} />
-
-      {!checklistAberto && insightsQueue.length > 0 && (
-        <Link
-          href="/admin/pendencias"
-          className="mx-auto mt-3 flex items-center gap-1.5 rounded-full bg-surface-soft px-4 py-2 text-[12.5px] font-medium text-text-secondary active:opacity-60"
-        >
-          Ver tudo que falta ({insightsQueue.length}) <span aria-hidden>→</span>
-        </Link>
-      )}
-
-      {activeBoxes === 0 && (
-        <p className="mx-auto mt-3 max-w-[280px] text-center text-[12px] leading-relaxed text-red-600">
-          ⚠ Ainda não dá pra divulgar, sua página está sem nenhum botão ligado, então quem abrir o link não vê nada.{" "}
-          <Link href="/admin/boxes" className="underline">Resolver agora</Link>
-        </p>
-      )}
-
-      {!business!.tour_completed_at && (
-        <Link
-          href="/admin/agent?tour=0"
-          className="mt-6 flex items-center justify-between rounded-2xl border border-divider bg-surface-white px-4 py-3.5"
-        >
-          <span className="text-[14px] font-medium">✦ Conheça o Orbibox num tour rápido</span>
-          <span className="text-text-tertiary">→</span>
-        </Link>
-      )}
-
-      {/* Métricas em lista, cada uma leva pro Pulse (ou Conversas), onde dá
-          pra ver o detalhe. Mesma fonte de dados do Pulse, então os números
-          batem entre as duas telas. */}
-      <div className="mt-8 flex flex-col">
-        {METRICS.map((m) => (
-          <Link key={m.key} href={m.href} className="flex items-center justify-between border-b border-divider py-4 active:opacity-60">
-            <div className="flex items-center gap-3">
-              <span className="text-[16px] text-text-secondary">{m.icon}</span>
-              <div>
-                <span className="block text-[15px] text-text-secondary">{m.label}</span>
-                <span className="block text-[12px] text-text-tertiary">{m.explica}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">
-                {values[m.key].toLocaleString("pt-BR")}
-              </span>
-              <span className="text-[14px] text-text-tertiary">›</span>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Insight Orbi com botão "Novo insight" pra rodar outra dica. Começa
-          por uma dica ainda pendente se houver (insightsQueue), senão gira. */}
-      <InsightRotator
-        tips={growthTips}
-        startIndex={new Date().getDate() % growthTips.length}
-        shareUrl={shareUrl}
-        shareTitle={`${business!.name}, Orbibox`}
-        shareReady={shareReady}
-      />
-    </div>
+    <HomeView
+      saudacao={saudacaoDoMomento()}
+      primeiroNome={primeiroNome}
+      b={{ id: b.id, name: b.name, slug: b.slug }}
+      shareUrl={shareUrl}
+      shareTitle={shareTitle}
+      shareReady={shareReady}
+      teste={acesso.testeSemCartao && acesso.diasRestantes != null ? { dias: acesso.diasRestantes } : null}
+      oportunidade={oportunidade}
+      proxima={{
+        businessId: b.id,
+        hasVouchers: acesso.hasVouchers,
+        gifts: giftsRes.data ?? [],
+        perguntas: perguntasRes.data ?? [],
+        data: dataProxima ? { id: dataProxima.id, nome: dataProxima.nome, dias: dataProxima.dias, clima: dataProxima.clima } : null,
+        vouchersBaixos,
+      }}
+      marcos={{ visitas: visitsRes.count ?? 0, acoes: actionsRes.count ?? 0, conversas: realConvs, resgates: resgatesRes.count ?? 0 }}
+      numeros={numeros}
+      orbiColors={orbiColors}
+      progressoPct={progress.pct}
+      mostrarConvite={!acesso.subscription || acesso.subscription.status === "trialing"}
+      pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))}
+    />
   );
 }

@@ -17,6 +17,12 @@ export interface AccessInfo {
   hasVouchers: boolean;
   maxBusinesses: number;
   trialEndsAt: string | null;
+  /** Teste grátis que começou sem cartão (ainda não passou pelo Stripe). */
+  testeSemCartao: boolean;
+  /** Teste sem cartão que já acabou: hora de mostrar o que o Orbibox fez. */
+  testeAcabou: boolean;
+  /** Dias inteiros que faltam no teste (0 no último dia). */
+  diasRestantes: number | null;
 }
 
 // Sem assinatura = trata como Titânio bloqueado (sem chat, 1 negócio) até o
@@ -30,6 +36,9 @@ const NO_ACCESS: AccessInfo = {
   hasVouchers: false,
   maxBusinesses: 1,
   trialEndsAt: null,
+  testeSemCartao: false,
+  testeAcabou: false,
+  diasRestantes: null,
 };
 
 export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
@@ -49,20 +58,28 @@ export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
     .eq("id", subscription.plan_id)
     .maybeSingle();
 
-  const isActive = ACTIVE_STATUSES.has(subscription.status);
-  const isTrialing = subscription.status === "trialing";
+  const testeSemCartao = subscription.status === "trialing" && !subscription.stripe_subscription_id;
+  const fimTeste = subscription.trial_ends_at ? new Date(subscription.trial_ends_at).getTime() : null;
+  const agora = Date.now();
+  const testeAcabou = testeSemCartao && fimTeste != null && fimTeste < agora;
+  const isActive = ACTIVE_STATUSES.has(subscription.status) && !testeAcabou;
+  const isTrialing = subscription.status === "trialing" && !testeAcabou;
+  const diasRestantes = isTrialing && fimTeste != null ? Math.max(0, Math.floor((fimTeste - agora) / 86400000)) : null;
 
   return {
     subscription,
     plan,
     isActive,
     isTrialing,
-    // No teste de 3 dias a pessoa sente o potencial completo (Titânio +
+    // No teste grátis a pessoa sente o potencial completo (Titânio +
     // Nióbio juntos), independente de qual plano ela selecionou no checkout.
     hasAiChat: isTrialing ? true : isActive && (plan?.has_ai_chat ?? false),
     hasVouchers: isTrialing ? true : isActive && (plan?.has_vouchers ?? false),
     maxBusinesses: isTrialing ? 999 : isActive ? (plan?.max_businesses ?? 1) : 1,
     trialEndsAt: subscription.trial_ends_at,
+    testeSemCartao,
+    testeAcabou,
+    diasRestantes,
   };
 }
 

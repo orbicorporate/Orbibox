@@ -59,9 +59,9 @@ export function ReferralPanel({ code, amigos, mesesGuardados, statusPlano }: { c
   const testando = amigos.filter((a) => a.estado === "testando").length;
 
   const MODELOS = [
-    { rotulo: "Pra um amigo", texto: `Tô usando o Orbibox no meu negócio: uma página com IA que responde cliente, mostra catálogo e cria vouchers. Pelo meu link você testa 7 dias grátis: ${link}` },
-    { rotulo: "Pra quem tem negócio", texto: `Se você tem negócio, olha isso: o Orbibox monta sua página com uma IA que atende seus clientes 24h e ainda cria promoções. Me ajudou muito. Pelo meu convite são 7 dias grátis: ${link}` },
-    { rotulo: "Curtinha", texto: `Testa o Orbibox, 7 dias grátis pelo meu link: ${link}` },
+    { rotulo: "Pra um amigo", texto: `Tô usando o Orbibox no meu negócio: uma página com IA que responde cliente, mostra catálogo e cria vouchers. Pelo meu link você testa 14 dias grátis, sem cartão: ${link}` },
+    { rotulo: "Pra quem tem negócio", texto: `Se você tem negócio, olha isso: o Orbibox monta sua página com uma IA que atende seus clientes 24h e ainda cria promoções. Me ajudou muito. Pelo meu convite são 14 dias grátis: ${link}` },
+    { rotulo: "Curtinha", texto: `Testa o Orbibox, 14 dias grátis pelo meu link: ${link}` },
   ];
   const texto = MODELOS[modelo].texto;
 
@@ -106,7 +106,7 @@ export function ReferralPanel({ code, amigos, mesesGuardados, statusPlano }: { c
           Cada amigo que assina vale <span className="orbi-gradient-text">1 mês grátis</span> pra você
         </h1>
         <p className="relative mt-2.5 text-[14px] leading-snug text-white/75">
-          No plano mensal ou anual, sem limite. E seu amigo ainda testa 7 dias grátis em vez de 3.
+          No plano mensal ou anual, sem limite. E seu amigo ainda testa 14 dias grátis em vez de 7, sem cartão.
         </p>
 
         <div className="relative mt-6">

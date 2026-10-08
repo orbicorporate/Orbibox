@@ -52,12 +52,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // senão o mais recente, senão um em que a pessoa é administradora.
   const businessId = await getCurrentBusinessId(user.id);
   const { data: business } = businessId
-    ? await supabase.from("businesses").select("id, name, slug, tour_completed_at, logo_url").eq("id", businessId).maybeSingle()
+    ? await supabase.from("businesses").select("id, name, slug, tour_completed_at, logo_url, owner_id").eq("id", businessId).maybeSingle()
     : { data: null };
   const negocios = business ? await listMyBusinesses(user.id) : [];
   const podeCriar = business ? await podeCriarOutroNegocio(user.id) : false;
 
   if (!business) redirect("/onboarding");
+
+  // Conta antiga, criada antes do teste sem cartão, que nunca assinou:
+  // ganha o teste agora, pra ver a IA e as ofertas funcionando.
+  if (business.owner_id === user.id) {
+    const { data: temAssinatura } = await supabase.from("subscriptions").select("id").eq("owner_id", user.id).maybeSingle();
+    if (!temAssinatura) await supabase.rpc("iniciar_teste_gratis");
+  }
 
   // Contagem de conversas não vistas, mostrada como bolinha no sino, ao lado
   // do ícone de configurações, em todas as telas do painel (não só no Today).

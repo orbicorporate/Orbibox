@@ -5,6 +5,13 @@ import { createClient } from "@/lib/supabase/client";
 /** Tipos de clique que o Pulse conta separadamente. */
 export type ClickKind = "categoria" | "produto" | "whatsapp" | "ligar" | "email" | "zara" | "link" | "site" | "carrossel" | "cta" | "cupom";
 
+// O dono olhando a própria página (ou a prévia do painel) não conta como
+// visitante: senão os números de Resultados e o resumo de valor mentem.
+let rastreioDesligado = false;
+export function desligarRastreio() {
+  rastreioDesligado = true;
+}
+
 /**
  * Registra o clique e segue o fluxo. Nunca bloqueia a navegação:
  * se o registro falhar, o visitante vai para o destino do mesmo jeito.
@@ -16,6 +23,7 @@ export async function trackClick(params: {
   sessionId?: string | null;
   targetUrl?: string | null;
 }) {
+  if (rastreioDesligado) return;
   try {
     const supabase = createClient();
     await supabase.from("click_events").insert({

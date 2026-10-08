@@ -17,7 +17,7 @@ import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, groupByCategory, sizeOf, tit
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
 import { heroBackground } from "@/lib/heroStyle";
 import { RATIOS } from "@/components/ui/ImageCropModal";
-import { trackClick, whatsappLink } from "@/lib/track";
+import { desligarRastreio, trackClick, whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, nomeDaRede, redeDoLink, type Rede } from "@/lib/redesSociais";
 import { homeCardShellClass, homeCardShellStyle, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
@@ -165,6 +165,11 @@ export function VisitorExperience({
   }
 
   useEffect(() => {
+    // Dono ou prévia do painel: não abre sessão nem registra cliques.
+    if (isOwner || new URLSearchParams(window.location.search).get("preview") === "1") {
+      desligarRastreio();
+      return;
+    }
     // Detecta origem e dispositivo do visitante, antes era fixo "direct/web",
     // o que não dizia nada. Origem vem do referrer (de onde a pessoa clicou)
     // ou de um ?utm_source= no link; dispositivo, do user agent.

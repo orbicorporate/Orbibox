@@ -331,11 +331,11 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
     {
       rotulo: "Comece agora",
       titulo: "Crie a IA da sua marca com site inteligente",
-      frase: "3 dias grátis. Cancela quando quiser.",
-      checks: ["Teste grátis por 3 dias", "Sem cartão para começar"],
+      frase: "7 dias grátis, sem cartão.",
+      checks: ["7 dias grátis", "Sem cartão para começar"],
       cor: "#1F7A45",
       full: true,
-      livre: <CenaFinal href={finalHref} label={finalLabel} rotulo="Comece agora" titulo="Crie a IA da sua marca com site inteligente" checks={["Teste grátis por 3 dias", "Sem cartão para começar"]} />,
+      livre: <CenaFinal href={finalHref} label={finalLabel} rotulo="Comece agora" titulo="Crie a IA da sua marca com site inteligente" checks={["7 dias grátis", "Sem cartão para começar"]} />,
     },
   ];
 }
