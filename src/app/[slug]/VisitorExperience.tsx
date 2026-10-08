@@ -1050,7 +1050,7 @@ export function VisitorExperience({
           />
         )}
 
-        {intent === "duvida" && sessionId && (
+        {intent === "duvida" && (
           <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} initialInput={orbiPrefill} onBack={voltarAoInicio} />
         )}
 
@@ -1061,7 +1061,7 @@ export function VisitorExperience({
 
       {/* Orbi flutuante, sempre à mão, exceto quando o chat já está aberto ou
           o dono está visualizando a própria página. Só pra quem tem chat. */}
-      {hasAiChat && intent !== null && intent !== "duvida" && sessionId && (
+      {hasAiChat && intent !== null && intent !== "duvida" && (
         <OrbiFloatingButton onOpen={() => chooseIntent("duvida")} orbiColors={orbiColors} agentName={agentName} />
       )}
     </main>
@@ -1664,7 +1664,7 @@ function OrbiChat({
 }: {
   businessId: string;
   slug: string;
-  sessionId: string;
+  sessionId: string | null;
   agentName: string;
   orbiColors: string[] | null;
   heroGradient: string[];
