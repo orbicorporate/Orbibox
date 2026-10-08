@@ -110,15 +110,15 @@ export function AppHeader({
   }
 
   return (
-    <header className={`sticky top-0 flex items-center justify-between bg-background-main/65 px-6 py-4 backdrop-blur-xl ${menuOpen || sinoOpen ? "z-50" : "z-20"}`}>
-      <div className="flex items-center gap-2">
+    <header className={`sticky top-0 flex items-center justify-between gap-2 bg-background-main/65 px-4 py-4 min-[400px]:px-6 backdrop-blur-xl ${menuOpen || sinoOpen ? "z-50" : "z-20"}`}>
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <BackButton />
-        <OrbiOrb size={28} />
+        <span className="shrink-0"><OrbiOrb size={28} /></span>
         {/* Nome do negócio aberto; toca pra trocar ou criar outro Orbibox. */}
         <button
           type="button"
           onClick={() => setTrocaOpen(true)}
-          className="flex min-w-0 max-w-[170px] items-center gap-1 text-left"
+          className="flex min-w-0 items-center gap-1 text-left"
           aria-label="Trocar de negócio"
         >
           <span className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-medium tracking-[-0.01em]">
@@ -129,7 +129,7 @@ export function AppHeader({
           </svg>
         </button>
       </div>
-      <div className="relative flex items-center gap-2">
+      <div className="relative flex shrink-0 items-center gap-2">
         <ProgressBadge pct={progressPct} />
         {/* Sino de notificação: junta conversa não vista com pendências do
             negócio (checklist, fotos faltando, etc), pra pessoa nunca ficar

@@ -172,6 +172,7 @@ export function ShowcaseBuilder({
   const [avisoDesfazer, setAvisoDesfazer] = useState<string | null>(null);
   const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const estiloOk = useFlag(`vitrine_estilo_${businessId}`);
   const guiaOculto = useFlag(`vitrine_guia_off_${businessId}`);
 
   // Fecha o menu "Mais" ao tocar fora dele.
@@ -788,6 +789,16 @@ export function ShowcaseBuilder({
             </div>
           )}
         </div>
+        {estiloOk && items.length > 0 && (
+          <button onClick={() => setShowEstilo(true)} className="ml-auto flex items-center gap-2 rounded-full px-2 py-2 text-[13px] text-text-secondary active:opacity-60">
+            <span className="flex -space-x-1">
+              {(currentBrandColors.length ? currentBrandColors : [{ hex: "#E8E8E3" }, { hex: "#111318" }]).slice(0, 3).map((c, i) => (
+                <span key={`${c.hex}-${i}`} className="h-4 w-4 rounded-full border border-surface-white shadow-[0_0_0_1px_rgba(17,19,24,0.12)]" style={{ backgroundColor: c.hex }} />
+              ))}
+            </span>
+            Trocar estilo
+          </button>
+        )}
       </div>
 
       {showImport && (
@@ -810,7 +821,7 @@ export function ShowcaseBuilder({
       {importMsg && <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>}
 
       {/* Estilo: uma linha só, abre as paletas e as vitrines prontas. */}
-      {items.length > 0 && (
+      {items.length > 0 && !estiloOk && (
         <button
           onClick={() => setShowEstilo(true)}
           className="mt-3 flex items-center gap-3 rounded-[18px] border border-divider bg-surface-white px-4 py-3 text-left"
