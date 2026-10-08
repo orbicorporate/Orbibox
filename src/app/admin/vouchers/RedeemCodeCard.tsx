@@ -3,9 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { QRScanner } from "@/components/mobile/QRScanner";
 import { CHERRY_GRADIENT, CHERRY_SHADOW, CHERRY_TEXT, CHERRY_SOFT_BG } from "@/lib/voucherThemes";
+import { descontoCurto } from "@/lib/voucherDesconto";
 
 function discountLabel(v: { discount_type?: string; discount_value?: number }) {
-  return v.discount_type === "percent" ? `${v.discount_value}% off` : `R$ ${v.discount_value} off`;
+  return descontoCurto(v);
 }
 
 /** Card "Resgatar código" no design da referência. Usado no topo da tela de

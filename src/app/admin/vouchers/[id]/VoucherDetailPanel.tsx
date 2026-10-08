@@ -10,12 +10,14 @@ import { VoucherPlanoOrbi } from "../VoucherPlanoOrbi";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
+import { descontoCurto } from "@/lib/voucherDesconto";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
 
 function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
-  return v.discount_type === "percent" ? `${v.discount_value}% off` : `R$ ${v.discount_value} off`;
+  return descontoCurto(v);
 }
 
 function statusLabel(status: string) {
@@ -67,6 +69,14 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
     if (data) setV(data as Voucher);
   }
 
+  const [erroFoto, setErroFoto] = useState<string | null>(null);
+  async function salvarFoto(url: string | null) {
+    setErroFoto(null);
+    const { data, error } = await supabase.from("vouchers").update({ image_url: url }).eq("id", v.id).select().single();
+    if (error || !data) { setErroFoto("Não consegui salvar a foto. Tente de novo."); return; }
+    setV(data as Voucher);
+  }
+
   async function deleteVoucher() {
     if (!(await confirm({ title: "Excluir voucher", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
     await supabase.from("vouchers").delete().eq("id", v.id);
@@ -84,7 +94,11 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
         <div className="relative overflow-hidden rounded-[28px] p-6 text-white" style={{ background: voucherGradient(v.color), boxShadow: `0 14px 38px ${voucherTheme(v.color).glow}` }}>
           <VoucherLines />
           <div className="relative flex items-start justify-between gap-3">
-            <div className="min-w-0">
+            {v.image_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={v.image_url} alt="" className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-1 ring-white/30" />
+            )}
+            <div className="min-w-0 flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-wide opacity-85">🎟️ Painel do voucher</p>
               <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-tight">{v.title}</p>
               <p className="mt-0.5 text-[15px] opacity-90">{discountLabel(v)}</p>
@@ -107,6 +121,17 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
             <p className="mt-1.5 text-[12px] opacity-85">{pct}% do estoque já saiu</p>
           </div>
         </div>
+      </div>
+
+      {/* Foto do voucher: aparece no cartão da sua página. Dá pra adicionar,
+          trocar ou tirar a qualquer hora, sem recriar o voucher. */}
+      <div className="mt-4 rounded-[22px] border border-divider bg-surface-white p-4">
+        <p className="text-[13px] font-semibold">Foto do voucher</p>
+        <p className="mt-0.5 text-[12px] text-text-tertiary">Aparece no cartão do voucher na sua página.</p>
+        <div className="mt-3">
+          <ImageUpload value={v.image_url} businessId={v.business_id} lockedRatio="quadrado" promptKind="capa" promptSubject={v.title} onChange={salvarFoto} />
+        </div>
+        {erroFoto && <p role="alert" className="mt-2 text-[12.5px] text-red-600">{erroFoto}</p>}
       </div>
 
       {/* Estatísticas, coloridas, cada uma com seu próprio tom */}

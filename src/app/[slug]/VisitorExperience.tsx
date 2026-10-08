@@ -29,6 +29,7 @@ import { OrbitHome } from "./OrbitHome";
 import { LogoEditor } from "./LogoEditor";
 import { guardarModoHome, guardarModoVitrine, useModoHomeDoVisitante, useModoVitrine, type ModoHome } from "@/lib/modoHome";
 import { VitrineCoverflow, type CoverflowItem } from "./VitrineCoverflow";
+import { descontoLongo, descontoGrande } from "@/lib/voucherDesconto";
 
 type Business = {
   id: string;
@@ -922,12 +923,12 @@ export function VisitorExperience({
 type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null; color: string | null };
 
 function voucherDiscountLabel(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
-  return v.discount_type === "percent" ? `${v.discount_value}% de desconto` : `R$ ${v.discount_value} de desconto`;
+  return descontoLongo(v);
 }
 
 // Só o número grande do desconto, pra ficar em destaque no card ("10% OFF" / "R$ 10 OFF").
 function voucherDiscountBig(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
-  return v.discount_type === "percent" ? `${v.discount_value}% OFF` : `R$ ${v.discount_value} OFF`;
+  return descontoGrande(v);
 }
 
 type MeuVoucher = { code: string; title: string; expiresAt: string | null; claimedAt: string };

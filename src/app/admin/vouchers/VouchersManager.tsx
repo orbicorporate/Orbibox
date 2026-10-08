@@ -9,6 +9,7 @@ import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { VOUCHER_THEMES, voucherGradient, CHERRY_GRADIENT, CHERRY_SHADOW, type VoucherColor } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
 import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { descontoCurto } from "@/lib/voucherDesconto";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
@@ -23,7 +24,7 @@ const VALIDADES: { horas: string; rotulo: string }[] = [
 ];
 
 type RascunhoVoucher = {
-  title: string; description: string; discountType: "percent" | "fixed"; discountValue: string;
+  title: string; description: string; discountType: "percent" | "fixed" | "gift"; discountValue: string;
   quantityTotal: string; expiresHours: string; imageUrl: string | null; badge: string; color: VoucherColor;
   /** Veio pronto do cadastro, sugerido pelo ramo do negócio. */
   sugestao?: boolean;
@@ -38,7 +39,7 @@ function lerRascunho(id: string): string | null {
 }
 
 function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
-  return v.discount_type === "percent" ? `${v.discount_value}% off` : `R$ ${v.discount_value} off`;
+  return descontoCurto(v);
 }
 
 export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {}, abrirNovo = false }: { businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]>; abrirNovo?: boolean }) {
@@ -55,7 +56,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   // Form de criação
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [discountType, setDiscountType] = useState<"percent" | "fixed">("percent");
+  const [discountType, setDiscountType] = useState<"percent" | "fixed" | "gift">("percent");
   const [discountValue, setDiscountValue] = useState("");
   const [quantityTotal, setQuantityTotal] = useState("");
   const [expiresHours, setExpiresHours] = useState("48");
@@ -105,7 +106,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
     if (saving) return;
     const f: ("title" | "discount" | "quantity")[] = [];
     if (!title.trim()) f.push("title");
-    if (!discountValue || Number(discountValue) <= 0) f.push("discount");
+    if (discountType !== "gift" && (!discountValue || Number(discountValue) <= 0)) f.push("discount");
     if (!quantityTotal || Number(quantityTotal) < 1) f.push("quantity");
     setFaltando(f);
     if (f.length > 0) {
@@ -130,7 +131,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           title: title.trim(),
           description: description.trim() || null,
           discount_type: discountType,
-          discount_value: Number(discountValue),
+          discount_value: discountType === "gift" ? 0 : Number(discountValue),
           quantity_total: Number(quantityTotal),
           expires_hours: expiresHours.trim() ? Number(expiresHours) : null,
           image_url: imageUrl,
@@ -231,10 +232,16 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                   // destaque na cor dele. Mais informativo que o emoji.
                   <span className="relative flex h-14 w-14 shrink-0 flex-col items-center justify-center overflow-hidden rounded-2xl text-white" style={{ background: voucherGradient(v.color) }}>
                     <VoucherLines />
-                    <span className="relative text-[9px] font-bold uppercase leading-none opacity-80">
-                      {v.discount_type === "percent" ? "%" : "R$"}
-                    </span>
-                    <span className="relative text-[17px] font-extrabold leading-none">{v.discount_value}</span>
+                    {v.discount_type === "gift" ? (
+                      <span className="relative text-[11px] font-extrabold uppercase leading-none">Brinde</span>
+                    ) : (
+                      <>
+                        <span className="relative text-[9px] font-bold uppercase leading-none opacity-80">
+                          {v.discount_type === "percent" ? "%" : "R$"}
+                        </span>
+                        <span className="relative text-[17px] font-extrabold leading-none">{v.discount_value}</span>
+                      </>
+                    )}
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
@@ -374,12 +381,18 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           <div className="flex gap-2">
             <select
               value={discountType}
-              onChange={(e) => setDiscountType(e.target.value as "percent" | "fixed")}
+              onChange={(e) => { setDiscountType(e.target.value as "percent" | "fixed" | "gift"); setFaltando((f) => f.filter((x) => x !== "discount")); }}
               className="rounded-2xl border border-divider bg-surface-white px-3 py-2.5 text-[14px] outline-none"
             >
               <option value="percent">% desconto</option>
               <option value="fixed">R$ desconto</option>
+              <option value="gift">Brinde ou benefício</option>
             </select>
+            {discountType === "gift" ? (
+              <p className="flex min-w-0 flex-1 items-center rounded-2xl bg-surface-soft px-4 py-2.5 text-[13px] leading-snug text-text-secondary">
+                Sem número. O que a pessoa ganha vai no título (ex: Sobremesa grátis).
+              </p>
+            ) : (
             <input
               value={discountValue}
               id="voucher-campo-discount"
@@ -390,6 +403,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               inputMode="decimal"
               className={`min-w-0 flex-1 rounded-2xl border bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background ${faltando.includes("discount") ? "border-red-500" : "border-divider"}`}
             />
+            )}
           </div>
           <div>
             <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Quantos vouchers disponíveis</p>

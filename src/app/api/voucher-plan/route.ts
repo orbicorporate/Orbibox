@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { askClaude } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
+import { descontoLongo } from "@/lib/voucherDesconto";
 
 export const runtime = "nodejs";
 
@@ -40,9 +41,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
     if (!business) return NextResponse.json({ error: "Negócio não encontrado." }, { status: 404 });
 
-    const desconto = voucher.discount_type === "percent"
-      ? `${voucher.discount_value}% de desconto`
-      : `R$ ${voucher.discount_value} de desconto`;
+    const desconto = descontoLongo(voucher);
     const restam = voucher.quantity_total - voucher.quantity_claimed;
     const validade = voucher.expires_hours
       ? `quem pega tem ${voucher.expires_hours}h pra usar`

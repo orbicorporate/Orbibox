@@ -6,12 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 import { whatsappLink } from "@/lib/track";
 import { RedeemCodeCard } from "../RedeemCodeCard";
 import type { Database } from "@/lib/supabase/types";
+import { descontoCurto } from "@/lib/voucherDesconto";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
 
 function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
-  return v.discount_type === "percent" ? `${v.discount_value}% off` : `R$ ${v.discount_value} off`;
+  return descontoCurto(v);
 }
 
 function statusLabel(status: string) {
