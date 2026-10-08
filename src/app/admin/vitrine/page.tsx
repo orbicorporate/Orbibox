@@ -36,7 +36,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
         Catálogo
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">
-        Seus produtos e serviços, do jeito que o cliente vê no seu link.
+        O que o cliente vê no seu link.
       </p>
       <ShowcaseBuilder
         abrirNovo={novo === "1"}

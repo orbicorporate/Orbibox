@@ -15,7 +15,6 @@ import { HelperText } from "@/components/ui/HelperText";
 import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
-import { PreviewVisitante } from "@/components/mobile/PreviewVisitante";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { MiniTour } from "@/components/tour/MiniTour";
 import { InspireModal } from "./InspireModal";
@@ -173,7 +172,6 @@ export function ShowcaseBuilder({
   const [avisoDesfazer, setAvisoDesfazer] = useState<string | null>(null);
   const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const estiloOk = useFlag(`vitrine_estilo_${businessId}`);
   const guiaOculto = useFlag(`vitrine_guia_off_${businessId}`);
 
   // Fecha o menu "Mais" ao tocar fora dele.
@@ -422,12 +420,6 @@ export function ShowcaseBuilder({
           : `A Orbi trouxe ${items.length} ${items.length === 1 ? "item" : "itens"}. Revise e deixe ativo o que quiser mostrar`,
       feito: publishedCount > 0,
       acao: () => (items.length === 0 ? setShowImport(true) : document.getElementById("vitrine-itens")?.scrollIntoView({ behavior: "smooth", block: "start" })),
-    },
-    {
-      titulo: "Escolha o estilo",
-      detalhe: "Cores do catálogo e ideias prontas pro seu tipo de negócio",
-      feito: estiloOk,
-      acao: () => setShowEstilo(true),
     },
     {
       titulo: "Complete a página de cada item",
@@ -717,12 +709,12 @@ export function ShowcaseBuilder({
         <div className="mb-5">
           <div className="flex items-center justify-between gap-2 px-1">
             <p className="text-[13.5px] font-semibold">
-              Monte seu catálogo em 3 passos <span className="ml-1 text-[12.5px] font-normal text-text-tertiary">{passos.filter((p) => p.feito).length} de 3</span>
+              Próximo passo <span className="ml-1 text-[12.5px] font-normal text-text-tertiary">{passos.filter((p) => p.feito).length} de {passos.length}</span>
             </p>
             <button onClick={esconderGuia} className="text-[12px] text-text-tertiary">Ocultar</button>
           </div>
           <div className="mt-3 flex flex-col gap-2.5">
-            {passos.map((p, i) => (
+            {passos.map((p, i) => (i === passos.findIndex((x) => !x.feito) ? (
               <div key={i}>
               <PassoLinha
                 passo={{ titulo: p.titulo, detalhe: p.detalhe, feito: p.feito, onClick: p.acao }}
@@ -764,7 +756,7 @@ export function ShowcaseBuilder({
                 </div>
               )}
               </div>
-            ))}
+            ) : null))}
           </div>
         </div>
       )}
@@ -795,9 +787,6 @@ export function ShowcaseBuilder({
               <button onClick={() => { setMenuAberto(false); abrirAjustes(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Título, capa e novidades</button>
             </div>
           )}
-        </div>
-        <div className="ml-auto">
-          <PreviewVisitante slug={slug} tab="vitrine" soIcone className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-on-background text-white" />
         </div>
       </div>
 
@@ -833,7 +822,7 @@ export function ShowcaseBuilder({
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[14px] font-medium">Estilo do catálogo</span>
-            <span className="block text-[12px] text-text-tertiary">Cores e vitrines prontas pra se inspirar</span>
+            <span className="block text-[12px] text-text-tertiary">Cores e vitrines prontas</span>
           </span>
           <span className="shrink-0 text-[13px] font-medium text-text-secondary">Trocar →</span>
         </button>
@@ -904,8 +893,8 @@ export function ShowcaseBuilder({
       {showCoverExample && <CoverExampleModal onClose={() => setShowCoverExample(false)} />}
 
       {items.length > 0 && (
-        <p className="mt-5 text-[13px] text-text-tertiary">
-          {publishedCount === 0 ? "Nenhum item ativo ainda." : `${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}`} · toque num item pra editar
+        <p className="mt-4 text-[13px] text-text-tertiary">
+          {publishedCount === 0 ? "Nenhum item ativo ainda" : `${publishedCount} ${publishedCount === 1 ? "item ativo" : "itens ativos"}`}
         </p>
       )}
 
@@ -945,7 +934,7 @@ export function ShowcaseBuilder({
         />
       )}
 
-      <div id="vitrine-itens" className="mt-6 flex scroll-mt-24 flex-col gap-8">
+      <div id="vitrine-itens" className="mt-3 flex scroll-mt-24 flex-col gap-8">
         {sections.map((sec, si) => {
           const isDestaques = sec.name === "Destaques";
           const realCount = sections.filter((s) => s.name !== "Destaques").length;
@@ -958,7 +947,7 @@ export function ShowcaseBuilder({
             {!(isDestaques && realCount === 0) && (
             <div className="mb-3 flex items-center justify-between gap-2">
               {isDestaques ? (
-                <p className="text-[13px] text-text-tertiary">Sem categoria · aparecem no topo do Catálogo, sem título</p>
+                <p className="text-[13px] text-text-tertiary">Sem categoria</p>
               ) : (
                 <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
               )}
