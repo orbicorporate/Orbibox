@@ -26,6 +26,7 @@ import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
+import { LogoEditor } from "./LogoEditor";
 import { guardarModoHome, guardarModoVitrine, useModoHomeDoVisitante, useModoVitrine, type ModoHome } from "@/lib/modoHome";
 import { VitrineCoverflow, type CoverflowItem } from "./VitrineCoverflow";
 
@@ -137,6 +138,8 @@ export function VisitorExperience({
   const [editingBoxId, setEditingBoxId] = useState<string | null>(null);
   // Box com a paletinha de cor aberta na tela inicial.
   const [colorPickerBox, setColorPickerBox] = useState<string | null>(null);
+  // Menu recolhido de opções do card (cor, formato, ordem), aberto pelo lapinho.
+  const [menuBox, setMenuBox] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState("");
   // "Modo visitante", o dono liga isso pra ver a Home exatamente como o
   // visitante vê, sem os controles de edição no meio, sem precisar sair da
@@ -154,6 +157,9 @@ export function VisitorExperience({
   // Box de endereço expande direto na Home (sem navegar pra outra tela) , 
   // guarda qual box está expandido agora (ou null se nenhum).
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
+  // Logo editável na própria página (lapinho no modo de edição).
+  const [logoAtual, setLogoAtual] = useState<string | null>(business.logo_url);
+  const [editandoLogo, setEditandoLogo] = useState(false);
   // Modo Órbita x Modo Grade. O dono define o padrão da página; o visitante
   // pode trocar e a escolha dele vale só no aparelho dele.
   const [modoPadrao, setModoPadrao] = useState<ModoHome>(business.home_mode === "orbita" ? "orbita" : "grade");
@@ -427,6 +433,14 @@ export function VisitorExperience({
           sem os controles de edição (lápis, setinhas, formato) no meio , 
           só na tela inicial. Escondido nos overlays (chat, catálogo, sobre)
           porque senão fica borrado atrás do fundo semitransparente deles. */}
+      {editandoLogo && (
+        <LogoEditor
+          businessId={business.id}
+          logoUrl={logoAtual}
+          onClose={() => setEditandoLogo(false)}
+          onSaved={(url) => { setLogoAtual(url); setEditandoLogo(false); }}
+        />
+      )}
       {isOwner && intent === null && !previewMode && (
         <div className="fixed right-4 top-4 z-20 flex items-center gap-2">
           <Link
@@ -472,7 +486,7 @@ export function VisitorExperience({
             nome={business.name}
             descricao={frase}
             pergunta={business.hero_question}
-            logoUrl={business.logo_url}
+            logoUrl={logoAtual}
             cores={orbiColors ?? heroGradient}
             agentName={agentName}
             onPerguntar={hasAiChat ? () => chooseIntent("duvida") : undefined}
@@ -492,16 +506,26 @@ export function VisitorExperience({
 
         {intent === null && modo === "grade" && (
           <div className="flex flex-col items-center text-center">
-            {business.hero_avatar === "particle" || business.hero_avatar === "sphere" ? (
-              <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="mb-8 rounded-full" />
-            ) : business.hero_avatar === "logo" && business.logo_url ? (
-              <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
-            ) : business.logo_url ? (
-              // "auto" (padrão): mantém o comportamento de sempre, logo se tiver, senão a esfera.
-              <OrbiAvatar logoUrl={business.logo_url} size={96} className="mb-8" />
-            ) : (
-              <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="mb-8 rounded-full" />
-            )}
+            <div className="relative mb-8">
+              {business.hero_avatar === "particle" || business.hero_avatar === "sphere" ? (
+                <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
+              ) : logoAtual ? (
+                // "logo" ou "auto" (padrão): logo se tiver, senão a esfera.
+                <OrbiAvatar logoUrl={logoAtual} size={96} />
+              ) : (
+                <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
+              )}
+              {showOwnerControls && (
+                <button
+                  type="button"
+                  onClick={() => setEditandoLogo(true)}
+                  aria-label="Editar logo"
+                  className="absolute -right-1 bottom-0 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95"
+                >
+                  ✎
+                </button>
+              )}
+            </div>
             <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
               {business.name}
             </p>
@@ -594,49 +618,44 @@ export function VisitorExperience({
                   return (
                   <div key={o.key} className={`relative ${largo ? "col-span-2" : "col-span-1"}`}>
                     {showOwnerControls && (
-                      <div className="absolute right-2.5 top-2.5 z-10 flex gap-1">
+                      <div className="absolute right-2.5 top-2.5 z-20">
                         <span
                           role="button"
                           tabIndex={0}
-                          onClick={(e) => { e.stopPropagation(); setColorPickerBox(colorPickerBox === o.key ? null : o.key); }}
-                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
-                          aria-label="Trocar a cor"
-                          title="Cor do card"
+                          onClick={(e) => { e.stopPropagation(); setColorPickerBox(null); setMenuBox(menuBox === o.key ? null : o.key); }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[13px] text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.18)] active:scale-95"
+                          aria-label="Opções do card"
+                          aria-expanded={menuBox === o.key}
                         >
-                          <span className="h-4 w-4 rounded-full border border-black/10" style={{ background: o.color || "conic-gradient(from 0deg, #C0392B, #C2650A, #1F7A3D, #1D4ED8, #6D28D9, #C0392B)" }} />
+                          ✎
                         </span>
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e) => { e.stopPropagation(); toggleLayout(o.key, largo); }}
-                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
-                          aria-label={largo ? "Deixar quadrado (metade)" : "Deixar retângulo (linha toda)"}
-                          title={largo ? "Deixar quadrado" : "Deixar retângulo"}
-                        >
-                          {largo ? (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="5" y="5" width="14" height="14" rx="2.5" /></svg>
-                          ) : (
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2.5" y="7" width="19" height="10" rx="2.5" /></svg>
-                          )}
-                        </span>
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e) => { e.stopPropagation(); moveOption(o.key, -1); }}
-                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
-                          aria-label="Mover pra cima"
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6" /></svg>
-                        </span>
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e) => { e.stopPropagation(); moveOption(o.key, 1); }}
-                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.15)]"
-                          aria-label="Mover pra baixo"
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
-                        </span>
+                        {menuBox === o.key && (
+                          <>
+                            <button type="button" aria-label="Fechar opções" onClick={(e) => { e.stopPropagation(); setMenuBox(null); }} className="fixed inset-0 z-10 cursor-default" />
+                            <div className="absolute right-0 top-10 z-20 w-[176px] overflow-hidden rounded-2xl bg-white p-1.5 text-on-background shadow-[0_10px_30px_rgba(17,19,24,0.22)]" onClick={(e) => e.stopPropagation()}>
+                              <button type="button" onClick={() => { setMenuBox(null); setColorPickerBox(o.key); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                                <span className="h-4 w-4 shrink-0 rounded-full border border-black/10" style={{ background: o.color || "conic-gradient(from 0deg, #C0392B, #C2650A, #1F7A3D, #1D4ED8, #6D28D9, #C0392B)" }} />
+                                Cor do card
+                              </button>
+                              <button type="button" onClick={() => { setMenuBox(null); toggleLayout(o.key, largo); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                                {largo ? (
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0"><rect x="5" y="5" width="14" height="14" rx="2.5" /></svg>
+                                ) : (
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0"><rect x="2.5" y="7" width="19" height="10" rx="2.5" /></svg>
+                                )}
+                                {largo ? "Deixar quadrado" : "Deixar retângulo"}
+                              </button>
+                              <button type="button" onClick={() => { setMenuBox(null); moveOption(o.key, -1); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M18 15l-6-6-6 6" /></svg>
+                                Mover pra cima
+                              </button>
+                              <button type="button" onClick={() => { setMenuBox(null); moveOption(o.key, 1); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M6 9l6 6 6-6" /></svg>
+                                Mover pra baixo
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
 
@@ -703,7 +722,7 @@ export function VisitorExperience({
                           boxLogo={o.boxLogo}
                           color={o.color}
                           orbiColors={orbiColors}
-                          businessLogo={business.logo_url}
+                          businessLogo={logoAtual}
                           titleNode={titleNode}
                           ai={o.ai}
                           stars={o.stars}
@@ -732,7 +751,7 @@ export function VisitorExperience({
                           boxLogo={o.boxLogo}
                           color={o.color}
                           orbiColors={orbiColors}
-                          businessLogo={business.logo_url}
+                          businessLogo={logoAtual}
                           titleNode={titleNode}
                           ai={o.ai}
                           stars={o.stars}
