@@ -62,6 +62,9 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [badge, setBadge] = useState("");
   const [color, setColor] = useState<VoucherColor>("cherry");
+  // Campos obrigatórios que ficaram vazios ao tentar criar (o botão nunca fica
+  // morto: avisa o que falta e leva até o campo).
+  const [faltando, setFaltando] = useState<("title" | "discount" | "quantity")[]>([]);
 
   // Rascunho guardado quando um plano sem vouchers tentou criar: depois de
   // assinar, a pessoa volta e continua de onde parou.
@@ -99,7 +102,16 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
 
   async function createVoucher(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !discountValue || !quantityTotal || saving) return;
+    if (saving) return;
+    const f: ("title" | "discount" | "quantity")[] = [];
+    if (!title.trim()) f.push("title");
+    if (!discountValue || Number(discountValue) <= 0) f.push("discount");
+    if (!quantityTotal || Number(quantityTotal) < 1) f.push("quantity");
+    setFaltando(f);
+    if (f.length > 0) {
+      document.getElementById(`voucher-campo-${f[0]}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     // Titânio montou o voucher pra ver como é, na hora de salvar, pede o upgrade.
     if (!canSave) {
       try {
@@ -310,9 +322,10 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           )}
           <input
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            id="voucher-campo-title"
+            onChange={(e) => { setTitle(e.target.value); setFaltando((f) => f.filter((x) => x !== "title")); }}
             placeholder="Título (ex: 10% na primeira compra)"
-            className="rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+            className={`rounded-2xl border bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background ${faltando.includes("title") ? "border-red-500" : "border-divider"}`}
           />
           <textarea
             value={description}
@@ -369,22 +382,26 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             </select>
             <input
               value={discountValue}
-              onChange={(e) => setDiscountValue(e.target.value)}
+              id="voucher-campo-discount"
+              onChange={(e) => { setDiscountValue(e.target.value); setFaltando((f) => f.filter((x) => x !== "discount")); }}
               placeholder={discountType === "percent" ? "Ex: 10" : "Ex: 15"}
               type="number"
               min="0"
-              className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+              inputMode="decimal"
+              className={`min-w-0 flex-1 rounded-2xl border bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background ${faltando.includes("discount") ? "border-red-500" : "border-divider"}`}
             />
           </div>
           <div>
             <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Quantos vouchers disponíveis</p>
             <input
               value={quantityTotal}
-              onChange={(e) => setQuantityTotal(e.target.value)}
+              id="voucher-campo-quantity"
+              onChange={(e) => { setQuantityTotal(e.target.value); setFaltando((f) => f.filter((x) => x !== "quantity")); }}
               placeholder="Ex: 50"
               type="number"
               min="1"
-              className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+              inputMode="numeric"
+              className={`mt-1.5 w-full rounded-2xl border bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background ${faltando.includes("quantity") ? "border-red-500" : "border-divider"}`}
             />
           </div>
           <div>
@@ -411,13 +428,18 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               Se a pessoa resgatar e não aparecer dentro desse prazo, a vaga volta pro estoque.
             </p>
           </div>
+          {faltando.length > 0 && (
+            <p role="alert" className="text-[13px] text-red-600">
+              Falta preencher: {faltando.map((x) => (x === "title" ? "o título" : x === "discount" ? "o valor do desconto" : "a quantidade")).join(", ")}.
+            </p>
+          )}
           <div className="mt-1 flex gap-2">
             <button type="button" onClick={() => setCreating(false)} className="flex-1 rounded-full bg-surface-soft px-4 py-2.5 text-[14px] font-medium">
               Cancelar
             </button>
             <button
               type="submit"
-              disabled={saving || !title.trim() || !discountValue || !quantityTotal}
+              disabled={saving}
               className="flex-1 rounded-full bg-button-primary px-4 py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
             >
               {saving ? "Criando…" : canSave ? "Criar voucher" : "Criar voucher 💎"}
