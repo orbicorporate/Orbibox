@@ -288,6 +288,22 @@ export function AppHeader({
                 </Link>
               </div>
 
+              {/* Prévia: painel de rede para quem tem vários negócios ou franquias */}
+              {isMaster && (
+              <Link
+                href="/admin/rede"
+                onClick={() => setMenuOpen(false)}
+                className="mt-2 flex items-center gap-3 rounded-[20px] bg-white px-4 py-3 ring-1 ring-black/[0.07] transition-transform active:scale-[.98]"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full orbi-gradient text-[15px] text-on-background" aria-hidden>◎</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14.5px] leading-tight">Rede de Orbibox</span>
+                  <span className="block text-[12.5px] leading-snug text-text-tertiary">Tem vários negócios ou franquias? Veja todos num painel</span>
+                </span>
+                <span className="text-text-tertiary" aria-hidden>→</span>
+              </Link>
+              )}
+
               {/* Atalho pro painel de gestão, só pros masters */}
               {isMaster && (
                 <Link
@@ -333,10 +349,22 @@ export function AppHeader({
             <span className="mx-auto mb-4 block h-1.5 w-12 rounded-full bg-divider" />
             <p className="text-center font-[family-name:var(--font-manrope)] text-[18px] font-medium">Seus Orbibox</p>
             <div className="mt-4 flex flex-col gap-2">
-              {negocios.map((n) => {
+              {negocios.map((n, i) => {
                 const ativo = n.id === negocioAtual;
+                const temRede = negocios.some((x) => !x.dono);
+                const temMeus = negocios.some((x) => x.dono);
+                const rotulo =
+                  temRede && temMeus && i === 0
+                    ? "Meus Orbibox"
+                    : temRede && !n.dono && negocios[i - 1]?.dono
+                      ? "Rede que você administra"
+                      : null;
                 return (
-                  <div key={n.id} className="relative">
+                  <div key={n.id}>
+                  {rotulo && (
+                    <p className={`px-1 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary ${i === 0 ? "" : "mt-3"}`}>{rotulo}</p>
+                  )}
+                  <div className="relative">
                   <button
                     type="button"
                     onClick={() => trocarPara(n.id)}
@@ -350,6 +378,9 @@ export function AppHeader({
                       <span className="block truncate text-[15px] font-medium">{n.name}</span>
                       <span className="block truncate text-[12px] text-text-tertiary">/{n.slug}</span>
                     </span>
+                    {!n.dono && trocando !== n.id && (
+                      <span className="shrink-0 rounded-full bg-surface-soft px-2 py-0.5 text-[10.5px] font-medium text-text-secondary">Rede</span>
+                    )}
                     {trocando === n.id ? (
                       <span className="text-[12px] text-text-tertiary">Abrindo…</span>
                     ) : ativo ? (
@@ -367,27 +398,39 @@ export function AppHeader({
                     </button>
                   )}
                   </div>
+                  </div>
                 );
               })}
             </div>
 
-            {podeCriarNegocio ? (
+            <div className="mt-4 flex flex-col gap-2">
+              {podeCriarNegocio ? (
+                <Link
+                  href="/onboarding?novo=1"
+                  onClick={() => setTrocaOpen(false)}
+                  className="orbi-gradient flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-medium text-on-background"
+                >
+                  + Criar outro Orbibox para mim
+                </Link>
+              ) : (
+                <Link
+                  href="/admin/planos"
+                  onClick={() => setTrocaOpen(false)}
+                  className="block rounded-2xl bg-surface-soft px-4 py-3 text-center text-[13px] text-text-secondary"
+                >
+                  Tem mais de uma marca? No plano <span className="font-medium text-on-background">Nióbio</span> você cria vários Orbibox, cada um com seu link e sua IA. Ver planos →
+                </Link>
+              )}
+{isMaster && (
               <Link
-                href="/onboarding?novo=1"
+                href="/admin/rede"
                 onClick={() => setTrocaOpen(false)}
-                className="orbi-gradient mt-4 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-medium text-on-background"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-divider py-3.5 text-[15px] font-medium text-on-background transition-colors hover:bg-surface-soft"
               >
-                + Criar outro Orbibox
+                + Adicionar um Orbibox à rede
               </Link>
-            ) : (
-              <Link
-                href="/admin/planos"
-                onClick={() => setTrocaOpen(false)}
-                className="mt-4 block rounded-2xl bg-surface-soft px-4 py-3 text-center text-[13px] text-text-secondary"
-              >
-                Tem mais de uma marca? No plano <span className="font-medium text-on-background">Nióbio</span> você cria vários Orbibox, cada um com seu link e sua IA. Ver planos →
-              </Link>
-            )}
+              )}
+            </div>
 
             {/* Confirmação em dois níveis, por cima da lista. */}
             {excluir && (
