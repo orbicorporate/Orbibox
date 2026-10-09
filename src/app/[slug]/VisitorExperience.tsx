@@ -66,7 +66,14 @@ type Business = {
 
 // Uma frase curta que diz o que é o negócio, pra quem chega sem saber.
 // Usa a descrição de compartilhamento ou a primeira frase do "sobre".
+/** Texto guardado como só espaços = o dono apagou de propósito (não usar o texto padrão). */
+function textoApagado(v: string | null | undefined): boolean {
+  return typeof v === "string" && v.length > 0 && v.trim() === "";
+}
+
 function fraseDoNegocio(b: Business): string | null {
+  // Dono apagou a frase de propósito (guardamos um espaço): não mostra nada.
+  if (textoApagado(b.share_description)) return null;
   const fonte = b.share_description?.trim() || b.about_business?.trim() || "";
   if (!fonte) return null;
   const primeira = fonte.split(/(?<=[.!?])\s|\n/)[0].trim();
@@ -455,10 +462,13 @@ export function VisitorExperience({
   }
 
   const frase = fraseDoNegocio(business);
-  const [textos, setTextos] = useState<{ nome: string; frase?: string; pergunta: string | null }>({ nome: business.name, pergunta: business.hero_question });
+  const [textos, setTextos] = useState<{ nome: string; frase?: string; pergunta: string | null }>({ nome: business.name, frase: textoApagado(business.share_description) ? "" : undefined, pergunta: textoApagado(business.hero_question) ? "" : business.hero_question });
   async function salvarTexto(campo: "nome" | "frase" | "pergunta", valor: string) {
+    if (campo === "nome" && !valor.trim()) return;
     setTextos((t) => ({ ...t, [campo]: valor }));
-    const coluna = campo === "nome" ? { name: valor } : campo === "frase" ? { share_description: valor } : { hero_question: valor };
+    // Vazio vira um espaço no banco, pra diferenciar "apagou" de "nunca preencheu".
+    const guardar = valor.trim() === "" ? " " : valor;
+    const coluna = campo === "nome" ? { name: valor } : campo === "frase" ? { share_description: guardar } : { hero_question: guardar };
     conferirSalvo(await supabase.from("businesses").update(coluna).eq("id", business.id));
   }
   // WhatsApp sempre à mão na tela inicial: se o dono tem número mas não ligou
@@ -563,7 +573,7 @@ export function VisitorExperience({
             redes={redes.map((o) => ({ key: o.key, t: o.t, rede: o.rede as Rede, onClick: o.onClick }))}
             nome={business.name}
             descricao={frase}
-            pergunta={business.hero_question}
+            pergunta={textoApagado(business.hero_question) ? null : business.hero_question}
             logoUrl={logoAtual}
             cores={orbiColors ?? heroGradient}
             agentName={agentName}
@@ -611,12 +621,14 @@ export function VisitorExperience({
             </TextoEditavel>
             {(textos.frase ?? frase) || showOwnerControls ? (
               <TextoEditavel editavel={showOwnerControls} rotulo="frase de apresentação" valor={textos.frase ?? frase ?? ""} onSalvar={(v) => salvarTexto("frase", v)} multilinha placeholder="Uma frase que diz o que você faz" className="mt-3 max-w-[320px]" inputClassName="max-w-[320px] text-[14px]">
-                <p className="mt-1.5 max-w-[320px] text-[14px] leading-snug text-text-secondary">{textos.frase ?? frase ?? "Adicione uma frase que diz o que você faz"}</p>
+                <p className={`mt-1.5 max-w-[320px] text-[14px] leading-snug ${(textos.frase ?? frase) ? "text-text-secondary" : "text-text-tertiary"}`}>{(textos.frase ?? frase) || "Toque para adicionar uma frase"}</p>
               </TextoEditavel>
             ) : null}
             <TextoEditavel editavel={showOwnerControls} rotulo="pergunta da página" valor={textos.pergunta ?? ""} onSalvar={(v) => salvarTexto("pergunta", v)} placeholder="O que trouxe você aqui hoje?" className="mt-4" inputClassName="text-[24px] font-medium">
               <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-[1.1] tracking-[-0.02em]">
-                {textos.pergunta?.trim() ? (
+                {textos.pergunta === "" ? (
+                  showOwnerControls ? <span className="text-[16px] font-normal text-text-tertiary">Toque para adicionar uma pergunta</span> : null
+                ) : textos.pergunta?.trim() ? (
                   textos.pergunta
                 ) : (
                   <>

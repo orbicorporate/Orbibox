@@ -41,7 +41,8 @@ export function TextoEditavel({
   function fechar(salvar: boolean) {
     setEditando(false);
     const novo = rascunho.trim();
-    if (salvar && novo && novo !== valor.trim()) onSalvar(novo);
+    // Vazio é permitido: a pessoa pode querer a página sem esse texto.
+    if (salvar && novo !== valor.trim()) onSalvar(novo);
   }
 
   if (editando) {
