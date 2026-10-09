@@ -333,10 +333,22 @@ export function AppHeader({
             <span className="mx-auto mb-4 block h-1.5 w-12 rounded-full bg-divider" />
             <p className="text-center font-[family-name:var(--font-manrope)] text-[18px] font-medium">Seus Orbibox</p>
             <div className="mt-4 flex flex-col gap-2">
-              {negocios.map((n) => {
+              {negocios.map((n, i) => {
                 const ativo = n.id === negocioAtual;
+                const temRede = negocios.some((x) => !x.dono);
+                const temMeus = negocios.some((x) => x.dono);
+                const rotulo =
+                  temRede && temMeus && i === 0
+                    ? "Meus Orbibox"
+                    : temRede && !n.dono && negocios[i - 1]?.dono
+                      ? "Rede que você administra"
+                      : null;
                 return (
-                  <div key={n.id} className="relative">
+                  <div key={n.id}>
+                  {rotulo && (
+                    <p className={`px-1 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary ${i === 0 ? "" : "mt-3"}`}>{rotulo}</p>
+                  )}
+                  <div className="relative">
                   <button
                     type="button"
                     onClick={() => trocarPara(n.id)}
@@ -350,6 +362,9 @@ export function AppHeader({
                       <span className="block truncate text-[15px] font-medium">{n.name}</span>
                       <span className="block truncate text-[12px] text-text-tertiary">/{n.slug}</span>
                     </span>
+                    {!n.dono && trocando !== n.id && (
+                      <span className="shrink-0 rounded-full bg-surface-soft px-2 py-0.5 text-[10.5px] font-medium text-text-secondary">Rede</span>
+                    )}
                     {trocando === n.id ? (
                       <span className="text-[12px] text-text-tertiary">Abrindo…</span>
                     ) : ativo ? (
@@ -366,6 +381,7 @@ export function AppHeader({
                       ✕
                     </button>
                   )}
+                  </div>
                   </div>
                 );
               })}
