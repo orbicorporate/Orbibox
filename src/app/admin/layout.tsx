@@ -8,6 +8,7 @@ import { AppHeader } from "@/components/mobile/AppHeader";
 import { getBusinessProgress } from "@/lib/progress";
 import { getPendingInsights } from "@/lib/insights";
 import { TourOverlay } from "@/components/tour/TourOverlay";
+import { GuiaOrbi } from "@/components/guia/GuiaOrbi";
 import { ReferralCelebration } from "./ReferralCelebration";
 import { getCurrentBusinessId, listMyBusinesses, podeCriarOutroNegocio } from "@/lib/business";
 import { AbrirInternoNoApp } from "@/components/AbrirInternoNoApp";
@@ -147,6 +148,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <Suspense fallback={null}>
         <TourOverlay businessId={business.id} />
       </Suspense>
+      <GuiaOrbi semItens={(adminProducts ?? []).length === 0} slug={business.slug} />
     </div>
   );
 }

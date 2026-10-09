@@ -57,6 +57,7 @@ export function PreviewAoVivo({ slug, tab }: { slug: string; tab?: "vitrine" | "
     return (
       <button
         type="button"
+        data-guia="previa"
         onClick={() => alternar(true)}
         className="fixed bottom-28 left-4 z-30 flex items-center gap-2 rounded-full bg-on-background px-3.5 py-2.5 text-[12.5px] font-medium text-white shadow-[0_10px_24px_-10px_rgba(0,0,0,0.5)]"
       >
@@ -72,6 +73,7 @@ export function PreviewAoVivo({ slug, tab }: { slug: string; tab?: "vitrine" | "
   return (
     <div className="fixed bottom-28 left-3 z-30 flex flex-col items-start gap-1.5">
       <div
+        data-guia="previa"
         className="relative overflow-hidden rounded-[22px] border-[4px] border-[#16171a] bg-background-main shadow-[0_18px_40px_-14px_rgba(0,0,0,0.55)]"
         style={{ width: L * ESCALA + 8, height: altura * ESCALA + 8 }}
       >

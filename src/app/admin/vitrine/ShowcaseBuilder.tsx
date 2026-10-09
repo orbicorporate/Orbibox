@@ -764,7 +764,7 @@ export function ShowcaseBuilder({
 
       {/* Ação principal visível; o resto fica no menu "Mais". */}
       <div className="flex items-center gap-2">
-        <button onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-5 py-2.5 text-[14px] font-medium text-white disabled:opacity-50">
+        <button data-guia="novo-item" onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-5 py-2.5 text-[14px] font-medium text-white disabled:opacity-50">
           + Novo item
         </button>
         <div className="relative" ref={menuRef}>
@@ -1678,6 +1678,7 @@ function ItemCard({
             />
             <div className="flex items-start justify-between gap-3">
               <input
+                data-guia="nome-item"
                 value={item.title}
                 onChange={(e) => patch(item.id, { title: e.target.value })}
                 onBlur={(e) => save(item.id, { title: e.target.value })}
@@ -1697,7 +1698,7 @@ function ItemCard({
                 placeholder="Conte o que é, pra quem serve, o que inclui"
                 className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
               />
-              <button onClick={onImprove} disabled={improving} className={`mt-2 rounded-full px-4 py-2 text-[12px] font-medium ${improving ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}>
+              <button data-guia="texto-orbi" onClick={onImprove} disabled={improving} className={`mt-2 rounded-full px-4 py-2 text-[12px] font-medium ${improving ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background disabled:opacity-50"}`}>
                 {improving ? <OrbiWorking label="Pensando…" variant="inline" /> : (item.description?.trim() ? "✦ Melhorar texto" : "✦ Gerar texto com IA")}
               </button>
             </div>
@@ -1724,7 +1725,7 @@ function ItemCard({
               </div>
             </div>
 
-            <div data-tour="item-capa">
+            <div data-tour="item-capa" data-guia="foto-item">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Foto de capa</p>
               <div className="mt-2">
                 <ImageUpload
