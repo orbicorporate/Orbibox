@@ -63,13 +63,13 @@ export function GuiaBotao({ className = "" }: { className?: string }) {
   );
 }
 
-export function GuiaOrbi({ semItens, slug }: { semItens: boolean; slug: string }) {
+export function GuiaOrbi({ semItens }: { semItens: boolean; slug?: string }) {
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   if (!montado) return null;
-  return <GuiaInterno semItens={semItens} slug={slug} />;
+  return <GuiaInterno semItens={semItens} />;
 }
 
-function GuiaInterno({ semItens, slug }: { semItens: boolean; slug: string }) {
+function GuiaInterno({ semItens }: { semItens: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   // Começa sozinho só na primeira vez: negócio sem itens, no Catálogo.
@@ -77,7 +77,6 @@ function GuiaInterno({ semItens, slug }: { semItens: boolean; slug: string }) {
     semItens && !lerFeito() && typeof window !== "undefined" && window.location.pathname.startsWith("/admin/vitrine") ? 0 : null,
   );
   const [rect, setRect] = useState<Rect | null>(null);
-  const [copiado, setCopiado] = useState(false);
   const avancando = useRef(false);
 
   const passo = i !== null && i < PASSOS.length ? PASSOS[i] : null;
@@ -158,13 +157,6 @@ function GuiaInterno({ semItens, slug }: { semItens: boolean; slug: string }) {
     setRect(null);
   }
 
-  async function copiarLink() {
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}/${slug}`);
-      setCopiado(true);
-    } catch {}
-  }
-
   if (i === null) return null;
 
   const base = "fixed left-1/2 z-[70] w-[92vw] max-w-[380px] -translate-x-1/2 rounded-[26px] bg-surface-white p-5 shadow-[0_16px_44px_rgba(0,0,0,0.3)]";
@@ -176,11 +168,11 @@ function GuiaInterno({ semItens, slug }: { semItens: boolean; slug: string }) {
         <div className={`${base} top-1/2 -translate-y-1/2 text-center`}>
           <p className="text-[34px]" aria-hidden>🎉</p>
           <p className="mt-1 font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">Pronto!</p>
-          <p className="mt-1 text-[16px] leading-snug text-text-secondary">Seu primeiro item está no ar. Agora é só compartilhar o seu link.</p>
-          <button onClick={copiarLink} className="mt-5 min-h-[52px] w-full rounded-full bg-button-primary text-[16px] font-medium text-white">
-            {copiado ? "Link copiado ✓" : "Copiar meu link"}
+          <p className="mt-1 text-[16px] leading-snug text-text-secondary">Seu primeiro item está criado. Continue montando: mais itens, fotos e botões. Compartilhe o link quando a página estiver bem completa.</p>
+          <button onClick={() => { encerrar(); router.push("/admin/pendencias"); }} className="mt-5 min-h-[52px] w-full rounded-full bg-button-primary text-[16px] font-medium text-white">
+            Ver o que falta
           </button>
-          <button onClick={encerrar} className="mt-2 min-h-[44px] w-full text-[15px] text-text-secondary">Fechar</button>
+          <button onClick={encerrar} className="mt-2 min-h-[44px] w-full text-[15px] text-text-secondary">Continuar depois</button>
         </div>
       </div>,
       document.body,
