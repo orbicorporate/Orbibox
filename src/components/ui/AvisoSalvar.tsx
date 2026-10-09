@@ -188,14 +188,14 @@ export function BotaoSalvar({ className = "" }: { className?: string }) {
       onClick={salvar}
       aria-live="polite"
       title="Tudo salva sozinho. Toque pra ter certeza."
-      className={`inline-flex items-center gap-1.5 rounded-full bg-surface-white/80 px-3 py-1.5 text-[12px] font-medium shadow-[0_1px_6px_rgba(17,19,24,0.1)] ring-1 ring-black/[0.05] backdrop-blur transition-colors ${estado === "salvo" ? "text-[#1F7A45]" : "text-text-secondary"} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full bg-surface-white/80 px-3.5 py-1.5 text-[12px] font-medium shadow-[0_1px_6px_rgba(17,19,24,0.1)] ring-1 ring-black/[0.05] backdrop-blur transition-colors ${estado === "salvo" ? "text-[#1F7A45]" : "text-text-secondary"} ${className}`}
     >
       {estado === "salvando" ? (
         <><span className="h-3 w-3 animate-spin rounded-full border-[1.5px] border-current/30 border-t-current" />Salvando…</>
       ) : estado === "salvo" ? (
         <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M20 6L9 17l-5-5" /></svg>Salvo</>
       ) : (
-        <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 4h11l3 3v13H5z" /><path d="M8 4v5h7V4" /><path d="M8 20v-6h8v6" /></svg>Salvar</>
+        Salvar
       )}
     </button>
   );
