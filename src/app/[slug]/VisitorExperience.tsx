@@ -624,8 +624,8 @@ export function VisitorExperience({
                 <p className={`mt-1.5 max-w-[320px] text-[14px] leading-snug ${(textos.frase ?? frase) ? "text-text-secondary" : "text-text-tertiary"}`}>{(textos.frase ?? frase) || "Toque para adicionar uma frase"}</p>
               </TextoEditavel>
             ) : null}
-            <TextoEditavel editavel={showOwnerControls} rotulo="pergunta da página" valor={textos.pergunta ?? ""} onSalvar={(v) => salvarTexto("pergunta", v)} placeholder="O que trouxe você aqui hoje?" className="mt-4" inputClassName="text-[24px] font-medium">
-              <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-[1.1] tracking-[-0.02em]">
+            <TextoEditavel editavel={showOwnerControls} rotulo="pergunta da página" valor={textos.pergunta ?? ""} onSalvar={(v) => salvarTexto("pergunta", v)} placeholder="O que trouxe você aqui hoje?" className="mt-4" inputClassName="text-[20px] font-medium">
+              <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-[1.15] tracking-[-0.015em]">
                 {textos.pergunta === "" ? (
                   showOwnerControls ? <span className="text-[16px] font-normal text-text-tertiary">Toque para adicionar uma pergunta</span> : null
                 ) : textos.pergunta?.trim() ? (
