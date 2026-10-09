@@ -118,7 +118,7 @@ export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?:
   if (layout === "largo") {
     return `flex w-full items-center gap-4 rounded-[22px] p-4 text-left ${bg}${ring}`;
   }
-  return `flex h-full min-h-[132px] w-full flex-col justify-between rounded-[22px] p-4 text-left ${bg}${ring}`;
+  return `flex h-full min-h-[116px] w-full flex-col justify-between rounded-[22px] p-4 text-left ${bg}${ring}`;
 }
 
 /** Estilo inline que acompanha `homeCardShellClass`: só a cor escolhida
@@ -170,7 +170,9 @@ export function HomeOptionCardContent({
   const custom = isCustomBoxColor(color);
   const dark = needsDarkFg(color);
   const onDarkOrRed = cupom || custom;
-  const descClass = onDarkOrRed ? (dark ? "text-[#111318]/70" : "text-white/85") : "text-text-tertiary";
+  // Experimento minimalista: só o título aparece no box. A descrição continua
+  // no dado (e no editor), só não é mostrada aqui.
+  void description;
 
   if (layout === "largo") {
     return (
@@ -179,7 +181,6 @@ export function HomeOptionCardContent({
         <span className="relative min-w-0 flex-1">
           <span className="block text-[17px] font-semibold">{renderedTitle}</span>
           {stars && <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
-          <span className={`mt-0.5 line-clamp-2 block text-[13px] ${descClass}`}>{description}</span>
         </span>
         <span className={`relative shrink-0 ${onDarkOrRed ? (dark ? "text-[#111318]/80" : "text-white/80") : "text-text-tertiary"}`}>{addressIndicator ?? "→"}</span>
       </>
@@ -192,7 +193,6 @@ export function HomeOptionCardContent({
       <span className="relative">
         <span className="flex min-h-[40px] items-end text-[18px] font-semibold leading-tight">{renderedTitle}</span>
         {stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
-        <span className={`mt-1 line-clamp-2 block text-[13px] leading-snug ${descClass}`}>{description}</span>
       </span>
     </>
   );
