@@ -288,7 +288,7 @@ export function AppHeader({
                 </Link>
               </div>
 
-              {/* Prévia: painel de rede para quem tem várias lojas ou franquias */}
+              {/* Prévia: painel de rede para quem tem vários negócios ou franquias */}
               <Link
                 href="/admin/rede"
                 onClick={() => setMenuOpen(false)}
@@ -296,8 +296,8 @@ export function AppHeader({
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full orbi-gradient text-[15px] text-on-background" aria-hidden>◎</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14.5px] leading-tight">Rede de lojas</span>
-                  <span className="block text-[12.5px] leading-snug text-text-tertiary">Tem várias lojas ou franquias? Veja todas num painel</span>
+                  <span className="block text-[14.5px] leading-tight">Rede de Orbibox</span>
+                  <span className="block text-[12.5px] leading-snug text-text-tertiary">Tem vários negócios ou franquias? Veja todos num painel</span>
                 </span>
                 <span className="text-text-tertiary" aria-hidden>→</span>
               </Link>
@@ -401,23 +401,32 @@ export function AppHeader({
               })}
             </div>
 
-            {podeCriarNegocio ? (
+            <div className="mt-4 flex flex-col gap-2">
+              {podeCriarNegocio ? (
+                <Link
+                  href="/onboarding?novo=1"
+                  onClick={() => setTrocaOpen(false)}
+                  className="orbi-gradient flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-medium text-on-background"
+                >
+                  + Criar outro Orbibox para mim
+                </Link>
+              ) : (
+                <Link
+                  href="/admin/planos"
+                  onClick={() => setTrocaOpen(false)}
+                  className="block rounded-2xl bg-surface-soft px-4 py-3 text-center text-[13px] text-text-secondary"
+                >
+                  Tem mais de uma marca? No plano <span className="font-medium text-on-background">Nióbio</span> você cria vários Orbibox, cada um com seu link e sua IA. Ver planos →
+                </Link>
+              )}
               <Link
-                href="/onboarding?novo=1"
+                href="/admin/rede"
                 onClick={() => setTrocaOpen(false)}
-                className="orbi-gradient mt-4 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-medium text-on-background"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-divider py-3.5 text-[15px] font-medium text-on-background transition-colors hover:bg-surface-soft"
               >
-                + Criar outro Orbibox
+                + Adicionar um Orbibox à rede
               </Link>
-            ) : (
-              <Link
-                href="/admin/planos"
-                onClick={() => setTrocaOpen(false)}
-                className="mt-4 block rounded-2xl bg-surface-soft px-4 py-3 text-center text-[13px] text-text-secondary"
-              >
-                Tem mais de uma marca? No plano <span className="font-medium text-on-background">Nióbio</span> você cria vários Orbibox, cada um com seu link e sua IA. Ver planos →
-              </Link>
-            )}
+            </div>
 
             {/* Confirmação em dois níveis, por cima da lista. */}
             {excluir && (

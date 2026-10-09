@@ -77,14 +77,14 @@ export function RedeView() {
       <div className="mt-3 flex items-center gap-2">
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.02em]">{REDE_DEMO.nome}</h1>
       </div>
-      <p className="mt-1 text-[13.5px] text-text-secondary">Todas as suas lojas num só lugar.</p>
+      <p className="mt-1 text-[13.5px] text-text-secondary">Todos os seus Orbibox num só lugar.</p>
       <p className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FFF1C9] px-3 py-1 text-[12px] text-[#7A5A00]">
         <span className="h-1.5 w-1.5 rounded-full bg-[#E0A800]" aria-hidden />
         Prévia com dados de exemplo
       </p>
 
       <div role="tablist" aria-label="Seções da rede" className="mt-5 flex gap-1.5 rounded-full bg-surface-soft p-1">
-        {([["geral", "Visão geral"], ["lojas", "Lojas"], ["convite", "Convite e cobrança"]] as const).map(([id, rot]) => (
+        {([["geral", "Visão geral"], ["lojas", "Orbibox"], ["convite", "Convite e cobrança"]] as const).map(([id, rot]) => (
           <button
             key={id}
             role="tab"
@@ -131,7 +131,7 @@ function Geral({ lojas, totais, serieRede, deltaRede, onVerLoja }: { lojas: Loja
           <p className="font-[family-name:var(--font-manrope)] text-[52px] font-medium leading-none tracking-[-0.03em] tabular-nums">{nf(visitas)}</p>
           <span className="mb-1.5"><Delta v={deltaRede} /></span>
         </div>
-        <p className="relative mt-1.5 text-[13.5px] text-white/65">{lojas.length} lojas ativas na rede</p>
+        <p className="relative mt-1.5 text-[13.5px] text-white/65">{lojas.length} Orbibox ativos na rede</p>
         <div className="relative mt-5 flex h-16 items-end gap-1.5" aria-hidden>
           {serieRede.map((v, i) => (
             <div key={i} className="flex flex-1 flex-col items-center gap-1">
@@ -163,9 +163,9 @@ function Geral({ lojas, totais, serieRede, deltaRede, onVerLoja }: { lojas: Loja
         <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full orbi-gradient opacity-25 blur-2xl" aria-hidden />
         <p className="relative text-[12px] uppercase tracking-[0.12em] text-text-tertiary">A Orbi leu sua rede <span className="orbi-gradient-text">✦</span></p>
         <div className="relative mt-3 flex flex-col gap-2.5">
-          <Insight cor="#6DB300" fundo="#F1FCDC" rotulo="Em destaque" titulo={destaque.nome} texto={`Visitas cresceram ${destaque.delta}% na semana. Vale entender o que ela está fazendo diferente e levar para as outras.`} acao="Ver loja" onAcao={() => onVerLoja(destaque.id)} />
-          <Insight cor="#0A9C8E" fundo="#DDF8F4" rotulo="Onde gira" titulo={`${porUf[0]}, ${nf(porUf[1])} toques`} texto={`${lojasNaUf} ${lojasNaUf === 1 ? "loja concentra" : "lojas concentram"} o maior movimento da rede. É uma boa região para testar uma promoção.`} />
-          <Insight cor="#D6453B" fundo="#FFEAE7" rotulo="Atenção" titulo={atencao.nome} texto={`Visitas caíram ${Math.abs(atencao.delta)}% contra a semana anterior. Pode ser hora de reativar a divulgação do link dessa loja.`} acao="Ver loja" onAcao={() => onVerLoja(atencao.id)} />
+          <Insight cor="#6DB300" fundo="#F1FCDC" rotulo="Em destaque" titulo={destaque.nome} texto={`Visitas cresceram ${destaque.delta}% na semana. Vale entender o que ele está fazendo diferente e levar para os outros.`} acao="Ver Orbibox" onAcao={() => onVerLoja(destaque.id)} />
+          <Insight cor="#0A9C8E" fundo="#DDF8F4" rotulo="Onde gira" titulo={`${porUf[0]}, ${nf(porUf[1])} toques`} texto={`${lojasNaUf} ${lojasNaUf === 1 ? "Orbibox concentra" : "Orbibox concentram"} o maior movimento da rede. É uma boa região para testar uma promoção.`} />
+          <Insight cor="#D6453B" fundo="#FFEAE7" rotulo="Atenção" titulo={atencao.nome} texto={`Visitas caíram ${Math.abs(atencao.delta)}% contra a semana anterior. Pode ser hora de reativar a divulgação do link desse Orbibox.`} acao="Ver Orbibox" onAcao={() => onVerLoja(atencao.id)} />
         </div>
       </section>
 
@@ -273,7 +273,7 @@ function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
                     </div>
                     <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-surface-soft px-3 py-2.5">
                       <p className="text-[12.5px] leading-snug text-text-secondary">
-                        {l.delta >= 15 ? "Crescendo forte. Boa candidata para virar exemplo para a rede." : l.delta < 0 ? "Em queda. Vale reforçar a divulgação do link dessa loja." : "Estável. Uma promoção da semana pode dar um empurrão."}
+                        {l.delta >= 15 ? "Crescendo forte. Bom exemplo para virar referência para a rede." : l.delta < 0 ? "Em queda. Vale reforçar a divulgação do link desse Orbibox." : "Estável. Uma promoção da semana pode dar um empurrão."}
                       </p>
                       <Spark dados={l.serie} cor={l.cor === "#E6E26B" || l.cor === "#B7F34A" ? "#6B8E00" : l.cor} />
                     </div>
@@ -313,9 +313,9 @@ function Convite() {
         <p className="text-[15px]">Como funciona</p>
         <ol className="mt-3 flex flex-col gap-3">
           {[
-            ["#B7F34A", "Você compartilha o convite", "Cada loja recebe o seu link e o código da marca."],
-            ["#6EE7D8", "A loja cria o Orbibox e aceita entrar", "Ela decide, na hora, compartilhar os números com a rede."],
-            ["#C3A6FF", "Os números aparecem aqui", "Visitas, toques, conversas e vouchers de todas as lojas, num painel só."],
+            ["#B7F34A", "Você compartilha o convite", "Cada Orbibox recebe o seu link e o código da marca."],
+            ["#6EE7D8", "Quem recebe o convite cria o Orbibox e aceita entrar", "A pessoa decide, na hora, compartilhar os números com a rede."],
+            ["#C3A6FF", "Os números aparecem aqui", "Visitas, toques, conversas e vouchers de todos os Orbibox, num painel só."],
           ].map(([cor, t, d], i) => (
             <li key={t} className="flex gap-3">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px]" style={{ backgroundColor: cor }}>{i + 1}</span>
@@ -349,24 +349,24 @@ function Convite() {
         <div className="rounded-[22px] bg-[#EAFBC4] p-4 text-[#2F6B00]">
           <p className="text-[13px]">A marca vê</p>
           <ul className="mt-2 flex flex-col gap-1.5 text-[13px] leading-snug">
-            {["Visitas e toques", "Quantas conversas a Orbi teve", "Vouchers resgatados", "Ranking entre as lojas"].map((t) => <li key={t} className="flex gap-1.5"><Marca ok />{t}</li>)}
+            {["Visitas e toques", "Quantas conversas a Orbi teve", "Vouchers resgatados", "Ranking entre os Orbibox"].map((t) => <li key={t} className="flex gap-1.5"><Marca ok />{t}</li>)}
           </ul>
         </div>
         <div className="rounded-[22px] bg-[#FFE6E3] p-4 text-[#A63A2E]">
           <p className="text-[13px]">A marca nunca vê</p>
           <ul className="mt-2 flex flex-col gap-1.5 text-[13px] leading-snug">
-            {["O texto das conversas", "Nome e contato dos clientes", "Dados de pagamento da loja"].map((t) => <li key={t} className="flex gap-1.5"><Marca />{t}</li>)}
+            {["O texto das conversas", "Nome e contato dos clientes", "Dados de pagamento de cada Orbibox"].map((t) => <li key={t} className="flex gap-1.5"><Marca />{t}</li>)}
           </ul>
         </div>
       </section>
 
       {/* Cobrança */}
       <section className="rounded-[26px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
-        <p className="text-[15px]">Quem paga o plano das lojas?</p>
+        <p className="text-[15px]">Quem paga o plano dos Orbibox?</p>
         <p className="mt-0.5 text-[12.5px] text-text-secondary">Você escolhe o modelo da sua rede. Dá para mudar depois.</p>
         <div className="mt-4 flex flex-col gap-2.5" role="radiogroup" aria-label="Quem paga">
-          <Opcao sel={quem === "loja"} onClick={() => setQuem("loja")} titulo="Cada loja paga a sua" texto="A loja cria a conta pelo seu link, escolhe Titânio ou Nióbio e paga no próprio cartão. A marca não recebe cobrança e acompanha tudo no painel." />
-          <Opcao sel={quem === "marca"} onClick={() => setQuem("marca")} titulo="A marca paga todas" texto="Cada loja que entrar na rede já nasce com o plano ativo, sem precisar de cartão. A cobrança de todas vem para você, e quanto maior a rede, maior o desconto." destaque="Desconto por volume" />
+          <Opcao sel={quem === "loja"} onClick={() => setQuem("loja")} titulo="Cada Orbibox paga o seu" texto="Quem entra cria a conta pelo seu link, escolhe Titânio ou Nióbio e paga no próprio cartão. A marca não recebe cobrança e acompanha tudo no painel." />
+          <Opcao sel={quem === "marca"} onClick={() => setQuem("marca")} titulo="A marca paga todos" texto="Cada Orbibox que entrar na rede já nasce com o plano ativo, sem precisar de cartão. A cobrança de todos vem para você, e quanto maior a rede, maior o desconto." destaque="Desconto por volume" />
         </div>
 
         {quem === "marca" && (
@@ -381,10 +381,10 @@ function Convite() {
             </div>
             <label className="mt-4 block">
               <span className="flex items-baseline justify-between">
-                <span className="text-[13px] text-text-secondary">Número de lojas</span>
+                <span className="text-[13px] text-text-secondary">Número de Orbibox</span>
                 <span className="font-[family-name:var(--font-manrope)] text-[24px] tabular-nums">{qtd}</span>
               </span>
-              <input type="range" min={1} max={150} value={qtd} onChange={(e) => setQtd(Number(e.target.value))} className="mt-2 h-8 w-full accent-[#6A3FC4]" aria-label="Número de lojas" />
+              <input type="range" min={1} max={150} value={qtd} onChange={(e) => setQtd(Number(e.target.value))} className="mt-2 h-8 w-full accent-[#6A3FC4]" aria-label="Número de Orbibox" />
             </label>
             <div className="mt-3 rounded-2xl bg-white p-4">
               <div className="flex items-baseline justify-between gap-2">
@@ -392,20 +392,20 @@ function Convite() {
                 {r.desconto > 0 && <span className="rounded-full bg-[#E3F9C9] px-2.5 py-0.5 text-[12px] text-[#2B6B00]">{r.desconto}% de desconto</span>}
               </div>
               <p className="mt-1 font-[family-name:var(--font-manrope)] text-[34px] font-medium leading-none tabular-nums">{brl(r.total)}</p>
-              <p className="mt-2 text-[13px] text-text-secondary">{brl(r.porLoja)} por loja{r.economia > 0 ? `, você economiza ${brl(r.economia)} por mês` : ""}.</p>
+              <p className="mt-2 text-[13px] text-text-secondary">{brl(r.porLoja)} por Orbibox{r.economia > 0 ? `, você economiza ${brl(r.economia)} por mês` : ""}.</p>
             </div>
             <ul className="mt-3 flex flex-col gap-1.5">
               {FAIXAS.map((f) => {
                 const ativa = descontoPara(qtd) === f.desconto;
                 return (
                   <li key={f.de} className={`flex items-center justify-between rounded-xl px-3 py-2 text-[13px] ${ativa ? "bg-on-background text-white" : "bg-white/70 text-text-secondary"}`}>
-                    <span>{f.ate === null ? `Acima de 100 lojas` : f.de === 1 ? "Até 20 lojas" : "De 21 a 100 lojas"}</span>
+                    <span>{f.ate === null ? `Acima de 100 Orbibox` : f.de === 1 ? "Até 20 Orbibox" : "De 21 a 100 Orbibox"}</span>
                     <span>{f.desconto === 0 ? "Preço normal" : `${f.desconto}% de desconto`}</span>
                   </li>
                 );
               })}
             </ul>
-            <p className="mt-3 text-[12.5px] leading-snug text-text-secondary">O desconto vale para todas as lojas assim que a rede passa da faixa. A cobrança vem numa fatura só, no seu cartão.</p>
+            <p className="mt-3 text-[12.5px] leading-snug text-text-secondary">O desconto vale para todos os Orbibox assim que a rede passa da faixa. A cobrança vem numa fatura só, no seu cartão.</p>
           </div>
         )}
       </section>
