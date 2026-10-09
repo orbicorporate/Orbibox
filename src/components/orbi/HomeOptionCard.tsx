@@ -153,13 +153,14 @@ export function HomeOptionCardContent({
       aria-label="Trocar o ícone"
       onClick={(e) => { e.stopPropagation(); onIconClick(); }}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onIconClick(); } }}
-      className="shrink-0 cursor-pointer rounded-full outline-dashed outline-1 outline-offset-2 outline-current/30 active:opacity-60"
+      className="relative w-fit shrink-0 cursor-pointer self-start rounded-full active:opacity-60"
     >
       {icon === "__none__" ? (
         <span className="flex h-12 w-12 items-center justify-center text-[20px] opacity-50" aria-hidden>＋</span>
       ) : (
         <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
       )}
+      <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-white text-[10px] text-on-background shadow-[0_1px_4px_rgba(0,0,0,0.25)]" aria-hidden>✎</span>
     </span>
   ) : (
     <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
