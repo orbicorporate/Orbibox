@@ -28,7 +28,6 @@ import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
 import { LogoEditor } from "./LogoEditor";
 import { BotaoSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
-import { TextoEditavel } from "./TextoEditavel";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
 import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
@@ -153,6 +152,7 @@ export function VisitorExperience({
   // Box com a paletinha de cor aberta na tela inicial.
   const [colorPickerBox, setColorPickerBox] = useState<string | null>(null);
   const [iconeBox, setIconeBox] = useState<string | null>(null);
+  const [textosAberto, setTextosAberto] = useState(false);
   // Menu recolhido de opções do card (cor, formato, ordem), aberto pelo lapinho.
   const [menuBox, setMenuBox] = useState<string | null>(null);
   // Paleta da página inteira (prévia ao vivo) e grade completa de cores no seletor do card.
@@ -682,31 +682,62 @@ export function VisitorExperience({
                 </button>
               )}
             </div>
-            <TextoEditavel editavel={showOwnerControls} rotulo="nome do negócio" valor={textos.nome} onSalvar={(v) => salvarTexto("nome", v)} inputClassName="text-[14px] uppercase tracking-wide">
+            <div className="relative flex w-full flex-col items-center">
+              {showOwnerControls && (
+                <button
+                  type="button"
+                  onClick={() => setTextosAberto((v) => !v)}
+                  aria-label="Editar textos do topo"
+                  aria-expanded={textosAberto}
+                  className="absolute -right-1 -top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95"
+                >
+                  ✎
+                </button>
+              )}
               <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
                 {textos.nome}
               </p>
-            </TextoEditavel>
-            {(textos.frase ?? frase) || showOwnerControls ? (
-              <TextoEditavel editavel={showOwnerControls} rotulo="frase de apresentação" valor={textos.frase ?? frase ?? ""} onSalvar={(v) => salvarTexto("frase", v)} multilinha placeholder="Uma frase que diz o que você faz" className="mt-3 max-w-[320px]" inputClassName="max-w-[320px] text-[14px]">
-                <p className={`mt-1.5 max-w-[320px] text-[14px] leading-snug ${(textos.frase ?? frase) ? "text-text-secondary" : "text-text-tertiary"}`}>{(textos.frase ?? frase) || "Toque para adicionar uma frase"}</p>
-              </TextoEditavel>
-            ) : null}
-            <TextoEditavel editavel={showOwnerControls} rotulo="pergunta da página" valor={textos.pergunta ?? ""} onSalvar={(v) => salvarTexto("pergunta", v)} placeholder="O que trouxe você aqui hoje?" className="mt-4" inputClassName="text-[20px] font-medium">
-              <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-[1.15] tracking-[-0.015em]">
-                {textos.pergunta === "" ? (
-                  showOwnerControls ? <span className="text-[16px] font-normal text-text-tertiary">Toque para adicionar uma pergunta</span> : null
-                ) : textos.pergunta?.trim() ? (
-                  textos.pergunta
-                ) : (
-                  <>
-                    O que trouxe você
-                    <br />
-                    aqui hoje?
-                  </>
-                )}
-              </h1>
-            </TextoEditavel>
+              {(textos.frase ?? frase) ? (
+                <p className="mt-1.5 max-w-[320px] text-[14px] leading-snug text-text-secondary">{textos.frase ?? frase}</p>
+              ) : null}
+              {textos.pergunta !== "" && (
+                <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-[1.15] tracking-[-0.015em]">
+                  {textos.pergunta?.trim() ? (
+                    textos.pergunta
+                  ) : (
+                    <>
+                      O que trouxe você
+                      <br />
+                      aqui hoje?
+                    </>
+                  )}
+                </h1>
+              )}
+              {showOwnerControls && textosAberto && (
+                <div className="mt-3 w-full max-w-[360px] rounded-2xl bg-surface-white p-4 text-left shadow-[0_8px_30px_rgba(17,19,24,0.16)] ring-1 ring-black/[0.05]">
+                  {([
+                    { campo: "nome", rotulo: "Nome", valor: textos.nome, dica: "Nome do seu negócio" },
+                    { campo: "frase", rotulo: "Frase", valor: textos.frase ?? frase ?? "", dica: "Uma frase que diz o que você faz" },
+                    { campo: "pergunta", rotulo: "Pergunta", valor: textos.pergunta === "" ? "" : textos.pergunta?.trim() ? textos.pergunta : "", dica: "O que trouxe você aqui hoje?" },
+                  ] as const).map((c) => (
+                    <label key={c.campo} className="mb-3 block last:mb-0">
+                      <span className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">{c.rotulo}</span>
+                      <input
+                        defaultValue={c.valor}
+                        placeholder={c.dica}
+                        onBlur={(e) => {
+                          const v = e.target.value.trim();
+                          if (v !== c.valor.trim()) salvarTexto(c.campo, v);
+                        }}
+                        className="mt-1 w-full rounded-xl border border-divider px-3 py-2.5 text-[15px] outline-none focus:border-on-background"
+                      />
+                    </label>
+                  ))}
+                  <p className="text-[12px] text-text-tertiary">Deixe a frase ou a pergunta vazia para esconder.</p>
+                  <button type="button" onClick={() => setTextosAberto(false)} className="mt-3 min-h-[44px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white">Pronto</button>
+                </div>
+              )}
+            </div>
             <div className="mt-10 grid w-full grid-cols-2 gap-3">
               {(() => {
                 // Distribuição mista: cada opção recebe "largo" (linha toda,
