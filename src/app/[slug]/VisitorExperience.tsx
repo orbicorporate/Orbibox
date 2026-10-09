@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
@@ -873,16 +874,22 @@ export function VisitorExperience({
                     {/* Paletinha rápida de cor, abre sobre o card. Salva no
                         toque, sem precisar abrir o editor completo. */}
                     {showOwnerControls && colorPickerBox === o.key && (
+                      <Portal>
+                      <button type="button" aria-label="Fechar cores" onClick={(e) => { e.stopPropagation(); setColorPickerBox(null); }} className="fixed inset-0 z-[55] cursor-default" />
                       <div
-                        className="absolute right-2.5 top-11 z-20 w-[268px] rounded-2xl bg-white p-3 text-on-background shadow-[0_8px_24px_rgba(17,19,24,0.18)]"
+                        className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-h-[60vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        <div className="mb-1 flex items-center justify-between">
+                          <span className="text-[16px] font-medium">Cor do card</span>
+                          <button type="button" onClick={() => setColorPickerBox(null)} className="min-h-[40px] px-2 text-[14px] text-text-secondary">Fechar</button>
+                        </div>
                         <p className="px-0.5 pb-2 text-[11px] font-medium uppercase tracking-wide text-text-tertiary">Cores nobres</p>
-                        <div className="grid grid-cols-8 gap-1.5">
+                        <div className="grid grid-cols-8 gap-2">
                           <button
                             type="button"
                             onClick={() => setBoxColor(o.key, null)}
-                            className="flex h-[26px] w-[26px] items-center justify-center rounded-full border border-divider bg-surface-white"
+                            className="flex h-9 w-9 items-center justify-center rounded-full border border-divider bg-surface-white"
                             aria-label="Branco padrão"
                             title="Branco padrão"
                           >
@@ -895,7 +902,7 @@ export function VisitorExperience({
                                 key={c.hex}
                                 type="button"
                                 onClick={() => setBoxColor(o.key, c.hex)}
-                                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${claro ? "border border-divider" : ""}`}
+                                className={`flex h-9 w-9 items-center justify-center rounded-full ${claro ? "border border-divider" : ""}`}
                                 style={{ backgroundColor: c.hex }}
                                 aria-label={c.nome}
                                 title={c.nome}
@@ -915,7 +922,7 @@ export function VisitorExperience({
                           {todasCores ? "Esconder outras cores" : "Ver outras cores"}
                         </button>
                         {todasCores && (
-                          <div className="mt-2 grid grid-cols-8 gap-1.5">
+                          <div className="mt-2 grid grid-cols-8 gap-2">
                             {[
                               "#000000", "#5C6B73", "#9A968C", "#B9B3A6",
                               "#C0392B", "#E5482F", "#C2650A", "#E8902A", "#F2B705", "#B8860B", "#8A6A2B",
@@ -928,7 +935,7 @@ export function VisitorExperience({
                                 key={c}
                                 type="button"
                                 onClick={() => setBoxColor(o.key, c)}
-                                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${c.startsWith("#F") ? "border border-divider" : ""}`}
+                                className={`flex h-9 w-9 items-center justify-center rounded-full ${c.startsWith("#F") ? "border border-divider" : ""}`}
                                 style={{ backgroundColor: c }}
                                 aria-label={`Cor ${c}`}
                               >
@@ -940,6 +947,7 @@ export function VisitorExperience({
                           </div>
                         )}
                       </div>
+                      </Portal>
                     )}
                     {largo ? (
                       // Card LARGO, horizontal (ícone + texto na linha)
@@ -2557,6 +2565,12 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
 /** Troca clara entre os dois jeitos de ver a tela inicial. Pro dono (fora do
  * modo visitante) mostra também qual é o padrão da página e deixa tornar o
  * modo atual o padrão com um toque. */
+/** Renderiza fora do card (no body), pra painéis fixos não herdarem corte/transform do pai. */
+function Portal({ children }: { children: React.ReactNode }) {
+  const pronto = useSyncExternalStore(() => () => {}, () => true, () => false);
+  return pronto ? createPortal(children, document.body) : null;
+}
+
 function SeletorModo({
   modo,
   onTrocar,
