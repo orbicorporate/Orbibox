@@ -289,6 +289,7 @@ export function AppHeader({
               </div>
 
               {/* Prévia: painel de rede para quem tem vários negócios ou franquias */}
+              {isMaster && (
               <Link
                 href="/admin/rede"
                 onClick={() => setMenuOpen(false)}
@@ -301,6 +302,7 @@ export function AppHeader({
                 </span>
                 <span className="text-text-tertiary" aria-hidden>→</span>
               </Link>
+              )}
 
               {/* Atalho pro painel de gestão, só pros masters */}
               {isMaster && (
@@ -419,6 +421,7 @@ export function AppHeader({
                   Tem mais de uma marca? No plano <span className="font-medium text-on-background">Nióbio</span> você cria vários Orbibox, cada um com seu link e sua IA. Ver planos →
                 </Link>
               )}
+{isMaster && (
               <Link
                 href="/admin/rede"
                 onClick={() => setTrocaOpen(false)}
@@ -426,6 +429,7 @@ export function AppHeader({
               >
                 + Adicionar um Orbibox à rede
               </Link>
+              )}
             </div>
 
             {/* Confirmação em dois níveis, por cima da lista. */}
