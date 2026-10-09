@@ -195,7 +195,7 @@ export function BotaoSalvar({ className = "" }: { className?: string }) {
       ) : estado === "salvo" ? (
         <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M20 6L9 17l-5-5" /></svg>Salvo</>
       ) : (
-        Salvar
+        "Salvar"
       )}
     </button>
   );
