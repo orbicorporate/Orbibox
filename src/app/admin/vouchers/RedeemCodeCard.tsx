@@ -170,7 +170,7 @@ export function RedeemCodeCard({
 
           <button
             onClick={() => { setResult(null); setScanning(true); }}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[15px] font-bold"
+            className="flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-bold"
             style={{ backgroundColor: CHERRY_SOFT_BG, color: CHERRY_TEXT }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10" /></svg>

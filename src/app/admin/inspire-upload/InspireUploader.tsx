@@ -247,13 +247,13 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
         <div className="mt-1.5 flex gap-2">
           <button
             onClick={() => setTitleStyle("sobre")}
-            className={`flex-1 rounded-xl border-2 px-3 py-2 text-[13px] font-medium ${titleStyle === "sobre" ? "border-on-background" : "border-divider text-text-secondary"}`}
+            className={`flex-1 rounded-full border-2 px-3 py-2 text-[13px] font-medium ${titleStyle === "sobre" ? "border-on-background" : "border-divider text-text-secondary"}`}
           >
             Sobre a imagem
           </button>
           <button
             onClick={() => setTitleStyle("faixa")}
-            className={`flex-1 rounded-xl border-2 px-3 py-2 text-[13px] font-medium ${titleStyle === "faixa" ? "border-on-background" : "border-divider text-text-secondary"}`}
+            className={`flex-1 rounded-full border-2 px-3 py-2 text-[13px] font-medium ${titleStyle === "faixa" ? "border-on-background" : "border-divider text-text-secondary"}`}
           >
             Faixa branca
           </button>

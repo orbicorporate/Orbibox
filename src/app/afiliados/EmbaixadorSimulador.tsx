@@ -95,7 +95,7 @@ export function EmbaixadorSimulador() {
         <button
           type="button"
           onClick={() => setCiclo("mensal")}
-          className={`flex-1 rounded-2xl border py-2.5 text-[13.5px] font-semibold transition-colors ${
+          className={`flex-1 rounded-full border py-2.5 text-[13.5px] font-semibold transition-colors ${
             ciclo === "mensal" ? "border-transparent bg-[#14301F] text-white" : "border-divider bg-white/70 text-on-background"
           }`}
         >
@@ -104,7 +104,7 @@ export function EmbaixadorSimulador() {
         <button
           type="button"
           onClick={() => setCiclo("anual")}
-          className={`flex-1 rounded-2xl border py-2.5 text-[13.5px] font-semibold transition-colors ${
+          className={`flex-1 rounded-full border py-2.5 text-[13.5px] font-semibold transition-colors ${
             ciclo === "anual" ? "border-transparent bg-[#14301F] text-white" : "border-divider bg-white/70 text-on-background"
           }`}
         >
