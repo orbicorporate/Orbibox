@@ -530,6 +530,17 @@ export function VisitorExperience({
         <div className="fixed right-4 top-[60px] z-20"><BotaoSalvar /></div>
       )}
       {isOwner && intent === null && !previewMode && (
+        <div className="fixed left-4 top-[62px] z-20">
+          <SeletorModo
+            compacto
+            modo={modo}
+            onTrocar={(m) => guardarModoHome(business.slug, m)}
+            padrao={modoPadrao}
+            onTornarPadrao={() => tornarPadrao(modo)}
+          />
+        </div>
+      )}
+      {isOwner && intent === null && !previewMode && (
         <div className="fixed right-4 top-4 z-20 flex items-center gap-2">
           <Link
             href="/admin"
@@ -558,11 +569,11 @@ export function VisitorExperience({
           catálogo, sobre) centralizar empurrava tudo pra baixo e sobrava
           um vazio enorme no topo. */}
       <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
-        {intent === null && (
+        {intent === null && !showOwnerControls && (
           <SeletorModo
             modo={modo}
             onTrocar={(m) => guardarModoHome(business.slug, m)}
-            padrao={showOwnerControls ? modoPadrao : null}
+            padrao={null}
             onTornarPadrao={() => tornarPadrao(modo)}
           />
         )}
@@ -2457,63 +2468,48 @@ function SeletorModo({
   onTrocar,
   padrao,
   onTornarPadrao,
+  compacto = false,
 }: {
   modo: ModoHome;
   onTrocar: (m: ModoHome) => void;
   padrao: ModoHome | null;
   onTornarPadrao: () => void;
+  compacto?: boolean;
 }) {
-  const opcoes: { v: ModoHome; rotulo: string; icone: React.ReactNode }[] = [
-    {
-      v: "orbita",
-      rotulo: "Modo Órbita",
-      icone: (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-          <ellipse cx="12" cy="12" rx="10" ry="5.5" transform="rotate(-18 12 12)" />
-          <circle cx="12" cy="12" r="2.6" />
-        </svg>
-      ),
-    },
-    {
-      v: "grade",
-      rotulo: "Modo Grade",
-      icone: (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-          <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
-          <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
-          <rect x="3.5" y="13.5" width="17" height="7" rx="2" />
-        </svg>
-      ),
-    },
+  const opcoes: { v: ModoHome; rotulo: string }[] = [
+    { v: "orbita", rotulo: "órbita" },
+    { v: "grade", rotulo: "grade" },
   ];
-  return (
-    <div className="mb-6 flex flex-col items-center gap-2">
-      <div role="radiogroup" aria-label="Como ver esta página" className="flex rounded-full bg-on-background/[0.06] p-1">
-        {opcoes.map((o) => (
-          <button
-            key={o.v}
-            type="button"
-            role="radio"
-            aria-checked={modo === o.v}
-            onClick={() => onTrocar(o.v)}
-            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] transition-all duration-300 ${modo === o.v ? "bg-surface-white text-on-background shadow-[0_1px_6px_rgba(17,19,24,0.12)]" : "text-text-tertiary"}`}
-          >
-            {o.icone}
-            {o.rotulo}
-          </button>
-        ))}
-      </div>
-      {padrao && (
-        padrao === modo ? (
-          <p className="text-[12px] text-text-tertiary">Padrão da sua página</p>
-        ) : (
-          <button type="button" onClick={onTornarPadrao} className="text-[12px] text-text-secondary underline underline-offset-2">
-            Deixar o {modo === "orbita" ? "Modo Órbita" : "Modo Grade"} como padrão
-          </button>
-        )
-      )}
+  const texto = (
+    <div role="radiogroup" aria-label="Como ver esta página" className="flex items-center gap-4 text-[14px]">
+      {opcoes.map((o) => (
+        <button
+          key={o.v}
+          type="button"
+          role="radio"
+          aria-checked={modo === o.v}
+          onClick={() => onTrocar(o.v)}
+          className={`min-h-[36px] transition-colors ${modo === o.v ? "font-medium text-on-background underline underline-offset-[6px]" : "text-text-tertiary"}`}
+        >
+          {o.rotulo}
+          {padrao === o.v && <span className="ml-1 text-[10px] text-text-tertiary" title="Padrão da sua página" aria-label="padrão">●</span>}
+        </button>
+      ))}
     </div>
   );
+  if (compacto) {
+    return (
+      <div className="flex flex-col items-start">
+        {texto}
+        {padrao && padrao !== modo && (
+          <button type="button" onClick={onTornarPadrao} className="text-[11.5px] text-text-secondary underline underline-offset-2">
+            tornar {modo === "orbita" ? "órbita" : "grade"} o padrão
+          </button>
+        )}
+      </div>
+    );
+  }
+  return <div className="mb-6 flex justify-center">{texto}</div>;
 }
 
 /** Quebra o texto do "Sobre" em parágrafos. Respeita as quebras que o dono
