@@ -111,14 +111,14 @@ export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?:
   const custom = isCustomBoxColor(color);
   const dark = needsDarkFg(color);
   const bg = custom
-    ? `box-metal ${dark ? "text-[#111318]" : "text-white"} shadow-[0_10px_28px_rgba(17,19,24,0.22)]`
+    ? `box-metal ${dark ? "text-[#111318]" : "text-white"} shadow-[0_2px_10px_rgba(17,19,24,0.10)]`
     : cupom
-      ? "cupom-box text-white shadow-[0_10px_30px_rgba(204,23,57,0.4)]"
-      : "bg-surface-white shadow-[0_6px_24px_rgba(17,19,24,0.12)]";
+      ? "cupom-box text-white shadow-[0_2px_10px_rgba(204,23,57,0.18)]"
+      : "bg-surface-white border border-[#111318]/10 shadow-[0_1px_4px_rgba(17,19,24,0.04)]";
   if (layout === "largo") {
-    return `flex w-full items-center gap-4 rounded-[24px] p-5 text-left ${bg}${ring}`;
+    return `flex w-full items-center gap-4 rounded-[22px] p-4 text-left ${bg}${ring}`;
   }
-  return `flex h-full min-h-[168px] w-full flex-col justify-between rounded-[24px] p-5 text-left ${bg}${ring}`;
+  return `flex h-full min-h-[132px] w-full flex-col justify-between rounded-[22px] p-4 text-left ${bg}${ring}`;
 }
 
 /** Estilo inline que acompanha `homeCardShellClass`: só a cor escolhida
@@ -190,7 +190,7 @@ export function HomeOptionCardContent({
     <>
       <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
       <span className="relative">
-        <span className="flex min-h-[48px] items-end text-[19px] font-semibold leading-tight">{renderedTitle}</span>
+        <span className="flex min-h-[40px] items-end text-[18px] font-semibold leading-tight">{renderedTitle}</span>
         {stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
         <span className={`mt-1 line-clamp-2 block text-[13px] leading-snug ${descClass}`}>{description}</span>
       </span>
