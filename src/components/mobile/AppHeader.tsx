@@ -288,6 +288,20 @@ export function AppHeader({
                 </Link>
               </div>
 
+              {/* Prévia: painel de rede para quem tem várias lojas ou franquias */}
+              <Link
+                href="/admin/rede"
+                onClick={() => setMenuOpen(false)}
+                className="mt-2 flex items-center gap-3 rounded-[20px] bg-white px-4 py-3 ring-1 ring-black/[0.07] transition-transform active:scale-[.98]"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full orbi-gradient text-[15px] text-on-background" aria-hidden>◎</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14.5px] leading-tight">Rede de lojas</span>
+                  <span className="block text-[12.5px] leading-snug text-text-tertiary">Tem várias lojas ou franquias? Veja todas num painel</span>
+                </span>
+                <span className="text-text-tertiary" aria-hidden>→</span>
+              </Link>
+
               {/* Atalho pro painel de gestão, só pros masters */}
               {isMaster && (
                 <Link
