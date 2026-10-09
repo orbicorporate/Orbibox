@@ -28,6 +28,7 @@ import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
 import { LogoEditor } from "./LogoEditor";
 import { BotaoSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { TextoEditavel } from "./TextoEditavel";
 import { PaletaPanel } from "./PaletaPanel";
 import { NOBRES, coresDaMarca } from "@/lib/paletasNobres";
 import { guardarModoHome, guardarModoVitrine, useModoHomeDoVisitante, useModoVitrine, type ModoHome } from "@/lib/modoHome";
@@ -454,6 +455,12 @@ export function VisitorExperience({
   }
 
   const frase = fraseDoNegocio(business);
+  const [textos, setTextos] = useState<{ nome: string; frase?: string; pergunta: string | null }>({ nome: business.name, pergunta: business.hero_question });
+  async function salvarTexto(campo: "nome" | "frase" | "pergunta", valor: string) {
+    setTextos((t) => ({ ...t, [campo]: valor }));
+    const coluna = campo === "nome" ? { name: valor } : campo === "frase" ? { share_description: valor } : { hero_question: valor };
+    conferirSalvo(await supabase.from("businesses").update(coluna).eq("id", business.id));
+  }
   // WhatsApp sempre à mão na tela inicial: se o dono tem número mas não ligou
   // um botão de WhatsApp, aparece um atalho discreto embaixo dos botões.
   const temBotaoWhats = boxList.some((b) => b.is_active && b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "whatsapp");
@@ -597,21 +604,29 @@ export function VisitorExperience({
                 </button>
               )}
             </div>
-            <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
-              {business.name}
-            </p>
-            {frase && <p className="mt-1.5 max-w-[320px] text-[14px] leading-snug text-text-secondary">{frase}</p>}
-            <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-[1.1] tracking-[-0.02em]">
-              {business.hero_question?.trim() ? (
-                business.hero_question
-              ) : (
-                <>
-                  O que trouxe você
-                  <br />
-                  aqui hoje?
-                </>
-              )}
-            </h1>
+            <TextoEditavel editavel={showOwnerControls} rotulo="nome do negócio" valor={textos.nome} onSalvar={(v) => salvarTexto("nome", v)} inputClassName="text-[14px] uppercase tracking-wide">
+              <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
+                {textos.nome}
+              </p>
+            </TextoEditavel>
+            {(textos.frase ?? frase) || showOwnerControls ? (
+              <TextoEditavel editavel={showOwnerControls} rotulo="frase de apresentação" valor={textos.frase ?? frase ?? ""} onSalvar={(v) => salvarTexto("frase", v)} multilinha placeholder="Uma frase que diz o que você faz" className="mt-3 max-w-[320px]" inputClassName="max-w-[320px] text-[14px]">
+                <p className="mt-1.5 max-w-[320px] text-[14px] leading-snug text-text-secondary">{textos.frase ?? frase ?? "Adicione uma frase que diz o que você faz"}</p>
+              </TextoEditavel>
+            ) : null}
+            <TextoEditavel editavel={showOwnerControls} rotulo="pergunta da página" valor={textos.pergunta ?? ""} onSalvar={(v) => salvarTexto("pergunta", v)} placeholder="O que trouxe você aqui hoje?" className="mt-4" inputClassName="text-[24px] font-medium">
+              <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-[1.1] tracking-[-0.02em]">
+                {textos.pergunta?.trim() ? (
+                  textos.pergunta
+                ) : (
+                  <>
+                    O que trouxe você
+                    <br />
+                    aqui hoje?
+                  </>
+                )}
+              </h1>
+            </TextoEditavel>
             <div className="mt-10 grid w-full grid-cols-2 gap-3">
               {(() => {
                 // Distribuição mista: cada opção recebe "largo" (linha toda,
