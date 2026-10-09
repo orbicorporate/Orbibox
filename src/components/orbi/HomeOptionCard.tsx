@@ -55,30 +55,11 @@ export function HomeIcon({
 }) {
   const custom = isCustomBoxColor(color);
   const dark = needsDarkFg(color);
+  // Sem a "bola" atrás: o ícone fica solto no box, só com a cor do texto certa.
+  const tom = custom ? (dark ? "text-[#111318]" : "text-white") : cupom ? "text-white" : color && color !== "transparent" ? "text-white" : "text-on-background";
   return (
     <span
-      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"} ${
-        isAnimatedIcon(icon) || icon === "__logo__"
-          ? ""
-          : custom
-            ? dark
-              ? "bg-[#111318]/10 text-[#111318]"
-              : "bg-white/20 text-white"
-            : cupom
-              ? "bg-white/20 text-white"
-              : color && color !== "transparent"
-                ? "text-white"
-                : "bg-surface-soft"
-      }`}
-      style={
-        isAnimatedIcon(icon) || icon === "__logo__" || custom
-          ? undefined
-          : color && color !== "transparent"
-            ? { backgroundColor: color }
-            : color === "transparent"
-              ? { background: "transparent" }
-              : undefined
-      }
+      className={`flex h-12 w-12 shrink-0 items-center justify-center text-[22px] ${icon === "__logo__" ? "" : "overflow-hidden"} ${isAnimatedIcon(icon) || icon === "__logo__" ? "" : tom}`}
     >
       {icon === "__orb__" ? (
         <OrbiParticleSphere size={48} colors={orbiColors ?? undefined} className="rounded-full" />
