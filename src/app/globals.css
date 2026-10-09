@@ -1045,3 +1045,20 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .folha-sobe, .acao-entra { animation: veuEntra .15s ease-out both; }
 }
+
+/* Landing: animações leves, todas desligadas com "reduzir movimento". */
+@keyframes lpFade { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes lpFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes lpMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes lpPop { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes lpDot { 0%, 80%, 100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+@keyframes lpCaret { 50% { opacity: 0; } }
+.lp-fade { animation: lpFade 0.6s ease-out both; }
+.lp-float { animation: lpFloat 5s ease-in-out infinite; }
+.lp-pop { animation: lpPop 0.35s ease-out both; }
+.lp-dot { animation: lpDot 1s ease-in-out infinite; }
+.lp-caret { animation: lpCaret 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .lp-fade, .lp-float, .lp-pop, .lp-dot, .lp-caret { animation: none; }
+  [style*="lpMarquee"] { animation: none !important; }
+}
