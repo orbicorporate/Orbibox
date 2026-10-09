@@ -177,14 +177,14 @@ export function sizeOf(key: string | null | undefined): BoxSize {
 export function titleFontSize(title: string, size: BoxSize): string {
   const len = (title ?? "").trim().length;
   // teto por formato do card
-  const base = size === "destaque" ? 30 : size === "largo" ? 24 : size === "alto" ? 22 : 20;
+  const base = size === "destaque" ? 22 : size === "largo" ? 19 : size === "alto" ? 18 : 16;
   // encolhe conforme o título fica longo
   let px = base;
   if (len > 14) px -= 2;
   if (len > 22) px -= 3;
   if (len > 34) px -= 3;
   if (len > 48) px -= 3;
-  return `${Math.max(13, px)}px`;
+  return `${Math.max(12, px)}px`;
 }
 
 // Agrupa itens em seções por categoria, preservando a ordem de position.
