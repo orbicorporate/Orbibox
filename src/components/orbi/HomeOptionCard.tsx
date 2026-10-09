@@ -89,7 +89,7 @@ export function HomeIcon({
  * Vouchers; se o dono escolher uma cor própria pra ele (mesma regra dos
  * outros boxes), essa cor tem prioridade sobre o vermelho padrão. */
 export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?: boolean, color?: string | null) {
-  const ring = ai ? " ring-1 ring-orbi-gradient-start/60" : "";
+  const ring = ""; // sem a linha verde em volta do box da Orbi
   const custom = isCustomBoxColor(color);
   const dark = needsDarkFg(color);
   const bg = custom
