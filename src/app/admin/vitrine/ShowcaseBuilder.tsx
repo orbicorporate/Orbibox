@@ -1873,16 +1873,17 @@ function ItemCard({
               </div>
             )}
 
-            <div>
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Preço</p>
-              <div className="mt-2.5 flex flex-wrap gap-2">
+            <div className="rounded-2xl border border-divider bg-surface-white p-4">
+              <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Preço</p>
+              <HelperText>Escolha como o valor aparece no card e na página do item.</HelperText>
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 {(Object.keys(PRICE_TYPE_LABEL) as PriceType[]).map((t) => {
                   const ativo = (item.price_type ?? "exato") === t;
                   return (
                     <button
                       key={t}
                       onClick={() => save(item.id, { price_type: t })}
-                      className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors ${ativo ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                      className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-[13.5px] font-medium transition-colors ${ativo ? "border-on-background bg-surface-white text-on-background" : "border-transparent bg-surface-soft text-text-secondary"}`}
                     >
                       {ativo && <span aria-hidden>✓</span>}
                       {PRICE_TYPE_LABEL[t]}
@@ -1899,7 +1900,7 @@ function ItemCard({
                   Sem valor, o card mostra só &quot;Sob consulta&quot;. Ideal quando o preço depende do projeto ou é combinado no contato.
                 </p>
               ) : (
-                <div className="mt-2 flex gap-2">
+                <div className="mt-3 flex gap-2 border-t border-divider pt-3">
                   <PrecoCampo
                     valor={item.price}
                     onSalvar={(v) => save(item.id, { price: v })}
