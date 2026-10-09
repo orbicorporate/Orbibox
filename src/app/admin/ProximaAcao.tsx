@@ -118,10 +118,10 @@ export function ProximaAcao({
   const total = acoes.length;
 
   return (
-    <section aria-label="Próxima ação" className="mt-6">
-      <div className="rounded-[26px] bg-surface-white p-6 shadow-[0_18px_40px_-28px_rgba(17,19,24,.35)]">
+    <section aria-label="Próxima ação" className="mt-3">
+      <div className="rounded-[22px] bg-surface-white p-4 shadow-[0_18px_40px_-28px_rgba(17,19,24,.35)]">
         <div className="flex items-center gap-2.5">
-          <OrbiSimbolo size={28} />
+          <OrbiSimbolo size={22} />
           <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-text-tertiary">Agora</p>
           {total > 1 && !concluida && (
             <p className="ml-auto text-[12px] tabular-nums text-text-tertiary" aria-label={`${total} coisas pra fazer`}>1 de {total}</p>
@@ -129,26 +129,26 @@ export function ProximaAcao({
         </div>
 
         {concluida ? (
-          <div key="ok" className="acao-entra mt-5 flex items-start gap-3" aria-live="polite">
+          <div key="ok" className="acao-entra mt-3 flex items-start gap-3" aria-live="polite">
             <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1F9E4C]">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
             </span>
             <p className="text-[15px] font-medium leading-snug">{concluida}</p>
           </div>
         ) : atual ? (
-          <div key={atual.chave} className="acao-entra mt-5">
+          <div key={atual.chave} className="acao-entra mt-3">
             {atual.tipo === "gift" && (
               <>
-                <p className="text-[17px] font-medium leading-snug">
+                <p className="text-[15.5px] font-medium leading-snug">
                   {atual.gift.from_name ? `${atual.gift.from_name} montou` : "Um cliente montou"} um gift de {brl(atual.gift.value_cents)}
                   {atual.gift.to_name ? ` pra ${atual.gift.to_name}` : ""}.
                 </p>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">Recebeu o pagamento? Libere e a arte fica pronta na hora.</p>
-                <div className="mt-5 flex gap-2">
-                  <button type="button" disabled={ocupado} onClick={() => liberarGift(atual.gift, atual.chave)} className="min-h-[48px] flex-1 rounded-full bg-[#1F9E4C] text-[15px] font-medium text-white transition-transform active:scale-[.98] disabled:opacity-50">
+                <p className="mt-1 text-[13px] leading-snug text-text-secondary">Recebeu o pagamento? Libere e a arte fica pronta na hora.</p>
+                <div className="mt-3 flex gap-2">
+                  <button type="button" disabled={ocupado} onClick={() => liberarGift(atual.gift, atual.chave)} className="min-h-[42px] flex-1 rounded-full bg-[#1F9E4C] text-[14px] font-medium text-white transition-transform active:scale-[.98] disabled:opacity-50">
                     {ocupado ? "Liberando…" : "Liberar gift"}
                   </button>
-                  <button type="button" onClick={() => pular(atual.chave)} className="min-h-[48px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>
+                  <button type="button" onClick={() => pular(atual.chave)} className="min-h-[42px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>
                 </div>
               </>
             )}
@@ -164,41 +164,41 @@ export function ProximaAcao({
 
             {atual.tipo === "data" && (
               <>
-                <p className="text-[17px] font-medium leading-snug">
+                <p className="text-[15.5px] font-medium leading-snug">
                   {atual.data.nome} {atual.data.dias === 0 ? "é hoje" : atual.data.dias === 1 ? "é amanhã" : `em ${atual.data.dias} dias`}.
                 </p>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">A Orbi monta um voucher da data e os textos pra divulgar, com a cara do seu negócio.</p>
-                <div className="mt-5 flex gap-2">
-                  <button type="button" onClick={() => setFolha(atual.data)} className="min-h-[48px] flex-1 rounded-full bg-on-background text-[15px] font-medium text-white transition-transform active:scale-[.98]">
+                <p className="mt-1 text-[13px] leading-snug text-text-secondary">A Orbi monta um voucher da data e os textos pra divulgar, com a cara do seu negócio.</p>
+                <div className="mt-3 flex gap-2">
+                  <button type="button" onClick={() => setFolha(atual.data)} className="min-h-[42px] flex-1 rounded-full bg-on-background text-[14px] font-medium text-white transition-transform active:scale-[.98]">
                     Ver campanha pronta
                   </button>
-                  <button type="button" onClick={() => adiar(atual.chave, 3)} className="min-h-[48px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Agora não</button>
+                  <button type="button" onClick={() => adiar(atual.chave, 3)} className="min-h-[42px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Agora não</button>
                 </div>
               </>
             )}
 
             {atual.tipo === "estoque" && (
               <>
-                <p className="text-[17px] font-medium leading-snug">
+                <p className="text-[15.5px] font-medium leading-snug">
                   {atual.v.restam === 0 ? `"${atual.v.title}" esgotou.` : `Só ${atual.v.restam === 1 ? "resta 1 unidade" : `restam ${atual.v.restam} unidades`} de "${atual.v.title}".`}
                 </p>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">Esse voucher está funcionando. Quer manter ele no ar?</p>
-                <div className="mt-5 flex gap-2">
-                  <button type="button" disabled={ocupado} onClick={() => repor(atual.v, atual.chave)} className="min-h-[48px] flex-1 rounded-full bg-on-background text-[15px] font-medium text-white transition-transform active:scale-[.98] disabled:opacity-50">
+                <p className="mt-1 text-[13px] leading-snug text-text-secondary">Esse voucher está funcionando. Quer manter ele no ar?</p>
+                <div className="mt-3 flex gap-2">
+                  <button type="button" disabled={ocupado} onClick={() => repor(atual.v, atual.chave)} className="min-h-[42px] flex-1 rounded-full bg-on-background text-[14px] font-medium text-white transition-transform active:scale-[.98] disabled:opacity-50">
                     {ocupado ? "Salvando…" : "Mais 20 unidades"}
                   </button>
-                  <button type="button" onClick={() => pular(atual.chave)} className="min-h-[48px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>
+                  <button type="button" onClick={() => pular(atual.chave)} className="min-h-[42px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>
                 </div>
               </>
             )}
 
             {atual.tipo === "pendencia" && (
               <>
-                <p className="text-[17px] font-medium leading-snug">{atual.p.title}</p>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">{atual.p.description}</p>
-                <div className="mt-5 flex gap-2">
-                  <Link href={atual.p.href} className="flex min-h-[48px] flex-1 items-center justify-center rounded-full bg-on-background text-[15px] font-medium text-white">{atual.p.ctaLabel}</Link>
-                  {total > 1 && <button type="button" onClick={() => pular(atual.chave)} className="min-h-[48px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>}
+                <p className="text-[15.5px] font-medium leading-snug">{atual.p.title}</p>
+                <p className="mt-1 text-[13px] leading-snug text-text-secondary">{atual.p.description}</p>
+                <div className="mt-3 flex gap-2">
+                  <Link href={atual.p.href} className="flex min-h-[42px] flex-1 items-center justify-center rounded-full bg-on-background text-[14px] font-medium text-white">{atual.p.ctaLabel}</Link>
+                  {total > 1 && <button type="button" onClick={() => pular(atual.chave)} className="min-h-[42px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>}
                 </div>
               </>
             )}
