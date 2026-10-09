@@ -310,7 +310,10 @@ export function VisitorExperience({
   // logo abaixo, na ordem em que estão nos Smart Boxes.
   // WhatsApp, site e endereço podem virar ícone na fileira de baixo (o dono escolhe).
   const options = todasOpcoes.filter((o) => !o.rede && !(o.comoIcone && o.atalho));
-  const atalhos = todasOpcoes.filter((o) => !o.rede && o.comoIcone && !!o.atalho);
+  const atalhosTodos = todasOpcoes.filter((o) => !o.rede && o.comoIcone && !!o.atalho);
+  // O site vira ícone na mesma fileira das redes sociais; WhatsApp e endereço ficam em "Fale com a gente".
+  const atalhosSite = atalhosTodos.filter((o) => o.atalho === "site");
+  const atalhos = atalhosTodos.filter((o) => o.atalho !== "site");
   const redes = todasOpcoes.filter((o) => o.rede);
 
   // Cada tela interna (catálogo, chat, vouchers, sobre) entra no histórico do
@@ -954,7 +957,7 @@ export function VisitorExperience({
               </div>
             )}
 
-            {redes.length > 0 && (
+            {(redes.length > 0 || atalhosSite.length > 0) && (
               <div className="mt-7 flex flex-col items-center">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Siga a gente</p>
                 <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
@@ -976,6 +979,27 @@ export function VisitorExperience({
                       </button>
                     );
                   })}
+                  {atalhosSite.map((o, i) => (
+                    <div key={o.key} className="relative">
+                      <button
+                        type="button"
+                        onClick={o.onClick}
+                        aria-label={o.t || "Nosso site"}
+                        title={o.t || "Nosso site"}
+                        style={{ "--i": redes.length + i, "--cor": "#111318", background: "#111318", boxShadow: "0 6px 18px -6px #11131899" } as CSSProperties}
+                        className="orbi-rede flex h-12 w-12 items-center justify-center rounded-full text-white"
+                      >
+                        <span className="orbi-rede-anel" aria-hidden />
+                        <span className="orbi-rede-brilho" aria-hidden />
+                        <span className="relative">
+                          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3c2.6 2.6 3.8 5.6 3.8 9S14.6 18.4 12 21c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3Z" /></svg>
+                        </span>
+                      </button>
+                      {showOwnerControls && (
+                        <button type="button" onClick={() => definirIcone(o.key, false)} aria-label="Voltar a ser card" title="Voltar a ser card" className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-surface-white text-[10px] text-text-secondary shadow ring-1 ring-black/10">↩</button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
