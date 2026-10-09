@@ -208,7 +208,7 @@ body {
 .cupom-box {
   position: relative;
   overflow: hidden;
-  background-color: #CC1739;
+  background-image: linear-gradient(135deg, #BC1432 0%, #CC1739 55%, #D91F44 100%);
 }
 .cupom-box::before {
   content: "";
@@ -218,9 +218,8 @@ body {
   width: 45%;
   height: 220%;
   transform: rotate(18deg);
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 100%);
-  animation: cupomSheen 3.6s ease-in-out infinite;
-  display: none;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  animation: cupomSheen 6s ease-in-out infinite;
   pointer-events: none;
 }
 @keyframes cupomSheen {
@@ -251,7 +250,7 @@ body {
   height: 220%;
   transform: rotate(18deg);
   background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100%);
-  animation: cupomSheen 3.6s ease-in-out infinite;
+  animation: cupomSheen 6s ease-in-out infinite;
   pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -264,7 +263,8 @@ body {
 .box-metal {
   position: relative;
   overflow: hidden;
-  background-color: var(--box-color);
+  background-image:
+    linear-gradient(135deg, color-mix(in srgb, var(--box-color) 90%, white) 0%, var(--box-color) 55%, color-mix(in srgb, var(--box-color) 92%, black) 100%);
 }
 .box-metal::before {
   content: "";
@@ -274,9 +274,8 @@ body {
   width: 45%;
   height: 220%;
   transform: rotate(18deg);
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%);
-  display: none;
-  animation: cupomSheen 3.6s ease-in-out infinite;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  animation: cupomSheen 6s ease-in-out infinite;
   pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
