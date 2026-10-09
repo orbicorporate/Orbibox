@@ -1,3 +1,4 @@
+import { Escritorio } from "@/components/landing/Escritorio";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
@@ -173,6 +174,8 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
           </div>
         </Reveal>
       </section>
+
+      <Escritorio />
 
       <footer className="relative mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 pb-10 text-[13.5px] text-text-tertiary sm:flex-row">
         <span>Orbibox, um produto Nume.</span>
