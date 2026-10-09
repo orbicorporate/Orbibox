@@ -108,6 +108,7 @@ export default async function HojePage() {
       orbiColors={orbiColors}
       progressoPct={progress.pct}
       mostrarConvite={!acesso.subscription || acesso.subscription.status === "trialing"}
+      passoFaltando={oportunidade.selo === "Deixe sua página mais completa" ? null : insightsQueue[0] ? { title: insightsQueue[0].title, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
       pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))}
     />
   );
