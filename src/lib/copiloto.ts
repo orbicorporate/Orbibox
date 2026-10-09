@@ -26,6 +26,12 @@ export type Semana = {
   contatosAntes: number;
   conversoes: number;
   conversoesAntes: number;
+  /** Toques no botão de WhatsApp (parte das conversões). */
+  whatsapp: number;
+  whatsappAntes: number;
+  /** Ofertas resgatadas (parte das conversões). */
+  resgates: number;
+  resgatesAntes: number;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,6 +85,10 @@ export async function calcularSemana(supabase: Sb, businessId: string): Promise<
     contatosAntes: l0.count ?? 0,
     conversoes: (w1.count ?? 0) + (r1.count ?? 0),
     conversoesAntes: (w0.count ?? 0) + (r0.count ?? 0),
+    whatsapp: w1.count ?? 0,
+    whatsappAntes: w0.count ?? 0,
+    resgates: r1.count ?? 0,
+    resgatesAntes: r0.count ?? 0,
   };
 }
 
