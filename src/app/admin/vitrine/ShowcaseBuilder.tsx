@@ -2023,55 +2023,31 @@ function ItemCard({
 
             <div data-tour="item-destino">
               <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Ao tocar no card…</p>
-              <HelperText>Escolha o que acontece quando o cliente toca neste item no seu catálogo.</HelperText>
-              <div className="mt-4 flex flex-col gap-2.5">
-                {/* Página própria */}
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => save(item.id, { link_kind: "produto", target_url: null })}
-                  className={`flex cursor-pointer flex-col items-start rounded-2xl border-2 px-4 py-3 text-left ${(item.link_kind ?? "produto") === "produto" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
-                >
-                  <span className="flex items-center gap-1.5 text-[14px] font-semibold">
-                    {(item.link_kind ?? "produto") === "produto" && <span>✓</span>}
-                    Abrir uma página exclusiva do produto
-                  </span>
-                  <div className="w-full" onClick={(e) => e.stopPropagation()}>
-                    <HelperText className="mt-1">O Orbibox monta uma página só desse item, com a capa, as fotos do carrossel, a descrição e o preço. Ideal pra apresentar bem antes do cliente decidir.</HelperText>
-                  </div>
-                </div>
-
-                {/* Link externo */}
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => save(item.id, { link_kind: "externo", target_url: item.target_url ?? "" })}
-                  className={`flex cursor-pointer flex-col items-start rounded-2xl border-2 px-4 py-3 text-left ${item.link_kind === "externo" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
-                >
-                  <span className="flex items-center gap-1.5 text-[14px] font-semibold">
-                    {item.link_kind === "externo" && <span>✓</span>}
-                    Levar para um link externo
-                  </span>
-                  <div className="w-full" onClick={(e) => e.stopPropagation()}>
-                    <HelperText className="mt-1">Manda o cliente direto pra outro lugar, seu site, uma loja, o WhatsApp. Não abre página no Orbibox.</HelperText>
-                  </div>
-                </div>
-
-                {/* Sem página */}
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => save(item.id, { link_kind: "nenhum", target_url: null })}
-                  className={`flex cursor-pointer flex-col items-start rounded-2xl border-2 px-4 py-3 text-left ${item.link_kind === "nenhum" ? "border-on-background bg-surface-white" : "border-divider bg-surface-soft"}`}
-                >
-                  <span className="flex items-center gap-1.5 text-[14px] font-semibold">
-                    {item.link_kind === "nenhum" && <span>✓</span>}
-                    Não abrir nada (só mostrar)
-                  </span>
-                  <div className="w-full" onClick={(e) => e.stopPropagation()}>
-                    <HelperText className="mt-1">O card fica só de exposição, sem ser clicável. Bom pra destacar algo que não precisa de página nem link.</HelperText>
-                  </div>
-                </div>
+              <div className="mt-3 flex flex-col gap-2">
+                {([
+                  { v: "produto", titulo: "Abrir a página do produto", dica: "Uma página só desse item, com capa, fotos, descrição e preço.", patch: { link_kind: "produto", target_url: null } },
+                  { v: "externo", titulo: "Levar para um link", dica: "Manda direto para seu site, loja ou WhatsApp.", patch: { link_kind: "externo", target_url: item.target_url ?? "" } },
+                  { v: "nenhum", titulo: "Só mostrar", dica: "O card fica de exposição, sem abrir nada.", patch: { link_kind: "nenhum", target_url: null } },
+                ] as const).map((o) => {
+                  const sel = (item.link_kind ?? "produto") === o.v;
+                  return (
+                    <button
+                      key={o.v}
+                      type="button"
+                      onClick={() => save(item.id, o.patch)}
+                      aria-pressed={sel}
+                      className={`flex w-full items-start gap-3 rounded-[20px] border px-4 py-3.5 text-left transition-colors ${sel ? "border-on-background bg-surface-white shadow-[0_1px_4px_rgba(17,19,24,0.06)]" : "border-divider bg-surface-soft"}`}
+                    >
+                      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${sel ? "border-on-background bg-on-background" : "border-text-tertiary"}`} aria-hidden>
+                        {sel && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[15px] font-normal">{o.titulo}</span>
+                        {sel && <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">{o.dica}</span>}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
               {item.link_kind === "externo" && (
