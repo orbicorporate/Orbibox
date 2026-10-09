@@ -6,6 +6,7 @@ import { ProximaAcao } from "./ProximaAcao";
 import { Marcos } from "./Marcos";
 import { ConviteCard } from "./ConviteCard";
 import { OportunidadeCard } from "./OportunidadeCard";
+import { LinhaExpansivel } from "./LinhaExpansivel";
 import { PerguntaOrbi } from "./PerguntaOrbi";
 import type { Oportunidade } from "@/lib/copiloto";
 import type { ComponentProps } from "react";
@@ -52,7 +53,7 @@ export type HomeViewProps = {
   mostrarConvite: boolean;
   pendencias: { title: string; href: string }[];
   /** Próxima pendência de cadastro, em linha fina embaixo do card principal quando ele está ocupado por uma oportunidade. */
-  passoFaltando: { title: string; ctaLabel: string; href: string } | null;
+  passoFaltando: { title: string; description: string; ctaLabel: string; href: string } | null;
 };
 
 /** A home do painel, só apresentação: os dados vêm prontos de page.tsx. */
@@ -91,11 +92,14 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
       <ProximaAcao {...proxima} pendencia={null} />
 
       {passoFaltando && (
-        <Link href={passoFaltando.href} className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-white px-4 py-3 ring-1 ring-black/[0.06] active:opacity-70">
-          <span className="h-2 w-2 shrink-0 rounded-full orbi-gradient" aria-hidden />
-          <span className="min-w-0 flex-1 truncate text-[14px]">{passoFaltando.title}</span>
-          <span className="shrink-0 text-[13px] text-text-secondary underline underline-offset-2">{passoFaltando.ctaLabel} →</span>
-        </Link>
+        <LinhaExpansivel
+          className="mt-3"
+          marcador={<span className="h-2 w-2 rounded-full orbi-gradient" />}
+          titulo={passoFaltando.title}
+          texto={passoFaltando.description}
+          rotulo={passoFaltando.ctaLabel}
+          href={passoFaltando.href}
+        />
       )}
 
       <Marcos businessId={b.id} contagem={marcos} />
