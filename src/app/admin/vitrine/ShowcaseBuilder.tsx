@@ -1883,7 +1883,7 @@ function ItemCard({
                     <button
                       key={t}
                       onClick={() => save(item.id, { price_type: t })}
-                      className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-[13.5px] font-medium transition-colors ${ativo ? "border-on-background bg-surface-white text-on-background" : "border-transparent bg-surface-soft text-text-secondary"}`}
+                      className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border-2 px-3 py-2 text-[13.5px] font-medium transition-colors ${ativo ? "border-on-background bg-surface-white text-on-background" : "border-transparent bg-surface-soft text-text-secondary"}`}
                     >
                       {ativo && <span aria-hidden>✓</span>}
                       {PRICE_TYPE_LABEL[t]}

@@ -92,7 +92,7 @@ export function AdminsManager({
         <button
           onClick={convidar}
           disabled={saving}
-          className="rounded-2xl bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
+          className="rounded-full bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
         >
           {saving ? "..." : "Convidar"}
         </button>

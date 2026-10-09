@@ -558,19 +558,19 @@ export function VisitorExperience({
               <button
                 type="button"
                 onClick={() => setBoxIcon(iconeBox, "__none__")}
-                className={`mt-4 flex min-h-[48px] w-full items-center justify-center rounded-2xl border text-[15px] font-medium ${alvo.icon === "__none__" ? "border-on-background bg-surface-soft" : "border-divider"}`}
+                className={`mt-4 flex min-h-[48px] w-full items-center justify-center rounded-full border text-[15px] font-medium ${alvo.icon === "__none__" ? "border-on-background bg-surface-soft" : "border-divider"}`}
               >
                 Sem ícone
               </button>
               <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Destaques</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {especiais.map((ic) => (
-                  <button key={ic} type="button" onClick={() => setBoxIcon(iconeBox, ic)} className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border ${alvo.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}>
+                  <button key={ic} type="button" onClick={() => setBoxIcon(iconeBox, ic)} className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border ${alvo.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}>
                     <HomeIcon icon={ic} orbiColors={orbiColors} businessLogo={logoAtual} />
                   </button>
                 ))}
                 {logoAtual && (
-                  <button type="button" onClick={() => setBoxIcon(iconeBox, "__logo__")} className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border ${alvo.icon === "__logo__" ? "border-on-background bg-surface-soft" : "border-divider"}`}>
+                  <button type="button" onClick={() => setBoxIcon(iconeBox, "__logo__")} className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border ${alvo.icon === "__logo__" ? "border-on-background bg-surface-soft" : "border-divider"}`}>
                     <HomeIcon icon="__logo__" orbiColors={orbiColors} businessLogo={logoAtual} />
                   </button>
                 )}
@@ -578,7 +578,7 @@ export function VisitorExperience({
               <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Símbolos</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {ICON_LIBRARY.filter((ic) => !isAnimatedIcon(ic)).map((ic) => (
-                  <button key={ic} type="button" onClick={() => setBoxIcon(iconeBox, ic)} className={`flex h-12 w-12 items-center justify-center rounded-2xl border text-[20px] ${alvo.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}>
+                  <button key={ic} type="button" onClick={() => setBoxIcon(iconeBox, ic)} className={`flex h-12 w-12 items-center justify-center rounded-full border text-[20px] ${alvo.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}>
                     {ic}
                   </button>
                 ))}
@@ -831,25 +831,25 @@ export function VisitorExperience({
                           <>
                             <button type="button" aria-label="Fechar opções" onClick={(e) => { e.stopPropagation(); setMenuBox(null); }} className="fixed inset-0 z-10 cursor-default" />
                             <div className="absolute right-0 top-10 z-20 w-[176px] overflow-hidden rounded-2xl bg-white p-1.5 text-on-background shadow-[0_10px_30px_rgba(17,19,24,0.22)]" onClick={(e) => e.stopPropagation()}>
-                              <button type="button" onClick={() => { setMenuBox(null); setColorPickerBox(o.key); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                              <button type="button" onClick={() => { setMenuBox(null); setColorPickerBox(o.key); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                 <span className="h-4 w-4 shrink-0 rounded-full border border-black/10" style={{ background: o.color || "conic-gradient(from 0deg, #C0392B, #C2650A, #1F7A3D, #1D4ED8, #6D28D9, #C0392B)" }} />
                                 Cor do card
                               </button>
-                              <button type="button" onClick={() => { setMenuBox(null); setIconeBox(o.key); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                              <button type="button" onClick={() => { setMenuBox(null); setIconeBox(o.key); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                 <span className="flex h-4 w-4 shrink-0 items-center justify-center text-[13px]" aria-hidden>◆</span>
                                 Ícone do card
                               </button>
                               {o.atalho && (
-                                <button type="button" onClick={() => definirIcone(o.key, true)} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                                <button type="button" onClick={() => definirIcone(o.key, true)} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                   <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[8px]" aria-hidden>●</span>
                                   Virar ícone embaixo
                                 </button>
                               )}
-                              <button type="button" onClick={abrirPaleta} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                              <button type="button" onClick={abrirPaleta} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                 <span className="orbi-gradient flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px]">✦</span>
                                 Paleta da página
                               </button>
-                              <button type="button" onClick={() => { setMenuBox(null); toggleLayout(o.key, largo); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                              <button type="button" onClick={() => { setMenuBox(null); toggleLayout(o.key, largo); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                 {largo ? (
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0"><rect x="5" y="5" width="14" height="14" rx="2.5" /></svg>
                                 ) : (
@@ -857,11 +857,11 @@ export function VisitorExperience({
                                 )}
                                 {largo ? "Deixar quadrado" : "Deixar retângulo"}
                               </button>
-                              <button type="button" onClick={() => { setMenuBox(null); moveOption(o.key, -1); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                              <button type="button" onClick={() => { setMenuBox(null); moveOption(o.key, -1); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M18 15l-6-6-6 6" /></svg>
                                 Mover pra cima
                               </button>
-                              <button type="button" onClick={() => { setMenuBox(null); moveOption(o.key, 1); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                              <button type="button" onClick={() => { setMenuBox(null); moveOption(o.key, 1); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M6 9l6 6 6-6" /></svg>
                                 Mover pra baixo
                               </button>
@@ -914,7 +914,7 @@ export function VisitorExperience({
                             );
                           })}
                         </div>
-                        <button type="button" onClick={abrirPaleta} className="orbi-gradient mt-3 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-[13px] font-medium text-on-background">
+                        <button type="button" onClick={abrirPaleta} className="orbi-gradient mt-3 flex w-full items-center justify-between rounded-full px-3 py-2.5 text-left text-[13px] font-medium text-on-background">
                           <span>✦ Paleta da página inteira</span>
                           <span aria-hidden>→</span>
                         </button>

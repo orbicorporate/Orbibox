@@ -743,7 +743,7 @@ export function BoxesManager({
                       ))}
                       <button
                         onClick={() => saveDifferentialsCards([...cards, { icon: DIFF_ICONS[0], title: "", description: "" }])}
-                        className="rounded-2xl border border-dashed border-divider py-2.5 text-[13px] text-text-tertiary"
+                        className="rounded-full border border-dashed border-divider py-2.5 text-[13px] text-text-tertiary"
                       >
                         + Adicionar diferencial
                       </button>

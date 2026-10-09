@@ -539,7 +539,7 @@ export default function OnboardingPage() {
                     role="radio"
                     aria-checked={conversao === "orbi"}
                     onClick={() => setConversao("orbi")}
-                    className={`col-span-2 min-h-[48px] rounded-2xl px-3.5 py-3 text-left text-[14px] font-medium transition-all active:scale-[0.98] ${conversao === "orbi" ? "bg-on-background text-white" : "bg-surface-white text-text-secondary ring-1 ring-divider"}`}
+                    className={`col-span-2 min-h-[48px] rounded-full px-3.5 py-3 text-left text-[14px] font-medium transition-all active:scale-[0.98] ${conversao === "orbi" ? "bg-on-background text-white" : "bg-surface-white text-text-secondary ring-1 ring-divider"}`}
                   >
                     ✦ Deixe a Orbi decidir
                   </button>

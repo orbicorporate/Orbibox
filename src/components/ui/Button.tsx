@@ -9,7 +9,7 @@ export function Button({
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-[28px] px-6 py-3 text-[15px] font-medium transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[15px] font-medium transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed";
   const variants: Record<Variant, string> = {
     primary: "bg-button-primary text-white",
     secondary: "bg-button-secondary text-on-background",
