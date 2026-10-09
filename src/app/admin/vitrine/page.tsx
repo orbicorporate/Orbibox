@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getInspirePhotos } from "@/lib/inspirePhotos";
 import { ShowcaseBuilder } from "./ShowcaseBuilder";
+import { GuiaBotao } from "@/components/guia/GuiaOrbi";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -38,6 +39,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
       <p className="mt-1 text-[14px] text-text-secondary">
         O que o cliente vê no seu link.
       </p>
+      <GuiaBotao className="mt-3 self-start" />
       <ShowcaseBuilder
         abrirNovo={novo === "1"}
         items={items ?? []}

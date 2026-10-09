@@ -51,10 +51,12 @@ export type HomeViewProps = {
   progressoPct: number;
   mostrarConvite: boolean;
   pendencias: { title: string; href: string }[];
+  /** Próxima pendência de cadastro, em linha fina embaixo do card principal quando ele está ocupado por uma oportunidade. */
+  passoFaltando: { title: string; ctaLabel: string; href: string } | null;
 };
 
 /** A home do painel, só apresentação: os dados vêm prontos de page.tsx. */
-export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, mostrarConvite, pendencias }: HomeViewProps) {
+export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, mostrarConvite, pendencias, passoFaltando }: HomeViewProps) {
   const cartao = "flex min-h-[92px] flex-col justify-between gap-3 rounded-[22px] bg-surface-white p-4 text-left ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]";
 
   return (
@@ -85,6 +87,14 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
       )}
 
       <OportunidadeCard o={oportunidade} shareUrl={shareUrl} shareTitle={shareTitle} shareReady={shareReady} />
+
+      {passoFaltando && (
+        <Link href={passoFaltando.href} className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-white px-4 py-3 ring-1 ring-black/[0.06] active:opacity-70">
+          <span className="h-2 w-2 shrink-0 rounded-full orbi-gradient" aria-hidden />
+          <span className="min-w-0 flex-1 truncate text-[14px]">{passoFaltando.title}</span>
+          <span className="shrink-0 text-[13px] text-text-secondary underline underline-offset-2">{passoFaltando.ctaLabel} →</span>
+        </Link>
+      )}
 
       <ProximaAcao {...proxima} pendencia={null} />
 
