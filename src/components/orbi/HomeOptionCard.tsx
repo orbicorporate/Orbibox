@@ -116,7 +116,7 @@ export function homeCardShellClass(layout: HomeCardLayout, ai?: boolean, cupom?:
       ? "cupom-box text-white shadow-[0_2px_10px_rgba(204,23,57,0.18)]"
       : "bg-surface-white border border-[#111318]/10 shadow-[0_1px_4px_rgba(17,19,24,0.04)]";
   if (layout === "largo") {
-    return `flex w-full items-center gap-4 rounded-[22px] p-4 text-left ${bg}${ring}`;
+    return `flex w-full items-end gap-4 rounded-[22px] p-4 text-left ${bg}${ring}`;
   }
   return `flex h-full min-h-[116px] w-full flex-col justify-between rounded-[22px] p-4 text-left ${bg}${ring}`;
 }
@@ -179,7 +179,7 @@ export function HomeOptionCardContent({
       <>
         <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
         <span className="relative min-w-0 flex-1">
-          <span className="block text-[17px] font-semibold">{renderedTitle}</span>
+          <span className="block text-[16px] font-normal">{renderedTitle}</span>
           {stars && <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
         </span>
         <span className={`relative shrink-0 ${onDarkOrRed ? (dark ? "text-[#111318]/80" : "text-white/80") : "text-text-tertiary"}`}>{addressIndicator ?? "→"}</span>
@@ -191,7 +191,7 @@ export function HomeOptionCardContent({
     <>
       <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
       <span className="relative">
-        <span className="flex min-h-[40px] items-end text-[18px] font-semibold leading-tight">{renderedTitle}</span>
+        <span className="flex min-h-[40px] items-end text-[17px] font-normal leading-tight">{renderedTitle}</span>
         {stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
       </span>
     </>
