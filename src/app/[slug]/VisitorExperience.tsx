@@ -1479,10 +1479,13 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
                         {v.badge}
                       </span>
                     )}
-                    <p className={`font-[family-name:var(--font-manrope)] text-[32px] font-extrabold leading-none tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}`}>
-                      {voucherDiscountBig(v)}
-                    </p>
-                    <p className="mt-2 text-[16px] font-semibold leading-snug">{v.title}</p>
+                    {/* Brinde/benefício não tem número: o título assume o destaque. */}
+                    {v.discount_type !== "gift" && (
+                      <p className={`font-[family-name:var(--font-manrope)] text-[32px] font-extrabold leading-none tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}`}>
+                        {voucherDiscountBig(v)}
+                      </p>
+                    )}
+                    <p className={v.discount_type === "gift" ? `font-[family-name:var(--font-manrope)] text-[26px] font-extrabold leading-[1.1] tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}` : "mt-2 text-[16px] font-semibold leading-snug"}>{v.title}</p>
                     {v.description?.trim() && (
                       <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-80">{v.description}</p>
                     )}
