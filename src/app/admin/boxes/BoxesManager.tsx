@@ -811,90 +811,84 @@ export function BoxesManager({
             </span>
           </button>
 
-          <p className="mt-2 px-1 text-[13px] font-medium text-text-secondary">Ou use uma pronta:</p>
-
-          {/* Box da Orbi, sempre visível como destaque de super tecnologia.
-              Nióbio: reativa se estiver off. Titânio: leva pro teste (2 grátis). */}
-          {hasAiChat ? (
-            orbiDesativada ? (
-              <OrbiBoxCard
-                cores={orbiColors}
-                onClick={reativarOrbi}
-                tag="Desativada"
-                texto="Toque pra reativar a assistente de IA na sua página."
-                acao="Reativar"
-              />
-            ) : (
-              <OrbiBoxCard
-                cores={orbiColors}
-                tag="Ativa"
-                texto="Na sua página agora: tira dúvidas, recomenda produtos e captura contatos."
-              />
-            )
-          ) : (
-            <OrbiBoxCard
-              cores={orbiColors}
-              href="/admin/agent"
-              tag="Novidade"
-              texto="Atende seus clientes 24h, recomenda produtos e capta contatos."
-              acao="Experimentar grátis"
-            />
-          )}
-
-          <button
-            onClick={novoBoxWhatsapp}
-            className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiContactDisc size={40} /></span>
-            <span>
-              <span className="block text-[14px] font-medium">Botão de WhatsApp</span>
-              <span className="block text-[12.5px] text-text-tertiary">Abre a conversa direto, com sua mensagem pronta.</span>
-            </span>
-          </button>
-          <button
-            onClick={novoBoxAvaliacao}
-            className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
-          >
-            <span className="h-10 w-10 shrink-0 overflow-hidden rounded-full"><OrbiGoogleIcon size={40} /></span>
-            <span>
-              <span className="block text-[14px] font-medium">Botão de avaliação no Google</span>
-              <span className="block text-[12.5px] text-text-tertiary">O cliente toca e já dá as estrelas.</span>
-            </span>
-          </button>
-          <button
-            onClick={novoBoxEndereco}
-            className="flex items-center gap-3 rounded-[22px] border border-dashed border-divider bg-surface-white p-4 text-left"
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={28} /></span>
-            <span>
-              <span className="block text-[14px] font-medium">Botão de endereço</span>
-              <span className="block text-[12.5px] text-text-tertiary">Sai pronto com Waze e Google Maps.</span>
-            </span>
-          </button>
+          {/* Recomendado: um destaque só, o resto segue o mesmo formato. */}
+          <p className="mt-3 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Recomendado para você</p>
           {hasVouchers ? (
-            <DestaqueVidro
-              cores={["#FF5A4D", "#FF3B6E"]}
-              icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5)]">🎟️</span>}
+            <LinhaPronta
+              destaque
+              icone={<span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[20px]">🎟️</span>}
               titulo="Botão de vouchers"
-              tag="Atrai clientes"
-              subtitulo="Ofertas com código único"
-              texto="Coloca suas ofertas na página, com estoque controlado e captura de contato."
-              acao="Criar botão"
+              nota="Atrai clientes"
+              texto="Ofertas com código único, estoque controlado e captura de contato."
+              acao="Criar"
               onClick={novoBoxVoucher}
             />
           ) : (
-            <DestaqueVidro
-              cores={["#FF5A4D", "#FF3B6E"]}
-              icone={<span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,.5)]">🎟️</span>}
+            <LinhaPronta
+              destaque
+              icone={<span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[20px]">🎟️</span>}
               titulo="Botão de vouchers"
-              tag="Novidade"
-              subtitulo="Ofertas com código único"
-              texto="Trazem gente nova pra sua página e capturam o contato de quem resgata."
+              nota="Novidade"
+              texto="Traz gente nova para a sua página e captura o contato de quem resgata."
               acao="Ver como funciona"
               href="/admin/vouchers"
             />
           )}
 
+          {hasAiChat && !orbiDesativada && (
+            <>
+              <p className="mt-3 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Já ativos</p>
+              <LinhaPronta
+                icone={<OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="rounded-full" />}
+                titulo="Botão da Orbi"
+                texto="Tira dúvidas, recomenda produtos e captura contatos na sua página."
+                ativo
+              />
+            </>
+          )}
+
+          <p className="mt-3 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Para adicionar</p>
+          {hasAiChat && orbiDesativada && (
+            <LinhaPronta
+              icone={<OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="rounded-full" />}
+              titulo="Botão da Orbi"
+              nota="Desativada"
+              texto="Toque para reativar a assistente de IA na sua página."
+              acao="Reativar"
+              onClick={reativarOrbi}
+            />
+          )}
+          {!hasAiChat && (
+            <LinhaPronta
+              icone={<OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="rounded-full" />}
+              titulo="Botão da Orbi"
+              nota="Novidade"
+              texto="Atende seus clientes 24h, recomenda produtos e capta contatos."
+              acao="Experimentar"
+              href="/admin/agent"
+            />
+          )}
+          <LinhaPronta
+            icone={<OrbiContactDisc size={44} />}
+            titulo="Botão de WhatsApp"
+            texto="Abre a conversa direto, com sua mensagem pronta."
+            acao="Adicionar"
+            onClick={novoBoxWhatsapp}
+          />
+          <LinhaPronta
+            icone={<OrbiGoogleIcon size={44} />}
+            titulo="Avaliação no Google"
+            texto="O cliente toca e já dá as estrelas."
+            acao="Adicionar"
+            onClick={novoBoxAvaliacao}
+          />
+          <LinhaPronta
+            icone={<OrbiMapPin size={30} />}
+            titulo="Botão de endereço"
+            texto="Sai pronto com Waze e Google Maps."
+            acao="Adicionar"
+            onClick={novoBoxEndereco}
+          />
         </div>
       )}
     </div>
@@ -1326,79 +1320,48 @@ function ColorPickerModal({
   );
 }
 
-/** Destaque da Box da Orbi no painel: usa o card de vidro genérico com a
- * esfera da Orbi como ícone. */
-function OrbiBoxCard({ cores, tag, texto, acao, href, onClick }: { cores: string[] | null; tag: string; texto: string; acao?: string; href?: string; onClick?: () => void }) {
-  const c1 = cores?.[0] ?? "#B7F34A";
-  return (
-    <DestaqueVidro
-      cores={[c1, cores?.[1] ?? "#6EE7D8"]}
-      icone={
-        <>
-          <span className="relative h-14 w-14 overflow-hidden rounded-full"><OrbiParticleSphere size={56} colors={cores ?? undefined} vivid className="rounded-full" /></span>
-        </>
-      }
-      titulo="Botão da Orbi"
-      tag={tag}
-      subtitulo="IA que conversa com seus clientes"
-      texto={texto}
-      acao={acao}
-      href={href}
-      onClick={onClick}
-    />
-  );
-}
-
-/** Card de destaque em vidro fosco: borda em degradê nas cores dadas,
- * brilho colorido atrás, reflexo que passa de tempos em tempos, ícone
- * grande, etiqueta de estado e, quando tem, a ação em forma de botão. */
-function DestaqueVidro({
-  cores,
+/** Linha de botão pronto: mesmo formato para todos (ícone, título, uma linha de
+ * texto e uma ação à direita). Só o recomendado ganha fundo diferente. */
+function LinhaPronta({
   icone,
   titulo,
-  tag,
-  subtitulo,
+  nota,
   texto,
   acao,
+  ativo,
+  destaque,
   href,
   onClick,
 }: {
-  cores: [string, string];
   icone: ReactNode;
   titulo: string;
-  tag: string;
-  subtitulo: string;
+  nota?: string;
   texto: string;
   acao?: string;
+  ativo?: boolean;
+  destaque?: boolean;
   href?: string;
   onClick?: () => void;
 }) {
-  const [c1, c2] = cores;
   const miolo = (
     <>
-      <span className="vidro-orbi-brilho" aria-hidden />
-      <span className="relative z-[2] flex items-center gap-4 p-4">
-        <span className="relative flex h-14 w-14 shrink-0 items-center justify-center">{icone}</span>
-        <span className="min-w-0 flex-1">
-          <span className="flex flex-wrap items-center gap-2">
-            <span className="text-[15px] font-semibold tracking-[-0.01em]">{titulo}</span>
-            <span className="rounded-full px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-[0.08em] text-on-background" style={{ background: `linear-gradient(120deg, color-mix(in srgb, ${c1} 35%, white), color-mix(in srgb, ${c2} 35%, white))` }}>
-              {tag}
-            </span>
-          </span>
-          <span className="mt-0.5 block text-[12px] text-text-tertiary">{subtitulo}</span>
-          <span className="mt-1.5 block text-[13px] leading-snug text-text-secondary">{texto}</span>
-          {acao && (
-            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-on-background px-3.5 py-1.5 text-[12.5px] font-medium text-white">
-              ✦ {acao} <span aria-hidden>→</span>
-            </span>
-          )}
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-soft">{icone}</span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2">
+          <span className="truncate text-[15px] font-medium">{titulo}</span>
+          {nota && <span className="shrink-0 text-[11.5px] text-text-secondary">{nota}</span>}
         </span>
+        <span className="mt-0.5 line-clamp-2 block text-[12.5px] leading-snug text-text-secondary">{texto}</span>
       </span>
+      {ativo ? (
+        <span className="shrink-0 rounded-full bg-[#E4F7EA] px-2.5 py-1 text-[12px] font-medium text-[#1F7A45]">✓ Ativo</span>
+      ) : acao ? (
+        <span className={`shrink-0 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium ${destaque ? "bg-on-background text-white" : "border border-divider text-on-background"}`}>{acao}</span>
+      ) : null}
     </>
   );
-  const estilo = { "--vo1": c1, "--vo2": c2 } as CSSProperties;
-  if (href) return <Link href={href} className="vidro-orbi block text-left" style={estilo}>{miolo}</Link>;
-  if (onClick) return <button type="button" onClick={onClick} className="vidro-orbi block w-full text-left" style={estilo}>{miolo}</button>;
-  return <div className="vidro-orbi" style={estilo}>{miolo}</div>;
+  const base = `flex w-full items-center gap-3 rounded-[22px] p-3.5 text-left ${destaque ? "bg-gradient-to-br from-[#F6FDE6] to-[#E4F8F3] ring-1 ring-black/[0.06]" : "bg-surface-white ring-1 ring-black/[0.06]"}`;
+  if (href) return <Link href={href} className={base}>{miolo}</Link>;
+  if (onClick) return <button type="button" onClick={onClick} className={base}>{miolo}</button>;
+  return <div className={base}>{miolo}</div>;
 }
