@@ -53,6 +53,7 @@ export function HomeIcon({
   businessLogo?: string | null;
   cupom?: boolean;
 }) {
+  if (icon === "__none__") return null;
   const custom = isCustomBoxColor(color);
   const dark = needsDarkFg(color);
   // Sem a "bola" atrás: o ícone fica solto no box, só com a cor do texto certa.
@@ -127,6 +128,7 @@ export function HomeOptionCardContent({
   stars,
   cupom,
   addressIndicator,
+  onIconClick,
 }: {
   layout: HomeCardLayout;
   icon: string;
@@ -141,7 +143,27 @@ export function HomeOptionCardContent({
   stars?: boolean;
   cupom?: boolean;
   addressIndicator?: ReactNode;
+  /** No modo de edição da página: toque no ícone abre as opções de ícone. */
+  onIconClick?: () => void;
 }) {
+  const iconeNode = onIconClick ? (
+    <span
+      role="button"
+      tabIndex={0}
+      aria-label="Trocar o ícone"
+      onClick={(e) => { e.stopPropagation(); onIconClick(); }}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onIconClick(); } }}
+      className="shrink-0 cursor-pointer rounded-full outline-dashed outline-1 outline-offset-2 outline-current/30 active:opacity-60"
+    >
+      {icon === "__none__" ? (
+        <span className="flex h-12 w-12 items-center justify-center text-[20px] opacity-50" aria-hidden>＋</span>
+      ) : (
+        <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
+      )}
+    </span>
+  ) : (
+    <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
+  );
   const renderedTitle = titleNode ?? (
     <>
       {title}
@@ -158,7 +180,7 @@ export function HomeOptionCardContent({
   if (layout === "largo") {
     return (
       <>
-        <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
+        {iconeNode}
         <span className="relative min-w-0 flex-1">
           <span className="block text-[16px] font-normal">{renderedTitle}</span>
           {stars && <span className="mt-0.5 block text-[14px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
@@ -170,8 +192,8 @@ export function HomeOptionCardContent({
 
   return (
     <>
-      <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
-      <span className="relative">
+      {iconeNode}
+      <span className="relative mt-auto">
         <span className="flex min-h-[40px] items-end text-[17px] font-normal leading-tight">{renderedTitle}</span>
         {stars && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
       </span>

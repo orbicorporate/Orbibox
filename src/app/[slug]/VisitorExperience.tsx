@@ -29,6 +29,8 @@ import { OrbitHome } from "./OrbitHome";
 import { LogoEditor } from "./LogoEditor";
 import { BotaoSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { TextoEditavel } from "./TextoEditavel";
+import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
+import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
 import { NOBRES, coresDaMarca } from "@/lib/paletasNobres";
 import { guardarModoHome, guardarModoVitrine, useModoHomeDoVisitante, useModoVitrine, type ModoHome } from "@/lib/modoHome";
@@ -150,6 +152,7 @@ export function VisitorExperience({
   const [editingBoxId, setEditingBoxId] = useState<string | null>(null);
   // Box com a paletinha de cor aberta na tela inicial.
   const [colorPickerBox, setColorPickerBox] = useState<string | null>(null);
+  const [iconeBox, setIconeBox] = useState<string | null>(null);
   // Menu recolhido de opções do card (cor, formato, ordem), aberto pelo lapinho.
   const [menuBox, setMenuBox] = useState<string | null>(null);
   // Paleta da página inteira (prévia ao vivo) e grade completa de cores no seletor do card.
@@ -402,6 +405,16 @@ export function VisitorExperience({
     setColorPickerBox(null);
   }
 
+  // Troca (ou tira) o ícone do box direto na página.
+  async function setBoxIcon(key: string, icone: string) {
+    const box = boxList.find((b) => b.id === key);
+    if (!box) return;
+    const nextCfg: CustomConfig = { ...((box.config ?? {}) as CustomConfig), icon: icone };
+    setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: nextCfg } : b)));
+    setIconeBox(null);
+    conferirSalvo(await supabase.from("smart_boxes").update({ config: nextCfg }).eq("id", key));
+  }
+
   // Vira ícone na fileira de baixo (ou volta a ser card) direto na página.
   async function definirIcone(key: string, icone: boolean) {
     const box = boxList.find((b) => b.id === key);
@@ -529,6 +542,50 @@ export function VisitorExperience({
       {isOwner && intent === null && !previewMode && (
         <div className="fixed right-4 top-[60px] z-20"><BotaoSalvar /></div>
       )}
+      {iconeBox && showOwnerControls && (() => {
+        const alvo = todasOpcoes.find((o) => o.key === iconeBox);
+        if (!alvo) return null;
+        const especiais = ["__orb__", "__pin__", "__google__", "__money__", "__percent__", "__arrow__", "__heart__", "__gift__", "__happy__", "__dog__", "__leaf__", "__ticket__"];
+        return (
+          <div className="fixed inset-0 z-[60]">
+            <button type="button" aria-label="Fechar" onClick={() => setIconeBox(null)} className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-x-0 bottom-0 mx-auto max-h-[75vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-surface-white p-5 pb-8 shadow-[0_-12px_40px_rgba(0,0,0,0.25)]">
+              <div className="flex items-center justify-between">
+                <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Ícone de “{alvo.t}”</p>
+                <button type="button" onClick={() => setIconeBox(null)} className="min-h-[40px] px-2 text-[14px] text-text-secondary">Fechar</button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBoxIcon(iconeBox, "__none__")}
+                className={`mt-4 flex min-h-[48px] w-full items-center justify-center rounded-2xl border text-[15px] font-medium ${alvo.icon === "__none__" ? "border-on-background bg-surface-soft" : "border-divider"}`}
+              >
+                Sem ícone
+              </button>
+              <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Destaques</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {especiais.map((ic) => (
+                  <button key={ic} type="button" onClick={() => setBoxIcon(iconeBox, ic)} className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border ${alvo.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}>
+                    <HomeIcon icon={ic} orbiColors={orbiColors} businessLogo={logoAtual} />
+                  </button>
+                ))}
+                {logoAtual && (
+                  <button type="button" onClick={() => setBoxIcon(iconeBox, "__logo__")} className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border ${alvo.icon === "__logo__" ? "border-on-background bg-surface-soft" : "border-divider"}`}>
+                    <HomeIcon icon="__logo__" orbiColors={orbiColors} businessLogo={logoAtual} />
+                  </button>
+                )}
+              </div>
+              <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Símbolos</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {ICON_LIBRARY.filter((ic) => !isAnimatedIcon(ic)).map((ic) => (
+                  <button key={ic} type="button" onClick={() => setBoxIcon(iconeBox, ic)} className={`flex h-12 w-12 items-center justify-center rounded-2xl border text-[20px] ${alvo.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}>
+                    {ic}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
       {isOwner && intent === null && !previewMode && (
         <div className="fixed left-4 top-[62px] z-20">
           <SeletorModo
@@ -746,6 +803,10 @@ export function VisitorExperience({
                                 <span className="h-4 w-4 shrink-0 rounded-full border border-black/10" style={{ background: o.color || "conic-gradient(from 0deg, #C0392B, #C2650A, #1F7A3D, #1D4ED8, #6D28D9, #C0392B)" }} />
                                 Cor do card
                               </button>
+                              <button type="button" onClick={() => { setMenuBox(null); setIconeBox(o.key); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
+                                <span className="flex h-4 w-4 shrink-0 items-center justify-center text-[13px]" aria-hidden>◆</span>
+                                Ícone do card
+                              </button>
                               {o.atalho && (
                                 <button type="button" onClick={() => definirIcone(o.key, true)} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
                                   <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[8px]" aria-hidden>●</span>
@@ -862,6 +923,7 @@ export function VisitorExperience({
                         <HomeOptionCardContent
                           layout="largo"
                           icon={o.icon}
+                          onIconClick={showOwnerControls ? () => setIconeBox(o.key) : undefined}
                           boxLogo={o.boxLogo}
                           color={o.color}
                           orbiColors={orbiColors}
@@ -891,6 +953,7 @@ export function VisitorExperience({
                         <HomeOptionCardContent
                           layout="medio"
                           icon={o.icon}
+                          onIconClick={showOwnerControls ? () => setIconeBox(o.key) : undefined}
                           boxLogo={o.boxLogo}
                           color={o.color}
                           orbiColors={orbiColors}
