@@ -67,10 +67,12 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.02em]">
           {saudacao}, {primeiroNome ?? b.name}.
         </h1>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13.5px] text-text-secondary">
-          {primeiroNome && <span>{b.name}</span>}
-          <Link href={`/${b.slug}`} target="_blank" className="underline underline-offset-2">Ver minha página ↗</Link>
-          <QRCodeButton url={shareUrl} businessName={b.name} className="underline underline-offset-2">QR Code</QRCodeButton>
+        {primeiroNome && <p className="mt-1 text-[13.5px] text-text-secondary">{b.name}</p>}
+        <div className="mt-4 flex flex-wrap items-center gap-2.5">
+          <Link href={`/${b.slug}`} target="_blank" className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-on-background px-5 text-[14px] font-medium text-white transition-transform active:scale-[0.98]">
+            Ver minha página <span aria-hidden>↗</span>
+          </Link>
+          <QRCodeButton url={shareUrl} businessName={b.name} className="inline-flex min-h-[44px] items-center rounded-full border border-divider px-4 text-[14px] text-text-secondary">QR Code</QRCodeButton>
         </div>
       </div>
 

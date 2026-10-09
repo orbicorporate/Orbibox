@@ -739,7 +739,7 @@ export function VisitorExperience({
                 </div>
               )}
             </div>
-            <div className="mt-10 grid w-full grid-cols-2 gap-3">
+            <div className="mt-10 grid w-full grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
               {(() => {
                 // Distribuição mista: cada opção recebe "largo" (linha toda,
                 // card horizontal e compacto) ou "medio" (metade, card
