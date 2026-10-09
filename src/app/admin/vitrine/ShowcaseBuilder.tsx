@@ -1987,9 +1987,7 @@ function ItemCard({
             <div>
               <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Categoria</p>
               <p className="mt-1 text-[12px] leading-snug text-text-tertiary">Cada categoria vira uma seção com título no Catálogo.</p>
-              {/* Chips em vez de lista suspensa: dá pra ver todas as opções de
-                  uma vez e trocar com um toque. */}
-              <div className="mt-2.5 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-col gap-2">
                 {[{ v: null as string | null, t: "Sem categoria" }, ...categories.map((name) => ({ v: name as string | null, t: name }))].map(({ v, t }) => {
                   const ativo = (item.brand_label?.trim() || null) === v;
                   return (
@@ -1997,10 +1995,13 @@ function ItemCard({
                       key={t + (v ?? "")}
                       type="button"
                       onClick={() => save(item.id, { brand_label: v })}
-                      className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors ${ativo ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                      aria-pressed={ativo}
+                      className={`flex w-full items-center gap-3 rounded-[20px] border px-4 py-3 text-left text-[15px] font-normal transition-colors ${ativo ? "border-on-background bg-surface-white shadow-[0_1px_4px_rgba(17,19,24,0.06)]" : "border-divider bg-surface-soft text-text-secondary"}`}
                     >
-                      {ativo && <span aria-hidden>✓</span>}
-                      {t}
+                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${ativo ? "border-on-background bg-on-background" : "border-text-tertiary"}`} aria-hidden>
+                        {ativo && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">{t}</span>
                     </button>
                   );
                 })}
@@ -2014,9 +2015,10 @@ function ItemCard({
                       onNewCategory(trimmed);
                     }
                   }}
-                  className="rounded-full border border-dashed border-text-tertiary px-3.5 py-2 text-[13px] font-medium text-text-secondary"
+                  className="flex w-full items-center gap-3 rounded-[20px] border border-dashed border-text-tertiary px-4 py-3 text-left text-[15px] font-normal text-text-secondary"
                 >
-                  + Nova
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center text-[16px] leading-none" aria-hidden>+</span>
+                  Nova categoria
                 </button>
               </div>
             </div>
