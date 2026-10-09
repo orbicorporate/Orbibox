@@ -2316,7 +2316,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
                         </span>
                       )}
                       {destino && photo && (
-                        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/30 py-1.5 pl-3 pr-2.5 text-[12px] font-medium text-white backdrop-blur-sm">
+                        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border-[1.5px] border-white/90 bg-black/15 py-1 pl-3 pr-2.5 text-[12px] font-medium text-white backdrop-blur-[2px] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
                           Entrar
                           <span aria-hidden>{isExterno ? "↗" : "›"}</span>
                         </span>
@@ -2336,11 +2336,11 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { conten
                         {destino && (
                           size === "medio" ? (
                             // Card pequeno: só a bolinha com a seta, pro título respirar.
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-button-primary text-[13px] text-white">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-[1.5px] border-current text-[13px]" style={{ color: fc ? fc.fg : "#111318" }}>
                               {isExterno ? "↗" : "→"}
                             </span>
                           ) : (
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-button-primary px-3 py-1.5 text-[12px] font-medium text-white">
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border-[1.5px] border-current px-3 py-1 text-[12px] font-medium" style={{ color: fc ? fc.fg : "#111318" }}>
                               {isExterno
                                 ? (item.link_kind === "categoria" ? "Ver" : "Entrar")
                                 : "Entrar"}
