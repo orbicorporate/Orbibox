@@ -19,10 +19,11 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
     .single();
   if (!business) return [];
 
-  const [agentRes, itemsPhotoRes, activeBoxesRes] = await Promise.all([
+  const [agentRes, itemsPhotoRes, activeBoxesRes, boxesCfgRes] = await Promise.all([
     supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed, objectives, orbi_colors").eq("business_id", businessId).maybeSingle(),
     supabase.from("content_items").select("image_url, image_is_placeholder, description").eq("business_id", businessId).eq("status", "published"),
     supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", businessId).eq("is_active", true),
+    supabase.from("smart_boxes").select("config").eq("business_id", businessId),
   ]);
 
   const agentConfig = agentRes.data;
@@ -105,7 +106,13 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
       href: "/admin/config/marca#contatos",
     });
   }
-  if (!business.address) {
+  // O endereço pode estar em dois lugares: no cadastro do negócio ou no box
+  // "Como chegar" (config.url). Qualquer um dos dois já conta como preenchido.
+  const enderecoNoBox = (boxesCfgRes.data ?? []).some((b) => {
+    const c = b.config as { action?: string; url?: string } | null;
+    return c?.action === "endereco" && !!c.url?.trim();
+  });
+  if (!business.address?.trim() && !enderecoNoBox) {
     insightsQueue.push({
       title: "Adicione seu endereço",
       description: "Ganha um botão pronto na tela inicial, com botões pro Waze e Google Maps.",
