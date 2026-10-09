@@ -143,8 +143,7 @@ export function ProximaAcao({
                   {atual.gift.from_name ? `${atual.gift.from_name} montou` : "Um cliente montou"} um gift de {brl(atual.gift.value_cents)}
                   {atual.gift.to_name ? ` pra ${atual.gift.to_name}` : ""}.
                 </p>
-                <p className="mt-1 text-[13px] leading-snug text-text-secondary">Recebeu o pagamento? Libere e a arte fica pronta na hora.</p>
-                <div className="mt-3 flex gap-2">
+                                <div className="mt-3 flex gap-2">
                   <button type="button" disabled={ocupado} onClick={() => liberarGift(atual.gift, atual.chave)} className="min-h-[42px] flex-1 rounded-full bg-[#1F9E4C] text-[14px] font-medium text-white transition-transform active:scale-[.98] disabled:opacity-50">
                     {ocupado ? "Liberando…" : "Liberar gift"}
                   </button>
@@ -182,8 +181,7 @@ export function ProximaAcao({
                 <p className="text-[15.5px] font-medium leading-snug">
                   {atual.v.restam === 0 ? `"${atual.v.title}" esgotou.` : `Só ${atual.v.restam === 1 ? "resta 1 unidade" : `restam ${atual.v.restam} unidades`} de "${atual.v.title}".`}
                 </p>
-                <p className="mt-1 text-[13px] leading-snug text-text-secondary">Esse voucher está funcionando. Quer manter ele no ar?</p>
-                <div className="mt-3 flex gap-2">
+                                <div className="mt-3 flex gap-2">
                   <button type="button" disabled={ocupado} onClick={() => repor(atual.v, atual.chave)} className="min-h-[42px] flex-1 rounded-full bg-on-background text-[14px] font-medium text-white transition-transform active:scale-[.98] disabled:opacity-50">
                     {ocupado ? "Salvando…" : "Mais 20 unidades"}
                   </button>

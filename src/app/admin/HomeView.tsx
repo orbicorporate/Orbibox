@@ -86,7 +86,9 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         </Link>
       )}
 
-      <OportunidadeCard o={oportunidade} shareUrl={shareUrl} shareTitle={shareTitle} shareReady={shareReady} />
+      {oportunidade.selo !== "Deixe sua página mais completa" && <OportunidadeCard o={oportunidade} shareUrl={shareUrl} shareTitle={shareTitle} shareReady={shareReady} />}
+
+      <ProximaAcao {...proxima} pendencia={null} />
 
       {passoFaltando && (
         <Link href={passoFaltando.href} className="mt-3 flex items-center gap-3 rounded-2xl bg-surface-white px-4 py-3 ring-1 ring-black/[0.06] active:opacity-70">
@@ -95,8 +97,6 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
           <span className="shrink-0 text-[13px] text-text-secondary underline underline-offset-2">{passoFaltando.ctaLabel} →</span>
         </Link>
       )}
-
-      <ProximaAcao {...proxima} pendencia={null} />
 
       <Marcos businessId={b.id} contagem={marcos} />
 

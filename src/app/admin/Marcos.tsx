@@ -46,17 +46,15 @@ export function Marcos({ businessId, contagem }: { businessId: string; contagem:
   }
 
   return (
-    <div className="apr-pop relative mt-3 overflow-hidden rounded-[22px] bg-surface-white p-4 shadow-[0_14px_30px_-16px_rgba(17,19,24,0.35)] ring-1 ring-black/[0.06]">
-      <span className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full orbi-gradient opacity-30 blur-2xl" aria-hidden />
-      <button type="button" onClick={fechar} aria-label="Fechar" className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-text-tertiary">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-      </button>
-      <p className="relative text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary">Conquista</p>
-      <p className="relative mt-0.5 pr-8 font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">{marco.titulo} 🎉</p>
-      <p className="relative mt-1 text-[13.5px] leading-snug text-text-secondary">{marco.significa}</p>
-      <Link href={marco.href} onClick={fechar} className="relative mt-3 inline-flex rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">
+    <div className="apr-pop relative mt-3 flex items-center gap-3 rounded-2xl bg-surface-white py-3 pl-4 pr-2 ring-1 ring-black/[0.06]">
+      <span aria-hidden>🎉</span>
+      <p className="min-w-0 flex-1 truncate text-[14px]">{marco.titulo}</p>
+      <Link href={marco.href} onClick={fechar} className="shrink-0 text-[13px] text-text-secondary underline underline-offset-2">
         {marco.rotulo} →
       </Link>
+      <button type="button" onClick={fechar} aria-label="Fechar" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-tertiary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
     </div>
   );
 }
