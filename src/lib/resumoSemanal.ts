@@ -8,6 +8,10 @@ export type ResumoSemanal = {
   visitasAntes: number;
   acoes: number;
   whatsapp: number;
+  /** Item mais tocado da semana, se houver. */
+  topTitulo: string | null;
+  /** Canal que trouxe 40% ou mais das visitas, se houver. */
+  origem: string | null;
   frases: string[];
   dica: { texto: string; href: string; rotulo: string };
 };
@@ -89,5 +93,6 @@ export async function calcularResumoSemanal(supabase: SupabaseClient<any>, busin
     dica = { texto: "Está funcionando. Mantenha o catálogo com fotos e preços atualizados pra quem volta.", href: "/admin/vitrine", rotulo: "Revisar catálogo" };
   }
 
-  return { visitas, visitasAntes, acoes, whatsapp, frases, dica };
+  const origem = origemTop && visitas > 0 && origemQtd / visitas >= 0.4 ? origemTop : null;
+  return { visitas, visitasAntes, acoes, whatsapp, topTitulo, origem, frases, dica };
 }
