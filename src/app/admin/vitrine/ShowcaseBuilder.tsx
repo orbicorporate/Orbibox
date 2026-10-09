@@ -1710,7 +1710,7 @@ function ItemCard({
               <button onClick={() => move(item, 1)} disabled={idx === total - 1} className="h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30" aria-label="Mover para frente">→</button>
             </div>
 
-            <div data-tour="item-formato">
+            <div data-tour="item-formato" data-guia="formato-item">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
               <div className="mt-2 flex gap-2">
                 {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {

@@ -27,6 +27,7 @@ const PASSOS: Passo[] = [
   { alvo: "novo-item", titulo: "Vamos criar seu primeiro item", texto: "Toque em “Novo item”.", quando: "clique", semAlvo: "Abra o Catálogo para começar." },
   { alvo: "nome-item", titulo: "Dê um nome", texto: "Escreva o nome do produto ou serviço. Depois toque fora do campo.", quando: "digitou", semAlvo: "Toque no item que acabou de criar." },
   { alvo: "texto-orbi", titulo: "Deixa a Orbi escrever", texto: "Toque em “Gerar texto com IA”. Ela escreve a descrição por você.", quando: "clique" },
+  { alvo: "formato-item", titulo: "Escolha o formato do card", texto: "O card pode ser Grande, Largo, Pequeno ou Alto. Toque no que você preferir, dá pra mudar quando quiser.", quando: "clique" },
   { alvo: "foto-item", titulo: "Coloque uma foto", texto: "Toque na área da foto e escolha uma imagem do seu celular.", quando: "clique" },
   { alvo: "previa", titulo: "Veja como o cliente vê", texto: "Toque no celular pequeno para abrir sua página.", quando: "clique", semAlvo: "Toque em “Prévia ao vivo” para abrir." },
 ];
