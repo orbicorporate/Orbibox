@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore, type CSSProperties } from "react";
+import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
 import { groupByCategory } from "@/lib/showcase";
@@ -69,6 +69,8 @@ export function HomeVitrine({
   bolinhas,
   ctaRotulo,
   ctaTipo,
+  orbiAvatar,
+  onPerguntar,
   opcoesCta,
   onCtaTipo,
   onCta,
@@ -89,6 +91,10 @@ export function HomeVitrine({
   bolinhas: BolinhaVitrine[];
   ctaRotulo: string;
   ctaTipo: BotaoPrincipal;
+  /** Bolinha da Orbi no começo da barra de pergunta. */
+  orbiAvatar?: ReactNode;
+  /** Chamado ao enviar a pergunta digitada na barra da Orbi. */
+  onPerguntar: (pergunta: string) => void;
   opcoesCta: BotaoPrincipal[];
   /** Undefined quando não há onde guardar a escolha. */
   onCtaTipo?: (t: BotaoPrincipal) => void;
@@ -113,6 +119,7 @@ export function HomeVitrine({
   const [chip, setChip] = useState<string | null>(null);
   const [editandoFormato, setEditandoFormato] = useState(false);
   const [editandoCta, setEditandoCta] = useState(false);
+  const [pergunta, setPergunta] = useState("");
   const [editando, setEditando] = useState(false);
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [enderecoAberto, setEnderecoAberto] = useState<string | null>(null);
@@ -173,22 +180,40 @@ export function HomeVitrine({
       )}
 
       <div className="relative mt-7 w-full max-w-[340px]">
-        <button
-          type="button"
-          onClick={onCta}
-          className={`flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full px-6 text-[15px] font-semibold transition-transform active:scale-[0.98] ${
-            ctaTipo === "orbi"
-              ? "orbi-gradient text-on-background shadow-[0_10px_24px_-10px_rgba(60,190,170,0.7)]"
-              : ctaTipo === "whatsapp"
+        {ctaTipo === "orbi" ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onPerguntar(pergunta.trim());
+            }}
+            className="flex min-h-[56px] w-full items-center gap-3 rounded-full border-[1.5px] border-on-background/25 bg-transparent py-1.5 pl-3 pr-1.5 transition-colors focus-within:border-on-background/60"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center" aria-hidden>{orbiAvatar}</span>
+            <input
+              value={pergunta}
+              onChange={(e) => setPergunta(e.target.value)}
+              placeholder="Pergunte o que quiser..."
+              aria-label={ctaRotulo}
+              enterKeyHint="send"
+              className="min-w-0 flex-1 bg-transparent text-[16px] text-on-background outline-none placeholder:text-text-tertiary"
+            />
+            <button type="submit" aria-label="Enviar pergunta" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-on-background text-white transition-transform active:scale-95">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 19V5" /><path d="M5 12l7-7 7 7" /></svg>
+            </button>
+          </form>
+        ) : (
+          <button
+            type="button"
+            onClick={onCta}
+            className={`flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full px-6 text-[15px] font-semibold transition-transform active:scale-[0.98] ${
+              ctaTipo === "whatsapp"
                 ? "bg-[#25D366] text-white shadow-[0_10px_24px_-10px_rgba(37,211,102,0.7)]"
                 : "bg-button-primary text-white shadow-[0_10px_24px_-10px_rgba(17,19,24,0.5)]"
-          }`}
-        >
-          {ctaTipo === "orbi" && (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9L12 2Zm7 12l.9 2.6L22.5 17.5l-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9L19 14Z" /></svg>
-          )}
-          {ctaRotulo}
-        </button>
+            }`}
+          >
+            {ctaRotulo}
+          </button>
+        )}
         {podeEditar && onCtaTipo && opcoesCta.length > 1 && (
           <button type="button" onClick={() => setEditandoCta(true)} aria-label="Escolher o botão principal" className="absolute -right-2 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95">✎</button>
         )}

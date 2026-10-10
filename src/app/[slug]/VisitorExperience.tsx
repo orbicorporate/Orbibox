@@ -824,6 +824,8 @@ export function VisitorExperience({
                 bolinhas={bolinhasVitrine}
                 ctaRotulo={ctaVitrine.rotulo}
                 ctaTipo={ctaVitrine.tipo}
+                orbiAvatar={<OrbiParticleSphere size={34} colors={orbiColors ?? undefined} className="rounded-full" />}
+                onPerguntar={(q) => chooseIntent("duvida", q || undefined)}
                 opcoesCta={opcoesCta}
                 onCtaTipo={boxFormato ? (t) => guardarNaVitrine({ botaoPrincipal: t }) : undefined}
                 onCta={ctaVitrine.onClick}
