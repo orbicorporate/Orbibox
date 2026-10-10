@@ -5,6 +5,7 @@ import { ExcluirOrbibox } from "./ExcluirOrbibox";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
 import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 import { ObjetivoForm } from "./ObjetivoForm";
+import { CodigoRede } from "./CodigoRede";
 
 type Pendencias = { marca: number; contatos: number; orbi: number };
 
@@ -115,6 +116,8 @@ export default async function ConfigMenuPage() {
         conversao={business.conversao ?? null}
         servico={["agendar", "orcamento"].includes(business.conversao ?? "")}
       />
+
+      {isOwner && <CodigoRede businessId={business.id} />}
 
       <p className="mt-8 text-[13px] uppercase tracking-wide text-text-tertiary">Conta</p>
       <div className="mt-2.5 flex flex-col gap-3">
