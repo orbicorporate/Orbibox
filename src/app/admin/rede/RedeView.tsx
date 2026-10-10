@@ -219,11 +219,62 @@ function Insight({ cor, fundo, rotulo, titulo, texto, acao, onAcao }: { cor: str
 function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
   const [metrica, setMetrica] = useState<Metrica>("visitas");
   const [aberta, setAberta] = useState<string | null>(foco);
-  const ordenadas = useMemo(() => [...lojas].sort((a, b) => b[metrica] - a[metrica]), [lojas, metrica]);
+  const [uf, setUf] = useState<string>("Todos");
+  const [aviso, setAviso] = useState<string | null>(null);
+  const ufs = useMemo(() => ["Todos", ...Array.from(new Set(lojas.map((l) => l.uf))).sort()], [lojas]);
+  const ordenadas = useMemo(
+    () => lojas.filter((l) => uf === "Todos" || l.uf === uf).sort((a, b) => b[metrica] - a[metrica]),
+    [lojas, metrica, uf],
+  );
   const m = METRICAS.find((x) => x.id === metrica)!;
+  const poucosVouchers = lojas.filter((l) => l.resgates <= 15);
+
+  async function compartilharRanking() {
+    const linhas = [...lojas].sort((a, b) => b[metrica] - a[metrica]).slice(0, 5).map((l, i) => `${i + 1}. ${l.insta}: ${nf(l[metrica])} ${m.nome.toLowerCase()}`);
+    const texto = `Ranking da semana, ${m.nome.toLowerCase()}:\n${linhas.join("\n")}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ text: texto });
+        return;
+      }
+      await navigator.clipboard.writeText(texto);
+      setAviso("Ranking copiado. Cole no grupo da rede.");
+      setTimeout(() => setAviso(null), 2500);
+    } catch {
+      /* a pessoa fechou a folha de compartilhar */
+    }
+  }
 
   return (
     <div className="mt-5 flex flex-col gap-4">
+      {poucosVouchers.length > 0 && (
+        <div className="flex items-start gap-3 rounded-[22px] bg-gradient-to-br from-[#FFF3E4] to-[#FFE0CC] p-4">
+          <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full orbi-gradient" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <p className="text-[13.5px] leading-snug text-[#7A3A12]">
+              {poucosVouchers.length} Orbibox quase não tiveram vouchers resgatados esta semana. Quer que a Orbi sugira uma campanha para a rede toda?
+            </p>
+            <button type="button" onClick={() => { setAviso("Na versão real, a Orbi monta a campanha e você aprova antes de enviar."); setTimeout(() => setAviso(null), 3000); }} className="mt-2 min-h-[40px] rounded-full bg-on-background px-4 text-[13px] text-white">
+              Sugerir campanha
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="-mx-6 flex gap-2 overflow-x-auto px-6 no-scrollbar" role="group" aria-label="Filtrar por estado">
+        {ufs.map((u) => (
+          <button
+            key={u}
+            type="button"
+            aria-pressed={uf === u}
+            onClick={() => { setUf(u); setAberta(null); }}
+            className={`min-h-[36px] shrink-0 rounded-full px-3.5 text-[13px] transition-colors ${uf === u ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
+          >
+            {u === "Todos" ? "Todos os estados" : u}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-wrap gap-2" role="group" aria-label="Ordenar por">
         {METRICAS.map((x) => (
           <button
@@ -259,7 +310,10 @@ function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
                 <span className="shrink-0 text-[11px] tabular-nums text-text-secondary">#{i + 1}</span>
               </span>
               <span className="mt-0.5 truncate text-[11.5px] text-text-secondary">{l.cidade}, {l.uf}</span>
-              <span className="mt-3 font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-none tabular-nums" style={{ color: m.cor }}>{nf(l[metrica])}</span>
+              {situacao(l) && (
+                <span className="mt-1.5 inline-flex w-fit rounded-full px-2 py-0.5 text-[10.5px] font-medium" style={{ backgroundColor: situacao(l)!.fundo, color: situacao(l)!.cor }}>{situacao(l)!.rotulo}</span>
+              )}
+              <span className="mt-2 font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-none tabular-nums" style={{ color: m.cor }}>{nf(l[metrica])}</span>
               <span className="mt-1 text-[11.5px] text-text-secondary">{m.nome}</span>
               <span className="mt-auto flex items-end justify-between gap-2 pt-2">
                 <Delta v={l.delta} />
@@ -296,6 +350,9 @@ function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
                         </p>
                         <Spark dados={x.serie} cor={x.cor === "#E6E26B" || x.cor === "#B7F34A" ? "#6B8E00" : x.cor} />
                       </div>
+                      <button type="button" onClick={() => { setAviso("Na versão real, este botão abre o Orbibox para você ajudar a editar."); setTimeout(() => setAviso(null), 3000); }} className="mt-3 min-h-[44px] w-full rounded-full bg-on-background text-[14px] text-white active:scale-[0.99]">
+                        Abrir {x.insta}
+                      </button>
                     </div>
                   )}
                 </div>
@@ -305,8 +362,26 @@ function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
           return itens;
         })}
       </div>
+
+      {ordenadas.length === 0 && <p className="text-center text-[13px] text-text-secondary">Nenhum Orbibox nesse estado.</p>}
+
+      <button type="button" onClick={compartilharRanking} className="min-h-[46px] w-full rounded-full border border-divider bg-surface-white text-[14px] active:scale-[0.99]">
+        Compartilhar ranking da semana
+      </button>
+
+      {aviso && (
+        <p role="status" className="fixed inset-x-6 bottom-24 z-40 mx-auto max-w-[400px] rounded-full bg-on-background px-4 py-3 text-center text-[13px] text-white shadow-lg">{aviso}</p>
+      )}
     </div>
   );
+}
+
+/** Situação de cada Orbibox, em uma palavra, para ver de longe quem precisa de atenção. */
+function situacao(l: LojaDemo): { rotulo: string; cor: string; fundo: string } | null {
+  if (l.delta >= 15) return { rotulo: "Em alta", cor: "#1F7A3D", fundo: "#E4F7EA" };
+  if (l.delta <= -15) return { rotulo: "Precisa de ajuda", cor: "#B4321F", fundo: "#FFE8E4" };
+  if (l.delta < 0) return { rotulo: "Em queda", cor: "#8A5A00", fundo: "#FFF1C9" };
+  return null;
 }
 
 /* ───────────────────────── Convite e cobrança ───────────────────────── */
