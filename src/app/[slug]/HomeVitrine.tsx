@@ -144,13 +144,16 @@ export function HomeVitrine({
       </button>
 
       {extras.length > 0 && (
-        <div className="mt-3 flex w-full flex-wrap justify-center gap-2">
-          {extras.map((e) => (
-            <button key={e.key} type="button" onClick={e.onClick} className="min-h-[40px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-on-background active:scale-[0.98]">
-              {e.rotulo}
-            </button>
+        <nav aria-label="Mais caminhos" className="mt-4 flex w-full flex-wrap items-center justify-center gap-x-1 text-[13.5px] text-text-secondary">
+          {extras.map((x, i) => (
+            <span key={x.key} className="flex items-center">
+              {i > 0 && <span aria-hidden className="mx-2 text-text-tertiary">·</span>}
+              <button type="button" onClick={x.onClick} className="min-h-[40px] underline decoration-black/15 underline-offset-[5px] active:opacity-60">
+                {x.rotulo}
+              </button>
+            </span>
           ))}
-        </div>
+        </nav>
       )}
 
       {mostrar.length > 0 && (
