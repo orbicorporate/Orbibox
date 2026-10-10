@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
-import { formatPrice, groupByCategory } from "@/lib/showcase";
+import { groupByCategory } from "@/lib/showcase";
+import { CartaoItem, type ItemCartao } from "./CartaoItem";
 
 export type BolinhaVitrine = {
   key: string;
@@ -20,17 +21,7 @@ export type BolinhaVitrine = {
   onClick: () => void;
 };
 
-export type ItemVitrine = {
-  id: string;
-  title: string;
-  description: string | null;
-  price: number | null;
-  price_type: string | null;
-  price_max: number | null;
-  image_url: string | null;
-  brand_label: string | null;
-  position: number;
-};
+export type ItemVitrine = ItemCartao;
 
 export type FormatoItens = "destaque" | "grade" | "carrossel";
 
@@ -72,7 +63,9 @@ export function HomeVitrine({
   onCta,
   itens,
   tituloItens,
-  onItem,
+  slug,
+  businessId,
+  sessionId,
   onVerTudo,
   extras,
   podeEditar,
@@ -87,7 +80,9 @@ export function HomeVitrine({
   onCta: () => void;
   itens: ItemVitrine[];
   tituloItens: string;
-  onItem: (id: string) => void;
+  slug: string;
+  businessId: string;
+  sessionId: string | null;
   onVerTudo: (categoria: string | null) => void;
   /** Caminhos que não viram bolinha (Perguntar, Presentear, Sobre), em pílulas discretas. */
   extras: { key: string; rotulo: string; onClick: () => void }[];
@@ -217,14 +212,21 @@ export function HomeVitrine({
           {formato === "carrossel" ? (
             <ul className="no-scrollbar -mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2">
               {mostrar.map((i) => (
-                <Item key={i.id} item={i} onClick={() => onItem(i.id)} className="aspect-[4/5] w-[62%] shrink-0 snap-center" />
+                <li key={i.id} className="w-[72%] shrink-0 snap-center">
+                  <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
+                </li>
               ))}
             </ul>
           ) : (
             <ul className="mt-3 grid grid-cols-2 gap-3">
-              {mostrar.map((i, n) => (
-                <Item key={i.id} item={i} onClick={() => onItem(i.id)} grande={formato === "destaque" && n === 0} className={formato === "destaque" && n === 0 ? "col-span-2 aspect-[16/11]" : "aspect-[4/5]"} />
-              ))}
+              {mostrar.map((i, n) => {
+                const grande = formato === "destaque" && n === 0;
+                return (
+                  <li key={i.id} className={grande ? "col-span-2" : ""}>
+                    <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
@@ -329,21 +331,5 @@ function Seletor({ valor, onChange }: { valor: "cor" | "linha" | null; onChange:
         </button>
       ))}
     </div>
-  );
-}
-
-function Item({ item, onClick, className, grande = false }: { item: ItemVitrine; onClick: () => void; className: string; grande?: boolean }): ReactNode {
-  const preco = formatPrice(item);
-  return (
-    <li className={className}>
-      <button type="button" onClick={onClick} className="group relative block h-full w-full overflow-hidden rounded-[22px] bg-surface-soft text-left shadow-[0_2px_12px_rgba(17,19,24,0.08)] active:scale-[0.98]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={item.image_url ?? ""} alt={item.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-        <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent px-3 pb-3 pt-10">
-          <span className={`block truncate font-semibold leading-tight text-white ${grande ? "text-[18px]" : "text-[14px]"}`}>{item.title}</span>
-          {preco ? <span className="mt-0.5 block truncate text-[12.5px] text-white/85">{preco}</span> : null}
-        </span>
-      </button>
-    </li>
   );
 }
