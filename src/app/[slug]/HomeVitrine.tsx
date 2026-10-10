@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
 import { formatPrice } from "@/lib/showcase";
 
@@ -10,6 +11,10 @@ export type BolinhaVitrine = {
   tipo: "whatsapp" | "endereco" | "site" | "rede" | "voucher";
   rede?: Rede;
   endereco?: string;
+  /** "cor" = bolinha cheia de cor; "linha" = minimalista, só contorno e ícone. */
+  estilo: "cor" | "linha";
+  /** Só as que vêm de um box podem ser editadas e reordenadas. */
+  editavel: boolean;
   /** Selinho pequeno sobre a bolinha, ex.: "oferta". */
   selo?: string;
   onClick: () => void;
@@ -28,8 +33,9 @@ export type ItemVitrine = {
 const MINIMO_COM_FOTO = 4;
 const MAXIMO = 6;
 
-function Icone({ tipo, rede }: { tipo: BolinhaVitrine["tipo"]; rede?: Rede }) {
+function Icone({ tipo, rede, linha }: { tipo: BolinhaVitrine["tipo"]; rede?: Rede; linha?: boolean }) {
   const p = { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+  if (tipo === "whatsapp" && linha) return <svg {...p}><path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3Z" /><path d="M9 8.5c-.3 1.6.8 3.6 2.4 5s3.3 2 4.6 1.6" /></svg>;
   if (tipo === "whatsapp") return <svg {...p} fill="currentColor" stroke="none"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.2Z" /></svg>;
   if (tipo === "endereco") return <svg {...p}><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11Z" /><circle cx="12" cy="10" r="2.6" /></svg>;
   if (tipo === "voucher") return <svg {...p}><path d="M3 9a2 2 0 0 0 0 6v3h18v-3a2 2 0 0 0 0-6V6H3Z" /><path d="M14 6v12" strokeDasharray="2 2.5" /></svg>;
@@ -59,6 +65,9 @@ export function HomeVitrine({
   onItem,
   onVerTudo,
   extras,
+  podeEditar,
+  onEstilo,
+  onMover,
 }: {
   bolinhas: BolinhaVitrine[];
   ctaRotulo: string;
@@ -69,7 +78,13 @@ export function HomeVitrine({
   onVerTudo: () => void;
   /** Caminhos que não viram bolinha (Perguntar, Presentear, Sobre), em pílulas discretas. */
   extras: { key: string; rotulo: string; onClick: () => void }[];
+  /** Dono fora do modo visitante: mostra o lápis das bolinhas. */
+  podeEditar: boolean;
+  onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
+  onMover: (key: string, dir: -1 | 1) => void;
 }) {
+  const [editando, setEditando] = useState(false);
+  const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [enderecoAberto, setEnderecoAberto] = useState<string | null>(null);
   const comFoto = itens.filter((i) => !!i.image_url);
   const mostrar = comFoto.length >= MINIMO_COM_FOTO ? comFoto.slice(0, MAXIMO) : [];
@@ -82,46 +97,33 @@ export function HomeVitrine({
     b.onClick();
   }
 
-  // Até 4 bolinhas ficam numa linha; acima disso divide em duas linhas
-  // equilibradas, assim nada fica cortado nem sobra uma bolinha sozinha.
-  const porLinha = bolinhas.length <= 4 ? bolinhas.length : Math.ceil(bolinhas.length / 2);
-  const linhas: BolinhaVitrine[][] = [];
-  for (let i = 0; i < bolinhas.length; i += porLinha) linhas.push(bolinhas.slice(i, i + porLinha));
-
   const aberto = bolinhas.find((b) => b.key === enderecoAberto);
 
   return (
     <div className="mt-8 flex w-full flex-col items-center">
       {bolinhas.length > 0 && (
-        <div className="flex w-full flex-col items-center gap-4">
-          {linhas.map((linha, li) => (
-            <div key={li} role="list" className="flex w-full justify-center gap-3">
-              {linha.map((b) => {
-                const c = corDe(b);
-                const sel = enderecoAberto === b.key;
-                return (
-                  <div key={b.key} role="listitem" className="flex w-[72px] shrink-0 flex-col items-center">
-                    <button
-                      type="button"
-                      onClick={() => aoClicar(b)}
-                      aria-label={b.rotulo}
-                      aria-expanded={b.tipo === "endereco" ? sel : undefined}
-                      style={{ background: c.fundo, boxShadow: `0 6px 16px -6px ${c.sombra}99` } as CSSProperties}
-                      className="relative flex h-[60px] w-[60px] items-center justify-center rounded-full text-white transition-transform active:scale-95"
-                    >
-                      <Icone tipo={b.tipo} rede={b.rede} />
-                      {b.selo && (
-                        <span className="absolute -right-3 -top-1 rounded-full bg-[#FF5A36] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-white shadow">
-                          {b.selo}
-                        </span>
-                      )}
-                    </button>
-                    <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+        <div className="relative w-full">
+          {podeEditar && (
+            <button
+              type="button"
+              onClick={() => setEditando(true)}
+              aria-label="Editar bolinhas"
+              className="absolute -top-3 right-0 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95"
+            >
+              ✎
+            </button>
+          )}
+          <div
+            role="list"
+            className="no-scrollbar -mx-6 flex w-[calc(100%+3rem)] snap-x snap-proximity gap-3 overflow-x-auto px-6 pb-2 pt-2 [justify-content:safe_center] [mask-image:linear-gradient(to_right,transparent,#000_22px,#000_calc(100%-22px),transparent)]"
+          >
+            {bolinhas.map((b) => (
+              <div key={b.key} role="listitem" className="flex w-[72px] shrink-0 snap-center flex-col items-center">
+                <Bolinha b={b} aberto={enderecoAberto === b.key} onClick={() => aoClicar(b)} />
+                <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -171,6 +173,84 @@ export function HomeVitrine({
           </ul>
         </section>
       )}
+
+      {editando && montado && createPortal(
+        <>
+          <button type="button" aria-label="Fechar" onClick={() => setEditando(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-h-[80vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+            <div className="flex items-center justify-between">
+              <span className="text-[17px] font-medium">Editar bolinhas</span>
+              <button type="button" onClick={() => setEditando(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+            </div>
+            <p className="mt-1 text-[13px] text-text-secondary">Deixe em cor as que você quer destacar e as outras em linha. Use as setas para mudar a ordem.</p>
+            <div className="mt-4 flex items-center justify-between rounded-2xl bg-surface-soft p-3">
+              <span className="text-[13.5px] font-medium">Todas</span>
+              <Seletor valor={null} onChange={(e) => onEstilo(bolinhas.filter((x) => x.editavel).map((x) => x.key), e)} />
+            </div>
+            <ul className="mt-3 flex flex-col gap-2">
+              {bolinhas.map((b, i) => (
+                <li key={b.key} className="flex items-center gap-3 rounded-2xl border border-divider p-2.5">
+                  <div className="scale-[0.7] origin-left -mr-3.5 w-[60px] shrink-0"><Bolinha b={b} aberto={false} onClick={() => {}} /></div>
+                  <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{b.rotulo}</span>
+                  {b.editavel ? (
+                    <>
+                      <Seletor valor={b.estilo} onChange={(e) => onEstilo([b.key], e)} />
+                      <div className="flex flex-col">
+                        <button type="button" aria-label={`Subir ${b.rotulo}`} disabled={i === 0} onClick={() => onMover(b.key, -1)} className="flex h-[22px] w-8 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▲</button>
+                        <button type="button" aria-label={`Descer ${b.rotulo}`} disabled={i === bolinhas.length - 1} onClick={() => onMover(b.key, 1)} className="flex h-[22px] w-8 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▼</button>
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-[12px] text-text-tertiary">automática</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
+function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; onClick: () => void }) {
+  const c = corDe(b);
+  const linha = b.estilo === "linha";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={b.rotulo}
+      aria-expanded={b.tipo === "endereco" ? aberto : undefined}
+      style={(linha ? {} : { background: c.fundo, boxShadow: `0 6px 16px -6px ${c.sombra}99` }) as CSSProperties}
+      className={`relative flex h-[60px] w-[60px] items-center justify-center rounded-full transition-transform active:scale-95 ${linha ? "border-[1.5px] border-on-background/70 bg-transparent text-on-background" : "text-white"}`}
+    >
+      <Icone tipo={b.tipo} rede={b.rede} linha={linha} />
+      {b.selo && (
+        <span className="absolute -right-3 -top-1 rounded-full bg-[#FF5A36] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-white shadow">
+          {b.selo}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function Seletor({ valor, onChange }: { valor: "cor" | "linha" | null; onChange: (e: "cor" | "linha") => void }) {
+  return (
+    <div role="radiogroup" className="flex rounded-full bg-surface-soft p-0.5 text-[12.5px]">
+      {(["cor", "linha"] as const).map((e) => (
+        <button
+          key={e}
+          type="button"
+          role="radio"
+          aria-checked={valor === e}
+          onClick={() => onChange(e)}
+          className={`min-h-[34px] rounded-full px-3.5 font-medium ${valor === e ? "bg-on-background text-white" : "text-text-secondary"}`}
+        >
+          {e === "cor" ? "Cor" : "Linha"}
+        </button>
+      ))}
     </div>
   );
 }

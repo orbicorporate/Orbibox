@@ -106,7 +106,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha" };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -265,7 +265,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; onClick: () => void };
+  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; onClick: () => void };
   const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -319,7 +319,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
@@ -497,19 +497,46 @@ export function VisitorExperience({
   // Home em estilo Vitrine: bolinhas com nome (WhatsApp, endereço, redes, site,
   // voucher), um botão principal e o resto em pílulas discretas.
   const bolinhasVitrine: BolinhaVitrine[] = (() => {
+    // Segue a ordem dos Smart Boxes, então reordenar aqui reordena lá também.
     const out: BolinhaVitrine[] = [];
-    const zap = todasOpcoes.find((o) => o.atalho === "whatsapp");
-    if (zap) out.push({ key: zap.key, rotulo: "WhatsApp", tipo: "whatsapp", onClick: zap.onClick });
-    else if (whatsAtalho) out.push({ key: "zap", rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
-    const end = todasOpcoes.find((o) => o.atalho === "endereco");
-    if (end?.address) out.push({ key: end.key, rotulo: "Local", tipo: "endereco", endereco: end.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
-    for (const o of todasOpcoes.filter((x) => x.rede)) out.push({ key: o.key, rotulo: o.t || nomeDaRede(o.rede as Rede), tipo: "rede", rede: o.rede as Rede, onClick: o.onClick });
-    const site = todasOpcoes.find((o) => o.atalho === "site");
-    if (site) out.push({ key: site.key, rotulo: site.t || "Site", tipo: "site", onClick: site.onClick });
-    const cupom = todasOpcoes.find((o) => o.cupom);
-    if (cupom) out.push({ key: cupom.key, rotulo: "Vouchers", tipo: "voucher", selo: "oferta", onClick: cupom.onClick });
+    for (const o of todasOpcoes) {
+      const estilo = o.bolinha === "linha" ? "linha" : "cor";
+      const base = { key: o.key, estilo, editavel: true } as const;
+      if (o.atalho === "whatsapp") out.push({ ...base, rotulo: "WhatsApp", tipo: "whatsapp", onClick: o.onClick });
+      else if (o.atalho === "endereco" && o.address) out.push({ ...base, rotulo: "Local", tipo: "endereco", endereco: o.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
+      else if (o.rede) out.push({ ...base, rotulo: o.t || nomeDaRede(o.rede), tipo: "rede", rede: o.rede, onClick: o.onClick });
+      else if (o.atalho === "site") out.push({ ...base, rotulo: o.t || "Site", tipo: "site", onClick: o.onClick });
+      else if (o.cupom) out.push({ ...base, rotulo: "Vouchers", tipo: "voucher", selo: "oferta", onClick: o.onClick });
+    }
+    if (!out.some((b) => b.tipo === "whatsapp") && whatsAtalho) {
+      out.unshift({ key: "zap", estilo: "cor", editavel: false, rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
+    }
     return out;
   })();
+  async function estiloBolinhas(keys: string[], estilo: "cor" | "linha") {
+    setBoxList((prev) => prev.map((b) => (keys.includes(b.id) ? { ...b, config: { ...((b.config ?? {}) as CustomConfig), bolinha: estilo } } : b)));
+    const res = await Promise.all(keys.map((id) => {
+      const box = boxList.find((b) => b.id === id);
+      if (!box) return null;
+      return supabase.from("smart_boxes").update({ config: { ...((box.config ?? {}) as CustomConfig), bolinha: estilo } }).eq("id", id);
+    }));
+    conferirSalvo(res.find((r) => r && r.error) ?? { error: null });
+  }
+  async function moverBolinha(key: string, dir: -1 | 1) {
+    const lista = bolinhasVitrine.filter((b) => b.editavel);
+    const idx = lista.findIndex((b) => b.key === key);
+    const outro = lista[idx + dir];
+    if (idx < 0 || !outro) return;
+    const boxA = boxList.find((b) => b.id === key);
+    const boxB = boxList.find((b) => b.id === outro.key);
+    if (!boxA || !boxB) return;
+    setBoxList((prev) => prev.map((b) => (b.id === boxA.id ? { ...b, position: boxB.position } : b.id === boxB.id ? { ...b, position: boxA.position } : b)));
+    const [r1, r2] = await Promise.all([
+      supabase.from("smart_boxes").update({ position: boxB.position }).eq("id", boxA.id),
+      supabase.from("smart_boxes").update({ position: boxA.position }).eq("id", boxB.id),
+    ]);
+    conferirSalvo(r1.error ? r1 : r2);
+  }
   const ctaVitrine: { rotulo: string; onClick: () => void } = (() => {
     const vit = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
     if (vit || content.length > 0) return { rotulo: vit?.t || "Ver catálogo", onClick: () => chooseIntent("comprar") };
@@ -779,6 +806,9 @@ export function VisitorExperience({
                 onItem={() => chooseIntent("comprar")}
                 onVerTudo={() => chooseIntent("comprar")}
                 extras={extrasVitrine}
+                podeEditar={showOwnerControls}
+                onEstilo={estiloBolinhas}
+                onMover={moverBolinha}
               />
             )}
             {!estiloVitrine && (
