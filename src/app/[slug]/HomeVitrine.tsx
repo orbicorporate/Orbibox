@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
 import { groupByCategory } from "@/lib/showcase";
@@ -83,7 +83,7 @@ export function HomeVitrine({
   extras,
   podeEditar,
   onEstilo,
-  onMover,
+  onReordenar,
   onAdicionar,
   ordemCategorias,
   formato,
@@ -111,7 +111,8 @@ export function HomeVitrine({
   /** Dono fora do modo visitante: mostra o lápis das bolinhas. */
   podeEditar: boolean;
   onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
-  onMover: (key: string, dir: -1 | 1) => void;
+  /** Nova ordem das bolinhas editáveis (chaves), depois de arrastar ou de usar as setas. */
+  onReordenar: (chaves: string[]) => void;
   /** Só o dono: abre a folha para adicionar um botão novo. */
   onAdicionar?: () => void;
   ordemCategorias: string[];
@@ -351,30 +352,110 @@ export function HomeVitrine({
               <span className="text-[13.5px] font-medium">Todas</span>
               <Seletor valor={null} onChange={(e) => onEstilo(bolinhas.filter((x) => x.editavel).map((x) => x.key), e)} />
             </div>
-            <ul className="mt-3 flex flex-col gap-2">
-              {bolinhas.map((b, i) => (
-                <li key={b.key} className="flex items-center gap-3 rounded-2xl border border-divider p-2.5">
-                  <div className="scale-[0.7] origin-left -mr-3.5 w-[60px] shrink-0"><Bolinha b={b} aberto={false} onClick={() => {}} /></div>
-                  <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{b.rotulo}</span>
-                  {b.editavel ? (
-                    <>
-                      <Seletor valor={b.estilo} onChange={(e) => onEstilo([b.key], e)} />
-                      <div className="flex flex-col">
-                        <button type="button" aria-label={`Subir ${b.rotulo}`} disabled={i === 0} onClick={() => onMover(b.key, -1)} className="flex h-[22px] w-8 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▲</button>
-                        <button type="button" aria-label={`Descer ${b.rotulo}`} disabled={i === bolinhas.length - 1} onClick={() => onMover(b.key, 1)} className="flex h-[22px] w-8 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▼</button>
-                      </div>
-                    </>
-                  ) : (
-                    <span className="text-[12px] text-text-tertiary">automática</span>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <ListaBolinhas bolinhas={bolinhas} onEstilo={onEstilo} onReordenar={onReordenar} />
           </div>
         </>,
         document.body,
       )}
     </div>
+  );
+}
+
+/** Lista da folha "Editar bolinhas": estilo por bolinha e ordem, arrastando pela alça ou pelas setas. */
+function ListaBolinhas({
+  bolinhas,
+  onEstilo,
+  onReordenar,
+}: {
+  bolinhas: BolinhaVitrine[];
+  onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
+  onReordenar: (chaves: string[]) => void;
+}) {
+  const itens = useRef<(HTMLLIElement | null)[]>([]);
+  const [arrasto, setArrasto] = useState<{ de: number; para: number; dy: number; altura: number } | null>(null);
+  const inicio = useRef<{ y: number; centros: number[] } | null>(null);
+
+  function aplicar(de: number, para: number) {
+    if (de === para) return;
+    const ordem = bolinhas.map((x) => x.key);
+    const [k] = ordem.splice(de, 1);
+    ordem.splice(para, 0, k);
+    onReordenar(ordem.filter((chave) => bolinhas.find((x) => x.key === chave)?.editavel));
+  }
+
+  function comecar(e: React.PointerEvent<HTMLButtonElement>, i: number) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const centros = itens.current.map((el) => (el ? el.getBoundingClientRect().top + el.offsetHeight / 2 : 0));
+    inicio.current = { y: e.clientY, centros };
+    setArrasto({ de: i, para: i, dy: 0, altura: (itens.current[i]?.offsetHeight ?? 60) + 8 });
+  }
+  function mover(e: React.PointerEvent<HTMLButtonElement>) {
+    const ini = inicio.current;
+    if (!ini || !arrasto) return;
+    const dy = e.clientY - ini.y;
+    const centro = ini.centros[arrasto.de] + dy;
+    let para = arrasto.de;
+    ini.centros.forEach((c, j) => {
+      if (j < arrasto.de && centro < c) para = Math.min(para, j);
+      if (j > arrasto.de && centro > c) para = Math.max(para, j);
+    });
+    setArrasto({ ...arrasto, dy, para });
+  }
+  function soltar() {
+    if (arrasto) aplicar(arrasto.de, arrasto.para);
+    inicio.current = null;
+    setArrasto(null);
+  }
+
+  return (
+    <ul className="mt-3 flex flex-col gap-2">
+      {bolinhas.map((b, i) => {
+        let ty = 0;
+        if (arrasto) {
+          if (i === arrasto.de) ty = arrasto.dy;
+          else if (arrasto.de < arrasto.para && i > arrasto.de && i <= arrasto.para) ty = -arrasto.altura;
+          else if (arrasto.de > arrasto.para && i < arrasto.de && i >= arrasto.para) ty = arrasto.altura;
+        }
+        const arrastando = arrasto?.de === i;
+        return (
+          <li
+            key={b.key}
+            ref={(el) => { itens.current[i] = el; }}
+            style={{ transform: ty ? `translateY(${ty}px)` : undefined, transition: arrastando ? "none" : "transform .18s ease" }}
+            className={`relative flex items-center gap-2.5 rounded-2xl border bg-white p-2.5 ${arrastando ? "z-10 border-on-background/40 shadow-[0_8px_24px_rgba(17,19,24,0.18)]" : "border-divider"}`}
+          >
+            {b.editavel ? (
+              <button
+                type="button"
+                aria-label={`Arrastar ${b.rotulo}`}
+                onPointerDown={(e) => comecar(e, i)}
+                onPointerMove={mover}
+                onPointerUp={soltar}
+                onPointerCancel={soltar}
+                className="flex h-10 w-7 shrink-0 cursor-grab touch-none items-center justify-center text-text-tertiary active:cursor-grabbing"
+              >
+                <svg width="14" height="18" viewBox="0 0 14 18" fill="currentColor" aria-hidden><circle cx="4" cy="4" r="1.5" /><circle cx="10" cy="4" r="1.5" /><circle cx="4" cy="9" r="1.5" /><circle cx="10" cy="9" r="1.5" /><circle cx="4" cy="14" r="1.5" /><circle cx="10" cy="14" r="1.5" /></svg>
+              </button>
+            ) : (
+              <span className="w-7 shrink-0" />
+            )}
+            <div className="-mr-3.5 w-[60px] shrink-0 origin-left scale-[0.7]"><Bolinha b={b} aberto={false} onClick={() => {}} /></div>
+            <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{b.rotulo}</span>
+            {b.editavel ? (
+              <>
+                <Seletor valor={b.estilo} onChange={(e) => onEstilo([b.key], e)} />
+                <div className="flex flex-col">
+                  <button type="button" aria-label={`Subir ${b.rotulo}`} disabled={i === 0} onClick={() => aplicar(i, i - 1)} className="flex h-[22px] w-7 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▲</button>
+                  <button type="button" aria-label={`Descer ${b.rotulo}`} disabled={i === bolinhas.length - 1} onClick={() => aplicar(i, i + 1)} className="flex h-[22px] w-7 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▼</button>
+                </div>
+              </>
+            ) : (
+              <span className="text-[12px] text-text-tertiary">automática</span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

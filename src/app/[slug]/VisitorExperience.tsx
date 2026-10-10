@@ -547,20 +547,23 @@ export function VisitorExperience({
     }));
     conferirSalvo(res.find((r) => r && r.error) ?? { error: null });
   }
-  async function moverBolinha(key: string, dir: -1 | 1) {
-    const lista = bolinhasVitrine.filter((b) => b.editavel);
-    const idx = lista.findIndex((b) => b.key === key);
-    const outro = lista[idx + dir];
-    if (idx < 0 || !outro) return;
-    const boxA = boxList.find((b) => b.id === key);
-    const boxB = boxList.find((b) => b.id === outro.key);
-    if (!boxA || !boxB) return;
-    setBoxList((prev) => prev.map((b) => (b.id === boxA.id ? { ...b, position: boxB.position } : b.id === boxB.id ? { ...b, position: boxA.position } : b)));
-    const [r1, r2] = await Promise.all([
-      supabase.from("smart_boxes").update({ position: boxB.position }).eq("id", boxA.id),
-      supabase.from("smart_boxes").update({ position: boxA.position }).eq("id", boxB.id),
-    ]);
-    conferirSalvo(r1.error ? r1 : r2);
+  // Reordena as bolinhas e renumera todos os boxes em sequência. Antes, a troca
+  // só trocava o número de dois boxes, e dois boxes com o mesmo número (comum)
+  // ficavam sem sair do lugar.
+  async function reordenarBolinhas(chaves: string[]) {
+    const cheia = [...boxList].sort((a, b) => a.position - b.position);
+    const ocupadas = cheia.map((b, i) => (chaves.includes(b.id) ? i : -1)).filter((i) => i >= 0);
+    const porId = new Map(cheia.map((b) => [b.id, b]));
+    const nova = [...cheia];
+    ocupadas.forEach((slot, n) => {
+      const b = porId.get(chaves[n]);
+      if (b) nova[slot] = b;
+    });
+    const posicoes = new Map(nova.map((b, i) => [b.id, i]));
+    setBoxList((prev) => prev.map((b) => ({ ...b, position: posicoes.get(b.id) ?? b.position })));
+    const mudaram = cheia.filter((b) => posicoes.get(b.id) !== b.position);
+    const res = await Promise.all(mudaram.map((b) => supabase.from("smart_boxes").update({ position: posicoes.get(b.id) }).eq("id", b.id)));
+    conferirSalvo(res.find((r) => r.error) ?? { error: null });
   }
   // Botão principal da Home em Vitrine: Orbi (quando há IA), Vitrine ou WhatsApp.
   const zapBolinha = bolinhasVitrine.find((b) => b.tipo === "whatsapp");
@@ -864,7 +867,7 @@ export function VisitorExperience({
                 extras={extrasVitrine}
                 podeEditar={showOwnerControls}
                 onEstilo={estiloBolinhas}
-                onMover={moverBolinha}
+                onReordenar={reordenarBolinhas}
                 onAdicionar={() => setAdicionando(true)}
               />
             )}
