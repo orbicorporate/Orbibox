@@ -110,7 +110,7 @@ export function AppHeader({
   }
 
   return (
-    <header className={`sticky top-0 flex items-center justify-between gap-2 bg-background-main/65 px-4 py-4 min-[400px]:px-6 backdrop-blur-xl ${menuOpen || sinoOpen ? "z-50" : "z-20"}`}>
+    <header className={`sticky top-0 flex items-center justify-between gap-2 bg-background-main/65 px-4 py-4 min-[400px]:px-6 backdrop-blur-xl lg:px-[max(2.5rem,calc((100%-960px)/2+2.5rem))] ${menuOpen || sinoOpen ? "z-50" : "z-20"}`}>
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <BackButton />
         <span className="shrink-0"><OrbiOrb size={28} /></span>

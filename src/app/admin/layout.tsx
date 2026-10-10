@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { BottomNav } from "@/components/mobile/BottomNav";
+import { SideNav } from "@/components/mobile/SideNav";
 import { AdminOrbiFloating } from "./AdminOrbiFloating";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { getBusinessProgress } from "@/lib/progress";
@@ -112,7 +113,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { data: adminProducts } = await supabase.from("content_items").select("id, title, price, price_type, price_max, image_url, link_kind, target_url").eq("business_id", business.id).eq("status", "published").limit(20);
 
   return (
-    <div className="sistema-vidro mx-auto flex min-h-screen w-full max-w-[440px] flex-col">
+    <div className="sistema-vidro mx-auto flex min-h-screen w-full max-w-[440px] flex-col lg:max-w-none lg:pl-[232px]">
       <div className="prisma-campo" aria-hidden><i /><i /><i /><i /><i /></div>
       <AppHeader
         unseenConversas={(unseenConversas ?? 0) + (unseenNotifs ?? 0)}
@@ -127,7 +128,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {celebrateNotif && (
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />
       )}
-      <main className="admin-zoom flex-1 px-6 pb-32 pt-5">
+      <main className="admin-zoom mx-auto w-full flex-1 px-6 pb-32 pt-5 lg:max-w-[960px] lg:px-10 lg:pb-16">
         {/* Botão salvar discreto, sempre à vista logo abaixo do topo. */}
         <div className="pointer-events-none sticky top-[84px] z-20 h-0">
           <div className="pointer-events-auto flex justify-end"><BotaoSalvar className="-translate-y-1" /></div>
@@ -136,6 +137,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </main>
       <AvisoSalvarHost />
       <BottomNav />
+      <SideNav />
       <AbrirInternoNoApp />
       <AdminOrbiFloating
         businessId={business.id}

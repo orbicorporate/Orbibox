@@ -118,7 +118,7 @@ export function AvisoSalvarHost() {
 
   if (pendente) {
     return (
-      <div role="status" className="fixed inset-x-0 bottom-28 z-[90] flex justify-center px-6">
+      <div role="status" className="fixed inset-x-0 bottom-28 z-[90] flex justify-center px-6 lg:bottom-8">
         <div className="flex w-full max-w-[400px] items-center gap-3 rounded-2xl bg-[#1a1b1f] py-2.5 pl-4 pr-2 text-[13.5px] text-white shadow-[0_12px_30px_-10px_rgba(0,0,0,0.5)]">
           <span className="min-w-0 flex-1 truncate">{pendente.texto}</span>
           <button type="button" onClick={() => desfazer(pendente.id)} className="shrink-0 rounded-full bg-white/15 px-3.5 py-1.5 text-[13px] font-semibold">
@@ -130,7 +130,7 @@ export function AvisoSalvarHost() {
   }
   if (!aviso) return null;
   return (
-    <div role="alert" className="fixed inset-x-0 bottom-28 z-[90] flex justify-center px-6">
+    <div role="alert" className="fixed inset-x-0 bottom-28 z-[90] flex justify-center px-6 lg:bottom-8">
       <button
         type="button"
         onClick={() => setAviso(null)}

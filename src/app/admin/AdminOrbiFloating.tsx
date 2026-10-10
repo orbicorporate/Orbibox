@@ -51,7 +51,7 @@ export function AdminOrbiFloating({
       <button
         onClick={() => setAberto(true)}
         aria-label={`Ajuda da ${agentName}`}
-        className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center transition-transform active:scale-95"
+        className="fixed bottom-28 right-4 z-40 lg:bottom-8 lg:right-8 flex h-14 w-14 items-center justify-center transition-transform active:scale-95"
         style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.22))" }}
       >
         <OrbiParticleSphere size={56} colors={orbiColors ?? undefined} vivid className="rounded-full" />

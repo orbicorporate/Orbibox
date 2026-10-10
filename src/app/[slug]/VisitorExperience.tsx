@@ -750,7 +750,7 @@ export function VisitorExperience({
       {/* Centralizado só na tela inicial. Nas telas de conteúdo (vouchers,
           catálogo, sobre) centralizar empurrava tudo pra baixo e sobrava
           um vazio enorme no topo. */}
-      <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
+      <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 lg:max-w-[960px] ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
         {intent === null && !showOwnerControls && (
           <SeletorModo
             modo={modo}
@@ -892,7 +892,7 @@ export function VisitorExperience({
             )}
             {!estiloVitrine && (
               <>
-            <div className="mt-10 grid w-full grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
+            <div className="mt-10 grid w-full grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 lg:grid-cols-4 lg:grid-flow-dense lg:gap-4">
               {(() => {
                 // Distribuição mista: cada opção recebe "largo" (linha toda,
                 // card horizontal e compacto) ou "medio" (metade, card
@@ -2198,7 +2198,7 @@ function OrbiChat({
   }, [messages.length, sending, justDone, started]);
 
   return (
-    <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main">
+    <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main lg:max-w-[760px]">
       {/* Nada de cor no topo aqui também, mesmo motivo da tela inicial. */}
 
       {/* Mesmo halo da tela inicial, pra não ficar um fundo parado/liso aqui , 
@@ -2568,7 +2568,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                   slug={business.slug}
                   businessId={business.id}
                   sessionId={sessionId}
-                  largura={sizeOf(item.layout_size) === "medio" ? "w-[calc(50%-10px)]" : "w-full"}
+                  largura={sizeOf(item.layout_size) === "medio" ? "w-[calc(50%-10px)] lg:w-[calc(25%-15px)]" : "w-full lg:w-[calc(50%-10px)]"}
                 />
               ))}
             </div>

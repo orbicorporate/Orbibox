@@ -160,7 +160,7 @@ export function HomeVitrine({
 
   return (
     <div className="mt-8 flex w-full flex-col items-center">
-      <div className="relative w-full max-w-[340px]">
+      <div className="relative w-full max-w-[340px] lg:max-w-[480px]">
         {ctaTipo === "orbi" ? (
           <form
             onSubmit={(e) => {
@@ -318,13 +318,13 @@ export function HomeVitrine({
           {formato === "carrossel" ? (
             <ul data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2">
               {mostrarNaOrdem.map((i) => (
-                <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`w-[72%] shrink-0 snap-center transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
+                <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                   <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
                 </li>
               ))}
             </ul>
           ) : (
-            <ul className="relative mt-3 grid grid-cols-2 gap-3">
+            <ul className="relative mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
               {mostrarNaOrdem.map((i, n) => {
                 const grande = formato === "destaque" && n === 0;
                 return (

@@ -14,7 +14,7 @@ function TalkIcon() {
   );
 }
 
-const TABS: { href: string; label: string; icon: ReactNode; glow?: boolean }[] = [
+export const TABS: { href: string; label: string; icon: ReactNode; glow?: boolean }[] = [
   { href: "/admin", label: "Início", icon: "◈" },
   { href: "/admin/boxes", label: "Botões", icon: "▣" },
   { href: "/admin/vitrine", label: "Catálogo", icon: "◫", glow: true },
@@ -26,7 +26,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[440px]">
+    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[440px] lg:hidden">
       <div className="m-4 flex items-center justify-around rounded-[28px] border border-divider bg-surface-white/75 px-2 py-3 shadow-[0_8px_30px_rgba(17,19,24,0.10)] backdrop-blur-xl">
         {TABS.map((tab) => {
           const active =
