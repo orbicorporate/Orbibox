@@ -82,39 +82,46 @@ export function HomeVitrine({
     b.onClick();
   }
 
+  // Até 4 bolinhas ficam numa linha; acima disso divide em duas linhas
+  // equilibradas, assim nada fica cortado nem sobra uma bolinha sozinha.
+  const porLinha = bolinhas.length <= 4 ? bolinhas.length : Math.ceil(bolinhas.length / 2);
+  const linhas: BolinhaVitrine[][] = [];
+  for (let i = 0; i < bolinhas.length; i += porLinha) linhas.push(bolinhas.slice(i, i + porLinha));
+
   const aberto = bolinhas.find((b) => b.key === enderecoAberto);
 
   return (
     <div className="mt-8 flex w-full flex-col items-center">
       {bolinhas.length > 0 && (
-        <div
-          role="list"
-          className="no-scrollbar -mx-6 flex w-[calc(100%+3rem)] snap-x gap-4 overflow-x-auto px-6 pb-1 [justify-content:safe_center]"
-        >
-          {bolinhas.map((b) => {
-            const c = corDe(b);
-            const sel = enderecoAberto === b.key;
-            return (
-              <div key={b.key} role="listitem" className="flex w-[68px] shrink-0 snap-start flex-col items-center">
-                <button
-                  type="button"
-                  onClick={() => aoClicar(b)}
-                  aria-label={b.rotulo}
-                  aria-expanded={b.tipo === "endereco" ? sel : undefined}
-                  style={{ background: c.fundo, boxShadow: `0 6px 16px -6px ${c.sombra}99` } as CSSProperties}
-                  className="relative flex h-[60px] w-[60px] items-center justify-center rounded-full text-white ring-2 ring-white ring-offset-2 ring-offset-transparent transition-transform active:scale-95"
-                >
-                  <Icone tipo={b.tipo} rede={b.rede} />
-                  {b.selo && (
-                    <span className="absolute -right-2 -top-1 rounded-full bg-[#FF5A36] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-white shadow">
-                      {b.selo}
-                    </span>
-                  )}
-                </button>
-                <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>
-              </div>
-            );
-          })}
+        <div className="flex w-full flex-col items-center gap-4">
+          {linhas.map((linha, li) => (
+            <div key={li} role="list" className="flex w-full justify-center gap-3">
+              {linha.map((b) => {
+                const c = corDe(b);
+                const sel = enderecoAberto === b.key;
+                return (
+                  <div key={b.key} role="listitem" className="flex w-[72px] shrink-0 flex-col items-center">
+                    <button
+                      type="button"
+                      onClick={() => aoClicar(b)}
+                      aria-label={b.rotulo}
+                      aria-expanded={b.tipo === "endereco" ? sel : undefined}
+                      style={{ background: c.fundo, boxShadow: `0 6px 16px -6px ${c.sombra}99` } as CSSProperties}
+                      className="relative flex h-[60px] w-[60px] items-center justify-center rounded-full text-white transition-transform active:scale-95"
+                    >
+                      <Icone tipo={b.tipo} rede={b.rede} />
+                      {b.selo && (
+                        <span className="absolute -right-3 -top-1 rounded-full bg-[#FF5A36] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-white shadow">
+                          {b.selo}
+                        </span>
+                      )}
+                    </button>
+                    <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       )}
 
@@ -137,7 +144,7 @@ export function HomeVitrine({
       </button>
 
       {extras.length > 0 && (
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
+        <div className="mt-3 flex w-full flex-wrap justify-center gap-2">
           {extras.map((e) => (
             <button key={e.key} type="button" onClick={e.onClick} className="min-h-[40px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-on-background active:scale-[0.98]">
               {e.rotulo}

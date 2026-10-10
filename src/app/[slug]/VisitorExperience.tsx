@@ -502,7 +502,7 @@ export function VisitorExperience({
     if (zap) out.push({ key: zap.key, rotulo: "WhatsApp", tipo: "whatsapp", onClick: zap.onClick });
     else if (whatsAtalho) out.push({ key: "zap", rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
     const end = todasOpcoes.find((o) => o.atalho === "endereco");
-    if (end?.address) out.push({ key: end.key, rotulo: "Como chegar", tipo: "endereco", endereco: end.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
+    if (end?.address) out.push({ key: end.key, rotulo: "Local", tipo: "endereco", endereco: end.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
     for (const o of todasOpcoes.filter((x) => x.rede)) out.push({ key: o.key, rotulo: o.t || nomeDaRede(o.rede as Rede), tipo: "rede", rede: o.rede as Rede, onClick: o.onClick });
     const site = todasOpcoes.find((o) => o.atalho === "site");
     if (site) out.push({ key: site.key, rotulo: site.t || "Site", tipo: "site", onClick: site.onClick });
