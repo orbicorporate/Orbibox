@@ -9,12 +9,15 @@ import { conferirSalvo } from "@/components/ui/AvisoSalvar";
  * Escolha do dono: como a tela inicial abre para quem chega. O visitante
  * continua podendo trocar entre os dois, isto só define o padrão.
  */
+/** Além dos dois modos, a grade tem o estilo Vitrine (guardado como "vitrine"). */
+type ModoEscolha = ModoHome | "vitrine";
+
 export function HomeModePicker({ businessId, inicial }: { businessId: string; inicial: string | null }) {
   const supabase = createClient();
-  const [modo, setModo] = useState<ModoHome>(inicial === "orbita" ? "orbita" : "grade");
+  const [modo, setModo] = useState<ModoEscolha>(inicial === "orbita" ? "orbita" : inicial === "vitrine" ? "vitrine" : "grade");
   const [salvo, setSalvo] = useState(false);
 
-  async function escolher(novo: ModoHome) {
+  async function escolher(novo: ModoEscolha) {
     if (novo === modo) return;
     const anterior = modo;
     setModo(novo);
@@ -27,7 +30,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
     setSalvo(true);
   }
 
-  const opcoes: { v: ModoHome; titulo: string; texto: string; desenho: React.ReactNode }[] = [
+  const opcoes: { v: ModoEscolha; titulo: string; texto: string; desenho: React.ReactNode }[] = [
     {
       v: "orbita",
       titulo: "Modo Órbita",
@@ -46,7 +49,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
     },
     {
       v: "grade",
-      titulo: "Modo Grade",
+      titulo: "Grade clássica",
       texto: "Todos os botões visíveis de uma vez, em cards, no tamanho que você escolheu.",
       desenho: (
         <svg viewBox="0 0 120 64" className="h-16 w-full" aria-hidden>
@@ -54,6 +57,22 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
           <rect x="62" y="6" width="36" height="24" rx="6" fill="currentColor" fillOpacity=".3" />
           <rect x="22" y="34" width="76" height="12" rx="5" fill="currentColor" fillOpacity=".55" />
           <rect x="22" y="50" width="76" height="10" rx="5" fill="currentColor" fillOpacity=".2" />
+        </svg>
+      ),
+    },
+    {
+      v: "vitrine",
+      titulo: "Vitrine",
+      texto: "Bolinhas no topo (WhatsApp, local, redes, voucher), um botão principal e fotos dos seus itens.",
+      desenho: (
+        <svg viewBox="0 0 120 64" className="h-16 w-full" aria-hidden>
+          <circle cx="30" cy="12" r="6" fill="currentColor" fillOpacity=".6" />
+          <circle cx="48" cy="12" r="6" fill="currentColor" fillOpacity=".4" />
+          <circle cx="66" cy="12" r="6" fill="currentColor" fillOpacity=".4" />
+          <circle cx="84" cy="12" r="6" fill="currentColor" fillOpacity=".4" />
+          <rect x="24" y="24" width="72" height="9" rx="4.5" fill="currentColor" fillOpacity=".7" />
+          <rect x="24" y="38" width="34" height="22" rx="5" fill="currentColor" fillOpacity=".3" />
+          <rect x="62" y="38" width="34" height="22" rx="5" fill="currentColor" fillOpacity=".3" />
         </svg>
       ),
     },
@@ -65,7 +84,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
       <p className="mt-1 text-[12px] text-text-secondary">
         Escolha o modo padrão da tela inicial. O visitante vê um seletor no topo e pode trocar quando quiser.
       </p>
-      <div role="radiogroup" aria-label="Modo padrão da tela inicial" className="mt-3 grid grid-cols-2 gap-2">
+      <div role="radiogroup" aria-label="Modo padrão da tela inicial" className="mt-3 grid grid-cols-3 gap-2">
         {opcoes.map((o) => (
           <button
             key={o.v}
