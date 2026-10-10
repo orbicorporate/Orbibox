@@ -124,7 +124,8 @@ export function OrbitHome({
           const y = CY - 6 + Math.sin(a) * 40;
           const d = (Math.sin(a) + 1) / 2;
           el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${(0.75 + 0.35 * d).toFixed(3)})`;
-          el.style.zIndex = Math.sin(a) > 0 ? "60" : "5";
+          // As luas (redes) passam sempre por trás da esfera do logo, nunca por cima dele.
+          el.style.zIndex = "5";
           el.style.opacity = (0.55 + 0.45 * d).toFixed(2);
         });
         trilhaRef.current?.setAttribute("d", `M${CX - RX} ${CY} A${RX} ${RY} 0 0 0 ${CX + RX} ${CY}`);
