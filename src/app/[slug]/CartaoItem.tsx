@@ -188,7 +188,7 @@ export function CartaoItem({
       </>
     );
 
-    const classe = `block overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${largura}`;
+    const classe = `block text-left overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${largura}`;
     const cardStyle = photo && fc && item.title_placement !== "sobre" ? { backgroundColor: fc.bg } : undefined;
 
     if (!destino) {

@@ -186,7 +186,7 @@ export function HomeVitrine({
                 <button type="button" onClick={() => setEditandoFormato(true)} aria-label="Editar formato dos itens" className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95">✎</button>
               )}
               <button type="button" onClick={() => onVerTudo(ativo?.name ?? null)} className="min-h-[36px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-4">
-                Ver tudo
+                {itens.length > mostrar.length ? `Ver todos (${itens.length})` : "Ver tudo"}
               </button>
             </div>
           </div>
