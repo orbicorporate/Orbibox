@@ -458,11 +458,6 @@ export function VisitorExperience({
     setPaletaAberta(true);
   }
 
-  function startEditTitle(key: string, current: string) {
-    setEditingBoxId(key);
-    setTitleDraft(current);
-  }
-
   async function saveTitle(key: string) {
     setEditingBoxId(null);
     const trimmed = titleDraft.trim();
@@ -800,17 +795,6 @@ export function VisitorExperience({
                   ) : (
                     <>
                       {o.t}{o.ai ? <span className="orbi-gradient-text"> ✦</span> : null}
-                      {showOwnerControls && (
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e) => { e.stopPropagation(); startEditTitle(o.key, o.t); }}
-                          className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface-soft text-[10px] align-middle text-text-tertiary"
-                          aria-label="Editar título"
-                        >
-                          ✎
-                        </span>
-                      )}
                     </>
                   );
                   return (
@@ -820,7 +804,7 @@ export function VisitorExperience({
                         <span
                           role="button"
                           tabIndex={0}
-                          onClick={(e) => { e.stopPropagation(); setColorPickerBox(null); setMenuBox(menuBox === o.key ? null : o.key); }}
+                          onClick={(e) => { e.stopPropagation(); setColorPickerBox(null); setTitleDraft(o.t); setMenuBox(menuBox === o.key ? null : o.key); }}
                           className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[13px] text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.18)] active:scale-95"
                           aria-label="Opções do card"
                           aria-expanded={menuBox === o.key}
@@ -828,45 +812,72 @@ export function VisitorExperience({
                           ✎
                         </span>
                         {menuBox === o.key && (
-                          <>
-                            <button type="button" aria-label="Fechar opções" onClick={(e) => { e.stopPropagation(); setMenuBox(null); }} className="fixed inset-0 z-10 cursor-default" />
-                            <div className="absolute right-0 top-10 z-20 w-[176px] overflow-hidden rounded-2xl bg-white p-1.5 text-on-background shadow-[0_10px_30px_rgba(17,19,24,0.22)]" onClick={(e) => e.stopPropagation()}>
-                              <button type="button" onClick={() => { setMenuBox(null); setColorPickerBox(o.key); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
-                                <span className="h-4 w-4 shrink-0 rounded-full border border-black/10" style={{ background: o.color || "conic-gradient(from 0deg, #C0392B, #C2650A, #1F7A3D, #1D4ED8, #6D28D9, #C0392B)" }} />
-                                Cor do card
-                              </button>
-                              <button type="button" onClick={() => { setMenuBox(null); setIconeBox(o.key); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
-                                <span className="flex h-4 w-4 shrink-0 items-center justify-center text-[13px]" aria-hidden>◆</span>
-                                Ícone do card
-                              </button>
-                              {o.atalho && (
-                                <button type="button" onClick={() => definirIcone(o.key, true)} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
-                                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[8px]" aria-hidden>●</span>
-                                  Virar ícone embaixo
+                          <Portal>
+                            <button type="button" aria-label="Fechar opções" onClick={(e) => { e.stopPropagation(); saveTitle(o.key); setMenuBox(null); }} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
+                            <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-h-[78vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center justify-between">
+                                <span className="text-[17px] font-medium">Editar card</span>
+                                <button type="button" onClick={() => { saveTitle(o.key); setMenuBox(null); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+                              </div>
+
+                              <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Nome</p>
+                              <input
+                                value={titleDraft}
+                                onChange={(e) => setTitleDraft(e.target.value)}
+                                onBlur={() => saveTitle(o.key)}
+                                onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+                                className="mt-2 w-full rounded-full border border-divider px-4 py-3 text-[15px] outline-none focus:border-on-background"
+                                aria-label="Nome do card"
+                              />
+
+                              <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Cor</p>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <button type="button" onClick={() => setBoxColor(o.key, null)} aria-label="Branco padrão" className="flex h-9 w-9 items-center justify-center rounded-full border border-divider bg-surface-white">
+                                  {!o.color && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111318" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
                                 </button>
+                                {NOBRES.slice(0, 7).map((c) => {
+                                  const claro = ["#F1EDE4", "#D9D4C7", "#D8C8A0"].includes(c.hex);
+                                  return (
+                                    <button key={c.hex} type="button" onClick={() => setBoxColor(o.key, c.hex)} aria-label={c.nome} title={c.nome} className={`flex h-9 w-9 items-center justify-center rounded-full ${claro ? "border border-divider" : ""}`} style={{ backgroundColor: c.hex }}>
+                                      {o.color?.toLowerCase() === c.hex.toLowerCase() && (
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={claro ? "#111318" : "#fff"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                                <button type="button" onClick={() => { saveTitle(o.key); setMenuBox(null); setColorPickerBox(o.key); }} className="min-h-[36px] rounded-full border border-divider px-3 text-[12.5px] text-text-secondary">Mais cores</button>
+                              </div>
+
+                              <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Ícone</p>
+                              <button type="button" onClick={() => { saveTitle(o.key); setMenuBox(null); setIconeBox(o.key); }} className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-full border border-divider px-4 text-[14px]">
+                                <span>Trocar o ícone do card</span>
+                                <span aria-hidden>→</span>
+                              </button>
+
+                              <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Formato</p>
+                              <div className="mt-2 grid grid-cols-2 gap-2">
+                                {([[false, "Quadrado"], [true, "Retângulo"]] as const).map(([ehLargo, rot]) => (
+                                  <button key={rot} type="button" aria-pressed={largo === ehLargo} onClick={() => { if (largo !== ehLargo) toggleLayout(o.key, largo); }} className={`min-h-[44px] rounded-full text-[14px] ${largo === ehLargo ? "bg-on-background text-white" : "border border-divider"}`}>
+                                    {rot}
+                                  </button>
+                                ))}
+                              </div>
+
+                              <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Posição</p>
+                              <div className="mt-2 grid grid-cols-2 gap-2">
+                                <button type="button" onClick={() => moveOption(o.key, -1)} className="min-h-[44px] rounded-full border border-divider text-[14px]">↑ Subir</button>
+                                <button type="button" onClick={() => moveOption(o.key, 1)} className="min-h-[44px] rounded-full border border-divider text-[14px]">↓ Descer</button>
+                              </div>
+
+                              {o.atalho && (
+                                <button type="button" onClick={() => { setMenuBox(null); definirIcone(o.key, true); }} className="mt-5 min-h-[48px] w-full rounded-full border border-divider text-[14px]">Virar ícone embaixo</button>
                               )}
-                              <button type="button" onClick={abrirPaleta} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
-                                <span className="orbi-gradient flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px]">✦</span>
-                                Paleta da página
-                              </button>
-                              <button type="button" onClick={() => { setMenuBox(null); toggleLayout(o.key, largo); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
-                                {largo ? (
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0"><rect x="5" y="5" width="14" height="14" rx="2.5" /></svg>
-                                ) : (
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0"><rect x="2.5" y="7" width="19" height="10" rx="2.5" /></svg>
-                                )}
-                                {largo ? "Deixar quadrado" : "Deixar retângulo"}
-                              </button>
-                              <button type="button" onClick={() => { setMenuBox(null); moveOption(o.key, -1); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M18 15l-6-6-6 6" /></svg>
-                                Mover pra cima
-                              </button>
-                              <button type="button" onClick={() => { setMenuBox(null); moveOption(o.key, 1); }} className="flex w-full items-center gap-2.5 rounded-full px-3 py-2.5 text-left text-[13.5px] active:bg-surface-soft">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M6 9l6 6 6-6" /></svg>
-                                Mover pra baixo
+                              <button type="button" onClick={() => { saveTitle(o.key); setMenuBox(null); abrirPaleta(); }} className="orbi-gradient mt-3 flex min-h-[48px] w-full items-center justify-between rounded-full px-4 text-left text-[14px] font-medium text-on-background">
+                                <span>✦ Paleta da página inteira</span>
+                                <span aria-hidden>→</span>
                               </button>
                             </div>
-                          </>
+                          </Portal>
                         )}
                       </div>
                     )}
@@ -962,7 +973,6 @@ export function VisitorExperience({
                         <HomeOptionCardContent
                           layout="largo"
                           icon={o.icon}
-                          onIconClick={showOwnerControls ? () => setIconeBox(o.key) : undefined}
                           boxLogo={o.boxLogo}
                           color={o.color}
                           orbiColors={orbiColors}
@@ -992,7 +1002,6 @@ export function VisitorExperience({
                         <HomeOptionCardContent
                           layout="medio"
                           icon={o.icon}
-                          onIconClick={showOwnerControls ? () => setIconeBox(o.key) : undefined}
                           boxLogo={o.boxLogo}
                           color={o.color}
                           orbiColors={orbiColors}

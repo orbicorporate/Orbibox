@@ -160,7 +160,6 @@ export function HomeOptionCardContent({
       ) : (
         <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
       )}
-      <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-white text-[10px] text-on-background shadow-[0_1px_4px_rgba(0,0,0,0.25)]" aria-hidden>✎</span>
     </span>
   ) : (
     <HomeIcon icon={icon} boxLogo={boxLogo} color={color} orbiColors={orbiColors} businessLogo={businessLogo} cupom={cupom} />
