@@ -690,7 +690,7 @@ export function VisitorExperience({
             onClick={() => setPreviewMode(true)}
             className="flex items-center gap-1.5 rounded-full bg-surface-white/90 px-3.5 py-2 text-[13px] font-medium text-text-secondary shadow-lg backdrop-blur"
           >
-            👁 Modo visitante
+            Modo visitante
           </button>
         </div>
       )}
