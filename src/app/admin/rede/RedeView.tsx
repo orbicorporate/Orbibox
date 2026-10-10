@@ -219,9 +219,7 @@ function Insight({ cor, fundo, rotulo, titulo, texto, acao, onAcao }: { cor: str
 function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
   const [metrica, setMetrica] = useState<Metrica>("visitas");
   const [aberta, setAberta] = useState<string | null>(foco);
-  const entrou = useEntrou();
   const ordenadas = useMemo(() => [...lojas].sort((a, b) => b[metrica] - a[metrica]), [lojas, metrica]);
-  const max = ordenadas[0][metrica];
   const m = METRICAS.find((x) => x.id === metrica)!;
 
   return (
@@ -241,49 +239,72 @@ function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
         ))}
       </div>
 
-      <ol className="flex flex-col gap-2">
-        {ordenadas.map((l, i) => {
+      <div className="grid grid-cols-2 gap-2.5">
+        {ordenadas.flatMap((l, i) => {
           const sel = aberta === l.id;
-          return (
-            <li key={l.id} className={`rounded-[22px] bg-surface-white ring-1 transition-shadow ${sel || foco === l.id ? "ring-on-background" : "ring-black/[0.06]"}`}>
-              <button type="button" onClick={() => setAberta(sel ? null : l.id)} aria-expanded={sel} className="flex w-full items-center gap-3 rounded-[22px] p-3.5 text-left active:opacity-80">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] tabular-nums" style={{ backgroundColor: l.cor }}>{i + 1}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="truncate text-[15px]">{l.nome}</span>
-                    <span className="shrink-0 text-[15px] tabular-nums" style={{ color: m.cor }}>{nf(l[metrica])}</span>
-                  </span>
-                  <span className="mt-1.5 block h-2 overflow-hidden rounded-full bg-surface-soft">
-                    <span className="block h-full origin-left rounded-full transition-transform duration-700 ease-out motion-reduce:transition-none" style={{ width: `${(l[metrica] / max) * 100}%`, backgroundColor: l.cor, transform: entrou ? "scaleX(1)" : "scaleX(0)", transitionDelay: `${i * 40}ms` }} />
-                  </span>
-                </span>
+          const fimDaLinha = i % 2 === 1 || i === ordenadas.length - 1;
+          const linhaInicio = i - (i % 2);
+          const abertaNaLinha = ordenadas.slice(linhaInicio, i + 1).find((x) => x.id === aberta);
+          const tile = (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => setAberta(sel ? null : l.id)}
+              aria-expanded={sel}
+              className={`flex min-h-[148px] flex-col rounded-[22px] p-3.5 text-left ring-1 transition-[box-shadow,transform] duration-200 active:scale-[0.98] motion-reduce:transition-none ${sel || foco === l.id ? "ring-2 ring-on-background" : "ring-black/[0.06]"}`}
+              style={{ backgroundImage: `linear-gradient(165deg, ${l.cor}59 0%, ${l.cor}1F 100%)`, backgroundColor: "#fff" }}
+            >
+              <span className="flex items-center justify-between gap-1">
+                <span className="truncate text-[13.5px] font-medium">{l.insta}</span>
+                <span className="shrink-0 text-[11px] tabular-nums text-text-secondary">#{i + 1}</span>
+              </span>
+              <span className="mt-0.5 truncate text-[11.5px] text-text-secondary">{l.cidade}, {l.uf}</span>
+              <span className="mt-3 font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-none tabular-nums" style={{ color: m.cor }}>{nf(l[metrica])}</span>
+              <span className="mt-1 text-[11.5px] text-text-secondary">{m.nome}</span>
+              <span className="mt-auto flex items-end justify-between gap-2 pt-2">
                 <Delta v={l.delta} />
-              </button>
-              <div className={`grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none ${sel ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
-                <div className="overflow-hidden">
-                  <div className="px-4 pb-4">
-                    <p className="text-[12.5px] text-text-secondary">{l.cidade}, {l.uf}</p>
-                    <div className="mt-3 grid grid-cols-4 gap-2">
-                      {METRICAS.map((x) => (
-                        <div key={x.id} className="rounded-xl px-2 py-2 text-center" style={{ backgroundColor: x.fundo, color: x.cor }}>
-                          <p className="text-[16px] tabular-nums">{nf(l[x.id])}</p>
-                          <p className="text-[10.5px] opacity-80">{x.nome}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-surface-soft px-3 py-2.5">
-                      <p className="text-[12.5px] leading-snug text-text-secondary">
-                        {l.delta >= 15 ? "Crescendo forte. Bom exemplo para virar referência para a rede." : l.delta < 0 ? "Em queda. Vale reforçar a divulgação do link desse Orbibox." : "Estável. Uma promoção da semana pode dar um empurrão."}
-                      </p>
-                      <Spark dados={l.serie} cor={l.cor === "#E6E26B" || l.cor === "#B7F34A" ? "#6B8E00" : l.cor} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
+                <Spark dados={l.serie} cor={l.cor === "#E6E26B" || l.cor === "#B7F34A" ? "#6B8E00" : l.cor} />
+              </span>
+            </button>
           );
+          const itens = [tile];
+          if (fimDaLinha) {
+            const x = abertaNaLinha;
+            itens.push(
+              <div key={`painel-${linhaInicio}`} className={`col-span-2 grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${x ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                <div className="overflow-hidden">
+                  {x && (
+                    <div className="rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-[16px] font-medium">{x.insta}</p>
+                          <p className="text-[12.5px] text-text-secondary">{x.nome}, {x.cidade}</p>
+                        </div>
+                        <Delta v={x.delta} />
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        {METRICAS.map((mm) => (
+                          <div key={mm.id} className="rounded-2xl px-3 py-2.5" style={{ backgroundColor: mm.fundo, color: mm.cor }}>
+                            <p className="text-[20px] tabular-nums">{nf(x[mm.id])}</p>
+                            <p className="text-[11.5px] opacity-80">{mm.nome}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-surface-soft px-3 py-2.5">
+                        <p className="text-[12.5px] leading-snug text-text-secondary">
+                          {x.delta >= 15 ? "Crescendo forte. Bom exemplo para virar referência para a rede." : x.delta < 0 ? "Em queda. Vale reforçar a divulgação do link desse Orbibox." : "Estável. Uma promoção da semana pode dar um empurrão."}
+                        </p>
+                        <Spark dados={x.serie} cor={x.cor === "#E6E26B" || x.cor === "#B7F34A" ? "#6B8E00" : x.cor} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>,
+            );
+          }
+          return itens;
         })}
-      </ol>
+      </div>
     </div>
   );
 }
