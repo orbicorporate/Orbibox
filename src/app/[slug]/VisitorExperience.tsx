@@ -106,7 +106,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; esferaCor?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -513,6 +513,17 @@ export function VisitorExperience({
     }
     return out;
   })();
+  // A cor da esfera do meio na Órbita fica guardada no box de entrada (hero).
+  const heroBox = boxList.find((b) => b.box_type === "hero");
+  const esferaCor = ((heroBox?.config ?? {}) as CustomConfig).esferaCor ?? null;
+  async function escolherEsfera(cor: string | null) {
+    if (!heroBox) return;
+    const base = { ...((heroBox.config ?? {}) as CustomConfig) };
+    if (cor) base.esferaCor = cor;
+    else delete base.esferaCor;
+    setBoxList((prev) => prev.map((b) => (b.id === heroBox.id ? { ...b, config: base } : b)));
+    conferirSalvo(await supabase.from("smart_boxes").update({ config: base }).eq("id", heroBox.id));
+  }
   const [categoriaInicial, setCategoriaInicial] = useState<string | null>(null);
   // O formato dos itens fica guardado no box da vitrine (o mesmo do botão principal).
   const boxFormato = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
@@ -727,6 +738,8 @@ export function VisitorExperience({
             cores={orbiColors ?? heroGradient}
             agentName={agentName}
             onPerguntar={hasAiChat ? () => chooseIntent("duvida") : undefined}
+            esferaCor={esferaCor}
+            onEsfera={showOwnerControls && heroBox ? escolherEsfera : undefined}
           />
         )}
         {intent === null && modo === "orbita" && whatsAtalho && (

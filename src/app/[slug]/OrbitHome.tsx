@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { HomeIcon, isCustomBoxColor } from "@/components/orbi/HomeOptionCard";
 import { isAnimatedIcon } from "@/lib/showcase";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, nomeDaRede, type Rede } from "@/lib/redesSociais";
@@ -51,6 +52,8 @@ export function OrbitHome({
   onPerguntar,
   semCabecalho = false,
   rotuloAbrir = "Abrir",
+  esferaCor = null,
+  onEsfera,
 }: {
   itens: OrbitaItem[];
   redes: OrbitaRede[];
@@ -65,7 +68,12 @@ export function OrbitHome({
   /** Esconde nome e pergunta do topo (a vitrine já tem o próprio título). */
   semCabecalho?: boolean;
   rotuloAbrir?: string;
+  /** Cor escolhida para a esfera do meio; sem escolha, puxa para o tom do fundo. */
+  esferaCor?: string | null;
+  /** Só o dono: escolhe a cor da esfera. */
+  onEsfera?: (cor: string | null) => void;
 }) {
+  const [escolhendoEsfera, setEscolhendoEsfera] = useState(false);
   const N = itens.length;
   const PASSO = N > 0 ? (Math.PI * 2) / N : 1;
   const FRENTE = Math.PI / 2;
@@ -201,7 +209,20 @@ export function OrbitHome({
   }
 
   const itemFrente = itens[frente];
-  const estiloCores = { "--o1": cores[0], "--o2": cores[1] ?? cores[0], "--o3": cores[2] ?? cores[0] } as CSSProperties;
+  const estiloCores = {
+    "--o1": cores[0],
+    "--o2": cores[1] ?? cores[0],
+    "--o3": cores[2] ?? cores[0],
+    "--esfera": esferaCor ?? "color-mix(in srgb, var(--background-main) 78%, var(--o1))",
+  } as CSSProperties;
+  const opcoesEsfera: { cor: string | null; nome: string }[] = [
+    { cor: null, nome: "Tom do fundo" },
+    ...cores.slice(0, 3).map((c, i) => ({ cor: c, nome: `Cor da marca ${i + 1}` })),
+    { cor: "#FFFFFF", nome: "Branco" },
+    { cor: "#EADFCB", nome: "Areia" },
+    { cor: "#D5DBE1", nome: "Névoa" },
+    { cor: "#2B2D33", nome: "Grafite" },
+  ];
 
   return (
     <div className="orbita-entra flex w-full flex-col items-center text-center" style={estiloCores}>
@@ -246,6 +267,9 @@ export function OrbitHome({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logoUrl} alt="" className="h-full w-full object-cover" />
             </span>
+          )}
+          {onEsfera && (
+            <button type="button" onClick={() => setEscolhendoEsfera(true)} aria-label="Escolher a cor da esfera" className="pointer-events-auto absolute -right-3 -top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95">✎</button>
           )}
         </div>
 
@@ -361,6 +385,29 @@ export function OrbitHome({
           <span className="flex-1 text-[14px] text-text-tertiary">Pergunte o que quiser…</span>
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-on-background text-white" aria-hidden>↑</span>
         </button>
+      )}
+      {escolhendoEsfera && onEsfera && typeof document !== "undefined" && createPortal(
+        <>
+          <button type="button" aria-label="Fechar" onClick={() => setEscolhendoEsfera(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+            <div className="flex items-center justify-between">
+              <span className="text-[17px] font-medium">Cor da esfera</span>
+              <button type="button" onClick={() => setEscolhendoEsfera(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+            </div>
+            <p className="mt-1 text-[13px] text-text-secondary">Por padrão ela acompanha o tom do fundo da página.</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {opcoesEsfera.map((o) => {
+                const on = (esferaCor ?? null) === o.cor;
+                return (
+                  <button key={o.nome} type="button" onClick={() => onEsfera(o.cor)} aria-label={o.nome} title={o.nome} aria-pressed={on} className={`flex h-12 w-12 items-center justify-center rounded-full border-2 ${on ? "border-on-background" : "border-divider"}`}>
+                    <span className="h-8 w-8 rounded-full ring-1 ring-black/10" style={{ background: o.cor ?? "color-mix(in srgb, var(--background-main) 78%, " + cores[0] + ")" }} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>,
+        document.body,
       )}
     </div>
   );
