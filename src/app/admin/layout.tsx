@@ -11,7 +11,7 @@ import { getPendingInsights } from "@/lib/insights";
 import { TourOverlay } from "@/components/tour/TourOverlay";
 import { GuiaOrbi } from "@/components/guia/GuiaOrbi";
 import { ReferralCelebration } from "./ReferralCelebration";
-import { getCurrentBusinessId, listMyBusinesses, podeCriarOutroNegocio } from "@/lib/business";
+import { getCurrentBusinessId, listMyBusinesses } from "@/lib/business";
 import { AbrirInternoNoApp } from "@/components/AbrirInternoNoApp";
 import { AvisoSalvarHost, BotaoSalvar } from "@/components/ui/AvisoSalvar";
 
@@ -57,7 +57,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ? await supabase.from("businesses").select("id, name, slug, tour_completed_at, logo_url, owner_id").eq("id", businessId).maybeSingle()
     : { data: null };
   const negocios = business ? await listMyBusinesses(user.id) : [];
-  const podeCriar = business ? await podeCriarOutroNegocio(user.id) : false;
 
   if (!business) redirect("/onboarding");
 
@@ -119,11 +118,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         unseenConversas={(unseenConversas ?? 0) + (unseenNotifs ?? 0)}
         progressPct={headerProgress.pct}
         isMaster={!!isSuper}
+        podeRede={!!isSuper || (business.owner_id === user.id && adminAccess.hasAiChat)}
         pendencias={headerPendencias}
         negocios={negocios.map((n) => ({ id: n.id, name: n.name, slug: n.slug, dono: n.dono }))}
         negocioAtual={business.id}
         logoUrl={business.logo_url ?? null}
-        podeCriarNegocio={podeCriar}
       />
       {celebrateNotif && (
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />

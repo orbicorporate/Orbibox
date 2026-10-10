@@ -25,15 +25,17 @@ export function AppHeader({
   unseenConversas = 0,
   progressPct = 100,
   isMaster = false,
+  podeRede = false,
   pendencias = [],
   negocios = [],
   negocioAtual,
-  podeCriarNegocio = false,
   logoUrl = null,
 }: {
   unseenConversas?: number;
   progressPct?: number;
   isMaster?: boolean;
+  /** Mostra a entrada do painel de Rede (masters e donos com plano que tem a Orbi). */
+  podeRede?: boolean;
   /** Fila de "o que falta" (mesma do checklist/insights), pro sino avisar
    * além de conversa não vista, o objetivo é a pessoa nunca ficar perdida
    * sobre o que fazer, mesmo sumindo dias e voltando depois. */
@@ -41,8 +43,6 @@ export function AppHeader({
   /** Negócios que a pessoa pode abrir (os dela e os que administra). */
   negocios?: { id: string; name: string; slug: string; dono?: boolean }[];
   negocioAtual?: string;
-  /** Plano permite criar mais um Orbibox (Nióbio). */
-  podeCriarNegocio?: boolean;
   /** Logo cadastrado da marca, vira o ícone de "Sua marca". */
   logoUrl?: string | null;
 }) {
@@ -51,40 +51,6 @@ export function AppHeader({
   const [sinoOpen, setSinoOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [trocaOpen, setTrocaOpen] = useState(false);
-  // Excluir um Orbibox pela lista: 1º confirma a intenção, 2º digita o nome.
-  const [excluir, setExcluir] = useState<{ id: string; name: string; etapa: 1 | 2 } | null>(null);
-  const [textoExcluir, setTextoExcluir] = useState("");
-  const [excluindo, setExcluindo] = useState(false);
-  const [erroExcluir, setErroExcluir] = useState<string | null>(null);
-  const normNome = (t: string) => t.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-  function fecharExcluir() {
-    setExcluir(null);
-    setTextoExcluir("");
-    setErroExcluir(null);
-  }
-
-  async function confirmarExcluir() {
-    if (!excluir) return;
-    setExcluindo(true);
-    setErroExcluir(null);
-    const r = await fetch("/api/negocio/excluir", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: excluir.id, confirmacao: textoExcluir }),
-    });
-    const d = await r.json().catch(() => ({}));
-    setExcluindo(false);
-    if (!r.ok) {
-      setErroExcluir(d.error ?? "Não consegui excluir agora.");
-      return;
-    }
-    fecharExcluir();
-    setTrocaOpen(false);
-    // Sobrou outro Orbibox: abre o painel. Não sobrou: começa do zero.
-    router.push(d.restantes > 0 ? "/admin" : "/onboarding");
-    router.refresh();
-  }
   const [trocando, setTrocando] = useState<string | null>(null);
   const atual = negocios.find((n) => n.id === negocioAtual);
 
@@ -114,20 +80,26 @@ export function AppHeader({
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <BackButton />
         <span className="shrink-0"><OrbiOrb size={28} /></span>
-        {/* Nome do negócio aberto; toca pra trocar ou criar outro Orbibox. */}
-        <button
-          type="button"
-          onClick={() => setTrocaOpen(true)}
-          className="flex min-w-0 items-center gap-1 text-left"
-          aria-label="Trocar de negócio"
-        >
-          <span className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-medium tracking-[-0.01em]">
+        {/* Nome do negócio aberto. Só vira seletor quando a conta tem mais de um Orbibox. */}
+        {negocios.length > 1 ? (
+          <button
+            type="button"
+            onClick={() => setTrocaOpen(true)}
+            className="flex min-w-0 items-center gap-1 text-left"
+            aria-label="Trocar de negócio"
+          >
+            <span className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-medium tracking-[-0.01em]">
+              {atual?.name ?? "Orbibox"}
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-text-tertiary" aria-hidden>
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        ) : (
+          <span className="min-w-0 truncate font-[family-name:var(--font-manrope)] text-[20px] font-medium tracking-[-0.01em]">
             {atual?.name ?? "Orbibox"}
           </span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-text-tertiary" aria-hidden>
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
+        )}
       </div>
       <div className="relative flex shrink-0 items-center gap-2">
         <ProgressBadge pct={progressPct} />
@@ -289,7 +261,7 @@ export function AppHeader({
               </div>
 
               {/* Prévia: painel de rede para quem tem vários negócios ou franquias */}
-              {isMaster && (
+              {podeRede && (
               <Link
                 href="/admin/rede"
                 onClick={() => setMenuOpen(false)}
@@ -298,7 +270,7 @@ export function AppHeader({
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full orbi-gradient text-[15px] text-on-background" aria-hidden>◎</span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[14.5px] leading-tight">Rede de Orbibox</span>
-                  <span className="block text-[12.5px] leading-snug text-text-tertiary">Tem vários negócios ou franquias? Veja todos num painel</span>
+                  <span className="block text-[12.5px] leading-snug text-text-tertiary">Tem uma rede de lojas? Adicione cada loja pelo código dela</span>
                 </span>
                 <span className="text-text-tertiary" aria-hidden>→</span>
               </Link>
@@ -369,7 +341,7 @@ export function AppHeader({
                     type="button"
                     onClick={() => trocarPara(n.id)}
                     disabled={!!trocando}
-                    className={`flex w-full items-center gap-3 rounded-2xl border py-3 pl-4 text-left transition-colors ${n.dono ? "pr-12" : "pr-4"} ${ativo ? "border-on-background" : "border-divider"} disabled:opacity-60`}
+                    className={`flex w-full items-center gap-3 rounded-2xl border py-3 pl-4 text-left transition-colors pr-4 ${ativo ? "border-on-background" : "border-divider"} disabled:opacity-60`}
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft font-[family-name:var(--font-manrope)] text-[15px] font-semibold">
                       {n.name.trim().charAt(0).toUpperCase()}
@@ -387,97 +359,12 @@ export function AppHeader({
                       <span className="text-[13px] font-medium">✓</span>
                     ) : null}
                   </button>
-                  {n.dono && (
-                    <button
-                      type="button"
-                      onClick={() => setExcluir({ id: n.id, name: n.name, etapa: 1 })}
-                      aria-label={`Excluir ${n.name}`}
-                      className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-red-50 text-[11px] font-bold text-red-500 transition-colors hover:bg-red-100"
-                    >
-                      ✕
-                    </button>
-                  )}
                   </div>
                   </div>
                 );
               })}
             </div>
 
-            <div className="mt-4 flex flex-col gap-2">
-              {podeCriarNegocio ? (
-                <Link
-                  href="/onboarding?novo=1"
-                  onClick={() => setTrocaOpen(false)}
-                  className="orbi-gradient flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-medium text-on-background"
-                >
-                  + Criar outro Orbibox para mim
-                </Link>
-              ) : (
-                <Link
-                  href="/admin/planos"
-                  onClick={() => setTrocaOpen(false)}
-                  className="block rounded-2xl bg-surface-soft px-4 py-3 text-center text-[13px] text-text-secondary"
-                >
-                  Tem mais de uma marca? No plano <span className="font-medium text-on-background">Nióbio</span> você cria vários Orbibox, cada um com seu link e sua IA. Ver planos →
-                </Link>
-              )}
-{isMaster && (
-              <Link
-                href="/admin/rede"
-                onClick={() => setTrocaOpen(false)}
-                className="flex w-full items-center justify-center gap-2 rounded-full border border-divider py-3.5 text-[15px] font-medium text-on-background transition-colors hover:bg-surface-soft"
-              >
-                + Adicionar um Orbibox à rede
-              </Link>
-              )}
-            </div>
-
-            {/* Confirmação em dois níveis, por cima da lista. */}
-            {excluir && (
-              <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/40 px-4 pb-8 sm:items-center" onClick={(e) => { e.stopPropagation(); if (!excluindo) fecharExcluir(); }}>
-                <div className="w-full max-w-[420px] rounded-[24px] bg-surface-white p-5" onClick={(e) => e.stopPropagation()}>
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-[18px] text-red-600">!</span>
-                  {excluir.etapa === 1 ? (
-                    <>
-                      <p className="mt-3 text-[17px] font-semibold">Excluir “{excluir.name}”?</p>
-                      <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-                        Apaga de vez a página, o link, a Orbi e tudo que ela aprendeu, o catálogo, os botões, as conversas, os contatos e as métricas. Não dá pra desfazer.
-                      </p>
-                      <div className="mt-4 flex gap-2">
-                        <button type="button" onClick={fecharExcluir} className="flex-1 rounded-full border border-divider py-3 text-[14px] font-medium">Cancelar</button>
-                        <button type="button" onClick={() => setExcluir({ ...excluir, etapa: 2 })} className="flex-1 rounded-full bg-red-600 py-3 text-[14px] font-medium text-white">Quero excluir</button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <p className="mt-3 text-[17px] font-semibold">Última confirmação</p>
-                      <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-                        Digite <span className="font-semibold text-on-background">{excluir.name}</span> pra excluir.
-                      </p>
-                      <input
-                        value={textoExcluir}
-                        onChange={(e) => setTextoExcluir(e.target.value)}
-                        placeholder={excluir.name}
-                        autoFocus
-                        className="mt-3 w-full rounded-2xl border border-divider px-4 py-3 text-[15px] outline-none focus:border-red-500"
-                      />
-                      {erroExcluir && <p className="mt-2 text-[12.5px] text-red-600">{erroExcluir}</p>}
-                      <div className="mt-4 flex gap-2">
-                        <button type="button" onClick={fecharExcluir} disabled={excluindo} className="flex-1 rounded-full border border-divider py-3 text-[14px] font-medium">Cancelar</button>
-                        <button
-                          type="button"
-                          onClick={confirmarExcluir}
-                          disabled={excluindo || normNome(textoExcluir) !== normNome(excluir.name)}
-                          className="flex-1 rounded-full bg-red-600 py-3 text-[14px] font-medium text-white disabled:opacity-40"
-                        >
-                          {excluindo ? "Excluindo…" : "Excluir de vez"}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>,
         document.body,
