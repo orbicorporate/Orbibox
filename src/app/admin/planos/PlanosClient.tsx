@@ -37,7 +37,7 @@ const FEATURES: Record<string, { label: string; highlight?: boolean }[]> = {
     { label: "Recomenda produtos no chat", highlight: true },
     { label: "Captura contatos automaticamente", highlight: true },
     { label: "Vouchers com código único", highlight: true },
-    { label: "Múltiplos negócios numa conta", highlight: true },
+    { label: "Rede de lojas com código", highlight: true },
     { label: "Vários administradores" },
   ],
 };
