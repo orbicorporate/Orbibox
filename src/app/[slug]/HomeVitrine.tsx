@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
-import { formatPrice } from "@/lib/showcase";
+import { formatPrice, groupByCategory } from "@/lib/showcase";
 
 export type BolinhaVitrine = {
   key: string;
@@ -28,7 +28,17 @@ export type ItemVitrine = {
   price_type: string | null;
   price_max: number | null;
   image_url: string | null;
+  brand_label: string | null;
+  position: number;
 };
+
+export type FormatoItens = "destaque" | "grade" | "carrossel";
+
+const FORMATOS: { v: FormatoItens; titulo: string; texto: string }[] = [
+  { v: "destaque", titulo: "Destaque e grade", texto: "O primeiro item grande, os outros em duas colunas." },
+  { v: "grade", titulo: "Grade", texto: "Todos do mesmo tamanho, duas colunas." },
+  { v: "carrossel", titulo: "Carrossel", texto: "Uma linha que rola de lado. Ocupa pouca altura." },
+];
 
 const MINIMO_COM_FOTO = 4;
 const MAXIMO = 6;
@@ -68,6 +78,9 @@ export function HomeVitrine({
   podeEditar,
   onEstilo,
   onMover,
+  ordemCategorias,
+  formato,
+  onFormato,
 }: {
   bolinhas: BolinhaVitrine[];
   ctaRotulo: string;
@@ -75,19 +88,30 @@ export function HomeVitrine({
   itens: ItemVitrine[];
   tituloItens: string;
   onItem: (id: string) => void;
-  onVerTudo: () => void;
+  onVerTudo: (categoria: string | null) => void;
   /** Caminhos que não viram bolinha (Perguntar, Presentear, Sobre), em pílulas discretas. */
   extras: { key: string; rotulo: string; onClick: () => void }[];
   /** Dono fora do modo visitante: mostra o lápis das bolinhas. */
   podeEditar: boolean;
   onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
   onMover: (key: string, dir: -1 | 1) => void;
+  ordemCategorias: string[];
+  formato: FormatoItens;
+  /** Undefined quando não há onde guardar a escolha (sem box da vitrine). */
+  onFormato?: (f: FormatoItens) => void;
 }) {
+  const [chip, setChip] = useState<string | null>(null);
+  const [editandoFormato, setEditandoFormato] = useState(false);
   const [editando, setEditando] = useState(false);
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [enderecoAberto, setEnderecoAberto] = useState<string | null>(null);
   const comFoto = itens.filter((i) => !!i.image_url);
-  const mostrar = comFoto.length >= MINIMO_COM_FOTO ? comFoto.slice(0, MAXIMO) : [];
+  // Chips só com 2 ou mais categorias que tenham ao menos 2 itens com foto.
+  const categorias = groupByCategory(comFoto, ordemCategorias).filter((c) => c.name && c.items.length >= 2).slice(0, 5);
+  const temChips = categorias.length >= 2;
+  const ativo = temChips ? categorias.find((c) => c.name === chip) ?? null : null;
+  const base = ativo ? ativo.items : [...comFoto].sort((a, b) => a.position - b.position);
+  const mostrar = comFoto.length >= MINIMO_COM_FOTO ? base.slice(0, MAXIMO) : [];
 
   function aoClicar(b: BolinhaVitrine) {
     if (b.tipo === "endereco" && b.endereco) {
@@ -160,18 +184,71 @@ export function HomeVitrine({
 
       {mostrar.length > 0 && (
         <section className="mt-9 w-full" aria-label={tituloItens}>
-          <div className="flex items-baseline justify-between">
+          <div className="flex items-center justify-between gap-2">
             <h2 className="font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
-            <button type="button" onClick={onVerTudo} className="min-h-[36px] text-[13px] font-medium text-text-secondary underline underline-offset-4">
-              Ver tudo
-            </button>
+            <div className="flex items-center gap-1">
+              {podeEditar && onFormato && (
+                <button type="button" onClick={() => setEditandoFormato(true)} aria-label="Editar formato dos itens" className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95">✎</button>
+              )}
+              <button type="button" onClick={() => onVerTudo(ativo?.name ?? null)} className="min-h-[36px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-4">
+                Ver tudo
+              </button>
+            </div>
           </div>
-          <ul className="mt-3 grid grid-cols-2 gap-3">
-            {mostrar.map((i) => (
-              <Item key={i.id} item={i} onClick={() => onItem(i.id)} />
-            ))}
-          </ul>
+          {temChips && (
+            <div role="tablist" aria-label="Categorias" className="no-scrollbar -mx-6 mt-3 flex gap-2 overflow-x-auto px-6 pb-1">
+              {[{ name: null as string | null, rotulo: "Tudo" }, ...categorias.map((c) => ({ name: c.name as string | null, rotulo: c.name }))].map((c) => {
+                const on = (ativo?.name ?? null) === c.name;
+                return (
+                  <button
+                    key={c.rotulo}
+                    type="button"
+                    role="tab"
+                    aria-selected={on}
+                    onClick={() => setChip(c.name)}
+                    className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-full px-4 text-[13.5px] ${on ? "bg-button-primary font-medium text-white" : "border border-divider bg-surface-white text-text-secondary"}`}
+                  >
+                    {c.rotulo}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {formato === "carrossel" ? (
+            <ul className="no-scrollbar -mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2">
+              {mostrar.map((i) => (
+                <Item key={i.id} item={i} onClick={() => onItem(i.id)} className="aspect-[4/5] w-[62%] shrink-0 snap-center" />
+              ))}
+            </ul>
+          ) : (
+            <ul className="mt-3 grid grid-cols-2 gap-3">
+              {mostrar.map((i, n) => (
+                <Item key={i.id} item={i} onClick={() => onItem(i.id)} grande={formato === "destaque" && n === 0} className={formato === "destaque" && n === 0 ? "col-span-2 aspect-[16/11]" : "aspect-[4/5]"} />
+              ))}
+            </ul>
+          )}
         </section>
+      )}
+
+      {editandoFormato && montado && onFormato && createPortal(
+        <>
+          <button type="button" aria-label="Fechar" onClick={() => setEditandoFormato(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+            <div className="flex items-center justify-between">
+              <span className="text-[17px] font-medium">Formato dos itens</span>
+              <button type="button" onClick={() => setEditandoFormato(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+            </div>
+            <div role="radiogroup" className="mt-4 flex flex-col gap-2">
+              {FORMATOS.map((f) => (
+                <button key={f.v} type="button" role="radio" aria-checked={formato === f.v} onClick={() => onFormato(f.v)} className={`rounded-2xl border-2 p-3.5 text-left ${formato === f.v ? "border-on-background" : "border-divider"}`}>
+                  <span className="block text-[14.5px] font-medium">{f.titulo}</span>
+                  <span className="mt-0.5 block text-[13px] text-text-secondary">{f.texto}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>,
+        document.body,
       )}
 
       {editando && montado && createPortal(
@@ -255,15 +332,15 @@ function Seletor({ valor, onChange }: { valor: "cor" | "linha" | null; onChange:
   );
 }
 
-function Item({ item, onClick }: { item: ItemVitrine; onClick: () => void }): ReactNode {
+function Item({ item, onClick, className, grande = false }: { item: ItemVitrine; onClick: () => void; className: string; grande?: boolean }): ReactNode {
   const preco = formatPrice(item);
   return (
-    <li>
-      <button type="button" onClick={onClick} className="group relative block aspect-[4/5] w-full overflow-hidden rounded-[22px] bg-surface-soft text-left shadow-[0_2px_12px_rgba(17,19,24,0.08)] active:scale-[0.98]">
+    <li className={className}>
+      <button type="button" onClick={onClick} className="group relative block h-full w-full overflow-hidden rounded-[22px] bg-surface-soft text-left shadow-[0_2px_12px_rgba(17,19,24,0.08)] active:scale-[0.98]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={item.image_url ?? ""} alt={item.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
         <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent px-3 pb-3 pt-10">
-          <span className="block truncate text-[14px] font-semibold leading-tight text-white">{item.title}</span>
+          <span className={`block truncate font-semibold leading-tight text-white ${grande ? "text-[18px]" : "text-[14px]"}`}>{item.title}</span>
           {preco ? <span className="mt-0.5 block truncate text-[11px] uppercase tracking-[0.14em] text-white/80">{preco}</span> : null}
         </span>
       </button>

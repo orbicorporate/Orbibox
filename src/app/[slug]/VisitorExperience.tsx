@@ -27,7 +27,7 @@ import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
-import { HomeVitrine, type BolinhaVitrine } from "./HomeVitrine";
+import { HomeVitrine, type BolinhaVitrine, type FormatoItens } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
 import { BotaoSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
@@ -106,7 +106,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha" };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha"; formatoItens?: FormatoItens };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -265,7 +265,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; onClick: () => void };
+  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; formatoItens?: FormatoItens; onClick: () => void };
   const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -319,12 +319,12 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, formatoItens: cfg.formatoItens, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
       const fallbackLabel = b.box_type === "content" ? `Sobre a ${business.name}` : base.t;
-      return { key: b.id, interno: true, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || (b.box_type === "campaign" && giftEnabled ? "Monte um vale-presente." : base.d), color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, acao: base.k, onClick: () => chooseIntent(base.k) };
+      return { key: b.id, interno: true, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || (b.box_type === "campaign" && giftEnabled ? "Monte um vale-presente." : base.d), color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, acao: base.k, formatoItens: cfg.formatoItens, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
   // Redes sociais saem da grade de boxes e viram uma fileira de bolinhas
@@ -513,6 +513,17 @@ export function VisitorExperience({
     }
     return out;
   })();
+  const [categoriaInicial, setCategoriaInicial] = useState<string | null>(null);
+  // O formato dos itens fica guardado no box da vitrine (o mesmo do botão principal).
+  const boxFormato = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
+  async function escolherFormato(f: FormatoItens) {
+    if (!boxFormato) return;
+    const box = boxList.find((b) => b.id === boxFormato.key);
+    if (!box) return;
+    const cfg = { ...((box.config ?? {}) as CustomConfig), formatoItens: f };
+    setBoxList((prev) => prev.map((b) => (b.id === box.id ? { ...b, config: cfg } : b)));
+    conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", box.id));
+  }
   async function estiloBolinhas(keys: string[], estilo: "cor" | "linha") {
     setBoxList((prev) => prev.map((b) => (keys.includes(b.id) ? { ...b, config: { ...((b.config ?? {}) as CustomConfig), bolinha: estilo } } : b)));
     const res = await Promise.all(keys.map((id) => {
@@ -801,10 +812,13 @@ export function VisitorExperience({
                 bolinhas={bolinhasVitrine}
                 ctaRotulo={ctaVitrine.rotulo}
                 onCta={ctaVitrine.onClick}
-                itens={content.slice(0, 12)}
+                itens={content}
                 tituloItens={business.catalog_title?.trim() || "Em destaque"}
                 onItem={() => chooseIntent("comprar")}
-                onVerTudo={() => chooseIntent("comprar")}
+                onVerTudo={(cat) => { setCategoriaInicial(cat); chooseIntent("comprar"); }}
+                ordemCategorias={business.vitrine_categories ?? []}
+                formato={boxFormato?.formatoItens ?? "destaque"}
+                onFormato={boxFormato ? escolherFormato : undefined}
                 extras={extrasVitrine}
                 podeEditar={showOwnerControls}
                 onEstilo={estiloBolinhas}
@@ -1283,7 +1297,7 @@ export function VisitorExperience({
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
             ) : (
               <>
-                <Showcase content={content} business={business} sessionId={sessionId} orbiColors={orbiColors} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
+                <Showcase categoriaInicial={categoriaInicial} content={content} business={business} sessionId={sessionId} orbiColors={orbiColors} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
                 {/* Captura discreta no fim do catálogo: quem chegou até aqui
                     olhou tudo, é o momento certo de oferecer aviso. */}
                 {!business.vitrine_lead_top && (
@@ -2379,12 +2393,12 @@ function VitrineCoverBleed({ business }: { business: Business }) {
   );
 }
 
-function Showcase({ content, business, sessionId, onOrbi, orbiColors }: { content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
+function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaInicial = null }: { categoriaInicial?: string | null; content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
   const sections = groupByCategory(content, business.vitrine_categories ?? []);
   // Chips e títulos só pras categorias de verdade; itens sem categoria
   // aparecem no topo, sem título.
   const nomeadas = sections.filter((s) => s.name);
-  const [active, setActive] = useState<string | null>(null);
+  const [active, setActive] = useState<string | null>(categoriaInicial && nomeadas.some((s) => s.name === categoriaInicial) ? categoriaInicial : null);
 
   const visible = active ? sections.filter((s) => s.name === active) : sections;
   const router = useRouter();
