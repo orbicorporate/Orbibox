@@ -2540,7 +2540,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                                 {item.title}
                               </p>
                               {item.description?.trim() && (
-                                <p className="mt-1.5 line-clamp-1 text-[11px] font-medium uppercase leading-snug tracking-[0.18em] text-white/80">{item.description}</p>
+                                <p className="mt-1.5 line-clamp-1 text-[13px] leading-snug text-white/85">{item.description}</p>
                               )}
                               {priceLabel && <p className="mt-1.5 text-[14px] font-medium text-white/90">{priceLabel}</p>}
                             </div>

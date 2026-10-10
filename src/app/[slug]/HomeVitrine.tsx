@@ -341,7 +341,7 @@ function Item({ item, onClick, className, grande = false }: { item: ItemVitrine;
         <img src={item.image_url ?? ""} alt={item.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
         <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent px-3 pb-3 pt-10">
           <span className={`block truncate font-semibold leading-tight text-white ${grande ? "text-[18px]" : "text-[14px]"}`}>{item.title}</span>
-          {preco ? <span className="mt-0.5 block truncate text-[11px] uppercase tracking-[0.14em] text-white/80">{preco}</span> : null}
+          {preco ? <span className="mt-0.5 block truncate text-[12.5px] text-white/85">{preco}</span> : null}
         </span>
       </button>
     </li>
