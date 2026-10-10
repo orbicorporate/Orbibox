@@ -528,6 +528,22 @@ export function VisitorExperience({
     setBoxList((prev) => [...prev, data as BoxRow]);
     return true;
   }
+  // Ordem dos itens em destaque, mexida direto na Home (segurar e arrastar).
+  const [posItens, setPosItens] = useState<Record<string, number>>({});
+  const contentHome = content.map((i) => (i.id in posItens ? { ...i, position: posItens[i.id] } : i));
+  async function reordenarItens(ids: string[]) {
+    // Só os itens visíveis trocam de lugar entre si; os outros ficam onde estão.
+    const cheia = [...contentHome].sort((a, b) => a.position - b.position);
+    const slots = cheia.map((i, n) => (ids.includes(i.id) ? n : -1)).filter((n) => n >= 0);
+    const nova = [...cheia];
+    slots.forEach((slot, n) => { const it = cheia.find((x) => x.id === ids[n]); if (it) nova[slot] = it; });
+    const posicoes: Record<string, number> = {};
+    nova.forEach((i, n) => { posicoes[i.id] = n; });
+    setPosItens(posicoes);
+    const mudaram = cheia.filter((i) => posicoes[i.id] !== i.position);
+    const res = await Promise.all(mudaram.map((i) => supabase.from("content_items").update({ position: posicoes[i.id] }).eq("id", i.id)));
+    conferirSalvo(res.find((r) => r.error) ?? { error: null });
+  }
   const [categoriaInicial, setCategoriaInicial] = useState<string | null>(null);
   // O formato dos itens fica guardado no box da vitrine (o mesmo do botão principal).
   const boxFormato = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
@@ -857,7 +873,8 @@ export function VisitorExperience({
                 opcoesCta={opcoesCta}
                 onCtaTipo={boxFormato ? (t) => guardarNaVitrine({ botaoPrincipal: t }) : undefined}
                 onCta={ctaVitrine.onClick}
-                itens={content}
+                itens={contentHome}
+                onReordenarItens={reordenarItens}
                 tituloItens={business.catalog_title?.trim() || "Em destaque"}
                 slug={business.slug}
                 businessId={business.id}

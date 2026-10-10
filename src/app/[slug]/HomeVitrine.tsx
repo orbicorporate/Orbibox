@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
 import { groupByCategory } from "@/lib/showcase";
 import { CartaoItem, type ItemCartao } from "./CartaoItem";
+import { useArrastarOrdem } from "./useArrastarOrdem";
 
 export type BolinhaVitrine = {
   key: string;
@@ -86,6 +87,7 @@ export function HomeVitrine({
   onVerTudo,
   extras,
   podeEditar,
+  onReordenarItens,
   onEstilo,
   onReordenar,
   onAdicionar,
@@ -119,6 +121,8 @@ export function HomeVitrine({
   onReordenar: (chaves: string[]) => void;
   /** Só o dono: abre a folha para adicionar um botão novo. */
   onAdicionar?: () => void;
+  /** Só o dono: grava a ordem nova dos itens em destaque (ids na ordem final, só os visíveis). */
+  onReordenarItens?: (ids: string[]) => void;
   ordemCategorias: string[];
   formato: FormatoItens;
   /** Undefined quando não há onde guardar a escolha (sem box da vitrine). */
@@ -148,6 +152,11 @@ export function HomeVitrine({
   }
 
   const aberto = bolinhas.find((b) => b.key === enderecoAberto);
+
+  const arrastoB = useArrastarOrdem(bolinhas.map((b) => b.key), podeEditar && !!onReordenar, (ord) => onReordenar?.(ord.filter((k) => bolinhas.find((b) => b.key === k)?.editavel)));
+  const bolinhasNaOrdem = arrastoB.ordem.map((k) => bolinhas.find((b) => b.key === k)).filter((b): b is BolinhaVitrine => !!b);
+  const arrastoI = useArrastarOrdem(mostrar.map((i) => i.id), podeEditar && !!onReordenarItens, (ids) => onReordenarItens?.(ids));
+  const mostrarNaOrdem = arrastoI.ordem.map((id) => mostrar.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i);
 
   return (
     <div className="mt-8 flex w-full flex-col items-center">
@@ -226,10 +235,17 @@ export function HomeVitrine({
           )}
           <div
             role="list"
-            className="no-scrollbar -mx-6 flex w-[calc(100%+3rem)] snap-x snap-proximity gap-3 overflow-x-auto px-6 pb-2 pt-2 [justify-content:safe_center] [mask-image:linear-gradient(to_right,transparent,#000_22px,#000_calc(100%-22px),transparent)]"
+            data-rolavel
+            className="no-scrollbar relative -mx-6 flex w-[calc(100%+3rem)] snap-x snap-proximity gap-3 overflow-x-auto px-6 pb-2 pt-2 [justify-content:safe_center] [mask-image:linear-gradient(to_right,transparent,#000_22px,#000_calc(100%-22px),transparent)]"
           >
-            {bolinhas.map((b) => (
-              <div key={b.key} role="listitem" className="flex w-[72px] shrink-0 snap-center flex-col items-center">
+            {bolinhasNaOrdem.map((b) => (
+              <div
+                key={b.key}
+                ref={arrastoB.ref(b.key)}
+                role="listitem"
+                {...arrastoB.props(b.key, b.editavel)}
+                className={`flex w-[72px] shrink-0 snap-center flex-col items-center transition-transform duration-150 ${arrastoB.pegado === b.key ? "z-20 scale-110 opacity-90" : ""}`}
+              >
                 <Bolinha b={b} aberto={enderecoAberto === b.key} onClick={() => aoClicar(b)} />
                 <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>
               </div>
@@ -300,19 +316,19 @@ export function HomeVitrine({
             </div>
           )}
           {formato === "carrossel" ? (
-            <ul className="no-scrollbar -mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2">
-              {mostrar.map((i) => (
-                <li key={i.id} className="w-[72%] shrink-0 snap-center">
+            <ul data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2">
+              {mostrarNaOrdem.map((i) => (
+                <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`w-[72%] shrink-0 snap-center transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                   <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
                 </li>
               ))}
             </ul>
           ) : (
-            <ul className="mt-3 grid grid-cols-2 gap-3">
-              {mostrar.map((i, n) => {
+            <ul className="relative mt-3 grid grid-cols-2 gap-3">
+              {mostrarNaOrdem.map((i, n) => {
                 const grande = formato === "destaque" && n === 0;
                 return (
-                  <li key={i.id} className={grande ? "col-span-2" : ""}>
+                  <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`transition-transform duration-150 ${grande ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                     <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
                   </li>
                 );
