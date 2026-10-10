@@ -488,7 +488,7 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
       onClick={onClick}
       aria-label={b.rotulo}
       aria-expanded={b.tipo === "endereco" ? aberto : undefined}
-      style={(linha ? {} : { background: c.fundo, boxShadow: `0 6px 16px -6px ${c.sombra}99` }) as CSSProperties}
+      style={(linha ? {} : { background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0) 48%), ${c.fundo}`, boxShadow: `inset 0 -7px 12px -5px rgba(0,0,0,0.22), inset 0 1.5px 2px rgba(255,255,255,0.28), 0 6px 16px -6px ${c.sombra}99` }) as CSSProperties}
       className={`relative flex h-[60px] w-[60px] items-center justify-center rounded-full transition-transform active:scale-95 ${linha ? "border-[1.5px] border-on-background/70 bg-transparent text-on-background" : "text-white"}`}
     >
       <Icone tipo={b.tipo} rede={b.rede} linha={linha} />
