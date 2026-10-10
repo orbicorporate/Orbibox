@@ -84,6 +84,7 @@ export function HomeVitrine({
   podeEditar,
   onEstilo,
   onMover,
+  onAdicionar,
   ordemCategorias,
   formato,
   onFormato,
@@ -111,6 +112,8 @@ export function HomeVitrine({
   podeEditar: boolean;
   onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
   onMover: (key: string, dir: -1 | 1) => void;
+  /** Só o dono: abre a folha para adicionar um botão novo. */
+  onAdicionar?: () => void;
   ordemCategorias: string[];
   formato: FormatoItens;
   /** Undefined quando não há onde guardar a escolha (sem box da vitrine). */
@@ -204,7 +207,7 @@ export function HomeVitrine({
         document.body,
       )}
 
-      {bolinhas.length > 0 && (
+      {(bolinhas.length > 0 || (podeEditar && onAdicionar)) && (
         <div className="relative mt-7 w-full">
           {podeEditar && (
             <button
@@ -226,6 +229,12 @@ export function HomeVitrine({
                 <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>
               </div>
             ))}
+            {podeEditar && onAdicionar && (
+              <div role="listitem" className="flex w-[72px] shrink-0 snap-center flex-col items-center">
+                <button type="button" onClick={onAdicionar} aria-label="Adicionar botão" className="flex h-[60px] w-[60px] items-center justify-center rounded-full border-[1.5px] border-dashed border-on-background/35 text-[24px] text-text-secondary active:scale-95">＋</button>
+                <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-tertiary">Adicionar</span>
+              </div>
+            )}
           </div>
         </div>
       )}

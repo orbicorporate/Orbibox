@@ -27,6 +27,7 @@ import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
 import { CartaoItem } from "./CartaoItem";
+import { AdicionarBox, type NovoBox } from "./AdicionarBox";
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
 import { BotaoSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
@@ -513,6 +514,18 @@ export function VisitorExperience({
     }
     return out;
   })();
+  const [adicionando, setAdicionando] = useState(false);
+  async function criarBox(novo: NovoBox): Promise<boolean> {
+    const posicao = boxList.reduce((m, b) => Math.max(m, b.position), -1) + 1;
+    const { data, error } = await supabase
+      .from("smart_boxes")
+      .insert({ business_id: business.id, box_type: "custom", title: novo.nome, position: posicao, is_active: true, config: novo.config })
+      .select()
+      .single();
+    if (error || !data) return false;
+    setBoxList((prev) => [...prev, data as BoxRow]);
+    return true;
+  }
   const [categoriaInicial, setCategoriaInicial] = useState<string | null>(null);
   // O formato dos itens fica guardado no box da vitrine (o mesmo do botão principal).
   const boxFormato = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
@@ -667,6 +680,16 @@ export function VisitorExperience({
           </div>
         );
       })()}
+      {isOwner && (
+        <AdicionarBox
+          aberto={adicionando}
+          onFechar={() => setAdicionando(false)}
+          whatsappInicial={business.contact_whatsapp ?? ""}
+          enderecoInicial={business.address ?? ""}
+          temVouchers={hasVouchers}
+          onCriar={criarBox}
+        />
+      )}
       {isOwner && intent === null && !previewMode && (
         <div className="fixed left-4 top-[62px] z-20">
           <SeletorModo
@@ -842,6 +865,7 @@ export function VisitorExperience({
                 podeEditar={showOwnerControls}
                 onEstilo={estiloBolinhas}
                 onMover={moverBolinha}
+                onAdicionar={() => setAdicionando(true)}
               />
             )}
             {!estiloVitrine && (
@@ -1156,6 +1180,11 @@ export function VisitorExperience({
               )}
             </div>
 
+            {showOwnerControls && (
+              <button type="button" onClick={() => setAdicionando(true)} className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-dashed border-on-background/30 text-[14.5px] font-medium text-text-secondary active:bg-surface-soft">
+                <span aria-hidden className="text-[18px] leading-none">＋</span> Adicionar botão
+              </button>
+            )}
             {whatsAtalho && (
               <a
                 href={whatsAtalho}
