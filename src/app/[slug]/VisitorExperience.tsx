@@ -718,7 +718,7 @@ export function VisitorExperience({
             onClick={() => setPreviewMode(true)}
             className="flex items-center gap-1.5 rounded-full bg-surface-white/90 px-3.5 py-2 text-[13px] font-medium text-text-secondary shadow-lg backdrop-blur"
           >
-            👁 Modo visitante
+            Modo visitante
           </button>
         </div>
       )}
@@ -785,7 +785,7 @@ export function VisitorExperience({
                   type="button"
                   onClick={() => setEditandoLogo(true)}
                   aria-label="Editar logo"
-                  className="absolute -right-1 bottom-0 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95"
+                  className="absolute -right-1 bottom-0 flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95"
                 >
                   ✎
                 </button>
@@ -798,7 +798,7 @@ export function VisitorExperience({
                   onClick={() => setTextosAberto((v) => !v)}
                   aria-label="Editar textos do topo"
                   aria-expanded={textosAberto}
-                  className="absolute -right-1 -top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95"
+                  className="absolute -right-1 -top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95"
                 >
                   ✎
                 </button>
@@ -946,7 +946,7 @@ export function VisitorExperience({
                           role="button"
                           tabIndex={0}
                           onClick={(e) => { e.stopPropagation(); setColorPickerBox(null); setTitleDraft(o.t); setMenuBox(menuBox === o.key ? null : o.key); }}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[13px] text-text-secondary shadow-[0_1px_6px_rgba(17,19,24,0.18)] active:scale-95"
+                          className="flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95"
                           aria-label="Opções do card"
                           aria-expanded={menuBox === o.key}
                         >
