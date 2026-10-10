@@ -143,43 +143,7 @@ export function HomeVitrine({
 
   return (
     <div className="mt-8 flex w-full flex-col items-center">
-      {bolinhas.length > 0 && (
-        <div className="relative w-full">
-          {podeEditar && (
-            <button
-              type="button"
-              onClick={() => setEditando(true)}
-              aria-label="Editar bolinhas"
-              className="absolute -top-3 right-0 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95"
-            >
-              ✎
-            </button>
-          )}
-          <div
-            role="list"
-            className="no-scrollbar -mx-6 flex w-[calc(100%+3rem)] snap-x snap-proximity gap-3 overflow-x-auto px-6 pb-2 pt-2 [justify-content:safe_center] [mask-image:linear-gradient(to_right,transparent,#000_22px,#000_calc(100%-22px),transparent)]"
-          >
-            {bolinhas.map((b) => (
-              <div key={b.key} role="listitem" className="flex w-[72px] shrink-0 snap-center flex-col items-center">
-                <Bolinha b={b} aberto={enderecoAberto === b.key} onClick={() => aoClicar(b)} />
-                <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {aberto?.endereco && (
-        <div className="mt-4 w-full max-w-[320px] rounded-2xl bg-surface-white p-4 text-center shadow-[0_2px_12px_rgba(17,19,24,0.08)]">
-          <p className="text-[13.5px] leading-snug text-text-secondary">{aberto.endereco}</p>
-          <div className="mt-3 flex gap-2">
-            <a href={`https://waze.com/ul?q=${encodeURIComponent(aberto.endereco)}&navigate=yes`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Waze</a>
-            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(aberto.endereco)}`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Google Maps</a>
-          </div>
-        </div>
-      )}
-
-      <div className="relative mt-7 w-full max-w-[340px]">
+      <div className="relative w-full max-w-[340px]">
         {ctaTipo === "orbi" ? (
           <form
             onSubmit={(e) => {
@@ -238,6 +202,42 @@ export function HomeVitrine({
           </div>
         </>,
         document.body,
+      )}
+
+      {bolinhas.length > 0 && (
+        <div className="relative mt-7 w-full">
+          {podeEditar && (
+            <button
+              type="button"
+              onClick={() => setEditando(true)}
+              aria-label="Editar bolinhas"
+              className="absolute -top-3 right-0 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95"
+            >
+              ✎
+            </button>
+          )}
+          <div
+            role="list"
+            className="no-scrollbar -mx-6 flex w-[calc(100%+3rem)] snap-x snap-proximity gap-3 overflow-x-auto px-6 pb-2 pt-2 [justify-content:safe_center] [mask-image:linear-gradient(to_right,transparent,#000_22px,#000_calc(100%-22px),transparent)]"
+          >
+            {bolinhas.map((b) => (
+              <div key={b.key} role="listitem" className="flex w-[72px] shrink-0 snap-center flex-col items-center">
+                <Bolinha b={b} aberto={enderecoAberto === b.key} onClick={() => aoClicar(b)} />
+                <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {aberto?.endereco && (
+        <div className="mt-4 w-full max-w-[320px] rounded-2xl bg-surface-white p-4 text-center shadow-[0_2px_12px_rgba(17,19,24,0.08)]">
+          <p className="text-[13.5px] leading-snug text-text-secondary">{aberto.endereco}</p>
+          <div className="mt-3 flex gap-2">
+            <a href={`https://waze.com/ul?q=${encodeURIComponent(aberto.endereco)}&navigate=yes`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Waze</a>
+            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(aberto.endereco)}`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Google Maps</a>
+          </div>
+        </div>
       )}
 
       {extras.length > 0 && (
