@@ -47,7 +47,7 @@ export type HomeViewProps = {
   oportunidade: Oportunidade;
   proxima: Omit<ComponentProps<typeof ProximaAcao>, "pendencia">;
   marcos: ComponentProps<typeof Marcos>["contagem"];
-  numeros: { rotulo: string; n: number; antes: number; href: string }[];
+  numeros: { rotulo: string; n: number; antes: number; href: string; conversao?: boolean }[];
   orbiColors: string[] | null;
   progressoPct: number;
   mostrarConvite: boolean;
@@ -112,11 +112,11 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
           <h2 className="text-[15px] font-medium">Últimos 7 dias</h2>
           <Link href="/admin/pulse" className="text-[13px] text-text-secondary">Ver tudo →</Link>
         </div>
-        <div className="mt-3 grid grid-cols-4 gap-2">
-          {numeros.map((m) => {
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {numeros.filter((m) => !m.conversao).map((m) => {
             const v = variacao(m.n, m.antes);
             return (
-              <Link key={m.rotulo} href={m.href} className="flex flex-col rounded-[18px] bg-surface-white px-2.5 py-3 ring-1 ring-black/[0.05] active:opacity-70">
+              <Link key={m.rotulo} href={m.href} className="flex flex-col rounded-[18px] bg-surface-white px-3 py-3 ring-1 ring-black/[0.05] active:opacity-70">
                 <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tabular-nums leading-none">{m.n.toLocaleString("pt-BR")}</span>
                 <span className="mt-1.5 text-[11.5px] text-text-secondary">{m.rotulo}</span>
                 <span className={`mt-0.5 h-4 text-[11px] font-medium ${v.sobe === true ? "text-[#1F7A3D]" : v.sobe === false ? "text-[#B4321F]" : "text-text-tertiary"}`}>{v.texto}</span>
@@ -124,7 +124,21 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
             );
           })}
         </div>
-        <p className="mt-2 text-[11.5px] text-text-tertiary">Conversões são toques no WhatsApp e ofertas resgatadas.</p>
+        <p className="mt-4 text-[12px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Conversões</p>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {numeros.filter((m) => m.conversao).map((m) => {
+            const v = variacao(m.n, m.antes);
+            const dica = m.rotulo === "WhatsApp" ? "Toques no botão de WhatsApp" : "Ofertas resgatadas";
+            return (
+              <Link key={m.rotulo} href={m.href} className="flex flex-col rounded-[20px] bg-gradient-to-br from-[#F3FCDD] to-[#DDF8F2] px-4 py-3.5 ring-1 ring-black/[0.05] active:opacity-70">
+                <span className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tabular-nums leading-none">{m.n.toLocaleString("pt-BR")}</span>
+                <span className="mt-1.5 text-[13px] font-medium">{m.rotulo}</span>
+                <span className="text-[11.5px] leading-snug text-text-secondary">{dica}</span>
+                <span className={`mt-1 h-4 text-[11px] font-medium ${v.sobe === true ? "text-[#1F7A3D]" : v.sobe === false ? "text-[#B4321F]" : "text-text-tertiary"}`}>{v.texto}</span>
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
       {/* Próximas ações por intenção: as ferramentas continuam no menu */}
