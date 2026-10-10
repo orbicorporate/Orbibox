@@ -570,6 +570,9 @@ export function VisitorExperience({
                   </button>
                 )}
               </div>
+              <button type="button" onClick={() => { setIconeBox(null); setEditandoLogo(true); }} className="mt-3 min-h-[44px] w-full rounded-full border border-divider text-[14px]">
+                {logoAtual ? "Editar a logo da página" : "Adicionar a logo da página"}
+              </button>
               <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Símbolos</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {ICON_LIBRARY.filter((ic) => !isAnimatedIcon(ic)).map((ic) => (
@@ -851,6 +854,10 @@ export function VisitorExperience({
                               <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Ícone</p>
                               <button type="button" onClick={() => { saveTitle(o.key); setMenuBox(null); setIconeBox(o.key); }} className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-full border border-divider px-4 text-[14px]">
                                 <span>Trocar o ícone do card</span>
+                                <span aria-hidden>→</span>
+                              </button>
+                              <button type="button" onClick={() => { saveTitle(o.key); setMenuBox(null); setEditandoLogo(true); }} className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-full border border-divider px-4 text-[14px]">
+                                <span>Editar a logo da página</span>
                                 <span aria-hidden>→</span>
                               </button>
 
