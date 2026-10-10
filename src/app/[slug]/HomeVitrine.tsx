@@ -23,6 +23,14 @@ export type BolinhaVitrine = {
 
 export type ItemVitrine = ItemCartao;
 
+export type BotaoPrincipal = "orbi" | "vitrine" | "whatsapp";
+
+const BOTOES: Record<BotaoPrincipal, { titulo: string; texto: string }> = {
+  orbi: { titulo: "Orbi", texto: "Convida a pessoa a perguntar qualquer coisa à IA da marca." },
+  vitrine: { titulo: "Vitrine", texto: "Leva direto ao catálogo completo." },
+  whatsapp: { titulo: "WhatsApp", texto: "Abre a conversa com você, sem intermediário." },
+};
+
 export type FormatoItens = "destaque" | "grade" | "carrossel";
 
 const FORMATOS: { v: FormatoItens; titulo: string; texto: string }[] = [
@@ -60,6 +68,9 @@ function corDe(b: BolinhaVitrine): { fundo: string; sombra: string } {
 export function HomeVitrine({
   bolinhas,
   ctaRotulo,
+  ctaTipo,
+  opcoesCta,
+  onCtaTipo,
   onCta,
   itens,
   tituloItens,
@@ -77,6 +88,10 @@ export function HomeVitrine({
 }: {
   bolinhas: BolinhaVitrine[];
   ctaRotulo: string;
+  ctaTipo: BotaoPrincipal;
+  opcoesCta: BotaoPrincipal[];
+  /** Undefined quando não há onde guardar a escolha. */
+  onCtaTipo?: (t: BotaoPrincipal) => void;
   onCta: () => void;
   itens: ItemVitrine[];
   tituloItens: string;
@@ -97,6 +112,7 @@ export function HomeVitrine({
 }) {
   const [chip, setChip] = useState<string | null>(null);
   const [editandoFormato, setEditandoFormato] = useState(false);
+  const [editandoCta, setEditandoCta] = useState(false);
   const [editando, setEditando] = useState(false);
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [enderecoAberto, setEnderecoAberto] = useState<string | null>(null);
@@ -156,13 +172,48 @@ export function HomeVitrine({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onCta}
-        className="mt-7 flex min-h-[52px] w-full max-w-[340px] items-center justify-center rounded-full bg-button-primary px-6 text-[15px] font-semibold text-white shadow-[0_10px_24px_-10px_rgba(17,19,24,0.5)] transition-transform active:scale-[0.98]"
-      >
-        {ctaRotulo}
-      </button>
+      <div className="relative mt-7 w-full max-w-[340px]">
+        <button
+          type="button"
+          onClick={onCta}
+          className={`flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full px-6 text-[15px] font-semibold transition-transform active:scale-[0.98] ${
+            ctaTipo === "orbi"
+              ? "orbi-gradient text-on-background shadow-[0_10px_24px_-10px_rgba(60,190,170,0.7)]"
+              : ctaTipo === "whatsapp"
+                ? "bg-[#25D366] text-white shadow-[0_10px_24px_-10px_rgba(37,211,102,0.7)]"
+                : "bg-button-primary text-white shadow-[0_10px_24px_-10px_rgba(17,19,24,0.5)]"
+          }`}
+        >
+          {ctaTipo === "orbi" && (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9L12 2Zm7 12l.9 2.6L22.5 17.5l-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9L19 14Z" /></svg>
+          )}
+          {ctaRotulo}
+        </button>
+        {podeEditar && onCtaTipo && opcoesCta.length > 1 && (
+          <button type="button" onClick={() => setEditandoCta(true)} aria-label="Escolher o botão principal" className="absolute -right-2 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-surface-white text-[13px] text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.18)] ring-1 ring-black/[0.06] active:scale-95">✎</button>
+        )}
+      </div>
+
+      {editandoCta && montado && onCtaTipo && createPortal(
+        <>
+          <button type="button" aria-label="Fechar" onClick={() => setEditandoCta(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+            <div className="flex items-center justify-between">
+              <span className="text-[17px] font-medium">Botão principal</span>
+              <button type="button" onClick={() => setEditandoCta(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+            </div>
+            <div role="radiogroup" className="mt-4 flex flex-col gap-2">
+              {opcoesCta.map((t) => (
+                <button key={t} type="button" role="radio" aria-checked={ctaTipo === t} onClick={() => onCtaTipo(t)} className={`rounded-2xl border-2 p-3.5 text-left ${ctaTipo === t ? "border-on-background" : "border-divider"}`}>
+                  <span className="block text-[14.5px] font-medium">{BOTOES[t].titulo}</span>
+                  <span className="mt-0.5 block text-[13px] text-text-secondary">{BOTOES[t].texto}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>,
+        document.body,
+      )}
 
       {extras.length > 0 && (
         <nav aria-label="Mais caminhos" className="mt-4 flex w-full flex-wrap items-center justify-center gap-x-1 text-[13.5px] text-text-secondary">

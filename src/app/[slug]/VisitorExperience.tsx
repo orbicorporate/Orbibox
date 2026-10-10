@@ -27,7 +27,7 @@ import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
 import { CartaoItem } from "./CartaoItem";
-import { HomeVitrine, type BolinhaVitrine, type FormatoItens } from "./HomeVitrine";
+import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
 import { BotaoSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
@@ -106,7 +106,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha"; formatoItens?: FormatoItens };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -265,7 +265,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; formatoItens?: FormatoItens; onClick: () => void };
+  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; onClick: () => void };
   const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -319,12 +319,12 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, formatoItens: cfg.formatoItens, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
       const fallbackLabel = b.box_type === "content" ? `Sobre a ${business.name}` : base.t;
-      return { key: b.id, interno: true, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || (b.box_type === "campaign" && giftEnabled ? "Monte um vale-presente." : base.d), color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, acao: base.k, formatoItens: cfg.formatoItens, onClick: () => chooseIntent(base.k) };
+      return { key: b.id, interno: true, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || (b.box_type === "campaign" && giftEnabled ? "Monte um vale-presente." : base.d), color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, acao: base.k, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
   // Redes sociais saem da grade de boxes e viram uma fileira de bolinhas
@@ -516,14 +516,15 @@ export function VisitorExperience({
   const [categoriaInicial, setCategoriaInicial] = useState<string | null>(null);
   // O formato dos itens fica guardado no box da vitrine (o mesmo do botão principal).
   const boxFormato = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
-  async function escolherFormato(f: FormatoItens) {
+  async function guardarNaVitrine(patch: { formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal }) {
     if (!boxFormato) return;
     const box = boxList.find((b) => b.id === boxFormato.key);
     if (!box) return;
-    const cfg = { ...((box.config ?? {}) as CustomConfig), formatoItens: f };
+    const cfg = { ...((box.config ?? {}) as CustomConfig), ...patch };
     setBoxList((prev) => prev.map((b) => (b.id === box.id ? { ...b, config: cfg } : b)));
     conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", box.id));
   }
+  const escolherFormato = (f: FormatoItens) => guardarNaVitrine({ formatoItens: f });
   async function estiloBolinhas(keys: string[], estilo: "cor" | "linha") {
     setBoxList((prev) => prev.map((b) => (keys.includes(b.id) ? { ...b, config: { ...((b.config ?? {}) as CustomConfig), bolinha: estilo } } : b)));
     const res = await Promise.all(keys.map((id) => {
@@ -548,14 +549,22 @@ export function VisitorExperience({
     ]);
     conferirSalvo(r1.error ? r1 : r2);
   }
-  const ctaVitrine: { rotulo: string; onClick: () => void } = (() => {
-    const vit = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
-    if (vit || content.length > 0) return { rotulo: vit?.t || "Ver catálogo", onClick: () => chooseIntent("comprar") };
-    const zap = bolinhasVitrine.find((b) => b.tipo === "whatsapp");
-    return { rotulo: "Falar no WhatsApp", onClick: zap?.onClick ?? (() => {}) };
-  })();
+  // Botão principal da Home em Vitrine: Orbi (quando há IA), Vitrine ou WhatsApp.
+  const zapBolinha = bolinhasVitrine.find((b) => b.tipo === "whatsapp");
+  const vitOpcao = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
+  const temVitrine = !!vitOpcao || content.length > 0;
+  const opcoesCta: BotaoPrincipal[] = [...(hasAiChat ? (["orbi"] as const) : []), ...(temVitrine ? (["vitrine"] as const) : []), ...(zapBolinha ? (["whatsapp"] as const) : [])];
+  const escolhaCta = boxFormato?.botaoPrincipal;
+  const ctaTipo: BotaoPrincipal | null = escolhaCta && opcoesCta.includes(escolhaCta) ? escolhaCta : (opcoesCta[0] ?? null);
+  const ctaVitrine: { tipo: BotaoPrincipal; rotulo: string; onClick: () => void } =
+    ctaTipo === "orbi"
+      ? { tipo: "orbi", rotulo: `Pergunte à ${agentName?.trim() || "Orbi"}`, onClick: () => chooseIntent("duvida") }
+      : ctaTipo === "whatsapp"
+        ? { tipo: "whatsapp", rotulo: "Falar no WhatsApp", onClick: zapBolinha?.onClick ?? (() => {}) }
+        : { tipo: "vitrine", rotulo: vitOpcao?.t || "Ver catálogo", onClick: () => chooseIntent("comprar") };
   const extrasVitrine = todasOpcoes
     .filter((o) => !o.rede && !o.atalho && !o.cupom && o.acao !== "vitrine" && o.acao !== "comprar")
+    .filter((o) => !(ctaVitrine.tipo === "orbi" && (o.ai || o.acao === "zara" || o.acao === "duvida")))
     .map((o) => ({ key: o.key, rotulo: o.t, onClick: o.onClick }));
 
   const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
@@ -814,6 +823,9 @@ export function VisitorExperience({
               <HomeVitrine
                 bolinhas={bolinhasVitrine}
                 ctaRotulo={ctaVitrine.rotulo}
+                ctaTipo={ctaVitrine.tipo}
+                opcoesCta={opcoesCta}
+                onCtaTipo={boxFormato ? (t) => guardarNaVitrine({ botaoPrincipal: t }) : undefined}
                 onCta={ctaVitrine.onClick}
                 itens={content}
                 tituloItens={business.catalog_title?.trim() || "Em destaque"}
