@@ -11,6 +11,7 @@ type V = {
   discount_value: number | null;
   quantity_total: number;
   quantity_claimed: number;
+  show_discount?: boolean | null;
 };
 
 /**
@@ -30,10 +31,10 @@ export function VoucherQuadrado({ v }: { v: V }) {
           <img src={v.image_url} alt={v.title} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center px-2 text-center">
-            <span className="font-[family-name:var(--font-manrope)] text-[34px] font-extrabold leading-none tracking-[-0.02em]">{v.discount_type === "gift" ? "Brinde" : grande}</span>
+            <span className="font-[family-name:var(--font-manrope)] text-[34px] font-extrabold leading-none tracking-[-0.02em]">{v.discount_type === "gift" ? "Brinde" : v.show_discount === false ? v.title : grande}</span>
           </div>
         )}
-        {v.image_url && v.discount_type !== "gift" && (
+        {v.image_url && v.discount_type !== "gift" && v.show_discount !== false && (
           <span className="absolute right-0 top-0 rounded-bl-[18px] bg-white px-3 py-1.5 text-[15px] font-extrabold leading-none" style={{ color: tema.ctaText }}>{grande}</span>
         )}
         {v.badge?.trim() && (

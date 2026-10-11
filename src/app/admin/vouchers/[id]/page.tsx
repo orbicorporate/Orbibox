@@ -33,7 +33,7 @@ export default async function VoucherDetailPage({ params, searchParams }: { para
 
   const { data: todos } = await supabase
     .from("vouchers")
-    .select("id, title, color, image_url, discount_type, discount_value, is_active")
+    .select("id, title, color, image_url, discount_type, discount_value, is_active, show_discount")
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
 
