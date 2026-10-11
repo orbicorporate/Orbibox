@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDialogs } from "@/hooks/useDialogs";
 import {
-  BUCKET, MAX_CATEGORIAS, clienteBanco, enviarImagem, kb, sincronizarBiblioteca, urlDaImagem,
-  type Categoria, type ImagemBanco,
+  BUCKET, COLUNAS_IMAGEM, MAX_CATEGORIAS, TIPOS_IMAGEM, classificarImagens, clienteBanco, enviarImagem, kb, sincronizarBiblioteca, urlDaImagem,
+  type Categoria, type ImagemBanco, type TipoImagem,
 } from "@/lib/bancoImagens";
 
 type Filtro = "todas" | "sem" | string;
@@ -22,12 +22,16 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
   const [gerenciando, setGerenciando] = useState(false);
   const [moverAberto, setMoverAberto] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [tipo, setTipo] = useState<"todos" | "sem" | TipoImagem>("todos");
+  const [tipoAberto, setTipoAberto] = useState(false);
+  const [organizando, setOrganizando] = useState(false);
+  const classificando = useRef(false);
 
   const carregar = useCallback(async () => {
     await sincronizarBiblioteca(supabase, businessId);
     const [{ data: cats }, { data: imgs }] = await Promise.all([
       supabase.from("image_categories").select("id, name, position").eq("business_id", businessId).order("position").order("created_at"),
-      supabase.from("image_library").select("id, path, category_id, size_bytes, created_at").eq("business_id", businessId).order("created_at", { ascending: false }).limit(2000),
+      supabase.from("image_library").select(COLUNAS_IMAGEM).eq("business_id", businessId).order("created_at", { ascending: false }).limit(2000),
     ]);
     setCategorias((cats as Categoria[]) ?? []);
     setImagens(((imgs as Omit<ImagemBanco, "url">[]) ?? []).map((i) => ({ ...i, url: urlDaImagem(supabase, i.path) })));
@@ -37,6 +41,30 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
     // eslint-disable-next-line react-hooks/set-state-in-effect
     carregar();
   }, [carregar]);
+
+  /** Pede o tipo das imagens que ainda não têm, em lotes, e atualiza a tela. */
+  const classificar = useCallback(async (alvo: ImagemBanco[]) => {
+    if (classificando.current) return;
+    const pendentes = alvo.filter((i) => !i.auto_tipo && !i.tipo_corrigido);
+    if (pendentes.length === 0) return;
+    classificando.current = true;
+    setOrganizando(true);
+    for (let n = 0; n < pendentes.length; n += 8) {
+      const lote = pendentes.slice(n, n + 8).map((i) => i.id);
+      const res = await classificarImagens(businessId, lote);
+      if (Object.keys(res).length === 0) break;
+      setImagens((p) => (p ?? []).map((i) => (res[i.id] && !i.tipo_corrigido ? { ...i, auto_tipo: res[i.id] } : i)));
+    }
+    classificando.current = false;
+    setOrganizando(false);
+  }, [businessId]);
+
+  const jaOrganizou = useRef(false);
+  useEffect(() => {
+    if (!imagens || jaOrganizou.current) return;
+    jaOrganizou.current = true;
+    classificar(imagens);
+  }, [imagens, classificar]);
 
   const total = imagens?.length ?? 0;
   const cheio = total >= limite;
@@ -50,7 +78,20 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
     return { porCategoria: m, sem };
   }, [imagens]);
 
-  const visiveis = (imagens ?? []).filter((i) => (filtro === "todas" ? true : filtro === "sem" ? !i.category_id : i.category_id === filtro));
+  const visiveis = (imagens ?? []).filter(
+    (i) =>
+      (filtro === "todas" ? true : filtro === "sem" ? !i.category_id : i.category_id === filtro) &&
+      (tipo === "todos" ? true : tipo === "sem" ? !i.auto_tipo : i.auto_tipo === tipo),
+  );
+  const porTipo = useMemo(() => {
+    const m = new Map<string, number>();
+    let sem = 0;
+    for (const i of imagens ?? []) {
+      if (i.auto_tipo) m.set(i.auto_tipo, (m.get(i.auto_tipo) ?? 0) + 1);
+      else sem++;
+    }
+    return { m, sem };
+  }, [imagens]);
   const nomeDe = (id: string | null) => categorias.find((c) => c.id === id)?.name ?? null;
 
   async function enviar(files: FileList | null) {
@@ -63,16 +104,19 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
     const categoria = filtro !== "todas" && filtro !== "sem" ? filtro : null;
     setEnviando({ feitas: 0, total: aEnviar.length });
     let falhas = 0;
+    const novas: ImagemBanco[] = [];
     for (let n = 0; n < aEnviar.length; n++) {
       try {
         const nova = await enviarImagem(supabase, businessId, aEnviar[n], categoria);
         setImagens((p) => [nova, ...(p ?? [])]);
+        novas.push(nova);
       } catch {
         falhas++;
       }
       setEnviando({ feitas: n + 1, total: aEnviar.length });
     }
     setEnviando(null);
+    classificar(novas);
     const cortadas = lista.length - aEnviar.length;
     if (falhas > 0) setErro(`${falhas} ${falhas === 1 ? "imagem não subiu" : "imagens não subiram"}. Tente de novo.`);
     else if (cortadas > 0) setErro(`Só ${aEnviar.length} ${aEnviar.length === 1 ? "coube" : "couberam"} no limite de ${limite} imagens.`);
@@ -132,6 +176,14 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
     setMoverAberto(false);
     await supabase.from("image_library").update({ category_id: cat }).in("id", ids);
     setImagens((p) => (p ?? []).map((i) => (marcadas.has(i.id) ? { ...i, category_id: cat } : i)));
+    sair();
+  }
+
+  async function definirTipo(t: TipoImagem) {
+    const ids = Array.from(marcadas);
+    setTipoAberto(false);
+    await supabase.from("image_library").update({ auto_tipo: t, tipo_corrigido: true }).in("id", ids);
+    setImagens((p) => (p ?? []).map((i) => (marcadas.has(i.id) ? { ...i, auto_tipo: t, tipo_corrigido: true } : i)));
     sair();
   }
 
@@ -263,9 +315,24 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
         </div>
       )}
 
+      {/* Tipo, separado automaticamente pela Orbi */}
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-[15px] font-semibold">Tipo</p>
+        {organizando && <p className="text-[12px] text-text-tertiary">Organizando suas fotos…</p>}
+      </div>
+      <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
+        <button type="button" onClick={() => setTipo("todos")} className={chip(tipo === "todos")}>Todos</button>
+        {TIPOS_IMAGEM.map((t) => (
+          <button key={t.id} type="button" onClick={() => setTipo(t.id)} className={chip(tipo === t.id)}>
+            {t.nome} {porTipo.m.get(t.id) ?? 0}
+          </button>
+        ))}
+        {porTipo.sem > 0 && !organizando && <button type="button" onClick={() => setTipo("sem")} className={chip(tipo === "sem")}>Sem tipo {porTipo.sem}</button>}
+      </div>
+
       {/* Grade de miniaturas */}
       <div className="mt-5 flex items-center justify-between">
-        <p className="text-[15px] font-semibold">{filtro === "todas" ? "Todas as imagens" : filtro === "sem" ? "Sem categoria" : nomeDe(filtro)}</p>
+        <p className="text-[15px] font-semibold">{filtro === "todas" ? "Todas as imagens" : filtro === "sem" ? "Sem categoria" : nomeDe(filtro)}{tipo !== "todos" ? ` · ${tipo === "sem" ? "Sem tipo" : TIPOS_IMAGEM.find((t) => t.id === tipo)?.nome}` : ""}</p>
         {visiveis.length > 0 && (
           <button type="button" onClick={() => (selecionando ? sair() : setSelecionando(true))} className="min-h-[40px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-2">
             {selecionando ? "Cancelar" : "Selecionar"}
@@ -316,6 +383,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
           <span className="pl-2 text-[13px] font-medium text-white">{marcadas.size} {marcadas.size === 1 ? "selecionada" : "selecionadas"}</span>
           <span className="flex-1" />
           <button type="button" onClick={() => setMoverAberto(true)} className="min-h-[40px] rounded-full bg-white/15 px-4 text-[13px] font-semibold text-white">Mover para</button>
+          <button type="button" onClick={() => setTipoAberto(true)} className="min-h-[40px] rounded-full bg-white/15 px-4 text-[13px] font-semibold text-white">Tipo</button>
           <button type="button" onClick={() => excluir((imagens ?? []).filter((i) => marcadas.has(i.id)))} className="min-h-[40px] rounded-full bg-[#E4264C] px-4 text-[13px] font-semibold text-white">Excluir</button>
         </div>
       )}
@@ -330,6 +398,20 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
               ))}
               <button type="button" onClick={() => moverSelecionadas(null)} className="min-h-[48px] rounded-2xl border border-divider px-4 text-left text-[14.5px] text-text-secondary">Sem categoria</button>
               {categorias.length === 0 && <p className="text-[13px] text-text-tertiary">Crie uma categoria primeiro, em + Nova categoria.</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tipoAberto && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 sm:items-center" onClick={() => setTipoAberto(false)}>
+          <div className="w-full max-w-md rounded-t-[28px] bg-surface-white p-5 sm:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
+            <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold">Qual é o tipo?</p>
+            <p className="mt-1 text-[13px] text-text-tertiary">Use para corrigir quando a Orbi errar.</p>
+            <div className="mt-3 flex flex-col gap-2">
+              {TIPOS_IMAGEM.map((t) => (
+                <button key={t.id} type="button" onClick={() => definirTipo(t.id)} className="min-h-[48px] rounded-2xl border border-divider px-4 text-left text-[14.5px] font-medium">{t.nome}</button>
+              ))}
             </div>
           </div>
         </div>

@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { clienteBanco, sincronizarBiblioteca, urlDaImagem, type Categoria } from "@/lib/bancoImagens";
+import { TIPOS_IMAGEM, clienteBanco, sincronizarBiblioteca, urlDaImagem, type Categoria, type TipoImagem } from "@/lib/bancoImagens";
 
-type Item = { id: string; nome: string; url: string; category_id: string | null };
+type Item = { id: string; nome: string; url: string; category_id: string | null; auto_tipo: TipoImagem | null };
 
 /**
  * Folha com todas as imagens do banco de imagens da marca, em miniaturas
@@ -26,6 +26,7 @@ export function MinhaGaleriaPicker({
   const [itens, setItens] = useState<Item[] | null>(null);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [filtro, setFiltro] = useState<string>("todas");
+  const [tipo, setTipo] = useState<"todos" | TipoImagem>("todos");
   const [erro, setErro] = useState<string | null>(null);
   const [quebradas, setQuebradas] = useState<Set<string>>(new Set());
 
@@ -36,12 +37,12 @@ export function MinhaGaleriaPicker({
         await sincronizarBiblioteca(supabase, businessId);
         const [{ data: cats }, { data: imgs, error }] = await Promise.all([
           supabase.from("image_categories").select("id, name, position").eq("business_id", businessId).order("position"),
-          supabase.from("image_library").select("id, path, category_id").eq("business_id", businessId).order("created_at", { ascending: false }).limit(1000),
+          supabase.from("image_library").select("id, path, category_id, auto_tipo").eq("business_id", businessId).order("created_at", { ascending: false }).limit(1000),
         ]);
         if (!vivo) return;
         if (error) throw error;
         setCategorias((cats as Categoria[]) ?? []);
-        setItens(((imgs as { id: string; path: string; category_id: string | null }[]) ?? []).map((o) => ({ id: o.id, nome: o.path, category_id: o.category_id, url: urlDaImagem(supabase, o.path) })));
+        setItens(((imgs as { id: string; path: string; category_id: string | null; auto_tipo: TipoImagem | null }[]) ?? []).map((o) => ({ id: o.id, nome: o.path, category_id: o.category_id, auto_tipo: o.auto_tipo, url: urlDaImagem(supabase, o.path) })));
       } catch {
         if (!vivo) return;
         setErro("Não consegui abrir sua galeria agora.");
@@ -53,7 +54,8 @@ export function MinhaGaleriaPicker({
     };
   }, [supabase, businessId]);
 
-  const visiveis = (itens ?? []).filter((i) => !quebradas.has(i.nome) && (filtro === "todas" ? true : filtro === "sem" ? !i.category_id : i.category_id === filtro));
+  const visiveis = (itens ?? []).filter((i) => !quebradas.has(i.nome) && (filtro === "todas" ? true : filtro === "sem" ? !i.category_id : i.category_id === filtro) && (tipo === "todos" ? true : i.auto_tipo === tipo));
+  const temTipos = (itens ?? []).some((i) => i.auto_tipo);
   const temSem = (itens ?? []).some((i) => !i.category_id);
   const chip = (ativo: boolean) => `shrink-0 min-h-[36px] rounded-full px-3.5 text-[13px] font-medium ${ativo ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`;
 
@@ -77,6 +79,15 @@ export function MinhaGaleriaPicker({
               <button key={c.id} type="button" onClick={() => setFiltro(c.id)} className={chip(filtro === c.id)}>{c.name}</button>
             ))}
             {temSem && <button type="button" onClick={() => setFiltro("sem")} className={chip(filtro === "sem")}>Sem categoria</button>}
+          </div>
+        )}
+
+        {temTipos && (
+          <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto px-5">
+            <button type="button" onClick={() => setTipo("todos")} className={chip(tipo === "todos")}>Todos os tipos</button>
+            {TIPOS_IMAGEM.map((t) => (
+              <button key={t.id} type="button" onClick={() => setTipo(t.id)} className={chip(tipo === t.id)}>{t.nome}</button>
+            ))}
           </div>
         )}
 

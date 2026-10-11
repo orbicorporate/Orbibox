@@ -12,7 +12,26 @@ export const LIMITE_NIOBIO = 300;
 export const MAX_CATEGORIAS = 12;
 
 export type Categoria = { id: string; name: string; position: number };
-export type ImagemBanco = { id: string; path: string; category_id: string | null; size_bytes: number | null; created_at: string; url: string };
+export type TipoImagem = "logos" | "produtos" | "ambientes";
+export const TIPOS_IMAGEM: { id: TipoImagem; nome: string }[] = [
+  { id: "logos", nome: "Logos e ícones" },
+  { id: "produtos", nome: "Produtos" },
+  { id: "ambientes", nome: "Ambientes" },
+];
+export type ImagemBanco = { id: string; path: string; category_id: string | null; size_bytes: number | null; created_at: string; url: string; auto_tipo: TipoImagem | null; tipo_corrigido: boolean };
+export const COLUNAS_IMAGEM = "id, path, category_id, size_bytes, created_at, auto_tipo, tipo_corrigido";
+
+/** Pede à IA o tipo de até 8 imagens por vez. Devolve id -> tipo. */
+export async function classificarImagens(businessId: string, ids: string[]): Promise<Record<string, TipoImagem>> {
+  try {
+    const r = await fetch("/api/classificar-imagens", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessId, ids }) });
+    if (!r.ok) return {};
+    const j = (await r.json()) as { resultados?: Record<string, TipoImagem> };
+    return j.resultados ?? {};
+  } catch {
+    return {};
+  }
+}
 
 export function urlDaImagem(supabase: ClienteBanco, path: string) {
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
@@ -84,7 +103,7 @@ export async function enviarImagem(supabase: ClienteBanco, businessId: string, f
   const { data, error: e2 } = await supabase
     .from("image_library")
     .insert({ business_id: businessId, path, category_id: categoryId, size_bytes: blob.size })
-    .select("id, path, category_id, size_bytes, created_at")
+    .select(COLUNAS_IMAGEM)
     .single();
   if (e2 || !data) throw new Error("registro");
   return { ...(data as Omit<ImagemBanco, "url">), url: urlDaImagem(supabase, path) };
