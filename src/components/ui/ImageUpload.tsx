@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropModal";
 import { FotoProntaPicker } from "./FotoProntaPicker";
+import { MinhaGaleriaPicker } from "./MinhaGaleriaPicker";
 import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 import { AbrirChatGPT } from "@/components/ui/AbrirChatGPT";
 import { PassosPrompt } from "@/components/ui/PassosPrompt";
@@ -55,6 +56,7 @@ export function ImageUpload({
   const [showPrompt, setShowPrompt] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showFotos, setShowFotos] = useState(false);
+  const [showGaleria, setShowGaleria] = useState(false);
   // Dados da marca pro prompt da capa ficar com a cara dela (cores, tom).
   const [marca, setMarca] = useState<Marca | null>(null);
 
@@ -224,6 +226,26 @@ export function ImageUpload({
             </span>
           </button>
 
+          <button
+            type="button"
+            onClick={() => setShowGaleria(true)}
+            className="flex w-full items-center gap-3 rounded-2xl border border-divider bg-surface-white px-3.5 py-3 text-left active:scale-[0.99]"
+          >
+            <span className="grid h-9 w-9 shrink-0 grid-cols-2 gap-0.5 overflow-hidden rounded-lg" aria-hidden>
+              <span className="bg-gradient-to-br from-[#C7F284] to-[#6FD8C4]" />
+              <span className="bg-gradient-to-br from-[#9EC5FF] to-[#B69CFF]" />
+              <span className="bg-gradient-to-br from-[#FFD9A8] to-[#FFB3C1]" />
+              <span className="bg-surface-soft" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14px] font-medium text-on-background">Minha galeria</span>
+              <span className="block text-[12px] text-text-tertiary">Imagens que você já enviou, pra usar de novo</span>
+            </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary" aria-hidden>
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
+
           <div className={`rounded-2xl border bg-surface-white ${showPrompt ? "border-on-background/15" : "border-divider"}`}>
             <button type="button" onClick={abrirPrompt} className="flex w-full items-center gap-3 px-3.5 py-3 text-left">
               <OrbiSimbolo size={36} />
@@ -261,6 +283,18 @@ export function ImageUpload({
             onEscolher={(file) => {
               setShowFotos(false);
               setPendingFile(file);
+            }}
+          />
+        )}
+
+        {showGaleria && (
+          <MinhaGaleriaPicker
+            businessId={businessId}
+            atual={value}
+            onFechar={() => setShowGaleria(false)}
+            onEscolher={(url) => {
+              setShowGaleria(false);
+              onChange(url);
             }}
           />
         )}
