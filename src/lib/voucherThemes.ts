@@ -1,13 +1,21 @@
-// Temas de cor dos vouchers, 4 opções, todas com degradê profundo e texto
+// Temas de cor dos vouchers, 12 opções, todas com degradê profundo e texto
 // branco. O vermelho "cereja" é a cor-assinatura da ferramenta de vouchers
 // e também é usado nos botões do admin (CHERRY abaixo).
-export type VoucherColor = "cherry" | "black" | "navy" | "green";
+export type VoucherColor = "cherry" | "black" | "navy" | "green" | "purple" | "pink" | "orange" | "gold" | "teal" | "wine" | "chocolate" | "royal";
 
 export const VOUCHER_THEMES: Record<VoucherColor, { label: string; from: string; via: string; to: string; ctaText: string; glow: string }> = {
   cherry: { label: "Vermelho", from: "#A80F2B", via: "#CC1739", to: "#E4264C", ctaText: "#C4143A", glow: "rgba(204,23,57,0.45)" },
   black: { label: "Preto", from: "#0B0D12", via: "#1A1E27", to: "#2B3140", ctaText: "#111318", glow: "rgba(17,19,24,0.45)" },
   navy: { label: "Azul escuro", from: "#081A45", via: "#102B68", to: "#1A3D8C", ctaText: "#102B68", glow: "rgba(16,43,104,0.45)" },
   green: { label: "Verde", from: "#0B4A2E", via: "#136B42", to: "#1C8A57", ctaText: "#136B42", glow: "rgba(19,107,66,0.45)" },
+  purple: { label: "Roxo", from: "#3B0F6B", via: "#5B1FA3", to: "#7B3FD1", ctaText: "#5B1FA3", glow: "rgba(91,31,163,0.45)" },
+  pink: { label: "Rosa", from: "#A3124F", via: "#D41F6E", to: "#F0408C", ctaText: "#B8165D", glow: "rgba(212,31,110,0.45)" },
+  orange: { label: "Laranja", from: "#B33E00", via: "#DB5A08", to: "#F77F1E", ctaText: "#C24A02", glow: "rgba(219,90,8,0.45)" },
+  gold: { label: "Dourado", from: "#6B4A05", via: "#9A6F0C", to: "#C99A1E", ctaText: "#7F5A08", glow: "rgba(154,111,12,0.45)" },
+  teal: { label: "Turquesa", from: "#05494F", via: "#0A6B73", to: "#12929B", ctaText: "#0A6B73", glow: "rgba(10,107,115,0.45)" },
+  wine: { label: "Vinho", from: "#3D0A18", via: "#5E1226", to: "#7F1D36", ctaText: "#5E1226", glow: "rgba(94,18,38,0.45)" },
+  chocolate: { label: "Chocolate", from: "#3A1F10", via: "#5A3320", to: "#7A4A2E", ctaText: "#5A3320", glow: "rgba(90,51,32,0.45)" },
+  royal: { label: "Azul real", from: "#0D47A1", via: "#1565C0", to: "#2A86E0", ctaText: "#1565C0", glow: "rgba(21,101,192,0.45)" },
 };
 
 export function voucherTheme(color: string | null | undefined) {
