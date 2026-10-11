@@ -12,7 +12,7 @@ type VoucherSimples = { id: string; title: string };
  * si é por voucher (ele usa o desconto, o estoque e a validade pra escrever
  * os textos), então com mais de um a gente pergunta qual antes de abrir.
  */
-export function DivulgarVoucherButton({ vouchers, orbiColors }: { vouchers: VoucherSimples[]; orbiColors?: string[] | null }) {
+export function DivulgarVoucherButton({ vouchers, orbiColors, linkBase }: { vouchers: VoucherSimples[]; orbiColors?: string[] | null; linkBase: string }) {
   const [escolhendo, setEscolhendo] = useState(false);
   const [escolhido, setEscolhido] = useState<VoucherSimples | null>(
     vouchers.length === 1 ? vouchers[0] : null,
@@ -30,6 +30,7 @@ export function DivulgarVoucherButton({ vouchers, orbiColors }: { vouchers: Vouc
           voucherId={escolhido.id}
           voucherTitulo={escolhido.title}
           orbiColors={orbiColors}
+          link={`${linkBase}?v=${escolhido.id}`}
         />
       ) : (
         <button

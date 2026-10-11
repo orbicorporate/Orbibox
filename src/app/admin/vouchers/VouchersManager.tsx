@@ -9,6 +9,7 @@ import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { VOUCHER_THEMES, voucherGradient, CHERRY_GRADIENT, CHERRY_SHADOW, type VoucherColor } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
 import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { LinkDoVoucher } from "./LinkDoVoucher";
 import { descontoCurto } from "@/lib/voucherDesconto";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
@@ -42,7 +43,7 @@ function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
   return descontoCurto(v);
 }
 
-export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {}, abrirNovo = false }: { businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]>; abrirNovo?: boolean }) {
+export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {}, abrirNovo = false, linkBase }: { linkBase?: string; businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]>; abrirNovo?: boolean }) {
   const supabase = createClient();
   const { confirm, DialogRenderer } = useDialogs();
   const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
@@ -280,6 +281,8 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               <p className="mt-3 text-[12px] text-text-tertiary">
                 {v.expires_hours ? `Código vale por ${v.expires_hours % 24 === 0 ? `${v.expires_hours / 24} ${v.expires_hours === 24 ? "dia" : "dias"}` : `${v.expires_hours} horas`} depois do resgate` : "Código sem prazo"}
               </p>
+
+              {linkBase && v.is_active && <LinkDoVoucher url={`${linkBase}?v=${v.id}`} titulo={v.title} />}
 
               {/* Quem resgatou, botão bem visível pro painel completo, com nome, WhatsApp e filtros */}
               <Link

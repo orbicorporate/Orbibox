@@ -9,6 +9,7 @@ import { VoucherFormato } from "./VoucherFormato";
 import { VoucherExplainer } from "./VoucherExplainer";
 import { RedeemCodeCard } from "./RedeemCodeCard";
 import Link from "next/link";
+import { headers } from "next/headers";
 
 type BoxConfigShape = { action?: string };
 
@@ -20,9 +21,13 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
   const access = businessId ? await getAccessInfoForBusiness(businessId) : null;
   const canSave = !!access?.hasVouchers;
 
+  // Link público pelo domínio de produção, como na Home do painel.
+  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL || (await headers()).get("host") || "orbibox-orbi-app.vercel.app";
+  const linkBase = `${host.includes("localhost") ? "http" : "https"}://${host}`;
+
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name")
+    .select("id, name, slug")
     .eq("id", businessId!)
     .single();
 
@@ -217,10 +222,10 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
       {/* Atalho pro plano de divulgação: antes ele só existia dentro de um
           voucher específico, então ninguém descobria que existia. */}
       {canSave && (vouchers?.length ?? 0) > 0 && (
-        <DivulgarVoucherButton vouchers={(vouchers ?? []).map((v) => ({ id: v.id, title: v.title }))} />
+        <DivulgarVoucherButton linkBase={`${linkBase}/${business!.slug}`} vouchers={(vouchers ?? []).map((v) => ({ id: v.id, title: v.title }))} />
       )}
 
-      <VouchersManager abrirNovo={novo === "1"} businessId={business!.id} initialVouchers={vouchers ?? []} canSave={canSave} redemptionsByVoucher={redemptionsByVoucher} />
+      <VouchersManager linkBase={`${linkBase}/${business!.slug}`} abrirNovo={novo === "1"} businessId={business!.id} initialVouchers={vouchers ?? []} canSave={canSave} redemptionsByVoucher={redemptionsByVoucher} />
     </div>
   );
 }

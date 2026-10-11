@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { LinkDoVoucher } from "./LinkDoVoucher";
 import { OrbiInsightCard, OrbiInsightHeader } from "@/components/orbi/OrbiInsightCard";
 
 type Canal = { canal: string; quando: string; texto: string; dica: string };
@@ -25,7 +26,7 @@ function iconeDoCanal(nome: string) {
   return ICONES.grupo;
 }
 
-export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { voucherId: string; voucherTitulo: string; orbiColors?: string[] | null }) {
+export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors, link }: { voucherId: string; voucherTitulo: string; orbiColors?: string[] | null; link?: string }) {
   const [plano, setPlano] = useState<Plano | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -55,7 +56,7 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
 
   async function copiar(texto: string, i: number) {
     try {
-      await navigator.clipboard.writeText(texto);
+      await navigator.clipboard.writeText(link && !texto.includes(link) ? `${texto}\n\n${link}` : texto);
       setCopiado(i);
       setTimeout(() => setCopiado(null), 1500);
     } catch { /* sem clipboard */ }
@@ -132,6 +133,12 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
               </div>
             )}
 
+            {link && (
+              <div className="orbi-rise mt-4">
+                <LinkDoVoucher url={link} titulo={voucherTitulo} />
+              </div>
+            )}
+
             {/* Canais, com texto pronto */}
             {plano.canais.map((c, i) => {
               const ic = iconeDoCanal(c.canal);
@@ -159,6 +166,7 @@ export function VoucherPlanoOrbi({ voucherId, voucherTitulo, orbiColors }: { vou
                   {c.texto && (
                     <div className="mt-4 rounded-[20px] bg-surface-soft px-5 py-4">
                       <p className="whitespace-pre-line text-[15.5px] leading-[1.65] text-on-background">{c.texto}</p>
+                      {link && <p className="mt-2 break-all text-[13.5px] text-text-secondary">{link}</p>}
                       <button
                         onClick={() => copiar(c.texto, i)}
                         className="mt-3.5 w-full rounded-full bg-on-background py-2.5 text-[13.5px] font-semibold text-white"

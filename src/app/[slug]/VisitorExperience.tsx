@@ -258,7 +258,9 @@ export function VisitorExperience({
     const chat = searchParams.get("chat");
     const tab = searchParams.get("tab");
     const msg = searchParams.get("msg");
-    if (chat === "1" && hasAiChat) chooseIntent("duvida", msg || undefined);
+    // ?v=ID: link de um voucher específico, abre direto nele.
+    if (searchParams.get("v") && hasVouchers) chooseIntent("cupom");
+    else if (chat === "1" && hasAiChat) chooseIntent("duvida", msg || undefined);
     else if (tab === "conhecer") chooseIntent("conhecer");
     else if (tab === "vitrine") chooseIntent("comprar");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1429,7 +1431,7 @@ export function VisitorExperience({
         )}
 
         {intent === "cupom" && (
-          <VoucherFlow business={business} sessionId={sessionId} orbiColors={orbiColors} formato={todasOpcoes.find((o) => o.cupom)?.voucherFormato ?? "horizontal"} onBack={voltarAoInicio} />
+          <VoucherFlow business={business} sessionId={sessionId} orbiColors={orbiColors} formato={todasOpcoes.find((o) => o.cupom)?.voucherFormato ?? "horizontal"} focoId={searchParams.get("v")} onBack={voltarAoInicio} />
         )}
       </div>
 
@@ -1480,7 +1482,9 @@ function resultMessage(businessName: string, expiresAt: string | null) {
   return `${base} Vale até ${data}.`;
 }
 
-function VoucherFlow({ business, sessionId, orbiColors, formato, onBack }: { business: Business; sessionId: string | null; orbiColors: string[] | null; formato: "horizontal" | "quadrado"; onBack: () => void }) {
+function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack }: { business: Business; sessionId: string | null; orbiColors: string[] | null; formato: "horizontal" | "quadrado"; focoId: string | null; onBack: () => void }) {
+  // Veio de um link de voucher: mostra só ele, com a saída pra ver os outros.
+  const [soFoco, setSoFoco] = useState(!!focoId);
   const quadrado = formato === "quadrado";
   const larga = quadrado ? "col-span-2" : "";
   const supabase = createClient();
@@ -1567,10 +1571,14 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, onBack }: { bus
     }
   }
 
+  const focoExiste = !!focoId && !!vouchers?.some((x) => x.id === focoId);
+  const emFoco = soFoco && focoExiste;
+  const visiveis = emFoco ? vouchers?.filter((x) => x.id === focoId) : vouchers;
+
   return (
     <div className="w-full">
       <button onClick={onBack} className="mb-3 text-[14px] text-text-tertiary hover:underline">← voltar</button>
-      <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">Vouchers</h2>
+      <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">{emFoco ? "Seu voucher" : "Vouchers"}</h2>
       <p className="mt-1 text-[14px] text-text-secondary">Vantagens exclusivas pra você.</p>
 
       {result ? (
@@ -1601,7 +1609,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, onBack }: { bus
                 className="flex-1 rounded-full bg-white/20 py-3 text-[14px] font-semibold text-white backdrop-blur-sm disabled:opacity-60"
               />
             </div>
-            <button onClick={() => setResult(null)} className="mt-4 text-[12.5px] underline opacity-80">Ver outros vouchers</button>
+            <button onClick={() => { setResult(null); setSoFoco(false); }} className="mt-4 text-[12.5px] underline opacity-80">Ver outros vouchers</button>
           </div>
           {!deixouWhats && (
             <LeadCapture
@@ -1618,7 +1626,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, onBack }: { bus
         <div className={quadrado ? "mt-6 grid grid-cols-2 gap-3" : "mt-6 flex flex-col gap-4"}>
           {vouchers === null && <p className={`text-[14px] text-text-tertiary ${larga}`}>Carregando…</p>}
           {vouchers?.length === 0 && <p className={`text-[14px] text-text-tertiary ${larga}`}>Nenhum voucher disponível no momento.</p>}
-          {vouchers?.map((v) => {
+          {visiveis?.map((v) => {
             const restam = v.quantity_total - v.quantity_claimed;
             const isClaiming = claiming === v.id;
 
@@ -1751,6 +1759,12 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, onBack }: { bus
               </div>
             );
           })}
+
+          {emFoco && (
+            <button onClick={() => setSoFoco(false)} className={`min-h-[44px] rounded-full border border-divider px-5 text-[14px] font-medium text-text-secondary active:scale-[0.98] ${larga}`}>
+              Ver outros vouchers
+            </button>
+          )}
 
           {/* Vouchers já resgatados neste aparelho, pra pessoa reencontrar o código */}
           {meusVouchers.length > 0 && (

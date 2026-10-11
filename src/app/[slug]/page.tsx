@@ -13,10 +13,13 @@ import { VisitorExperience } from "./VisitorExperience";
  */
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ v?: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const { v: voucherId } = await searchParams;
   const supabase = await createClient();
   const { data: b } = await supabase
     .from("businesses")
@@ -25,6 +28,33 @@ export async function generateMetadata({
     .maybeSingle();
 
   if (!b) return { title: "Orbibox" };
+
+  // Link de um voucher específico (?v=ID): a capinha é o próprio voucher.
+  // Voucher inexistente, pausado ou de outro negócio cai no preview normal.
+  if (voucherId && /^[0-9a-f-]{36}$/i.test(voucherId)) {
+    const { data: bid } = await supabase.from("businesses").select("id").eq("slug", slug).maybeSingle();
+    const { data: v } = bid
+      ? await supabase
+          .from("vouchers")
+          .select("title, discount_type, discount_value")
+          .eq("id", voucherId)
+          .eq("business_id", bid.id)
+          .eq("is_active", true)
+          .maybeSingle()
+      : { data: null };
+    if (v) {
+      const imagem = `/${slug}/voucher-og/${voucherId}`;
+      const titulo = `${v.title} · ${b.name}`;
+      const desc = "Toque para pegar seu voucher.";
+      return {
+        title: titulo,
+        description: desc,
+        manifest: `/${slug}/manifest.webmanifest`,
+        openGraph: { title: titulo, description: desc, type: "website", images: [{ url: imagem, width: 1200, height: 630 }] },
+        twitter: { card: "summary_large_image", title: titulo, description: desc, images: [imagem] },
+      };
+    }
+  }
 
   const capa = b.share_image_url || b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls[0]) || b.logo_url || `/${slug}/opengraph-image`;
   // Curto de propósito, WhatsApp e afins cortam a descrição em poucas linhas
