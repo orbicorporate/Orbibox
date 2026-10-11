@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   const { data: v } = b
     ? await supabase
         .from("vouchers")
-        .select("title, discount_type, discount_value, image_url, badge, color, quantity_total, quantity_claimed")
+        .select("title, discount_type, discount_value, image_url, badge, color, quantity_total, quantity_claimed, show_discount")
         .eq("id", id)
         .eq("business_id", b.id)
         .eq("is_active", true)
@@ -28,7 +28,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
 
   const tema = voucherTheme(v.color);
   const gift = v.discount_type === "gift";
-  const grande = gift ? "Brinde" : descontoGrande(v);
+  const mostrar = v.show_discount !== false;
+  const grande = gift ? "Brinde" : mostrar ? descontoGrande(v) : null;
   const restam = v.quantity_total - v.quantity_claimed;
 
   let foto: string | null = null;
@@ -70,8 +71,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
               {v.badge}
             </div>
           )}
-          <div style={{ display: "flex", fontSize: foto ? 96 : 150, fontWeight: 800, lineHeight: 1, letterSpacing: -2 }}>{grande}</div>
-          <div style={{ display: "flex", fontSize: 46, fontWeight: 600, lineHeight: 1.15, marginTop: 24, opacity: 0.95 }}>{v.title}</div>
+          {grande && <div style={{ display: "flex", fontSize: foto ? 96 : 150, fontWeight: 800, lineHeight: 1, letterSpacing: -2 }}>{grande}</div>}
+          <div style={{ display: "flex", fontSize: grande ? 46 : 72, fontWeight: grande ? 600 : 800, lineHeight: 1.15, marginTop: grande ? 24 : 0, opacity: 0.95 }}>{v.title}</div>
           <div style={{ display: "flex", fontSize: 30, marginTop: 20, opacity: 0.85 }}>
             {b.name}{restam > 0 && restam <= 20 ? `  ·  restam ${restam}` : ""}
           </div>

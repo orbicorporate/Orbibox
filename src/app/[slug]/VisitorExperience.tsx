@@ -1489,7 +1489,7 @@ export function VisitorExperience({
   );
 }
 
-type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null; color: string | null };
+type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null; color: string | null; show_discount?: boolean | null };
 
 function voucherDiscountLabel(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
   return descontoLongo(v);
@@ -1553,7 +1553,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
   useEffect(() => {
     supabase
       .from("vouchers")
-      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge, color")
+      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge, color, show_discount")
       .eq("business_id", business.id)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
@@ -1722,10 +1722,10 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                       <img src={v.image_url} alt={v.title} className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full items-center justify-center px-2 text-center">
-                        <span className="font-[family-name:var(--font-manrope)] text-[34px] font-extrabold leading-none tracking-[-0.02em]">{v.discount_type === "gift" ? "Brinde" : voucherDiscountBig(v)}</span>
+                        <span className="font-[family-name:var(--font-manrope)] text-[34px] font-extrabold leading-none tracking-[-0.02em]">{v.discount_type === "gift" ? "Brinde" : v.show_discount === false ? v.title : voucherDiscountBig(v)}</span>
                       </div>
                     )}
-                    {v.image_url && v.discount_type !== "gift" && (
+                    {v.image_url && v.discount_type !== "gift" && v.show_discount !== false && (
                       <span className="absolute right-0 top-0 rounded-bl-[18px] bg-white px-3 py-1.5 text-[15px] font-extrabold leading-none" style={{ color: tema.ctaText }}>{voucherDiscountBig(v)}</span>
                     )}
                     {v.badge?.trim() && (
@@ -1774,12 +1774,12 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                       </span>
                     )}
                     {/* Brinde/benefício não tem número: o título assume o destaque. */}
-                    {v.discount_type !== "gift" && (
+                    {v.discount_type !== "gift" && v.show_discount !== false && (
                       <p className={`font-[family-name:var(--font-manrope)] text-[32px] font-extrabold leading-none tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}`}>
                         {voucherDiscountBig(v)}
                       </p>
                     )}
-                    <p className={v.discount_type === "gift" ? `font-[family-name:var(--font-manrope)] text-[26px] font-extrabold leading-[1.1] tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}` : "mt-2 text-[16px] font-semibold leading-snug"}>{v.title}</p>
+                    <p className={v.discount_type === "gift" || v.show_discount === false ? `font-[family-name:var(--font-manrope)] text-[26px] font-extrabold leading-[1.1] tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}` : "mt-2 text-[16px] font-semibold leading-snug"}>{v.title}</p>
                     {v.description?.trim() && (
                       <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-80">{v.description}</p>
                     )}

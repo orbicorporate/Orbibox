@@ -63,6 +63,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const [expiresHours, setExpiresHours] = useState("48");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [badge, setBadge] = useState("");
+  const [mostrarDesconto, setMostrarDesconto] = useState(true);
   const [color, setColor] = useState<VoucherColor>("cherry");
   // Campos obrigatórios que ficaram vazios ao tentar criar (o botão nunca fica
   // morto: avisa o que falta e leva até o campo).
@@ -138,6 +139,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           image_url: imageUrl,
           badge: badge.trim() || null,
           color,
+          ...(mostrarDesconto ? {} : { show_discount: false }),
         })
         .select()
         .single();
@@ -156,6 +158,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         setImageUrl(null);
         setBadge("");
         setColor("cherry");
+        setMostrarDesconto(true);
       }
     } finally {
       setSaving(false);
@@ -413,6 +416,18 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             />
             )}
           </div>
+          {discountType !== "gift" && (
+            <div className="flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-medium">Mostrar o desconto no voucher</p>
+                <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Desligado, o selo com a porcentagem ou o valor não aparece no cartão.</p>
+              </div>
+              <button type="button" role="switch" aria-checked={mostrarDesconto} onClick={() => setMostrarDesconto((m) => !m)} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${mostrarDesconto ? "bg-on-background" : "bg-divider"}`}>
+                <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${mostrarDesconto ? "left-7" : "left-1"}`} />
+                <span className="sr-only">{mostrarDesconto ? "Ligado" : "Desligado"}</span>
+              </button>
+            </div>
+          )}
           <div>
             <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Quantos vouchers disponíveis</p>
             <input

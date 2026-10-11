@@ -26,7 +26,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
-type Resumo = { id: string; title: string; color: string | null; image_url: string | null; discount_type: string; discount_value: number | null; is_active: boolean };
+type Resumo = { id: string; title: string; color: string | null; image_url: string | null; discount_type: string; discount_value: number | null; is_active: boolean; show_discount?: boolean | null };
 
 export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, todos, abrirEdicao = false }: { voucher: Voucher; initialRedemptions: Redemption[]; orbiColors?: string[] | null; todos: Resumo[]; abrirEdicao?: boolean }) {
   const supabase = createClient();
@@ -95,7 +95,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={t.image_url} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="px-1 text-center font-[family-name:var(--font-manrope)] text-[15px] font-extrabold leading-tight">{t.discount_type === "gift" ? "Brinde" : descontoGrande(t)}</span>
+                  <span className="px-1 text-center font-[family-name:var(--font-manrope)] text-[15px] font-extrabold leading-tight">{t.discount_type === "gift" ? "Brinde" : t.show_discount === false ? t.title : descontoGrande(t)}</span>
                 )}
                 <span className="absolute left-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-black/55 px-1 text-[11px] font-bold">{n + 1}</span>
               </span>
