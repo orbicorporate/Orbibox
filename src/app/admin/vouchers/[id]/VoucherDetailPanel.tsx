@@ -1,5 +1,6 @@
 "use client";
 
+import { FaixaStatusVoucher } from "../FaixaStatusVoucher";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -109,18 +110,13 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
         </Link>
       </div>
 
+      <FaixaStatusVoucher ativo={v.is_active} onAlternar={toggleActive} className="mt-4" />
+
       {/* O voucher aberto, igual ao da galeria da sua página, com o painel ao lado. */}
-      <div className="mt-4 flex items-start gap-4">
+      <div className={`mt-3 flex items-start gap-4 ${v.is_active ? "" : "opacity-70"}`}>
         <VoucherQuadrado v={v} />
         <div className="flex min-w-0 flex-1 flex-col gap-3">
-          <p className="text-[12.5px] text-text-tertiary">Assim ele aparece na sua página.</p>
-          <button
-            onClick={toggleActive}
-            className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-white px-3.5 py-2 text-[13px] font-semibold ring-1 ring-black/[0.08]"
-          >
-            <span className={`inline-block h-2 w-2 rounded-full ${v.is_active ? "bg-[#1F9E4C]" : "bg-text-tertiary"}`} />
-            {v.is_active ? "Ativo" : "Pausado"}
-          </button>
+          <p className="text-[12.5px] text-text-tertiary">{v.is_active ? "Assim ele aparece na sua página." : "Assim ele vai aparecer quando você ativar."}</p>
           <button type="button" onClick={() => setEditando(true)} className="min-h-[44px] w-fit rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white">Editar voucher</button>
           <div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-surface-soft">

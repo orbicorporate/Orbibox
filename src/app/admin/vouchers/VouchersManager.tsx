@@ -16,6 +16,7 @@ type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
 
 // Opções de validade em linguagem de gente. O banco continua guardando horas.
+import { FaixaStatusVoucher } from "./FaixaStatusVoucher";
 import { PrazoVoucher } from "./PrazoVoucher";
 import { SeletorDesconto } from "./SeletorDesconto";
 
@@ -258,14 +259,9 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                     <span className="mt-1.5 inline-block rounded-full bg-[#FCE8EC] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#C4143A]">{v.badge}</span>
                   )}
                 </div>
-                <button
-                  onClick={() => toggleActive(v)}
-                  className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium text-text-secondary"
-                >
-                  <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${v.is_active ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
-                  {v.is_active ? "Ativo" : "Pausado"}
-                </button>
               </div>
+
+              <FaixaStatusVoucher ativo={v.is_active} onAlternar={() => toggleActive(v)} className="mt-3" />
 
               {v.description?.trim() && (
                 <div className="mt-3 rounded-2xl bg-surface-soft px-3.5 py-2.5">
