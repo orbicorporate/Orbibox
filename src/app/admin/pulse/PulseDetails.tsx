@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { LogoApp } from "@/components/delivery/LogoApp";
+import { appPorId, type AppDeliveryId } from "@/lib/delivery";
 
 type ItemInfo = { title: string; image_url: string | null; brand_label: string | null };
 
@@ -24,6 +26,7 @@ export function PulseDetails({
   topItems,
   paginas,
   slug,
+  delivery = [],
 }: {
   porTipo: Record<string, number>;
   porTipoItem: Record<string, Record<string, number>>;
@@ -31,11 +34,15 @@ export function PulseDetails({
   topItems: { id: string; count: number }[];
   paginas: PaginaVisitada[];
   slug: string;
+  /** Toques por app de delivery (kind delivery_ifood, delivery_rappi...). */
+  delivery?: { id: string; count: number }[];
 }) {
   const [open, setOpen] = useState<string | null>(null);
   // Começam fechadas: são listas longas que empurram o resto pra baixo.
   const [paginasAberto, setPaginasAberto] = useState(false);
   const [clicadosAberto, setClicadosAberto] = useState(false);
+  const [deliveryAberto, setDeliveryAberto] = useState(false);
+  const totalDelivery = delivery.reduce((n, d) => n + d.count, 0);
 
   return (
     <>
@@ -111,6 +118,40 @@ export function PulseDetails({
           );
         })}
       </div>
+
+      {totalDelivery > 0 && (
+        <div className="mt-4 rounded-[22px] border border-divider bg-surface-white">
+          <button type="button" onClick={() => setDeliveryAberto((v) => !v)} className="flex w-full items-center gap-3 p-4 text-left">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FDEEDF] text-[#C2650A]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8h12l-1 11H7L6 8Z" /><path d="M9 8V7a3 3 0 0 1 6 0v1" /></svg>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-medium">Toques nos apps de delivery</span>
+              <span className="block text-[12px] text-text-tertiary">quantos foram pedir em cada app</span>
+            </span>
+            <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{totalDelivery.toLocaleString("pt-BR")}</span>
+            <span className={`text-[12px] text-text-tertiary transition-transform ${deliveryAberto ? "rotate-90" : ""}`}>›</span>
+          </button>
+          {deliveryAberto && (
+            <div className="flex flex-col gap-2 px-4 pb-4">
+              {delivery.map((d) => {
+                const app = appPorId(d.id);
+                const pct = Math.round((d.count / totalDelivery) * 100);
+                return (
+                  <div key={d.id} className="flex items-center gap-3 rounded-2xl bg-surface-soft px-3 py-2.5">
+                    {app ? <LogoApp id={d.id as AppDeliveryId} tamanho={34} /> : <span className="h-[34px] w-[34px] rounded-[10px] bg-divider" />}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13.5px] font-medium">{app?.nome ?? d.id}</p>
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-on-background" style={{ width: `${pct}%` }} /></div>
+                    </div>
+                    <span className="shrink-0 text-[13px] text-text-secondary">{d.count}× · {pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {paginas.length > 0 && (
         <div className="mt-6">

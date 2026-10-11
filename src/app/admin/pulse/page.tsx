@@ -97,6 +97,10 @@ export default async function PulsePage({
       porItemGeral[c.content_item_id] = (porItemGeral[c.content_item_id] ?? 0) + 1;
     }
   }
+  const delivery = Object.entries(porTipo)
+    .filter(([k]) => k.startsWith("delivery_"))
+    .map(([k, count]) => ({ id: k.slice(9), count }))
+    .sort((a, b) => b.count - a.count);
   const totalCliques = cliques.length;
   const topItems = Object.entries(porItemGeral)
     .sort((a, b) => b[1] - a[1])
@@ -169,7 +173,7 @@ export default async function PulsePage({
               <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{visitas.toLocaleString("pt-BR")}</span>
             </div>
 
-            <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} paginas={paginas} slug={business!.slug} />
+            <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} paginas={paginas} slug={business!.slug} delivery={delivery} />
 
             <PulseAudience origens={origens} dispositivos={dispositivos} totalSessoes={totalSessoes} />
 

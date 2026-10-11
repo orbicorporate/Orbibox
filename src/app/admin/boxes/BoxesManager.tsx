@@ -22,7 +22,7 @@ import { addToLogoGallery } from "@/lib/logoGallery";
 import { DateTimeField } from "./DateTimeField";
 
 type BrandColor = { hex: string; role?: string };
-type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown; starts_at: string | null; ends_at: string | null };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
@@ -50,6 +50,7 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   link: "Abre um link",
   cupom: "Abre os vouchers",
   gift: "Abre o gift card",
+  delivery: "Abre os apps de delivery",
 };
 
 /** Explicação curta de onde o cliente vai parar e de onde aquilo vem, pros
@@ -61,6 +62,12 @@ const ACAO_EXPLICA: Partial<Record<NonNullable<BoxConfig["action"]>, { titulo: s
     texto: "Seu cliente escolhe um valor, escreve uma mensagem pra quem vai ganhar e combina o pagamento com você no WhatsApp. Você confirma e o gift card é liberado.",
     href: "/admin/gift",
     link: "Ver valores e pedidos de gift card →",
+  },
+  delivery: {
+    titulo: "Abre seus apps de delivery",
+    texto: "O cliente escolhe o app (iFood, Rappi, 99Food e outros) e vai direto para a sua loja nele. Cada toque é contado no Pulse.",
+    href: "/admin/delivery",
+    link: "Escolher apps e links →",
   },
   cupom: {
     titulo: "Abre seus vouchers",
