@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import { LogoApp } from "@/components/delivery/LogoApp";
+import { appPorId, type AppDeliveryId } from "@/lib/delivery";
 
 // As funções da rede ainda não estão nos tipos gerados do banco, por isso o cliente sem tipos.
 function cliente() {
@@ -29,7 +31,8 @@ type ProdutoLinha = {
   sugestoes: number;
 };
 
-type Aba = "resumo" | "vouchers" | "produtos";
+type Aba = "resumo" | "vouchers" | "produtos" | "delivery";
+type AcaoLinha = { business_id: string; loja: string; tipo: string; toques: number };
 const PERIODOS = [7, 30, 90] as const;
 
 const nf = (n: number) => n.toLocaleString("pt-BR");
@@ -71,6 +74,8 @@ export function RedeMarketing() {
   const [dias, setDias] = useState<(typeof PERIODOS)[number]>(30);
   const [vouchers, setVouchers] = useState<VoucherLinha[]>([]);
   const [produtos, setProdutos] = useState<ProdutoLinha[]>([]);
+  const [acoes, setAcoes] = useState<AcaoLinha[]>([]);
+  const [acoesIndisponivel, setAcoesIndisponivel] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [atualizando, setAtualizando] = useState(false);
 
@@ -91,15 +96,18 @@ export function RedeMarketing() {
     (async () => {
       setAtualizando(true);
       const sb = cliente();
-      const [v, p] = await Promise.all([
+      const [v, p, a] = await Promise.all([
         sb.rpc("listar_vouchers_da_rede", { p_network_id: redeId, p_dias: dias }),
         sb.rpc("listar_produtos_da_rede", { p_network_id: redeId, p_dias: dias }),
+        sb.rpc("listar_acoes_da_rede", { p_network_id: redeId, p_dias: dias }),
       ]);
       if (!vivo) return;
       if (v.error || p.error) setErro("Não consegui carregar os números agora. Tente de novo.");
       else setErro(null);
       setVouchers(Array.isArray(v.data) ? (v.data as VoucherLinha[]).map((x) => ({ ...x, emitidos: Number(x.emitidos), resgatados: Number(x.resgatados) })) : []);
       setProdutos(Array.isArray(p.data) ? (p.data as ProdutoLinha[]).map((x) => ({ ...x, cliques: Number(x.cliques), sugestoes: Number(x.sugestoes) })) : []);
+      setAcoesIndisponivel(!!a.error);
+      setAcoes(Array.isArray(a.data) ? (a.data as AcaoLinha[]).map((x) => ({ ...x, toques: Number(x.toques) })) : []);
       setAtualizando(false);
       setCarregando(false);
     })();
@@ -143,6 +151,25 @@ export function RedeMarketing() {
     return [...m.values()].filter((x) => x.emitidos > 0).sort((a, b) => taxa(b.resgatados, b.emitidos) - taxa(a.resgatados, a.emitidos));
   }, [vouchers]);
 
+  const deliveryPorApp = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const x of acoes) if (x.tipo.startsWith("delivery_")) m.set(x.tipo.slice(9), (m.get(x.tipo.slice(9)) ?? 0) + x.toques);
+    return [...m.entries()].map(([id, toques]) => ({ id, toques })).sort((a, b) => b.toques - a.toques);
+  }, [acoes]);
+  const deliveryPorLoja = useMemo(() => {
+    const m = new Map<string, { nome: string; toques: number; apps: Map<string, number> }>();
+    for (const x of acoes) {
+      if (!x.tipo.startsWith("delivery_")) continue;
+      const l = m.get(x.business_id) ?? { nome: x.loja, toques: 0, apps: new Map<string, number>() };
+      l.toques += x.toques;
+      l.apps.set(x.tipo.slice(9), (l.apps.get(x.tipo.slice(9)) ?? 0) + x.toques);
+      m.set(x.business_id, l);
+    }
+    return [...m.values()].sort((a, b) => b.toques - a.toques);
+  }, [acoes]);
+  const totalDelivery = deliveryPorApp.reduce((t, d) => t + d.toques, 0);
+  const totalCardapio = acoes.filter((x) => x.tipo === "cardapio").reduce((t, x) => t + x.toques, 0);
+
   const maisToques = useMemo(() => [...produtos].filter((p) => p.cliques > 0).sort((a, b) => b.cliques - a.cliques), [produtos]);
   const maisSugeridos = useMemo(() => [...produtos].filter((p) => p.sugestoes > 0).sort((a, b) => b.sugestoes - a.sugestoes), [produtos]);
 
@@ -175,7 +202,7 @@ export function RedeMarketing() {
       </div>
 
       <div role="tablist" aria-label="Marketing da rede" className="mt-3 flex gap-1.5 rounded-full bg-surface-soft p-1">
-        {([["resumo", "Resumo"], ["vouchers", "Vouchers"], ["produtos", "Produtos"]] as const).map(([id, rot]) => (
+        {([["resumo", "Resumo"], ["vouchers", "Vouchers"], ["produtos", "Produtos"], ["delivery", "Delivery"]] as const).map(([id, rot]) => (
           <button key={id} role="tab" aria-selected={aba === id} onClick={() => setAba(id)} className={`min-h-[40px] flex-1 rounded-full px-2 text-[13px] transition-colors ${aba === id ? "bg-on-background text-white" : "text-text-secondary"}`}>
             {rot}
           </button>
@@ -197,6 +224,8 @@ export function RedeMarketing() {
             <Numero rotulo="Vouchers usados" valor={nf(totais.resgatados)} fundo="#E4F7EA" cor="#1F7A3D" />
             <Numero rotulo="Toques em produtos" valor={nf(totais.cliques)} fundo="#DDF8F4" cor="#0A7F74" />
             <Numero rotulo="Vezes que a Orbi sugeriu" valor={nf(totais.sugestoes)} fundo="#FFF1C9" cor="#7A5A00" />
+            {!acoesIndisponivel && <Numero rotulo="Toques em apps de delivery" valor={nf(totalDelivery)} fundo="#FDEEDF" cor="#C2650A" />}
+            {!acoesIndisponivel && <Numero rotulo="Aberturas do cardápio" valor={nf(totalCardapio)} fundo="#E2EAFE" cor="#1D4ED8" />}
           </div>
           {melhorCampanha && (
             <div className="rounded-2xl bg-[#F1FCDC] p-4">
@@ -283,6 +312,54 @@ export function RedeMarketing() {
               </ol>
             )}
           </div>
+        </div>
+      )}
+
+      {aba === "delivery" && (
+        <div className="mt-4 flex flex-col gap-5">
+          {acoesIndisponivel ? (
+            <p className="rounded-2xl bg-surface-soft p-4 text-[13.5px] leading-snug text-text-secondary">Os números de delivery ainda não estão disponíveis para a rede.</p>
+          ) : totalDelivery === 0 ? (
+            <p className="rounded-2xl bg-surface-soft p-4 text-[13.5px] leading-snug text-text-secondary">Ninguém tocou nos apps de delivery neste período. Quando as lojas ligarem o botão de delivery e os clientes começarem a pedir, os números aparecem aqui.</p>
+          ) : (
+            <>
+              <div>
+                <p className="text-[14.5px] font-medium">Por app</p>
+                <p className="text-[12.5px] text-text-tertiary">Quantos toques cada app recebeu em toda a rede.</p>
+                <ol className="mt-2 flex flex-col gap-2.5">
+                  {deliveryPorApp.map((d) => (
+                    <li key={d.id} className="flex items-center gap-3">
+                      {appPorId(d.id) ? <LogoApp id={d.id as AppDeliveryId} tamanho={38} /> : <span className="h-[38px] w-[38px] rounded-[12px] bg-surface-soft" aria-hidden />}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <p className="truncate text-[14px]">{appPorId(d.id)?.nome ?? d.id}</p>
+                          <p className="shrink-0 text-[13px] tabular-nums">{nf(d.toques)} <span className="text-text-tertiary">{d.toques === 1 ? "toque" : "toques"}</span></p>
+                        </div>
+                        <div className="mt-1.5"><Barra pct={(d.toques / deliveryPorApp[0].toques) * 100} cor="#C2650A" /></div>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div>
+                <p className="text-[14.5px] font-medium">Por loja</p>
+                <p className="text-[12.5px] text-text-tertiary">Quais lojas mais levam clientes para pedir por app.</p>
+                <ol className="mt-2 flex flex-col gap-2.5">
+                  {deliveryPorLoja.map((l, i) => (
+                    <li key={l.nome + i} className="rounded-2xl bg-surface-soft px-3.5 py-3">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="truncate text-[14px] font-medium">{l.nome}</p>
+                        <p className="shrink-0 text-[13px] tabular-nums">{nf(l.toques)} <span className="text-text-tertiary">{l.toques === 1 ? "toque" : "toques"}</span></p>
+                      </div>
+                      <p className="mt-1 text-[12.5px] text-text-tertiary">
+                        {[...l.apps.entries()].sort((a, b) => b[1] - a[1]).map(([id, n]) => `${appPorId(id)?.nome ?? id} ${n}`).join(" · ")}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </>
+          )}
         </div>
       )}
 

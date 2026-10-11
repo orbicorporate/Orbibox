@@ -1,6 +1,7 @@
 "use client";
 
 import { DeliveryFlow } from "./DeliveryFlow";
+import { CardapioFlow } from "./CardapioFlow";
 import { appsAtivos, linkDoApp } from "@/lib/delivery";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
@@ -107,9 +108,9 @@ type ContentItem = {
   link_kind: string | null;
 };
 
-type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery";
+type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery"; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; esferaCor?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio"; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; esferaCor?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -320,6 +321,8 @@ export function VisitorExperience({
             chooseIntent("cupom");
           } else if (cfg.action === "gift") {
             chooseIntent("presentear");
+          } else if (cfg.action === "cardapio") {
+            chooseIntent("cardapio");
           } else if (cfg.action === "delivery") {
             // Um app só: abre direto, sem tela no meio.
             const ativos = appsAtivos(cfg.apps);
@@ -332,7 +335,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || cfg.action === "cardapio" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
@@ -1439,6 +1442,28 @@ export function VisitorExperience({
         {intent === "duvida" && (
           <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} initialInput={orbiPrefill} onBack={voltarAoInicio} />
         )}
+
+        {intent === "cardapio" && (() => {
+          const cfgCardapio = (boxList.find((b) => b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "cardapio")?.config ?? {}) as CustomConfig;
+          const cfgDelivery = (boxList.find((b) => b.is_active && b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "delivery")?.config ?? {}) as CustomConfig;
+          const apps = appsAtivos(cfgDelivery.apps);
+          return (
+            <CardapioFlow
+              business={business}
+              itens={content}
+              sessionId={sessionId}
+              titulo={cfgCardapio.label || "Cardápio"}
+              subtitulo={cfgCardapio.subtitle || `Veja o que ${business.name} tem para você.`}
+              onPedir={apps.length > 0 ? () => {
+                if (apps.length === 1) {
+                  const link = linkDoApp(apps[0]);
+                  if (link) { trackClick({ businessId: business.id, kind: `delivery_${apps[0].id}`, sessionId, targetUrl: link }); window.open(link, "_blank", "noopener"); }
+                } else chooseIntent("delivery");
+              } : undefined}
+              onBack={voltarAoInicio}
+            />
+          );
+        })()}
 
         {intent === "delivery" && (
           <DeliveryFlow
