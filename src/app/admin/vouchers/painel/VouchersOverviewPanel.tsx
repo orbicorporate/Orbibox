@@ -5,6 +5,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { whatsappLink } from "@/lib/track";
 import { RedeemCodeCard } from "../RedeemCodeCard";
+import { LinkDoVoucher } from "../LinkDoVoucher";
+import { voucherTheme, voucherGradient } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
 import { descontoCurto } from "@/lib/voucherDesconto";
 
@@ -25,13 +27,14 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
-export function VouchersOverviewPanel({ businessId, initialVouchers, initialRedemptions }: { businessId: string; initialVouchers: Voucher[]; initialRedemptions: Redemption[] }) {
+export function VouchersOverviewPanel({ businessId, initialVouchers, initialRedemptions, linkBase }: { businessId: string; initialVouchers: Voucher[]; initialRedemptions: Redemption[]; linkBase: string | null }) {
   const supabase = createClient();
   const [vouchers, setVouchers] = useState(initialVouchers);
   const [redemptions, setRedemptions] = useState(initialRedemptions);
   const [voucherFilter, setVoucherFilter] = useState<string>("todos");
   const [statusFilter, setStatusFilter] = useState<"todos" | "claimed" | "redeemed">("todos");
   const [query, setQuery] = useState("");
+  const [linkAberto, setLinkAberto] = useState<string | null>(null);
 
 
   const voucherById = useMemo(() => new Map(vouchers.map((v) => [v.id, v])), [vouchers]);
@@ -65,86 +68,137 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
     if (data) setVouchers((p) => p.map((x) => (x.id === v.id ? (data as Voucher) : x)));
   }
 
+  const porVoucher = useMemo(() => {
+    const m = new Map<string, { total: number; aguardando: number; usaram: number }>();
+    for (const r of redemptions) {
+      const x = m.get(r.voucher_id) ?? { total: 0, aguardando: 0, usaram: 0 };
+      x.total++;
+      if (r.status === "redeemed") x.usaram++;
+      else if (r.status === "claimed") x.aguardando++;
+      m.set(r.voucher_id, x);
+    }
+    return m;
+  }, [redemptions]);
+  const varios = vouchers.length > 1;
+
   return (
     <div className="flex flex-col pb-4">
       <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Vouchers</Link>
 
-      <div className="relative mt-4">
-        <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] bg-[#CC1739] opacity-25 blur-2xl" />
-        <div className="rounded-[28px] bg-gradient-to-br from-[#A80F2B] via-[#CC1739] to-[#E4264C] p-6 text-white shadow-[0_14px_38px_rgba(204,23,57,0.35)]">
-          <p className="text-[11px] font-semibold uppercase tracking-wide opacity-85">📊 Painel de controle</p>
-          <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-tight">Todos os seus vouchers</p>
-          <p className="mt-1 text-[13.5px] opacity-90">{ativos} {ativos === 1 ? "voucher ativo" : "vouchers ativos"} · {totalResgatados} {totalResgatados === 1 ? "resgate" : "resgates"} no total</p>
-        </div>
+      <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.02em]">Painel de vouchers</h1>
+      <p className="mt-1 text-[14px] text-text-secondary">
+        {ativos} {ativos === 1 ? "voucher ativo" : "vouchers ativos"} · {totalResgatados} {totalResgatados === 1 ? "resgate" : "resgates"} no total
+      </p>
+
+      {/* 1. O que se faz todo dia: validar o código do cliente no balcão */}
+      <div className="mt-4">
+        <RedeemCodeCard
+          businessId={businessId}
+          onRedeemed={refresh}
+          vouchers={vouchers.map((v) => ({ id: v.id, title: v.title }))}
+          resgates={redemptions.map((r) => ({ code: r.code, voucher_id: r.voucher_id, visitor_name: r.visitor_name, status: r.status }))}
+        />
       </div>
 
-      {/* Totais coloridos, cada um explica o momento do resgate */}
-      <div className="mt-4 grid grid-cols-3 gap-2.5">
-        <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#E7EAFC" }}>
-          <p className="text-[24px] font-bold" style={{ color: "#4453D6" }}>{totalResgatados}</p>
-          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#4453D6" }}>resgataram o voucher</p>
-        </div>
-        <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#FDEEDF" }}>
-          <p className="text-[24px] font-bold" style={{ color: "#C2650A" }}>{totalAguardando}</p>
-          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#C2650A" }}>ainda não usaram</p>
-        </div>
-        <div className="rounded-[20px] p-3.5" style={{ backgroundColor: "#DEF3E3" }}>
-          <p className="text-[24px] font-bold" style={{ color: "#1F9E4C" }}>{totalConfirmados}</p>
-          <p className="mt-0.5 text-[12px] font-medium leading-tight" style={{ color: "#1F9E4C" }}>já usaram</p>
-        </div>
-      </div>
-      {/* Resgatar no balcão, mesmo card da referência, reaproveitado */}
-      <div className="mt-5">
-        <RedeemCodeCard businessId={businessId} onRedeemed={refresh} vouchers={vouchers.map((v) => ({ id: v.id, title: v.title }))} />
+      {/* 2. Números por voucher: cada linha diz de qual voucher são os números */}
+      <div className="mt-7 flex items-baseline justify-between">
+        <p className="text-[15px] font-semibold">Seus vouchers</p>
+        {varios && <p className="text-[12.5px] text-text-tertiary">Toque num voucher para ver só os resgates dele</p>}
       </div>
 
-      {/* Vouchers, ativar/pausar direto daqui, e filtrar a lista por eles */}
-      <p className="mt-6 text-[15px] font-semibold">Seus vouchers</p>
-      <div className="mt-2.5 flex flex-col gap-2">
+      {varios && (
+        <div className="mt-2.5 grid grid-cols-3 gap-2">
+          {[
+            { n: totalResgatados, t: "resgataram", bg: "#E7EAFC", c: "#4453D6" },
+            { n: totalAguardando, t: "ainda não usaram", bg: "#FDEEDF", c: "#C2650A" },
+            { n: totalConfirmados, t: "já usaram", bg: "#DEF3E3", c: "#1F9E4C" },
+          ].map((k) => (
+            <div key={k.t} className="rounded-[16px] px-3 py-2.5" style={{ backgroundColor: k.bg }}>
+              <p className="text-[20px] font-bold leading-none" style={{ color: k.c }}>{k.n}</p>
+              <p className="mt-1 text-[11.5px] font-medium leading-tight" style={{ color: k.c }}>{k.t}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-3 flex flex-col gap-3">
         {vouchers.map((v) => {
-          const qtd = redemptions.filter((r) => r.voucher_id === v.id).length;
+          const e = porVoucher.get(v.id) ?? { total: 0, aguardando: 0, usaram: 0 };
+          const tema = voucherTheme(v.color);
           const selecionado = voucherFilter === v.id;
+          const conv = e.total > 0 ? Math.round((e.usaram / e.total) * 100) : 0;
           return (
-            <div key={v.id} className={`flex items-center gap-3 rounded-[20px] border p-3 ${selecionado ? "border-on-background bg-surface-white" : "border-divider bg-surface-white"}`}>
-              <button onClick={() => setVoucherFilter(selecionado ? "todos" : v.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+            <div key={v.id} className={`overflow-hidden rounded-[22px] bg-surface-white ring-1 transition-shadow ${selecionado ? "ring-2 ring-on-background" : "ring-black/[0.06]"}`}>
+              <button type="button" onClick={() => setVoucherFilter(selecionado ? "todos" : v.id)} className="flex w-full items-center gap-3 p-3.5 text-left">
                 {v.image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={v.image_url} alt={v.title} className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+                  <img src={v.image_url} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
                 ) : (
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FCE8EC] text-[18px]">🎟️</span>
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-[11px] font-extrabold uppercase text-white" style={{ background: voucherGradient(v.color) }}>
+                    {v.discount_type === "gift" ? "Brinde" : discountLabel(v).split(" ")[0]}
+                  </span>
                 )}
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[14px] font-semibold">{v.title}</span>
-                  <span className="block text-[12px] text-text-tertiary">{discountLabel(v)} · {qtd} {qtd === 1 ? "resgate" : "resgates"}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: tema.via }} aria-hidden />
+                    <span className="truncate text-[15px] font-semibold">{v.title}</span>
+                  </span>
+                  <span className="mt-0.5 block text-[12.5px] text-text-tertiary">{discountLabel(v)} · {v.quantity_total - v.quantity_claimed} de {v.quantity_total} restantes</span>
                 </span>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${v.is_active ? "bg-[#DEF3E3] text-[#1F9E4C]" : "bg-surface-soft text-text-tertiary"}`}>{v.is_active ? "Ativo" : "Pausado"}</span>
               </button>
-              <button
-                onClick={() => toggleActive(v)}
-                className={`shrink-0 rounded-full px-2.5 py-1.5 text-[11px] font-semibold ${v.is_active ? "bg-[#DEF3E3] text-[#1F9E4C]" : "bg-surface-soft text-text-tertiary"}`}
-              >
-                {v.is_active ? "Ativo" : "Pausado"}
-              </button>
-              <Link href={`/admin/vouchers/${v.id}`} className="shrink-0 text-[16px] text-text-tertiary" aria-label="Abrir painel do voucher">›</Link>
+
+              <div className="grid grid-cols-3 gap-px bg-divider/60">
+                {[
+                  { n: e.total, t: "resgataram", c: "#4453D6" },
+                  { n: e.aguardando, t: "não usaram", c: "#C2650A" },
+                  { n: e.usaram, t: "já usaram", c: "#1F9E4C" },
+                ].map((k) => (
+                  <div key={k.t} className="bg-surface-white px-3 py-2.5 text-center">
+                    <p className="text-[19px] font-bold leading-none" style={{ color: k.c }}>{k.n}</p>
+                    <p className="mt-1 text-[11px] text-text-secondary">{k.t}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="px-3.5 pb-3 pt-2.5">
+                <div className="flex items-center justify-between text-[11.5px] text-text-tertiary">
+                  <span>{e.total === 0 ? "Ninguém resgatou ainda" : `${conv}% dos que resgataram já usaram`}</span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-soft">
+                  <div className="h-full rounded-full" style={{ width: `${conv}%`, backgroundColor: tema.via }} />
+                </div>
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  {linkBase && v.is_active && (
+                    <button type="button" onClick={() => setLinkAberto(linkAberto === v.id ? null : v.id)} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[12.5px] font-medium">
+                      {linkAberto === v.id ? "Fechar link" : "Link do voucher"}
+                    </button>
+                  )}
+                  <button type="button" onClick={() => toggleActive(v)} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[12.5px] font-medium">{v.is_active ? "Pausar" : "Ativar"}</button>
+                  <Link href={`/admin/vouchers/${v.id}`} className="ml-auto inline-flex min-h-[40px] items-center rounded-full px-3 text-[12.5px] font-medium text-text-secondary">Abrir painel →</Link>
+                </div>
+                {linkAberto === v.id && linkBase && <LinkDoVoucher url={`${linkBase}?v=${v.id}`} titulo={v.title} />}
+              </div>
             </div>
           );
         })}
-        {vouchers.length === 0 && (
-          <p className="text-[13px] text-text-tertiary">Nenhum voucher criado ainda.</p>
-        )}
+        {vouchers.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum voucher criado ainda.</p>}
       </div>
-      {voucherFilter !== "todos" && (
-        <button onClick={() => setVoucherFilter("todos")} className="mt-2 self-start text-[12.5px] font-medium text-text-secondary underline">
-          Mostrar resgates de todos os vouchers
-        </button>
-      )}
 
-      {/* Lista de resgates, com filtro por cupom, status e busca */}
-      <div className="mt-6 flex items-center justify-between">
-        <p className="text-[15px] font-semibold">
-          {voucherFilter === "todos" ? "Todos os resgates" : `Resgates: ${voucherById.get(voucherFilter)?.title ?? "voucher"}`}
-        </p>
+      {/* 3. Quem resgatou, cada resgate com o voucher identificado */}
+      <div className="mt-8 flex items-center justify-between">
+        <p className="text-[15px] font-semibold">Resgates</p>
         <span className="text-[13px] text-text-tertiary">{filtered.length}</span>
       </div>
+
+      {varios && (
+        <div className="no-scrollbar mt-2.5 flex gap-2 overflow-x-auto">
+          <button type="button" onClick={() => setVoucherFilter("todos")} className={`shrink-0 min-h-[40px] rounded-full px-4 text-[13px] font-medium ${voucherFilter === "todos" ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>Todos os vouchers</button>
+          {vouchers.map((v) => (
+            <button key={v.id} type="button" onClick={() => setVoucherFilter(v.id)} className={`shrink-0 min-h-[40px] max-w-[200px] truncate rounded-full px-4 text-[13px] font-medium ${voucherFilter === v.id ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{v.title}</button>
+          ))}
+        </div>
+      )}
 
       {redemptions.length > 0 && (
         <>
@@ -163,7 +217,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
               <button
                 key={f.v}
                 onClick={() => setStatusFilter(f.v)}
-                className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium ${statusFilter === f.v ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+                className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${statusFilter === f.v ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
               >
                 {f.t}
               </button>
@@ -176,18 +230,25 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
         {redemptions.length === 0 && (
           <div className="rounded-[22px] border border-dashed border-divider p-6 text-center">
             <p className="text-[14px] font-medium">Ninguém resgatou ainda</p>
-            <p className="mt-1 text-[13px] text-text-tertiary">Assim que alguém pegar um voucher na sua página, aparece aqui com nome e WhatsApp.</p>
+            <p className="mt-1 text-[13px] text-text-tertiary">
+              {vouchers.some((v) => v.is_active) && linkBase
+                ? "Compartilhe o link de um voucher para ter os primeiros resgates. Toque em Link do voucher no card dele."
+                : "Assim que alguém pegar um voucher na sua página, aparece aqui com nome e WhatsApp."}
+            </p>
           </div>
         )}
         {filtered.map((r) => {
           const v = voucherById.get(r.voucher_id);
+          const tema = voucherTheme(v?.color);
           return (
             <div key={r.id} className="rounded-[20px] border border-divider bg-surface-white p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-[14.5px] font-semibold">{r.visitor_name || "Sem nome"}</p>
-                  <p className="mt-0.5 truncate text-[12.5px] text-text-secondary">{v?.title ?? "Voucher"} · código {r.code}</p>
-                  <p className="mt-0.5 text-[12px] text-text-tertiary">{formatDate(r.created_at)}</p>
+                  <span className="mt-1 inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold text-white" style={{ background: tema.via }}>
+                    <span className="truncate">{v?.title ?? "Voucher"}</span>
+                  </span>
+                  <p className="mt-1.5 text-[12.5px] text-text-secondary">código <span className="font-semibold tracking-wide">{r.code}</span> · {formatDate(r.created_at)}</p>
                 </div>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${r.status === "redeemed" ? "bg-[#DEF3E3] text-[#1F9E4C]" : r.status === "expired" ? "bg-surface-soft text-text-tertiary" : "bg-[#FDEEDF] text-[#C2650A]"}`}>
                   {statusLabel(r.status)}
@@ -198,7 +259,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
                   href={whatsappLink(r.visitor_whatsapp, `Olá ${r.visitor_name || ""}! Sobre o voucher ${r.code}...`)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-[#DEF3E3] px-3 py-1.5 text-[12.5px] font-medium text-[#1F9E4C]"
+                  className="mt-2.5 inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#DEF3E3] px-3.5 text-[12.5px] font-medium text-[#1F9E4C]"
                 >
                   💬 {r.visitor_whatsapp}
                 </a>

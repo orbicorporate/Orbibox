@@ -21,6 +21,7 @@ export function RedeemCodeCard({
   vouchers,
   fixedVoucherId,
   fixedVoucherTitle,
+  resgates,
 }: {
   businessId: string;
   collapsible?: boolean;
@@ -28,6 +29,8 @@ export function RedeemCodeCard({
   vouchers?: { id: string; title: string }[];
   fixedVoucherId?: string;
   fixedVoucherTitle?: string;
+  /** Resgates conhecidos: com eles, ao digitar um código o card já mostra de qual voucher e de quem ele é. */
+  resgates?: { code: string; voucher_id: string; visitor_name: string | null; status: string }[];
 }) {
   const [code, setCode] = useState("");
   const [redeeming, setRedeeming] = useState(false);
@@ -39,6 +42,9 @@ export function RedeemCodeCard({
   const [selected, setSelected] = useState<string>(fixedVoucherId ?? "todos");
   const activeVoucherId = fixedVoucherId ?? (selected === "todos" ? undefined : selected);
   const selectedTitle = fixedVoucherTitle ?? vouchers?.find((v) => v.id === selected)?.title;
+
+  const achado = code.trim().length >= 4 ? resgates?.find((r) => r.code.toUpperCase() === code.trim().toUpperCase()) : undefined;
+  const tituloAchado = achado ? vouchers?.find((v) => v.id === achado.voucher_id)?.title ?? fixedVoucherTitle : undefined;
 
   async function redeemCode(raw: string) {
     const value = raw.trim();
@@ -155,6 +161,14 @@ export function RedeemCodeCard({
               {redeeming ? "Validando…" : <>Confirmar <span aria-hidden>→</span></>}
             </button>
           </form>
+
+          {achado && !result && (
+            <p className="mt-3 rounded-2xl bg-surface-soft px-4 py-3 text-[13.5px] leading-relaxed">
+              Este código é do voucher <span className="font-semibold">{tituloAchado ?? "da sua loja"}</span>
+              {achado.visitor_name ? <>, de <span className="font-semibold">{achado.visitor_name}</span></> : null}.{" "}
+              {achado.status === "redeemed" ? <span className="font-semibold text-[#B4321F]">Já foi usado.</span> : achado.status === "expired" ? <span className="font-semibold text-[#B4321F]">Expirou.</span> : <span className="font-semibold text-[#1F9E4C]">Pode confirmar.</span>}
+            </p>
+          )}
 
           {result && (
             <div className={`mt-3 rounded-2xl px-4 py-3 text-[13.5px] font-medium leading-relaxed ${result.ok ? "bg-[#DEF3E3] text-[#1F9E4C]" : "bg-red-50 text-red-600"}`}>
