@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { LogoApp } from "@/components/delivery/LogoApp";
+import { appPorId, type AppDeliveryId } from "@/lib/delivery";
 
 type ItemInfo = { title: string; image_url: string | null; brand_label: string | null };
 
@@ -12,6 +14,7 @@ const TIPOS = [
   { kind: "whatsapp", label: "Cliques que levaram para o WhatsApp", nota: "iniciaram conversa", cor: "#1F7A3D", fundo: "#DEF3E3", icon: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" },
   { kind: "email", label: "Cliques que levaram para email", nota: "tocaram em enviar e-mail", cor: "#C2650A", fundo: "#FDEEDF", icon: "M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 6l-10 7L2 6" },
   { kind: "ligar", label: "Ligações", nota: "tocaram em ligar", cor: "#B0463C", fundo: "#FBE6E3", icon: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" },
+  { kind: "cardapio", label: "Aberturas do cardápio", nota: "viram o cardápio completo", cor: "#C2650A", fundo: "#FDEEDF", icon: "M7 3v8a2 2 0 0 0 2 2v8M7 3v5M11 3v5M9 3v5M16 21V3c-2 1.5-3 4-3 7 0 2 1 3 3 3" },
   { kind: "zara", label: "Conversas com a Orbi", nota: "pediram ajuda da IA", cor: "#B0309E", fundo: "#FBE4F6", icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
 ] as const;
 
@@ -24,6 +27,7 @@ export function PulseDetails({
   topItems,
   paginas,
   slug,
+  delivery = [],
 }: {
   porTipo: Record<string, number>;
   porTipoItem: Record<string, Record<string, number>>;
@@ -31,11 +35,15 @@ export function PulseDetails({
   topItems: { id: string; count: number }[];
   paginas: PaginaVisitada[];
   slug: string;
+  /** Toques por app de delivery (kind delivery_ifood, delivery_rappi...). */
+  delivery?: { id: string; count: number }[];
 }) {
   const [open, setOpen] = useState<string | null>(null);
   // Começam fechadas: são listas longas que empurram o resto pra baixo.
   const [paginasAberto, setPaginasAberto] = useState(false);
   const [clicadosAberto, setClicadosAberto] = useState(false);
+  const [deliveryAberto, setDeliveryAberto] = useState(false);
+  const totalDelivery = delivery.reduce((n, d) => n + d.count, 0);
 
   return (
     <>
@@ -111,6 +119,40 @@ export function PulseDetails({
           );
         })}
       </div>
+
+      {totalDelivery > 0 && (
+        <div className="mt-4 rounded-[22px] border border-divider bg-surface-white">
+          <button type="button" onClick={() => setDeliveryAberto((v) => !v)} className="flex w-full items-center gap-3 p-4 text-left">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FDEEDF] text-[#C2650A]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8h12l-1 11H7L6 8Z" /><path d="M9 8V7a3 3 0 0 1 6 0v1" /></svg>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-medium">Toques nos apps de delivery</span>
+              <span className="block text-[12px] text-text-tertiary">quantos foram pedir em cada app</span>
+            </span>
+            <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{totalDelivery.toLocaleString("pt-BR")}</span>
+            <span className={`text-[12px] text-text-tertiary transition-transform ${deliveryAberto ? "rotate-90" : ""}`}>›</span>
+          </button>
+          {deliveryAberto && (
+            <div className="flex flex-col gap-2 px-4 pb-4">
+              {delivery.map((d) => {
+                const app = appPorId(d.id);
+                const pct = Math.round((d.count / totalDelivery) * 100);
+                return (
+                  <div key={d.id} className="flex items-center gap-3 rounded-2xl bg-surface-soft px-3 py-2.5">
+                    {app ? <LogoApp id={d.id as AppDeliveryId} tamanho={34} /> : <span className="h-[34px] w-[34px] rounded-[10px] bg-divider" />}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13.5px] font-medium">{app?.nome ?? d.id}</p>
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-on-background" style={{ width: `${pct}%` }} /></div>
+                    </div>
+                    <span className="shrink-0 text-[13px] text-text-secondary">{d.count}× · {pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {paginas.length > 0 && (
         <div className="mt-6">
