@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
+import { PerguntaRede } from "@/components/rede/PerguntaRede";
 import { conversaoPorId, type ConversaoId, type ObjetivoId } from "@/lib/conversao";
 
 export type ProntoDados = {
@@ -166,6 +167,8 @@ export function Pronto({
             </ShareOrbiboxButton>
           </div>
         </div>
+
+        <PerguntaRede chave={`orbibox:pergunta-rede:${d.slug}`} aoTenho={() => onPainel("/admin/rede")} />
 
         <button type="button" onClick={() => onPainel()} className="orbi-gradient mt-1 w-full rounded-full py-3.5 text-[15px] font-medium text-on-background transition-transform active:scale-[0.98]">
           Ir para o meu painel →

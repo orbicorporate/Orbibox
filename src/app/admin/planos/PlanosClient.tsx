@@ -22,7 +22,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 // Features detalhadas por plano, mais rico que só o banco, pra vender melhor.
-const FEATURES: Record<string, { label: string; highlight?: boolean }[]> = {
+const FEATURES: Record<string, { label: string; highlight?: boolean; nota?: string }[]> = {
   titanio: [
     { label: "1 catálogo + 1 página de negócio" },
     { label: "Botões ilimitados (WhatsApp, mapa, links…)" },
@@ -37,7 +37,7 @@ const FEATURES: Record<string, { label: string; highlight?: boolean }[]> = {
     { label: "Recomenda produtos no chat", highlight: true },
     { label: "Captura contatos automaticamente", highlight: true },
     { label: "Vouchers com código único", highlight: true },
-    { label: "Rede de lojas com código", highlight: true },
+    { label: "Rede de lojas com código", highlight: true, nota: "Franquia ou várias lojas? Acompanhe todas num painel só." },
     { label: "Vários administradores" },
   ],
 };
@@ -201,7 +201,10 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
                 {features.map((f, i) => (
                   <li key={i} className="flex items-start gap-2.5">
                     <Check highlight={f.highlight} />
-                    <span className={`text-[14px] leading-snug ${f.highlight ? "font-medium text-on-background" : "text-text-secondary"}`}>{f.label}</span>
+                    <span className="min-w-0">
+                      <span className={`block text-[14px] leading-snug ${f.highlight ? "font-medium text-on-background" : "text-text-secondary"}`}>{f.label}</span>
+                      {f.nota && <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">{f.nota}</span>}
+                    </span>
                   </li>
                 ))}
               </ul>

@@ -108,6 +108,7 @@ export default async function HojePage() {
       numeros={numeros}
       orbiColors={orbiColors}
       progressoPct={progress.pct}
+      perguntaRede={b.owner_id === user!.id && acesso.hasAiChat}
       mostrarConvite={!acesso.subscription || acesso.subscription.status === "trialing"}
       passoFaltando={insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
       pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))}

@@ -260,18 +260,14 @@ export function AppHeader({
                 </Link>
               </div>
 
-              {/* Prévia: painel de rede para quem tem vários negócios ou franquias */}
+              {/* Rede de lojas: linha simples, visível mas sem competir com as ações do dia a dia */}
               {podeRede && (
               <Link
                 href="/admin/rede"
                 onClick={() => setMenuOpen(false)}
-                className="mt-2 flex items-center gap-3 rounded-[20px] bg-white px-4 py-3 ring-1 ring-black/[0.07] transition-transform active:scale-[.98]"
+                className="mt-2 flex min-h-[48px] items-center justify-between gap-3 rounded-full px-4 text-[14px] text-text-secondary ring-1 ring-black/[0.07] transition-transform active:scale-[.98]"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full orbi-gradient text-[15px] text-on-background" aria-hidden>◎</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[14.5px] leading-tight">Rede de Orbibox</span>
-                  <span className="block text-[12.5px] leading-snug text-text-tertiary">Tem uma rede de lojas? Adicione cada loja pelo código dela</span>
-                </span>
+                <span>Rede de lojas</span>
                 <span className="text-text-tertiary" aria-hidden>→</span>
               </Link>
               )}
