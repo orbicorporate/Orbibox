@@ -45,7 +45,7 @@ export function emailResumoSemanal({ nome, resumo, base, businessId }: { nome: s
 <div style="background:#111318;border-radius:26px;padding:24px;color:#fff">
 <p style="margin:0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55)">Visitas nos últimos 7 dias</p>
 <p style="margin:8px 0 0;font-size:56px;font-weight:600;line-height:1;letter-spacing:-.02em">${nf(resumo.visitas)}</p>
-<p style="margin:8px 0 0;font-size:15px;line-height:1.4;color:rgba(255,255,255,.8)">${esc(resumo.frases[0] ?? "")}</p>
+<p style="margin:8px 0 0;font-size:15px;line-height:1.4;color:rgba(255,255,255,.8)">${resumo.visitas === 0 ? esc(resumo.frases[0] ?? "") : resumo.visitas === 1 ? "pessoa abriu seu link." : "pessoas abriram seu link."}</p>
 ${variacao}
 </div>
 
