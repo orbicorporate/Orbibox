@@ -30,7 +30,7 @@ import { CartaoItem } from "./CartaoItem";
 import { AdicionarBox, type NovoBox } from "./AdicionarBox";
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
-import { BotaoSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
 import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
@@ -676,9 +676,6 @@ export function VisitorExperience({
           onSaved={(url) => { setLogoAtual(url); setEditandoLogo(false); }}
         />
       )}
-      {isOwner && intent === null && !previewMode && (
-        <div className="fixed right-4 top-[60px] z-20"><BotaoSalvar /></div>
-      )}
       {iconeBox && showOwnerControls && (() => {
         const alvo = todasOpcoes.find((o) => o.key === iconeBox);
         if (!alvo) return null;
@@ -908,7 +905,7 @@ export function VisitorExperience({
                 sessionId={sessionId}
                 onVerTudo={(cat) => { setCategoriaInicial(cat); chooseIntent("comprar"); }}
                 ordemCategorias={business.vitrine_categories ?? []}
-                formato={boxFormato?.formatoItens ?? "destaque"}
+                formato={boxFormato?.formatoItens ?? "vitrine"}
                 onFormato={boxFormato ? escolherFormato : undefined}
                 extras={extrasVitrine}
                 podeEditar={showOwnerControls}

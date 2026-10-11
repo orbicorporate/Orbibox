@@ -1712,6 +1712,7 @@ function ItemCard({
 
             <div data-tour="item-formato" data-guia="formato-item">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Vale também na Home, quando o formato dos itens lá estiver em “Igual à vitrine”.</p>
               <div className="mt-2 flex gap-2">
                 {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {
                   const ativo = size === s;

@@ -6,7 +6,7 @@ import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSoc
 import { groupByCategory } from "@/lib/showcase";
 import { CartaoItem, type ItemCartao } from "./CartaoItem";
 import { useArrastarOrdem } from "./useArrastarOrdem";
-import { ORBI_SPHERE_COLORS } from "@/lib/showcase";
+import { ORBI_SPHERE_COLORS, sizeOf } from "@/lib/showcase";
 
 export type BolinhaVitrine = {
   key: string;
@@ -35,9 +35,10 @@ const BOTOES: Record<BotaoPrincipal, { titulo: string; texto: string }> = {
   whatsapp: { titulo: "WhatsApp", texto: "Abre a conversa com você, sem intermediário." },
 };
 
-export type FormatoItens = "destaque" | "grade" | "carrossel";
+export type FormatoItens = "vitrine" | "destaque" | "grade" | "carrossel";
 
 const FORMATOS: { v: FormatoItens; titulo: string; texto: string }[] = [
+  { v: "vitrine", titulo: "Igual à vitrine", texto: "Cada item no tamanho que você escolheu no Catálogo (Grande, Largo, Pequeno ou Alto)." },
   { v: "destaque", titulo: "Destaque e grade", texto: "O primeiro item grande, os outros em duas colunas." },
   { v: "grade", titulo: "Grade", texto: "Todos do mesmo tamanho, duas colunas." },
   { v: "carrossel", titulo: "Carrossel", texto: "Uma linha que rola de lado. Ocupa pouca altura." },
@@ -302,6 +303,9 @@ export function HomeVitrine({
             <h2 className="font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
             <div className="flex items-center gap-1">
               {podeEditar && onFormato && (
+                <span className="text-[12px] text-text-tertiary">{FORMATOS.find((f) => f.v === formato)?.titulo}</span>
+              )}
+              {podeEditar && onFormato && (
                 <button type="button" onClick={() => setEditandoFormato(true)} aria-label="Editar formato dos itens" className="flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95">✎</button>
               )}
               <button type="button" onClick={() => onVerTudo(ativo?.name ?? null)} className="min-h-[36px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-4">
@@ -328,7 +332,19 @@ export function HomeVitrine({
               })}
             </div>
           )}
-          {formato === "carrossel" ? (
+          {formato === "vitrine" ? (
+            <ul className="relative mt-3 grid grid-flow-dense grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+              {mostrarNaOrdem.map((i) => {
+                const tam = sizeOf(i.layout_size);
+                const largo = tam === "destaque" || tam === "largo";
+                return (
+                  <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`transition-transform duration-150 ${largo ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
+                    <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
+                  </li>
+                );
+              })}
+            </ul>
+          ) : formato === "carrossel" ? (
             <ul data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2">
               {mostrarNaOrdem.map((i) => (
                 <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
