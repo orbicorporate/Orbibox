@@ -9,7 +9,7 @@ function discountLabel(v: { discount_type?: string; discount_value?: number }) {
   return descontoCurto(v);
 }
 
-/** Card "Resgatar código" no design da referência. Usado no topo da tela de
+/** Card "Confirmar código de voucher" no design da referência. Usado no topo da tela de
  * Vouchers (recolhível) e dentro dos painéis. Valida qualquer voucher ativo do
  * negócio, por texto digitado ou pelo QR escaneado. Quando recebe a lista
  * de vouchers, mostra um seletor pra deixar explícito qual está sendo
@@ -88,11 +88,11 @@ export function RedeemCodeCard({
           </svg>
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[16px] font-bold">Resgatar código</span>
+          <span className="block text-[16px] font-bold">Confirmar código de voucher</span>
           {(!collapsible || open) ? (
-            <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">Cliente chegou com o voucher? Digite ou escaneie pra validar.</span>
+            <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">Cliente chegou com o voucher? Digite ou escaneie o código pra confirmar.</span>
           ) : (
-            <span className="mt-0.5 block text-[13px] leading-snug text-text-tertiary">Toque pra validar um voucher na hora.</span>
+            <span className="mt-0.5 block text-[13px] leading-snug text-text-tertiary">Toque pra conferir o código do cliente na hora.</span>
           )}
         </span>
         {collapsible && (

@@ -43,7 +43,7 @@ export const AJUDAS: Ajuda[] = [
     passos: ["Em Vouchers, toque em + Novo voucher.", "Escolha o desconto, quantos vão existir e o prazo pra usar.", "Ligue o botão Vouchers na sua página pra ele aparecer."],
     acao: { rotulo: "Criar voucher agora", href: "/admin/vouchers?novo=1" } },
   { id: "resgate", pergunta: "Como confiro o código de um voucher?", palavras: ["validar", "conferir código", "codigo", "resgate", "qr"], telas: ["/admin/vouchers"],
-    passos: ["O cliente mostra o código ou o QR no balcão.", "Em Vouchers, use Resgatar código: digite ou escaneie o QR.", "Cada código vale uma vez só, então não tem risco de usar duas vezes."],
+    passos: ["O cliente mostra o código ou o QR no balcão.", "Em Vouchers, use Confirmar código de voucher: digite ou escaneie o QR.", "Cada código vale uma vez só, então não tem risco de usar duas vezes."],
     acao: { rotulo: "Abrir Vouchers", href: "/admin/vouchers" } },
   { id: "gift", pergunta: "Como funciona o vale-presente?", palavras: ["gift", "presente", "vale-presente", "vale presente", "presentear"], telas: ["/admin/gift"],
     passos: ["Em Gift Cards, ligue o vale-presente e escolha a arte.", "O cliente monta o presente na sua página e fala com você no WhatsApp pra pagar.", "Quando receber, marque como pago e a arte é liberada."],
