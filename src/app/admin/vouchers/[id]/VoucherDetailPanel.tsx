@@ -28,7 +28,7 @@ function formatDate(iso: string) {
 
 type Resumo = { id: string; title: string; color: string | null; image_url: string | null; discount_type: string; discount_value: number | null; is_active: boolean };
 
-export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, todos }: { voucher: Voucher; initialRedemptions: Redemption[]; orbiColors?: string[] | null; todos: Resumo[] }) {
+export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, todos, abrirEdicao = false }: { voucher: Voucher; initialRedemptions: Redemption[]; orbiColors?: string[] | null; todos: Resumo[]; abrirEdicao?: boolean }) {
   const supabase = createClient();
   const router = { push: (href: string) => { window.location.href = href; } };
   const { confirm, DialogRenderer } = useDialogs();
@@ -67,7 +67,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
     if (data) setV(data as Voucher);
   }
 
-  const [editando, setEditando] = useState(false);
+  const [editando, setEditando] = useState(abrirEdicao);
   // Com resgates, o desconto trava (mudaria o que a pessoa já tem na mão).
   const travado = v.quantity_claimed > 0 || redemptions.length > 0;
 

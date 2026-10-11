@@ -210,7 +210,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             <span className="min-w-0 flex-1">
               <span className="block text-[16.5px] font-bold leading-tight">Seus vouchers</span>
               <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">
-                {vouchers.length} {vouchers.length === 1 ? "voucher criado" : "vouchers criados"}. Toque pra gerenciar e editar.
+                {vouchers.length} {vouchers.length === 1 ? "voucher criado" : "vouchers criados"}. Toque pra ver, editar e divulgar.
               </span>
             </span>
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft transition-transform ${listaAberta ? "rotate-180" : ""}`}>
@@ -293,9 +293,14 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                 📊 Ver painel completo{meusResgates.length > 0 ? ` (${meusResgates.length})` : ""}
               </Link>
 
-              <button onClick={() => deleteVoucher(v)} className="mt-3 text-[13px] text-red-600">
-                Excluir
-              </button>
+              <div className="mt-3 flex items-center gap-2">
+                <Link href={`/admin/vouchers/${v.id}?editar=1`} className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-surface-soft text-[14px] font-semibold">
+                  Editar voucher
+                </Link>
+                <button onClick={() => deleteVoucher(v)} className="min-h-[44px] rounded-full px-4 text-[13px] font-medium text-red-600">
+                  Excluir
+                </button>
+              </div>
             </div>
           );
         })}

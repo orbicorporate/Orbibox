@@ -3,8 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { VoucherDetailPanel } from "./VoucherDetailPanel";
 
-export default async function VoucherDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function VoucherDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ editar?: string }> }) {
   const { id } = await params;
+  const { editar } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
@@ -36,5 +37,5 @@ export default async function VoucherDetailPage({ params }: { params: Promise<{ 
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
 
-  return <VoucherDetailPanel todos={todos ?? []} voucher={voucher} initialRedemptions={redemptions ?? []} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />;
+  return <VoucherDetailPanel abrirEdicao={editar === "1"} todos={todos ?? []} voucher={voucher} initialRedemptions={redemptions ?? []} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />;
 }
