@@ -7,18 +7,14 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { whatsappLink } from "@/lib/track";
 import { RedeemCodeCard } from "../RedeemCodeCard";
 import { VoucherPlanoOrbi } from "../VoucherPlanoOrbi";
-import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
-import { descontoCurto } from "@/lib/voucherDesconto";
 import { EditarVoucherSheet } from "./EditarVoucherSheet";
+import { VoucherQuadrado } from "@/components/mobile/VoucherQuadrado";
+import { descontoGrande } from "@/lib/voucherDesconto";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
-
-function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
-  return descontoCurto(v);
-}
 
 function statusLabel(status: string) {
   if (status === "redeemed") return "Já usou";
@@ -30,7 +26,9 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
-export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: { voucher: Voucher; initialRedemptions: Redemption[]; orbiColors?: string[] | null }) {
+type Resumo = { id: string; title: string; color: string | null; image_url: string | null; discount_type: string; discount_value: number | null; is_active: boolean };
+
+export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, todos }: { voucher: Voucher; initialRedemptions: Redemption[]; orbiColors?: string[] | null; todos: Resumo[] }) {
   const supabase = createClient();
   const router = { push: (href: string) => { window.location.href = href; } };
   const { confirm, DialogRenderer } = useDialogs();
@@ -82,46 +80,53 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
   return (
     <div className="flex flex-col pb-4">
       <DialogRenderer />
-      <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Todos os vouchers</Link>
+      <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Gerenciar vouchers</Link>
 
-      {/* Cabeçalho, mesmo vermelho vivo com brilho da oferta real */}
-      <div className="relative mt-4">
-        <div aria-hidden className="absolute inset-0 -z-10 rounded-[28px] opacity-35 blur-2xl" style={{ background: voucherTheme(v.color).via }} />
-        <div className="relative overflow-hidden rounded-[28px] p-6 text-white" style={{ background: voucherGradient(v.color), boxShadow: `0 14px 38px ${voucherTheme(v.color).glow}` }}>
-          <VoucherLines />
-          <div className="relative flex items-start justify-between gap-3">
-            <button type="button" onClick={() => setEditando(true)} aria-label={v.image_url ? "Trocar foto do voucher" : "Adicionar foto do voucher"} className="shrink-0">
-              {v.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={v.image_url} alt="" className="h-16 w-16 rounded-2xl object-cover ring-1 ring-white/30" />
-              ) : (
-                <span className="flex h-16 w-16 flex-col items-center justify-center rounded-2xl border border-dashed border-white/50 text-[11px] font-medium text-white/85"><span className="text-[18px] leading-none">+</span>foto</span>
-              )}
-            </button>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wide opacity-85">🎟️ Painel do voucher</p>
-              <p className="mt-1.5 font-[family-name:var(--font-manrope)] text-[24px] font-bold leading-tight">{v.title}</p>
-              <p className="mt-0.5 text-[15px] opacity-90">{discountLabel(v)}</p>
+      {/* Seus vouchers: todos numerados, o aberto fica em destaque. */}
+      <p className="mt-5 text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Seus vouchers</p>
+      <div className="no-scrollbar -mx-6 mt-2.5 flex gap-3 overflow-x-auto px-6 pb-2">
+        {todos.map((t, n) => {
+          const atual = t.id === v.id;
+          const tema = voucherTheme(t.color as never);
+          return (
+            <Link key={t.id} href={`/admin/vouchers/${t.id}`} aria-current={atual ? "page" : undefined} className={`flex w-[84px] shrink-0 flex-col items-center gap-1.5 ${atual ? "" : "opacity-70"}`}>
+              <span className={`relative flex h-[84px] w-[84px] items-center justify-center overflow-hidden rounded-[20px] text-white ${atual ? "ring-[3px] ring-on-background ring-offset-2 ring-offset-transparent" : ""}`} style={{ background: voucherGradient(t.color as never), boxShadow: `0 6px 16px ${tema.glow}` }}>
+                {t.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={t.image_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="px-1 text-center font-[family-name:var(--font-manrope)] text-[15px] font-extrabold leading-tight">{t.discount_type === "gift" ? "Brinde" : descontoGrande(t)}</span>
+                )}
+                <span className="absolute left-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-black/55 px-1 text-[11px] font-bold">{n + 1}</span>
+              </span>
+              <span className="w-full truncate text-center text-[11.5px] font-medium">{t.title}</span>
+            </Link>
+          );
+        })}
+        <Link href="/admin/vouchers?novo=1" className="flex w-[84px] shrink-0 flex-col items-center gap-1.5 text-text-secondary">
+          <span className="flex h-[84px] w-[84px] items-center justify-center rounded-[20px] border border-dashed border-divider text-[26px]">+</span>
+          <span className="text-[11.5px] font-medium">Novo</span>
+        </Link>
+      </div>
+
+      {/* O voucher aberto, igual ao da galeria da sua página, com o painel ao lado. */}
+      <div className="mt-4 flex items-start gap-4">
+        <VoucherQuadrado v={v} />
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <p className="text-[12.5px] text-text-tertiary">Assim ele aparece na sua página.</p>
+          <button
+            onClick={toggleActive}
+            className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-white px-3.5 py-2 text-[13px] font-semibold ring-1 ring-black/[0.08]"
+          >
+            <span className={`inline-block h-2 w-2 rounded-full ${v.is_active ? "bg-[#1F9E4C]" : "bg-text-tertiary"}`} />
+            {v.is_active ? "Ativo" : "Pausado"}
+          </button>
+          <button type="button" onClick={() => setEditando(true)} className="min-h-[44px] w-fit rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white">Editar voucher</button>
+          <div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-surface-soft">
+              <div className="h-full rounded-full bg-on-background" style={{ width: `${pct}%` }} />
             </div>
-            <button
-              onClick={toggleActive}
-              className="shrink-0 rounded-full bg-white/20 px-3 py-1.5 text-[12px] font-semibold backdrop-blur-sm"
-            >
-              <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${v.is_active ? "bg-white" : "bg-white/50"}`} />
-              {v.is_active ? "Ativo" : "Pausado"}
-            </button>
-          </div>
-          <div className="relative mt-4 flex gap-2">
-            <button type="button" onClick={() => setEditando(true)} className="min-h-[40px] rounded-full bg-white px-4 text-[13px] font-semibold" style={{ color: voucherTheme(v.color).via }}>Editar voucher</button>
-          </div>
-          {v.description?.trim() && (
-            <p className="mt-3 rounded-2xl bg-white/15 px-3.5 py-2.5 text-[13px] leading-relaxed opacity-95">{v.description}</p>
-          )}
-          <div className="mt-4">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-white/20">
-              <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
-            </div>
-            <p className="mt-1.5 text-[12px] opacity-85">{pct}% do estoque já saiu</p>
+            <p className="mt-1.5 text-[12px] text-text-secondary">{pct}% do estoque já saiu</p>
           </div>
         </div>
       </div>

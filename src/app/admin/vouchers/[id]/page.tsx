@@ -30,5 +30,11 @@ export default async function VoucherDetailPage({ params }: { params: Promise<{ 
     .eq("voucher_id", id)
     .order("created_at", { ascending: false });
 
-  return <VoucherDetailPanel voucher={voucher} initialRedemptions={redemptions ?? []} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />;
+  const { data: todos } = await supabase
+    .from("vouchers")
+    .select("id, title, color, image_url, discount_type, discount_value, is_active")
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: false });
+
+  return <VoucherDetailPanel todos={todos ?? []} voucher={voucher} initialRedemptions={redemptions ?? []} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />;
 }
