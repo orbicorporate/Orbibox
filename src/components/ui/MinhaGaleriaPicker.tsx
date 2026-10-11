@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { createClient } from "@/lib/supabase/client";
+import { clienteBanco, sincronizarBiblioteca, urlDaImagem, type Categoria } from "@/lib/bancoImagens";
 
-type Item = { nome: string; url: string };
+type Item = { id: string; nome: string; url: string; category_id: string | null };
 
 /**
- * Folha com todas as imagens que já foram enviadas para este negócio, em
- * miniaturas pequenas. A pessoa toca numa e ela é usada na hora, sem enviar de novo.
+ * Folha com todas as imagens do banco de imagens da marca, em miniaturas
+ * pequenas e com o filtro por categoria que a própria pessoa criou. A pessoa
+ * toca numa e ela é usada na hora, sem enviar de novo.
  */
 export function MinhaGaleriaPicker({
   businessId,
@@ -21,34 +22,40 @@ export function MinhaGaleriaPicker({
   onEscolher: (url: string) => void;
   onFechar: () => void;
 }) {
+  const supabase = useMemo(() => clienteBanco(), []);
   const [itens, setItens] = useState<Item[] | null>(null);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [filtro, setFiltro] = useState<string>("todas");
   const [erro, setErro] = useState<string | null>(null);
   const [quebradas, setQuebradas] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let vivo = true;
-    const supabase = createClient();
-    supabase.storage
-      .from("box-images")
-      .list(businessId, { limit: 300, sortBy: { column: "created_at", order: "desc" } })
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        await sincronizarBiblioteca(supabase, businessId);
+        const [{ data: cats }, { data: imgs, error }] = await Promise.all([
+          supabase.from("image_categories").select("id, name, position").eq("business_id", businessId).order("position"),
+          supabase.from("image_library").select("id, path, category_id").eq("business_id", businessId).order("created_at", { ascending: false }).limit(1000),
+        ]);
         if (!vivo) return;
-        if (error) {
-          setErro("Não consegui abrir sua galeria agora.");
-          setItens([]);
-          return;
-        }
-        const imagens = (data ?? [])
-          .filter((o) => o.name && /\.(jpe?g|png|webp|gif|avif)$/i.test(o.name))
-          .map((o) => ({ nome: o.name, url: supabase.storage.from("box-images").getPublicUrl(`${businessId}/${o.name}`).data.publicUrl }));
-        setItens(imagens);
-      });
+        if (error) throw error;
+        setCategorias((cats as Categoria[]) ?? []);
+        setItens(((imgs as { id: string; path: string; category_id: string | null }[]) ?? []).map((o) => ({ id: o.id, nome: o.path, category_id: o.category_id, url: urlDaImagem(supabase, o.path) })));
+      } catch {
+        if (!vivo) return;
+        setErro("Não consegui abrir sua galeria agora.");
+        setItens([]);
+      }
+    })();
     return () => {
       vivo = false;
     };
-  }, [businessId]);
+  }, [supabase, businessId]);
 
-  const visiveis = (itens ?? []).filter((i) => !quebradas.has(i.nome));
+  const visiveis = (itens ?? []).filter((i) => !quebradas.has(i.nome) && (filtro === "todas" ? true : filtro === "sem" ? !i.category_id : i.category_id === filtro));
+  const temSem = (itens ?? []).some((i) => !i.category_id);
+  const chip = (ativo: boolean) => `shrink-0 min-h-[36px] rounded-full px-3.5 text-[13px] font-medium ${ativo ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`;
 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 sm:items-center" onClick={onFechar}>
@@ -56,12 +63,22 @@ export function MinhaGaleriaPicker({
         <div className="flex items-start justify-between gap-2 px-5 pt-5">
           <div>
             <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold">Minha galeria</p>
-            <p className="text-[12.5px] text-text-tertiary">Todas as imagens que você já enviou. Toque numa pra usar.</p>
+            <p className="text-[12.5px] text-text-tertiary">Seu banco de imagens. Toque numa pra usar.</p>
           </div>
           <button onClick={onFechar} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[14px]" aria-label="Fechar">
             ✕
           </button>
         </div>
+
+        {categorias.length > 0 && (
+          <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto px-5">
+            <button type="button" onClick={() => setFiltro("todas")} className={chip(filtro === "todas")}>Todas</button>
+            {categorias.map((c) => (
+              <button key={c.id} type="button" onClick={() => setFiltro(c.id)} className={chip(filtro === c.id)}>{c.name}</button>
+            ))}
+            {temSem && <button type="button" onClick={() => setFiltro("sem")} className={chip(filtro === "sem")}>Sem categoria</button>}
+          </div>
+        )}
 
         <div className="mt-4 min-h-0 flex-1 overflow-y-auto px-5 pb-6">
           {itens === null && (
@@ -75,7 +92,7 @@ export function MinhaGaleriaPicker({
           {itens && !erro && visiveis.length === 0 && (
             <div className="rounded-[20px] border border-dashed border-divider p-6 text-center">
               <p className="text-[14px] font-medium">Sua galeria está vazia</p>
-              <p className="mt-1 text-[13px] text-text-tertiary">As fotos que você enviar aparecem aqui para usar de novo.</p>
+              <p className="mt-1 text-[13px] text-text-tertiary">{filtro === "todas" ? "As fotos que você enviar aparecem aqui para usar de novo." : "Nenhuma foto nesta categoria ainda."}</p>
             </div>
           )}
           {visiveis.length > 0 && (
