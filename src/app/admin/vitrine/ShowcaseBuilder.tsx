@@ -1,5 +1,7 @@
 "use client";
 
+import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
+
 import { parsePreco, precoParaCampo } from "@/lib/preco";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import Link from "next/link";
@@ -444,10 +446,6 @@ export function ShowcaseBuilder({
   const allCategoryNames = Array.from(new Set([...categories, ...itemCategoryNames]));
   const uncategorized = ordered.filter((i) => !i.brand_label?.trim());
   // Mesma ordem da página pública: sem categoria no topo, depois as categorias.
-  const sections = [
-    ...(uncategorized.length > 0 ? [{ name: "Destaques", items: uncategorized }] : []),
-    ...allCategoryNames.map((name) => ({ name, items: ordered.filter((i) => (i.brand_label?.trim() ?? "") === name) })),
-  ];
 
   function patch(id: string, fields: Partial<Item>) {
     setItems((p) => p.map((i) => (i.id === id ? { ...i, ...fields } : i)));
@@ -485,6 +483,37 @@ export function ShowcaseBuilder({
     [next[idx], next[alvo]] = [next[alvo], next[idx]];
     await saveCategories(next);
   }
+
+  // Depois de arrastar: dentro de cada categoria, os itens ocupam as mesmas
+  // posições de antes, só que na ordem nova.
+  async function reordenarItens(ids: string[]) {
+    const grupos = new Map<string, Item[]>();
+    for (const id of ids) {
+      const it = ordered.find((x) => x.id === id);
+      if (!it) continue;
+      const cat = it.brand_label?.trim() || "";
+      grupos.set(cat, [...(grupos.get(cat) ?? []), it]);
+    }
+    const mudancas: { id: string; position: number }[] = [];
+    grupos.forEach((lista) => {
+      const posicoes = lista.map((x) => x.position).sort((a, b) => a - b);
+      lista.forEach((x, n) => { if (x.position !== posicoes[n]) mudancas.push({ id: x.id, position: posicoes[n] }); });
+    });
+    if (mudancas.length === 0) return;
+    snapshot();
+    mudancas.forEach((m) => patch(m.id, { position: m.position }));
+    await Promise.all(mudancas.map((m) => supabase.from("content_items").update({ position: m.position }).eq("id", m.id)));
+  }
+
+  // Segurar e arrastar: categorias (pelo título) e itens (pelo card).
+  const arrastoCats = useArrastarOrdem(allCategoryNames, true, (nova) => { snapshot(); saveCategories(nova); });
+  const arrastoItens = useArrastarOrdem(ordered.map((i) => i.id), true, (ids) => reordenarItens(ids));
+  const ordemItem = new Map(arrastoItens.ordem.map((id, n) => [id, n]));
+  const porOrdem = (lista: Item[]) => [...lista].sort((a, b) => (ordemItem.get(a.id) ?? 0) - (ordemItem.get(b.id) ?? 0));
+  const sections = [
+    ...(uncategorized.length > 0 ? [{ name: "Destaques", items: porOrdem(uncategorized) }] : []),
+    ...arrastoCats.ordem.map((name) => ({ name, items: porOrdem(ordered.filter((i) => (i.brand_label?.trim() ?? "") === name)) })),
+  ];
 
   // Move dentro da própria seção (categoria), que é o que a pessoa vê.
   async function move(item: Item, dir: -1 | 1) {
@@ -956,7 +985,11 @@ export function ShowcaseBuilder({
                 categoria; com categorias, aparecem como "Sem categoria", sem
                 renomear nem excluir (não é uma categoria de verdade). */}
             {!(isDestaques && realCount === 0) && (
-            <div className="mb-3 flex items-center justify-between gap-2">
+            <div
+              ref={isDestaques ? undefined : arrastoCats.ref(sec.name)}
+              {...(isDestaques ? {} : arrastoCats.props(sec.name))}
+              className={`mb-3 flex items-center justify-between gap-2 rounded-2xl transition-shadow ${arrastoCats.pegado === sec.name ? "bg-surface-soft px-2 shadow-lg" : ""}`}
+            >
               {isDestaques ? (
                 <p className="text-[13px] text-text-tertiary">Sem categoria</p>
               ) : (
@@ -1020,6 +1053,7 @@ export function ShowcaseBuilder({
                   showIntroTour={editingId === item.id && !introDone}
                   onIntroDone={finishIntro}
                   promptFn={prompt}
+                  arrasto={{ ref: arrastoItens.ref(item.id), props: arrastoItens.props(item.id, editingId !== item.id), pegado: arrastoItens.pegado === item.id }}
                 />
               ))}
               {sec.items.length === 0 && (
@@ -1406,8 +1440,10 @@ function ItemCard({
   showIntroTour = false,
   onIntroDone,
   promptFn,
+  arrasto,
 }: {
   item: Item;
+  arrasto?: { ref: (el: HTMLElement | null) => void; props: Record<string, unknown>; pegado: boolean };
   editing: boolean;
   onToggleEdit: () => void;
   onTogglePublish: () => void;
@@ -1471,8 +1507,10 @@ function ItemCard({
   return (
     <div
       id={`item-${item.id}`}
-      className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${widthClass}`}
-      style={!editing && hasPhoto && fc && item.title_placement !== "sobre" ? { backgroundColor: fc.bg } : undefined}
+      ref={arrasto?.ref}
+      {...(arrasto?.props ?? {})}
+      className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] transition-transform ${arrasto?.pegado ? "scale-[1.03] shadow-2xl" : ""} ${widthClass}`}
+      style={{ ...(!editing && hasPhoto && fc && item.title_placement !== "sobre" ? { backgroundColor: fc.bg } : {}), ...((arrasto?.props as { style?: React.CSSProperties } | undefined)?.style ?? {}) }}
     >
       <div
         className="relative"

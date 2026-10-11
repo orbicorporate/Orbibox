@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { LogoApp } from "@/components/delivery/LogoApp";
+import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import { APPS_DELIVERY, linkDoApp, type DeliveryApp } from "@/lib/delivery";
 
 /** Junta os apps salvos com a lista completa: quem ainda não foi ligado aparece desligado, no fim. */
@@ -21,6 +22,11 @@ export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: sa
   const [ativo, setAtivo] = useState(ativoInicial);
   const [criando, setCriando] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const arrasto = useArrastarOrdem(apps.map((a) => a.id), true, (ids) => {
+    const lista = ids.map((id) => apps.find((a) => a.id === id)!).filter(Boolean);
+    setApps(lista);
+    gravar(lista);
+  });
 
   async function ativar() {
     setCriando(true);
@@ -99,11 +105,12 @@ export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: sa
           </div>
 
           <div className="mt-5 flex flex-col gap-2.5">
-            {apps.map((a, i) => {
+            {arrasto.ordem.map((id) => apps.find((x) => x.id === id)!).filter(Boolean).map((a) => {
+              const i = apps.findIndex((x) => x.id === a.id);
               const info = APPS_DELIVERY.find((x) => x.id === a.id)!;
               const semLink = a.ativo && !a.url.trim();
               return (
-                <div key={a.id} className={`rounded-[22px] border bg-surface-white p-3.5 transition-colors ${a.ativo ? "border-on-background/20" : "border-divider"}`}>
+                <div key={a.id} ref={arrasto.ref(a.id)} {...arrasto.props(a.id)} className={`rounded-[22px] border bg-surface-white p-3.5 transition-[colors,transform,box-shadow] ${arrasto.pegado === a.id ? "scale-[1.02] shadow-xl" : ""} ${a.ativo ? "border-on-background/20" : "border-divider"}`}>
                   <div className="flex items-center gap-3">
                     <LogoApp id={a.id} tamanho={44} />
                     <p className="min-w-0 flex-1 truncate text-[15px] font-medium">{info.nome}</p>

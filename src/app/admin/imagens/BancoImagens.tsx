@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDialogs } from "@/hooks/useDialogs";
+import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import {
   BUCKET, COLUNAS_IMAGEM, MAX_CATEGORIAS, TIPOS_IMAGEM, classificarImagens, clienteBanco, enviarImagem, kb, sincronizarBiblioteca, urlDaImagem,
   type Categoria, type ImagemBanco, type TipoImagem,
@@ -26,6 +27,14 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
   const [tipoAberto, setTipoAberto] = useState(false);
   const [organizando, setOrganizando] = useState(false);
   const classificando = useRef(false);
+  const [fantasma, setFantasma] = useState<{ url: string; x: number; y: number; n: number } | null>(null);
+  const [sobre, setSobre] = useState<string | null>(null);
+  const bloqueiaToque = useRef(false);
+  const arrastoCats = useArrastarOrdem(categorias.map((c) => c.id), true, (ids) => {
+    const reord = ids.map((id, pos) => ({ ...categorias.find((c) => c.id === id)!, position: pos }));
+    setCategorias(reord);
+    Promise.all(reord.map((x) => supabase.from("image_categories").update({ position: x.position }).eq("id", x.id)));
+  });
 
   const carregar = useCallback(async () => {
     await sincronizarBiblioteca(supabase, businessId);
@@ -179,6 +188,56 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
     sair();
   }
 
+  /** Segurar numa foto e soltar em cima de uma categoria para movê-la (ou todas as marcadas). */
+  function segurarFoto(e: React.PointerEvent<HTMLElement>, img: ImagemBanco) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    const ini = { x: e.clientX, y: e.clientY };
+    let pegou = false;
+    let ultimoAlvo: string | null = null;
+    const ids = () => (selecionando && marcadas.has(img.id) ? Array.from(marcadas) : [img.id]);
+    const impede = (ev: TouchEvent) => { if (ev.cancelable) ev.preventDefault(); };
+    const alvoEm = (x: number, y: number) => (document.elementFromPoint(x, y) as HTMLElement | null)?.closest<HTMLElement>("[data-alvo-categoria]")?.dataset.alvoCategoria ?? null;
+    const aoMover = (ev: PointerEvent) => {
+      if (!pegou) { if (Math.hypot(ev.clientX - ini.x, ev.clientY - ini.y) > 8) limpar(); return; }
+      ultimoAlvo = alvoEm(ev.clientX, ev.clientY);
+      setSobre(ultimoAlvo);
+      setFantasma((f) => (f ? { ...f, x: ev.clientX, y: ev.clientY } : f));
+    };
+    const limpar = () => {
+      clearTimeout(t);
+      window.removeEventListener("pointermove", aoMover);
+      window.removeEventListener("pointerup", aoSoltar);
+      window.removeEventListener("pointercancel", aoCancelar);
+      window.removeEventListener("touchmove", impede);
+    };
+    const aoSoltar = () => {
+      const alvo = ultimoAlvo;
+      const lista = ids();
+      limpar();
+      if (!pegou) return;
+      bloqueiaToque.current = true;
+      setTimeout(() => { bloqueiaToque.current = false; }, 350);
+      setFantasma(null);
+      setSobre(null);
+      if (alvo !== null) {
+        const cat = alvo === "sem" ? null : alvo;
+        supabase.from("image_library").update({ category_id: cat }).in("id", lista);
+        setImagens((p) => (p ?? []).map((i) => (lista.includes(i.id) ? { ...i, category_id: cat } : i)));
+        if (selecionando) sair();
+      }
+    };
+    const aoCancelar = () => { limpar(); if (pegou) { setFantasma(null); setSobre(null); } };
+    const t = setTimeout(() => {
+      pegou = true;
+      setFantasma({ url: img.url, x: ini.x, y: ini.y, n: ids().length });
+      window.addEventListener("touchmove", impede, { passive: false });
+      if ("vibrate" in navigator) navigator.vibrate?.(12);
+    }, 350);
+    window.addEventListener("pointermove", aoMover);
+    window.addEventListener("pointerup", aoSoltar);
+    window.addEventListener("pointercancel", aoCancelar);
+  }
+
   async function definirTipo(t: TipoImagem) {
     const ids = Array.from(marcadas);
     setTipoAberto(false);
@@ -234,6 +293,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
   }
 
   function tocar(i: ImagemBanco) {
+    if (bloqueiaToque.current) return;
     if (!selecionando) { setSelecionando(true); setMarcadas(new Set([i.id])); return; }
     setMarcadas((p) => {
       const n = new Set(p);
@@ -284,16 +344,26 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
       </div>
       <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
         <button type="button" onClick={() => setFiltro("todas")} className={chip(filtro === "todas")}>Todas {total}</button>
-        {categorias.map((c) => (
-          <button key={c.id} type="button" onClick={() => setFiltro(c.id)} className={chip(filtro === c.id)}>
+        {arrastoCats.ordem.map((id) => categorias.find((x) => x.id === id)!).filter(Boolean).map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            ref={arrastoCats.ref(c.id)}
+            {...arrastoCats.props(c.id, !fantasma)}
+            data-alvo-categoria={c.id}
+            onClick={() => setFiltro(c.id)}
+            className={`${chip(filtro === c.id)} ${sobre === c.id ? "ring-[3px] ring-on-background scale-105" : ""} ${arrastoCats.pegado === c.id ? "scale-105 shadow-lg" : ""}`}
+          >
             {c.name} {contagem.porCategoria.get(c.id) ?? 0}
           </button>
         ))}
-        {contagem.sem > 0 && categorias.length > 0 && (
-          <button type="button" onClick={() => setFiltro("sem")} className={chip(filtro === "sem")}>Sem categoria {contagem.sem}</button>
+        {categorias.length > 0 && (contagem.sem > 0 || fantasma) && (
+          <button type="button" data-alvo-categoria="sem" onClick={() => setFiltro("sem")} className={`${chip(filtro === "sem")} ${sobre === "sem" ? "ring-[3px] ring-on-background scale-105" : ""}`}>Sem categoria {contagem.sem}</button>
         )}
         <button type="button" onClick={novaCategoria} className="shrink-0 min-h-[40px] rounded-full border border-dashed border-divider px-4 text-[13.5px] font-medium text-text-secondary">+ Nova categoria</button>
       </div>
+
+      {categorias.length > 0 && <p className="mt-1 text-[12px] text-text-tertiary">Segure uma foto e solte numa categoria para mover. Segure uma categoria para mudar a ordem.</p>}
 
       {categorias.length === 0 && (
         <button type="button" onClick={criarExemplos} className="mt-2 self-start text-[13px] text-text-secondary underline underline-offset-2">
@@ -361,11 +431,14 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
                 key={i.id}
                 type="button"
                 onClick={() => tocar(i)}
+                onPointerDown={(e) => segurarFoto(e, i)}
+                onContextMenu={(e) => e.preventDefault()}
+                style={{ WebkitTouchCallout: "none", userSelect: "none" }}
                 aria-label={marcada ? "Desmarcar imagem" : selecionando ? "Marcar imagem" : "Selecionar imagem"}
                 className={`relative aspect-square overflow-hidden rounded-2xl bg-surface-soft transition-transform active:scale-[0.97] ${marcada ? "ring-[3px] ring-on-background" : ""}`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={i.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                <img src={i.url} alt="" loading="lazy" draggable={false} className="h-full w-full object-cover" />
                 {selecionando && (
                   <span className={`absolute left-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full text-[13px] font-bold ${marcada ? "bg-on-background text-white" : "bg-white/90 text-transparent ring-1 ring-black/20"}`}>✓</span>
                 )}
@@ -400,6 +473,14 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
               {categorias.length === 0 && <p className="text-[13px] text-text-tertiary">Crie uma categoria primeiro, em + Nova categoria.</p>}
             </div>
           </div>
+        </div>
+      )}
+
+      {fantasma && (
+        <div className="pointer-events-none fixed z-[90] h-20 w-20 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl shadow-2xl ring-2 ring-white" style={{ left: fantasma.x, top: fantasma.y }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={fantasma.url} alt="" className="h-full w-full object-cover" />
+          {fantasma.n > 1 && <span className="absolute right-1 top-1 rounded-full bg-on-background px-1.5 text-[11px] font-semibold text-white">{fantasma.n}</span>}
         </div>
       )}
 

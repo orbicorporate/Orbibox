@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
 import { groupByCategory } from "@/lib/showcase";
 import { CartaoItem, type ItemCartao } from "./CartaoItem";
-import { useArrastarOrdem } from "./useArrastarOrdem";
+import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import { ORBI_SPHERE_COLORS, sizeOf } from "@/lib/showcase";
 
 export type BolinhaVitrine = {

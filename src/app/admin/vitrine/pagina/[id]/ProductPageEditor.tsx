@@ -10,6 +10,7 @@ import { ImageCropModal, RATIOS, RATIO_PIXELS } from "@/components/ui/ImageCropM
 import { PromptParaIA } from "@/components/ui/LinhaExpansivel";
 import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
+import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 
 type Business = {
   id: string;
@@ -96,6 +97,11 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const [diferenciais, setDiferenciais] = useState<string[]>(item.highlights ?? []);
   const [pergunta, setPergunta] = useState(item.orbi_hook ?? "");
   const [midias, setMidias] = useState<string[]>(item.gallery_urls ?? []);
+  const arrastoFotos = useArrastarOrdem(midias, true, (nova) => {
+    const eraAtiva = midias[ativo];
+    salvarMidias(nova);
+    if (eraAtiva) irPara(nova.indexOf(eraAtiva));
+  });
   const [formato, setFormato] = useState<GalleryRatio>(galleryRatioOf(item.gallery_ratio, item.layout_size));
   const [estado, setEstado] = useState<"salvo" | "salvando" | "erro">("salvo");
 
@@ -339,16 +345,19 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             <div className="mt-4 rounded-2xl border border-divider bg-surface-white p-3">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[13px] font-semibold">Ordem das fotos</p>
-                <p className="text-[11.5px] text-text-tertiary">A 1ª é a que aparece primeiro</p>
+                <p className="text-[11.5px] text-text-tertiary">Segure e arraste. A 1ª aparece primeiro</p>
               </div>
               <div className="no-scrollbar mt-2.5 flex gap-2 overflow-x-auto pb-0.5">
-                {midias.map((src, i) => {
+                {arrastoFotos.ordem.map((src) => {
+                  const i = midias.indexOf(src);
                   const yt = youtubeId(src);
                   return (
                     <button
-                      key={`${src}-${i}`}
+                      key={src}
+                      ref={arrastoFotos.ref(src)}
+                      {...arrastoFotos.props(src)}
                       onClick={() => irPara(i)}
-                      className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 ${i === ativo ? "border-on-background" : "border-transparent"}`}
+                      className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition-transform ${arrastoFotos.pegado === src ? "scale-110 shadow-lg" : ""} ${i === ativo ? "border-on-background" : "border-transparent"}`}
                     >
                       {instagramReelId(src) && !yt ? (
                         <span className="flex h-full w-full items-center justify-center bg-on-background text-[10px] text-white/70">Reels</span>
