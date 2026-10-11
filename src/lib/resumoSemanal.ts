@@ -46,7 +46,7 @@ export async function calcularResumoSemanal(supabase: SupabaseClient<any>, busin
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("started_at", iniAntes).lt("started_at", ini),
     supabase.from("click_events").select("kind, content_item_id").eq("business_id", businessId).gte("created_at", ini).limit(5000),
     supabase.from("content_items").select("id, title").eq("business_id", businessId),
-    supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("created_at", ini),
+    supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("started_at", ini),
     supabase.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("claimed_at", ini),
   ]);
 
