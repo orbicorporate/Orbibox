@@ -1748,58 +1748,43 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                 </div>
               );
             }
+            // Horizontal: cartão largo na mesma linguagem do quadrado. Foto grande
+            // no alto com o desconto no canto recortado e a etiqueta por cima,
+            // depois título, descrição, chips (estoque e desconto) e o botão.
+            const mostraDesconto = v.discount_type !== "gift" && v.show_discount !== false;
             return (
-              <div
-                key={v.id}
-                className="relative overflow-hidden rounded-[24px] text-white"
-                style={{ background: voucherGradient(v.color), boxShadow: `0 12px 30px ${tema.glow}` }}
-              >
-                {/* Foto ocupa a lateral direita, com recorte curvo, e o
-                    degradê da cor entra por cima dela pela esquerda, então o
-                    texto continua legível sem espremer nada. Sem foto, fica
-                    só o fundo metálico com as linhas. */}
-                {v.image_url && (
-                  <div className="absolute inset-y-0 right-0 w-[52%]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={v.image_url} alt={v.title} className="h-full w-full object-cover" style={{ WebkitMaskImage: "radial-gradient(140% 120% at 100% 50%, #000 55%, transparent 78%)", maskImage: "radial-gradient(140% 120% at 100% 50%, #000 55%, transparent 78%)" }} />
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(90deg, ${tema.via} 0%, ${tema.via}CC 30%, transparent 72%)` }} />
+              <div key={v.id} className="relative overflow-hidden rounded-[28px] p-3 text-white" style={{ background: voucherGradient(v.color), boxShadow: `0 12px 30px ${tema.glow}` }}>
+                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[22px] bg-white/15">
+                  {v.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={v.image_url} alt={v.title} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-4 text-center">
+                      <span className="font-[family-name:var(--font-manrope)] text-[40px] font-extrabold leading-none tracking-[-0.02em]">{v.discount_type === "gift" ? "Brinde" : v.show_discount === false ? v.title : voucherDiscountBig(v)}</span>
+                    </div>
+                  )}
+                  {v.image_url && mostraDesconto && (
+                    <span className="absolute right-0 top-0 rounded-bl-[20px] bg-white px-4 py-2 text-[18px] font-extrabold leading-none" style={{ color: tema.ctaText }}>{voucherDiscountBig(v)}</span>
+                  )}
+                  {v.badge?.trim() && (
+                    <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
+                  )}
+                </div>
+                <div className="px-2 pb-1 pt-3.5">
+                  <p className="text-[18px] font-semibold leading-snug">{v.title}</p>
+                  {v.description?.trim() && <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-80">{v.description}</p>}
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{restam > 0 ? `${restam} restantes` : "Acabou"}</span>
+                    {mostraDesconto && <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{voucherDiscountLabel(v)}</span>}
                   </div>
-                )}
-                <VoucherLines />
-                <div className="relative p-5">
-                  <div className="max-w-[62%]">
-                    {v.badge?.trim() && (
-                      <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
-                        {v.badge}
-                      </span>
-                    )}
-                    {/* Brinde/benefício não tem número: o título assume o destaque. */}
-                    {v.discount_type !== "gift" && v.show_discount !== false && (
-                      <p className={`font-[family-name:var(--font-manrope)] text-[32px] font-extrabold leading-none tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}`}>
-                        {voucherDiscountBig(v)}
-                      </p>
-                    )}
-                    <p className={v.discount_type === "gift" || v.show_discount === false ? `font-[family-name:var(--font-manrope)] text-[26px] font-extrabold leading-[1.1] tracking-[-0.02em] ${v.badge?.trim() ? "mt-2.5" : ""}` : "mt-2 text-[16px] font-semibold leading-snug"}>{v.title}</p>
-                    {v.description?.trim() && (
-                      <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-80">{v.description}</p>
-                    )}
-                  </div>
-
-                  {/* Ação e estoque na mesma linha: o botão cabe inteiro e o
-                      "restantes" deixa de gastar uma linha só pra ele. */}
-                  <div className="mt-5 flex items-center gap-3">
-                    <button
-                      onClick={() => { setClaiming(v.id); setError(null); }}
-                      disabled={restam <= 0}
-                      className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-[14px] font-bold disabled:opacity-50"
-                      style={{ color: tema.ctaText }}
-                    >
-                      {restam > 0 ? <>Pegar meu voucher <span aria-hidden>→</span></> : "Esgotado"}
-                    </button>
-                    <p className="min-w-0 flex-1 truncate text-[12.5px] opacity-75">
-                      {restam > 0 ? `${restam} restantes` : "Acabou"}
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => { setClaiming(v.id); setError(null); }}
+                    disabled={restam <= 0}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white py-3 text-[15px] font-bold disabled:opacity-50"
+                    style={{ color: tema.ctaText }}
+                  >
+                    {restam > 0 ? <>Pegar meu voucher <span aria-hidden>→</span></> : "Esgotado"}
+                  </button>
                 </div>
               </div>
             );
