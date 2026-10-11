@@ -8,6 +8,12 @@ export type ResumoSemanal = {
   visitasAntes: number;
   acoes: number;
   whatsapp: number;
+  /** Conversas iniciadas com a Orbi nos 7 dias. */
+  conversas: number;
+  /** Vouchers pegos pelos visitantes nos 7 dias. */
+  vouchers: number;
+  /** Visitas por dia, do mais antigo (há 6 dias) ao de hoje. */
+  porDia: { rotulo: string; n: number }[];
   /** Item mais tocado da semana, se houver. */
   topTitulo: string | null;
   /** Canal que trouxe 40% ou mais das visitas, se houver. */
@@ -35,14 +41,16 @@ export async function calcularResumoSemanal(supabase: SupabaseClient<any>, busin
   const ini = new Date(agora - 7 * DIA).toISOString();
   const iniAntes = new Date(agora - 14 * DIA).toISOString();
 
-  const [sessoes, sessoesAntes, cliques, itens] = await Promise.all([
-    supabase.from("visitor_sessions").select("source").eq("business_id", businessId).gte("started_at", ini).limit(5000),
+  const [sessoes, sessoesAntes, cliques, itens, conversasRes, vouchersRes] = await Promise.all([
+    supabase.from("visitor_sessions").select("source, started_at").eq("business_id", businessId).gte("started_at", ini).limit(5000),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("started_at", iniAntes).lt("started_at", ini),
     supabase.from("click_events").select("kind, content_item_id").eq("business_id", businessId).gte("created_at", ini).limit(5000),
     supabase.from("content_items").select("id, title").eq("business_id", businessId),
+    supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("created_at", ini),
+    supabase.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("claimed_at", ini),
   ]);
 
-  const listaSessoes = (sessoes.data ?? []) as { source: string | null }[];
+  const listaSessoes = (sessoes.data ?? []) as { source: string | null; started_at: string }[];
   const visitas = listaSessoes.length;
   const visitasAntes = sessoesAntes.count ?? 0;
   const listaCliques = (cliques.data ?? []) as { kind: string; content_item_id: string | null }[];
@@ -60,6 +68,20 @@ export async function calcularResumoSemanal(supabase: SupabaseClient<any>, busin
     porOrigem[o] = (porOrigem[o] ?? 0) + 1;
   }
   const [origemTop, origemQtd] = Object.entries(porOrigem).sort((a, b) => b[1] - a[1])[0] ?? [null, 0];
+
+  // Visitas por dia pelo horário de Brasília, de seis dias atrás até hoje.
+  const chaveDia = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" });
+  const nomeDia = new Intl.DateTimeFormat("pt-BR", { weekday: "short", timeZone: "America/Sao_Paulo" });
+  const dias: { chave: string; rotulo: string; n: number }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(agora - i * DIA);
+    dias.push({ chave: chaveDia.format(d), rotulo: nomeDia.format(d).replace(".", ""), n: 0 });
+  }
+  for (const s of listaSessoes) {
+    const dia = dias.find((x) => x.chave === chaveDia.format(new Date(s.started_at)));
+    if (dia) dia.n++;
+  }
+  const porDia = dias.map(({ rotulo, n }) => ({ rotulo, n }));
 
   const frases: string[] = [];
   if (visitas === 0) {
@@ -94,5 +116,5 @@ export async function calcularResumoSemanal(supabase: SupabaseClient<any>, busin
   }
 
   const origem = origemTop && visitas > 0 && origemQtd / visitas >= 0.4 ? origemTop : null;
-  return { visitas, visitasAntes, acoes, whatsapp, topTitulo, origem, frases, dica };
+  return { visitas, visitasAntes, acoes, whatsapp, conversas: conversasRes.count ?? 0, vouchers: vouchersRes.count ?? 0, porDia, topTitulo, origem, frases, dica };
 }

@@ -17,6 +17,8 @@ export type BolinhaVitrine = {
   estilo: "cor" | "linha";
   /** Só as que vêm de um box podem ser editadas e reordenadas. */
   editavel: boolean;
+  /** Cor escolhida pelo dono (só vale para as que não são logo de rede social). */
+  cor?: string;
   /** Selinho pequeno sobre a bolinha, ex.: "oferta". */
   selo?: string;
   onClick: () => void;
@@ -55,7 +57,14 @@ function Icone({ tipo, rede, linha }: { tipo: BolinhaVitrine["tipo"]; rede?: Red
   return <svg {...p}><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3c2.6 2.6 3.8 5.6 3.8 9S14.6 18.4 12 21c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3Z" /></svg>;
 }
 
+/** Cores que o dono pode escolher para as bolinhas que não são logo de marca. */
+const CORES_BOLINHA = ["#111318", "#E8508A", "#3B5BDB", "#EA4335", "#F29D38", "#2FA36B", "#7B4FE0", "#0E9AA7"];
+
+/** WhatsApp e redes sociais mantêm a cor da própria marca. */
+const podeMudarCor = (b: BolinhaVitrine) => b.editavel && b.tipo !== "whatsapp" && b.tipo !== "rede";
+
 function corDe(b: BolinhaVitrine): { fundo: string; sombra: string } {
+  if (b.cor && b.tipo !== "whatsapp" && b.tipo !== "rede") return { fundo: b.cor, sombra: b.cor };
   if (b.tipo === "whatsapp") return { fundo: "#25D366", sombra: "#25D366" };
   if (b.tipo === "endereco") return { fundo: "#EA4335", sombra: "#EA4335" };
   if (b.tipo === "voucher") return { fundo: "#111318", sombra: "#111318" };
@@ -89,6 +98,7 @@ export function HomeVitrine({
   podeEditar,
   onReordenarItens,
   onEstilo,
+  onCor,
   onReordenar,
   onAdicionar,
   ordemCategorias,
@@ -117,6 +127,8 @@ export function HomeVitrine({
   /** Dono fora do modo visitante: mostra o lápis das bolinhas. */
   podeEditar: boolean;
   onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
+  /** Escolhe (ou limpa, com null) a cor de uma bolinha que não é logo de rede social. */
+  onCor?: (key: string, cor: string | null) => void;
   /** Nova ordem das bolinhas editáveis (chaves), depois de arrastar ou de usar as setas. */
   onReordenar: (chaves: string[]) => void;
   /** Só o dono: abre a folha para adicionar um botão novo. */
@@ -372,7 +384,7 @@ export function HomeVitrine({
               <span className="text-[13.5px] font-medium">Todas</span>
               <Seletor valor={null} onChange={(e) => onEstilo(bolinhas.filter((x) => x.editavel).map((x) => x.key), e)} />
             </div>
-            <ListaBolinhas bolinhas={bolinhas} onEstilo={onEstilo} onReordenar={onReordenar} />
+            <ListaBolinhas bolinhas={bolinhas} onEstilo={onEstilo} onCor={onCor} onReordenar={onReordenar} />
           </div>
         </>,
         document.body,
@@ -385,10 +397,12 @@ export function HomeVitrine({
 function ListaBolinhas({
   bolinhas,
   onEstilo,
+  onCor,
   onReordenar,
 }: {
   bolinhas: BolinhaVitrine[];
   onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
+  onCor?: (key: string, cor: string | null) => void;
   onReordenar: (chaves: string[]) => void;
 }) {
   const itens = useRef<(HTMLLIElement | null)[]>([]);
@@ -442,7 +456,7 @@ function ListaBolinhas({
             key={b.key}
             ref={(el) => { itens.current[i] = el; }}
             style={{ transform: ty ? `translateY(${ty}px)` : undefined, transition: arrastando ? "none" : "transform .18s ease" }}
-            className={`relative flex items-center gap-2.5 rounded-2xl border bg-white p-2.5 ${arrastando ? "z-10 border-on-background/40 shadow-[0_8px_24px_rgba(17,19,24,0.18)]" : "border-divider"}`}
+            className={`relative flex flex-wrap items-center gap-2.5 rounded-2xl border bg-white p-2.5 ${arrastando ? "z-10 border-on-background/40 shadow-[0_8px_24px_rgba(17,19,24,0.18)]" : "border-divider"}`}
           >
             {b.editavel ? (
               <button
@@ -471,6 +485,29 @@ function ListaBolinhas({
               </>
             ) : (
               <span className="text-[12px] text-text-tertiary">automática</span>
+            )}
+            {onCor && podeMudarCor(b) && b.estilo === "cor" && (
+              <div role="group" aria-label={`Cor de ${b.rotulo}`} className="flex basis-full flex-wrap items-center gap-2 pl-[38px]">
+                {CORES_BOLINHA.map((c) => {
+                  const atual = (b.cor ?? corDe({ ...b, cor: undefined }).fundo).toLowerCase() === c.toLowerCase();
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      aria-label={`Usar a cor ${c}`}
+                      aria-pressed={atual}
+                      onClick={() => onCor(b.key, c)}
+                      className={`h-8 w-8 rounded-full ${atual ? "ring-2 ring-on-background ring-offset-2" : "ring-1 ring-black/10"}`}
+                      style={{ backgroundColor: c }}
+                    />
+                  );
+                })}
+                {b.cor && (
+                  <button type="button" onClick={() => onCor(b.key, null)} className="min-h-[32px] rounded-full px-2.5 text-[12.5px] text-text-secondary underline underline-offset-4">
+                    Cor original
+                  </button>
+                )}
+              </div>
             )}
           </li>
         );
