@@ -130,7 +130,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <main className="admin-zoom mx-auto w-full flex-1 px-6 pb-32 pt-5 lg:max-w-[960px] lg:px-10 lg:pb-16">
         {/* Botão salvar discreto, sempre à vista logo abaixo do topo. */}
         <div className="pointer-events-none sticky top-[84px] z-20 h-0">
-          <div className="pointer-events-auto flex justify-end"><BotaoSalvar className="-translate-y-1" /></div>
+          <div className="pointer-events-none flex justify-end"><BotaoSalvar className="pointer-events-auto -translate-y-1" /></div>
         </div>
         {children}
       </main>
