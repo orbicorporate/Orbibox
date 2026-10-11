@@ -57,6 +57,7 @@ function Spark({ dados, cor, h = 28, w = 84 }: { dados: number[]; cor: string; h
 }
 
 const DIAS = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"];
+const NOMES_DIA = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
 export function RedeView() {
   const [aba, setAba] = useState<Aba>("geral");
@@ -112,6 +113,9 @@ function Geral({ lojas, totais, serieRede, deltaRede, onVerLoja }: { lojas: Loja
   const maxSerie = Math.max(...serieRede);
 
   const destaque = [...lojas].sort((a, b) => b.delta - a.delta)[0];
+  const porDia = DIAS.map((_, i) => Math.round(lojas.reduce((t, l) => t + l.serie[i], 0)));
+  const melhorDia = porDia.indexOf(Math.max(...porDia));
+  const piorDia = porDia.indexOf(Math.min(...porDia));
   const atencao = [...lojas].sort((a, b) => a.delta - b.delta)[0];
   const porUf = useMemo(() => {
     const m = new Map<string, number>();
@@ -169,28 +173,33 @@ function Geral({ lojas, totais, serieRede, deltaRede, onVerLoja }: { lojas: Loja
         </div>
       </section>
 
-      {/* Mapa de calor */}
+      {/* Visitas por dia da semana */}
       <section className="rounded-[26px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
-        <p className="text-[15px]">Movimento por dia</p>
-        <p className="mt-0.5 text-[12.5px] text-text-secondary">Quanto mais forte a cor, mais visitas naquele dia.</p>
-        <div className="mt-4 flex flex-col gap-1.5">
-          <div className="ml-[104px] flex gap-1">
-            {DIAS.map((d) => <span key={d} className="flex-1 text-center text-[10.5px] text-text-tertiary">{d}</span>)}
-          </div>
+        <p className="text-[15px]">Em que dia a rede recebe mais visitas</p>
+        <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">
+          {NOMES_DIA[melhorDia]} é o melhor dia, com {nf(porDia[melhorDia])} visitas na semana. {NOMES_DIA[piorDia]} é o mais fraco, com {nf(porDia[piorDia])}.
+        </p>
+        <div className="mt-4 flex h-[140px] items-end gap-2">
+          {porDia.map((v, i) => (
+            <div key={DIAS[i]} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
+              <span className={`text-[11.5px] tabular-nums ${i === melhorDia ? "text-on-background" : "text-text-secondary"}`}>{nf(v)}</span>
+              <span className="w-full rounded-t-xl" style={{ height: `${Math.max(8, (v / porDia[melhorDia]) * 100)}%`, backgroundColor: i === melhorDia ? "#6DB300" : "#D9DEE6" }} title={`${NOMES_DIA[i]}: ${v} visitas`} />
+              <span className={`text-[11.5px] ${i === melhorDia ? "text-on-background" : "text-text-tertiary"}`}>{DIAS[i]}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-5 text-[13px] text-text-secondary">Melhor dia de cada Orbibox</p>
+        <ul className="mt-2 flex flex-col divide-y divide-divider">
           {lojas.map((l) => {
-            const max = Math.max(...l.serie);
+            const m = l.serie.indexOf(Math.max(...l.serie));
             return (
-              <div key={l.id} className="flex items-center gap-2">
-                <span className="w-[96px] truncate text-[12px] text-text-secondary">{l.nome.replace("Aurora ", "")}</span>
-                <div className="flex flex-1 gap-1">
-                  {l.serie.map((v, i) => (
-                    <span key={i} title={`${l.nome}, ${DIAS[i]}: ${v}`} className="h-6 flex-1 rounded-md" style={{ backgroundColor: l.cor, opacity: 0.18 + 0.82 * (v / max) }} />
-                  ))}
-                </div>
-              </div>
+              <li key={l.id} className="flex items-center justify-between gap-3 py-2.5">
+                <span className="min-w-0 truncate text-[14px]">{l.nome.replace("Aurora ", "")}</span>
+                <span className="shrink-0 text-[13px] text-text-secondary"><span className="rounded-full bg-surface-soft px-2.5 py-1 text-on-background">{NOMES_DIA[m]}</span> <span className="tabular-nums">{nf(l.serie[m])} visitas</span></span>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </section>
     </div>
   );
@@ -424,22 +433,6 @@ function Convite() {
         </ol>
       </section>
 
-      {/* Convite */}
-      <section className="relative overflow-hidden rounded-[26px] bg-[#111318] p-5 text-white">
-        <div className="pointer-events-none absolute -right-12 -top-16 h-44 w-44 rounded-full orbi-gradient opacity-30 blur-3xl" aria-hidden />
-        <p className="relative text-[12px] uppercase tracking-[0.12em] text-white/55">Seu convite</p>
-        <div className="relative mt-3 flex items-center gap-2 rounded-2xl bg-white/10 py-2 pl-4 pr-2">
-          <span className="min-w-0 flex-1 truncate text-[14px]">{link}</span>
-          <button type="button" onClick={() => copiar(`https://${link}`, "link")} className="min-h-[40px] shrink-0 rounded-full bg-white px-4 text-[13px] text-on-background active:scale-[0.98]">{copiado === "link" ? "Copiado" : "Copiar"}</button>
-        </div>
-        <div className="relative mt-2 flex items-center gap-2 rounded-2xl bg-white/10 py-2 pl-4 pr-2">
-          <span className="text-[12px] text-white/55">Código</span>
-          <span className="min-w-0 flex-1 truncate text-[15px] tracking-[0.08em]">{REDE_DEMO.codigo}</span>
-          <button type="button" onClick={() => copiar(REDE_DEMO.codigo, "cod")} className="min-h-[40px] shrink-0 rounded-full bg-white px-4 text-[13px] text-on-background active:scale-[0.98]">{copiado === "cod" ? "Copiado" : "Copiar"}</button>
-        </div>
-        <p className="relative mt-3 text-[12.5px] leading-snug text-white/60">Todo Orbibox novo que entrar com o link e o código aparece na sua rede.</p>
-      </section>
-
       {/* Privacidade */}
       <section className="grid grid-cols-2 gap-3">
         <div className="rounded-[22px] bg-[#EAFBC4] p-4 text-[#2F6B00]">
@@ -504,6 +497,23 @@ function Convite() {
             <p className="mt-3 text-[12.5px] leading-snug text-text-secondary">O desconto vale para todos os Orbibox assim que a rede passa da faixa. A cobrança vem numa fatura só, no seu cartão.</p>
           </div>
         )}
+      </section>
+
+      {/* Convite */}
+      <section className="relative overflow-hidden rounded-[26px] bg-[#111318] p-5 text-white">
+        <div className="pointer-events-none absolute -right-12 -top-16 h-44 w-44 rounded-full orbi-gradient opacity-30 blur-3xl" aria-hidden />
+        <p className="relative text-[12px] uppercase tracking-[0.12em] text-white/55">Seu convite</p>
+        <p className="relative mt-1 text-[13px] text-white/75">{quem === "marca" ? "A marca paga: quem entrar por aqui já nasce com o plano ativo." : "Cada Orbibox paga o seu: quem entrar por aqui escolhe o plano e paga no próprio cartão."}</p>
+        <div className="relative mt-3 flex items-center gap-2 rounded-2xl bg-white/10 py-2 pl-4 pr-2">
+          <span className="min-w-0 flex-1 truncate text-[14px]">{link}</span>
+          <button type="button" onClick={() => copiar(`https://${link}`, "link")} className="min-h-[40px] shrink-0 rounded-full bg-white px-4 text-[13px] text-on-background active:scale-[0.98]">{copiado === "link" ? "Copiado" : "Copiar"}</button>
+        </div>
+        <div className="relative mt-2 flex items-center gap-2 rounded-2xl bg-white/10 py-2 pl-4 pr-2">
+          <span className="text-[12px] text-white/55">Código</span>
+          <span className="min-w-0 flex-1 truncate text-[15px] tracking-[0.08em]">{REDE_DEMO.codigo}</span>
+          <button type="button" onClick={() => copiar(REDE_DEMO.codigo, "cod")} className="min-h-[40px] shrink-0 rounded-full bg-white px-4 text-[13px] text-on-background active:scale-[0.98]">{copiado === "cod" ? "Copiado" : "Copiar"}</button>
+        </div>
+        <p className="relative mt-3 text-[12.5px] leading-snug text-white/60">Todo Orbibox novo que entrar com o link e o código aparece na sua rede.</p>
       </section>
     </div>
   );
