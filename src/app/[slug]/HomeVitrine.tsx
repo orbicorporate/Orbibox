@@ -6,6 +6,7 @@ import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSoc
 import { groupByCategory } from "@/lib/showcase";
 import { CartaoItem, type ItemCartao } from "./CartaoItem";
 import { useArrastarOrdem } from "./useArrastarOrdem";
+import { ORBI_SPHERE_COLORS } from "@/lib/showcase";
 
 export type BolinhaVitrine = {
   key: string;
@@ -408,6 +409,8 @@ function ListaBolinhas({
   const itens = useRef<(HTMLLIElement | null)[]>([]);
   const [arrasto, setArrasto] = useState<{ de: number; para: number; dy: number; altura: number } | null>(null);
   const inicio = useRef<{ y: number; centros: number[] } | null>(null);
+  // Qual bolinha está com a paleta completa aberta.
+  const [maisCores, setMaisCores] = useState<string | null>(null);
 
   function aplicar(de: number, para: number) {
     if (de === para) return;
@@ -502,11 +505,47 @@ function ListaBolinhas({
                     />
                   );
                 })}
+                <button
+                  type="button"
+                  aria-label="Mais cores"
+                  aria-expanded={maisCores === b.key}
+                  onClick={() => setMaisCores(maisCores === b.key ? null : b.key)}
+                  className={`h-8 w-8 rounded-full ${maisCores === b.key ? "ring-2 ring-on-background ring-offset-2" : "ring-1 ring-black/10"}`}
+                  style={{ background: "conic-gradient(#EA4335, #F29D38, #F2D338, #2FA36B, #0E9AA7, #3B5BDB, #7B4FE0, #E8508A, #EA4335)" }}
+                />
                 {b.cor && (
                   <button type="button" onClick={() => onCor(b.key, null)} className="min-h-[32px] rounded-full px-2.5 text-[12.5px] text-text-secondary underline underline-offset-4">
                     Cor original
                   </button>
                 )}
+              </div>
+            )}
+            {onCor && podeMudarCor(b) && b.estilo === "cor" && maisCores === b.key && (
+              <div className="basis-full pl-[38px]">
+                <div className="grid grid-cols-8 gap-2">
+                  {ORBI_SPHERE_COLORS.map((c) => (
+                    <button
+                      key={c.hex}
+                      type="button"
+                      aria-label={c.label}
+                      title={c.label}
+                      aria-pressed={b.cor?.toLowerCase() === c.hex.toLowerCase()}
+                      onClick={() => onCor(b.key, c.hex)}
+                      className={`aspect-square rounded-full ${b.cor?.toLowerCase() === c.hex.toLowerCase() ? "ring-2 ring-on-background ring-offset-1" : "ring-1 ring-black/10"}`}
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </div>
+                <label className="mt-3 flex min-h-[44px] items-center gap-3 text-[13px] text-text-secondary">
+                  <input
+                    type="color"
+                    value={/^#[0-9a-f]{6}$/i.test(b.cor ?? "") ? (b.cor as string) : corDe({ ...b, cor: undefined }).fundo}
+                    onChange={(e) => onCor(b.key, e.target.value)}
+                    className="h-10 w-12 cursor-pointer rounded-lg border border-divider bg-transparent p-0.5"
+                    aria-label="Escolher outra cor"
+                  />
+                  Outra cor, qualquer tom
+                </label>
               </div>
             )}
           </li>

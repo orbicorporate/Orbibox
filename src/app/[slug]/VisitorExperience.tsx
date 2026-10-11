@@ -577,13 +577,18 @@ export function VisitorExperience({
     conferirSalvo(res.find((r) => r && r.error) ?? { error: null });
   }
   // Cor de uma bolinha que não é logo de rede social (null volta à cor padrão).
-  async function corBolinha(key: string, cor: string | null) {
+  const salvarCorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function corBolinha(key: string, cor: string | null) {
     const box = boxList.find((b) => b.id === key);
     if (!box) return;
     const cfg = { ...((box.config ?? {}) as CustomConfig) };
     if (cor) cfg.bolinhaCor = cor; else delete cfg.bolinhaCor;
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: cfg } : b)));
-    conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", key));
+    // O seletor livre dispara a cada tom; salva só quando a pessoa para de mexer.
+    if (salvarCorTimer.current) clearTimeout(salvarCorTimer.current);
+    salvarCorTimer.current = setTimeout(async () => {
+      conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", key));
+    }, 500);
   }
   // Reordena as bolinhas e renumera todos os boxes em sequência. Antes, a troca
   // só trocava o número de dois boxes, e dois boxes com o mesmo número (comum)
