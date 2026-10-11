@@ -7,7 +7,9 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { VOUCHER_THEMES, voucherGradient, type VoucherColor } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
-import { VALIDADES } from "../VouchersManager";
+import { PrazoVoucher } from "../PrazoVoucher";
+import { SeletorDesconto } from "../SeletorDesconto";
+import { VoucherQuadrado } from "@/components/mobile/VoucherQuadrado";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 
@@ -89,7 +91,24 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
 
           <div>
             <p className={rotulo}>Cor</p>
-            <div className="mt-2 grid grid-cols-4 gap-2">
+            <div className="mt-2 flex flex-col items-center rounded-[22px] bg-surface-soft px-4 py-4">
+              <VoucherQuadrado
+                v={{
+                  title: title.trim() || "Título do voucher",
+                  description,
+                  color,
+                  image_url: imageUrl,
+                  badge,
+                  discount_type: discountType,
+                  discount_value: Number(discountValue) || 0,
+                  quantity_total: Number(quantityTotal) || voucher.quantity_total,
+                  quantity_claimed: voucher.quantity_claimed,
+                  show_discount: mostrarDesconto,
+                }}
+              />
+              <p className="mt-3 text-[12px] text-text-tertiary">Assim ele aparece na sua página. Toque numa cor para trocar.</p>
+            </div>
+            <div className="mt-3 grid grid-cols-4 gap-2">
               {(Object.keys(VOUCHER_THEMES) as VoucherColor[]).map((key) => (
                 <button
                   key={key}
@@ -117,17 +136,8 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
                 O desconto não muda depois que alguém resgata, porque mudaria o que essa pessoa já tem na mão. Para um desconto diferente, crie outro voucher.
               </p>
             ) : (
-              <div className="mt-1.5 flex gap-2">
-                <select value={discountType} onChange={(e) => setDiscountType(e.target.value as "percent" | "fixed" | "gift")} className="rounded-2xl border border-divider bg-surface-white px-3 py-2.5 text-[14px] outline-none">
-                  <option value="percent">% desconto</option>
-                  <option value="fixed">R$ desconto</option>
-                  <option value="gift">Brinde ou benefício</option>
-                </select>
-                {discountType === "gift" ? (
-                  <p className="flex min-w-0 flex-1 items-center rounded-2xl bg-surface-soft px-4 py-2.5 text-[13px] leading-snug text-text-secondary">Sem número. O que a pessoa ganha vai no título.</p>
-                ) : (
-                  <input value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} type="number" min="0" inputMode="decimal" className={`${campo} min-w-0 flex-1`} />
-                )}
+              <div className="mt-1.5">
+                <SeletorDesconto tipo={discountType} valor={discountValue} onTipo={setDiscountType} onValor={setDiscountValue} />
               </div>
             )}
           </div>
@@ -153,19 +163,7 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
 
           <div>
             <p className={rotulo}>Prazo pra usar depois de resgatar</p>
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              {VALIDADES.map((v) => (
-                <button
-                  key={v.rotulo}
-                  type="button"
-                  onClick={() => setExpiresHours(v.horas)}
-                  aria-pressed={expiresHours === v.horas}
-                  className={`min-h-[40px] rounded-full px-3.5 text-[13px] font-medium ${expiresHours === v.horas ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
-                >
-                  {v.rotulo}
-                </button>
-              ))}
-            </div>
+            <PrazoVoucher horas={expiresHours} onChange={setExpiresHours} />
             <p className="mt-1 text-[12px] text-text-tertiary">Vale para quem resgatar daqui para frente.</p>
           </div>
         </div>

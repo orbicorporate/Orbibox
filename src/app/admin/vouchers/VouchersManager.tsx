@@ -16,6 +16,9 @@ type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
 
 // Opções de validade em linguagem de gente. O banco continua guardando horas.
+import { PrazoVoucher } from "./PrazoVoucher";
+import { SeletorDesconto } from "./SeletorDesconto";
+
 export const VALIDADES: { horas: string; rotulo: string }[] = [
   { horas: "24", rotulo: "1 dia" },
   { horas: "48", rotulo: "2 dias" },
@@ -389,33 +392,14 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             <p className="mb-2 mt-1 text-[12px] text-text-tertiary">Fica do lado do desconto, na galeria de vouchers. Uma foto do produto ou do ambiente funciona bem.</p>
             <ImageUpload value={imageUrl} businessId={businessId} lockedRatio="quadrado" promptKind="capa" promptSubject={title || undefined} onChange={setImageUrl} />
           </div>
-          <div className="flex gap-2">
-            <select
-              value={discountType}
-              onChange={(e) => { setDiscountType(e.target.value as "percent" | "fixed" | "gift"); setFaltando((f) => f.filter((x) => x !== "discount")); }}
-              className="rounded-2xl border border-divider bg-surface-white px-3 py-2.5 text-[14px] outline-none"
-            >
-              <option value="percent">% desconto</option>
-              <option value="fixed">R$ desconto</option>
-              <option value="gift">Brinde ou benefício</option>
-            </select>
-            {discountType === "gift" ? (
-              <p className="flex min-w-0 flex-1 items-center rounded-2xl bg-surface-soft px-4 py-2.5 text-[13px] leading-snug text-text-secondary">
-                Sem número. O que a pessoa ganha vai no título (ex: Sobremesa grátis).
-              </p>
-            ) : (
-            <input
-              value={discountValue}
-              id="voucher-campo-discount"
-              onChange={(e) => { setDiscountValue(e.target.value); setFaltando((f) => f.filter((x) => x !== "discount")); }}
-              placeholder={discountType === "percent" ? "Ex: 10" : "Ex: 15"}
-              type="number"
-              min="0"
-              inputMode="decimal"
-              className={`min-w-0 flex-1 rounded-2xl border bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background ${faltando.includes("discount") ? "border-red-500" : "border-divider"}`}
-            />
-            )}
-          </div>
+          <SeletorDesconto
+            tipo={discountType}
+            valor={discountValue}
+            idCampo="voucher-campo-discount"
+            invalido={faltando.includes("discount")}
+            onTipo={(t) => { setDiscountType(t); setFaltando((f) => f.filter((x) => x !== "discount")); }}
+            onValor={(v) => { setDiscountValue(v); setFaltando((f) => f.filter((x) => x !== "discount")); }}
+          />
           {discountType !== "gift" && (
             <div className="flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3">
               <div className="min-w-0 flex-1">
@@ -443,24 +427,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           </div>
           <div>
             <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Prazo pra usar depois de resgatar</p>
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              {VALIDADES.map((v) => (
-                <button
-                  key={v.rotulo}
-                  type="button"
-                  onClick={() => setExpiresHours(v.horas)}
-                  aria-pressed={expiresHours === v.horas}
-                  className={`rounded-full px-3.5 py-2 text-[13px] font-medium ${expiresHours === v.horas ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
-                >
-                  {v.rotulo}
-                </button>
-              ))}
-              {!VALIDADES.some((v) => v.horas === expiresHours) && (
-                <span className="rounded-full bg-button-primary px-3.5 py-2 text-[13px] font-medium text-white">
-                  {Number(expiresHours) % 24 === 0 ? `${Number(expiresHours) / 24} dias` : `${expiresHours} horas`}
-                </span>
-              )}
-            </div>
+            <PrazoVoucher horas={expiresHours} onChange={setExpiresHours} />
             <p className="mt-1 text-[12px] text-text-tertiary">
               Se a pessoa resgatar e não aparecer dentro desse prazo, a vaga volta pro estoque.
             </p>
