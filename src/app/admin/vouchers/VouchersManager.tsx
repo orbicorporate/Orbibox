@@ -16,7 +16,7 @@ type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
 
 // Opções de validade em linguagem de gente. O banco continua guardando horas.
-const VALIDADES: { horas: string; rotulo: string }[] = [
+export const VALIDADES: { horas: string; rotulo: string }[] = [
   { horas: "24", rotulo: "1 dia" },
   { horas: "48", rotulo: "2 dias" },
   { horas: "168", rotulo: "7 dias" },
