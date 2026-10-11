@@ -150,14 +150,14 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors }: 
         {v.expires_hours ? `Cada código expira em ${v.expires_hours}h se não for usado.` : "Códigos não têm validade."}
       </p>
 
-      {/* Plano de divulgação da Orbi: o voucher só rende se for divulgado,
-          então isso vem antes da operação do balcão. */}
-      <VoucherPlanoOrbi voucherId={v.id} voucherTitulo={v.title} orbiColors={orbiColors} />
-
       {/* Resgate rápido no balcão, mesmo card da referência, reaproveitado */}
-      <div className="mt-6">
+      <div className="mt-4">
         <RedeemCodeCard businessId={v.business_id} onRedeemed={refreshVoucher} fixedVoucherId={v.id} fixedVoucherTitle={v.title} />
       </div>
+
+      {/* Plano de divulgação da Orbi: o voucher só rende se for divulgado,
+          mas o balcão (resgatar código) vem primeiro, é o uso diário. */}
+      <VoucherPlanoOrbi voucherId={v.id} voucherTitulo={v.title} orbiColors={orbiColors} />
 
       {/* Lista de quem resgatou, o painel de verdade */}
       <div className="mt-6 flex items-center justify-between">
