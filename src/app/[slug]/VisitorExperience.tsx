@@ -107,7 +107,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; esferaCor?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; esferaCor?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -266,7 +266,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; bolinhaCor?: string; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; onClick: () => void };
+  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; onClick: () => void };
   const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -320,7 +320,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift", icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
@@ -1429,7 +1429,7 @@ export function VisitorExperience({
         )}
 
         {intent === "cupom" && (
-          <VoucherFlow business={business} sessionId={sessionId} orbiColors={orbiColors} onBack={voltarAoInicio} />
+          <VoucherFlow business={business} sessionId={sessionId} orbiColors={orbiColors} formato={todasOpcoes.find((o) => o.cupom)?.voucherFormato ?? "horizontal"} onBack={voltarAoInicio} />
         )}
       </div>
 
@@ -1480,7 +1480,9 @@ function resultMessage(businessName: string, expiresAt: string | null) {
   return `${base} Vale até ${data}.`;
 }
 
-function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Business; sessionId: string | null; orbiColors: string[] | null; onBack: () => void }) {
+function VoucherFlow({ business, sessionId, orbiColors, formato, onBack }: { business: Business; sessionId: string | null; orbiColors: string[] | null; formato: "horizontal" | "quadrado"; onBack: () => void }) {
+  const quadrado = formato === "quadrado";
+  const larga = quadrado ? "col-span-2" : "";
   const supabase = createClient();
   const [vouchers, setVouchers] = useState<VoucherPublic[] | null>(null);
   const [claiming, setClaiming] = useState<string | null>(null);
@@ -1613,16 +1615,16 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
           )}
         </div>
       ) : (
-        <div className="mt-6 flex flex-col gap-4">
-          {vouchers === null && <p className="text-[14px] text-text-tertiary">Carregando…</p>}
-          {vouchers?.length === 0 && <p className="text-[14px] text-text-tertiary">Nenhum voucher disponível no momento.</p>}
+        <div className={quadrado ? "mt-6 grid grid-cols-2 gap-3" : "mt-6 flex flex-col gap-4"}>
+          {vouchers === null && <p className={`text-[14px] text-text-tertiary ${larga}`}>Carregando…</p>}
+          {vouchers?.length === 0 && <p className={`text-[14px] text-text-tertiary ${larga}`}>Nenhum voucher disponível no momento.</p>}
           {vouchers?.map((v) => {
             const restam = v.quantity_total - v.quantity_claimed;
             const isClaiming = claiming === v.id;
 
             if (isClaiming) {
               return (
-                <div key={v.id} className="rounded-[24px] border border-divider bg-surface-white p-5">
+                <div key={v.id} className={`rounded-[24px] border border-divider bg-surface-white p-5 ${larga}`}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Pegando seu voucher</p>
                   <p className="mt-1 text-[16px] font-semibold">{v.title}</p>
                   <p className="mt-0.5 text-[14px] text-text-secondary">{voucherDiscountLabel(v)}</p>
@@ -1658,6 +1660,41 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
             }
 
             const tema = voucherTheme(v.color);
+            if (quadrado) {
+              return (
+                <div key={v.id} className="relative flex flex-col overflow-hidden rounded-[26px] p-2.5 text-white" style={{ background: voucherGradient(v.color), boxShadow: `0 10px 26px ${tema.glow}` }}>
+                  <div className="relative aspect-square w-full overflow-hidden rounded-[20px] bg-white/15">
+                    {v.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={v.image_url} alt={v.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center px-2 text-center">
+                        <span className="font-[family-name:var(--font-manrope)] text-[34px] font-extrabold leading-none tracking-[-0.02em]">{v.discount_type === "gift" ? "Brinde" : voucherDiscountBig(v)}</span>
+                      </div>
+                    )}
+                    {v.image_url && v.discount_type !== "gift" && (
+                      <span className="absolute right-0 top-0 rounded-bl-[18px] bg-white px-3 py-1.5 text-[15px] font-extrabold leading-none" style={{ color: tema.ctaText }}>{voucherDiscountBig(v)}</span>
+                    )}
+                    {v.badge?.trim() && (
+                      <span className="absolute left-2 top-2 rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
+                    <p className="line-clamp-2 text-[15px] font-semibold leading-snug">{v.title}</p>
+                    {v.description?.trim() && <p className="mt-0.5 line-clamp-1 text-[12px] opacity-80">{v.description}</p>}
+                    <span className="mt-2 w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[11px]">{restam > 0 ? `${restam} restantes` : "Acabou"}</span>
+                    <button
+                      onClick={() => { setClaiming(v.id); setError(null); }}
+                      disabled={restam <= 0}
+                      className="mt-3 inline-flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white py-2.5 text-[13.5px] font-bold disabled:opacity-50"
+                      style={{ color: tema.ctaText }}
+                    >
+                      {restam > 0 ? <>Pegar voucher <span aria-hidden>↗</span></> : "Esgotado"}
+                    </button>
+                  </div>
+                </div>
+              );
+            }
             return (
               <div
                 key={v.id}
@@ -1717,7 +1754,7 @@ function VoucherFlow({ business, sessionId, orbiColors, onBack }: { business: Bu
 
           {/* Vouchers já resgatados neste aparelho, pra pessoa reencontrar o código */}
           {meusVouchers.length > 0 && (
-            <div className="mt-2">
+            <div className={`mt-2 ${larga}`}>
               <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Meus vouchers resgatados</p>
               <div className="mt-2.5 flex flex-col gap-2">
                 {meusVouchers.map((c) => {

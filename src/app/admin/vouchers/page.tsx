@@ -5,6 +5,7 @@ import { getCurrentBusinessId } from "@/lib/business";
 import { VouchersManager } from "./VouchersManager";
 import { DivulgarVoucherButton } from "./DivulgarVoucherButton";
 import { CupomBoxToggle } from "./CupomBoxToggle";
+import { VoucherFormato } from "./VoucherFormato";
 import { VoucherExplainer } from "./VoucherExplainer";
 import { RedeemCodeCard } from "./RedeemCodeCard";
 import Link from "next/link";
@@ -156,6 +157,9 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
         <div className="mt-6 flex flex-col gap-4">
           {/* O elo que faltava: colocar (ou confirmar que já tem) o box na Home */}
           <CupomBoxToggle businessId={business!.id} initialHasBox={!!cupomBox} boxId={cupomBox?.id ?? null} nextPosition={nextPosition} />
+          {cupomBox && (
+            <VoucherFormato boxId={cupomBox.id} config={(cupomBox.config ?? {}) as Record<string, unknown>} inicial={(cupomBox.config as { voucherFormato?: string } | null)?.voucherFormato === "quadrado" ? "quadrado" : "horizontal"} />
+          )}
         </div>
       )}
 
