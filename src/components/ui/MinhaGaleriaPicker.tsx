@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { TIPOS_IMAGEM, clienteBanco, sincronizarBiblioteca, urlDaImagem, type Categoria, type TipoImagem } from "@/lib/bancoImagens";
+import { TIPOS_IMAGEM, classificarImagens, clienteBanco, sincronizarBiblioteca, urlDaImagem, type Categoria, type TipoImagem } from "@/lib/bancoImagens";
 
 type Item = { id: string; nome: string; url: string; category_id: string | null; auto_tipo: TipoImagem | null };
 
@@ -28,6 +28,7 @@ export function MinhaGaleriaPicker({
   const [filtro, setFiltro] = useState<string>("todas");
   const [tipo, setTipo] = useState<"todos" | TipoImagem>("todos");
   const [erro, setErro] = useState<string | null>(null);
+  const [organizando, setOrganizando] = useState(false);
   const [quebradas, setQuebradas] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -42,7 +43,19 @@ export function MinhaGaleriaPicker({
         if (!vivo) return;
         if (error) throw error;
         setCategorias((cats as Categoria[]) ?? []);
-        setItens(((imgs as { id: string; path: string; category_id: string | null; auto_tipo: TipoImagem | null }[]) ?? []).map((o) => ({ id: o.id, nome: o.path, category_id: o.category_id, auto_tipo: o.auto_tipo, url: urlDaImagem(supabase, o.path) })));
+        const lista = ((imgs as { id: string; path: string; category_id: string | null; auto_tipo: TipoImagem | null }[]) ?? []).map((o) => ({ id: o.id, nome: o.path, category_id: o.category_id, auto_tipo: o.auto_tipo, url: urlDaImagem(supabase, o.path) }));
+        setItens(lista);
+        // As fotos sem tipo são classificadas aqui mesmo, em lotes, sem precisar abrir o Banco de imagens.
+        const pendentes = lista.filter((i) => !i.auto_tipo).map((i) => i.id);
+        if (pendentes.length > 0) {
+          setOrganizando(true);
+          for (let n = 0; n < pendentes.length && vivo; n += 8) {
+            const res = await classificarImagens(businessId, pendentes.slice(n, n + 8));
+            if (Object.keys(res).length === 0) break;
+            if (vivo) setItens((p) => (p ?? []).map((i) => (res[i.id] ? { ...i, auto_tipo: res[i.id] } : i)));
+          }
+          if (vivo) setOrganizando(false);
+        }
       } catch {
         if (!vivo) return;
         setErro("Não consegui abrir sua galeria agora.");
@@ -55,7 +68,8 @@ export function MinhaGaleriaPicker({
   }, [supabase, businessId]);
 
   const visiveis = (itens ?? []).filter((i) => !quebradas.has(i.nome) && (filtro === "todas" ? true : filtro === "sem" ? !i.category_id : i.category_id === filtro) && (tipo === "todos" ? true : i.auto_tipo === tipo));
-  const temTipos = (itens ?? []).some((i) => i.auto_tipo);
+  const temTipos = (itens ?? []).some((i) => i.auto_tipo) || organizando;
+  const contagemTipo = (t: TipoImagem) => (itens ?? []).filter((i) => i.auto_tipo === t).length;
   const temSem = (itens ?? []).some((i) => !i.category_id);
   const chip = (ativo: boolean) => `shrink-0 min-h-[36px] rounded-full px-3.5 text-[13px] font-medium ${ativo ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`;
 
@@ -83,12 +97,15 @@ export function MinhaGaleriaPicker({
         )}
 
         {temTipos && (
+          <>
           <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto px-5">
             <button type="button" onClick={() => setTipo("todos")} className={chip(tipo === "todos")}>Todos os tipos</button>
             {TIPOS_IMAGEM.map((t) => (
-              <button key={t.id} type="button" onClick={() => setTipo(t.id)} className={chip(tipo === t.id)}>{t.nome}</button>
+              <button key={t.id} type="button" onClick={() => setTipo(t.id)} className={chip(tipo === t.id)}>{t.nome} {contagemTipo(t.id)}</button>
             ))}
           </div>
+          {organizando && <p className="mt-1.5 px-5 text-[12px] text-text-tertiary">Organizando suas fotos por tipo…</p>}
+          </>
         )}
 
         <div className="mt-4 min-h-0 flex-1 overflow-y-auto px-5 pb-6">
