@@ -93,6 +93,7 @@ export function HomeVitrine({
   itens,
   tituloItens,
   onTitulo,
+  destaque,
   slug,
   businessId,
   sessionId,
@@ -123,6 +124,8 @@ export function HomeVitrine({
   tituloItens: string;
   /** Dono: salva o título da seção (vazio volta ao padrão, Destaque). */
   onTitulo?: (t: string) => void;
+  /** Box destaque, fixado no topo da tela inicial. */
+  destaque?: ReactNode;
   slug: string;
   businessId: string;
   sessionId: string | null;
@@ -178,7 +181,8 @@ export function HomeVitrine({
 
   return (
     <div className="mt-8 flex w-full flex-col items-center">
-      <div className="relative w-full max-w-[340px] lg:max-w-[480px]">
+      {destaque}
+      <div className="relative mt-6 w-full max-w-[340px] lg:max-w-[480px]">
         {ctaTipo === "orbi" ? (
           <form
             onSubmit={(e) => {

@@ -31,6 +31,7 @@ import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
 import { CartaoItem } from "./CartaoItem";
 import { AdicionarBox, type NovoBox } from "./AdicionarBox";
+import { BoxDestaque, lerDestaques, type Destaque } from "./BoxDestaque";
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
@@ -68,6 +69,7 @@ type Business = {
   catalog_subtitle: string | null;
   vitrine_lead_top?: boolean | null;
   home_mode?: string | null;
+  home_destaques?: unknown;
   share_description?: string | null;
 };
 
@@ -148,6 +150,7 @@ export function VisitorExperience({
   // então só aparece pro visitante quando o negócio tem número.
   const giftEnabled = giftLigado && !!business.contact_whatsapp;
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [intent, setIntent] = useState<Intent | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   // Cópia local editável dos boxes, o dono pode reordenar e renomear direto
@@ -500,6 +503,12 @@ export function VisitorExperience({
   async function salvarTituloSecao(valor: string) {
     setTituloSecao(valor);
     conferirSalvo(await supabase.from("businesses").update({ catalog_title: valor.trim() || null }).eq("id", business.id));
+  }
+  // Box destaque da tela inicial: vouchers e produtos que o dono fixa no topo.
+  const [destaquesHome, setDestaquesHome] = useState<Destaque[]>(() => lerDestaques(business.home_destaques));
+  async function salvarDestaques(lista: Destaque[]) {
+    setDestaquesHome(lista);
+    conferirSalvo(await supabase.from("businesses").update({ home_destaques: lista }).eq("id", business.id));
   }
   const frase = fraseDoNegocio(business);
   const [textos, setTextos] = useState<{ nome: string; frase?: string; pergunta: string | null }>({ nome: business.name, frase: textoApagado(business.share_description) ? "" : undefined, pergunta: textoApagado(business.hero_question) ? "" : business.hero_question });
@@ -918,10 +927,22 @@ export function VisitorExperience({
                 opcoesCta={opcoesCta}
                 onCtaTipo={boxFormato ? (t) => guardarNaVitrine({ botaoPrincipal: t }) : undefined}
                 onCta={ctaVitrine.onClick}
-                itens={contentHome}
+                itens={contentHome.filter((i) => !destaquesHome.some((d) => d.t === "item" && d.id === i.id))}
                 onReordenarItens={reordenarItens}
                 tituloItens={tituloSecao.trim() || "Destaque"}
                 onTitulo={salvarTituloSecao}
+                destaque={
+                  <BoxDestaque
+                    businessId={business.id}
+                    slug={business.slug}
+                    sessionId={sessionId}
+                    destaques={destaquesHome}
+                    itens={contentHome}
+                    podeEditar={showOwnerControls}
+                    onSalvar={salvarDestaques}
+                    onVoucher={(id) => router.push(`/${business.slug}?v=${id}`)}
+                  />
+                }
                 slug={business.slug}
                 businessId={business.id}
                 sessionId={sessionId}
