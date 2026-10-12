@@ -29,7 +29,7 @@ export const VALIDADES: { horas: string; rotulo: string }[] = [
 ];
 
 type RascunhoVoucher = {
-  title: string; description: string; discountType: "percent" | "fixed" | "gift"; discountValue: string;
+  title: string; description: string; discountType: "percent" | "fixed" | "gift" | ""; discountValue: string;
   quantityTotal: string; expiresHours: string; imageUrl: string | null; badge: string; color: VoucherColor;
   /** Veio pronto do cadastro, sugerido pelo ramo do negócio. */
   sugestao?: boolean;
@@ -61,7 +61,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   // Form de criação
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [discountType, setDiscountType] = useState<"percent" | "fixed" | "gift">("percent");
+  const [discountType, setDiscountType] = useState<"percent" | "fixed" | "gift" | "">("");
   const [discountValue, setDiscountValue] = useState("");
   const [quantityTotal, setQuantityTotal] = useState("");
   const [expiresHours, setExpiresHours] = useState("48");
@@ -92,7 +92,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   function retomarRascunho() {
     try {
       const r = JSON.parse(rascunhoBruto ?? "") as RascunhoVoucher;
-      setTitle(r.title ?? ""); setDescription(r.description ?? ""); setDiscountType(r.discountType ?? "percent");
+      setTitle(r.title ?? ""); setDescription(r.description ?? ""); setDiscountType(r.discountType ?? "");
       setDiscountValue(r.discountValue ?? ""); setQuantityTotal(r.quantityTotal ?? ""); setExpiresHours(r.expiresHours ?? "48");
       setImageUrl(r.imageUrl ?? null); setBadge(r.badge ?? ""); setColor(r.color ?? "cherry");
       setCreating(true);
@@ -112,7 +112,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
     if (saving) return;
     const f: ("title" | "discount" | "quantity")[] = [];
     if (!title.trim()) f.push("title");
-    if (discountType !== "gift" && (!discountValue || Number(discountValue) <= 0)) f.push("discount");
+    if (!discountType || (discountType !== "gift" && (!discountValue || Number(discountValue) <= 0))) f.push("discount");
     if (!quantityTotal || Number(quantityTotal) < 1) f.push("quantity");
     setFaltando(f);
     if (f.length > 0) {
@@ -396,7 +396,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             onTipo={(t) => { setDiscountType(t); setFaltando((f) => f.filter((x) => x !== "discount")); }}
             onValor={(v) => { setDiscountValue(v); setFaltando((f) => f.filter((x) => x !== "discount")); }}
           />
-          {discountType !== "gift" && (
+          {discountType !== "gift" && discountType !== "" && (
             <div className="flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3">
               <div className="min-w-0 flex-1">
                 <p className="text-[14px] font-medium">Mostrar o desconto no voucher</p>
@@ -430,7 +430,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           </div>
           {faltando.length > 0 && (
             <p role="alert" className="text-[13px] text-red-600">
-              Falta preencher: {faltando.map((x) => (x === "title" ? "o título" : x === "discount" ? "o valor do desconto" : "a quantidade")).join(", ")}.
+              Falta preencher: {faltando.map((x) => (x === "title" ? "o título" : x === "discount" ? "o tipo e o valor do desconto" : "a quantidade")).join(", ")}.
             </p>
           )}
           <div className="mt-1 flex gap-2">

@@ -2,10 +2,12 @@
 
 export type TipoDesconto = "percent" | "fixed" | "gift";
 
-const OPCOES: { id: TipoDesconto; nome: string }[] = [
-  { id: "percent", nome: "Porcentagem" },
-  { id: "fixed", nome: "Valor em R$" },
-  { id: "gift", nome: "Brinde" },
+// Porcentagem fica por último: é a opção que mais vem pré-marcada, então quem
+// quer um brinde ou um valor em reais precisa ver essas duas primeiro.
+const OPCOES: { id: TipoDesconto; nome: string; sub: string; icone: string }[] = [
+  { id: "gift", nome: "Brinde", sub: "Um item ou benefício", icone: "🎁" },
+  { id: "fixed", nome: "Valor em R$", sub: "Ex: R$ 15 off", icone: "R$" },
+  { id: "percent", nome: "Porcentagem", sub: "Ex: 10% off", icone: "%" },
 ];
 
 /**
@@ -21,7 +23,8 @@ export function SeletorDesconto({
   invalido,
   idCampo,
 }: {
-  tipo: TipoDesconto;
+  /** Vazio no cadastro novo: a pessoa precisa escolher, nada vem pré-marcado. */
+  tipo: TipoDesconto | "";
   valor: string;
   onTipo: (t: TipoDesconto) => void;
   onValor: (v: string) => void;
@@ -31,25 +34,32 @@ export function SeletorDesconto({
   const exemplo = tipo === "percent" ? `${valor || "10"}% OFF` : `R$ ${valor || "15"} OFF`;
   return (
     <div>
-      <div role="radiogroup" aria-label="Tipo de benefício" className="flex gap-1.5 rounded-full bg-surface-soft p-1">
-        {OPCOES.map((o) => (
-          <button
-            key={o.id}
-            type="button"
-            role="radio"
-            aria-checked={tipo === o.id}
-            onClick={() => onTipo(o.id)}
-            className={`min-h-[40px] flex-1 rounded-full px-2 text-[13px] font-medium transition-colors ${tipo === o.id ? "bg-on-background text-white" : "text-text-secondary"}`}
-          >
-            {o.nome}
-          </button>
-        ))}
+      <div role="radiogroup" aria-label="Tipo de benefício" className="grid grid-cols-3 gap-2">
+        {OPCOES.map((o) => {
+          const on = tipo === o.id;
+          return (
+            <button
+              key={o.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => onTipo(o.id)}
+              className={`flex flex-col items-center gap-0.5 rounded-[20px] border-2 px-2 py-3 text-center transition-colors ${on ? "border-on-background bg-on-background text-white" : "border-divider bg-surface-white text-text-secondary"}`}
+            >
+              <span className="text-[18px] font-bold leading-none" aria-hidden>{o.icone}</span>
+              <span className="mt-1 text-[13px] font-semibold leading-tight">{o.nome}</span>
+              <span className={`text-[11px] leading-tight ${on ? "text-white/70" : "text-text-tertiary"}`}>{o.sub}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {tipo === "gift" ? (
-        <div className="mt-2 rounded-2xl bg-surface-soft px-4 py-3">
-          <p className="text-[13.5px] font-medium">Sem número no cartão</p>
-          <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">O que a pessoa ganha vai no título. Ex: Sobremesa grátis, Café de cortesia.</p>
+      {tipo === "" ? (
+        <p className={`mt-2 rounded-[20px] px-4 py-3 text-[13px] ${invalido ? "bg-red-50 text-red-600" : "bg-surface-soft text-text-tertiary"}`}>Escolha acima o que a pessoa ganha com este voucher.</p>
+      ) : tipo === "gift" ? (
+        <div className="mt-2 rounded-[20px] bg-[#FDEEDF] px-4 py-3.5 ring-1 ring-[#C2650A]/25">
+          <p className="text-[14px] font-semibold text-[#9A4F06]">Este voucher é um brinde, sem número</p>
+          <p className="mt-1 text-[12.5px] leading-snug text-[#9A4F06]/90">No cartão aparece a palavra <span className="font-bold">BRINDE</span>, e o que a pessoa ganha vai no título. Ex: Sobremesa grátis, Café de cortesia. Porcentagem e valor não valem para brinde.</p>
         </div>
       ) : (
         <div className="mt-2">
