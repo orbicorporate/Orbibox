@@ -169,22 +169,15 @@ export function BoxDestaque({
     "v" in c && c.v ? cartaoVoucher(c.v, largo) : "b" in c && c.b ? cartaoBotao(c.b, largo) : "i" in c && c.i ? cartaoItem(c.i, largo) : null;
 
   const maisQuadrado = podeEditar && (
-    <button type="button" onClick={() => setAberto(true)} aria-label="Adicionar ao box destaque" className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[20px] border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
+    <button type="button" onClick={() => setAberto(true)} aria-label="Fixar ou tirar itens do destaque" className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[20px] border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
   );
 
   return (
     <section className="w-full" aria-label="Destaque">
-      {podeEditar && (
-        <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Box destaque</span>
-          <button type="button" onClick={() => setAberto(true)} aria-label="Escolher o que fica em destaque" className="flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 text-[13px] text-on-background/70 active:scale-95">✎</button>
-        </div>
-      )}
-
       {cartoes.length === 0 ? (
         <button type="button" onClick={() => setAberto(true)} className="flex min-h-[72px] w-full max-w-[300px] flex-col items-start justify-center gap-1 rounded-[20px] border-2 border-dashed border-divider px-4 text-left text-text-secondary">
-          <span className="text-[15px] font-medium">+ Adicionar box destaque</span>
-          <span className="text-[12.5px] text-text-tertiary">Fixe um voucher ou produto no topo. Só você vê este aviso.</span>
+          <span className="text-[15px] font-medium">+ Fixar no destaque</span>
+          <span className="text-[12.5px] text-text-tertiary">Fixe um botão, voucher ou produto aqui. Só você vê este aviso.</span>
         </button>
       ) : cartoes.length === 1 ? (
         <div className="flex w-full items-center gap-2">
@@ -207,10 +200,10 @@ export function BoxDestaque({
           <button type="button" aria-label="Fechar" onClick={() => setAberto(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
           <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-h-[80vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex items-center justify-between">
-              <span className="text-[17px] font-medium">Box destaque</span>
+              <span className="text-[17px] font-medium">Fixar no destaque</span>
               <button type="button" onClick={() => setAberto(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
             </div>
-            <p className="mt-1 text-[13px] text-text-secondary">Escolha um ou mais: botões, vouchers ou produtos. Ficam na seção Destaque, na ordem em que você marcar.</p>
+            <p className="mt-1 text-[13px] text-text-secondary">Marque o que você quer em evidência: botões, vouchers ou produtos. Eles aparecem no começo da seção, na ordem em que você marcar. Desmarque para tirar.</p>
 
             <p className="mt-4 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Botões</p>
             <div className="mt-2 flex flex-col gap-2">
