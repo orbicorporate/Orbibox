@@ -10,7 +10,10 @@ import { trackClick } from "@/lib/track";
 import { formatPrice } from "@/lib/showcase";
 import type { ItemCartao } from "./CartaoItem";
 
-export type Destaque = { t: "voucher" | "item"; id: string };
+export type Destaque = { t: "voucher" | "item" | "botao"; id: string };
+
+/** Qualquer botão que o dono criou (WhatsApp, link, cardápio, endereço...), pronto para virar destaque. */
+export type BotaoDestaque = { key: string; titulo: string; sub: string; icone: string; logo: string | null; cor: string; acao: string; onClick: () => void };
 
 type V = {
   id: string;
@@ -29,7 +32,7 @@ type V = {
 /** Lê o que está salvo em businesses.home_destaques, ignorando lixo. */
 export function lerDestaques(raw: unknown): Destaque[] {
   if (!Array.isArray(raw)) return [];
-  return raw.filter((d): d is Destaque => !!d && typeof d === "object" && ((d as Destaque).t === "voucher" || (d as Destaque).t === "item") && typeof (d as Destaque).id === "string");
+  return raw.filter((d): d is Destaque => !!d && typeof d === "object" && ((d as Destaque).t === "voucher" || (d as Destaque).t === "item" || (d as Destaque).t === "botao") && typeof (d as Destaque).id === "string");
 }
 
 /**
@@ -44,6 +47,7 @@ export function BoxDestaque({
   sessionId,
   destaques,
   itens,
+  botoes,
   podeEditar,
   onSalvar,
   onVoucher,
@@ -53,6 +57,7 @@ export function BoxDestaque({
   sessionId: string | null;
   destaques: Destaque[];
   itens: ItemCartao[];
+  botoes: BotaoDestaque[];
   podeEditar: boolean;
   onSalvar: (lista: Destaque[]) => void;
   onVoucher: (id: string) => void;
@@ -79,8 +84,8 @@ export function BoxDestaque({
   }, [supabase, businessId]);
 
   const cartoes = destaques
-    .map((d) => (d.t === "voucher" ? { d, v: vouchers.find((x) => x.id === d.id) } : { d, i: itens.find((x) => x.id === d.id) }))
-    .filter((c) => ("v" in c ? !!c.v : !!c.i));
+    .map((d) => (d.t === "voucher" ? { d, v: vouchers.find((x) => x.id === d.id) } : d.t === "botao" ? { d, b: botoes.find((x) => x.key === d.id) } : { d, i: itens.find((x) => x.id === d.id) }))
+    .filter((c) => ("v" in c ? !!c.v : "b" in c ? !!c.b : !!c.i));
 
   const marcado = (t: Destaque["t"], id: string) => destaques.some((d) => d.t === t && d.id === id);
   const alternar = (t: Destaque["t"], id: string) => onSalvar(marcado(t, id) ? destaques.filter((d) => !(d.t === t && d.id === id)) : [...destaques, { t, id }]);
@@ -112,6 +117,24 @@ export function BoxDestaque({
     );
   };
 
+  const cartaoBotao = (b: BotaoDestaque, largo: boolean) => (
+    <div className={`flex items-center gap-3 rounded-[20px] border border-divider bg-surface-white p-2 pr-3 text-left shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`}>
+      {b.logo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={b.logo} alt="" className="h-14 w-14 shrink-0 rounded-[14px] object-cover" />
+      ) : (
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] text-[22px] text-white" style={{ background: b.cor }} aria-hidden>{b.icone}</span>
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.titulo}</span>
+        {b.sub && <span className="mt-0.5 block truncate text-[12px] text-text-secondary">{b.sub}</span>}
+      </span>
+      <button type="button" onClick={b.onClick} className="shrink-0 rounded-full bg-on-background px-3.5 py-1.5 text-[12.5px] font-semibold text-white">
+        {b.acao}
+      </button>
+    </div>
+  );
+
   const cartaoItem = (i: ItemCartao, largo: boolean) => {
     const destino = i.link_kind === "nenhum" ? null : i.link_kind === "categoria" ? i.target_url : i.target_url && i.link_kind === "externo" ? i.target_url : `/${slug}/p/${i.id}`;
     const externo = i.link_kind === "categoria" || i.link_kind === "externo";
@@ -142,6 +165,9 @@ export function BoxDestaque({
     );
   };
 
+  const renderCartao = (c: (typeof cartoes)[number], largo: boolean) =>
+    "v" in c && c.v ? cartaoVoucher(c.v, largo) : "b" in c && c.b ? cartaoBotao(c.b, largo) : "i" in c && c.i ? cartaoItem(c.i, largo) : null;
+
   const maisQuadrado = podeEditar && (
     <button type="button" onClick={() => setAberto(true)} aria-label="Adicionar ao box destaque" className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[20px] border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
   );
@@ -162,14 +188,14 @@ export function BoxDestaque({
         </button>
       ) : cartoes.length === 1 ? (
         <div className="flex w-full items-center gap-2">
-          {"v" in cartoes[0] && cartoes[0].v ? cartaoVoucher(cartoes[0].v, true) : "i" in cartoes[0] && cartoes[0].i ? cartaoItem(cartoes[0].i, true) : null}
+          {renderCartao(cartoes[0], true)}
           {maisQuadrado}
         </div>
       ) : (
         <ul data-rolavel className="no-scrollbar -mx-6 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-6 pb-2">
           {cartoes.map((c) => (
             <li key={`${c.d.t}-${c.d.id}`} className="contents">
-              {"v" in c && c.v ? cartaoVoucher(c.v, false) : "i" in c && c.i ? cartaoItem(c.i, false) : null}
+              {renderCartao(c, false)}
             </li>
           ))}
           {maisQuadrado && <li className="contents">{maisQuadrado}</li>}
@@ -184,9 +210,17 @@ export function BoxDestaque({
               <span className="text-[17px] font-medium">Box destaque</span>
               <button type="button" onClick={() => setAberto(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
             </div>
-            <p className="mt-1 text-[13px] text-text-secondary">Escolha um ou mais. Ficam no topo da tela inicial, na ordem em que você marcar.</p>
+            <p className="mt-1 text-[13px] text-text-secondary">Escolha um ou mais: botões, vouchers ou produtos. Ficam na seção Destaque, na ordem em que você marcar.</p>
 
-            <p className="mt-4 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Vouchers no ar</p>
+            <p className="mt-4 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Botões</p>
+            <div className="mt-2 flex flex-col gap-2">
+              {botoes.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum botão criado ainda.</p>}
+              {botoes.map((b) => (
+                <Linha key={b.key} ligado={marcado("botao", b.key)} titulo={b.titulo} sub={b.sub} foto={b.logo} icone={b.icone} cor={b.cor} onClick={() => alternar("botao", b.key)} />
+              ))}
+            </div>
+
+            <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Vouchers no ar</p>
             <div className="mt-2 flex flex-col gap-2">
               {vouchers.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum voucher ativo agora.</p>}
               {vouchers.map((v) => (
@@ -209,12 +243,14 @@ export function BoxDestaque({
   );
 }
 
-function Linha({ ligado, titulo, sub, foto, onClick }: { ligado: boolean; titulo: string; sub: string; foto: string | null; onClick: () => void }) {
+function Linha({ ligado, titulo, sub, foto, icone, cor, onClick }: { ligado: boolean; titulo: string; sub: string; foto: string | null; icone?: string; cor?: string; onClick: () => void }) {
   return (
     <button type="button" role="checkbox" aria-checked={ligado} onClick={onClick} className={`flex items-center gap-3 rounded-2xl border-2 p-2.5 text-left ${ligado ? "border-on-background" : "border-divider"}`}>
       {foto ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={foto} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+      ) : icone ? (
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[18px] text-white" style={{ background: cor ?? "#111318" }} aria-hidden>{icone}</span>
       ) : (
         <span className="h-11 w-11 shrink-0 rounded-xl bg-surface-soft" />
       )}

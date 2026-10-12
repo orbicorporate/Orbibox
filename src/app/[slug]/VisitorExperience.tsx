@@ -31,7 +31,7 @@ import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
 import { CartaoItem } from "./CartaoItem";
 import { AdicionarBox, type NovoBox } from "./AdicionarBox";
-import { BoxDestaque, lerDestaques, type Destaque } from "./BoxDestaque";
+import { BoxDestaque, lerDestaques, type Destaque, type BotaoDestaque } from "./BoxDestaque";
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
@@ -656,6 +656,26 @@ export function VisitorExperience({
     .filter((o) => !(ctaVitrine.tipo === "orbi" && (o.ai || o.acao === "zara" || o.acao === "duvida")))
     .map((o) => ({ key: o.key, rotulo: o.t, onClick: o.onClick }));
 
+  // Botões que o dono pode fixar no Box destaque (tudo que ele criou, menos Vouchers e a barra da Orbi).
+  const botoesDestaque: BotaoDestaque[] = (() => {
+    const lista: BotaoDestaque[] = todasOpcoes
+      .filter((o) => !o.cupom && !o.ai)
+      .map((o) => ({
+        key: o.key,
+        titulo: o.t,
+        sub: o.d || (o.atalho === "whatsapp" ? "Falar agora" : ""),
+        icone: o.icon === "__orb__" ? "✦" : o.icon,
+        logo: o.boxLogo ?? null,
+        cor: o.atalho === "whatsapp" ? "#25D366" : (o.bolinhaCor || o.color || "#111318"),
+        acao: o.atalho === "whatsapp" ? "Falar" : o.atalho === "endereco" ? "Ver" : "Abrir",
+        onClick: o.onClick,
+      }));
+    if (!lista.some((b) => b.key === "zap") && !todasOpcoes.some((o) => o.atalho === "whatsapp") && whatsAtalho) {
+      lista.unshift({ key: "zap", titulo: "WhatsApp", sub: "Falar agora", icone: "✆", logo: null, cor: "#25D366", acao: "Falar", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
+    }
+    return lista;
+  })();
+
   const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
     ? (business.hero_gradient as string[])
     : ["#B7F34A", "#6EE7D8"];
@@ -938,6 +958,7 @@ export function VisitorExperience({
                     sessionId={sessionId}
                     destaques={destaquesHome}
                     itens={contentHome}
+                    botoes={botoesDestaque}
                     podeEditar={showOwnerControls}
                     onSalvar={salvarDestaques}
                     onVoucher={(id) => router.push(`/${business.slug}?v=${id}`)}
