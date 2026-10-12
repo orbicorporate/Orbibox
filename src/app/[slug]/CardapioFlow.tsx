@@ -31,6 +31,7 @@ export function CardapioFlow({
   sessionId,
   titulo,
   subtitulo,
+  pdfUrl,
   onPedir,
   onBack,
 }: {
@@ -39,6 +40,8 @@ export function CardapioFlow({
   sessionId: string | null;
   titulo: string;
   subtitulo: string;
+  /** PDF do cardápio para baixar, se o dono enviou. */
+  pdfUrl?: string | null;
   onPedir?: () => void;
   onBack: () => void;
 }) {
@@ -67,6 +70,12 @@ export function CardapioFlow({
       <button onClick={onBack} className="mb-3 text-[14px] text-text-tertiary hover:underline">← voltar</button>
       <h2 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.01em]">{titulo}</h2>
       <p className="mt-1 text-[14px] text-text-secondary">{subtitulo}</p>
+      {pdfUrl && (
+        <a href={pdfUrl} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: pdfUrl })} className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="M7 11l5 5 5-5" /><path d="M5 21h14" /></svg>
+          Baixar cardápio em PDF
+        </a>
+      )}
 
       {itens.length === 0 && (
         <p className="mt-8 rounded-[22px] border border-dashed border-divider p-6 text-center text-[14px] text-text-tertiary">O cardápio ainda está sendo montado.</p>
