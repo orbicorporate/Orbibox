@@ -181,8 +181,7 @@ export function HomeVitrine({
 
   return (
     <div className="mt-8 flex w-full flex-col items-center">
-      {destaque}
-      <div className="relative mt-6 w-full max-w-[340px] lg:max-w-[480px]">
+      <div className="relative w-full max-w-[340px] lg:max-w-[480px]">
         {ctaTipo === "orbi" ? (
           <form
             onSubmit={(e) => {
@@ -221,6 +220,8 @@ export function HomeVitrine({
           <button type="button" onClick={() => setEditandoCta(true)} aria-label="Escolher o botão principal" className="absolute -right-2 -top-3 flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95">✎</button>
         )}
       </div>
+
+      <div className="mt-5 flex w-full flex-col items-center empty:hidden">{destaque}</div>
 
       {editandoCta && montado && onCtaTipo && createPortal(
         <>
