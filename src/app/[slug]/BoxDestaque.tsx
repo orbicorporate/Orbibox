@@ -88,13 +88,13 @@ export function BoxDestaque({
   if (cartoes.length === 0 && !podeEditar) return null;
 
   // Cartões pequenos e delicados: miniatura, nome, uma linha de apoio e um botão discreto.
-  const largura = (largo: boolean) => (largo ? "w-full" : "w-[88%] shrink-0 snap-center");
+  const largura = (largo: boolean) => (largo ? "min-w-0 flex-1 max-w-[300px]" : "w-[80%] max-w-[300px] shrink-0 snap-center");
   const cartaoVoucher = (v: V, largo: boolean) => {
     const tema = voucherTheme(v.color as never);
     const restam = v.quantity_total - v.quantity_claimed;
     const apoio = v.discount_type === "gift" ? "Brinde" : v.show_discount === false ? (v.description?.trim() || "Voucher") : descontoGrande(v);
     return (
-      <div className={`flex items-center gap-3 rounded-[20px] p-2 pr-3 text-white ${largura(largo)}`} style={{ background: voucherGradient(v.color as never), boxShadow: `0 6px 16px ${tema.glow}` }}>
+      <div className={`flex items-center gap-3 rounded-[20px] p-2 pr-3 text-left text-white ${largura(largo)}`} style={{ background: voucherGradient(v.color as never), boxShadow: `0 6px 16px ${tema.glow}` }}>
         {v.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={v.image_url} alt="" className="h-14 w-14 shrink-0 rounded-[14px] object-cover" />
@@ -132,7 +132,7 @@ export function BoxDestaque({
         {destino && <span className="shrink-0 rounded-full bg-on-background px-3.5 py-1.5 text-[12.5px] font-semibold text-white">Ver</span>}
       </>
     );
-    const classe = `flex items-center gap-3 rounded-[20px] border border-divider bg-surface-white p-2 pr-3 shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`;
+    const classe = `flex items-center gap-3 rounded-[20px] text-left border border-divider bg-surface-white p-2 pr-3 shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`;
     return destino ? (
       <Link href={destino} target={externo ? "_blank" : undefined} onClick={() => trackClick({ businessId, kind, contentItemId: i.id, sessionId, targetUrl: destino })} className={classe}>
         {miolo}
@@ -141,6 +141,10 @@ export function BoxDestaque({
       <div className={classe}>{miolo}</div>
     );
   };
+
+  const maisQuadrado = podeEditar && (
+    <button type="button" onClick={() => setAberto(true)} aria-label="Adicionar ao box destaque" className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[20px] border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
+  );
 
   return (
     <section className="w-full" aria-label="Destaque">
@@ -152,13 +156,14 @@ export function BoxDestaque({
       )}
 
       {cartoes.length === 0 ? (
-        <button type="button" onClick={() => setAberto(true)} className="mx-auto flex min-h-[72px] w-full max-w-[340px] flex-col items-center justify-center gap-1 rounded-[24px] border-2 border-dashed border-divider px-4 text-center text-text-secondary">
+        <button type="button" onClick={() => setAberto(true)} className="flex min-h-[72px] w-full max-w-[300px] flex-col items-start justify-center gap-1 rounded-[20px] border-2 border-dashed border-divider px-4 text-left text-text-secondary">
           <span className="text-[15px] font-medium">+ Adicionar box destaque</span>
           <span className="text-[12.5px] text-text-tertiary">Fixe um voucher ou produto no topo. Só você vê este aviso.</span>
         </button>
       ) : cartoes.length === 1 ? (
-        <div className="mx-auto w-full max-w-[340px] lg:max-w-[480px]">
+        <div className="flex w-full items-center gap-2">
           {"v" in cartoes[0] && cartoes[0].v ? cartaoVoucher(cartoes[0].v, true) : "i" in cartoes[0] && cartoes[0].i ? cartaoItem(cartoes[0].i, true) : null}
+          {maisQuadrado}
         </div>
       ) : (
         <ul data-rolavel className="no-scrollbar -mx-6 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-6 pb-2">
@@ -167,6 +172,7 @@ export function BoxDestaque({
               {"v" in c && c.v ? cartaoVoucher(c.v, false) : "i" in c && c.i ? cartaoItem(c.i, false) : null}
             </li>
           ))}
+          {maisQuadrado && <li className="contents">{maisQuadrado}</li>}
         </ul>
       )}
 
