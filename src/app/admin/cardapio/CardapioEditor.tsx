@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { ImportarCardapio } from "./ImportarCardapio";
+import { PdfCardapio } from "./PdfCardapio";
 
 export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: ativoInicial, totalBoxes, itens, slug }: { businessId: string; boxId: string | null; config: Record<string, unknown>; ativo: boolean; totalBoxes: number; itens: number; slug: string }) {
   const supabase = useRef(createClient()).current;
@@ -37,6 +39,13 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     }, 600);
   }
 
+  async function trocarPdf(url: string) {
+    if (!boxId) return;
+    const novo = { ...cfg, pdf_url: url || null };
+    const res = await supabase.from("smart_boxes").update({ config: novo }).eq("id", boxId);
+    if (conferirSalvo(res)) setCfg(novo);
+  }
+
   async function alternar() {
     if (!boxId) return;
     const novo = !ativo;
@@ -50,6 +59,8 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
       <Link href="/admin/boxes" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Botões da home</Link>
       <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.02em]">Cardápio</h1>
       <p className="mt-1 text-[14px] leading-snug text-text-secondary">Um botão na sua página que abre o cardápio: seus itens por categoria, com foto, descrição e preço.</p>
+
+      <ImportarCardapio businessId={businessId} slug={slug} />
 
       {!boxId ? (
         <div className="mt-5 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
@@ -82,6 +93,8 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
               <input value={sub} onChange={(e) => { setSub(e.target.value); gravarTexto(nome, e.target.value); }} maxLength={60} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
             </div>
           </div>
+
+          <PdfCardapio businessId={businessId} url={(cfg.pdf_url as string) || ""} onChange={trocarPdf} />
 
           <div className="mt-4 rounded-[22px] bg-surface-soft p-4">
             <p className="text-[14px] font-medium">{itens === 0 ? "Seu cardápio ainda está vazio" : `${itens} ${itens === 1 ? "item publicado" : "itens publicados"} no cardápio`}</p>
