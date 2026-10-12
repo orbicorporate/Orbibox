@@ -19,6 +19,14 @@ export function PdfCardapio({ businessId, url, onChange }: { businessId: string;
   const [modoLink, setModoLink] = useState(false);
   const [link, setLink] = useState("");
 
+  // Apaga do armazenamento o PDF antigo quando ele é trocado ou removido, pra não acumular arquivo esquecido.
+  async function apagarAntigo(antigo: string) {
+    const marca = "/object/public/cardapios-pdf/";
+    const i = antigo.indexOf(marca);
+    if (i < 0) return;
+    await supabase.storage.from("cardapios-pdf").remove([decodeURIComponent(antigo.slice(i + marca.length))]);
+  }
+
   async function enviar(f: File | null | undefined) {
     if (!f) return;
     setErro(null);
@@ -30,7 +38,9 @@ export function PdfCardapio({ businessId, url, onChange }: { businessId: string;
     setEnviando(false);
     if (input.current) input.current.value = "";
     if (error) return setErro("Não consegui enviar o PDF. Tente de novo.");
+    const antigo = url;
     onChange(supabase.storage.from("cardapios-pdf").getPublicUrl(path).data.publicUrl);
+    if (antigo) void apagarAntigo(antigo);
   }
 
   function salvarLink() {
@@ -54,7 +64,7 @@ export function PdfCardapio({ businessId, url, onChange }: { businessId: string;
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <a href={url} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center rounded-full bg-surface-soft px-4 text-[13.5px] font-medium">Ver o PDF atual ↗</a>
           <button type="button" onClick={() => input.current?.click()} className="min-h-[44px] rounded-full border border-divider px-4 text-[13.5px] font-medium">Trocar</button>
-          <button type="button" onClick={() => onChange("")} className="min-h-[44px] rounded-full border border-divider px-4 text-[13.5px] font-medium text-text-secondary">Remover</button>
+          <button type="button" onClick={() => { const antigo = url; onChange(""); void apagarAntigo(antigo); }} className="min-h-[44px] rounded-full border border-divider px-4 text-[13.5px] font-medium text-text-secondary">Remover</button>
         </div>
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
