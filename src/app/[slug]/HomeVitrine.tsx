@@ -92,6 +92,7 @@ export function HomeVitrine({
   onCta,
   itens,
   tituloItens,
+  onTitulo,
   slug,
   businessId,
   sessionId,
@@ -120,6 +121,8 @@ export function HomeVitrine({
   onCta: () => void;
   itens: ItemVitrine[];
   tituloItens: string;
+  /** Dono: salva o título da seção (vazio volta ao padrão, Destaque). */
+  onTitulo?: (t: string) => void;
   slug: string;
   businessId: string;
   sessionId: string | null;
@@ -144,6 +147,7 @@ export function HomeVitrine({
 }) {
   const [chip, setChip] = useState<string | null>(null);
   const [editandoFormato, setEditandoFormato] = useState(false);
+  const [editandoTitulo, setEditandoTitulo] = useState(false);
   const [editandoCta, setEditandoCta] = useState(false);
   const [pergunta, setPergunta] = useState("");
   const [editando, setEditando] = useState(false);
@@ -300,7 +304,12 @@ export function HomeVitrine({
       {mostrar.length > 0 && (
         <section className="mt-9 w-full" aria-label={tituloItens}>
           <div className="flex items-center justify-between gap-2">
-            <h2 className="font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
+            <div className="flex min-w-0 items-center gap-1.5">
+              <h2 className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
+              {podeEditar && onTitulo && (
+                <button type="button" onClick={() => setEditandoTitulo(true)} aria-label="Editar o título desta seção" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-[1.5px] border-on-background/35 text-[12px] text-on-background/70 active:scale-95">✎</button>
+              )}
+            </div>
             <div className="flex items-center gap-1">
               {podeEditar && onFormato && (
                 <span className="text-[12px] text-text-tertiary">{FORMATOS.find((f) => f.v === formato)?.titulo}</span>
@@ -365,6 +374,28 @@ export function HomeVitrine({
             </ul>
           )}
         </section>
+      )}
+
+      {editandoTitulo && montado && onTitulo && createPortal(
+        <>
+          <button type="button" aria-label="Fechar" onClick={() => setEditandoTitulo(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+            <div className="flex items-center justify-between">
+              <span className="text-[17px] font-medium">Título da seção</span>
+              <button type="button" onClick={() => setEditandoTitulo(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+            </div>
+            <input
+              defaultValue={tituloItens === "Destaque" ? "" : tituloItens}
+              placeholder="Destaque"
+              maxLength={40}
+              autoFocus
+              onBlur={(e) => { const v = e.target.value.trim(); if (v !== (tituloItens === "Destaque" ? "" : tituloItens)) onTitulo(v); }}
+              className="mt-4 w-full rounded-2xl border border-divider px-4 py-3 text-[16px] outline-none focus:border-on-background"
+            />
+            <p className="mt-2 text-[13px] text-text-secondary">O padrão é Destaque. Você pode trocar por qualquer nome, como Nossas delícias ou Mais pedidos. Vazio volta ao padrão.</p>
+          </div>
+        </>,
+        document.body,
       )}
 
       {editandoFormato && montado && onFormato && createPortal(

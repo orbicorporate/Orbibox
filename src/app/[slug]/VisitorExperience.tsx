@@ -495,6 +495,12 @@ export function VisitorExperience({
     conferirSalvo(await supabase.from("smart_boxes").update({ title: trimmed, config: nextCfg }).eq("id", key));
   }
 
+  // Título da seção de itens na tela inicial: padrão "Destaque", e o dono troca na própria página.
+  const [tituloSecao, setTituloSecao] = useState(business.catalog_title?.trim() ?? "");
+  async function salvarTituloSecao(valor: string) {
+    setTituloSecao(valor);
+    conferirSalvo(await supabase.from("businesses").update({ catalog_title: valor.trim() || null }).eq("id", business.id));
+  }
   const frase = fraseDoNegocio(business);
   const [textos, setTextos] = useState<{ nome: string; frase?: string; pergunta: string | null }>({ nome: business.name, frase: textoApagado(business.share_description) ? "" : undefined, pergunta: textoApagado(business.hero_question) ? "" : business.hero_question });
   async function salvarTexto(campo: "nome" | "frase" | "pergunta", valor: string) {
@@ -914,7 +920,8 @@ export function VisitorExperience({
                 onCta={ctaVitrine.onClick}
                 itens={contentHome}
                 onReordenarItens={reordenarItens}
-                tituloItens={business.catalog_title?.trim() || "Em destaque"}
+                tituloItens={tituloSecao.trim() || "Destaque"}
+                onTitulo={salvarTituloSecao}
                 slug={business.slug}
                 businessId={business.id}
                 sessionId={sessionId}
