@@ -18,6 +18,7 @@ export function PdfCardapio({ businessId, url, onChange }: { businessId: string;
   const [erro, setErro] = useState<string | null>(null);
   const [modoLink, setModoLink] = useState(false);
   const [link, setLink] = useState("");
+  const [grande, setGrande] = useState<number | null>(null);
 
   // Apaga do armazenamento o PDF antigo quando ele é trocado ou removido, pra não acumular arquivo esquecido.
   async function apagarAntigo(antigo: string) {
@@ -30,8 +31,9 @@ export function PdfCardapio({ businessId, url, onChange }: { businessId: string;
   async function enviar(f: File | null | undefined) {
     if (!f) return;
     setErro(null);
+    setGrande(null);
     if (f.type !== "application/pdf") return setErro("Envie um arquivo PDF.");
-    if (f.size > LIMITE_MB * 1024 * 1024) return setErro(`O PDF passa de ${LIMITE_MB} MB. Reduza o tamanho e tente de novo.`);
+    if (f.size > LIMITE_MB * 1024 * 1024) return setGrande(f.size);
     setEnviando(true);
     const path = `${businessId}/cardapio-${Date.now()}.pdf`;
     const { error } = await supabase.storage.from("cardapios-pdf").upload(path, f, { cacheControl: "3600", upsert: false, contentType: "application/pdf" });
@@ -85,6 +87,19 @@ export function PdfCardapio({ businessId, url, onChange }: { businessId: string;
       )}
       {url && ehDrive && <p className="mt-2 text-[12px] leading-snug text-[#9A4F06]">Esse é um link do Drive. Se o cliente ver &quot;pedir acesso&quot;, mude o compartilhamento para &quot;Qualquer pessoa com o link&quot; ou envie o arquivo aqui.</p>}
       {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
+
+      {grande !== null && (
+        <div role="alert" className="mt-3 rounded-2xl bg-[#FDEEDF] p-3.5 ring-1 ring-[#C2650A]/25">
+          <p className="text-[14px] font-semibold text-[#9A4F06]">Esse PDF tem {(grande / 1024 / 1024).toFixed(1).replace(".", ",")} MB e o limite é {LIMITE_MB} MB</p>
+          <p className="mt-1 text-[12.5px] leading-snug text-[#9A4F06]/90">Arquivo grande demora pra baixar no celular do cliente, principalmente com internet fraca, e muita gente desiste. Um cardápio bem feito costuma ficar abaixo de 5 MB. Como reduzir:</p>
+          <ol className="mt-2 list-decimal pl-5 text-[12.5px] leading-relaxed text-[#9A4F06]/90">
+            <li>Abra o PDF em um compressor grátis, como ilovepdf.com/pt/comprimir_pdf ou smallpdf.com/pt/comprimir-pdf, e escolha compressão recomendada.</li>
+            <li>No Mac: abra no Preview, vá em Arquivo, Exportar, e em Filtro Quartz escolha &quot;Reduce File Size&quot;.</li>
+            <li>No Canva: Compartilhar, Baixar, PDF para impressão desmarcado e qualidade &quot;Menor tamanho&quot;.</li>
+          </ol>
+          <p className="mt-2 text-[12.5px] leading-snug text-[#9A4F06]/90">Se mesmo assim passar, divida em dois PDFs (por exemplo, Comidas e Bebidas) e envie o link de um deles, ou use &quot;Já tenho um link&quot; com o arquivo no seu site.</p>
+        </div>
+      )}
     </div>
   );
 }
