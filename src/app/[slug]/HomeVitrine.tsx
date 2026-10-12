@@ -221,8 +221,6 @@ export function HomeVitrine({
         )}
       </div>
 
-      <div className="mt-5 flex w-full flex-col items-center empty:hidden">{destaque}</div>
-
       {editandoCta && montado && onCtaTipo && createPortal(
         <>
           <button type="button" aria-label="Fechar" onClick={() => setEditandoCta(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
@@ -306,6 +304,8 @@ export function HomeVitrine({
         </nav>
       )}
 
+      {mostrar.length === 0 && <div className="mt-9 flex w-full flex-col items-center empty:hidden">{destaque}</div>}
+
       {mostrar.length > 0 && (
         <section className="mt-9 w-full" aria-label={tituloItens}>
           <div className="flex items-center justify-between gap-2">
@@ -327,6 +327,7 @@ export function HomeVitrine({
               </button>
             </div>
           </div>
+          <div className="mt-3 flex w-full flex-col items-center empty:hidden">{destaque}</div>
           {temChips && (
             <div role="tablist" aria-label="Categorias" className="no-scrollbar -mx-6 mt-3 flex gap-2 overflow-x-auto px-6 pb-1">
               {[{ name: null as string | null, rotulo: "Tudo" }, ...categorias.map((c) => ({ name: c.name as string | null, rotulo: c.name }))].map((c) => {
