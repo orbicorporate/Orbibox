@@ -203,34 +203,52 @@ export function ConversasList({ conversations, businessId, orbiColors }: { conve
       <DialogRenderer />
 
       {/* Números que importam, antes da lista. Cada card é o atalho do
-          filtro correspondente: tocar filtra a lista embaixo. */}
+          filtro correspondente. Zero fica apagado: só o que tem valor chama o olho. */}
       <div className="grid grid-cols-3 gap-2.5">
-        <button type="button" onClick={() => setFiltro("todos")} className={`cursor-pointer rounded-[20px] border px-4 py-3.5 text-center transition-colors ${filtro === "todos" ? "border-on-background bg-surface-white" : "border-divider bg-surface-white"}`}>
-          <p className="text-[22px] font-bold leading-none">{lista.length}</p>
-          <p className="mt-1 text-[11.5px] text-text-tertiary">conversas</p>
-        </button>
-        <button type="button" onClick={() => setFiltro("contato")} className={`cursor-pointer rounded-[20px] border px-4 py-3.5 text-center transition-colors ${filtro === "contato" ? "border-[#128C3E] bg-surface-white" : "border-divider bg-surface-white"}`}>
-          <p className="text-[22px] font-bold leading-none text-[#128C3E]">{comContato}</p>
-          <p className="mt-1 text-[11.5px] text-text-tertiary">com contato</p>
-        </button>
-        <button type="button" onClick={() => setFiltro("quentes")} className={`cursor-pointer rounded-[20px] border px-4 py-3.5 text-center transition-colors ${filtro === "quentes" ? "border-[#C0392B] bg-surface-white" : "border-divider bg-surface-white"}`}>
-          <p className="text-[22px] font-bold leading-none text-[#C0392B]">{quentes}</p>
-          <p className="mt-1 text-[11.5px] text-text-tertiary">quentes</p>
+        {([
+          { k: "todos", n: lista.length, rot: "conversas", cor: "#111318" },
+          { k: "contato", n: comContato, rot: "com contato", cor: "#128C3E" },
+          { k: "quentes", n: quentes, rot: "quentes", cor: "#C0392B" },
+        ] as const).map((c) => {
+          const on = filtro === c.k;
+          return (
+            <button
+              key={c.k}
+              type="button"
+              onClick={() => setFiltro(c.k)}
+              aria-pressed={on}
+              className={`cursor-pointer rounded-[20px] border px-3 py-3 text-center transition-colors ${on ? "border-on-background bg-surface-white" : "border-divider bg-surface-white/60"}`}
+            >
+              <p className="text-[22px] font-bold leading-none" style={{ color: c.n === 0 ? "#A3A6AD" : c.cor }}>{c.n}</p>
+              <p className="mt-1 text-[11.5px] text-text-tertiary">{c.rot}</p>
+            </button>
+          );
+        })}
+      </div>
+      {comContato === 0 && (
+        <p className="mt-2 text-[12px] leading-snug text-text-tertiary">Quando alguém deixar o WhatsApp na conversa, ele aparece em &quot;com contato&quot;.</p>
+      )}
+
+      {/* Período à esquerda; exportar vira só um ícone, é ação rara. */}
+      <div className="mt-4 flex items-center gap-2">
+        <div className="no-scrollbar flex min-w-0 flex-1 gap-2 overflow-x-auto">
+          {PERIODOS.map((p) => (
+            <button key={p.key} type="button" onClick={() => setPeriodo(p.key)} aria-pressed={periodo === p.key} className={`shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-[12.5px] font-medium ${periodo === p.key ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={exportarContatos}
+          disabled={exporting}
+          aria-label="Exportar leads em CSV"
+          title="Exportar leads (CSV)"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-divider bg-surface-white text-text-secondary disabled:opacity-50"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19h14" /></svg>
         </button>
       </div>
-
-      {/* Só o período aqui: os três cards acima já fazem o filtro por tipo. */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {PERIODOS.map((p) => (
-          <button key={p.key} type="button" onClick={() => setPeriodo(p.key)} className={`cursor-pointer rounded-full px-3 py-1.5 text-[12.5px] font-medium ${periodo === p.key ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>
-            {p.label}
-          </button>
-        ))}
-      </div>
-
-      <button type="button" onClick={exportarContatos} disabled={exporting} className="mt-2 cursor-pointer self-start rounded-full border border-divider bg-surface-white px-3.5 py-1.5 text-[12px] font-medium text-text-secondary disabled:opacity-50">
-        {exporting ? "Exportando…" : "⬇ Exportar leads (CSV)"}
-      </button>
 
       {visiveis.length === 0 ? (
         <div className="mt-5 rounded-[24px] border border-divider bg-surface-white p-6 text-center text-[14px] text-text-secondary">
@@ -274,6 +292,18 @@ export function ConversasList({ conversations, businessId, orbiColors }: { conve
                   </div>
                   <span className={`mt-1 shrink-0 text-text-tertiary transition-transform ${open ? "rotate-90" : ""}`}>→</span>
                 </button>
+                {lead && !open && (
+                  <div className="px-4 pb-4 pt-0">
+                    <a
+                      href={`https://wa.me/${lead.whatsapp}${lead.nextAction?.mensagem ? `?text=${encodeURIComponent(lead.nextAction.mensagem)}` : ""}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-[40px] items-center gap-2 rounded-full bg-[#25D366] px-4 text-[13px] font-semibold text-white"
+                    >
+                      Responder no WhatsApp
+                    </a>
+                  </div>
+                )}
 
                 {open && (
                   <div className="flex flex-col gap-3 border-t border-divider p-4">

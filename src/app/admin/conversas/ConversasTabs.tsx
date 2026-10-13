@@ -10,11 +10,11 @@ type AbaKey = "conversas" | "etiquetas" | "automaticas" | "minhas";
 
 // Cada aba com ícone, cor e uma frase que explica o que é. As quatro
 // pílulas iguais não diziam que eram filtros nem o que faziam.
-const ABAS: { key: AbaKey; label: string; icon: string; cor: string; fundo: string; desc: string }[] = [
-  { key: "conversas", label: "Conversas", icon: "▤", cor: "#1D4ED8", fundo: "#E2EAFE", desc: "Quem falou com a Orbi pelo seu link. Ela resume, mede a temperatura e sugere o que responder." },
-  { key: "etiquetas", label: "Por etiqueta", icon: "◉", cor: "#6D28D9", fundo: "#EDE6FC", desc: "Seus contatos agrupados por interesse, misturando quem veio do link e quem você importou." },
-  { key: "automaticas", label: "Listas da Orbi", icon: "✦", cor: "#1F7A3D", fundo: "#DEF3E3", desc: "Listas que a Orbi monta sozinha: quem esquentou, sumiu, ou pegou voucher e não usou." },
-  { key: "minhas", label: "Listas suas", icon: "◫", cor: "#C2650A", fundo: "#FDEEDF", desc: "Contatos que você traz de fora do Orbibox e organiza do seu jeito, com lembrete de recompra." },
+const ABAS: { key: AbaKey; label: string; desc: string }[] = [
+  { key: "conversas", label: "Conversas", desc: "" },
+  { key: "etiquetas", label: "Por etiqueta", desc: "Seus contatos agrupados por interesse, de quem veio do link e de quem você importou." },
+  { key: "automaticas", label: "Listas da Orbi", desc: "Listas que a Orbi monta sozinha: quem esquentou, sumiu, ou pegou voucher e não usou." },
+  { key: "minhas", label: "Listas suas", desc: "Contatos que você traz de fora do Orbibox, com lembrete de recompra." },
 ];
 
 /**
@@ -30,30 +30,25 @@ export function ConversasTabs(props: ComponentProps<typeof ConversasList>) {
 
   return (
     <>
-      <div className="mt-5">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Ver</p>
-        <div className="flex flex-wrap gap-2">
+      <div className="mt-4">
+        <div role="tablist" aria-label="Ver" className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1">
           {ABAS.map((a) => {
             const on = aba === a.key;
             return (
               <button
                 key={a.key}
                 type="button"
+                role="tab"
+                aria-selected={on}
                 onClick={() => setAba(a.key)}
-                className="flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold transition-all"
-                style={on ? { backgroundColor: a.cor, color: "#fff" } : { backgroundColor: a.fundo, color: a.cor }}
+                className={`shrink-0 cursor-pointer rounded-full px-4 py-2 text-[13.5px] font-medium transition-colors ${on ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
               >
-                <span className="text-[13px]">{a.icon}</span>
                 {a.label}
               </button>
             );
           })}
         </div>
-        {/* Explica a visão ativa, com a cor dela */}
-        <div className="mt-2.5 flex items-start gap-2.5 rounded-[16px] px-3.5 py-2.5" style={{ backgroundColor: ativa.fundo }}>
-          <span className="mt-0.5 shrink-0 text-[14px]" style={{ color: ativa.cor }}>{ativa.icon}</span>
-          <p className="text-[12.5px] leading-snug" style={{ color: ativa.cor }}>{ativa.desc}</p>
-        </div>
+        {ativa.desc && <p className="mt-2.5 text-[12.5px] leading-snug text-text-tertiary">{ativa.desc}</p>}
       </div>
 
       {/* Sem nenhuma conversa ainda: aponta pro caminho que não depende
