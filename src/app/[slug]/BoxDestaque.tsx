@@ -186,7 +186,7 @@ export function BoxDestaque({
           {maisQuadrado}
         </div>
       ) : (
-        <ul data-rolavel className="no-scrollbar -mx-6 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-6 pb-2">
+        <ul data-rolavel className="no-scrollbar -mx-6 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-6 pb-7 pt-1 -mb-5">
           {cartoes.map((c) => (
             <li key={`${c.d.t}-${c.d.id}`} className="contents">
               {renderCartao(c, false)}
