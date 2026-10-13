@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { LOJAS_DEMO, METRICAS, REDE_DEMO, nf, soma, type LojaDemo, type Metrica } from "@/lib/rede/demo";
+import { LOJAS_DEMO, METRICAS, REDE_DEMO, nf, soma, vouchersDaLoja, type LojaDemo, type Metrica } from "@/lib/rede/demo";
 import { FAIXAS, NOME_PLANO, PRECO_MENSAL, brl, calcularRede, descontoPara, type PlanoRede } from "@/lib/rede/preco";
 
 type Aba = "geral" | "lojas" | "convite";
@@ -359,7 +359,35 @@ function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
                         </p>
                         <Spark dados={x.serie} cor={x.cor === "#E6E26B" || x.cor === "#B7F34A" ? "#6B8E00" : x.cor} />
                       </div>
-                      <button type="button" onClick={() => { setAviso("Na versão real, este botão abre o Orbibox para você ajudar a editar."); setTimeout(() => setAviso(null), 3000); }} className="mt-3 min-h-[44px] w-full rounded-full bg-on-background text-[14px] text-white active:scale-[0.99]">
+                      <div className="mt-4">
+                        <div className="flex items-baseline justify-between">
+                          <p className="text-[14px] font-semibold">Vouchers desta loja</p>
+                          <p className="text-[12px] text-text-tertiary">Resultado da semana</p>
+                        </div>
+                        <ul className="mt-2 flex flex-col gap-2">
+                          {vouchersDaLoja(x).map((v) => {
+                            const conv = v.pegaram > 0 ? Math.round((v.usaram / v.pegaram) * 100) : 0;
+                            return (
+                              <li key={v.titulo} className="rounded-2xl bg-surface-soft px-3.5 py-3">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <p className="truncate text-[14px] font-medium">{v.titulo}</p>
+                                    <p className="mt-0.5 text-[12px] text-text-tertiary">{v.desconto} · {v.vagas - v.pegaram} de {v.vagas} vagas</p>
+                                  </div>
+                                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${v.ativo ? "bg-[#DEF3E3] text-[#1F7A3D]" : "bg-white text-text-tertiary"}`}>{v.ativo ? "Ativo" : "Pausado"}</span>
+                                </div>
+                                <div className="mt-2.5 flex items-center gap-3">
+                                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-white" aria-hidden>
+                                    <div className="h-full rounded-full bg-on-background" style={{ width: `${conv}%` }} />
+                                  </div>
+                                  <p className="shrink-0 text-[12px] tabular-nums text-text-secondary"><span className="font-semibold text-on-background">{v.pegaram}</span> pegaram · <span className="font-semibold text-on-background">{v.usaram}</span> usaram</p>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                      <button type="button" onClick={() => { setAviso("Na versão real, este botão abre o Orbibox para você ajudar a editar."); setTimeout(() => setAviso(null), 3000); }} className="mt-4 min-h-[44px] w-full rounded-full bg-on-background text-[14px] text-white active:scale-[0.99]">
                         Abrir {x.insta}
                       </button>
                     </div>

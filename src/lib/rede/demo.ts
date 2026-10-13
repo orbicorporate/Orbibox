@@ -42,3 +42,34 @@ export const METRICAS: { id: Metrica; nome: string; cor: string; fundo: string }
 
 export const nf = (n: number) => n.toLocaleString("pt-BR");
 export const soma = (lojas: LojaDemo[], m: Metrica) => lojas.reduce((a, l) => a + l[m], 0);
+
+export type VoucherDemo = {
+  titulo: string;
+  desconto: string;
+  ativo: boolean;
+  /** quantas pessoas pegaram o voucher na semana */
+  pegaram: number;
+  /** destas, quantas já usaram na loja */
+  usaram: number;
+  vagas: number;
+};
+
+const MODELOS_VOUCHER: { titulo: string; desconto: string }[] = [
+  { titulo: "10% na primeira compra", desconto: "10% OFF" },
+  { titulo: "Sobremesa cortesia", desconto: "Brinde" },
+  { titulo: "R$ 15 de desconto no fim de semana", desconto: "R$ 15 OFF" },
+  { titulo: "Leve 2 e pague 1", desconto: "50% OFF" },
+];
+
+/** Vouchers de exemplo de uma loja, somando os resgates dela. Determinístico. */
+export function vouchersDaLoja(l: LojaDemo): VoucherDemo[] {
+  const partes = [0.5, 0.3, 0.2];
+  let restante = l.resgates;
+  return partes.map((p, i) => {
+    const pegaram = i === partes.length - 1 ? restante : Math.round(l.resgates * p);
+    restante -= pegaram;
+    const m = MODELOS_VOUCHER[(Number(l.id) + i) % MODELOS_VOUCHER.length];
+    const usaram = Math.round(pegaram * (0.68 - i * 0.12));
+    return { ...m, ativo: i < 2 || l.delta > 0, pegaram, usaram, vagas: Math.max(pegaram + 10, 30) };
+  });
+}
