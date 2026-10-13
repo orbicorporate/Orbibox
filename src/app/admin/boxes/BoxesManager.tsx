@@ -734,7 +734,7 @@ export function BoxesManager({
                   </div>
                   <div id="sobre-diferenciais" className="scroll-mt-24 rounded-2xl">
                     <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
-                    <p className="mt-1 text-[12px] text-text-secondary">Viram um carrossel de cards na tela “Sobre”, ícone, título e uma frase curta.</p>
+                    <p className="mt-1 text-[12px] text-text-secondary">Cartões curtos com o que vocês têm de melhor.</p>
                     <div className="mt-2 flex flex-col gap-2.5">
                       {cards.map((c, i) => (
                         <div key={i} className="rounded-2xl border border-divider p-3">
@@ -776,30 +776,34 @@ export function BoxesManager({
                     </div>
                   </div>
                   <div id="sobre-fotos" className="scroll-mt-24 rounded-2xl">
-                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos e vídeos da história (carrossel)</p>
-                    <p className="mt-1 text-[12px] text-text-secondary">
-                      Aparecem em carrossel, acima do texto, nessa mesma ordem. Vídeo entra direto na grade abaixo, junto das fotos; use as setinhas ‹ › pra escolher a posição dele.
-                    </p>
+                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos</p>
+                    <p className="mt-1 text-[12px] text-text-secondary">Aparecem no topo da página Sobre. Toque no + para adicionar.</p>
                     <div className="mt-2">
                       <GalleryUpload
                         value={storyPhotos}
                         businessId={businessId}
                         lockedRatio="paisagem"
                         lockedReason="As fotos são sempre no formato paisagem, pra combinar com fotos de espaço/equipe e manter o carrossel uniforme."
+                        emptySlots={1}
+                        emptyLabel="Adicionar foto"
                         onChange={saveStoryPhotos}
                       />
                     </div>
-                    <YoutubeAdder
-                      videos={storyPhotos.filter((u) => isVideoUrl(u))}
-                      label="Adicionar vídeo (YouTube ou Reels)"
-                      hint="Cole o link, ele entra na grade acima, no fim da fila. Depois é só usar as setinhas pra mover pra posição que quiser."
-                      showList={false}
-                      onAdd={(url) => {
-                        if (storyPhotos.includes(url)) return;
-                        saveStoryPhotos([...storyPhotos, url]);
-                      }}
-                      onRemove={(url) => saveStoryPhotos(storyPhotos.filter((u) => u !== url))}
-                    />
+                    <details className="mt-3 rounded-2xl bg-surface-soft">
+                      <summary className="flex min-h-[44px] cursor-pointer list-none items-center px-4 text-[13.5px] font-medium">+ Adicionar vídeo (YouTube ou Reels)</summary>
+                      <div className="px-4 pb-4">
+                        <YoutubeAdder
+                          videos={storyPhotos.filter((u) => isVideoUrl(u))}
+                          showList={false}
+                          semTexto
+                          onAdd={(url) => {
+                            if (storyPhotos.includes(url)) return;
+                            saveStoryPhotos([...storyPhotos, url]);
+                          }}
+                          onRemove={(url) => saveStoryPhotos(storyPhotos.filter((u) => u !== url))}
+                        />
+                      </div>
+                    </details>
                   </div>
                 </div>
               )}
