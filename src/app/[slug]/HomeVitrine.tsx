@@ -533,6 +533,16 @@ function ListaBolinhas({
             <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{b.rotulo}</span>
             {b.editavel ? (
               <>
+                {onCor && podeMudarCor(b) && b.estilo === "cor" && (
+                  <button
+                    type="button"
+                    aria-label="Escolher a cor"
+                    aria-expanded={maisCores === b.key}
+                    onClick={() => setMaisCores(maisCores === b.key ? null : b.key)}
+                    className={`h-8 w-8 shrink-0 rounded-full ${maisCores === b.key ? "ring-2 ring-on-background ring-offset-2" : "ring-1 ring-black/10"}`}
+                    style={{ background: "conic-gradient(#EA4335, #F29D38, #F2D338, #2FA36B, #0E9AA7, #3B5BDB, #7B4FE0, #E8508A, #EA4335)" }}
+                  />
+                )}
                 <Seletor valor={b.estilo} onChange={(e) => onEstilo([b.key], e)} />
                 <div className="flex flex-col">
                   <button type="button" aria-label={`Subir ${b.rotulo}`} disabled={i === 0} onClick={() => aplicar(i, i - 1)} className="flex h-[22px] w-7 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▲</button>
@@ -542,40 +552,30 @@ function ListaBolinhas({
             ) : (
               <span className="text-[12px] text-text-tertiary">automática</span>
             )}
-            {onCor && podeMudarCor(b) && b.estilo === "cor" && (
-              <div role="group" aria-label={`Cor de ${b.rotulo}`} className="flex basis-full flex-wrap items-center gap-2 pl-[38px]">
-                {CORES_BOLINHA.map((c) => {
-                  const atual = (b.cor ?? corDe({ ...b, cor: undefined }).fundo).toLowerCase() === c.toLowerCase();
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      aria-label={`Usar a cor ${c}`}
-                      aria-pressed={atual}
-                      onClick={() => onCor(b.key, c)}
-                      className={`h-8 w-8 rounded-full ${atual ? "ring-2 ring-on-background ring-offset-2" : "ring-1 ring-black/10"}`}
-                      style={{ backgroundColor: c }}
-                    />
-                  );
-                })}
-                <button
-                  type="button"
-                  aria-label="Mais cores"
-                  aria-expanded={maisCores === b.key}
-                  onClick={() => setMaisCores(maisCores === b.key ? null : b.key)}
-                  className={`h-8 w-8 rounded-full ${maisCores === b.key ? "ring-2 ring-on-background ring-offset-2" : "ring-1 ring-black/10"}`}
-                  style={{ background: "conic-gradient(#EA4335, #F29D38, #F2D338, #2FA36B, #0E9AA7, #3B5BDB, #7B4FE0, #E8508A, #EA4335)" }}
-                />
-                {b.cor && (
-                  <button type="button" onClick={() => onCor(b.key, null)} className="min-h-[32px] rounded-full px-2.5 text-[12.5px] text-text-secondary underline underline-offset-4">
-                    Cor original
-                  </button>
-                )}
-              </div>
-            )}
             {onCor && podeMudarCor(b) && b.estilo === "cor" && maisCores === b.key && (
               <div className="basis-full pl-[38px]">
-                <div className="grid grid-cols-8 gap-2">
+                <div role="group" aria-label={`Cor de ${b.rotulo}`} className="flex flex-wrap items-center gap-2">
+                  {CORES_BOLINHA.map((c) => {
+                    const atual = (b.cor ?? corDe({ ...b, cor: undefined }).fundo).toLowerCase() === c.toLowerCase();
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        aria-label={`Usar a cor ${c}`}
+                        aria-pressed={atual}
+                        onClick={() => onCor(b.key, c)}
+                        className={`h-8 w-8 rounded-full ${atual ? "ring-2 ring-on-background ring-offset-2" : "ring-1 ring-black/10"}`}
+                        style={{ backgroundColor: c }}
+                      />
+                    );
+                  })}
+                  {b.cor && (
+                    <button type="button" onClick={() => onCor(b.key, null)} className="min-h-[32px] rounded-full px-2.5 text-[12.5px] text-text-secondary underline underline-offset-4">
+                      Cor original
+                    </button>
+                  )}
+                </div>
+                <div className="mt-3 grid grid-cols-8 gap-2">
                   {ORBI_SPHERE_COLORS.map((c) => (
                     <button
                       key={c.hex}
