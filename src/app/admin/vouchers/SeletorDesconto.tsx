@@ -1,13 +1,15 @@
 "use client";
 
+import { IconePresente, IconeReais, IconePorcento } from "./IconesLinha";
+
 export type TipoDesconto = "percent" | "fixed" | "gift";
 
 // Porcentagem fica por último: é a opção que mais vem pré-marcada, então quem
 // quer um brinde ou um valor em reais precisa ver essas duas primeiro.
-const OPCOES: { id: TipoDesconto; nome: string; sub: string; icone: string }[] = [
-  { id: "gift", nome: "Brinde", sub: "Um item ou benefício", icone: "🎁" },
-  { id: "fixed", nome: "Valor em R$", sub: "Ex: R$ 15 off", icone: "R$" },
-  { id: "percent", nome: "Porcentagem", sub: "Ex: 10% off", icone: "%" },
+const OPCOES: { id: TipoDesconto; nome: string; sub: string; icone: React.ReactNode }[] = [
+  { id: "gift", nome: "Brinde", sub: "Um item ou benefício", icone: <IconePresente size={22} /> },
+  { id: "fixed", nome: "Valor em R$", sub: "Ex: R$ 15 off", icone: <IconeReais size={22} /> },
+  { id: "percent", nome: "Porcentagem", sub: "Ex: 10% off", icone: <IconePorcento size={22} /> },
 ];
 
 /**
@@ -46,7 +48,7 @@ export function SeletorDesconto({
               onClick={() => onTipo(o.id)}
               className={`flex flex-col items-center gap-0.5 rounded-[20px] border-2 px-2 py-3 text-center transition-colors ${on ? "border-on-background bg-on-background text-white" : "border-divider bg-surface-white text-text-secondary"}`}
             >
-              <span className="text-[18px] font-bold leading-none" aria-hidden>{o.icone}</span>
+              <span aria-hidden>{o.icone}</span>
               <span className="mt-1 text-[13px] font-semibold leading-tight">{o.nome}</span>
               <span className={`text-[11px] leading-tight ${on ? "text-white/70" : "text-text-tertiary"}`}>{o.sub}</span>
             </button>
