@@ -269,7 +269,7 @@ export function OrbitHome({
             </span>
           )}
           {onEsfera && (
-            <button type="button" onClick={() => setEscolhendoEsfera(true)} aria-label="Escolher a cor da esfera" className="pointer-events-auto absolute -right-3 -top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95">✎</button>
+            <button type="button" onClick={() => setEscolhendoEsfera(true)} aria-label="Escolher a cor da esfera" className="pointer-events-auto absolute -right-3 -top-2 z-10 flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60">✎</button>
           )}
         </div>
 

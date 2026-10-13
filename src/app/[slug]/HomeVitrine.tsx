@@ -217,7 +217,7 @@ export function HomeVitrine({
           </button>
         )}
         {podeEditar && onCtaTipo && opcoesCta.length > 1 && (
-          <button type="button" onClick={() => setEditandoCta(true)} aria-label="Escolher o botão principal" className="absolute -right-2 -top-3 flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95">✎</button>
+          <button type="button" onClick={() => setEditandoCta(true)} aria-label="Escolher o botão principal" className="absolute -right-2 -top-3 flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60">✎</button>
         )}
       </div>
 
@@ -249,7 +249,7 @@ export function HomeVitrine({
               type="button"
               onClick={() => setEditando(true)}
               aria-label="Editar bolinhas"
-              className="absolute -top-3 right-0 z-10 flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95"
+              className="absolute -top-3 right-0 z-10 flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60"
             >
               ✎
             </button>
@@ -312,7 +312,7 @@ export function HomeVitrine({
             <div className="flex min-w-0 items-center gap-1.5">
               <h2 className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
               {podeEditar && onTitulo && (
-                <button type="button" onClick={() => setEditandoTitulo(true)} aria-label="Editar o título desta seção" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-[1.5px] border-on-background/35 text-[12px] text-on-background/70 active:scale-95">✎</button>
+                <button type="button" onClick={() => setEditandoTitulo(true)} aria-label="Editar o título desta seção" className="flex h-7 w-7 shrink-0 items-center justify-center lapis-edita text-[14px] text-on-background/60">✎</button>
               )}
             </div>
             <div className="flex items-center gap-1">
@@ -320,7 +320,7 @@ export function HomeVitrine({
                 <span className="text-[12px] text-text-tertiary">{FORMATOS.find((f) => f.v === formato)?.titulo}</span>
               )}
               {podeEditar && onFormato && (
-                <button type="button" onClick={() => setEditandoFormato(true)} aria-label="Editar formato dos itens" className="flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95">✎</button>
+                <button type="button" onClick={() => setEditandoFormato(true)} aria-label="Editar formato dos itens" className="flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60">✎</button>
               )}
               <button type="button" onClick={() => onVerTudo(ativo?.name ?? null)} className="min-h-[36px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-4">
                 {itens.length > mostrar.length ? `Ver todos (${itens.length})` : "Ver tudo"}
