@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { IconeBotao } from "./IconeBotao";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
@@ -123,7 +124,7 @@ export function BoxDestaque({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={b.logo} alt="" className="h-14 w-14 shrink-0 rounded-[14px] object-cover" />
       ) : (
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] text-[22px] text-white" style={{ background: b.cor }} aria-hidden>{b.icone}</span>
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] text-[22px] text-white" style={{ background: b.cor }} aria-hidden><IconeBotao icone={b.icone} size={24} /></span>
       )}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.titulo}</span>
@@ -243,7 +244,7 @@ function Linha({ ligado, titulo, sub, foto, icone, cor, onClick }: { ligado: boo
         // eslint-disable-next-line @next/next/no-img-element
         <img src={foto} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
       ) : icone ? (
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[18px] text-white" style={{ background: cor ?? "#111318" }} aria-hidden>{icone}</span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[18px] text-white" style={{ background: cor ?? "#111318" }} aria-hidden><IconeBotao icone={icone} /></span>
       ) : (
         <span className="h-11 w-11 shrink-0 rounded-xl bg-surface-soft" />
       )}

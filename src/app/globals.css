@@ -1064,3 +1064,16 @@ body {
   .lp-fade, .lp-float, .lp-pop, .lp-dot, .lp-caret { animation: none; }
   [style*="lpMarquee"] { animation: none !important; }
 }
+
+/* Lápis de edição da página: sem círculo, balança de leve com pausa entre os
+   balanços pra chamar atenção sem poluir. Desligado com "reduzir movimento". */
+@keyframes lapisBalanca {
+  0%, 60%, 100% { transform: rotate(0); }
+  68% { transform: rotate(-14deg); }
+  76% { transform: rotate(12deg); }
+  84% { transform: rotate(-8deg); }
+  92% { transform: rotate(4deg); }
+}
+.lapis-edita { animation: lapisBalanca 3.2s ease-in-out infinite; transform-origin: 70% 80%; }
+.lapis-edita:active { animation: none; transform: scale(0.9); }
+@media (prefers-reduced-motion: reduce) { .lapis-edita { animation: none; } }

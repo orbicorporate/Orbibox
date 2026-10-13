@@ -876,7 +876,7 @@ export function VisitorExperience({
                   type="button"
                   onClick={() => setEditandoLogo(true)}
                   aria-label="Editar logo"
-                  className="absolute -right-1 bottom-0 flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95"
+                  className="absolute -right-1 bottom-0 flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60"
                 >
                   ✎
                 </button>
@@ -889,7 +889,7 @@ export function VisitorExperience({
                   onClick={() => setTextosAberto((v) => !v)}
                   aria-label="Editar textos do topo"
                   aria-expanded={textosAberto}
-                  className="absolute -right-1 -top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95"
+                  className="absolute -right-1 -top-2 z-10 flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60"
                 >
                   ✎
                 </button>
@@ -1053,7 +1053,7 @@ export function VisitorExperience({
                           role="button"
                           tabIndex={0}
                           onClick={(e) => { e.stopPropagation(); setColorPickerBox(null); setTitleDraft(o.t); setMenuBox(menuBox === o.key ? null : o.key); }}
-                          className="flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-on-background/35 bg-transparent text-[13px] text-on-background/70 active:scale-95"
+                          className="flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60"
                           aria-label="Opções do card"
                           aria-expanded={menuBox === o.key}
                         >
