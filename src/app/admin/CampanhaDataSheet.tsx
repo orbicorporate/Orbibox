@@ -36,6 +36,7 @@ export function CampanhaDataSheet({
   const [ativando, setAtivando] = useState(false);
   const [ativado, setAtivado] = useState(false);
   const [copiado, setCopiado] = useState<number | null>(null);
+  const [editando, setEditando] = useState(false);
 
   function gerar() {
     setErro(null);
@@ -95,6 +96,10 @@ export function CampanhaDataSheet({
     try { await navigator.clipboard.writeText(texto); setCopiado(i); setTimeout(() => setCopiado(null), 1800); } catch { /* sem clipboard */ }
   }
 
+  function ajustar(campo: Partial<CampanhaData["voucher"]>) {
+    setCampanha((c) => (c ? { ...c, voucher: { ...c.voucher, ...campo } } : c));
+  }
+
   const oferta = campanha ? (campanha.voucher.tipo === "percent" ? `${campanha.voucher.valor}% OFF` : `R$ ${campanha.voucher.valor} OFF`) : "";
 
   return createPortal(
@@ -142,6 +147,52 @@ export function CampanhaDataSheet({
               />
               <p className="mt-3 text-[12px] text-text-tertiary">{campanha.voucher.quantidade} unidades · vale 72h depois de pego</p>
             </div>
+
+            {!ativado && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setEditando((v) => !v)}
+                  aria-expanded={editando}
+                  className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-surface-white text-[14.5px] font-medium ring-1 ring-black/[0.1] active:scale-[.98]"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z" /><path d="M14 7l3 3" /></svg>
+                  {editando ? "Fechar edição" : "Editar voucher"}
+                </button>
+                {editando && (
+                  <div className="acao-entra mt-2 flex flex-col gap-3 rounded-[18px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
+                    <label className="block text-[12.5px] font-medium text-text-secondary">
+                      Título
+                      <input value={campanha.voucher.titulo} maxLength={60} onChange={(e) => ajustar({ titulo: e.target.value })} className="mt-1 min-h-[44px] w-full rounded-xl bg-surface-soft px-3 text-[15px] text-on-background outline-none" />
+                    </label>
+                    <label className="block text-[12.5px] font-medium text-text-secondary">
+                      Texto
+                      <textarea value={campanha.voucher.descricao} rows={3} maxLength={160} onChange={(e) => ajustar({ descricao: e.target.value })} className="mt-1 w-full resize-none rounded-xl bg-surface-soft px-3 py-2.5 text-[15px] leading-snug text-on-background outline-none" />
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[12.5px] font-medium text-text-secondary">Desconto</p>
+                        <div className="mt-1 flex rounded-full bg-surface-soft p-1">
+                          {(["percent", "fixed"] as const).map((t) => (
+                            <button key={t} type="button" onClick={() => ajustar({ tipo: t })} aria-pressed={campanha.voucher.tipo === t} className={`min-h-[40px] flex-1 rounded-full text-[14px] font-medium ${campanha.voucher.tipo === t ? "bg-on-background text-white" : "text-text-secondary"}`}>
+                              {t === "percent" ? "%" : "R$"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <label className="block text-[12.5px] font-medium text-text-secondary">
+                        Valor
+                        <input type="number" inputMode="decimal" min={1} value={campanha.voucher.valor} onChange={(e) => ajustar({ valor: Math.max(0, Number(e.target.value)) })} className="mt-1 min-h-[44px] w-full rounded-xl bg-surface-soft px-3 text-[15px] text-on-background outline-none" />
+                      </label>
+                    </div>
+                    <label className="block text-[12.5px] font-medium text-text-secondary">
+                      Quantidade de vouchers
+                      <input type="number" inputMode="numeric" min={1} value={campanha.voucher.quantidade} onChange={(e) => ajustar({ quantidade: Math.max(1, Math.round(Number(e.target.value))) })} className="mt-1 min-h-[44px] w-full rounded-xl bg-surface-soft px-3 text-[15px] text-on-background outline-none" />
+                    </label>
+                  </div>
+                )}
+              </>
+            )}
 
             {!ativado && (
               <details className="mt-3 rounded-[18px] bg-surface-white ring-1 ring-black/[0.06]">
