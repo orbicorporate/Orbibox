@@ -40,21 +40,35 @@ type Item = {
 // solto não ganha rótulo, não ajudaria em nada.
 const EYEBROW_LABEL: Record<string, string> = { product: "Produtos", service: "Serviços" };
 
-// A Orbi já escreve a descrição de serviços em bullets ("• algo"), um por
-// linha, quando melhora o texto (versão antiga, antes do campo "highlights"
-// existir). Continua separado em intro (linhas soltas) + checklist (linhas
-// com bullet) só como reserva, pra item antigo sem nada no campo novo não
-// perder a listinha. Item novo usa "highlights" direto, editável campo a
-// campo no painel, sem depender de parsear texto solto.
-function splitDescription(description: string | null): { intro: string[]; checklist: string[] } {
-  const lines = (description ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
-  const intro: string[] = [];
-  const checklist: string[] = [];
-  for (const line of lines) {
-    if (line.startsWith("•")) checklist.push(line.replace(/^•\s*/, ""));
-    else intro.push(line);
+// A descrição vira blocos na ordem em que foi escrita, nada some: parágrafo
+// (texto corrido), título (linha curta em CAIXA ALTA ou terminada em ":") e
+// item de lista (linha com "•", "-" ou "*"). Antes as linhas com bullet eram
+// tiradas da descrição e, havendo "highlights", simplesmente sumiam.
+type Bloco = { t: "p" | "h" | "li"; texto: string };
+
+function blocosDaDescricao(description: string | null): Bloco[] {
+  const out: Bloco[] = [];
+  for (const bruta of (description ?? "").split("\n")) {
+    const l = bruta.trim();
+    if (!l) continue;
+    if (/^[•\-*–]\s+/.test(l)) { out.push({ t: "li", texto: l.replace(/^[•\-*–]\s+/, "") }); continue; }
+    const letras = l.replace(/[^A-Za-zÀ-ÿ]/g, "");
+    const caixaAlta = letras.length >= 3 && l === l.toUpperCase();
+    if ((caixaAlta && l.length <= 40) || (l.endsWith(":") && l.length <= 40)) {
+      out.push({ t: "h", texto: l.replace(/:$/, "") });
+      continue;
+    }
+    out.push({ t: "p", texto: l });
   }
-  return { intro, checklist };
+  return out;
+}
+
+function Check() {
+  return (
+    <span className="orbi-gradient mt-[1px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full" aria-hidden>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+    </span>
+  );
 }
 
 export function ProductView({ business, item }: { business: Business; item: Item }) {
@@ -179,33 +193,43 @@ export function ProductView({ business, item }: { business: Business; item: Item
             {item.brand_label || EYEBROW_LABEL[item.type]}
           </p>
         )}
-        <h1 className="mt-1 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight">{item.title}</h1>
+        <h1 className="mt-1 break-words font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight">{item.title}</h1>
         {formatPrice(item) && (
           <p className="mt-2 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{formatPrice(item)}</p>
         )}
 
         {(() => {
-          const { intro, checklist: legacyChecklist } = splitDescription(item.description);
-          // "highlights" (campo próprio, editável linha a linha no painel) é
-          // a fonte de verdade. Item antigo sem nada nesse campo ainda usa o
-          // que a Orbi escreveu como bullet dentro da descrição, pra não
-          // sumir com a lista de quem já tinha.
-          const diferenciais = item.highlights && item.highlights.length > 0 ? item.highlights : legacyChecklist;
+          const blocos = blocosDaDescricao(item.description);
+          const noTexto = new Set(blocos.filter((x) => x.t === "li").map((x) => x.texto.toLowerCase()));
+          const diferenciais = (item.highlights ?? []).map((h) => h.trim()).filter((h) => h && !noTexto.has(h.toLowerCase()));
           return (
             <>
-              {intro.length > 0 && (
-                <div className="mt-4 flex flex-col gap-2 text-[15px] leading-relaxed text-text-secondary">
-                  {intro.map((line, i) => <p key={i}>{line}</p>)}
+              {blocos.length > 0 && (
+                <div className="mt-5 break-words text-[15px] leading-relaxed text-text-secondary">
+                  {blocos.map((b, i) => {
+                    if (b.t === "h") {
+                      return <p key={i} className="mt-5 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-on-background first:mt-0">{b.texto}</p>;
+                    }
+                    if (b.t === "li") {
+                      return (
+                        <div key={i} className="mt-2 flex items-start gap-2.5 text-[15px] leading-snug text-on-background">
+                          <Check />
+                          <span className="min-w-0 flex-1">{b.texto}</span>
+                        </div>
+                      );
+                    }
+                    return <p key={i} className={i > 0 ? "mt-3" : ""}>{b.texto}</p>;
+                  })}
                 </div>
               )}
               {diferenciais.length > 0 && (
-                <div className="mt-5">
-                  <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Diferenciais</p>
-                  <div className="mt-2.5 flex flex-col">
+                <div className="mt-6">
+                  <p className="text-[12.5px] font-semibold uppercase tracking-[0.1em] text-on-background">Diferenciais</p>
+                  <div className="mt-2 flex flex-col">
                     {diferenciais.map((line, i) => (
-                      <div key={i} className={`flex items-start gap-2.5 py-2.5 text-[14.5px] leading-snug ${i > 0 ? "border-t border-divider" : ""}`}>
-                        <span className="orbi-gradient mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px]">✓</span>
-                        {line}
+                      <div key={i} className={`flex items-start gap-2.5 py-3 text-[15px] leading-snug ${i > 0 ? "border-t border-divider" : ""}`}>
+                        <Check />
+                        <span className="min-w-0 flex-1 break-words">{line}</span>
                       </div>
                     ))}
                   </div>
@@ -219,7 +243,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
           <a
             href={`/${business.slug}?chat=1&msg=${encodeURIComponent(item.orbi_hook)}`}
             onClick={() => trackClick({ businessId: business.id, kind: "zara", contentItemId: item.id })}
-            className="mt-5 flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3.5"
+            className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3.5"
           >
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5 text-[12px] font-medium text-text-tertiary">
