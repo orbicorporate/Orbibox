@@ -596,7 +596,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
 
           {/* Botões da página: automáticos, só pra ver como fica */}
           <div className="pointer-events-none mt-7 flex flex-col gap-2.5 opacity-50" aria-hidden>
-            <span className="rounded-full orbi-gradient py-3.5 text-center text-[14px] font-medium text-on-background">✦ Falar com a Orbi</span>
+            <span className="rounded-full btn-orbi-preto py-3.5 text-center text-[14px] font-medium">✦ Falar com a Orbi</span>
             {(business.contact_whatsapp || business.contact_phone) && (
               <div className="flex gap-2.5">
                 {business.contact_whatsapp && <span className="flex-1 rounded-full border border-divider py-3 text-center text-[13.5px] font-medium">WhatsApp</span>}

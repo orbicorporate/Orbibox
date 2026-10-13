@@ -260,7 +260,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
           <Link
             href={`/${business.slug}?chat=1`}
             onClick={() => trackClick({ businessId: business.id, kind: "zara", contentItemId: item.id })}
-            className="inline-flex items-center justify-center gap-2 rounded-full orbi-gradient py-3.5 text-center text-[14px] font-medium text-on-background"
+            className="inline-flex items-center justify-center gap-2 rounded-full btn-orbi-preto py-3.5 text-center text-[14px] font-medium"
           >
             ✦ Falar com a Orbi
           </Link>
