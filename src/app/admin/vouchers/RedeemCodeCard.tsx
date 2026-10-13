@@ -116,7 +116,8 @@ export function RedeemCodeCard({
               um voucher fixo. */}
           {!fixedVoucherId && vouchers && vouchers.length > 1 && (
             <div className="mt-4">
-              <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Qual voucher?</p>
+              <p className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Qual voucher? <span className="font-normal normal-case tracking-normal">(opcional)</span></p>
+              <p className="mt-1 text-[12.5px] leading-snug text-text-tertiary">Não precisa escolher. Deixe em &quot;Qualquer um&quot; e digite o código: ele funciona em qualquer voucher seu. Escolha um só se quiser aceitar códigos apenas dele.</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={() => { setSelected("todos"); setResult(null); }}
@@ -194,7 +195,7 @@ export function RedeemCodeCard({
           <div className="mt-4 flex items-center gap-2 border-t border-divider pt-3.5">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA0AA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" /></svg>
             <span className="text-[12.5px] text-text-tertiary">
-              {activeVoucherId ? "Só aceita código deste voucher." : "Válido para qualquer voucher ativo da sua loja."}
+              {activeVoucherId ? "Só aceita código deste voucher." : "Sem escolher, o código vale para qualquer voucher ativo da sua loja."}
             </span>
           </div>
         </>
