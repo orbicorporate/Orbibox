@@ -12,6 +12,15 @@ import { PerguntaRede } from "@/components/rede/PerguntaRede";
 import type { Oportunidade } from "@/lib/copiloto";
 import type { ComponentProps } from "react";
 
+const TEMA_PADRAO = { de: "#F3F4F6", ate: "#E4E6EB", cor: "#2A2F3A", icone: "M4 12h16", dica: "" };
+const TEMAS_NUMERO: Record<string, { de: string; ate: string; cor: string; icone: string; dica: string }> = {
+  Visitas: { de: "#EEFCCB", ate: "#D8F59A", cor: "#2F6B00", icone: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 9a3 3 0 100 6 3 3 0 000-6z", dica: "Pessoas que abriram seu link" },
+  Conversas: { de: "#E3EBFF", ate: "#C4D3FF", cor: "#2F4FB3", icone: "M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z", dica: "Papos com a Orbi" },
+  Contatos: { de: "#EFE6FF", ate: "#D2BDFF", cor: "#6A3FC4", icone: "M16 19c0-2.8-2.2-5-5-5s-5 2.2-5 5M11 11a3 3 0 100-6 3 3 0 000 6zM19 8v6M22 11h-6", dica: "Quem deixou o contato" },
+  WhatsApp: { de: "#DDF9F4", ate: "#B5EDE3", cor: "#00695F", icone: "M5 19l1.2-3.6A8 8 0 1112 20a8 8 0 01-3.8-1L5 19z", dica: "Toques no botão de WhatsApp" },
+  Resgates: { de: "#FFEAD7", ate: "#FFCFA6", cor: "#A8481A", icone: "M3 9a2 2 0 010 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 010-4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2zM13 5v14", dica: "Pessoas que pegaram um voucher" },
+};
+
 function variacao(agora: number, antes: number): { texto: string; sobe: boolean | null } {
   if (antes === 0) return agora > 0 ? { texto: "novo", sobe: true } : { texto: "", sobe: null };
   const d = Math.round(((agora - antes) / antes) * 100);
@@ -115,29 +124,24 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
           <h2 className="text-[15px] font-medium">Últimos 7 dias</h2>
           <Link href="/admin/pulse" className="text-[13px] text-text-secondary">Ver tudo →</Link>
         </div>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {numeros.filter((m) => !m.conversao).map((m) => {
+        <div className="no-scrollbar -mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-1">
+          {[...numeros.filter((m) => !m.conversao), ...numeros.filter((m) => m.conversao)].map((m) => {
             const v = variacao(m.n, m.antes);
+            const tema = TEMAS_NUMERO[m.rotulo] ?? TEMA_PADRAO;
             return (
-              <Link key={m.rotulo} href={m.href} className="flex flex-col rounded-[18px] bg-surface-white px-3 py-3 ring-1 ring-black/[0.05] active:opacity-70">
-                <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tabular-nums leading-none">{m.n.toLocaleString("pt-BR")}</span>
-                <span className="mt-1.5 text-[11.5px] text-text-secondary">{m.rotulo}</span>
-                <span className={`mt-0.5 h-4 text-[11px] font-medium ${v.sobe === true ? "text-[#1F7A3D]" : v.sobe === false ? "text-[#B4321F]" : "text-text-tertiary"}`}>{v.texto}</span>
-              </Link>
-            );
-          })}
-        </div>
-        <p className="mt-4 text-[12px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Conversões</p>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          {numeros.filter((m) => m.conversao).map((m) => {
-            const v = variacao(m.n, m.antes);
-            const dica = m.rotulo === "WhatsApp" ? "Toques no botão de WhatsApp" : "Pessoas que pegaram um voucher";
-            return (
-              <Link key={m.rotulo} href={m.href} className="flex flex-col rounded-[20px] bg-gradient-to-br from-[#F3FCDD] to-[#DDF8F2] px-4 py-3.5 ring-1 ring-black/[0.05] active:opacity-70">
-                <span className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tabular-nums leading-none">{m.n.toLocaleString("pt-BR")}</span>
-                <span className="mt-1.5 text-[13px] font-medium">{m.rotulo}</span>
-                <span className="text-[11.5px] leading-snug text-text-secondary">{dica}</span>
-                <span className={`mt-1 h-4 text-[11px] font-medium ${v.sobe === true ? "text-[#1F7A3D]" : v.sobe === false ? "text-[#B4321F]" : "text-text-tertiary"}`}>{v.texto}</span>
+              <Link
+                key={m.rotulo}
+                href={m.href}
+                className="flex aspect-[4/5] w-[44%] max-w-[190px] shrink-0 snap-start flex-col rounded-[24px] p-4 ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]"
+                style={{ backgroundImage: `linear-gradient(165deg, ${tema.de} 0%, ${tema.ate} 100%)`, color: tema.cor }}
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/60">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={tema.icone} /></svg>
+                </span>
+                <span className="mt-auto font-[family-name:var(--font-manrope)] text-[44px] font-medium tabular-nums leading-none">{m.n.toLocaleString("pt-BR")}</span>
+                <span className="mt-1.5 text-[14px] font-medium leading-tight">{m.rotulo}</span>
+                <span className="mt-0.5 text-[11.5px] leading-snug opacity-75">{tema.dica}</span>
+                <span className={`mt-2 inline-flex h-6 w-fit items-center rounded-full bg-white/65 px-2.5 text-[11px] font-medium ${v.texto ? "" : "invisible"}`} style={{ color: v.sobe === false ? "#B4321F" : v.sobe === true ? "#1F7A3D" : tema.cor }}>{v.texto || "-"}</span>
               </Link>
             );
           })}
