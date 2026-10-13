@@ -738,20 +738,26 @@ export function BoxesManager({
                     <div className="mt-2 flex flex-col gap-2.5">
                       {cards.map((c, i) => (
                         <div key={i} className="rounded-2xl border border-divider p-3">
-                          <div className="flex items-center gap-2">
-                            <div className="flex flex-wrap gap-1">
+                          <details className="group">
+                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-3">
+                              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-divider bg-surface-soft text-[16px]">{c.icon || DIFF_ICONS[0]}</span>
+                              <span className="text-[13px] text-text-secondary group-open:hidden">Trocar ícone</span>
+                              <span className="hidden text-[13px] text-text-secondary group-open:inline">Escolha um</span>
+                              <button type="button" onClick={(e) => { e.preventDefault(); saveDifferentialsCards(cards.filter((_, xi) => xi !== i)); }} className="ml-auto min-h-[44px] px-2 text-[12.5px] text-red-600">Excluir</button>
+                            </summary>
+                            <div className="mt-1 flex flex-wrap gap-1">
                               {DIFF_ICONS.map((ic) => (
                                 <button
                                   key={ic}
-                                  onClick={() => saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, icon: ic } : x)))}
-                                  className={`flex h-7 w-7 items-center justify-center rounded-full border text-[12px] ${(c.icon || DIFF_ICONS[0]) === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}
+                                  type="button"
+                                  onClick={(e) => { saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, icon: ic } : x))); (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open"); }}
+                                  className={`flex h-9 w-9 items-center justify-center rounded-full border text-[14px] ${(c.icon || DIFF_ICONS[0]) === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}
                                 >
                                   {ic}
                                 </button>
                               ))}
                             </div>
-                            <button onClick={() => saveDifferentialsCards(cards.filter((_, xi) => xi !== i))} className="ml-auto text-[12px] text-red-600">Excluir</button>
-                          </div>
+                          </details>
                           <input
                             defaultValue={c.title}
                             onBlur={(e) => saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, title: e.target.value } : x)))}
