@@ -41,7 +41,7 @@ const agora = () => performance.now();
  * sociais viram luas pequenas numa órbita interna.
  */
 export function OrbitHome({
-  itens,
+  itens: itensBrutos,
   redes,
   nome,
   pergunta,
@@ -74,6 +74,8 @@ export function OrbitHome({
   onEsfera?: (cor: string | null) => void;
 }) {
   const [escolhendoEsfera, setEscolhendoEsfera] = useState(false);
+  // Planeta nunca fica vazio: sem ícone nem foto, ganha a seta.
+  const itens = itensBrutos.map((o) => (!o.imagem && (!o.icon || o.icon === "__none__") ? { ...o, icon: "__arrow__" } : o));
   const N = itens.length;
   const PASSO = N > 0 ? (Math.PI * 2) / N : 1;
   const FRENTE = Math.PI / 2;
@@ -263,7 +265,7 @@ export function OrbitHome({
         <div className="absolute left-1/2 top-[190px] z-30 h-[84px] w-[84px] -translate-x-1/2 -translate-y-1/2">
           <span className="orbita-esfera inset-0"><span className="orbita-esfera-halo" /><span className="orbita-esfera-vidro" /></span>
           {logoUrl && (
-            <span className="absolute inset-[16px] overflow-hidden rounded-full shadow-[0_2px_8px_rgba(0,0,0,.25)]">
+            <span className="absolute inset-[3px] overflow-hidden rounded-full bg-surface-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logoUrl} alt="" className="h-full w-full object-cover" />
             </span>
