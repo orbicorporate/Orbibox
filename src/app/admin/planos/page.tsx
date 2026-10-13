@@ -4,6 +4,7 @@ import { getAccessInfo, getAllPlans } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { PlanosClient } from "./PlanosClient";
 import { ConfirmandoPagamento } from "./ConfirmandoPagamento";
+import { ValorEntregueCard } from "./ValorEntregueCard";
 import { calcularValorEntregue, linhasDoValor } from "@/lib/valorEntregue";
 
 export default async function PlanosPage({
@@ -43,33 +44,15 @@ export default async function PlanosPage({
   return (
     <div className="flex flex-col">
       {mostrarValor && (
-        <section className="mb-6 mt-2 overflow-hidden rounded-[28px] bg-[#111318] p-6 text-white">
-          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/50">
-            {access.testeAcabou || fim === "1" ? "Seu teste terminou" : access.diasRestantes != null ? (access.diasRestantes === 0 ? "Último dia de teste" : `Faltam ${access.diasRestantes} ${access.diasRestantes === 1 ? "dia" : "dias"} de teste`) : "Teste grátis"}
-          </p>
-          <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[27px] font-medium leading-[1.12] tracking-[-0.02em]">
-            {linhas.length > 0 ? "Seu Orbibox trabalhou por você ✦" : "Seu Orbibox está pronto pra trabalhar ✦"}
-          </h1>
-          {linhas.length > 0 ? (
-            <ul className="mt-5 flex flex-col gap-2.5">
-              {linhas.map((l) => (
-                <li key={l.texto} className="flex items-baseline gap-3">
-                  <span className="min-w-[48px] text-right font-[family-name:var(--font-manrope)] text-[26px] font-medium tabular-nums leading-none">{l.n.toLocaleString("pt-BR")}</span>
-                  <span className="text-[14.5px] text-white/75">{l.texto}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-[14.5px] leading-relaxed text-white/70">
-              {negocio?.name ?? "Sua página"} já tem vitrine, IA e link prontos. Assim que você divulgar, cada visita, conversa e contato aparece aqui.
-            </p>
-          )}
-          <p className="mt-5 text-[14.5px] font-medium">
-            {access.testeAcabou || fim === "1" ? "Continue com seu Orbibox ativo: a IA volta a atender e as ofertas voltam pro ar." : "Assine quando quiser. Os dias de teste que faltam continuam grátis."}
-          </p>
-        </section>
+        <ValorEntregueCard
+          rotulo={access.testeAcabou || fim === "1" ? "Seu teste terminou" : access.diasRestantes != null ? (access.diasRestantes === 0 ? "Último dia de teste" : `Faltam ${access.diasRestantes} ${access.diasRestantes === 1 ? "dia" : "dias"} de teste`) : "Teste grátis"}
+          titulo={linhas.length > 0 ? "Seu Orbibox trabalhou por você" : "Seu Orbibox está pronto pra trabalhar"}
+          linhas={linhas}
+          vazio={`${negocio?.name ?? "Sua página"} já tem vitrine, IA e link prontos. Assim que você divulgar, cada visita, conversa e contato aparece aqui.`}
+          fecho={access.testeAcabou || fim === "1" ? "Continue com seu Orbibox ativo: a IA volta a atender e as ofertas voltam pro ar." : "Assine quando quiser. Os dias de teste que faltam continuam grátis."}
+        />
       )}
-      <h1 className={`font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em] ${mostrarValor ? "" : "mt-2"}`}>
+      <h1 id="planos" className={`scroll-mt-24 font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em] ${mostrarValor ? "" : "mt-2"}`}>
         Plano e cobrança
       </h1>
       {blocked === "1" ? (
