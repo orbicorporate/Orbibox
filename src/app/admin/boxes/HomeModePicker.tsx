@@ -16,6 +16,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
   const supabase = createClient();
   const [modo, setModo] = useState<ModoEscolha>(inicial === "orbita" ? "orbita" : inicial === "vitrine" ? "vitrine" : "grade");
   const [salvo, setSalvo] = useState(false);
+  const [aberto, setAberto] = useState(false);
 
   async function escolher(novo: ModoEscolha) {
     if (novo === modo) return;
@@ -30,11 +31,11 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
     setSalvo(true);
   }
 
-  const opcoes: { v: ModoEscolha; titulo: string; texto: string; desenho: React.ReactNode }[] = [
+  const opcoes: { v: ModoEscolha; titulo: string; curto: string; texto: string; desenho: React.ReactNode }[] = [
     {
       v: "orbita",
       titulo: "Modo Órbita",
-      texto: "Seus botões giram em volta do seu logo, um de cada vez, com transições animadas.",
+      curto: "Botões girando", texto: "Seus botões giram em volta do seu logo, um de cada vez.",
       desenho: (
         <svg viewBox="0 0 120 64" className="h-16 w-full" aria-hidden>
           <ellipse cx="60" cy="34" rx="46" ry="14" fill="none" stroke="currentColor" strokeOpacity=".25" strokeDasharray="1.5 4" />
@@ -50,7 +51,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
     {
       v: "grade",
       titulo: "Grade clássica",
-      texto: "Todos os botões visíveis de uma vez, em cards, no tamanho que você escolheu.",
+      curto: "Tudo em cards", texto: "Todos os botões visíveis de uma vez, em cards.",
       desenho: (
         <svg viewBox="0 0 120 64" className="h-16 w-full" aria-hidden>
           <rect x="22" y="6" width="36" height="24" rx="6" fill="currentColor" fillOpacity=".3" />
@@ -63,7 +64,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
     {
       v: "vitrine",
       titulo: "Vitrine",
-      texto: "Bolinhas no topo (WhatsApp, local, redes, voucher), um botão principal e fotos dos seus itens.",
+      curto: "Bolinhas e fotos", texto: "Bolinhas no topo, um botão principal e fotos dos seus itens.",
       desenho: (
         <svg viewBox="0 0 120 64" className="h-16 w-full" aria-hidden>
           <circle cx="30" cy="12" r="6" fill="currentColor" fillOpacity=".6" />
@@ -78,30 +79,41 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
     },
   ];
 
+  const atual = opcoes.find((o) => o.v === modo)!;
+
   return (
-    <div className="mt-5 rounded-[20px] bg-surface-soft p-4">
-      <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Como sua página abre</p>
-      <p className="mt-1 text-[12px] text-text-secondary">
-        Escolha o modo padrão da tela inicial. O visitante vê um seletor no topo e pode trocar quando quiser.
-      </p>
-      <div role="radiogroup" aria-label="Modo padrão da tela inicial" className="mt-3 grid grid-cols-3 gap-2">
-        {opcoes.map((o) => (
-          <button
-            key={o.v}
-            type="button"
-            role="radio"
-            aria-checked={modo === o.v}
-            onClick={() => escolher(o.v)}
-            className={`flex flex-col items-center rounded-2xl border-2 bg-surface-white px-3 pb-3 pt-2 text-center transition-colors ${modo === o.v ? "border-on-background text-on-background" : "border-transparent text-text-tertiary"}`}
-          >
-            {o.desenho}
-            <span className="mt-1 text-[13px] font-medium text-on-background">{o.titulo}</span>
-            <span className="mt-1 text-[11.5px] leading-snug text-text-secondary">{o.texto}</span>
-            {modo === o.v && <span className="mt-2 rounded-full bg-on-background px-2.5 py-0.5 text-[10.5px] text-white">Padrão</span>}
-          </button>
-        ))}
-      </div>
-      {salvo && <p className="mt-2 text-[11.5px] text-text-tertiary">Salvo. Quem abrir sua página agora vê o {modo === "orbita" ? "Modo Órbita" : "Modo Grade"} primeiro.</p>}
+    <div className="mt-5 rounded-[20px] bg-surface-soft">
+      <button type="button" onClick={() => setAberto((v) => !v)} aria-expanded={aberto} className="flex min-h-[60px] w-full items-center gap-3 px-4 py-3 text-left">
+        <span className="min-w-0 flex-1">
+          <span className="block text-[12px] uppercase tracking-wide text-text-tertiary">Como sua página abre</span>
+          <span className="mt-0.5 block text-[15px] font-medium">{atual.titulo}</span>
+        </span>
+        <span className="text-[13px] text-text-secondary">{aberto ? "Fechar" : "Mudar"}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-secondary transition-transform ${aberto ? "rotate-180" : ""}`} aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+
+      {aberto && (
+        <div className="acao-entra px-4 pb-4">
+          <div role="radiogroup" aria-label="Modo padrão da tela inicial" className="grid grid-cols-3 gap-2">
+            {opcoes.map((o) => (
+              <button
+                key={o.v}
+                type="button"
+                role="radio"
+                aria-checked={modo === o.v}
+                onClick={() => escolher(o.v)}
+                className={`flex flex-col items-center rounded-2xl border-2 bg-surface-white px-2 pb-3 pt-2 text-center transition-colors ${modo === o.v ? "border-on-background text-on-background" : "border-transparent text-text-tertiary"}`}
+              >
+                {o.desenho}
+                <span className="mt-1 text-[13px] font-medium leading-tight text-on-background">{o.titulo}</span>
+                <span className="mt-0.5 text-[11.5px] leading-tight text-text-secondary">{o.curto}</span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 text-[12.5px] leading-snug text-text-secondary">{atual.texto} O visitante pode trocar pelo seletor no topo.</p>
+          {salvo && <p className="mt-1.5 text-[12px] text-text-tertiary">Salvo. Já vale para quem abrir sua página.</p>}
+        </div>
+      )}
     </div>
   );
 }
