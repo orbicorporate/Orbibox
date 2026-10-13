@@ -516,15 +516,15 @@ export function BoxesManager({
           const off = !box.is_active && !m.fixo;
           const editing = editingId === box.id;
           return (
-            <div key={box.id} id={`box-${box.id}`} className={`scroll-mt-24 rounded-[22px] border border-divider bg-surface-white p-4 ${off ? "opacity-55" : ""}`}>
-              <div className="flex items-start gap-3">
+            <div key={box.id} id={`box-${box.id}`} className={`scroll-mt-24 overflow-hidden rounded-[22px] border border-divider bg-surface-white p-4 ${off ? "opacity-55" : ""}`}>
+              <div className="-mx-4 -mt-4 mb-1 flex items-start gap-3 bg-[#111318] p-4 text-white">
                 {!isHero && (
                   <div className="flex shrink-0 flex-col gap-1 pt-0.5">
                     <button
                       onClick={() => move(box, -1)}
                       disabled={idx === 0}
                       aria-label="Mover pra cima"
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-white/80 disabled:opacity-30"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6" /></svg>
                     </button>
@@ -532,13 +532,13 @@ export function BoxesManager({
                       onClick={() => move(box, 1)}
                       disabled={idx === visibleBoxes.length - 1}
                       aria-label="Mover pra baixo"
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-white/80 disabled:opacity-30"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
                     </button>
                   </div>
                 )}
-                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon) || icon === "__logo__") ? "transparent" : color, color: isHero ? "#fff" : fg }}>
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] ring-1 ring-white/15 ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon) || icon === "__logo__") ? "transparent" : color, color: isHero ? "#fff" : fg }}>
                   {icon === "__orb__" ? (
                     <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} />
                   ) : icon === "__orbcheck__" ? (
@@ -553,18 +553,18 @@ export function BoxesManager({
                     EMOJI_STICKERS[icon](40)
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={40} ringColor={isHero ? undefined : color} />
-                  ) : (
+                  ) : icon === "__none__" ? null : (
                     icon
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   {isHero ? (
-                    <p className="text-[15px] font-medium">{m.name}</p>
+                    <p className="text-[15px] font-medium text-white">{m.name}</p>
                   ) : cfg?.action === "cupom" ? (
                     <>
-                      <p className="text-[15px] font-medium">Vouchers</p>
-                      <p className="mt-1 text-[13px] text-text-secondary">Resgate agora e aproveite</p>
-                      <p className="mt-1 text-[11px] text-text-tertiary">Nome e texto fixos do botão de vouchers.</p>
+                      <p className="text-[15px] font-medium text-white">Vouchers</p>
+                      <p className="mt-1 text-[13px] text-white/75">Resgate agora e aproveite</p>
+                      <p className="mt-1 text-[11px] text-white/55">Nome e texto fixos do botão de vouchers.</p>
                     </>
                   ) : (
                     <>
@@ -574,9 +574,9 @@ export function BoxesManager({
                           onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || suggestedName })}
                           placeholder={suggestedName}
                           aria-label="Título do botão"
-                          className="w-full border-b border-divider bg-transparent py-0.5 pr-5 text-[15px] font-medium outline-none focus:border-on-background"
+                          className="w-full border-b border-white/25 bg-transparent py-0.5 pr-5 text-[15px] font-medium text-white outline-none placeholder:text-white/45 focus:border-white"
                         />
-                        <span className="pointer-events-none absolute right-0 top-1.5 text-[12px] text-text-tertiary">✎</span>
+                        <span className="pointer-events-none absolute right-0 top-1.5 text-[12px] text-white/50">✎</span>
                       </div>
                       <div className="relative mt-2">
                         <input
@@ -584,25 +584,25 @@ export function BoxesManager({
                           onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), subtitle: e.target.value })}
                           placeholder={isCustom ? "Texto de apoio (opcional)" : "Texto de apoio, em branco usa o padrão"}
                           aria-label="Texto de apoio do botão"
-                          className="w-full border-b border-divider bg-transparent py-0.5 pr-5 text-[13px] text-text-secondary outline-none focus:border-on-background"
+                          className="w-full border-b border-white/25 bg-transparent py-0.5 pr-5 text-[13px] text-white/75 outline-none placeholder:text-white/40 focus:border-white"
                         />
-                        <span className="pointer-events-none absolute right-0 top-1.5 text-[11px] text-text-tertiary">✎</span>
+                        <span className="pointer-events-none absolute right-0 top-1.5 text-[11px] text-white/50">✎</span>
                       </div>
                     </>
                   )}
-                  {m.fixo && <span className="mt-1 inline-block rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">sempre ativo</span>}
-                  {m.assinatura && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary"><span className="orbi-gradient-text">✦</span> assinatura da IA</span>}
+                  {m.fixo && <span className="mt-1 inline-block rounded-full bg-white/15 px-2 py-0.5 text-[10px] text-white/75">sempre ativo</span>}
+                  {m.assinatura && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[10px] text-white/75"><span className="orbi-gradient-text">✦</span> assinatura da IA</span>}
                   {(cfg?.action === "avaliar" || icon === "__google__") && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
                   {box.ends_at && new Date(box.ends_at) < new Date() ? (
                     <span className="mt-1 inline-block rounded-full bg-red-50 px-2 py-0.5 text-[10px] text-red-600">expirado</span>
                   ) : box.starts_at && new Date(box.starts_at) > new Date() ? (
-                    <span className="mt-1 inline-block rounded-full bg-surface-soft px-2 py-0.5 text-[10px] text-text-tertiary">agendado</span>
+                    <span className="mt-1 inline-block rounded-full bg-white/15 px-2 py-0.5 text-[10px] text-white/75">agendado</span>
                   ) : null}
                 </div>
                 {!m.fixo && (
                   <button
                     onClick={() => toggleActive(box)}
-                    className={`mt-1 h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ${box.is_active ? "orbi-gradient" : "bg-surface-soft"}`}
+                    className={`mt-1 h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ${box.is_active ? "orbi-gradient" : "bg-white/20"}`}
                     aria-label={box.is_active ? "Desativar" : "Ativar"}
                   >
                     <span className={`block h-5 w-5 rounded-full bg-surface-white shadow transition-transform ${box.is_active ? "translate-x-5" : ""}`} />
