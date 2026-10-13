@@ -29,7 +29,7 @@ export function VerComoFicou({ slug }: { slug: string }) {
 
   const voucher = caminho.match(/^\/admin\/vouchers\/([0-9a-f-]{36})/)?.[1];
   const rotulo = voucher ? "Ver este voucher na página" : "Ver como ficou";
-  const edita = voucher || /^\/admin\/(vouchers|vitrine|cardapio|delivery|boxes|gift|rede)(\/|$)/.test(caminho);
+  const edita = voucher || /^\/admin\/(vouchers|vitrine|cardapio|delivery|gift|rede)(\/|$)/.test(caminho);
   if (!edita) return null;
 
   return (
