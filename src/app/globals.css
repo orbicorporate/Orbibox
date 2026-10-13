@@ -1123,3 +1123,32 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .orbi-estrela { animation: none; opacity: 0; }
 }
+
+/* Card de resultados do teste: fundo vivo, entrada em cascata, confete uma vez. */
+.valor-card {
+  background-color: #C9F27A;
+  background-image:
+    radial-gradient(90% 70% at 100% 0%, rgba(167, 139, 250, 0.55) 0%, rgba(167, 139, 250, 0) 60%),
+    radial-gradient(80% 70% at 0% 100%, rgba(110, 231, 216, 0.75) 0%, rgba(110, 231, 216, 0) 62%),
+    linear-gradient(160deg, #D9F99D 0%, #A7F3D0 100%);
+}
+@keyframes valorEntra {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.valor-entra { animation: valorEntra 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes valorConfete {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translateY(340px) rotate(420deg); opacity: 0; }
+}
+.valor-confete { animation: valorConfete 2.2s ease-in both; }
+@keyframes valorEstrela {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(20deg) scale(1.25); }
+}
+.valor-estrela { animation: valorEstrela 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .valor-entra, .valor-estrela { animation: none; }
+  .valor-confete { display: none; }
+}

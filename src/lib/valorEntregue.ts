@@ -39,14 +39,14 @@ export async function calcularValorEntregue(supabase: SupabaseClient<any>, busin
 }
 
 /** Linhas prontas pra mostrar, só as que aconteceram. */
-export function linhasDoValor(v: ValorEntregue): { n: number; texto: string }[] {
-  const l: { n: number; texto: string }[] = [
-    { n: v.visitas, texto: v.visitas === 1 ? "pessoa visitou seu Orbibox" : "pessoas visitaram seu Orbibox" },
-    { n: v.produtos, texto: v.produtos === 1 ? "vez olharam um produto" : "vezes olharam seus produtos" },
-    { n: v.conversas, texto: v.conversas === 1 ? "pessoa conversou com sua IA" : "pessoas conversaram com sua IA" },
-    { n: v.whatsapp, texto: v.whatsapp === 1 ? "chamou no seu WhatsApp" : "chamaram no seu WhatsApp" },
-    { n: v.contatos, texto: v.contatos === 1 ? "novo contato capturado" : "novos contatos capturados" },
-    { n: v.resgates, texto: v.resgates === 1 ? "oferta resgatada" : "ofertas resgatadas" },
+export function linhasDoValor(v: ValorEntregue): { n: number; texto: string; chave: string }[] {
+  const l: { n: number; texto: string; chave: string }[] = [
+    { n: v.visitas, chave: "visitas", texto: v.visitas === 1 ? "pessoa visitou seu Orbibox" : "pessoas visitaram seu Orbibox" },
+    { n: v.produtos, chave: "produtos", texto: v.produtos === 1 ? "vez olharam um produto" : "vezes olharam seus produtos" },
+    { n: v.conversas, chave: "conversas", texto: v.conversas === 1 ? "pessoa conversou com sua IA" : "pessoas conversaram com sua IA" },
+    { n: v.whatsapp, chave: "whatsapp", texto: v.whatsapp === 1 ? "chamou no seu WhatsApp" : "chamaram no seu WhatsApp" },
+    { n: v.contatos, chave: "contatos", texto: v.contatos === 1 ? "novo contato capturado" : "novos contatos capturados" },
+    { n: v.resgates, chave: "resgates", texto: v.resgates === 1 ? "oferta resgatada" : "ofertas resgatadas" },
   ];
   return l.filter((x) => x.n > 0);
 }
