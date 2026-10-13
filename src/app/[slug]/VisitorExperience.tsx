@@ -867,7 +867,7 @@ export function VisitorExperience({
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               ) : logoAtual ? (
                 // "logo" ou "auto" (padrão): logo se tiver, senão a esfera.
-                <OrbiAvatar logoUrl={logoAtual} size={96} />
+                <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} />
               ) : (
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               )}

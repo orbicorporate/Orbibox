@@ -1064,3 +1064,16 @@ body {
   .lp-fade, .lp-float, .lp-pop, .lp-dot, .lp-caret { animation: none; }
   [style*="lpMarquee"] { animation: none !important; }
 }
+
+/* Estrelinhas em volta do logo: uma de cada vez acende e apaga (7,8s de ciclo,
+   6 posições, cada uma acesa ~1,3s). Desligado com "reduzir movimento". */
+@keyframes orbiEstrela {
+  0% { opacity: 0; transform: scale(0.4); }
+  8% { opacity: 1; transform: scale(1); }
+  16% { opacity: 0; transform: scale(0.5); }
+  100% { opacity: 0; transform: scale(0.4); }
+}
+.orbi-estrela { opacity: 0; animation: orbiEstrela 7.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .orbi-estrela { animation: none; opacity: 0; }
+}
