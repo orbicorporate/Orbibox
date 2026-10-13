@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { HomeIcon, isCustomBoxColor } from "@/components/orbi/HomeOptionCard";
 import { isAnimatedIcon } from "@/lib/showcase";
@@ -74,6 +74,7 @@ export function OrbitHome({
   onEsfera?: (cor: string | null) => void;
 }) {
   const [escolhendoEsfera, setEscolhendoEsfera] = useState(false);
+  const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   const N = itens.length;
   const PASSO = N > 0 ? (Math.PI * 2) / N : 1;
   const FRENTE = Math.PI / 2;
@@ -375,16 +376,25 @@ export function OrbitHome({
       </div>
 
       {onPerguntar && (
-        <button
-          type="button"
-          onClick={(e) => abrirEmOrbita(e.currentTarget, { cores, aoCobrir: onPerguntar })}
-          className="mt-4 flex h-[54px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white/85 pl-2 pr-2 text-left shadow-[0_14px_30px_-20px_rgba(16,18,22,.5)] backdrop-blur"
-          style={estiloCores}
-        >
-          <OrbiParticleSphere size={36} colors={cores} vivid className="shrink-0 rounded-full" />
-          <span className="flex-1 text-[14px] text-text-tertiary">Pergunte o que quiser…</span>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-on-background text-white" aria-hidden>↑</span>
-        </button>
+        <>
+          {/* Reserva o lugar da barra no fluxo; a barra em si fica fixa no pé da tela. */}
+          <div className="mt-10 h-[58px] w-full" aria-hidden />
+          {montado && createPortal(
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[440px] px-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+              <button
+                type="button"
+                onClick={(e) => abrirEmOrbita(e.currentTarget, { cores, aoCobrir: onPerguntar })}
+                className="pointer-events-auto flex h-[58px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white pl-2.5 pr-2.5 text-left shadow-[0_14px_30px_-16px_rgba(16,18,22,.45)]"
+                style={estiloCores}
+              >
+                <OrbiParticleSphere size={38} colors={cores} vivid className="shrink-0 rounded-full" />
+                <span className="flex-1 text-[14.5px] text-text-tertiary">Pergunte o que quiser…</span>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-on-background text-white" aria-hidden>↑</span>
+              </button>
+            </div>,
+            document.body,
+          )}
+        </>
       )}
       {escolhendoEsfera && onEsfera && typeof document !== "undefined" && createPortal(
         <>
