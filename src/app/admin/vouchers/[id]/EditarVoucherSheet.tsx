@@ -1,5 +1,6 @@
 "use client";
 
+import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
@@ -19,6 +20,7 @@ type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
  * fica menor do que a de quem já pegou.
  */
 export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { voucher: Voucher; travado: boolean; onSalvo: (v: Voucher) => void; onFechar: () => void }) {
+  useTravarRolagem();
   const supabase = createClient();
   const [title, setTitle] = useState(voucher.title);
   const [description, setDescription] = useState(voucher.description ?? "");
@@ -67,7 +69,7 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 sm:items-center" onClick={onFechar}>
-      <div className="flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-[28px] bg-surface-white sm:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
+      <div className="flex max-h-[92dvh] overscroll-contain w-full max-w-lg flex-col rounded-t-[28px] bg-surface-white sm:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 pb-2 pt-5">
           <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold">Editar voucher</p>
           <button type="button" onClick={onFechar} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px]">✕</button>
