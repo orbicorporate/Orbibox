@@ -168,21 +168,6 @@ export function CartaoItem({
                 <p className={`mt-0.5 font-[family-name:var(--font-manrope)] text-[15px] font-medium ${fc ? "" : "text-text-secondary"}`} style={fc ? { color: fc.fg, opacity: 0.85 } : undefined}>{priceLabel}</p>
               )}
             </div>
-            {destino && (
-              size === "medio" ? (
-                // Card pequeno: só a bolinha com a seta, pro título respirar.
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-[1.5px] border-current text-[13px]" style={{ color: fc ? fc.fg : "#111318" }}>
-                  {isExterno ? "↗" : "→"}
-                </span>
-              ) : (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full border-[1.5px] border-current px-3 py-1 text-[12px] font-medium" style={{ color: fc ? fc.fg : "#111318" }}>
-                  {isExterno
-                    ? (item.link_kind === "categoria" ? "Ver" : "Entrar")
-                    : "Entrar"}
-                  <span aria-hidden>{isExterno ? "↗" : "→"}</span>
-                </span>
-              )
-            )}
           </div>
         )}
       </>
