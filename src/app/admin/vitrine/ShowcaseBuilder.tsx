@@ -1590,13 +1590,7 @@ function ItemCard({
         )}
 
         {/* X pequeno pra excluir direto, sem precisar abrir a edição. */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-surface-white/95 text-[13px] text-text-secondary shadow backdrop-blur"
-          aria-label="Excluir item"
-        >
-          ✕
-        </button>
+        <ExcluirComConfirmacao onConfirmar={onDelete} variante="x" />
 
         {/* Setinhas pra subir e descer o box dentro da seção. */}
         {!editing && total > 1 && (
@@ -2167,9 +2161,7 @@ function ItemCard({
                 Ver página do item ↗
               </Link>
             )}
-            <button onClick={onDelete} className="block w-full rounded-full py-3 text-center text-[13px] font-medium text-red-600">
-              Excluir item
-            </button>
+            <ExcluirComConfirmacao onConfirmar={onDelete} variante="texto" />
             </div>
           </div>
         )}
@@ -2371,5 +2363,49 @@ function PrecoCampo({ valor, onSalvar, placeholder }: { valor: number | null | u
       />
       {invalido && <p className="mt-1 text-[11px] text-red-500">Use só números, ex: 49,90</p>}
     </div>
+  );
+}
+
+
+/**
+ * Excluir em dois toques: o primeiro troca o botão por "Confirmar exclusão"
+ * (vermelho) e o segundo exclui de verdade. Se a pessoa não confirmar em
+ * poucos segundos, volta ao normal.
+ */
+function ExcluirComConfirmacao({ onConfirmar, variante }: { onConfirmar: () => void; variante: "x" | "texto" }) {
+  const [confirmando, setConfirmando] = useState(false);
+  useEffect(() => {
+    if (!confirmando) return;
+    const t = setTimeout(() => setConfirmando(false), 4500);
+    return () => clearTimeout(t);
+  }, [confirmando]);
+
+  if (variante === "x") {
+    return confirmando ? (
+      <button
+        onClick={(e) => { e.stopPropagation(); onConfirmar(); }}
+        className="absolute left-3 top-3 z-10 flex h-9 items-center gap-1.5 rounded-full bg-red-600 px-3.5 text-[13px] font-medium text-white shadow-lg active:scale-95"
+        aria-label="Confirmar exclusão do item"
+      >
+        Confirmar exclusão
+      </button>
+    ) : (
+      <button
+        onClick={(e) => { e.stopPropagation(); setConfirmando(true); }}
+        className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-surface-white/95 text-[13px] text-text-secondary shadow backdrop-blur"
+        aria-label="Excluir item"
+      >
+        ✕
+      </button>
+    );
+  }
+  return confirmando ? (
+    <button onClick={onConfirmar} className="block min-h-[48px] w-full rounded-full bg-red-600 py-3 text-center text-[14px] font-medium text-white active:scale-[0.99]">
+      Confirmar exclusão
+    </button>
+  ) : (
+    <button onClick={() => setConfirmando(true)} className="block min-h-[48px] w-full rounded-full py-3 text-center text-[13px] font-medium text-red-600">
+      Excluir item
+    </button>
   );
 }
