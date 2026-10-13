@@ -66,7 +66,7 @@ const ACAO_EXPLICA: Partial<Record<NonNullable<BoxConfig["action"]>, { titulo: s
   },
   cardapio: {
     titulo: "Abre o cardápio",
-    texto: "Os itens do seu Catálogo, organizados por categoria, com foto, descrição e preço. Os de formato destaque aparecem numa faixa no topo.",
+    texto: "Os pratos do seu cardápio, por categoria, com nome, preço e, se quiser, foto e descrição. É separado do Catálogo.",
     href: "/admin/cardapio",
     link: "Configurar o cardápio →",
   },

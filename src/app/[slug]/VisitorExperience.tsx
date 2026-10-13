@@ -2,6 +2,7 @@
 
 import { DeliveryFlow } from "./DeliveryFlow";
 import { CardapioFlow } from "./CardapioFlow";
+import { lerSecoes } from "@/lib/cardapio";
 import { appsAtivos, linkDoApp } from "@/lib/delivery";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
@@ -1501,7 +1502,7 @@ export function VisitorExperience({
           return (
             <CardapioFlow
               business={business}
-              itens={content}
+              secoes={lerSecoes(cfgCardapio)}
               sessionId={sessionId}
               titulo={cfgCardapio.label || "Cardápio"}
               subtitulo={cfgCardapio.subtitle || `Veja o que ${business.name} tem para você.`}
