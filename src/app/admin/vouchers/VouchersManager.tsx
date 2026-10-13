@@ -10,6 +10,7 @@ import { VOUCHER_THEMES, voucherGradient, CHERRY_GRADIENT, CHERRY_SHADOW, type V
 import type { Database } from "@/lib/supabase/types";
 import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { LinkDoVoucher } from "./LinkDoVoucher";
+import { PromocaoGuiada, type ItemBase, type RascunhoPromocao } from "./PromocaoGuiada";
 import { descontoCurto } from "@/lib/voucherDesconto";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
@@ -47,11 +48,13 @@ function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
   return descontoCurto(v);
 }
 
-export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {}, abrirNovo = false, linkBase }: { linkBase?: string; businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]>; abrirNovo?: boolean }) {
+export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {}, abrirNovo = false, linkBase, itemBase = null, campanha = null, destaques = [] }: { itemBase?: ItemBase | null; campanha?: string | null; destaques?: { t: string; id: string }[]; linkBase?: string; businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]>; abrirNovo?: boolean }) {
   const supabase = createClient();
   const { confirm, DialogRenderer } = useDialogs();
   const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
-  const [creating, setCreating] = useState(abrirNovo);
+  const [creating, setCreating] = useState(false);
+  // Criar promoção abre direto o passo a passo; o formulário completo fica como opção.
+  const [guiado, setGuiado] = useState(abrirNovo);
   // Fechada por padrão: quem entra normalmente quer criar um voucher novo ou
   // ver o painel, não rolar a lista inteira.
   const [listaAberta, setListaAberta] = useState(false);
@@ -169,6 +172,45 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
     }
   }
 
+  async function publicarGuiado(d: RascunhoPromocao): Promise<Voucher | null> {
+    if (!canSave) {
+      try {
+        const r: RascunhoVoucher = { title: d.title, description: d.description, discountType: d.discountType, discountValue: d.discountValue, quantityTotal: d.quantityTotal, expiresHours: d.expiresHours, imageUrl: d.imageUrl, badge: d.badge, color: d.color };
+        window.localStorage.setItem(chaveRascunho(businessId), JSON.stringify(r));
+      } catch {}
+      setGuiado(false);
+      setShowUpgrade(true);
+      return null;
+    }
+    const { data, error } = await supabase
+      .from("vouchers")
+      .insert({
+        business_id: businessId,
+        title: d.title,
+        description: d.description.trim() || null,
+        discount_type: d.discountType,
+        discount_value: d.discountType === "gift" ? 0 : Number(d.discountValue),
+        quantity_total: Number(d.quantityTotal),
+        expires_hours: d.expiresHours.trim() ? Number(d.expiresHours) : null,
+        image_url: d.imageUrl,
+        badge: d.badge.trim() || null,
+        color: d.color,
+      })
+      .select()
+      .single();
+    if (error || !data) return null;
+    setVouchers((p) => [data as Voucher, ...p]);
+    return data as Voucher;
+  }
+
+  function personalizarGuiado(d: RascunhoPromocao) {
+    setTitle(d.title); setDescription(d.description); setDiscountType(d.discountType);
+    setDiscountValue(d.discountValue); setQuantityTotal(d.quantityTotal); setExpiresHours(d.expiresHours);
+    setImageUrl(d.imageUrl); setBadge(d.badge); setColor(d.color);
+    setGuiado(false);
+    setCreating(true);
+  }
+
   async function toggleActive(v: Voucher) {
     const res = await supabase.from("vouchers").update({ is_active: !v.is_active }).eq("id", v.id).select().single();
     const data = res.data;
@@ -185,6 +227,18 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   return (
     <div className="mt-6 flex flex-col gap-7">
       <DialogRenderer />
+      {guiado && (
+        <PromocaoGuiada
+          itemBase={itemBase}
+          campanha={campanha}
+          businessId={businessId}
+          linkBase={linkBase}
+          destaques={destaques}
+          onPublicar={publicarGuiado}
+          onPersonalizar={personalizarGuiado}
+          onFechar={() => setGuiado(false)}
+        />
+      )}
       {showUpgrade && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6" onClick={() => setShowUpgrade(false)}>
           <div className="w-full max-w-[340px] rounded-[24px] bg-surface-white p-6 text-center" onClick={(e) => e.stopPropagation()}>
@@ -448,10 +502,10 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         </form>
       ) : (
         <button
-          onClick={() => setCreating(true)}
+          onClick={() => setGuiado(true)}
           className="orbi-gradient rounded-full px-5 py-3 text-[14px] font-medium text-on-background"
         >
-          + Novo voucher
+          + Criar promoção
         </button>
       )}
     </div>

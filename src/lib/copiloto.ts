@@ -191,7 +191,7 @@ export async function calcularOportunidade(
       titulo: `“${topTitulo.trim()}” é o mais procurado`,
       dados: [`${topQtd} toques em 7 dias${origemForte ? `, a maioria vindo do ${origemForte}` : ""}.`],
       pergunta: "",
-      cta: ctx.hasVouchers ? { rotulo: "Criar promoção pra ele", href: "/admin/vouchers?novo=1" } : { rotulo: "Criar um post sobre ele", href: "/admin/content" },
+      cta: ctx.hasVouchers ? { rotulo: "Criar promoção pra ele", href: `/admin/vouchers?novo=1&item=${topId}` } : { rotulo: "Criar um post sobre ele", href: "/admin/content" },
     };
   }
 

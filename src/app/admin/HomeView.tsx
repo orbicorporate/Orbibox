@@ -156,7 +156,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
             <Icone d={I.promocao} />
             <span className="text-[14px] font-medium leading-tight">Criar uma promoção</span>
           </Link>
-          <Link href="/admin/boxes" className={cartao}>
+          <Link href="/admin/vitrine" className={cartao}>
             <Icone d={I.vitrine} />
             <span className="text-[14px] font-medium leading-tight">Melhorar minha vitrine</span>
           </Link>
