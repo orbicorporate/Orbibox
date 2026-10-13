@@ -412,7 +412,7 @@ export function BoxesManager({
         <button
           onClick={autoArrange}
           disabled={arranging}
-          className="rounded-full orbi-gradient px-4 py-2 text-[13px] font-medium text-on-background disabled:opacity-60"
+          className="rounded-full bg-surface-white px-3.5 py-1.5 text-[12.5px] font-medium text-text-secondary ring-1 ring-black/[0.08] disabled:opacity-60"
         >
           {arranging ? "Organizando…" : "✦ Sugerir ordem"}
         </button>
@@ -425,7 +425,6 @@ export function BoxesManager({
         titulo="Tela inicial"
         descricao="A frase de saudação e o avatar que aparecem no topo, antes dos caminhos."
         preenchido
-        destaque
       >
         <div className="flex flex-col gap-4">
           <div className="rounded-[20px] bg-surface-soft p-4">
@@ -524,7 +523,7 @@ export function BoxesManager({
                       onClick={() => move(box, -1)}
                       disabled={idx === 0}
                       aria-label="Mover pra cima"
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-white/80 disabled:opacity-30"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white disabled:opacity-25"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6" /></svg>
                     </button>
@@ -532,7 +531,7 @@ export function BoxesManager({
                       onClick={() => move(box, 1)}
                       disabled={idx === visibleBoxes.length - 1}
                       aria-label="Mover pra baixo"
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-white/80 disabled:opacity-30"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white disabled:opacity-25"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
                     </button>
@@ -553,7 +552,9 @@ export function BoxesManager({
                     EMOJI_STICKERS[icon](40)
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={40} ringColor={isHero ? undefined : color} />
-                  ) : icon === "__none__" ? null : (
+                  ) : icon === "__none__" ? (
+                    <span className="text-white/80" aria-hidden>→</span>
+                  ) : (
                     icon
                   )}
                 </div>
@@ -582,7 +583,7 @@ export function BoxesManager({
                         <input
                           defaultValue={cfg?.subtitle ?? ""}
                           onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), subtitle: e.target.value })}
-                          placeholder={isCustom ? "Texto de apoio (opcional)" : "Texto de apoio, em branco usa o padrão"}
+                          placeholder="Texto de apoio"
                           aria-label="Texto de apoio do botão"
                           className="w-full border-b border-white/25 bg-transparent py-0.5 pr-5 text-[13px] text-white/75 outline-none placeholder:text-white/40 focus:border-white"
                         />
@@ -610,7 +611,13 @@ export function BoxesManager({
                 )}
               </div>
 
-              <p className="mt-3 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>
+              <details className="group mt-3">
+                <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[12.5px] font-medium text-text-tertiary">
+                  O que este botão faz
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+                </summary>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>
+              </details>
               {box.box_type === "campaign" && (
                 <Link href="/admin/gift" className="mt-1.5 inline-block text-[12.5px] text-text-secondary underline underline-offset-2">
                   {giftEnabled ? "Ver gift cards →" : "Ativar Gift Card →"}

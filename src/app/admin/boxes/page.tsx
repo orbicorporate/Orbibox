@@ -5,7 +5,6 @@ import { getCurrentBusinessId } from "@/lib/business";
 import { BoxesManager } from "./BoxesManager";
 import { HomeModePicker } from "./HomeModePicker";
 import { parseLogoGallery } from "@/lib/logoGallery";
-import { PreviewVisitante } from "@/components/mobile/PreviewVisitante";
 
 export default async function BoxesPage() {
   const supabase = await createClient();
@@ -38,17 +37,10 @@ export default async function BoxesPage() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-start justify-between gap-3">
-        <h1 data-tour="boxes" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
-          Botões
-        </h1>
-        <div className="mt-2 shrink-0">
-          <PreviewVisitante slug={business!.slug} />
-        </div>
-      </div>
-      <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
-        Os botões que aparecem quando alguém abre seu link. Ligue os que fazem sentido e escolha a ordem.
-      </p>
+      <h1 data-tour="boxes" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
+        Botões
+      </h1>
+      <p className="mt-1 text-[14px] text-text-secondary">Ligue os que fazem sentido e escolha a ordem.</p>
       <HomeModePicker businessId={business!.id} inicial={business!.home_mode ?? null} />
       <BoxesManager
         businessId={business!.id}
