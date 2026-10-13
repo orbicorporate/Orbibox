@@ -1109,6 +1109,8 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .btn-orbi-preto::before { animation: none; opacity: 0; }
+}
+
 /* Estrelinhas em volta do logo: uma de cada vez acende e apaga (7,8s de ciclo,
    6 posições, cada uma acesa ~1,3s). Desligado com "reduzir movimento". */
 @keyframes orbiEstrela {
