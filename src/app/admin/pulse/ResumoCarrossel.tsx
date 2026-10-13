@@ -27,8 +27,9 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
           {resumo.visitas === 0 ? "Ninguém abriu seu link nos últimos 7 dias." : resumo.visitas === 1 ? "pessoa abriu seu link." : "pessoas abriram seu link."}
         </p>
         {dif !== null && resumo.visitas > 0 && (
-          <span className="mt-3 inline-flex w-fit rounded-full bg-white/70 px-2.5 py-1 text-[12px]">
-            {dif > 0 ? `${dif}% a mais` : dif < 0 ? `${Math.abs(dif)}% a menos` : "Igual"} que na semana anterior
+          <span className={`mt-3 inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-medium ${dif < 0 ? "bg-[#FFE9E3] text-[#B0463C]" : "bg-white/70"}`}>
+            <span aria-hidden>{dif > 0 ? "↑" : dif < 0 ? "↓" : "="}</span>
+            {dif === 0 ? "Igual à semana anterior" : `${Math.abs(dif)}% ${dif > 0 ? "a mais" : "a menos"} que antes`}
           </span>
         )}
       </>
@@ -49,7 +50,7 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
         </p>
         {resumo.whatsapp > 0 && (
           <span className="mt-3 inline-flex w-fit rounded-full bg-white/70 px-2.5 py-1 text-[12px]">
-            {resumo.whatsapp} {resumo.whatsapp === 1 ? "foi" : "foram"} para o WhatsApp
+            {resumo.whatsapp} no WhatsApp
           </span>
         )}
       </>
@@ -102,11 +103,11 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
     <div className="mt-3">
       <div ref={trilho} onScroll={aoRolar} className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-1 no-scrollbar">
         {cartoes.map((c) => (
-          <div key={c.id} className="flex min-h-[148px] w-[70%] max-w-[240px] shrink-0 snap-start flex-col rounded-[22px] p-4" style={{ backgroundImage: `linear-gradient(170deg, ${c.fundo} 0%, ${c.fundo2} 100%)`, color: c.cor }}>
+          <div key={c.id} className="flex min-h-[148px] w-[62%] max-w-[220px] shrink-0 snap-start flex-col rounded-[22px] p-4" style={{ backgroundImage: `linear-gradient(170deg, ${c.fundo} 0%, ${c.fundo2} 100%)`, color: c.cor }}>
             {c.corpo}
           </div>
         ))}
-        <div className="flex min-h-[148px] w-[70%] max-w-[240px] shrink-0 snap-start flex-col rounded-[24px] bg-[linear-gradient(170deg,#1B1E26_0%,#0D0F14_100%)] p-4 text-white">
+        <div className="flex min-h-[148px] w-[62%] max-w-[220px] shrink-0 snap-start flex-col rounded-[24px] bg-[linear-gradient(170deg,#1B1E26_0%,#0D0F14_100%)] p-4 text-white">
           <p className="text-[12.5px] text-white/60">O que fazer agora</p>
           <p className="mt-2 line-clamp-5 text-[14px] leading-snug">{resumo.dica.texto}</p>
           <Link href={resumo.dica.href} className="mt-3 inline-flex min-h-[42px] w-fit items-center gap-1.5 rounded-full bg-white px-5 text-[14px] text-on-background active:scale-[0.98]">
