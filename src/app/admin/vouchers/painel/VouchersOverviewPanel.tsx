@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { whatsappLink } from "@/lib/track";
@@ -80,6 +80,20 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
     return m;
   }, [redemptions]);
   const varios = vouchers.length > 1;
+
+  // Vindo do cartão "Resgates" da Home (#resgates): já leva até a lista de quem pegou.
+  useEffect(() => {
+    if (window.location.hash !== "#resgates") return;
+    const t = setTimeout(() => {
+      const el = document.getElementById("resgates");
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        el.animate([{ boxShadow: "0 0 0 0 rgba(17,19,24,0)" }, { boxShadow: "0 0 0 6px rgba(17,19,24,.16)" }, { boxShadow: "0 0 0 0 rgba(17,19,24,0)" }], { duration: 1800, delay: 400, easing: "ease-in-out" });
+      }
+    }, 150);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div className="flex flex-col pb-4">
@@ -186,9 +200,14 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
       </div>
 
       {/* 3. Quem resgatou, cada resgate com o voucher identificado */}
-      <div className="mt-8 flex items-center justify-between">
-        <p className="text-[15px] font-semibold">Resgates</p>
-        <span className="text-[13px] text-text-tertiary">{filtered.length}</span>
+      <div id="resgates" className="mt-8 scroll-mt-24 rounded-2xl">
+        <div className="flex items-center justify-between">
+          <p className="text-[15px] font-semibold">Quem pegou seus vouchers</p>
+          <span className="text-[13px] text-text-tertiary">{filtered.length}</span>
+        </div>
+        <p className="mt-1 text-[13px] leading-snug text-text-secondary">
+          Cada pessoa que tocou em um voucher na sua página aparece aqui, com o código dela. Quando ela chegar até você, use Confirmar código lá em cima.
+        </p>
       </div>
 
       {varios && (

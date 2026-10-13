@@ -20,7 +20,7 @@ export function ShareOrbiboxButton({
   className,
   children,
   shareReady = true,
-  configHref = "/admin/config/marca",
+  configHref = "/admin/config/marca#compartilhamento",
 }: {
   url: string;
   title: string;
@@ -91,7 +91,7 @@ export function ShareOrbiboxButton({
                   onClick={() => setAsking(false)}
                   className="mt-6 block rounded-full border border-divider bg-surface-white py-3.5 text-center text-[15px] font-semibold"
                 >
-                  Ver capa e descrição
+                  Ver como o link aparece
                 </Link>
                 <button
                   onClick={() => { setAsking(false); doShare(); }}
@@ -106,14 +106,14 @@ export function ShareOrbiboxButton({
                   Seu link ainda não tem capa
                 </p>
                 <p className="mt-2.5 text-center text-[15px] leading-relaxed text-text-secondary">
-                  Sem capa e descrição, o WhatsApp mostra só o endereço cru. Definir leva um minuto e muda a primeira impressão.
+                  Sem capa e descrição, o WhatsApp mostra só o endereço cru. Na próxima tela você escolhe a capa e já vê como o link vai aparecer.
                 </p>
                 <Link
                   href={configHref}
                   onClick={() => setAsking(false)}
                   className="mt-6 block rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
                 >
-                  Definir capa e descrição
+                  Escolher a capa
                 </Link>
                 <button
                   onClick={() => { setAsking(false); doShare(); }}
