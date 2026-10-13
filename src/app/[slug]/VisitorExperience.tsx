@@ -2584,7 +2584,7 @@ function BarraContato({ business, sessionId, onOrbi }: { business: Business; ses
       {onOrbi && (
         <button
           onClick={() => { trackClick({ businessId: business.id, kind: "zara", sessionId }); onOrbi(); }}
-          className="inline-flex items-center gap-2 rounded-full orbi-gradient px-5 py-3 text-[14px] font-medium text-on-background"
+          className="inline-flex items-center gap-2 rounded-full btn-orbi-preto px-5 py-3 text-[14px] font-medium"
         >
           ✦ Falar com a Orbi
         </button>
