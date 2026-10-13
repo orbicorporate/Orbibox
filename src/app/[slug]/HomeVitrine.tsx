@@ -327,7 +327,7 @@ export function HomeVitrine({
               </button>
             </div>
           </div>
-          <div className="mt-3 flex w-full flex-col items-center empty:hidden">{destaque}</div>
+          <div className="mt-3 flex w-full min-w-0 flex-col items-center empty:hidden">{destaque}</div>
           {temChips && (
             <div role="tablist" aria-label="Categorias" className="no-scrollbar -mx-6 mt-3 flex gap-2 overflow-x-auto px-6 pb-1">
               {[{ name: null as string | null, rotulo: "Tudo" }, ...categorias.map((c) => ({ name: c.name as string | null, rotulo: c.name }))].map((c) => {

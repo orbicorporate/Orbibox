@@ -34,6 +34,7 @@ import { AdicionarBox, type NovoBox } from "./AdicionarBox";
 import { BoxDestaque, lerDestaques, type Destaque, type BotaoDestaque } from "./BoxDestaque";
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
+import { SobreEditorSheet, type SobreParte } from "./SobreEditorSheet";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
 import { HomeIcon } from "@/components/orbi/HomeOptionCard";
@@ -860,7 +861,7 @@ export function VisitorExperience({
         )}
 
         {intent === null && modo === "grade" && (
-          <div className="flex flex-col items-center text-center">
+          <div className="flex w-full min-w-0 flex-col items-center text-center">
             <div className="relative mb-8">
               {business.hero_avatar === "particle" || business.hero_avatar === "sphere" ? (
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
@@ -1485,6 +1486,7 @@ export function VisitorExperience({
             onCatalog={() => chooseIntent("comprar")}
             onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined}
             sessionId={sessionId}
+            podeEditar={showOwnerControls}
           />
         )}
 
@@ -1911,28 +1913,49 @@ function AddressCard({ address }: { address: string }) {
   );
 }
 
+function LapisIcone() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
+  );
+}
+
+function BotaoEditarSobre({ rotulo, onClick }: { rotulo: string; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full bg-surface-white px-3.5 text-[12.5px] font-medium ring-1 ring-black/[0.08] active:scale-[0.97]">
+      <LapisIcone /> {rotulo}
+    </button>
+  );
+}
+
 function StoryView({
   business,
   onBack,
   onCatalog,
   onOrbi,
   sessionId,
+  podeEditar = false,
 }: {
   business: Business;
   onBack: () => void;
   onCatalog: () => void;
   onOrbi?: () => void;
   sessionId: string | null;
+  podeEditar?: boolean;
 }) {
   const [active, setActive] = useState(0);
-  const photos = business.story_photos ?? [];
-  const rawCards = business.differentials_cards;
+  const [editando, setEditando] = useState<SobreParte | null>(null);
+  const [fotosLocal, setFotosLocal] = useState<string[] | null>(null);
+  const [sobreLocal, setSobreLocal] = useState<string | null>(null);
+  const [cardsLocal, setCardsLocal] = useState<{ icon?: string; title: string; description?: string }[] | null>(null);
+  const photos = fotosLocal ?? business.story_photos ?? [];
+  const sobreTexto = sobreLocal ?? business.about_business ?? "";
+  const rawCards = cardsLocal ?? business.differentials_cards;
   type DiffCard = { icon?: string; title: string; description?: string };
   let cards: DiffCard[] = Array.isArray(rawCards)
     ? rawCards.filter((c): c is DiffCard => !!c && typeof c === "object" && typeof (c as DiffCard).title === "string" && (c as DiffCard).title.trim() !== "")
     : [];
   // Compatibilidade com quem só tinha o texto simples de antes (sem cards).
-  if (cards.length === 0 && business.differentials) {
+  if (cards.length === 0 && !cardsLocal && business.differentials) {
     cards = business.differentials.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((title) => ({ title }));
   }
 
@@ -1942,6 +1965,13 @@ function StoryView({
         ← voltar
       </button>
 
+      {podeEditar && photos.length === 0 && (
+        <button type="button" onClick={() => setEditando("fotos")} className="flex min-h-[120px] w-full flex-col items-center justify-center gap-1.5 rounded-[22px] border border-dashed border-divider bg-surface-white text-[14px] font-medium active:scale-[0.99]">
+          <span className="text-[22px] leading-none" aria-hidden>+</span>
+          Adicionar fotos da sua página
+          <span className="text-[12.5px] font-normal text-text-tertiary">Aparecem aqui no topo, em carrossel</span>
+        </button>
+      )}
       {photos.length > 0 && (
         <>
           {(() => {
@@ -1988,6 +2018,11 @@ function StoryView({
           </div>
             );
           })()}
+          {podeEditar && (
+            <button type="button" onClick={() => setEditando("fotos")} className="mx-auto mt-3 flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-white px-4 text-[13px] font-medium ring-1 ring-black/[0.08]">
+              <LapisIcone /> Editar fotos
+            </button>
+          )}
           {photos.length > 1 && (
             <div className="mt-3 flex justify-center gap-1.5">
               {photos.map((_, i) => (
@@ -2003,20 +2038,27 @@ function StoryView({
         {business.brand_voice_summary ?? "Uma marca com identidade própria, construída para conversar de perto com quem chega."}
       </p>
 
-      {business.about_business && (
+      {(sobreTexto || podeEditar) && (
         <div className="mt-6">
-          <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Sobre nós</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Sobre nós</p>
+            {podeEditar && <BotaoEditarSobre rotulo="Editar texto" onClick={() => setEditando("texto")} />}
+          </div>
+          {!sobreTexto && <button type="button" onClick={() => setEditando("texto")} className="mt-2 w-full rounded-[18px] border border-dashed border-divider px-4 py-4 text-left text-[14px] text-text-secondary">Toque para contar quem vocês são</button>}
           <div className="mt-2 flex flex-col gap-3.5 text-[14.5px] leading-[1.7] text-text-secondary">
-            {paragrafosSobre(business.about_business).map((p, i) => (
+            {paragrafosSobre(sobreTexto).map((p, i) => (
               <p key={i} className={i === 0 ? "text-[15.5px] leading-[1.6] text-on-background" : undefined}>{p}</p>
             ))}
           </div>
         </div>
       )}
 
-      {cards.length > 0 && (
+      {(cards.length > 0 || podeEditar) && (
         <div className="mt-6">
-          <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
+            {podeEditar && <BotaoEditarSobre rotulo={cards.length > 0 ? "Editar" : "Adicionar"} onClick={() => setEditando("diferenciais")} />}
+          </div>
           <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto no-scrollbar pb-1">
             {cards.map((c, i) => (
               <div key={i} className="w-[220px] shrink-0 snap-start rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
@@ -2030,6 +2072,20 @@ function StoryView({
       )}
 
       {business.address && <AddressCard address={business.address} />}
+
+      {editando && (
+        <SobreEditorSheet
+          parte={editando}
+          businessId={business.id}
+          texto={sobreTexto}
+          cards={cards}
+          fotos={photos}
+          onSalvoTexto={setSobreLocal}
+          onSalvoCards={setCardsLocal}
+          onSalvoFotos={setFotosLocal}
+          onFechar={() => setEditando(null)}
+        />
+      )}
 
       {/* Três caminhos a partir daqui: ver o catálogo, WhatsApp, ou conversar com a IA. */}
       <div className="mt-8 flex flex-col gap-2.5">
