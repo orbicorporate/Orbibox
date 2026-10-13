@@ -4,7 +4,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { formatPrice } from "@/lib/showcase";
-import { OrbiInsightCard, OrbiInsightHeader, OrbiSparkle } from "@/components/orbi/OrbiInsightCard";
+import { OrbiInsightCard, OrbiSparkle } from "@/components/orbi/OrbiInsightCard";
 
 type Product = { id: string; title: string; price: number | null; price_type: string | null; price_max: number | null; image_url: string | null };
 
@@ -115,9 +115,19 @@ export function CuradoriaOrbi({
   return (
     <>
       <OrbiInsightCard className={compact ? "" : ""}>
-        <div className="flex items-center gap-2">
-          <div className="flex flex-1 items-center gap-2" onClick={() => { if (pronto) setExpanded(true); }}>
-            <OrbiInsightHeader />
+        <div className="flex items-start gap-3">
+          <OrbiParticleSphere size={34} colors={orbiColors ?? undefined} vivid className="mt-0.5 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1" onClick={() => { if (pronto) setExpanded(true); }}>
+            {loadingQ ? (
+              <p className="pt-1.5 text-[15px] text-text-tertiary">Pensando na melhor pergunta pra você…</p>
+            ) : !escolhida ? (
+              <p className="font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight tracking-[-0.01em]">{pergunta}</p>
+            ) : (
+              <div className="flex items-start justify-between gap-3 pt-1.5">
+                <p className="text-[15px] font-medium leading-snug">{escolhida}</p>
+                <button onClick={(e) => { e.stopPropagation(); resetar(); }} className="shrink-0 text-[12px] text-text-tertiary underline">trocar</button>
+              </div>
+            )}
           </div>
           <button
             onClick={() => setShowHelp((v) => !v)}
@@ -134,11 +144,8 @@ export function CuradoriaOrbi({
           </p>
         )}
 
-        {loadingQ ? (
-          <p className="mt-3 text-[15px] text-text-tertiary">Pensando na melhor pergunta pra você…</p>
-        ) : !escolhida ? (
+        {loadingQ ? null : !escolhida ? (
           <>
-            <p className="mt-3 font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight tracking-[-0.01em]">{pergunta}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {opcoes.map((o) => (
                 <button
@@ -153,11 +160,6 @@ export function CuradoriaOrbi({
           </>
         ) : (
           <>
-            <div className="mt-3 flex items-start justify-between gap-3">
-              <p className="text-[15px] font-medium leading-snug">{escolhida}</p>
-              <button onClick={resetar} className="shrink-0 text-[12px] text-text-tertiary underline">trocar</button>
-            </div>
-
             {curating ? (
               <div className="mt-3 flex items-center gap-2.5">
                 <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
