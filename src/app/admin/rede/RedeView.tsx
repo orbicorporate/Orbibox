@@ -84,8 +84,10 @@ export function RedeView() {
         Prévia com dados de exemplo
       </p>
 
+      <ConviteRapido />
+
       <div role="tablist" aria-label="Seções da rede" className="mt-5 flex gap-1.5 rounded-full bg-surface-soft p-1">
-        {([["geral", "Visão geral"], ["lojas", "Orbibox"], ["convite", "Convite e cobrança"]] as const).map(([id, rot]) => (
+        {([["geral", "Visão geral"], ["lojas", "Orbibox"], ["convite", "Cobrança"]] as const).map(([id, rot]) => (
           <button
             key={id}
             role="tab"
@@ -102,6 +104,39 @@ export function RedeView() {
       {aba === "lojas" && <Lojas lojas={lojas} foco={foco} />}
       {aba === "convite" && <Convite />}
     </div>
+  );
+}
+
+/** Convite sempre à mão, antes das abas: é a primeira coisa que o dono da rede faz. */
+function ConviteRapido() {
+  const [copiado, setCopiado] = useState(false);
+  const link = `orbibox.app/rede/${REDE_DEMO.slug}`;
+  const texto = `Entre na rede ${REDE_DEMO.nome} pelo link https://${link} (código ${REDE_DEMO.codigo})`;
+
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(texto);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 1800);
+    } catch { /* sem permissão, segue */ }
+  }
+  async function compartilhar() {
+    try {
+      if (navigator.share) await navigator.share({ title: "Convite para a rede", text: texto });
+      else await copiar();
+    } catch { /* cancelou */ }
+  }
+
+  return (
+    <section className="mt-5 rounded-[24px] bg-on-background p-4 text-white">
+      <p className="text-[15px] font-medium">Convidar um Orbibox para a rede</p>
+      <p className="mt-1 text-[13px] leading-snug text-white/70">Envie o link. Quem aceitar entra na rede e escolhe compartilhar os números.</p>
+      <p className="mt-3 truncate rounded-2xl bg-white/10 px-3.5 py-2.5 text-[13px] text-white/90">{link} <span className="text-white/50">· código {REDE_DEMO.codigo}</span></p>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button type="button" onClick={copiar} className="min-h-[46px] rounded-full bg-white/12 text-[14px] font-medium active:scale-[0.98]" aria-live="polite">{copiado ? "Copiado" : "Copiar convite"}</button>
+        <button type="button" onClick={compartilhar} className="min-h-[46px] rounded-full bg-white text-[14px] font-medium text-on-background active:scale-[0.98]">Compartilhar</button>
+      </div>
+    </section>
   );
 }
 
