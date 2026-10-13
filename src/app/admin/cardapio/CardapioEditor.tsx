@@ -73,12 +73,11 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
   }
 
   return (
-    <div className="flex flex-col pb-10">
+    <div className="flex flex-col pb-40">
       <Link href="/admin/boxes" className="mt-12 text-[14px] text-text-tertiary hover:underline">← Botões da home</Link>
       <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.02em]">Cardápio</h1>
       <p className="mt-1 text-[14px] leading-snug text-text-secondary">Os pratos do seu restaurante, por categoria. É uma lista própria, separada do Catálogo (que mostra destaques e páginas).</p>
 
-      <ImportarCardapio businessId={businessId} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} />
 
       {!boxId ? (
         <div className="mt-5 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
@@ -90,31 +89,46 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
         </div>
       ) : (
         <>
-          <div className="mt-5 flex items-center justify-between gap-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
-            <div className="min-w-0">
-              <p className="text-[14.5px] font-medium">Botão na página</p>
-              <p className="mt-0.5 text-[12.5px] text-text-tertiary">{ativo ? "Aparece na sua página agora." : "Desligado, o cliente não vê."}</p>
+          <div className="mt-5 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[14.5px] font-medium">Botão na página</p>
+                <p className="mt-0.5 text-[12.5px] text-text-tertiary">{ativo ? "Aparece na sua página agora." : "Desligado, o cliente não vê."}</p>
+              </div>
+              <button type="button" role="switch" aria-checked={ativo} onClick={alternar} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${ativo ? "bg-on-background" : "bg-divider"}`}>
+                <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${ativo ? "left-7" : "left-1"}`} />
+                <span className="sr-only">{ativo ? "Ligado" : "Desligado"}</span>
+              </button>
             </div>
-            <button type="button" role="switch" aria-checked={ativo} onClick={alternar} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${ativo ? "bg-on-background" : "bg-divider"}`}>
-              <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${ativo ? "left-7" : "left-1"}`} />
-              <span className="sr-only">{ativo ? "Ligado" : "Desligado"}</span>
-            </button>
+            <details className="group mt-3 border-t border-divider pt-3">
+              <summary className="flex min-h-[40px] cursor-pointer list-none items-center justify-between text-[13.5px] font-medium text-text-secondary">
+                Nome e frase do botão
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+              </summary>
+              <div className="mt-2 flex flex-col gap-3">
+                <div>
+                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do botão</p>
+                  <input value={nome} onChange={(e) => { setNome(e.target.value); gravarTexto(e.target.value, sub); }} maxLength={30} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+                </div>
+                <div>
+                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase embaixo</p>
+                  <input value={sub} onChange={(e) => { setSub(e.target.value); gravarTexto(nome, e.target.value); }} maxLength={60} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+                </div>
+              </div>
+            </details>
           </div>
 
-          <div className="mt-4 flex flex-col gap-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
-            <div>
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do botão</p>
-              <input value={nome} onChange={(e) => { setNome(e.target.value); gravarTexto(e.target.value, sub); }} maxLength={30} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
-            </div>
-            <div>
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase embaixo</p>
-              <input value={sub} onChange={(e) => { setSub(e.target.value); gravarTexto(nome, e.target.value); }} maxLength={60} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
-            </div>
-          </div>
+          <ImportarCardapio businessId={businessId} compacto={secoes.length > 0} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} />
 
           <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes} />
 
-          <PdfCardapio businessId={businessId} url={(cfg.pdf_url as string) || ""} onChange={trocarPdf} />
+          <details className="group mt-2" open={!!cfg.pdf_url}>
+            <summary className="mt-3 flex min-h-[44px] cursor-pointer list-none items-center justify-between rounded-[22px] bg-surface-white px-4 text-[14px] font-medium ring-1 ring-black/[0.06]">
+              Cardápio em PDF (opcional)
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+            </summary>
+            <PdfCardapio businessId={businessId} url={(cfg.pdf_url as string) || ""} onChange={trocarPdf} />
+          </details>
 
           <div className="mt-4 rounded-[22px] bg-surface-soft p-4">
             <p className="text-[14px] font-medium">{totalItens(secoes) === 0 ? "Seu cardápio ainda está vazio" : `${totalItens(secoes)} ${totalItens(secoes) === 1 ? "prato" : "pratos"} no cardápio`}</p>

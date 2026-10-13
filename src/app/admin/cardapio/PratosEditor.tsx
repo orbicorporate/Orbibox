@@ -17,6 +17,9 @@ export function PratosEditor({ businessId, secoes, onChange }: { businessId: str
   const [subindo, setSubindo] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
+  const [comDesc, setComDesc] = useState<string[]>([]);
+  const [apagado, setApagado] = useState<{ s: string; idx: number; item: CardapioItem } | null>(null);
+  const timerDesfazer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function mudarItem(sid: string, iid: string, patch: Partial<CardapioItem>) {
     onChange(secoes.map((s) => (s.id !== sid ? s : { ...s, itens: s.itens.map((i) => (i.id === iid ? { ...i, ...patch } : i)) })));
@@ -34,7 +37,20 @@ export function PratosEditor({ businessId, secoes, onChange }: { businessId: str
     setAberto(i.id);
   }
   function removerPrato(sid: string, iid: string) {
+    const sec = secoes.find((s) => s.id === sid);
+    const idx = sec ? sec.itens.findIndex((i) => i.id === iid) : -1;
+    if (sec && idx >= 0) {
+      setApagado({ s: sid, idx, item: sec.itens[idx] });
+      if (timerDesfazer.current) clearTimeout(timerDesfazer.current);
+      timerDesfazer.current = setTimeout(() => setApagado(null), 7000);
+    }
     onChange(secoes.map((s) => (s.id === sid ? { ...s, itens: s.itens.filter((i) => i.id !== iid) } : s)));
+  }
+  function desfazer() {
+    if (!apagado) return;
+    const a = apagado;
+    setApagado(null);
+    onChange(secoes.map((s) => (s.id === a.s ? { ...s, itens: [...s.itens.slice(0, a.idx), a.item, ...s.itens.slice(a.idx)] } : s)));
   }
   function removerSecao(s: CardapioSecao) {
     if (s.itens.length > 0 && !window.confirm(`Apagar a categoria "${s.nome || "sem nome"}" e os ${s.itens.length} pratos dela?`)) return;
@@ -68,7 +84,7 @@ export function PratosEditor({ businessId, secoes, onChange }: { businessId: str
       <div className="flex items-end justify-between gap-3">
         <div>
           <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Pratos do cardápio</h2>
-          <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Só o nome é obrigatório. Foto e descrição são opcionais.</p>
+          <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Toque na câmera para pôr foto. Só o nome é obrigatório.</p>
         </div>
       </div>
       <input ref={inputFoto} type="file" accept="image/*" className="hidden" onChange={(e) => enviarFoto(e.target.files?.[0])} />
@@ -82,9 +98,12 @@ export function PratosEditor({ businessId, secoes, onChange }: { businessId: str
         {secoes.map((s, idx) => (
           <section key={s.id} className="rounded-[24px] bg-surface-white p-4 ring-1 ring-black/[0.06]" aria-label={s.nome || "Categoria"}>
             <div className="flex items-center gap-2">
-              <input value={s.nome} onChange={(e) => mudarSecao(s.id, { nome: e.target.value })} maxLength={40} placeholder="Nome da categoria (ex: Pratos, Bebidas)" aria-label="Nome da categoria" className="min-w-0 flex-1 bg-transparent font-[family-name:var(--font-manrope)] text-[17px] font-semibold outline-none placeholder:font-normal placeholder:text-text-tertiary" />
-              <button type="button" onClick={() => mover(idx, -1)} disabled={idx === 0} aria-label="Subir categoria" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px] disabled:opacity-30">↑</button>
-              <button type="button" onClick={() => mover(idx, 1)} disabled={idx === secoes.length - 1} aria-label="Descer categoria" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px] disabled:opacity-30">↓</button>
+              <label className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl bg-surface-soft px-3.5 py-2 focus-within:ring-2 focus-within:ring-on-background/30">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" /></svg>
+                <input value={s.nome} onChange={(e) => mudarSecao(s.id, { nome: e.target.value })} maxLength={40} placeholder="Nome da categoria" aria-label="Nome da categoria" className="min-w-0 flex-1 bg-transparent font-[family-name:var(--font-manrope)] text-[16.5px] font-semibold outline-none placeholder:font-normal placeholder:text-text-tertiary" />
+              </label>
+              <button type="button" onClick={() => mover(idx, -1)} disabled={idx === 0} aria-label="Subir categoria" className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px] text-on-background disabled:opacity-25">↑</button>
+              <button type="button" onClick={() => mover(idx, 1)} disabled={idx === secoes.length - 1} aria-label="Descer categoria" className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px] text-on-background disabled:opacity-25">↓</button>
             </div>
 
             <ul className="mt-3 flex flex-col gap-2">
@@ -92,44 +111,56 @@ export function PratosEditor({ businessId, secoes, onChange }: { businessId: str
                 const aberta = aberto === i.id;
                 return (
                   <li key={i.id} className="rounded-2xl border border-divider">
-                    <button type="button" onClick={() => setAberto(aberta ? null : i.id)} aria-expanded={aberta} className="flex w-full items-center gap-3 p-2.5 text-left">
-                      <span className="h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-surface-soft">
-                        {i.foto && (
+                    <div className="flex items-center gap-3 p-2.5">
+                      <button type="button" onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} disabled={subindo === i.id} aria-label={i.foto ? "Trocar foto do prato" : "Adicionar foto do prato"} className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary active:scale-[0.96]">
+                        {i.foto ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={i.foto} alt="" className="h-full w-full object-cover" />
+                        ) : subindo === i.id ? (
+                          <span className="text-[11px]">Enviando</span>
+                        ) : (
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
                         )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[14.5px] font-medium">{i.nome || "Prato sem nome"}</span>
-                        <span className="block truncate text-[12.5px] text-text-tertiary">{i.preco != null ? i.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Sem preço"}{i.descricao ? " · com descrição" : ""}</span>
-                      </span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${aberta ? "rotate-180" : ""}`} aria-hidden><path d="M6 9l6 6 6-6" /></svg>
-                    </button>
+                      </button>
+                      <button type="button" onClick={() => setAberto(aberta ? null : i.id)} aria-expanded={aberta} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-[14.5px] font-medium">{i.nome || "Prato sem nome"}</span>
+                          <span className="block truncate text-[12.5px] text-text-tertiary">{i.preco != null ? i.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Sem preço"}{i.descricao ? " · com descrição" : ""}{i.foto ? "" : " · sem foto"}</span>
+                        </span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${aberta ? "rotate-180" : ""}`} aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+                      </button>
+                    </div>
 
                     {aberta && (
                       <div className="flex flex-col gap-2.5 border-t border-divider p-3">
-                        <input value={i.nome} onChange={(e) => mudarItem(s.id, i.id, { nome: e.target.value })} maxLength={80} placeholder="Nome do prato" aria-label="Nome do prato" className={campo} autoFocus={!i.nome} />
-                        <textarea value={i.descricao ?? ""} onChange={(e) => mudarItem(s.id, i.id, { descricao: e.target.value })} rows={3} maxLength={600} placeholder="Descrição (opcional): ingredientes, tamanho, o que acompanha" aria-label="Descrição do prato" className={`${campo} resize-y text-[14px] leading-snug`} />
                         <div className="flex items-center gap-2">
-                          <label className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] text-text-secondary focus-within:border-on-background">
+                          <input value={i.nome} onChange={(e) => mudarItem(s.id, i.id, { nome: e.target.value })} maxLength={80} placeholder="Nome do prato" aria-label="Nome do prato" className={`${campo} min-w-0 flex-1`} autoFocus={!i.nome} />
+                          <label className="flex w-[118px] shrink-0 items-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 py-2.5 text-[14px] text-text-secondary focus-within:border-on-background">
                             R$
                             <input
                               value={i.preco == null ? "" : String(i.preco).replace(".", ",")}
                               onChange={(e) => { const v = e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""); mudarItem(s.id, i.id, { preco: v === "" ? null : Number(v) || 0 }); }}
+                              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); novoPrato(s.id); } }}
                               inputMode="decimal"
-                              placeholder="Preço (opcional)"
+                              enterKeyHint="next"
+                              placeholder="0,00"
                               aria-label="Preço"
                               className="min-w-0 flex-1 bg-transparent text-[15px] text-on-background outline-none"
                             />
                           </label>
-                          <button type="button" role="checkbox" aria-checked={!!i.aPartir} onClick={() => mudarItem(s.id, i.id, { aPartir: !i.aPartir })} className={`min-h-[44px] shrink-0 rounded-full px-4 text-[13px] font-medium ${i.aPartir ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>A partir de</button>
                         </div>
+                        {(comDesc.includes(i.id) || !!i.descricao) && (
+                          <textarea value={i.descricao ?? ""} onChange={(e) => mudarItem(s.id, i.id, { descricao: e.target.value })} rows={3} maxLength={600} placeholder="Ingredientes, tamanho, o que acompanha" aria-label="Descrição do prato" className={`${campo} resize-y text-[14px] leading-snug`} />
+                        )}
                         <div className="flex flex-wrap items-center gap-2">
-                          <button type="button" onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} disabled={subindo === i.id} className="min-h-[44px] rounded-full border border-divider px-4 text-[13.5px] font-medium disabled:opacity-50">
-                            {subindo === i.id ? "Enviando…" : i.foto ? "Trocar foto" : "Adicionar foto"}
-                          </button>
-                          {i.foto && <button type="button" onClick={() => mudarItem(s.id, i.id, { foto: null })} className="min-h-[44px] rounded-full px-3 text-[13.5px] font-medium text-text-secondary">Tirar foto</button>}
-                          <button type="button" onClick={() => removerPrato(s.id, i.id)} className="ml-auto min-h-[44px] rounded-full px-3 text-[13.5px] font-medium text-red-600">Apagar prato</button>
+                          {!(comDesc.includes(i.id) || !!i.descricao) && (
+                            <button type="button" onClick={() => setComDesc((p) => [...p, i.id])} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">+ Descrição</button>
+                          )}
+                          {i.preco != null && (
+                            <button type="button" role="checkbox" aria-checked={!!i.aPartir} onClick={() => mudarItem(s.id, i.id, { aPartir: !i.aPartir })} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${i.aPartir ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>A partir de</button>
+                          )}
+                          {i.foto && <button type="button" onClick={() => mudarItem(s.id, i.id, { foto: null })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Tirar foto</button>}
+                          <button type="button" onClick={() => removerPrato(s.id, i.id)} className="ml-auto min-h-[40px] rounded-full px-3 text-[13px] font-medium text-text-tertiary">Apagar</button>
                         </div>
                       </div>
                     )}
@@ -145,6 +176,13 @@ export function PratosEditor({ businessId, secoes, onChange }: { businessId: str
           </section>
         ))}
       </div>
+
+      {apagado && (
+        <div role="status" className="fixed inset-x-0 bottom-28 z-40 mx-auto flex w-[calc(100%-48px)] max-w-[392px] items-center justify-between gap-3 rounded-full bg-on-background py-2 pl-5 pr-2 text-[13.5px] text-white shadow-[0_10px_30px_rgba(17,19,24,0.3)]">
+          Prato apagado
+          <button type="button" onClick={desfazer} className="min-h-[40px] rounded-full bg-white/15 px-4 font-semibold">Desfazer</button>
+        </div>
+      )}
 
       <button type="button" onClick={novaSecao} className="mt-4 min-h-[48px] w-full rounded-full border border-divider bg-surface-white text-[14px] font-medium active:scale-[0.99]">+ Nova categoria</button>
     </div>

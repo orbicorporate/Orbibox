@@ -12,7 +12,7 @@ type Secao = { nome: string; itens: ItemProposto[] };
  * Orbi monta os pratos por categoria. Antes de entrar no cardápio tudo passa por
  * uma revisão (marcar, trocar nome e preço), porque a leitura de foto pode errar.
  */
-export function ImportarCardapio({ businessId, onAdicionar }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void }) {
+export function ImportarCardapio({ businessId, onAdicionar, compacto = false }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void; compacto?: boolean }) {
   const supabase = useRef(createClient()).current;
   const inputFoto = useRef<HTMLInputElement>(null);
   const [aberto, setAberto] = useState(false);
@@ -94,13 +94,21 @@ export function ImportarCardapio({ businessId, onAdicionar }: { businessId: stri
 
   const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
 
+  if (!aberto && feito === null && compacto) {
+    return (
+      <button type="button" onClick={() => setAberto(true)} className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.08] active:scale-[0.98]">
+        <span aria-hidden>✨</span> Importar mais com a Orbi
+      </button>
+    );
+  }
+
   if (!aberto && feito === null) {
     return (
       <button type="button" onClick={() => setAberto(true)} className="mt-5 flex w-full items-center gap-3 rounded-[22px] bg-surface-white p-4 text-left ring-1 ring-black/[0.06] active:scale-[0.99]">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface-soft text-[20px]" aria-hidden>✨</span>
         <span className="min-w-0 flex-1">
           <span className="block text-[15px] font-semibold">Importar cardápio com a Orbi</span>
-          <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">Cole o texto ou envie uma foto do cardápio e a Orbi monta os itens por categoria.</span>
+          <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">Cole o texto ou envie uma foto do cardápio e a Orbi monta os pratos por categoria.</span>
         </span>
         <span aria-hidden className="text-text-tertiary">→</span>
       </button>
