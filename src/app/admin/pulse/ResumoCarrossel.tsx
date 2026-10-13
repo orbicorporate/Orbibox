@@ -6,17 +6,6 @@ import type { ResumoSemanal } from "@/lib/resumoSemanal";
 
 type Cartao = { id: string; fundo: string; fundo2: string; cor: string; corpo: ReactNode };
 
-/** Explica de onde a pessoa veio, em palavras simples. */
-function explicarOrigem(origem: string): string {
-  const o = origem.toLowerCase();
-  if (o === "link direto")
-    return "Acontece quando alguém toca num link que você mandou por mensagem, escaneia seu QR Code ou digita o endereço. Nesses casos o navegador não informa de onde a pessoa veio.";
-  if (o === "instagram") return "Gente que chegou pelo link da sua bio, dos Stories ou de um post.";
-  if (o === "whatsapp") return "Gente que abriu seu link a partir de uma conversa no WhatsApp.";
-  if (o === "google") return "Gente que encontrou você numa busca do Google.";
-  return "Sites e apps que levaram pessoas até a sua página.";
-}
-
 /** Cartões que deslizam de lado, um assunto por cartão. */
 export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
   const trilho = useRef<HTMLDivElement>(null);
@@ -32,9 +21,9 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
     cor: "#2F6B00",
     corpo: (
       <>
-        <p className="text-[12.5px] opacity-80">Visitas, 7 dias</p>
+        <p className="text-[12.5px] font-medium opacity-80">Visitas, 7 dias</p>
         <p className="mt-1 font-[family-name:var(--font-manrope)] text-[40px] font-medium leading-none tabular-nums">{resumo.visitas}</p>
-        <p className="mt-2 text-[14px] leading-snug">
+        <p className="mt-1.5 text-[13px] leading-snug">
           {resumo.visitas === 0 ? "Ninguém abriu seu link nos últimos 7 dias." : resumo.visitas === 1 ? "pessoa abriu seu link." : "pessoas abriram seu link."}
         </p>
         {dif !== null && resumo.visitas > 0 && (
@@ -53,9 +42,9 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
     cor: "#00695F",
     corpo: (
       <>
-        <p className="text-[12.5px] opacity-80">Toques</p>
+        <p className="text-[12.5px] font-medium opacity-80">Toques</p>
         <p className="mt-1 font-[family-name:var(--font-manrope)] text-[40px] font-medium leading-none tabular-nums">{resumo.acoes}</p>
-        <p className="mt-2 text-[14px] leading-snug">
+        <p className="mt-1.5 text-[13px] leading-snug">
           {resumo.acoes === 0 ? "Ninguém tocou em nenhum botão ainda." : resumo.acoes === 1 ? "vez que tocaram em algo." : "vezes que tocaram em algo."}
         </p>
         {resumo.whatsapp > 0 && (
@@ -75,9 +64,9 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
       cor: "#A8481A",
       corpo: (
         <>
-          <p className="text-[12.5px] opacity-80">O mais procurado</p>
-          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-tight">{resumo.topTitulo}</p>
-          <p className="mt-2 text-[14px] leading-snug">É o que mais chamou atenção esta semana.</p>
+          <p className="text-[12.5px] font-medium opacity-80">O mais procurado</p>
+          <p className="mt-auto line-clamp-3 font-[family-name:var(--font-manrope)] text-[22px] font-medium leading-tight">{resumo.topTitulo}</p>
+          <p className="mt-1.5 text-[13px] leading-snug">É o que mais chamou atenção esta semana.</p>
         </>
       ),
     });
@@ -91,10 +80,9 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
       cor: "#6A3FC4",
       corpo: (
         <>
-          <p className="text-[12.5px] opacity-80">De onde vieram</p>
-          <p className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-tight">{resumo.origem}</p>
-          <p className="mt-2 text-[14px] leading-snug">A maioria chegou por aqui.</p>
-          <p className="mt-3 rounded-2xl bg-white/60 px-3 py-2.5 text-[12.5px] leading-snug">{explicarOrigem(resumo.origem)}</p>
+          <p className="text-[12.5px] font-medium opacity-80">De onde vieram</p>
+          <p className="mt-auto line-clamp-3 font-[family-name:var(--font-manrope)] text-[22px] font-medium leading-tight">{resumo.origem}</p>
+          <p className="mt-1.5 text-[13px] leading-snug">A maioria chegou por aqui.</p>
         </>
       ),
     });
@@ -118,9 +106,9 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
             {c.corpo}
           </div>
         ))}
-        <div className="flex min-h-[148px] w-[70%] max-w-[240px] shrink-0 snap-start flex-col rounded-[26px] bg-[linear-gradient(170deg,#1B1E26_0%,#0D0F14_100%)] p-5 text-white">
+        <div className="flex min-h-[148px] w-[70%] max-w-[240px] shrink-0 snap-start flex-col rounded-[24px] bg-[linear-gradient(170deg,#1B1E26_0%,#0D0F14_100%)] p-4 text-white">
           <p className="text-[12.5px] text-white/60">O que fazer agora</p>
-          <p className="mt-2 text-[15px] leading-snug">{resumo.dica.texto}</p>
+          <p className="mt-2 line-clamp-5 text-[14px] leading-snug">{resumo.dica.texto}</p>
           <Link href={resumo.dica.href} className="mt-3 inline-flex min-h-[42px] w-fit items-center gap-1.5 rounded-full bg-white px-5 text-[14px] text-on-background active:scale-[0.98]">
             {resumo.dica.rotulo} <span aria-hidden>→</span>
           </Link>

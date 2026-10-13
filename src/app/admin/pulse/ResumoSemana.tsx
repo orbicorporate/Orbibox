@@ -9,10 +9,13 @@ export function ResumoSemana({ resumo, businessId, emailLigado }: { resumo: Resu
     <section className="mt-5">
       <p className="text-[12px] uppercase tracking-[0.12em] text-text-tertiary">Sua semana em palavras</p>
       <ResumoCarrossel resumo={resumo} />
-      <Link href="/resumo-semanal" className="mt-3 flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-divider bg-surface-white px-5 text-[14px] text-on-background active:scale-[0.98]">
-        Ver em página e salvar em PDF
-      </Link>
-      <ResumoEmailToggle businessId={businessId} inicial={emailLigado} />
+      <div className="mt-3 divide-y divide-divider overflow-hidden rounded-[20px] bg-surface-white ring-1 ring-black/[0.06]">
+        <Link href="/resumo-semanal" className="flex min-h-[52px] items-center justify-between gap-3 px-4 text-[14px] active:bg-surface-soft">
+          <span>Ver em página e salvar em PDF</span>
+          <span aria-hidden className="text-text-tertiary">→</span>
+        </Link>
+        <ResumoEmailToggle businessId={businessId} inicial={emailLigado} />
+      </div>
     </section>
   );
 }
