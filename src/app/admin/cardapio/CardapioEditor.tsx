@@ -8,7 +8,7 @@ import { ImportarCardapio } from "./ImportarCardapio";
 import { PdfCardapio } from "./PdfCardapio";
 import { PratosEditor } from "./PratosEditor";
 import type { Json } from "@/lib/supabase/types";
-import { lerSecoes, totalItens, type CardapioSecao } from "@/lib/cardapio";
+import { lerSecoes, novoId, totalItens, type CardapioSecao } from "@/lib/cardapio";
 
 export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: ativoInicial, totalBoxes, slug }: { businessId: string; boxId: string | null; config: Record<string, unknown>; ativo: boolean; totalBoxes: number; slug: string }) {
   const supabase = useRef(createClient()).current;
@@ -100,27 +100,11 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
                 <span className="sr-only">{ativo ? "Ligado" : "Desligado"}</span>
               </button>
             </div>
-            <details className="group mt-3 border-t border-divider pt-3">
-              <summary className="flex min-h-[40px] cursor-pointer list-none items-center justify-between text-[13.5px] font-medium text-text-secondary">
-                Nome e frase do botão
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
-              </summary>
-              <div className="mt-2 flex flex-col gap-3">
-                <div>
-                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do botão</p>
-                  <input value={nome} onChange={(e) => { setNome(e.target.value); gravarTexto(e.target.value, sub); }} maxLength={30} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
-                </div>
-                <div>
-                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase embaixo</p>
-                  <input value={sub} onChange={(e) => { setSub(e.target.value); gravarTexto(nome, e.target.value); }} maxLength={60} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
-                </div>
-              </div>
-            </details>
           </div>
 
-          <ImportarCardapio businessId={businessId} compacto={secoes.length > 0} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} />
-
-          <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes} />
+          <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes}>
+            <ImportarCardapio businessId={businessId} compacto={secoes.length > 0} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={() => mudarSecoes([...secoes, { id: novoId(), nome: "", itens: [] }])} />
+          </PratosEditor>
 
           <details className="group mt-2" open={!!cfg.pdf_url}>
             <summary className="mt-3 flex min-h-[44px] cursor-pointer list-none items-center justify-between rounded-[22px] bg-surface-white px-4 text-[14px] font-medium ring-1 ring-black/[0.06]">
@@ -130,7 +114,29 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
             <PdfCardapio businessId={businessId} url={(cfg.pdf_url as string) || ""} onChange={trocarPdf} />
           </details>
 
-          <div className="mt-4 rounded-[22px] bg-surface-soft p-4">
+          <section className="mt-8" aria-label="Texto do botão">
+            <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Como o botão aparece na sua página</h2>
+            <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">É o botão que o cliente toca para abrir o cardápio.</p>
+            <div className="mt-3 flex items-center gap-3 rounded-[22px] bg-on-background p-4 text-white" aria-hidden>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-[18px]">🍴</span>
+              <span className="min-w-0">
+                <span className="block truncate text-[15px] font-semibold">{nome || "Cardápio"}</span>
+                <span className="block truncate text-[12.5px] text-white/70">{sub}</span>
+              </span>
+            </div>
+            <div className="mt-3 flex flex-col gap-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
+              <div>
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Título do botão</p>
+                <input value={nome} onChange={(e) => { setNome(e.target.value); gravarTexto(e.target.value, sub); }} maxLength={30} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              </div>
+              <div>
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase pequena embaixo do título</p>
+                <input value={sub} onChange={(e) => { setSub(e.target.value); gravarTexto(nome, e.target.value); }} maxLength={60} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+              </div>
+            </div>
+          </section>
+
+          <div className="mt-6 rounded-[22px] bg-surface-soft p-4">
             <p className="text-[14px] font-medium">{totalItens(secoes) === 0 ? "Seu cardápio ainda está vazio" : `${totalItens(secoes)} ${totalItens(secoes) === 1 ? "prato" : "pratos"} no cardápio`}</p>
             <p className="mt-1 text-[13px] leading-snug text-text-secondary">O botão Pedir por delivery aparece no cardápio quando você liga um app em Delivery.</p>
             <div className="mt-3.5 flex flex-wrap gap-2">

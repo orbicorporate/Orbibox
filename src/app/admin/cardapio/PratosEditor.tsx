@@ -10,7 +10,7 @@ const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py
  * Editor dos pratos do cardápio: categorias com pratos. Só o nome é obrigatório,
  * descrição e foto são opcionais. Sem foto, o cliente vê o prato só com texto.
  */
-export function PratosEditor({ businessId, secoes, onChange }: { businessId: string; secoes: CardapioSecao[]; onChange: (s: CardapioSecao[]) => void }) {
+export function PratosEditor({ businessId, secoes, onChange, children }: { businessId: string; secoes: CardapioSecao[]; onChange: (s: CardapioSecao[]) => void; children?: React.ReactNode }) {
   const supabase = useRef(createClient()).current;
   const inputFoto = useRef<HTMLInputElement>(null);
   const alvo = useRef<{ s: string; i: string } | null>(null);
@@ -84,15 +84,13 @@ export function PratosEditor({ businessId, secoes, onChange }: { businessId: str
       <div className="flex items-end justify-between gap-3">
         <div>
           <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Pratos do cardápio</h2>
-          <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Toque na câmera para pôr foto. Só o nome é obrigatório.</p>
+          <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Duas formas de montar: colar tudo de uma vez ou cadastrar um por um.</p>
         </div>
       </div>
       <input ref={inputFoto} type="file" accept="image/*" className="hidden" onChange={(e) => enviarFoto(e.target.files?.[0])} />
       {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
 
-      {secoes.length === 0 && (
-        <p className="mt-3 rounded-[22px] border border-dashed border-divider p-5 text-center text-[13.5px] leading-snug text-text-tertiary">Nenhum prato ainda. Importe com a Orbi acima ou crie a primeira categoria.</p>
-      )}
+      {children}
 
       <div className="mt-3 flex flex-col gap-4">
         {secoes.map((s, idx) => (
@@ -184,7 +182,7 @@ export function PratosEditor({ businessId, secoes, onChange }: { businessId: str
         </div>
       )}
 
-      <button type="button" onClick={novaSecao} className="mt-4 min-h-[48px] w-full rounded-full border border-divider bg-surface-white text-[14px] font-medium active:scale-[0.99]">+ Nova categoria</button>
+      {secoes.length > 0 && <button type="button" onClick={novaSecao} className="mt-4 min-h-[48px] w-full rounded-full border border-divider bg-surface-white text-[14px] font-medium active:scale-[0.99]">+ Nova categoria</button>}
     </div>
   );
 }
