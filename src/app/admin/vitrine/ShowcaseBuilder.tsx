@@ -87,6 +87,7 @@ export function ShowcaseBuilder({
   initialLeadTop = false,
   siteSalvo = null,
   abrirNovo = false,
+  abrirCapa = false,
 }: {
   items: Item[];
   slug: string;
@@ -103,6 +104,8 @@ export function ShowcaseBuilder({
   initialLeadTop?: boolean;
   /** Site informado no cadastro: já vem preenchido na importação. */
   siteSalvo?: string | null;
+  /** Veio do atalho "Capa" do checklist: abre os ajustes já rolando até a capa. */
+  abrirCapa?: boolean;
   /** Veio de um atalho "Adicionar item agora": já abre um item novo. */
   abrirNovo?: boolean;
 }) {
@@ -170,7 +173,7 @@ export function ShowcaseBuilder({
   const [showInspire, setShowInspire] = useState(false);
   const [showEstilo, setShowEstilo] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
-  const [ajustesAbertos, setAjustesAbertos] = useState(false);
+  const [ajustesAbertos, setAjustesAbertos] = useState(abrirCapa);
   const [avisoDesfazer, setAvisoDesfazer] = useState<string | null>(null);
   const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -597,6 +600,13 @@ export function ShowcaseBuilder({
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abrirNovo]);
+
+  // Atalho "Capa": os ajustes já nascem abertos, só falta rolar até o card da capa.
+  useEffect(() => {
+    if (!abrirCapa) return;
+    const t = window.setTimeout(() => document.getElementById("vitrine-capa")?.scrollIntoView({ behavior: "smooth", block: "start" }), 250);
+    return () => window.clearTimeout(t);
+  }, [abrirCapa]);
 
   async function createCategory() {
     const nome = await prompt({ title: "Nome da nova categoria", placeholder: "Ex: Bebidas" });
@@ -1109,7 +1119,7 @@ export function ShowcaseBuilder({
         />
       </div>
       {/* Capa do Catálogo, opcional, pode ter várias fotos (vira carrossel). Sem foto, some sem deixar espaço vazio nem aviso. */}
-      <div className="mt-6 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+      <div id="vitrine-capa" className="mt-6 scroll-mt-24 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">

@@ -8,7 +8,7 @@ export const PROGRESS_STEPS: { key: ProgressKey; label: string; href: string }[]
   { key: "vitrine", label: "Preencher o Catálogo", href: "/admin/vitrine" },
   { key: "boxes", label: "Ligar os botões da página", href: "/admin/boxes" },
   { key: "whatsapp", label: "Colocar seu WhatsApp", href: "/admin/config/marca#contatos" },
-  { key: "capa", label: "Adicionar a capa do Catálogo", href: "/admin/vitrine" },
+  { key: "capa", label: "Adicionar a capa do Catálogo", href: "/admin/vitrine?abrir=capa" },
   { key: "orbi", label: "Ativar a Orbi (IA)", href: "/admin/agent" },
 ];
 

@@ -7,8 +7,8 @@ import { GuiaBotao } from "@/components/guia/GuiaOrbi";
 
 type BrandColor = { hex: string; role?: string };
 
-export default async function VitrinePage({ searchParams }: { searchParams: Promise<{ novo?: string }> }) {
-  const { novo } = await searchParams;
+export default async function VitrinePage({ searchParams }: { searchParams: Promise<{ novo?: string; abrir?: string }> }) {
+  const { novo, abrir } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
@@ -42,6 +42,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
       <GuiaBotao className="mt-3 self-start" />
       <ShowcaseBuilder
         abrirNovo={novo === "1"}
+        abrirCapa={abrir === "capa"}
         items={items ?? []}
         slug={business!.slug}
         businessId={business!.id}
