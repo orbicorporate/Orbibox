@@ -23,7 +23,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
     supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed, objectives, orbi_colors").eq("business_id", businessId).maybeSingle(),
     supabase.from("content_items").select("image_url, image_is_placeholder, description").eq("business_id", businessId).eq("status", "published"),
     supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", businessId).eq("is_active", true),
-    supabase.from("smart_boxes").select("config").eq("business_id", businessId),
+    supabase.from("smart_boxes").select("id, box_type, config").eq("business_id", businessId),
   ]);
 
   const agentConfig = agentRes.data;
@@ -42,6 +42,13 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   const rawDiff = business.differentials_cards;
   const hasDifferentials = (Array.isArray(rawDiff) && rawDiff.length > 0) || !!business.differentials?.trim();
   const storyPhotos = (business.story_photos as string[] | null) ?? [];
+
+  // Links que já abrem o bloco certo na tela de Botões (e rolam até a parte
+  // que falta), pra a pessoa não cair numa página cheia sem saber onde mexer.
+  const caixas = (boxesCfgRes.data ?? []) as { id: string; box_type: string; config: { action?: string; url?: string } | null }[];
+  const sobreId = caixas.find((b) => b.box_type === "content")?.id ?? null;
+  const enderecoBoxId = caixas.find((b) => b.box_type === "custom" && b.config?.action === "endereco")?.id ?? null;
+  const hrefSobre = (parte: "fotos" | "diferenciais") => (sobreId ? `/admin/boxes?box=${sobreId}&ir=${parte}` : "/admin/boxes");
 
   const insightsQueue: Insight[] = [];
   if (activeBoxes === 0) {
@@ -108,16 +115,13 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   }
   // O endereço pode estar em dois lugares: no cadastro do negócio ou no box
   // "Como chegar" (config.url). Qualquer um dos dois já conta como preenchido.
-  const enderecoNoBox = (boxesCfgRes.data ?? []).some((b) => {
-    const c = b.config as { action?: string; url?: string } | null;
-    return c?.action === "endereco" && !!c.url?.trim();
-  });
+  const enderecoNoBox = caixas.some((b) => b.config?.action === "endereco" && !!b.config.url?.trim());
   if (!business.address?.trim() && !enderecoNoBox) {
     insightsQueue.push({
       title: "Adicione seu endereço",
       description: "Ganha um botão pronto na tela inicial, com botões pro Waze e Google Maps.",
       ctaLabel: "Adicionar endereço",
-      href: "/admin/boxes",
+      href: enderecoBoxId ? `/admin/boxes?box=${enderecoBoxId}` : "/admin/boxes",
     });
   }
   if (storyPhotos.length === 0) {
@@ -125,7 +129,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
       title: "Complete a página sobre o seu negócio",
       description: "Adicione fotos do espaço, da equipe ou dos bastidores no carrossel, ajuda o visitante a confiar mais antes de comprar.",
       ctaLabel: "Adicionar fotos",
-      href: "/admin/boxes",
+      href: hrefSobre("fotos"),
     });
   }
   if (!hasDifferentials) {
@@ -133,7 +137,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
       title: "Mostre seus diferenciais",
       description: "O que faz seu negócio especial? Frete grátis, garantia, atendimento rápido, pequenos detalhes que pesam na decisão de compra.",
       ctaLabel: "Adicionar diferenciais",
-      href: "/admin/boxes",
+      href: hrefSobre("diferenciais"),
     });
   }
   if (hasItems && itemsWithoutDescription > 0) {

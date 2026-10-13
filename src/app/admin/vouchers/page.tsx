@@ -13,8 +13,8 @@ import { headers } from "next/headers";
 
 type BoxConfigShape = { action?: string };
 
-export default async function VouchersPage({ searchParams }: { searchParams: Promise<{ novo?: string }> }) {
-  const { novo } = await searchParams;
+export default async function VouchersPage({ searchParams }: { searchParams: Promise<{ novo?: string; item?: string; campanha?: string }> }) {
+  const { novo, item, campanha } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
@@ -27,9 +27,15 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug")
+    .select("id, name, slug, home_destaques")
     .eq("id", businessId!)
     .single();
+
+  // Produto sugerido pela Orbi (?item=), já com foto, para a promoção nascer pronta.
+  const { data: itemRow } = item
+    ? await supabase.from("content_items").select("id, title, image_url").eq("id", item).eq("business_id", business!.id).maybeSingle()
+    : { data: null };
+  const destaques = Array.isArray(business!.home_destaques) ? (business!.home_destaques as { t: string; id: string }[]) : [];
 
   // Titânio pode montar o voucher pra ver como é, mas não tem vouchers salvos.
   const { data: vouchers } = canSave
@@ -225,7 +231,7 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
         <DivulgarVoucherButton linkBase={`${linkBase}/${business!.slug}`} vouchers={(vouchers ?? []).map((v) => ({ id: v.id, title: v.title }))} />
       )}
 
-      <VouchersManager linkBase={`${linkBase}/${business!.slug}`} abrirNovo={novo === "1"} businessId={business!.id} initialVouchers={vouchers ?? []} canSave={canSave} redemptionsByVoucher={redemptionsByVoucher} />
+      <VouchersManager linkBase={`${linkBase}/${business!.slug}`} abrirNovo={novo === "1"} itemBase={itemRow ?? null} campanha={campanha ?? null} destaques={destaques} businessId={business!.id} initialVouchers={vouchers ?? []} canSave={canSave} redemptionsByVoucher={redemptionsByVoucher} />
     </div>
   );
 }

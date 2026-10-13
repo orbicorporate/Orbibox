@@ -33,12 +33,12 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
     corpo: (
       <>
         <p className="text-[12.5px] opacity-80">Visitas, 7 dias</p>
-        <p className="mt-1 font-[family-name:var(--font-manrope)] text-[56px] font-medium leading-none tabular-nums">{resumo.visitas}</p>
+        <p className="mt-1 font-[family-name:var(--font-manrope)] text-[40px] font-medium leading-none tabular-nums">{resumo.visitas}</p>
         <p className="mt-2 text-[14px] leading-snug">
           {resumo.visitas === 0 ? "Ninguém abriu seu link nos últimos 7 dias." : resumo.visitas === 1 ? "pessoa abriu seu link." : "pessoas abriram seu link."}
         </p>
         {dif !== null && resumo.visitas > 0 && (
-          <span className="mt-auto inline-flex w-fit rounded-full bg-white/70 px-2.5 py-1 text-[12px]">
+          <span className="mt-3 inline-flex w-fit rounded-full bg-white/70 px-2.5 py-1 text-[12px]">
             {dif > 0 ? `${dif}% a mais` : dif < 0 ? `${Math.abs(dif)}% a menos` : "Igual"} que na semana anterior
           </span>
         )}
@@ -54,12 +54,12 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
     corpo: (
       <>
         <p className="text-[12.5px] opacity-80">Toques</p>
-        <p className="mt-1 font-[family-name:var(--font-manrope)] text-[56px] font-medium leading-none tabular-nums">{resumo.acoes}</p>
+        <p className="mt-1 font-[family-name:var(--font-manrope)] text-[40px] font-medium leading-none tabular-nums">{resumo.acoes}</p>
         <p className="mt-2 text-[14px] leading-snug">
           {resumo.acoes === 0 ? "Ninguém tocou em nenhum botão ainda." : resumo.acoes === 1 ? "vez que tocaram em algo." : "vezes que tocaram em algo."}
         </p>
         {resumo.whatsapp > 0 && (
-          <span className="mt-auto inline-flex w-fit rounded-full bg-white/70 px-2.5 py-1 text-[12px]">
+          <span className="mt-3 inline-flex w-fit rounded-full bg-white/70 px-2.5 py-1 text-[12px]">
             {resumo.whatsapp} {resumo.whatsapp === 1 ? "foi" : "foram"} para o WhatsApp
           </span>
         )}
@@ -94,7 +94,7 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
           <p className="text-[12.5px] opacity-80">De onde vieram</p>
           <p className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-tight">{resumo.origem}</p>
           <p className="mt-2 text-[14px] leading-snug">A maioria chegou por aqui.</p>
-          <p className="mt-auto rounded-2xl bg-white/60 px-3 py-2.5 text-[12.5px] leading-snug">{explicarOrigem(resumo.origem)}</p>
+          <p className="mt-3 rounded-2xl bg-white/60 px-3 py-2.5 text-[12.5px] leading-snug">{explicarOrigem(resumo.origem)}</p>
         </>
       ),
     });
@@ -111,17 +111,17 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
   const total = cartoes.length + 1;
 
   return (
-    <div className="mt-4">
+    <div className="mt-3">
       <div ref={trilho} onScroll={aoRolar} className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-1 no-scrollbar">
         {cartoes.map((c) => (
-          <div key={c.id} className="flex min-h-[290px] w-[62%] max-w-[250px] shrink-0 snap-start flex-col rounded-[26px] p-5" style={{ backgroundImage: `linear-gradient(170deg, ${c.fundo} 0%, ${c.fundo2} 100%)`, color: c.cor }}>
+          <div key={c.id} className="flex min-h-[148px] w-[70%] max-w-[240px] shrink-0 snap-start flex-col rounded-[22px] p-4" style={{ backgroundImage: `linear-gradient(170deg, ${c.fundo} 0%, ${c.fundo2} 100%)`, color: c.cor }}>
             {c.corpo}
           </div>
         ))}
-        <div className="flex min-h-[290px] w-[62%] max-w-[250px] shrink-0 snap-start flex-col rounded-[26px] bg-[linear-gradient(170deg,#1B1E26_0%,#0D0F14_100%)] p-5 text-white">
+        <div className="flex min-h-[148px] w-[70%] max-w-[240px] shrink-0 snap-start flex-col rounded-[26px] bg-[linear-gradient(170deg,#1B1E26_0%,#0D0F14_100%)] p-5 text-white">
           <p className="text-[12.5px] text-white/60">O que fazer agora</p>
           <p className="mt-2 text-[15px] leading-snug">{resumo.dica.texto}</p>
-          <Link href={resumo.dica.href} className="mt-auto inline-flex min-h-[42px] w-fit items-center gap-1.5 rounded-full bg-white px-5 text-[14px] text-on-background active:scale-[0.98]">
+          <Link href={resumo.dica.href} className="mt-3 inline-flex min-h-[42px] w-fit items-center gap-1.5 rounded-full bg-white px-5 text-[14px] text-on-background active:scale-[0.98]">
             {resumo.dica.rotulo} <span aria-hidden>→</span>
           </Link>
         </div>

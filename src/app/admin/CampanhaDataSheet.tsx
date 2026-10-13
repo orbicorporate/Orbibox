@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { voucherGradient } from "@/lib/voucherThemes";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { VoucherQuadrado } from "@/components/mobile/VoucherQuadrado";
+import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import type { CampanhaData } from "@/app/api/campanha-data/route";
 
@@ -25,7 +27,10 @@ export function CampanhaDataSheet({
   onClose: () => void;
   onAtivada?: () => void;
 }) {
+  useTravarRolagem();
   const supabase = createClient();
+  const [foto, setFoto] = useState<string | null>(null);
+  const [anteriores, setAnteriores] = useState<string[]>([]);
   const [campanha, setCampanha] = useState<CampanhaData | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [ativando, setAtivando] = useState(false);
@@ -34,20 +39,23 @@ export function CampanhaDataSheet({
 
   function gerar() {
     setErro(null);
+    const ant = campanha ? [...anteriores, campanha.voucher.titulo] : anteriores;
+    setAnteriores(ant);
     setCampanha(null);
-    buscar();
+    buscar(ant);
   }
 
-  async function buscar() {
+  async function buscar(ant: string[] = []) {
     try {
       const res = await fetch("/api/campanha-data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, dataNome: data.nome, dias: data.dias, clima: data.clima }),
+        body: JSON.stringify({ businessId, dataNome: data.nome, dias: data.dias, clima: data.clima, anteriores: ant }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       setCampanha(json);
+      setFoto((json as CampanhaData).foto ?? null);
     } catch {
       setErro("Não consegui montar agora. Tenta de novo.");
     }
@@ -75,6 +83,7 @@ export function CampanhaDataSheet({
       expires_hours: 72,
       badge: v.selo,
       color: "cherry",
+      image_url: foto,
     });
     setAtivando(false);
     if (error) { setErro("Não consegui ativar o voucher. Tenta de novo."); return; }
@@ -91,7 +100,7 @@ export function CampanhaDataSheet({
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center" role="dialog" aria-modal="true" aria-label={`Campanha de ${data.nome}`}>
       <button type="button" aria-label="Fechar" onClick={onClose} className="veu-entra absolute inset-0 bg-black/40" />
-      <div className="folha-sobe relative max-h-[90vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-background-main px-6 pb-10 pt-3">
+      <div className="folha-sobe relative max-h-[90dvh] w-full overscroll-contain max-w-[440px] overflow-y-auto rounded-t-[28px] bg-background-main px-6 pb-10 pt-3">
         <span className="mx-auto mb-5 block h-1.5 w-11 rounded-full bg-on-background/15" aria-hidden />
 
         <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-text-tertiary">{data.nome} · {data.dias === 0 ? "hoje" : data.dias === 1 ? "amanhã" : `em ${data.dias} dias`}</p>
@@ -116,13 +125,35 @@ export function CampanhaDataSheet({
           <div className="acao-entra">
             {/* Voucher */}
             <p className="mt-7 text-[12px] font-medium uppercase tracking-[0.14em] text-text-tertiary">Voucher</p>
-            <div className="relative mt-2.5 overflow-hidden rounded-[22px] p-5 text-white shadow-[0_14px_34px_-14px_rgba(204,23,57,.55)]" style={{ background: voucherGradient("cherry") }}>
-              <span className="inline-block rounded-full border border-white/35 bg-white/15 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.08em]">{campanha.voucher.selo}</span>
-              <p className="mt-4 font-[family-name:var(--font-manrope)] text-[34px] font-semibold leading-none tracking-[-0.02em]">{oferta}</p>
-              <p className="mt-2 text-[16px] font-medium">{campanha.voucher.titulo}</p>
-              <p className="mt-1 text-[13px] leading-snug opacity-85">{campanha.voucher.descricao}</p>
-              <p className="mt-4 text-[12px] opacity-75">{campanha.voucher.quantidade} unidades · vale 72h depois de pego</p>
+            <div className="mt-2.5 flex flex-col items-center rounded-[22px] bg-surface-soft px-4 py-5">
+              <VoucherQuadrado
+                v={{
+                  title: campanha.voucher.titulo,
+                  description: campanha.voucher.descricao,
+                  color: "cherry",
+                  image_url: foto,
+                  badge: campanha.voucher.selo,
+                  discount_type: campanha.voucher.tipo,
+                  discount_value: campanha.voucher.valor,
+                  quantity_total: campanha.voucher.quantidade,
+                  quantity_claimed: 0,
+                  show_discount: true,
+                }}
+              />
+              <p className="mt-3 text-[12px] text-text-tertiary">{campanha.voucher.quantidade} unidades · vale 72h depois de pego</p>
             </div>
+
+            {!ativado && (
+              <details className="mt-3 rounded-[18px] bg-surface-white ring-1 ring-black/[0.06]">
+                <summary className="flex min-h-[48px] cursor-pointer list-none items-center justify-between px-4 text-[14px] font-medium">
+                  <span>{foto ? "Trocar a foto" : "Adicionar uma foto"}</span>
+                  <span className="text-[12.5px] text-text-tertiary">{campanha.fotoDe ? `Foto de ${campanha.fotoDe}` : foto ? "Foto escolhida" : "Recomendado"}</span>
+                </summary>
+                <div className="px-4 pb-4">
+                  <ImageUpload value={foto} businessId={businessId} lockedRatio="quadrado" promptKind="capa" promptSubject={campanha.voucher.titulo} onChange={setFoto} />
+                </div>
+              </details>
+            )}
 
             {ativado ? (
               <div className="acao-entra mt-3 flex items-center gap-3 rounded-[18px] bg-[#EEF7F0] px-4 py-3.5">
@@ -165,9 +196,11 @@ export function CampanhaDataSheet({
               </div>
             )}
 
-            <button type="button" onClick={gerar} className="mx-auto mt-6 block min-h-[44px] px-4 text-[13.5px] text-text-secondary underline underline-offset-4">
-              Gerar outra versão
-            </button>
+            <p className="mt-8 text-[12px] font-medium uppercase tracking-[0.14em] text-text-tertiary">Não gostou?</p>
+            <div className="mt-2.5 grid grid-cols-2 gap-2">
+              <button type="button" onClick={gerar} className="min-h-[48px] rounded-full bg-surface-white text-[14px] font-medium ring-1 ring-black/[0.08] active:scale-[.98]">Nova sugestão</button>
+              <Link href={`/admin/vouchers?novo=1&campanha=${encodeURIComponent(data.nome)}`} className="flex min-h-[48px] items-center justify-center rounded-full bg-surface-white text-[14px] font-medium ring-1 ring-black/[0.08] active:scale-[.98]">Criar a minha</Link>
+            </div>
           </div>
         )}
       </div>

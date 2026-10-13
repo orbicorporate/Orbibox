@@ -131,7 +131,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         <div className="mt-2 grid grid-cols-2 gap-2">
           {numeros.filter((m) => m.conversao).map((m) => {
             const v = variacao(m.n, m.antes);
-            const dica = m.rotulo === "WhatsApp" ? "Toques no botão de WhatsApp" : "Ofertas resgatadas";
+            const dica = m.rotulo === "WhatsApp" ? "Toques no botão de WhatsApp" : "Pessoas que pegaram um voucher";
             return (
               <Link key={m.rotulo} href={m.href} className="flex flex-col rounded-[20px] bg-gradient-to-br from-[#F3FCDD] to-[#DDF8F2] px-4 py-3.5 ring-1 ring-black/[0.05] active:opacity-70">
                 <span className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tabular-nums leading-none">{m.n.toLocaleString("pt-BR")}</span>
@@ -156,7 +156,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
             <Icone d={I.promocao} />
             <span className="text-[14px] font-medium leading-tight">Criar uma promoção</span>
           </Link>
-          <Link href="/admin/boxes" className={cartao}>
+          <Link href="/admin/vitrine" className={cartao}>
             <Icone d={I.vitrine} />
             <span className="text-[14px] font-medium leading-tight">Melhorar minha vitrine</span>
           </Link>

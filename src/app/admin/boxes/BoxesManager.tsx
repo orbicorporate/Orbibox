@@ -207,8 +207,20 @@ export function BoxesManager({
 
   useEffect(() => {
     if (!editingId) return;
-    const el = document.getElementById(`box-${editingId}`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    // ?ir=fotos|diferenciais (vindo das pendências da Home): rola até a parte
+    // que falta e dá uma piscada suave nela, pra pessoa ver onde mexer.
+    const ir = new URLSearchParams(window.location.search).get("ir");
+    const parte = ir ? document.getElementById(`sobre-${ir}`) : null;
+    const el = parte ?? document.getElementById(`box-${editingId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: parte ? "start" : "center" });
+      if (parte && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        parte.animate(
+          [{ boxShadow: "0 0 0 0 rgba(17,19,24,0)" }, { boxShadow: "0 0 0 6px rgba(17,19,24,.18)" }, { boxShadow: "0 0 0 0 rgba(17,19,24,0)" }],
+          { duration: 1800, delay: 500, easing: "ease-in-out" },
+        );
+      }
+    }
     // só na montagem: depois disso quem abre é o toque da pessoa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -720,7 +732,7 @@ export function BoxesManager({
                       className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
                     />
                   </div>
-                  <div>
+                  <div id="sobre-diferenciais" className="scroll-mt-24 rounded-2xl">
                     <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
                     <p className="mt-1 text-[12px] text-text-secondary">Viram um carrossel de cards na tela “Sobre”, ícone, título e uma frase curta.</p>
                     <div className="mt-2 flex flex-col gap-2.5">
@@ -763,7 +775,7 @@ export function BoxesManager({
                       </button>
                     </div>
                   </div>
-                  <div>
+                  <div id="sobre-fotos" className="scroll-mt-24 rounded-2xl">
                     <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos e vídeos da história (carrossel)</p>
                     <p className="mt-1 text-[12px] text-text-secondary">
                       Aparecem em carrossel, acima do texto, nessa mesma ordem. Vídeo entra direto na grade abaixo, junto das fotos; use as setinhas ‹ › pra escolher a posição dele.

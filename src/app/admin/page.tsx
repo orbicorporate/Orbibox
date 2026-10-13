@@ -83,7 +83,7 @@ export default async function HojePage() {
     { rotulo: "Conversas", n: semana.conversas, antes: semana.conversasAntes, href: "/admin/conversas" },
     { rotulo: "Contatos", n: semana.contatos, antes: semana.contatosAntes, href: "/admin/conversas" },
     { rotulo: "WhatsApp", n: semana.whatsapp, antes: semana.whatsappAntes, href: "/admin/pulse", conversao: true },
-    { rotulo: "Resgates", n: semana.resgates, antes: semana.resgatesAntes, href: "/admin/vouchers/painel", conversao: true },
+    { rotulo: "Resgates", n: semana.resgates, antes: semana.resgatesAntes, href: "/admin/vouchers/painel#resgates", conversao: true },
   ];
 
   return (

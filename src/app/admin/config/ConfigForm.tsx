@@ -86,6 +86,14 @@ export function ConfigForm({
       contatos: hash === "contatos",
     };
   });
+  // Vindo de um link com #secao (ex: do aviso de compartilhar): leva até ela.
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    const alvo = hash === "cores-orbi" || hash === "fundo-pagina" ? "cores" : hash;
+    if (!["logo", "cores", "compartilhamento", "contatos"].includes(alvo)) return;
+    const t = setTimeout(() => rolarAte(`marca-${alvo}`), 250);
+    return () => clearTimeout(t);
+  }, []);
   const coresVistas = useFlag(`marca_cores_${business.id}`);
   function alternar(sec: SecaoMarca) {
     setAbertos((a) => ({ ...a, [sec]: !a[sec] }));
