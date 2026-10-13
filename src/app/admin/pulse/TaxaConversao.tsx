@@ -126,7 +126,8 @@ export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiCol
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative mt-6 flex h-56 w-56 items-center justify-center">
+      <p className="mt-6 text-[12px] font-medium uppercase tracking-[0.12em] text-text-tertiary">Visitantes que agem</p>
+      <div className="relative mt-3 flex h-56 w-56 items-center justify-center">
         <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full -rotate-90">
           <defs>
             {/* Degradê padrão da Orbi no anel, com um reflexo claro que

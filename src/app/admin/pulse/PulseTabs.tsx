@@ -7,31 +7,25 @@ export function PulseTabs({ visitantes, marketing }: { visitantes: ReactNode; ma
 
   return (
     <div className="flex flex-col">
-      {/* Dois botões grandes lado a lado. Ativo fica preto, o outro vazado. */}
-      <div className="mt-2 grid grid-cols-2 gap-2.5">
-        <button
-          onClick={() => setAba("marketing")}
-          className={`flex items-center justify-center gap-1.5 rounded-full py-3.5 text-[14px] font-semibold transition-colors ${
-            aba === "marketing"
-              ? "bg-on-background text-white"
-              : "border border-divider bg-transparent text-text-secondary"
-          }`}
-        >
-          <span aria-hidden>✦</span> Marketing IA
-        </button>
-        <button
-          onClick={() => setAba("visitantes")}
-          className={`flex items-center justify-center gap-1.5 rounded-full py-3.5 text-[14px] font-semibold transition-colors ${
-            aba === "visitantes"
-              ? "bg-on-background text-white"
-              : "border border-divider bg-transparent text-text-secondary"
-          }`}
-        >
-          <span aria-hidden>◑</span> Visitantes
-        </button>
+      <div role="tablist" aria-label="Ver" className="mt-5 flex gap-2">
+        {([
+          { k: "visitantes", rot: "Visitantes" },
+          { k: "marketing", rot: "Marketing IA" },
+        ] as const).map((t) => (
+          <button
+            key={t.k}
+            type="button"
+            role="tab"
+            aria-selected={aba === t.k}
+            onClick={() => setAba(t.k)}
+            className={`cursor-pointer rounded-full px-4 py-2 text-[13.5px] font-medium transition-colors ${aba === t.k ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
+          >
+            {t.rot}
+          </button>
+        ))}
       </div>
 
-      <div className="mt-2">{aba === "visitantes" ? visitantes : marketing}</div>
+      <div className="mt-3">{aba === "visitantes" ? visitantes : marketing}</div>
     </div>
   );
 }
