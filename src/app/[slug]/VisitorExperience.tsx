@@ -1431,7 +1431,13 @@ export function VisitorExperience({
           <div className="w-full">
             <VitrineCoverBleed business={business} />
             <button onClick={voltarAoInicio} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
-            <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">
+            {hasAiChat && content.length >= 3 && (
+              <div className="mt-1">
+                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} agentName={agentName} onAskOrbi={hasAiChat ? (q) => chooseIntent("duvida", q) : undefined} compact />
+              </div>
+            )}
+
+            <h2 className="mt-6 font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">
               {intent === "presentear" ? "Para presentear" : (business.catalog_title || `${business.name}, Catálogo`)}
             </h2>
             <p className="mt-1 text-[15px] text-text-secondary">
@@ -1449,12 +1455,6 @@ export function VisitorExperience({
                 variant="compact"
                 className="mt-4"
               />
-            )}
-
-            {hasAiChat && content.length >= 3 && (
-              <div className="mt-5">
-                <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} agentName={agentName} onAskOrbi={hasAiChat ? (q) => chooseIntent("duvida", q) : undefined} compact />
-              </div>
             )}
 
             {content.length === 0 ? (
