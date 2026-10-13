@@ -121,15 +121,15 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
       </div>
 
       {varios && (
-        <div className="mt-2.5 grid grid-cols-3 gap-2">
+        <div className="mt-2.5 flex items-stretch rounded-[20px] bg-surface-white py-3.5 ring-1 ring-black/[0.06]">
           {[
-            { n: totalResgatados, t: "resgataram", bg: "#E7EAFC", c: "#4453D6" },
-            { n: totalAguardando, t: "ainda não usaram", bg: "#FDEEDF", c: "#C2650A" },
-            { n: totalConfirmados, t: "já usaram", bg: "#DEF3E3", c: "#1F9E4C" },
-          ].map((k) => (
-            <div key={k.t} className="rounded-[16px] px-3 py-2.5" style={{ backgroundColor: k.bg }}>
-              <p className="text-[20px] font-bold leading-none" style={{ color: k.c }}>{k.n}</p>
-              <p className="mt-1 text-[11.5px] font-medium leading-tight" style={{ color: k.c }}>{k.t}</p>
+            { n: totalResgatados, t: "pegaram" },
+            { n: totalAguardando, t: "ainda não usaram" },
+            { n: totalConfirmados, t: "já usaram" },
+          ].map((k, i) => (
+            <div key={k.t} className={`flex-1 text-center ${i > 0 ? "border-l border-divider" : ""}`}>
+              <p className="font-[family-name:var(--font-manrope)] text-[24px] font-semibold leading-none tabular-nums">{k.n}</p>
+              <p className="mt-1.5 text-[12px] text-text-tertiary">{k.t}</p>
             </div>
           ))}
         </div>
@@ -138,8 +138,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
       <div className="mt-3 flex flex-col gap-3">
         {vouchers.map((v) => {
           const e = porVoucher.get(v.id) ?? { total: 0, aguardando: 0, usaram: 0 };
-          const tema = voucherTheme(v.color);
-          const selecionado = voucherFilter === v.id;
+                    const selecionado = voucherFilter === v.id;
           const conv = e.total > 0 ? Math.round((e.usaram / e.total) * 100) : 0;
           return (
             <div key={v.id} className={`overflow-hidden rounded-[22px] bg-surface-white ring-1 transition-shadow ${selecionado ? "ring-2 ring-on-background" : "ring-black/[0.06]"}`}>
@@ -154,7 +153,6 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
                 )}
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: tema.via }} aria-hidden />
                     <span className="truncate text-[15px] font-semibold">{v.title}</span>
                   </span>
                   <span className="mt-0.5 block text-[12.5px] text-text-tertiary">{discountLabel(v)} · {v.quantity_total - v.quantity_claimed} de {v.quantity_total} restantes</span>
@@ -162,34 +160,37 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${v.is_active ? "bg-[#DEF3E3] text-[#1F9E4C]" : "bg-surface-soft text-text-tertiary"}`}>{v.is_active ? "Ativo" : "Pausado"}</span>
               </button>
 
-              <div className="grid grid-cols-3 gap-px bg-divider/60">
-                {[
-                  { n: e.total, t: "resgataram", c: "#4453D6" },
-                  { n: e.aguardando, t: "não usaram", c: "#C2650A" },
-                  { n: e.usaram, t: "já usaram", c: "#1F9E4C" },
-                ].map((k) => (
-                  <div key={k.t} className="bg-surface-white px-3 py-2.5 text-center">
-                    <p className="text-[19px] font-bold leading-none" style={{ color: k.c }}>{k.n}</p>
-                    <p className="mt-1 text-[11px] text-text-secondary">{k.t}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="px-3.5 pb-3 pt-2.5">
-                <div className="flex items-center justify-between text-[11.5px] text-text-tertiary">
-                  <span>{e.total === 0 ? "Ninguém resgatou ainda" : `${conv}% dos que resgataram já usaram`}</span>
-                </div>
-                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-soft">
-                  <div className="h-full rounded-full" style={{ width: `${conv}%`, backgroundColor: tema.via }} />
-                </div>
-                <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  {linkBase && v.is_active && (
-                    <button type="button" onClick={() => setLinkAberto(linkAberto === v.id ? null : v.id)} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[12.5px] font-medium">
-                      {linkAberto === v.id ? "Fechar link" : "Link do voucher"}
+              <div className="px-4 pb-4">
+                {e.total === 0 ? (
+                  <p className="rounded-2xl bg-surface-soft px-3.5 py-2.5 text-[13px] text-text-secondary">Ninguém pegou este voucher ainda.</p>
+                ) : (
+                  <>
+                    <div className="flex items-stretch rounded-2xl bg-surface-soft py-2.5">
+                      {[
+                        { n: e.total, t: "pegaram" },
+                        { n: e.aguardando, t: "a usar" },
+                        { n: e.usaram, t: "usaram" },
+                      ].map((k, i) => (
+                        <div key={k.t} className={`flex-1 text-center ${i > 0 ? "border-l border-divider" : ""}`}>
+                          <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold leading-none tabular-nums">{k.n}</p>
+                          <p className="mt-1 text-[11.5px] text-text-tertiary">{k.t}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-surface-soft" aria-hidden>
+                      <div className="h-full rounded-full bg-on-background" style={{ width: `${conv}%` }} />
+                    </div>
+                    <p className="mt-1.5 text-[12px] text-text-tertiary">{conv}% de quem pegou já usou</p>
+                  </>
+                )}
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {linkBase && v.is_active ? (
+                    <button type="button" onClick={() => setLinkAberto(linkAberto === v.id ? null : v.id)} className="min-h-[44px] rounded-full bg-surface-soft text-[13px] font-medium active:scale-[0.98]">
+                      {linkAberto === v.id ? "Fechar" : "Link"}
                     </button>
-                  )}
-                  <button type="button" onClick={() => toggleActive(v)} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[12.5px] font-medium">{v.is_active ? "Pausar" : "Ativar"}</button>
-                  <Link href={`/admin/vouchers/${v.id}`} className="ml-auto inline-flex min-h-[40px] items-center rounded-full px-3 text-[12.5px] font-medium text-text-secondary">Abrir painel →</Link>
+                  ) : <span aria-hidden />}
+                  <button type="button" onClick={() => toggleActive(v)} className="min-h-[44px] rounded-full bg-surface-soft text-[13px] font-medium active:scale-[0.98]">{v.is_active ? "Pausar" : "Ativar"}</button>
+                  <Link href={`/admin/vouchers/${v.id}`} className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-on-background text-[13px] font-medium text-white active:scale-[0.98]">Abrir</Link>
                 </div>
                 {linkAberto === v.id && linkBase && <LinkDoVoucher url={`${linkBase}?v=${v.id}`} titulo={v.title} />}
               </div>
