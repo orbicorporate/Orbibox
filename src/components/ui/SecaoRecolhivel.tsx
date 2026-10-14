@@ -43,6 +43,7 @@ export function SecaoRecolhivel({
   preenchido,
   opcional = false,
   destaque = false,
+  compacto = false,
   children,
 }: {
   titulo: string;
@@ -52,13 +53,15 @@ export function SecaoRecolhivel({
   /** Layout mais forte (borda de cor, seta maior), pra seção que não pode
    * passar despercebida no meio de outras mais discretas. */
   destaque?: boolean;
+  /** Linha enxuta: sem tag de estado, descrição curta, padding menor. */
+  compacto?: boolean;
   children: React.ReactNode;
 }) {
   const [aberto, setAberto] = useState(!preenchido && !opcional);
 
   return (
     <div
-      className={`rounded-[28px] bg-surface-white p-6 ${
+      className={`bg-surface-white ${compacto ? "rounded-[22px] px-5 py-3.5" : "rounded-[28px] p-6"} ${
         destaque
           ? "border-2 border-on-background shadow-[0_4px_20px_rgba(17,19,24,0.10)]"
           : "shadow-[0_2px_16px_rgba(17,19,24,0.05)]"
@@ -73,9 +76,9 @@ export function SecaoRecolhivel({
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
             <span className={destaque ? "text-[17px] font-bold" : "text-[15px] font-semibold"}>{titulo}</span>
-            <StatusTag preenchido={preenchido} opcional={opcional} />
+            {!(compacto && preenchido) && <StatusTag preenchido={preenchido} opcional={opcional} />}
           </span>
-          <span className="mt-1.5 block text-[13px] leading-relaxed text-text-secondary">{descricao}</span>
+          <span className={`block text-[13px] leading-relaxed text-text-secondary ${compacto ? "mt-0.5" : "mt-1.5"}`}>{descricao}</span>
         </span>
         <span className={`mt-0.5 shrink-0 transition-transform ${destaque ? "text-[20px] text-on-background" : "text-text-tertiary"} ${aberto ? "rotate-90" : ""}`}>
           →

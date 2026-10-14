@@ -131,7 +131,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <main className="admin-zoom mx-auto w-full flex-1 px-6 pb-32 pt-5 lg:max-w-[960px] lg:px-10 lg:pb-16">
         {/* Botão salvar discreto, sempre à vista logo abaixo do topo. */}
         <div className="pointer-events-none sticky top-[84px] z-20 mb-3 h-10">
-          <div className="pointer-events-none flex h-full items-center justify-between gap-2">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-6 -top-1 h-[52px] backdrop-blur-md lg:-inset-x-10"
+            style={{ maskImage: "linear-gradient(to bottom, #000 55%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, #000 55%, transparent)" }}
+          />
+          <div className="pointer-events-none relative flex h-full items-center justify-between gap-2">
             <span className="pointer-events-auto"><VerComoFicou slug={business.slug} /></span>
             <BotaoSalvar className="pointer-events-auto" />
           </div>

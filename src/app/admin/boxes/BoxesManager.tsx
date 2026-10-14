@@ -133,6 +133,30 @@ function contrastFg(hex: string): string {
   return luminance > 0.6 ? "#111318" : "#FFFFFF";
 }
 
+function TextoApoio({ valor, onSalvar }: { valor: string; onSalvar: (v: string) => void }) {
+  const [aberto, setAberto] = useState(false);
+  if (!valor && !aberto) {
+    return (
+      <button type="button" onClick={() => setAberto(true)} className="mt-1.5 cursor-pointer text-[12.5px] font-medium text-white/70 underline-offset-2 hover:underline">
+        + texto de apoio
+      </button>
+    );
+  }
+  return (
+    <div className="relative mt-2">
+      <input
+        autoFocus={aberto && !valor}
+        defaultValue={valor}
+        onBlur={(e) => { onSalvar(e.target.value); if (!e.target.value) setAberto(false); }}
+        placeholder="Texto de apoio"
+        aria-label="Texto de apoio do botão"
+        className="w-full border-b border-white/25 bg-transparent py-0.5 pr-8 text-[13.5px] text-white/80 outline-none placeholder:text-white/40 focus:border-white"
+      />
+      <span className="pointer-events-none absolute right-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-[12px] text-white/80" aria-hidden>✎</span>
+    </div>
+  );
+}
+
 export function BoxesManager({
   businessId,
   businessName,
@@ -423,8 +447,9 @@ export function BoxesManager({
 
       <SecaoRecolhivel
         titulo="Tela inicial"
-        descricao="A frase de saudação e o avatar que aparecem no topo, antes dos caminhos."
+        descricao="Saudação e avatar do topo"
         preenchido
+        compacto
       >
         <div className="flex flex-col gap-4">
           <div className="rounded-[20px] bg-surface-soft p-4">
@@ -553,7 +578,7 @@ export function BoxesManager({
                   ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
                     <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={40} ringColor={isHero ? undefined : color} />
                   ) : icon === "__none__" ? (
-                    <span className="text-white/80" aria-hidden>→</span>
+                    <span className="text-[20px] font-semibold leading-none" style={{ color: fg }} aria-hidden>→</span>
                   ) : (
                     icon
                   )}
@@ -570,25 +595,32 @@ export function BoxesManager({
                   ) : (
                     <>
                       <div className="relative">
-                        <input
+                        <textarea
+                          rows={1}
                           defaultValue={label}
                           onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || suggestedName })}
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }}
                           placeholder={suggestedName}
                           aria-label="Título do botão"
-                          className="w-full border-b border-white/25 bg-transparent py-0.5 pr-5 text-[15px] font-medium text-white outline-none placeholder:text-white/45 focus:border-white"
+                          className="field-sizing-content w-full resize-none border-b border-white/25 bg-transparent py-0.5 pr-8 text-[16px] font-semibold leading-snug text-white outline-none placeholder:text-white/45 focus:border-white"
                         />
-                        <span className="pointer-events-none absolute right-0 top-1.5 text-[12px] text-white/50">✎</span>
+                        <span className="pointer-events-none absolute right-0 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-[13px] text-white/80" aria-hidden>✎</span>
                       </div>
-                      <div className="relative mt-2">
-                        <input
-                          defaultValue={cfg?.subtitle ?? ""}
-                          onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), subtitle: e.target.value })}
-                          placeholder="Texto de apoio"
-                          aria-label="Texto de apoio do botão"
-                          className="w-full border-b border-white/25 bg-transparent py-0.5 pr-5 text-[13px] text-white/75 outline-none placeholder:text-white/40 focus:border-white"
-                        />
-                        <span className="pointer-events-none absolute right-0 top-1.5 text-[11px] text-white/50">✎</span>
-                      </div>
+                      <TextoApoio
+                        valor={cfg?.subtitle ?? ""}
+                        onSalvar={(v) => saveConfig(box, { ...(cfg ?? {}), subtitle: v })}
+                      />
+                      {!isHero && !m.assinatura && (
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(editing ? null : box.id)}
+                          className={`mt-3 cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold ${
+                            editing ? "bg-white/20 text-white" : "bg-white text-[#111318]"
+                          }`}
+                        >
+                          {editing ? "Fechar" : "Configurar"}
+                        </button>
+                      )}
                     </>
                   )}
                   {m.fixo && <span className="mt-1 inline-block rounded-full bg-white/15 px-2 py-0.5 text-[10px] text-white/75">sempre ativo</span>}
@@ -611,33 +643,22 @@ export function BoxesManager({
                 )}
               </div>
 
-              <details className="group mt-3">
-                <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[12.5px] font-medium text-text-tertiary">
-                  O que este botão faz
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
-                </summary>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>
-              </details>
               {box.box_type === "campaign" && (
                 <Link href="/admin/gift" className="mt-1.5 inline-block text-[12.5px] text-text-secondary underline underline-offset-2">
                   {giftEnabled ? "Ver gift cards →" : "Ativar Gift Card →"}
                 </Link>
               )}
 
-              {!isHero && !m.assinatura && (
-                <button
-                  type="button"
-                  onClick={() => setEditingId(editing ? null : box.id)}
-                  className={`mt-3 cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold ${
-                    editing ? "bg-surface-soft text-text-secondary" : "bg-button-primary text-white"
-                  }`}
-                >
-                  {editing ? "Fechar" : "Configurar"}
-                </button>
-              )}
 
               {editing && !isHero && (
                 <div className="mt-3">
+              <details className="group mb-3">
+                <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[12.5px] font-medium text-text-tertiary">
+                  O que este botão faz
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+                </summary>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-text-secondary">{m.explica}</p>
+              </details>
                   <p className="mb-1.5 text-[11px] uppercase tracking-wide text-text-tertiary">Assim aparece pro visitante</p>
                   <HomeOptionCardPreview
                     layout={cfg?.layout && cfg.layout !== "auto" ? cfg.layout : "medio"}
