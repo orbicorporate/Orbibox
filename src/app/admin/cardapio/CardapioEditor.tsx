@@ -86,7 +86,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     <div className="flex flex-col pb-40">
       <Link href="/admin/boxes" className="mt-12 text-[14px] text-text-tertiary hover:underline">← Botões da home</Link>
       <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.02em]">Cardápio</h1>
-      <p className="mt-1 text-[14px] leading-snug text-text-secondary">Os pratos do seu restaurante, por categoria. É uma lista própria, separada do Catálogo (que mostra destaques e páginas).</p>
+      <p className="mt-1 text-[14px] leading-snug text-text-secondary">Aqui você cria a seção cardápio, com todos os itens, pratos e detalhes.</p>
 
 
       {!boxId ? (
