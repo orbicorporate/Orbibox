@@ -57,6 +57,16 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     }, 700);
   }
 
+  function novaCategoria() {
+    const id = novoId();
+    mudarSecoes([...secoes, { id, nome: "", itens: [] }]);
+    setTimeout(() => {
+      const el = document.getElementById(`cat-${id}`);
+      el?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+      el?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+    }, 80);
+  }
+
   async function trocarPdf(url: string) {
     if (!boxId) return;
     const novo = { ...cfgRef.current, pdf_url: url || null };
@@ -103,7 +113,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
           </div>
 
           <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes}>
-            <ImportarCardapio businessId={businessId} compacto={secoes.length > 0} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={() => mudarSecoes([...secoes, { id: novoId(), nome: "", itens: [] }])} />
+            <ImportarCardapio businessId={businessId} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={novaCategoria} />
           </PratosEditor>
 
           <details className="group mt-2" open={!!cfg.pdf_url}>

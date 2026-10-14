@@ -27,10 +27,6 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
   function mudarSecao(sid: string, patch: Partial<CardapioSecao>) {
     onChange(secoes.map((s) => (s.id === sid ? { ...s, ...patch } : s)));
   }
-  function novaSecao() {
-    const s: CardapioSecao = { id: novoId(), nome: "", itens: [] };
-    onChange([...secoes, s]);
-  }
   function novoPrato(sid: string) {
     const i: CardapioItem = { id: novoId(), nome: "", descricao: "", preco: null, foto: null };
     onChange(secoes.map((s) => (s.id === sid ? { ...s, itens: [...s.itens, i] } : s)));
@@ -84,7 +80,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
       <div className="flex items-end justify-between gap-3">
         <div>
           <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Pratos do cardápio</h2>
-          <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Duas formas de montar: colar tudo de uma vez ou cadastrar um por um.</p>
+          <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Escolha uma das duas formas abaixo.</p>
         </div>
       </div>
       <input ref={inputFoto} type="file" accept="image/*" className="hidden" onChange={(e) => enviarFoto(e.target.files?.[0])} />
@@ -94,7 +90,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
 
       <div className="mt-3 flex flex-col gap-4">
         {secoes.map((s, idx) => (
-          <section key={s.id} className="rounded-[24px] bg-surface-white p-4 ring-1 ring-black/[0.06]" aria-label={s.nome || "Categoria"}>
+          <section key={s.id} id={`cat-${s.id}`} className="scroll-mt-28 rounded-[24px] bg-surface-white p-4 ring-1 ring-black/[0.06]" aria-label={s.nome || "Categoria"}>
             <div className="flex items-center gap-2">
               <label className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl bg-surface-soft px-3.5 py-2 focus-within:ring-2 focus-within:ring-on-background/30">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" /></svg>
@@ -182,7 +178,6 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
         </div>
       )}
 
-      {secoes.length > 0 && <button type="button" onClick={novaSecao} className="mt-4 min-h-[48px] w-full rounded-full border border-divider bg-surface-white text-[14px] font-medium active:scale-[0.99]">+ Nova categoria</button>}
     </div>
   );
 }
