@@ -7,8 +7,9 @@ import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ImportarCardapio } from "./ImportarCardapio";
 import { PdfCardapio } from "./PdfCardapio";
 import { PratosEditor } from "./PratosEditor";
+import { GuiaPrato } from "./GuiaPrato";
 import type { Json } from "@/lib/supabase/types";
-import { lerSecoes, novoId, totalItens, type CardapioSecao } from "@/lib/cardapio";
+import { lerSecoes, novoId, totalItens, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
 
 export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: ativoInicial, totalBoxes, slug }: { businessId: string; boxId: string | null; config: Record<string, unknown>; ativo: boolean; totalBoxes: number; slug: string }) {
   const supabase = useRef(createClient()).current;
@@ -20,6 +21,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
   const [nome, setNome] = useState((config.label as string) || "Cardápio");
   const [sub, setSub] = useState((config.subtitle as string) || "Veja os pratos e preços");
   const [ativo, setAtivo] = useState(ativoInicial);
+  const [guia, setGuia] = useState(false);
   const [criando, setCriando] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -57,14 +59,10 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     }, 700);
   }
 
-  function novaCategoria() {
-    const id = novoId();
-    mudarSecoes([...secoes, { id, nome: "", itens: [] }]);
-    setTimeout(() => {
-      const el = document.getElementById(`cat-${id}`);
-      el?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-      el?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
-    }, 80);
+  function adicionarPrato(categoria: string, item: CardapioItem) {
+    const alvo = secoes.find((x) => x.nome.trim().toLowerCase() === categoria.trim().toLowerCase());
+    if (alvo) mudarSecoes(secoes.map((x) => (x.id === alvo.id ? { ...x, itens: [...x.itens, item] } : x)));
+    else mudarSecoes([...secoes, { id: novoId(), nome: categoria.trim(), itens: [item] }]);
   }
 
   async function trocarPdf(url: string) {
@@ -99,21 +97,12 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
         </div>
       ) : (
         <>
-          <div className="mt-5 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[14.5px] font-medium">Botão na página</p>
-                <p className="mt-0.5 text-[12.5px] text-text-tertiary">{ativo ? "Aparece na sua página agora." : "Desligado, o cliente não vê."}</p>
-              </div>
-              <button type="button" role="switch" aria-checked={ativo} onClick={alternar} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${ativo ? "bg-on-background" : "bg-divider"}`}>
-                <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${ativo ? "left-7" : "left-1"}`} />
-                <span className="sr-only">{ativo ? "Ligado" : "Desligado"}</span>
-              </button>
-            </div>
-          </div>
-
           <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes}>
-            <ImportarCardapio businessId={businessId} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={novaCategoria} />
+            {guia ? (
+              <GuiaPrato businessId={businessId} categorias={secoes.map((x) => x.nome)} onSalvar={adicionarPrato} onFechar={() => setGuia(false)} />
+            ) : (
+              <ImportarCardapio businessId={businessId} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={() => setGuia(true)} />
+            )}
           </PratosEditor>
 
           <details className="group mt-2" open={!!cfg.pdf_url}>
@@ -143,6 +132,13 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase pequena embaixo do título</p>
                 <input value={sub} onChange={(e) => { setSub(e.target.value); gravarTexto(nome, e.target.value); }} maxLength={60} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
+              <p className="text-[14.5px] font-medium">{ativo ? "Aparece na sua página" : "Escondido do cliente"}</p>
+              <button type="button" role="switch" aria-checked={ativo} onClick={alternar} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${ativo ? "bg-on-background" : "bg-divider"}`}>
+                <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${ativo ? "left-7" : "left-1"}`} />
+                <span className="sr-only">{ativo ? "Ligado" : "Desligado"}</span>
+              </button>
             </div>
           </section>
 
