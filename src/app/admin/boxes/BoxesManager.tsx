@@ -133,30 +133,6 @@ function contrastFg(hex: string): string {
   return luminance > 0.6 ? "#111318" : "#FFFFFF";
 }
 
-function TextoApoio({ valor, onSalvar }: { valor: string; onSalvar: (v: string) => void }) {
-  const [aberto, setAberto] = useState(false);
-  if (!valor && !aberto) {
-    return (
-      <button type="button" onClick={() => setAberto(true)} className="mt-1.5 cursor-pointer text-[12.5px] font-medium text-white/70 underline-offset-2 hover:underline">
-        + texto de apoio
-      </button>
-    );
-  }
-  return (
-    <div className="relative mt-2">
-      <input
-        autoFocus={aberto && !valor}
-        defaultValue={valor}
-        onBlur={(e) => { onSalvar(e.target.value); if (!e.target.value) setAberto(false); }}
-        placeholder="Texto de apoio"
-        aria-label="Texto de apoio do botão"
-        className="w-full border-b border-white/25 bg-transparent py-0.5 pr-8 text-[13.5px] text-white/80 outline-none placeholder:text-white/40 focus:border-white"
-      />
-      <span className="pointer-events-none absolute right-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-[12px] text-white/80" aria-hidden>✎</span>
-    </div>
-  );
-}
-
 export function BoxesManager({
   businessId,
   businessName,
@@ -225,6 +201,7 @@ export function BoxesManager({
   const [arranging, setArranging] = useState(false);
   // ?box=<id> (vindo de outra tela, ex: painel de vouchers) já abre esse box
   // em modo de edição e rola até ele.
+  const [reordenando, setReordenando] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(
     () => (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("box") : null),
   );
@@ -440,6 +417,12 @@ export function BoxesManager({
         >
           {arranging ? "Organizando…" : "✦ Sugerir ordem"}
         </button>
+        <button
+          onClick={() => setReordenando((v) => !v)}
+          className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-medium ring-1 ring-black/[0.08] ${reordenando ? "bg-on-background text-white" : "bg-surface-white text-text-secondary"}`}
+        >
+          {reordenando ? "Pronto" : "Reordenar"}
+        </button>
         <span className="text-[12.5px] text-text-tertiary">
           {ativos === 0 ? "Nenhum botão ligado" : `${ativos} ${ativos === 1 ? "botão ligado" : "botões ligados"}`}
         </span>
@@ -520,7 +503,7 @@ export function BoxesManager({
         </div>
       </SecaoRecolhivel>
 
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {visibleBoxes.map((box, idx) => {
           const isHero = false;
           const isCustom = box.box_type === "custom";
@@ -540,108 +523,105 @@ export function BoxesManager({
           const off = !box.is_active && !m.fixo;
           const editing = editingId === box.id;
           return (
-            <div key={box.id} id={`box-${box.id}`} className={`scroll-mt-24 overflow-hidden rounded-[22px] border border-divider bg-surface-white p-4 ${off ? "opacity-55" : ""}`}>
-              <div className="-mx-4 -mt-4 mb-1 flex items-start gap-3 bg-[#111318] p-4 text-white">
-                {!isHero && (
-                  <div className="flex shrink-0 flex-col gap-1 pt-0.5">
-                    <button
-                      onClick={() => move(box, -1)}
-                      disabled={idx === 0}
-                      aria-label="Mover pra cima"
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white disabled:opacity-25"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6" /></svg>
-                    </button>
-                    <button
-                      onClick={() => move(box, 1)}
-                      disabled={idx === visibleBoxes.length - 1}
-                      aria-label="Mover pra baixo"
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white disabled:opacity-25"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
-                    </button>
+<div key={box.id} id={`box-${box.id}`} className={`relative scroll-mt-24 overflow-hidden rounded-[22px] border border-divider bg-surface-white p-3.5 ${editing ? "col-span-2" : ""} ${off ? "opacity-60" : ""}`}>
+              <div className={`flex ${editing ? "items-center gap-3" : "flex-col gap-3"}`}>
+                <button
+                  type="button"
+                  onClick={() => setEditingId(editing ? null : box.id)}
+                  aria-expanded={editing}
+                  className={`flex min-w-0 cursor-pointer text-left ${editing ? "flex-1 items-center gap-3" : "w-full flex-col gap-2.5"}`}
+                >
+                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] ring-1 ring-black/[0.06] ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon) || icon === "__logo__") ? "transparent" : color, color: isHero ? "#fff" : fg }}>
+                    {icon === "__orb__" ? (
+                      <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} />
+                    ) : icon === "__orbcheck__" ? (
+                      <OrbiParticleSphere size={44} variant="check" colors={orbiColors ?? undefined} />
+                    ) : icon === "__orbwa__" || icon === "__wadisc__" ? (
+                      <OrbiContactDisc size={44} />
+                    ) : icon === "__google__" ? (
+                      <OrbiGoogleIcon size={44} />
+                    ) : icon === "__pin__" ? (
+                      <OrbiMapPin size={30} />
+                    ) : EMOJI_STICKERS[icon] ? (
+                      EMOJI_STICKERS[icon](40)
+                    ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
+                      <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={40} ringColor={isHero ? undefined : color} />
+                    ) : icon === "__none__" ? (
+                      <span className="text-[20px] font-semibold leading-none" style={{ color: fg }} aria-hidden>→</span>
+                    ) : (
+                      icon
+                    )}
                   </div>
-                )}
-                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[16px] ring-1 ring-white/15 ${icon === "__logo__" ? "" : "overflow-hidden"}`} style={{ backgroundColor: isHero ? "#111318" : (color === "transparent" || isAnimatedIcon(icon) || icon === "__logo__") ? "transparent" : color, color: isHero ? "#fff" : fg }}>
-                  {icon === "__orb__" ? (
-                    <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} />
-                  ) : icon === "__orbcheck__" ? (
-                    <OrbiParticleSphere size={44} variant="check" colors={orbiColors ?? undefined} />
-                  ) : icon === "__orbwa__" || icon === "__wadisc__" ? (
-                    <OrbiContactDisc size={44} />
-                  ) : icon === "__google__" ? (
-                    <OrbiGoogleIcon size={44} />
-                  ) : icon === "__pin__" ? (
-                    <OrbiMapPin size={30} />
-                  ) : EMOJI_STICKERS[icon] ? (
-                    EMOJI_STICKERS[icon](40)
-                  ) : icon === "__logo__" && (cfg?.logo_url || logoUrl) ? (
-                    <OrbiLogoBadge logoUrl={cfg?.logo_url || logoUrl!} size={40} ringColor={isHero ? undefined : color} />
-                  ) : icon === "__none__" ? (
-                    <span className="text-[20px] font-semibold leading-none" style={{ color: fg }} aria-hidden>→</span>
-                  ) : (
-                    icon
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  {isHero ? (
-                    <p className="text-[15px] font-medium text-white">{m.name}</p>
-                  ) : cfg?.action === "cupom" ? (
-                    <>
-                      <p className="text-[15px] font-medium text-white">Vouchers</p>
-                      <p className="mt-1 text-[13px] text-white/75">Resgate agora e aproveite</p>
-                      <p className="mt-1 text-[11px] text-white/55">Nome e texto fixos do botão de vouchers.</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="relative">
-                        <textarea
-                          rows={1}
-                          defaultValue={label}
-                          onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || suggestedName })}
-                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }}
-                          placeholder={suggestedName}
-                          aria-label="Título do botão"
-                          className="field-sizing-content w-full resize-none border-b border-white/25 bg-transparent py-0.5 pr-8 text-[16px] font-semibold leading-snug text-white outline-none placeholder:text-white/45 focus:border-white"
-                        />
-                        <span className="pointer-events-none absolute right-0 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-[13px] text-white/80" aria-hidden>✎</span>
-                      </div>
-                      <TextoApoio
-                        valor={cfg?.subtitle ?? ""}
-                        onSalvar={(v) => saveConfig(box, { ...(cfg ?? {}), subtitle: v })}
-                      />
-                      {!isHero && !m.assinatura && (
-                        <button
-                          type="button"
-                          onClick={() => setEditingId(editing ? null : box.id)}
-                          className={`mt-3 cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold ${
-                            editing ? "bg-white/20 text-white" : "bg-white text-[#111318]"
-                          }`}
-                        >
-                          {editing ? "Fechar" : "Configurar"}
-                        </button>
-                      )}
-                    </>
-                  )}
-                  {m.fixo && <span className="mt-1 inline-block rounded-full bg-white/15 px-2 py-0.5 text-[10px] text-white/75">sempre ativo</span>}
-                  {m.assinatura && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[10px] text-white/75"><span className="orbi-gradient-text">✦</span> assinatura da IA</span>}
-                  {(cfg?.action === "avaliar" || icon === "__google__") && <span className="mt-0.5 block text-[13px] tracking-[2px] text-[#FBBC05]">★★★★★</span>}
-                  {box.ends_at && new Date(box.ends_at) < new Date() ? (
-                    <span className="mt-1 inline-block rounded-full bg-red-50 px-2 py-0.5 text-[10px] text-red-600">expirado</span>
-                  ) : box.starts_at && new Date(box.starts_at) > new Date() ? (
-                    <span className="mt-1 inline-block rounded-full bg-white/15 px-2 py-0.5 text-[10px] text-white/75">agendado</span>
-                  ) : null}
-                </div>
+                  <span className="block min-w-0 flex-1">
+                    <span className="block text-[15px] font-semibold leading-snug line-clamp-2">{cfg?.action === "cupom" ? "Vouchers" : (label || suggestedName)}</span>
+                    {(cfg?.action === "cupom" ? "Resgate agora e aproveite" : cfg?.subtitle) && (
+                      <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary line-clamp-1">{cfg?.action === "cupom" ? "Resgate agora e aproveite" : cfg?.subtitle}</span>
+                    )}
+                    {(m.fixo || m.assinatura || (cfg?.action === "avaliar" || icon === "__google__") || box.ends_at || box.starts_at) && (
+                      <span className="mt-1.5 flex flex-wrap items-center gap-1">
+                        {m.fixo && <span className="rounded-full bg-surface-soft px-2 py-0.5 text-[10.5px] text-text-secondary">sempre ativo</span>}
+                        {m.assinatura && <span className="inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10.5px] text-text-secondary"><span className="orbi-gradient-text">✦</span> assinatura da IA</span>}
+                        {(cfg?.action === "avaliar" || icon === "__google__") && <span className="text-[12px] tracking-[1px] text-[#FBBC05]">★★★★★</span>}
+                        {box.ends_at && new Date(box.ends_at) < new Date() ? (
+                          <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10.5px] text-red-600">expirado</span>
+                        ) : box.starts_at && new Date(box.starts_at) > new Date() ? (
+                          <span className="rounded-full bg-surface-soft px-2 py-0.5 text-[10.5px] text-text-secondary">agendado</span>
+                        ) : null}
+                      </span>
+                    )}
+                  </span>
+                </button>
                 {!m.fixo && (
                   <button
+                    type="button"
                     onClick={() => toggleActive(box)}
-                    className={`mt-1 h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ${box.is_active ? "orbi-gradient" : "bg-white/20"}`}
+                    className={`h-6 w-11 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors ${editing ? "" : "absolute right-3.5 top-3.5"} ${box.is_active ? "orbi-gradient" : "bg-divider"}`}
                     aria-label={box.is_active ? "Desativar" : "Ativar"}
                   >
                     <span className={`block h-5 w-5 rounded-full bg-surface-white shadow transition-transform ${box.is_active ? "translate-x-5" : ""}`} />
                   </button>
                 )}
               </div>
+
+              {reordenando && (
+                <div className="mt-3 flex gap-2">
+                  <button type="button" onClick={() => move(box, -1)} disabled={idx === 0} aria-label="Mover pra trás" className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 18l-6-6 6-6" /></svg>
+                  </button>
+                  <button type="button" onClick={() => move(box, 1)} disabled={idx === visibleBoxes.length - 1} aria-label="Mover pra frente" className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 18l6-6-6-6" /></svg>
+                  </button>
+                </div>
+              )}
+
+              {editing && (
+                <div className="mt-3 flex flex-col gap-2.5">
+                  {cfg?.action === "cupom" ? (
+                    <p className="text-[12px] text-text-tertiary">Nome e texto fixos do botão de vouchers.</p>
+                  ) : (
+                    <>
+                      <label className="block">
+                        <span className="text-[12px] text-text-tertiary">Nome do botão</span>
+                        <input
+                          defaultValue={label}
+                          onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || suggestedName })}
+                          placeholder={suggestedName}
+                          className="mt-1 w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-[12px] text-text-tertiary">Texto de apoio (opcional)</span>
+                        <input
+                          defaultValue={cfg?.subtitle ?? ""}
+                          onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), subtitle: e.target.value })}
+                          placeholder="Uma frase curta embaixo do nome"
+                          className="mt-1 w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                        />
+                      </label>
+                    </>
+                  )}
+                </div>
+              )}
 
               {box.box_type === "campaign" && (
                 <Link href="/admin/gift" className="mt-1.5 inline-block text-[12.5px] text-text-secondary underline underline-offset-2">
