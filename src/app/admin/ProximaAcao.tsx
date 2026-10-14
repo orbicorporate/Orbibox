@@ -51,6 +51,7 @@ export function ProximaAcao({
   data,
   vouchersBaixos,
   pendencia,
+  compacto = false,
 }: {
   businessId: string;
   hasVouchers: boolean;
@@ -59,6 +60,8 @@ export function ProximaAcao({
   data: Data | null;
   vouchersBaixos: VoucherBaixo[];
   pendencia: Pendencia | null;
+  /** Quando o card grande da home já está ocupado, esta ação vira uma faixa enxuta, sem texto de apoio. */
+  compacto?: boolean;
 }) {
   const supabase = createClient();
   const adiadasRaw = useSyncExternalStore(assinar, () => localStorage.getItem(CHAVE_ADIADAS) ?? "{}", () => "{}");
@@ -118,8 +121,8 @@ export function ProximaAcao({
   const total = acoes.length;
 
   return (
-    <section aria-label="Próxima ação" className="mt-3">
-      <div className="rounded-[22px] bg-surface-white p-4 shadow-[0_18px_40px_-28px_rgba(17,19,24,.35)]">
+    <section aria-label="Próxima ação" className="mt-3" data-compacto={compacto ? "" : undefined}>
+      <div className={`rounded-[22px] bg-surface-white shadow-[0_18px_40px_-28px_rgba(17,19,24,.35)] ${compacto ? "p-3.5 [&_.detalhe]:hidden" : "p-4"}`}>
         <div className="flex items-center gap-2.5">
           <OrbiSimbolo size={22} />
           <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-text-tertiary">Agora</p>
@@ -166,7 +169,7 @@ export function ProximaAcao({
                 <p className="text-[15.5px] font-medium leading-snug">
                   {atual.data.nome} {atual.data.dias === 0 ? "é hoje" : atual.data.dias === 1 ? "é amanhã" : `em ${atual.data.dias} dias`}.
                 </p>
-                <p className="mt-1 text-[13px] leading-snug text-text-secondary">A Orbi monta um voucher da data e os textos pra divulgar, com a cara do seu negócio.</p>
+                <p className="detalhe mt-1 text-[13px] leading-snug text-text-secondary">A Orbi monta a campanha pra você.</p>
                 <div className="mt-3 flex gap-2">
                   <button type="button" onClick={() => setFolha(atual.data)} className="min-h-[42px] flex-1 rounded-full bg-on-background text-[14px] font-medium text-white transition-transform active:scale-[.98]">
                     Ver campanha pronta

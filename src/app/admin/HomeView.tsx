@@ -79,7 +79,6 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.02em]">
           {saudacao}, {primeiroNome ?? b.name}.
         </h1>
-        {primeiroNome && <p className="mt-1 text-[13.5px] text-text-secondary">{b.name}</p>}
         <div className="mt-4 flex flex-wrap items-center gap-2.5">
           <Link href={`/${b.slug}`} target="_blank" className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-on-background px-5 text-[14px] font-medium text-white transition-transform active:scale-[0.98]">
             Ver minha página <span aria-hidden>↗</span>
@@ -88,38 +87,23 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         </div>
       </div>
 
-      {teste && (
-        <Link
-          href="/admin/planos"
-          className={`mt-4 flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-[13.5px] ${teste.dias <= 2 ? "bg-[#FFF4E5] text-[#7A4A0B] ring-1 ring-[#F5DDB8]" : "bg-surface-soft text-text-secondary"}`}
-        >
-          <span>
-            {teste.dias === 0 ? "Último dia do seu teste grátis." : `Teste grátis: ${teste.dias === 1 ? "falta 1 dia" : `faltam ${teste.dias} dias`}.`}{" "}
-            <span className={teste.dias <= 2 ? "font-medium underline underline-offset-2" : "text-text-tertiary"}>Ver resultados</span>
-          </span>
+      {teste && (teste.dias <= 2 ? (
+        <Link href="/admin/planos" className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#FFF4E5] px-4 py-2.5 text-[13.5px] text-[#7A4A0B] ring-1 ring-[#F5DDB8]">
+          <span>{teste.dias === 0 ? "Último dia do teste grátis" : teste.dias === 1 ? "Falta 1 dia do teste grátis" : `Faltam ${teste.dias} dias do teste grátis`} <span className="font-medium underline underline-offset-2">Ver resultados</span></span>
           <span aria-hidden>→</span>
         </Link>
-      )}
+      ) : (
+        <Link href="/admin/planos" className="mt-3 inline-flex min-h-[32px] w-fit items-center gap-1.5 rounded-full bg-surface-soft px-3 text-[12.5px] text-text-secondary">
+          Teste grátis: {teste.dias} dias <span aria-hidden>→</span>
+        </Link>
+      ))}
 
       {oportunidade.selo !== "Deixe sua página mais completa" && <OportunidadeCard o={oportunidade} shareUrl={shareUrl} shareTitle={shareTitle} shareReady={shareReady} />}
 
-      <ProximaAcao {...proxima} pendencia={null} />
-
-      {passoFaltando && (
-        <LinhaExpansivel
-          className="mt-3"
-          marcador={<span className="h-2 w-2 rounded-full orbi-gradient" />}
-          titulo={passoFaltando.title}
-          texto={passoFaltando.description}
-          rotulo={passoFaltando.ctaLabel}
-          href={passoFaltando.href}
-        />
-      )}
-
-      <Marcos businessId={b.id} contagem={marcos} />
+      <ProximaAcao {...proxima} pendencia={null} compacto={oportunidade.selo !== "Deixe sua página mais completa"} />
 
       {/* Só os 4 números que importam, da semana, com a comparação */}
-      <section className="mt-8">
+      <section className="mt-6">
         <div className="flex items-baseline justify-between">
           <h2 className="text-[15px] font-medium">Últimos 7 dias</h2>
           <Link href="/admin/pulse" className="text-[13px] text-text-secondary">Ver tudo →</Link>
@@ -147,6 +131,19 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
           })}
         </div>
       </section>
+
+      {passoFaltando && (
+        <LinhaExpansivel
+          className="mt-3"
+          marcador={<span className="h-2 w-2 rounded-full orbi-gradient" />}
+          titulo={passoFaltando.title}
+          texto={passoFaltando.description}
+          rotulo={passoFaltando.ctaLabel}
+          href={passoFaltando.href}
+        />
+      )}
+
+      <Marcos businessId={b.id} contagem={marcos} />
 
       {/* Próximas ações por intenção: as ferramentas continuam no menu */}
       <section className="mt-8">

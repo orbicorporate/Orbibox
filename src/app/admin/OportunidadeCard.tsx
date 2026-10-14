@@ -21,12 +21,12 @@ export function OportunidadeCard({ o, shareUrl, shareTitle, shareReady }: { o: O
     >
       {escuro && <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full orbi-gradient opacity-25 blur-3xl" aria-hidden />}
       <p className={`relative text-[12px] font-medium uppercase tracking-[0.1em] ${escuro ? "text-white/55" : o.tom === "alerta" ? "text-[#B4321F]" : "text-text-tertiary"}`}>
-        {o.selo} {o.tom === "oportunidade" && <span className="orbi-gradient-text">✦</span>}
+        {o.selo === "A Orbi encontrou uma oportunidade" ? "Oportunidade" : o.selo} {o.tom === "oportunidade" && <span className="orbi-gradient-text">✦</span>}
       </p>
       <h2 className="relative mt-1.5 font-[family-name:var(--font-manrope)] text-[19px] font-medium leading-[1.2] tracking-[-0.01em]">{o.titulo}</h2>
       <div className="relative mt-2 flex flex-col gap-0.5">
         {o.dados.slice(0, 1).map((d, i) => (
-          <p key={i} className={`text-[14px] leading-snug ${escuro ? (i === 0 ? "text-white/90" : "text-white/60") : i === 0 ? "text-on-background" : "text-text-secondary"}`}>
+          <p key={i} className={`line-clamp-2 text-[13.5px] leading-snug ${escuro ? (i === 0 ? "text-white/90" : "text-white/60") : i === 0 ? "text-on-background" : "text-text-secondary"}`}>
             {d}
           </p>
         ))}
