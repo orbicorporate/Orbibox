@@ -15,6 +15,8 @@ import { GiftFlow } from "./GiftFlow";
 import { CuradoriaOrbi } from "./CuradoriaOrbi";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { LeadCapture } from "@/components/mobile/LeadCapture";
+import { ContatoForm, chaveLead, lerVisitante } from "@/components/mobile/ContatoForm";
+import { NudgeLead } from "@/components/mobile/NudgeLead";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
@@ -1491,6 +1493,10 @@ export function VisitorExperience({
           />
         )}
 
+        {(intent === null || intent === "comprar" || intent === "conhecer" || intent === "cardapio") && (
+          <NudgeLead businessId={business.id} businessName={business.name} sessionId={sessionId} modo="navegacao" />
+        )}
+
         {intent === "duvida" && (
           <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} initialInput={orbiPrefill} onBack={voltarAoInicio} />
         )}
@@ -2138,7 +2144,8 @@ function formatMessage(text: string, products?: ContentItem[], slug?: string, bu
     .replace(/\[\[endereco\]\]/gi, () => {
       showAddress = true;
       return "";
-    });
+    })
+    .replace(/\[\[contato\]\]/gi, "");
 
   const cards = productIds
     .map((id) => products?.find((p) => p.id === id))
@@ -2248,6 +2255,26 @@ function OrbiChat({
   const [justDone, setJustDone] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const [typedPlaceholder, setTypedPlaceholder] = useState("");
+  // Captura de contato: a pessoa já deixou o WhatsApp (neste aparelho)?
+  const [temContato, setTemContato] = useState(() => {
+    try { return !!localStorage.getItem(chaveLead(businessId)); } catch { return false; }
+  });
+  // Dispensou o cartão? Respeita por 24h, sem perguntar de novo a cada abertura.
+  const [dispensou, setDispensou] = useState(() => {
+    try { return Date.now() - Number(localStorage.getItem(`orbi_lead_nao_${businessId}`) ?? 0) < 24 * 3600 * 1000; } catch { return false; }
+  });
+  const [saidaAberta, setSaidaAberta] = useState(false);
+
+  function dispensarCartao() {
+    setDispensou(true);
+    try { localStorage.setItem(`orbi_lead_nao_${businessId}`, String(Date.now())); } catch { /* ignora */ }
+  }
+
+  function contatoAnotado(mensagem: string) {
+    setTemContato(true);
+    setSaidaAberta(false);
+    setMessages((prev) => [...prev, { role: "agent", content: mensagem }]);
+  }
 
   // Trava o scroll da página por trás enquanto o chat (overlay fixed) está
   // aberto, sem isso, no iOS o dedo "vaza" pro fundo e a página de trás
@@ -2345,6 +2372,22 @@ function OrbiChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Visitante que já deixou o número neste aparelho (voucher, novidades, outra
+  // conversa): amarra esta conversa ao lead dele sem pedir de novo.
+  useEffect(() => {
+    if (!conversationId) return;
+    const v = lerVisitante(businessId);
+    if (!v.whatsapp) return;
+    const marca = `orbi_conv_lead_${conversationId}`;
+    try { if (localStorage.getItem(marca)) return; } catch { /* ignora */ }
+    fetch("/api/leads/capturar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ businessId, conversationId, sessionId, origem: "chat", nome: v.nome, whatsapp: v.whatsapp }),
+    }).then((r) => { if (r.ok) { try { localStorage.setItem(marca, "1"); } catch { /* ignora */ } } }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]);
+
   // Efeito de "alguém digitando" no placeholder do campo, só decorativo,
   // some assim que a pessoa toca pra escrever de verdade.
   useEffect(() => {
@@ -2388,10 +2431,14 @@ function OrbiChat({
       const res = await fetch("/api/orbi-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, conversationId, message: text, history: historyForApi }),
+        body: JSON.stringify({ businessId, conversationId, message: text, history: historyForApi, temContato }),
       });
       const data = await res.json();
       const reply = res.ok && data.reply ? data.reply : "Desculpa, tive um problema aqui, pode tentar de novo?";
+      if (data.leadCapturado) {
+        setTemContato(true);
+        try { localStorage.setItem(chaveLead(businessId), "1"); } catch { /* ignora */ }
+      }
       // Ao terminar: mostra o check por um instante ("pronto") antes de exibir a resposta.
       setJustDone(true);
       setMessages((prev) => [...prev, { role: "agent", content: reply }]);
@@ -2402,6 +2449,14 @@ function OrbiChat({
   }
 
   const started = messages.length > 0;
+  const falasDoVisitante = messages.filter((m) => m.role === "visitor").length;
+  const ultimoAgente = messages.map((m) => m.role).lastIndexOf("agent");
+  // Antes de fechar um chat que andou e ficou sem contato, uma última chance
+  // gentil. Só uma vez por abertura, e nunca pra quem dispensou o cartão.
+  function tentarSair() {
+    if (!temContato && !dispensou && !saidaAberta && falasDoVisitante >= 2 && !sending) { setSaidaAberta(true); return; }
+    onBack();
+  }
 
   // Auto-scroll só DEPOIS que a conversa começou, enquanto está nas sugestões,
   // o visitante rola livremente. Rolar pro fim só quando chega mensagem/pensa.
@@ -2423,7 +2478,7 @@ function OrbiChat({
 
       {/* Fechar, z-index acima do conteúdo pra o toque nunca ser bloqueado */}
       <button
-        onClick={onBack}
+        onClick={tentarSair}
         className="absolute left-5 top-5 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white text-[16px] shadow"
         aria-label="Fechar"
       >
@@ -2471,6 +2526,20 @@ function OrbiChat({
                 }`}
               >
                 <div className="flex flex-col gap-3">{formatMessage(m.content, content, slug, businessId, sessionId, address)}</div>
+                {m.role === "agent" && i === ultimoAgente && !sending && !temContato && !dispensou && (/\[\[contato\]\]/i.test(m.content) || falasDoVisitante >= 2) && (
+                  <div className="mt-4 rounded-2xl bg-surface-white p-3.5 shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
+                    <p className="mb-2.5 text-[13.5px] font-medium text-text-secondary">Deixe seu WhatsApp e um especialista continua com você.</p>
+                    <ContatoForm
+                      businessId={businessId}
+                      conversationId={conversationId}
+                      sessionId={sessionId}
+                      origem="chat"
+                      confirmar
+                      aoCapturar={(r) => contatoAnotado(r.mensagem)}
+                    />
+                    <button type="button" onClick={dispensarCartao} className="mt-2 w-full cursor-pointer py-1 text-center text-[12.5px] text-text-tertiary">Agora não</button>
+                  </div>
+                )}
               </div>
             ))}
             {(sending || justDone) && (
@@ -2495,6 +2564,25 @@ function OrbiChat({
         )}
         <div ref={endRef} />
       </div>
+
+      {saidaAberta && (
+        <div className="absolute inset-0 z-[60] flex flex-col justify-end bg-on-background/50 backdrop-blur-sm" onClick={() => setSaidaAberta(false)}>
+          <div className="mx-auto w-full max-w-[440px] rounded-t-[28px] bg-background-main px-5 pb-8 pt-4" onClick={(e) => e.stopPropagation()}>
+            <span className="mx-auto mb-4 block h-1.5 w-12 rounded-full bg-divider" />
+            <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold leading-tight tracking-[-0.01em]">Quer que um especialista continue com você?</p>
+            <p className="mb-4 mt-1 text-[13.5px] text-text-secondary">Deixe seu WhatsApp e a gente retoma essa conversa de onde parou.</p>
+            <ContatoForm
+              businessId={businessId}
+              conversationId={conversationId}
+              sessionId={sessionId}
+              origem="chat"
+              confirmar
+              aoCapturar={(r) => contatoAnotado(r.mensagem)}
+            />
+            <button type="button" onClick={() => { dispensarCartao(); setSaidaAberta(false); onBack(); }} className="mt-3 w-full cursor-pointer py-1 text-center text-[13px] text-text-tertiary">Sair assim mesmo</button>
+          </div>
+        </div>
+      )}
 
       {/* Campo fixo */}
       {/* Faixa de fundo sólida da base até acima do campo, impede que as
