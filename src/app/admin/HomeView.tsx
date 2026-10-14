@@ -108,7 +108,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
           <h2 className="text-[15px] font-medium">Últimos 7 dias</h2>
           <Link href="/admin/pulse" className="text-[13px] text-text-secondary">Ver tudo →</Link>
         </div>
-        <div className="no-scrollbar -mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-1">
+        <div className="no-scrollbar -mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-1">
           {[...numeros.filter((m) => !m.conversao), ...numeros.filter((m) => m.conversao)].map((m) => {
             const v = variacao(m.n, m.antes);
             const tema = TEMAS_NUMERO[m.rotulo] ?? TEMA_PADRAO;

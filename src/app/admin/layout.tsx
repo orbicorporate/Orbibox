@@ -136,7 +136,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             className="pointer-events-none absolute -inset-x-6 -top-1 h-[52px] backdrop-blur-md lg:-inset-x-10"
             style={{ maskImage: "linear-gradient(to bottom, #000 55%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, #000 55%, transparent)" }}
           />
-          <div className="pointer-events-none relative flex h-full items-center justify-between gap-2">
+          <div className="pointer-events-none relative flex h-full items-center justify-end gap-2">
             <span className="pointer-events-auto"><VerComoFicou slug={business.slug} /></span>
             <BotaoSalvar className="pointer-events-auto" />
           </div>
