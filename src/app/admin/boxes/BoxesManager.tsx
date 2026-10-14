@@ -20,6 +20,7 @@ import { SecaoRecolhivel } from "@/components/ui/SecaoRecolhivel";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery } from "@/lib/logoGallery";
 import { DateTimeField } from "./DateTimeField";
+import { IconeBotao } from "@/app/[slug]/IconeBotao";
 
 type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
@@ -549,7 +550,7 @@ export function BoxesManager({
                     ) : icon === "__none__" ? (
                       <span className="text-[20px] font-semibold leading-none" style={{ color: fg }} aria-hidden>→</span>
                     ) : (
-                      icon
+                      <IconeBotao icone={icon} size={22} />
                     )}
                   </div>
                   <span className="block min-w-0 flex-1">
@@ -571,16 +572,26 @@ export function BoxesManager({
                     )}
                   </span>
                 </button>
-                {!m.fixo && (
+                <div className={`flex shrink-0 items-center gap-1.5 ${editing ? "" : "absolute right-3.5 top-3.5"}`}>
                   <button
                     type="button"
-                    onClick={() => toggleActive(box)}
-                    className={`h-6 w-11 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors ${editing ? "" : "absolute right-3.5 top-3.5"} ${box.is_active ? "orbi-gradient" : "bg-divider"}`}
-                    aria-label={box.is_active ? "Desativar" : "Ativar"}
+                    onClick={() => setEditingId(editing ? null : box.id)}
+                    aria-label={editing ? "Fechar edição" : "Editar botão"}
+                    className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors ${editing ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
                   >
-                    <span className={`block h-5 w-5 rounded-full bg-surface-white shadow transition-transform ${box.is_active ? "translate-x-5" : ""}`} />
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
                   </button>
-                )}
+                  {!m.fixo && (
+                    <button
+                      type="button"
+                      onClick={() => toggleActive(box)}
+                      className={`h-6 w-11 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors ${box.is_active ? "orbi-gradient" : "bg-divider"}`}
+                      aria-label={box.is_active ? "Desativar" : "Ativar"}
+                    >
+                      <span className={`block h-5 w-5 rounded-full bg-surface-white shadow transition-transform ${box.is_active ? "translate-x-5" : ""}`} />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {reordenando && (
