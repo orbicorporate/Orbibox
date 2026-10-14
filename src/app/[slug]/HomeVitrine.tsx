@@ -257,7 +257,7 @@ export function HomeVitrine({
           <div
             role="list"
             data-rolavel
-            className="no-scrollbar relative -mx-6 flex w-[calc(100%+3rem)] snap-x snap-proximity gap-3 overflow-x-auto px-6 pb-2 pt-2 [justify-content:safe_center] [mask-image:linear-gradient(to_right,transparent,#000_22px,#000_calc(100%-22px),transparent)]"
+            className="no-scrollbar relative -mx-6 flex w-[calc(100%+3rem)] snap-x snap-proximity scroll-px-6 gap-3 overflow-x-auto px-6 pb-2 pt-2 [justify-content:safe_center] [mask-image:linear-gradient(to_right,transparent,#000_22px,#000_calc(100%-22px),transparent)]"
           >
             {bolinhasNaOrdem.map((b) => (
               <div
@@ -360,7 +360,7 @@ export function HomeVitrine({
               })}
             </ul>
           ) : formato === "carrossel" ? (
-            <ul data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2">
+            <ul data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-2">
               {mostrarNaOrdem.map((i) => (
                 <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                   <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />

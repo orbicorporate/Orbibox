@@ -101,7 +101,7 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
 
   return (
     <div className="mt-3">
-      <div ref={trilho} onScroll={aoRolar} className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-1 no-scrollbar">
+      <div ref={trilho} onScroll={aoRolar} className="-mx-6 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-1 no-scrollbar">
         {cartoes.map((c) => (
           <div key={c.id} className="flex min-h-[148px] w-[62%] max-w-[220px] shrink-0 snap-start flex-col rounded-[22px] p-4" style={{ backgroundImage: `linear-gradient(170deg, ${c.fundo} 0%, ${c.fundo2} 100%)`, color: c.cor }}>
             {c.corpo}
