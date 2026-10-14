@@ -12,7 +12,7 @@ type Secao = { nome: string; itens: ItemProposto[] };
  * Orbi monta os pratos por categoria. Antes de entrar no cardápio tudo passa por
  * uma revisão (marcar, trocar nome e preço), porque a leitura de foto pode errar.
  */
-export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto = false }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void; onManual: () => void; compacto?: boolean }) {
+export function ImportarCardapio({ businessId, onAdicionar, onManual }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void; onManual: () => void }) {
   const supabase = useRef(createClient()).current;
   const inputFoto = useRef<HTMLInputElement>(null);
   const [aberto, setAberto] = useState(false);
@@ -94,34 +94,16 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
 
   const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
 
-  if (!aberto && feito === null && compacto) {
-    return (
-      <button type="button" onClick={() => setAberto(true)} className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.08] active:scale-[0.98]">
-        <span aria-hidden>✨</span> Colar mais com a Orbi
-      </button>
-    );
-  }
-
   if (!aberto && feito === null) {
     return (
-      <div className="mt-4 flex flex-col gap-3">
-        <button type="button" onClick={() => setAberto(true)} className="flex w-full items-start gap-3 rounded-[22px] bg-surface-white p-4 text-left ring-1 ring-black/[0.06] active:scale-[0.99]">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface-soft text-[20px]" aria-hidden>✨</span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold">Colar o cardápio inteiro</span>
-            <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">Cole o texto ou envie uma foto. A Orbi separa tudo por categoria, com nome, descrição e preço, e você confere antes de entrar.</span>
-            <span className="mt-2.5 inline-flex min-h-[40px] items-center rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white">Colar ou enviar foto</span>
-          </span>
+      <div className="mt-4 flex flex-col gap-2.5">
+        <button type="button" onClick={() => setAberto(true)} className="flex min-h-[56px] w-full items-center gap-3 rounded-full bg-on-background pl-3 pr-5 text-left text-[15px] font-semibold text-white active:scale-[0.99]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-[14px]" aria-hidden>1</span>
+          Colar texto completo e a Orbi monta
         </button>
-        <button type="button" onClick={onManual} className="flex w-full items-start gap-3 rounded-[22px] bg-surface-white p-4 text-left ring-1 ring-black/[0.06] active:scale-[0.99]">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface-soft" aria-hidden>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" /></svg>
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold">Cadastrar um por um</span>
-            <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">Crie uma categoria e adicione os pratos com nome, preço e, se quiser, foto e descrição.</span>
-            <span className="mt-2.5 inline-flex min-h-[40px] items-center rounded-full border border-divider px-5 text-[13.5px] font-medium">Criar primeira categoria</span>
-          </span>
+        <button type="button" onClick={onManual} className="flex min-h-[56px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white pl-3 pr-5 text-left text-[15px] font-semibold active:scale-[0.99]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[14px]" aria-hidden>2</span>
+          Incluir itens e categorias, um por um
         </button>
       </div>
     );
