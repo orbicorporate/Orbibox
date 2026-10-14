@@ -103,11 +103,11 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
     <div className="mt-3">
       <div ref={trilho} onScroll={aoRolar} className="-mx-6 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-1 no-scrollbar">
         {cartoes.map((c) => (
-          <div key={c.id} className="flex min-h-[148px] w-[62%] max-w-[220px] shrink-0 snap-start flex-col rounded-[22px] p-4" style={{ backgroundImage: `linear-gradient(170deg, ${c.fundo} 0%, ${c.fundo2} 100%)`, color: c.cor }}>
+          <div key={c.id} className="flex min-h-[148px] w-[48%] max-w-[176px] shrink-0 snap-start flex-col rounded-[22px] p-4" style={{ backgroundImage: `linear-gradient(170deg, ${c.fundo} 0%, ${c.fundo2} 100%)`, color: c.cor }}>
             {c.corpo}
           </div>
         ))}
-        <div className="flex min-h-[148px] w-[62%] max-w-[220px] shrink-0 snap-start flex-col rounded-[24px] bg-[linear-gradient(170deg,#1B1E26_0%,#0D0F14_100%)] p-4 text-white">
+        <div className="flex min-h-[148px] w-[48%] max-w-[176px] shrink-0 snap-start flex-col rounded-[24px] bg-[linear-gradient(170deg,#1B1E26_0%,#0D0F14_100%)] p-4 text-white">
           <p className="text-[12.5px] text-white/60">O que fazer agora</p>
           <p className="mt-2 line-clamp-5 text-[14px] leading-snug">{resumo.dica.texto}</p>
           <Link href={resumo.dica.href} className="mt-3 inline-flex min-h-[42px] w-fit items-center gap-1.5 rounded-full bg-white px-5 text-[14px] text-on-background active:scale-[0.98]">
