@@ -26,5 +26,9 @@ export default async function ProductPage({
     .maybeSingle();
   if (!item) notFound();
 
-  return <ProductView business={business} item={item} />;
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: dono } = await supabase.from("businesses").select("owner_id").eq("id", business.id).maybeSingle();
+  const isOwner = !!user && dono?.owner_id === user.id;
+
+  return <ProductView business={business} item={item} isOwner={isOwner} />;
 }

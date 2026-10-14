@@ -47,7 +47,14 @@ export function CardapioFlow({
 
   return (
     <div className={`w-full ${onPedir ? "pb-24" : ""}`}>
-      <button onClick={onBack} className="mb-3 text-[14px] text-text-tertiary hover:underline">← voltar</button>
+      <div className="mb-3 flex items-center justify-between">
+        <button onClick={onBack} className="text-[14px] text-text-tertiary hover:underline">← voltar</button>
+        {donoVendo && preenchidas.length > 0 && (
+          <Link href="/admin/cardapio" aria-label="Editar cardápio" className="flex items-center gap-1.5 rounded-full bg-on-background px-3.5 py-2 text-[13px] font-medium text-white shadow-lg">
+            <span aria-hidden>✎</span> Editar
+          </Link>
+        )}
+      </div>
       <h2 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.01em]">{titulo}</h2>
       <p className="mt-1 text-[14px] text-text-secondary">{subtitulo}</p>
       {pdfUrl && preenchidas.length > 0 && (

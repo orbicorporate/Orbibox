@@ -94,7 +94,9 @@ export function BoxDestaque({
   if (cartoes.length === 0 && !podeEditar) return null;
 
   // Cartões pequenos e delicados: miniatura, nome, uma linha de apoio e um botão discreto.
-  const largura = (largo: boolean) => (largo ? "min-w-0 flex-1 max-w-[300px]" : "w-[80%] max-w-[300px] shrink-0 snap-center");
+  const larguraBase = (largo: boolean) => (largo ? "min-w-0 flex-1 max-w-[300px]" : "w-[80%] max-w-[300px] shrink-0 snap-center");
+  // Com o lápis, o invólucro assume a largura e o cartão preenche.
+  const largura = (largo: boolean) => (podeEditar ? "w-full min-w-0" : larguraBase(largo));
   const cartaoVoucher = (v: V, largo: boolean) => {
     const tema = voucherTheme(v.color as never);
     const restam = v.quantity_total - v.quantity_claimed;
@@ -166,8 +168,22 @@ export function BoxDestaque({
     );
   };
 
-  const renderCartao = (c: (typeof cartoes)[number], largo: boolean) =>
-    "v" in c && c.v ? cartaoVoucher(c.v, largo) : "b" in c && c.b ? cartaoBotao(c.b, largo) : "i" in c && c.i ? cartaoItem(c.i, largo) : null;
+  const renderCartao = (c: (typeof cartoes)[number], largo: boolean) => {
+    const cartao = "v" in c && c.v ? cartaoVoucher(c.v, largo) : "b" in c && c.b ? cartaoBotao(c.b, largo) : "i" in c && c.i ? cartaoItem(c.i, largo) : null;
+    if (!cartao || !podeEditar) return cartao;
+    // Dono: lapisinho em cada cartão, levando direto ao lugar certo de editar.
+    const editar = "v" in c && c.v ? { href: "/admin/vouchers", rotulo: "Editar voucher" } : "b" in c && c.b ? { href: "/admin/boxes", rotulo: "Editar botão" } : "i" in c && c.i ? { href: `/admin/vitrine/pagina/${c.i.id}`, rotulo: "Editar produto" } : null;
+    return (
+      <div className={`relative ${larguraBase(largo)}`}>
+        {cartao}
+        {editar && (
+          <Link href={editar.href} aria-label={editar.rotulo} className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white text-[13px] text-text-secondary shadow-md active:scale-95">
+            ✎
+          </Link>
+        )}
+      </div>
+    );
+  };
 
   const maisQuadrado = podeEditar && (
     <button type="button" onClick={() => setAberto(true)} aria-label="Fixar ou tirar itens do destaque" className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[20px] border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>

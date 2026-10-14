@@ -72,7 +72,7 @@ function Check() {
   );
 }
 
-export function ProductView({ business, item }: { business: Business; item: Item }) {
+export function ProductView({ business, item, isOwner = false }: { business: Business; item: Item; isOwner?: boolean }) {
   const router = useRouter();
   const [active, setActive] = useState(0);
   // A capa (image_url) só aparece sozinha quando não há carrossel próprio , 
@@ -115,6 +115,15 @@ export function ProductView({ business, item }: { business: Business; item: Item
         >
           <span aria-hidden>⊞</span> Ver catálogo
         </Link>
+        {isOwner && (
+          <Link
+            href={`/admin/vitrine/pagina/${item.id}`}
+            aria-label="Editar esta página"
+            className="flex shrink-0 items-center gap-1.5 rounded-full bg-on-background px-3.5 py-2 text-[13px] font-medium text-white shadow-lg"
+          >
+            <span aria-hidden>✎</span> Editar
+          </Link>
+        )}
       </div>
 
       {/* Carrossel estilo post: quadrado, cantos arredondados, com respiro nas laterais.
