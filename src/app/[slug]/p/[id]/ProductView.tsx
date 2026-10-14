@@ -174,11 +174,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
             })}
           </div>
           );
-        })() : (
-          <div className="flex w-full items-center justify-center rounded-[22px] bg-surface-soft text-[13px] text-text-tertiary" style={{ aspectRatio }}>
-            sem foto
-          </div>
-        )}
+        })() : null}
 
         {images.length > 1 && (
           <div className="mt-3 flex justify-center gap-1.5">
@@ -241,9 +237,9 @@ export function ProductView({ business, item }: { business: Business; item: Item
           );
         })()}
 
-        {item.orbi_hook?.trim() && (
+        {(item.orbi_hook?.trim() || !item.description?.trim()) && (
           <a
-            href={`/${business.slug}?chat=1&msg=${encodeURIComponent(item.orbi_hook)}`}
+            href={`/${business.slug}?chat=1&msg=${encodeURIComponent(item.orbi_hook?.trim() || `Me conta mais sobre "${item.title}"`)}`}
             onClick={() => trackClick({ businessId: business.id, kind: "zara", contentItemId: item.id })}
             className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3.5"
           >
@@ -252,7 +248,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
                 <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
                 Pergunte à Orbi, IA da {business.name}
               </span>
-              <span className="mt-0.5 block text-[14px] font-medium">{item.orbi_hook}</span>
+              <span className="mt-0.5 block text-[14px] font-medium">{item.orbi_hook?.trim() || `Me conta mais sobre ${item.title}`}</span>
             </span>
             <span className="shrink-0 text-text-tertiary" aria-hidden>→</span>
           </a>
