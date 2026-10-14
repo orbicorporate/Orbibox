@@ -105,9 +105,12 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
             )}
           </PratosEditor>
 
-          <details className="group mt-2" open={!!cfg.pdf_url}>
+          <details className="group mt-2" open={!!cfg.pdf_url || !secoes.some((x) => x.itens.some((i) => i.nome.trim()))}>
             <summary className="mt-3 flex min-h-[44px] cursor-pointer list-none items-center justify-between rounded-[22px] bg-surface-white px-4 text-[14px] font-medium ring-1 ring-black/[0.06]">
-              Cardápio em PDF (opcional)
+              <span>
+                Prefere só o PDF? Envie aqui
+                <span className="block text-[12px] font-normal text-text-tertiary">Pode ser o único cardápio: sem pratos cadastrados, o cliente vê só o PDF.</span>
+              </span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
             </summary>
             <PdfCardapio businessId={businessId} url={(cfg.pdf_url as string) || ""} onChange={trocarPdf} />
