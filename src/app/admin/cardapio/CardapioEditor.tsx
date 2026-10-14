@@ -97,19 +97,6 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
         </div>
       ) : (
         <>
-          <div className="mt-5 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[14.5px] font-medium">Botão na página</p>
-                <p className="mt-0.5 text-[12.5px] text-text-tertiary">{ativo ? "Aparece na sua página agora." : "Desligado, o cliente não vê."}</p>
-              </div>
-              <button type="button" role="switch" aria-checked={ativo} onClick={alternar} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${ativo ? "bg-on-background" : "bg-divider"}`}>
-                <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${ativo ? "left-7" : "left-1"}`} />
-                <span className="sr-only">{ativo ? "Ligado" : "Desligado"}</span>
-              </button>
-            </div>
-          </div>
-
           <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes}>
             {guia ? (
               <GuiaPrato businessId={businessId} categorias={secoes.map((x) => x.nome)} onSalvar={adicionarPrato} onFechar={() => setGuia(false)} />
@@ -145,6 +132,13 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase pequena embaixo do título</p>
                 <input value={sub} onChange={(e) => { setSub(e.target.value); gravarTexto(nome, e.target.value); }} maxLength={60} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
               </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
+              <p className="text-[14.5px] font-medium">{ativo ? "Aparece na sua página" : "Escondido do cliente"}</p>
+              <button type="button" role="switch" aria-checked={ativo} onClick={alternar} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${ativo ? "bg-on-background" : "bg-divider"}`}>
+                <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${ativo ? "left-7" : "left-1"}`} />
+                <span className="sr-only">{ativo ? "Ligado" : "Desligado"}</span>
+              </button>
             </div>
           </section>
 
