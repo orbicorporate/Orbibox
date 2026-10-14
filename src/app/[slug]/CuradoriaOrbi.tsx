@@ -4,7 +4,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { formatPrice } from "@/lib/showcase";
-import { OrbiInsightCard, OrbiSparkle } from "@/components/orbi/OrbiInsightCard";
+import { OrbiSparkle } from "@/components/orbi/OrbiInsightCard";
 
 type Product = { id: string; title: string; price: number | null; price_type: string | null; price_max: number | null; image_url: string | null };
 
@@ -16,7 +16,6 @@ export function CuradoriaOrbi({
   agentName = "Orbi",
   onAskOrbi,
   onGift,
-  compact = false,
 }: {
   businessId: string;
   slug: string;
@@ -110,102 +109,100 @@ export function CuradoriaOrbi({
   // Sem pergunta gerada (catálogo vazio ou falha), não mostra nada.
   if (!loadingQ && !pergunta) return null;
 
-  const pronto = !!escolhida && !curating && !!frase;
-
   return (
     <>
-      <OrbiInsightCard className={compact ? "" : ""}>
-        <div className="flex items-start gap-3">
-          <OrbiParticleSphere size={34} colors={orbiColors ?? undefined} vivid className="mt-0.5 shrink-0 rounded-full" />
-          <div className="min-w-0 flex-1" onClick={() => { if (pronto) setExpanded(true); }}>
+      <div className="flex flex-col gap-2.5">
+        {/* Pergunta da Orbi, em balão de conversa. */}
+        <div className="flex items-end gap-2">
+          <OrbiParticleSphere size={28} colors={orbiColors ?? undefined} vivid className="shrink-0 rounded-full" />
+          <div className="relative max-w-[88%] rounded-2xl rounded-bl-md bg-surface-white px-3.5 py-2.5 shadow-[0_2px_10px_rgba(17,19,24,0.06)]">
             {loadingQ ? (
-              <p className="pt-1.5 text-[15px] text-text-tertiary">Pensando na melhor pergunta pra você…</p>
-            ) : !escolhida ? (
-              <p className="font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight tracking-[-0.01em]">{pergunta}</p>
+              <p className="text-[14px] text-text-tertiary">Pensando numa pergunta pra você…</p>
             ) : (
-              <div className="flex items-start justify-between gap-3 pt-1.5">
-                <p className="text-[15px] font-medium leading-snug">{escolhida}</p>
-                <button onClick={(e) => { e.stopPropagation(); resetar(); }} className="shrink-0 text-[12px] text-text-tertiary underline">trocar</button>
-              </div>
+              <p className="pr-5 text-[15px] font-medium leading-snug">{pergunta}</p>
             )}
+            <button
+              onClick={() => setShowHelp((v) => !v)}
+              aria-label="Como funciona"
+              className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-surface-soft text-[10px] font-bold text-text-tertiary"
+            >
+              ?
+            </button>
           </div>
-          <button
-            onClick={() => setShowHelp((v) => !v)}
-            aria-label="Como funciona"
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/50 text-[11px] font-bold text-text-secondary"
-          >
-            ?
-          </button>
         </div>
         {showHelp && (
-          <p className="mt-2 rounded-2xl bg-white/40 p-3 text-[13px] leading-relaxed text-text-secondary">
+          <p className="ml-9 rounded-2xl bg-surface-soft p-3 text-[12.5px] leading-relaxed text-text-secondary">
             A Orbi é a inteligência artificial daqui. Ela entende o que você procura e separa, do catálogo, as opções que
-            mais combinam com você, como um atendente que já te conhece.
+            mais combinam com você.
           </p>
         )}
 
         {loadingQ ? null : !escolhida ? (
-          <>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {opcoes.map((o) => (
-                <button
-                  key={o}
-                  onClick={() => escolher(o)}
-                  className="rounded-full border border-divider bg-white/50 px-4 py-2.5 text-[14px] font-medium transition-colors hover:border-on-background"
-                >
-                  {o}
-                </button>
-              ))}
-            </div>
-          </>
+          <div className="ml-9 flex flex-wrap gap-1.5">
+            {opcoes.map((o) => (
+              <button
+                key={o}
+                onClick={() => escolher(o)}
+                className="cursor-pointer rounded-full border border-divider bg-surface-white px-3.5 py-1.5 text-[13px] font-medium transition-colors hover:border-on-background"
+              >
+                {o}
+              </button>
+            ))}
+          </div>
         ) : (
           <>
+            {/* A resposta da pessoa, balão à direita. */}
+            <div className="flex flex-col items-end gap-0.5">
+              <p className="max-w-[80%] rounded-2xl rounded-br-md bg-on-background px-3.5 py-2 text-[14px] text-white">{escolhida}</p>
+              <button onClick={resetar} className="cursor-pointer text-[11.5px] text-text-tertiary underline">trocar</button>
+            </div>
+
             {curating ? (
-              <div className="mt-3 flex items-center gap-2.5">
-                <OrbiParticleSphere size={30} colors={orbiColors ?? undefined} vivid className="rounded-full" />
-                <span className="text-[13px] text-text-tertiary">Separando as melhores pra você…</span>
+              <div className="flex items-end gap-2">
+                <OrbiParticleSphere size={28} colors={orbiColors ?? undefined} vivid className="shrink-0 rounded-full" />
+                <p className="rounded-2xl rounded-bl-md bg-surface-white px-3.5 py-2.5 text-[13.5px] text-text-tertiary shadow-[0_2px_10px_rgba(17,19,24,0.06)]">Separando as melhores pra você…</p>
               </div>
             ) : (
               <>
-                {/* Prévia curta, a fonte grande só entra quando abre a tela cheia. */}
                 {frase && (
-                  <button onClick={() => setExpanded(true)} className="mt-3 flex w-full items-start gap-2 text-left">
-                    <span className="flex-1 text-[14px] leading-relaxed text-text-secondary">{frase}</span>
-                    <span className="mt-0.5 shrink-0 text-[13px] text-text-tertiary">⤢</span>
-                  </button>
+                  <div className="flex items-end gap-2">
+                    <OrbiParticleSphere size={28} colors={orbiColors ?? undefined} vivid className="shrink-0 rounded-full" />
+                    <button onClick={() => setExpanded(true)} className="max-w-[88%] cursor-pointer rounded-2xl rounded-bl-md bg-surface-white px-3.5 py-2.5 text-left shadow-[0_2px_10px_rgba(17,19,24,0.06)]">
+                      <span className="line-clamp-3 text-[14px] leading-snug">{frase}</span>
+                    </button>
+                  </div>
                 )}
                 {curados.length > 0 && (
-                  <div className="mt-3 flex flex-col gap-2.5">
+                  <div className="ml-9 flex flex-col gap-1.5">
                     {curados.map((p) => (
                       <a
                         key={p.id}
                         href={`/${slug}/p/${p.id}`}
-                        className="flex items-center gap-3.5 rounded-2xl bg-white/40 p-2.5"
+                        className="flex items-center gap-3 rounded-2xl bg-surface-white p-2 shadow-[0_2px_10px_rgba(17,19,24,0.05)]"
                       >
                         {p.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={p.image_url} alt={p.title} className="shrink-0 rounded-xl object-cover" style={{ height: 64, width: 64 }} />
+                          <img src={p.image_url} alt={p.title} className="shrink-0 rounded-xl object-cover" style={{ height: 44, width: 44 }} />
                         ) : (
-                          <span className="flex shrink-0 items-center justify-center rounded-xl bg-white/60 text-[20px]" style={{ height: 64, width: 64 }}>✦</span>
+                          <span className="flex shrink-0 items-center justify-center rounded-xl bg-surface-soft text-[16px]" style={{ height: 44, width: 44 }}>✦</span>
                         )}
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[15px] font-semibold">{p.title}</span>
-                          <span className="block text-[13px] text-text-secondary">{formatPrice(p) || "Ver detalhes"}</span>
+                          <span className="block truncate text-[14px] font-semibold">{p.title}</span>
+                          <span className="block truncate text-[12.5px] text-text-secondary">{formatPrice(p) || "Ver detalhes"}</span>
                         </span>
-                        <span className="shrink-0 pr-1 text-[18px] text-text-tertiary">→</span>
+                        <span className="shrink-0 pr-1 text-[16px] text-text-tertiary">→</span>
                       </a>
                     ))}
                   </div>
                 )}
 
-                {/* Convite pra falar com uma pessoa agora. Mostrar item e
-                    parar ali deixava o visitante sem próximo passo. */}
+                {/* Convite pra falar com uma pessoa agora. */}
                 {convite && whatsapp && (
                   <a
                     href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Oi! Vim pelo site e me interessei por ${escolhida ?? "isso"}.`)}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-4 flex items-center justify-center gap-2 rounded-full bg-[#1F9E4C] py-3.5 text-[14.5px] font-semibold text-white"
+                    className="ml-9 flex items-center justify-center gap-2 rounded-full bg-[#1F9E4C] py-2.5 text-[13.5px] font-semibold text-white"
                   >
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                       <path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .7.5l.9 2.1c.1.2.1.4 0 .6l-.4.5-.3.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2 1.3 2.3 1.5.3.1.5.1.6 0l.9-1c.2-.2.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.8-.1 1.5z" />
@@ -217,7 +214,7 @@ export function CuradoriaOrbi({
             )}
           </>
         )}
-      </OrbiInsightCard>
+      </div>
 
       {/* Tela cheia, mesma referência que a Orbi usava como "Zara IA":
           seta de voltar, frase em destaque, e campo pra continuar perguntando.
