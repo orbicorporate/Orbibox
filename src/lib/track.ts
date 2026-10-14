@@ -11,6 +11,26 @@ let rastreioDesligado = false;
 export function desligarRastreio() {
   rastreioDesligado = true;
 }
+export function rastreioAtivo() {
+  return !rastreioDesligado;
+}
+
+/** Cliques que mostram interesse de verdade; alimentam o aviso de captura. */
+const CLIQUES_DE_INTERESSE: string[] = ["produto", "categoria", "cardapio", "cupom", "carrossel", "lista_item"];
+const chaveIntencao = (businessId: string) => `orbi_intencao_${businessId}`;
+
+/** Quantos sinais de interesse a pessoa deu nesta visita (zera ao fechar a aba). */
+export function pontosDeInteresse(businessId: string): number {
+  try { return Number(sessionStorage.getItem(chaveIntencao(businessId)) ?? 0) || 0; } catch { return 0; }
+}
+
+function somarInteresse(businessId: string) {
+  try {
+    const pontos = pontosDeInteresse(businessId) + 1;
+    sessionStorage.setItem(chaveIntencao(businessId), String(pontos));
+    window.dispatchEvent(new CustomEvent("orbi:interesse", { detail: { businessId, pontos } }));
+  } catch { /* ignora */ }
+}
 
 /**
  * Registra o clique e segue o fluxo. Nunca bloqueia a navegação:
@@ -24,6 +44,7 @@ export async function trackClick(params: {
   targetUrl?: string | null;
 }) {
   if (rastreioDesligado) return;
+  if (CLIQUES_DE_INTERESSE.includes(params.kind)) somarInteresse(params.businessId);
   try {
     const supabase = createClient();
     await supabase.from("click_events").insert({

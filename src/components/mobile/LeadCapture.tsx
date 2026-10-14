@@ -79,7 +79,7 @@ export function LeadCapture({
         p_interest: interesse ?? null,
       });
       if (error) throw error;
-      try { localStorage.setItem(chave, "1"); } catch { /* ignora */ }
+      try { localStorage.setItem(chave, "1"); localStorage.setItem(`orbi_visitante_${businessId}`, JSON.stringify({ nome: nome.trim(), whatsapp: whatsapp.trim() })); } catch { /* ignora */ }
       setFeito(true);
       setTimeout(() => { setAberto(false); setJaDeixou(true); }, 1600);
     } catch {

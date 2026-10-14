@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
+import { NudgeLead } from "@/components/mobile/NudgeLead";
 import { COVER_RATIO_BY_SIZE, galleryRatioOf, formatPrice, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 
@@ -94,6 +95,7 @@ export function ProductView({ business, item }: { business: Business; item: Item
 
   return (
     <main className="mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
+      <NudgeLead businessId={business.id} businessName={business.name} modo="pagina" interesse={item.title} />
       {/* Voltar, fora da imagem, igual qualquer app, não sobrepõe a foto.
           Voltar leva sempre pra vitrine: voltar pelo histórico caía na
           tela inicial, porque a vitrine aberta não fica no endereço. "Ver catálogo" sempre

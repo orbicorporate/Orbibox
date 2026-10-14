@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { askClaude } from "@/lib/anthropic";
 import { AI_MODEL_RAPIDO } from "@/lib/aiModel";
 import { createClient } from "@/lib/supabase/server";
+import { extrairNome, extrairWhatsapp } from "@/lib/telefone";
 
 // Os chips são salvos por id; a Orbi precisa do rótulo em português.
 const PAGAMENTO_LABEL: Record<string, string> = {
@@ -17,7 +18,7 @@ const rotuloAtendimento = (id: string) => ATENDIMENTO_LABEL[id] ?? id;
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessId, conversationId, message, history, trialMode } = await req.json();
+    const { businessId, conversationId, message, history, trialMode, temContato } = await req.json();
 
     if (!businessId || !message) {
       return NextResponse.json({ error: "businessId e message são obrigatórios." }, { status: 400 });
@@ -37,6 +38,30 @@ export async function POST(req: NextRequest) {
           });
         }
       } catch { /* nunca bloqueia por bug de infra */ }
+    }
+
+    // Rede de segurança: se a pessoa digitou o WhatsApp no texto, anota na hora
+    // como lead e amarra à conversa, sem depender de ninguém clicar em nada.
+    let contatoNovo = false;
+    if (!trialMode && !temContato && typeof message === "string") {
+      const tel = extrairWhatsapp(message);
+      if (tel) {
+        try {
+          const { createServiceClient } = await import("@/lib/supabase/service");
+          const svc = createServiceClient();
+          let sessao: string | null = null;
+          if (conversationId) {
+            const { data: conv } = await svc.from("conversations").select("visitor_session_id").eq("id", conversationId).eq("business_id", businessId).maybeSingle();
+            sessao = conv?.visitor_session_id ?? null;
+          }
+          const nomeDito = extrairNome(message) ?? extrairNome(((history ?? []) as { role: string; content: string }[]).filter((m) => m.role !== "agent").map((m) => m.content).join("\n"));
+          const { data: leadId } = await svc.rpc("upsert_lead", { p_business_id: businessId, p_whatsapp: tel, p_name: nomeDito, p_source: "chat", p_session_id: sessao, p_interest: null });
+          if (leadId) {
+            contatoNovo = true;
+            if (conversationId) await svc.from("conversations").update({ lead_id: leadId }).eq("id", conversationId).eq("business_id", businessId);
+          }
+        } catch { /* captura é best-effort, nunca quebra a resposta */ }
+      }
     }
 
     const supabase = await createClient();
@@ -104,11 +129,9 @@ Regras:
 - Seja envolvente, próxima e consultiva, como uma especialista técnica do negócio que entende do assunto de verdade, não uma atendente genérica.
 - Sempre que fizer sentido, termine a resposta puxando uma pergunta estratégica pra levar a conversa adiante (qual é o objetivo da pessoa, o que ela já tentou, qual o prazo, o que mais importa pra ela), não deixe a conversa morrer numa resposta seca.
 - Captura de contato, é o objetivo principal da conversa, sem isso ela não gera valor pro negócio:
-  - Logo cedo (na 1ª ou 2ª resposta), depois de ajudar com a pergunta, ofereça ativamente conectar a pessoa com um especialista pelo WhatsApp, enquadrando como benefício pra ELA: atendimento mais completo e personalizado, com alguém que resolve de verdade. Ex: "Posso te conectar com um especialista da nossa equipe pra te atender de perto. Me passa seu WhatsApp que eu já encaminho?" Seja calorosa e natural, nunca robótica nem insistente. Nunca trave a resposta esperando isso.
-  - Se a pessoa pular ou não responder, sem problema, continue a conversa normalmente, não insista de novo por conta própria.
-  - Se em qualquer momento a pessoa pedir pra ser contatada, pedir orçamento/proposta, ou pedir algo que só nosso time resolve, e o WhatsApp dela AINDA não apareceu em nenhuma mensagem anterior desta conversa, peça o WhatsApp primeiro, antes de dizer que vai anotar ou encaminhar. Sem o contato, a solicitação não vai a lugar nenhum.
-  - Se a pessoa desconversar ou não quiser dar o contato agora, tudo bem: siga ajudando e ofereça de novo mais pra frente, sem pressionar.
-  - Assim que a pessoa der o WhatsApp, confirme com simpatia que anotou e diga que um especialista da equipe vai ver essa conversa e retornar. Nunca prometa um prazo específico (nunca diga "em breve" ou "hoje" sem saber).${business?.contact_whatsapp ? ' Mencione também que tem um atalho pro WhatsApp da empresa logo abaixo do chat pra quem quiser resposta mais rápida, sem esperar.' : ""}
+  - A tela mostra sozinha um cartão pra a pessoa deixar o WhatsApp quando você escreve a marcação [[contato]] numa linha própria (não a descreva). Use essa marcação, em vez de pedir o número por texto, nestes momentos: (1) a pessoa pediu orçamento, proposta, preço fechado, agendamento, disponibilidade, ou algo que só nosso time resolve; (2) depois de ajudar bem em 1 ou 2 perguntas, uma única vez, mostrando interesse real. Escreva antes da marcação uma frase curta e calorosa oferecendo conectar a pessoa com um especialista da equipe, enquadrado como benefício pra ELA (atendimento mais completo e personalizado). Exemplo: "Posso te conectar com um especialista da nossa equipe pra te atender de perto?" seguido de [[contato]].
+  - Nunca trave a resposta esperando o contato. Se a pessoa ignorar o cartão ou desconversar, siga ajudando normalmente, sem insistir e sem repetir a marcação por conta própria.
+  - Se a pessoa digitar o WhatsApp no texto, o sistema já anota sozinho. Confirme com simpatia que anotou e diga que um especialista da equipe vai ver a conversa e retornar. Nunca prometa prazo (nunca diga "em breve" ou "hoje" sem saber).${temContato || contatoNovo ? "\n  - IMPORTANTE: o contato desta pessoa JÁ está anotado. Nunca peça o WhatsApp de novo e nunca escreva [[contato]]. Se ela quiser algo do time, diga que um especialista vai ver a conversa e retornar." : ""}${business?.contact_whatsapp ? " Mencione também, quando fizer sentido, que tem um atalho pro WhatsApp da empresa logo abaixo do chat pra quem quiser resposta mais rápida." : ""}
 - Use no máximo um ✦ ocasionalmente, sem exagerar em emojis.
 - Se for listar 2 ou mais itens (produtos, serviços, opções), use uma lista com "- " no início de cada linha, uma por linha, nunca tudo numa frase só separado por vírgula.
 - Pode usar **negrito** em nomes de produtos/serviços e valores importantes, com moderação.`;
@@ -184,7 +207,7 @@ Regras:
       }
     }
 
-    return NextResponse.json({ reply });
+    return NextResponse.json({ reply, leadCapturado: contatoNovo });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Falha ao gerar resposta da Orbi." }, { status: 500 });
