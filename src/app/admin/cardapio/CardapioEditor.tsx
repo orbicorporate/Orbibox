@@ -7,8 +7,9 @@ import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ImportarCardapio } from "./ImportarCardapio";
 import { PdfCardapio } from "./PdfCardapio";
 import { PratosEditor } from "./PratosEditor";
+import { GuiaPrato } from "./GuiaPrato";
 import type { Json } from "@/lib/supabase/types";
-import { lerSecoes, novoId, totalItens, type CardapioSecao } from "@/lib/cardapio";
+import { lerSecoes, novoId, totalItens, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
 
 export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: ativoInicial, totalBoxes, slug }: { businessId: string; boxId: string | null; config: Record<string, unknown>; ativo: boolean; totalBoxes: number; slug: string }) {
   const supabase = useRef(createClient()).current;
@@ -20,6 +21,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
   const [nome, setNome] = useState((config.label as string) || "Cardápio");
   const [sub, setSub] = useState((config.subtitle as string) || "Veja os pratos e preços");
   const [ativo, setAtivo] = useState(ativoInicial);
+  const [guia, setGuia] = useState(false);
   const [criando, setCriando] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -57,14 +59,10 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     }, 700);
   }
 
-  function novaCategoria() {
-    const id = novoId();
-    mudarSecoes([...secoes, { id, nome: "", itens: [] }]);
-    setTimeout(() => {
-      const el = document.getElementById(`cat-${id}`);
-      el?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-      el?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
-    }, 80);
+  function adicionarPrato(categoria: string, item: CardapioItem) {
+    const alvo = secoes.find((x) => x.nome.trim().toLowerCase() === categoria.trim().toLowerCase());
+    if (alvo) mudarSecoes(secoes.map((x) => (x.id === alvo.id ? { ...x, itens: [...x.itens, item] } : x)));
+    else mudarSecoes([...secoes, { id: novoId(), nome: categoria.trim(), itens: [item] }]);
   }
 
   async function trocarPdf(url: string) {
@@ -113,7 +111,11 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
           </div>
 
           <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes}>
-            <ImportarCardapio businessId={businessId} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={novaCategoria} />
+            {guia ? (
+              <GuiaPrato businessId={businessId} categorias={secoes.map((x) => x.nome)} onSalvar={adicionarPrato} onFechar={() => setGuia(false)} />
+            ) : (
+              <ImportarCardapio businessId={businessId} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={() => setGuia(true)} />
+            )}
           </PratosEditor>
 
           <details className="group mt-2" open={!!cfg.pdf_url}>
