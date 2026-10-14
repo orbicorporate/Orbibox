@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { COVER_RATIO_BY_SIZE, galleryRatioOf, formatPrice, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
+import { lerLista } from "@/lib/lista";
+import { ListaItensView } from "./ListaItensView";
 
 type Business = {
   id: string;
@@ -33,6 +35,7 @@ type Item = {
   type: string;
   highlights: string[] | null;
   orbi_hook: string | null;
+  lista?: unknown;
 };
 
 // Rótulo da categoria lá em cima da capa, só aparece quando o tipo do item
@@ -237,6 +240,11 @@ export function ProductView({ business, item }: { business: Business; item: Item
               )}
             </>
           );
+        })()}
+
+        {(() => {
+          const lista = lerLista(item.lista);
+          return lista ? <ListaItensView lista={lista} businessId={business.id} paginaId={item.id} paginaTitulo={item.title} negocio={business.name} whatsapp={business.contact_whatsapp} /> : null;
         })()}
 
         {item.orbi_hook?.trim() && (
