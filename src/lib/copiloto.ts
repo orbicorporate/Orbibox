@@ -201,9 +201,9 @@ export async function calcularOportunidade(
     return {
       tom: "oportunidade",
       selo: "A Orbi encontrou uma oportunidade",
-      titulo: `${novos} ${novos === 1 ? "novo contato" : "novos contatos"} esta semana`,
-      dados: [`${novos === 1 ? "Essa pessoa deixou" : "Essas pessoas deixaram"} o WhatsApp com você.`, "Quem recebe resposta no mesmo dia tem muito mais chance de comprar."],
-      pergunta: "Quer mandar uma mensagem?",
+      titulo: `${novos === 1 ? "1 pessoa deixou" : `${novos} pessoas deixaram`} o WhatsApp com você esta semana`,
+      dados: [],
+      pergunta: "",
       cta: { rotulo: "Ver contatos", href: "/admin/conversas" },
     };
   }
