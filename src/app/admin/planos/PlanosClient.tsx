@@ -56,11 +56,13 @@ function Check({ highlight }: { highlight?: boolean }) {
   );
 }
 
-// Quem terminou o teste sem assinar ganha este desconto no primeiro ano do plano anual.
-const DESCONTO_FIM_TESTE = 15;
-
 export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessInfo }) {
   const oferta = access.testeAcabou;
+  // Desconto do anual contra 12 mensalidades, calculado dos preços reais (arredonda pra baixo, nunca promete mais).
+  const descontoAnual = plans.reduce((min, p) => {
+    const d = Math.floor((1 - p.yearly_price_cents / (p.monthly_price_cents * 12)) * 100);
+    return Math.min(min, d);
+  }, 100);
   const [cycle, setCycle] = useState<Cycle>(oferta ? "yearly" : ((access.subscription?.billing_cycle as Cycle) ?? "monthly"));
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
@@ -114,9 +116,9 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
           <div className="relative overflow-hidden rounded-[20px] bg-surface-white p-4">
             <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-text-tertiary">Seu teste terminou</p>
             <p className="mt-1 font-[family-name:var(--font-manrope)] text-[19px] font-semibold leading-snug">
-              Mas você ganhou {DESCONTO_FIM_TESTE}% de desconto no plano anual <span aria-hidden>✦</span>
+              No plano anual você paga {descontoAnual}% menos <span aria-hidden>✦</span>
             </p>
-            <p className="mt-1 text-[13px] leading-snug text-text-secondary">Vale pro Titânio ou pro Nióbio, o que você escolher, no primeiro ano.</p>
+            <p className="mt-1 text-[13px] leading-snug text-text-secondary">Vale pro Titânio ou pro Nióbio, o que você escolher.</p>
           </div>
         </div>
       )}
@@ -163,15 +165,14 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
             className={`flex items-center gap-1.5 rounded-full px-5 py-2 text-[13px] font-medium transition-all ${cycle === "yearly" ? "bg-surface-white shadow-sm" : "text-text-secondary"}`}
           >
             Anual
-            <span className="rounded-full orbi-gradient px-1.5 py-0.5 text-[10px] font-bold text-on-background">{oferta ? `-${DESCONTO_FIM_TESTE}%` : "-2 meses"}</span>
+            <span className="rounded-full orbi-gradient px-1.5 py-0.5 text-[10px] font-bold text-on-background">-{descontoAnual}%</span>
           </button>
         </div>
       </div>
 
       {ordered.map((plan, idx) => {
-        const comDesconto = oferta && cycle === "yearly";
-        const anualCheio = plan.yearly_price_cents;
-        const priceCents = cycle === "yearly" ? (comDesconto ? Math.round(anualCheio * (100 - DESCONTO_FIM_TESTE) / 100) : anualCheio) : plan.monthly_price_cents;
+        const dozeMeses = plan.monthly_price_cents * 12;
+        const priceCents = cycle === "yearly" ? plan.yearly_price_cents : plan.monthly_price_cents;
         const monthlyEquivalent = cycle === "yearly" ? Math.round(priceCents / 12) : plan.monthly_price_cents;
         const isCurrent = currentPlanId === plan.id && inGoodStanding;
         const isPremium = plan.has_ai_chat;
@@ -218,11 +219,7 @@ export function PlanosClient({ plans, access }: { plans: Plan[]; access: AccessI
               </div>
               {cycle === "yearly" && (
                 <p className="-mt-2 text-[12px] text-text-tertiary">
-                  {comDesconto ? (
-                    <><span className="line-through">{formatBRL(anualCheio)}</span> <span className="font-medium text-text-secondary">{formatBRL(priceCents)}</span> no primeiro ano, cobrado uma vez</>
-                  ) : (
-                    <>{formatBRL(priceCents)} cobrado uma vez por ano</>
-                  )}
+                  <span className="line-through">{formatBRL(dozeMeses)}</span> <span className="font-medium text-text-secondary">{formatBRL(priceCents)}</span> cobrado uma vez por ano
                 </p>
               )}
               {isPremium && (

@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 
-// Médias reais dos dois planos (Titânio R$79/R$790, Nióbio R$109/R$981),
+// Médias reais dos dois planos (Titânio R$97/R$900, Nióbio R$147/R$1.370),
 // já que a comissão de 30% incide sobre a fatura de verdade na Stripe:
 // mensal gera fatura todo mês (comissão recorrente), anual gera UMA fatura
 // com o valor cheio (comissão cai de uma vez só, na assinatura).
-const PLANO_MEDIO_MENSAL = 94;
-const PLANO_MEDIO_ANUAL = 886;
+const PLANO_MEDIO_MENSAL = 122;
+const PLANO_MEDIO_ANUAL = 1135;
 const COMISSAO = 0.3;
 const MIN = 10;
 const MAX = 10000;
