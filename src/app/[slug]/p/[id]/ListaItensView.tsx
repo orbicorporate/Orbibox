@@ -9,7 +9,7 @@ import { precoDoItem, urlSegura, type Lista, type ListaItem } from "@/lib/lista"
  * abre uma folha com o item maior e o botão que o dono escolheu
  * (WhatsApp, link do item ou nenhum).
  */
-export function ListaItensView({ lista, businessId, paginaId, paginaTitulo, negocio, whatsapp }: { lista: Lista; businessId: string; paginaId: string; paginaTitulo: string; negocio: string; whatsapp: string | null }) {
+export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo, negocio, whatsapp }: { lista: Lista; businessId: string; slug: string; paginaId: string; paginaTitulo: string; negocio: string; whatsapp: string | null }) {
   const [aberto, setAberto] = useState<ListaItem | null>(null);
   const fechar = useRef<HTMLButtonElement>(null);
 
@@ -115,7 +115,15 @@ export function ListaItensView({ lista, businessId, paginaId, paginaTitulo, nego
                 onClick={() => trackClick({ businessId, kind: "whatsapp", contentItemId: paginaId })}
                 className="mt-5 flex min-h-[50px] items-center justify-center rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]"
               >
-                Quero este
+                Falar agora
+              </a>
+            ) : lista.destino === "delivery" ? (
+              <a
+                href={`/${slug}?delivery=1`}
+                onClick={() => trackClick({ businessId, kind: "cta", contentItemId: paginaId })}
+                className="mt-5 flex min-h-[50px] items-center justify-center rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]"
+              >
+                Pedir no delivery
               </a>
             ) : lista.destino === "link" && linkItem ? (
               <a
@@ -128,6 +136,16 @@ export function ListaItensView({ lista, businessId, paginaId, paginaTitulo, nego
                 Ver este item <span aria-hidden>↗</span>
               </a>
             ) : null}
+            {lista.orbi !== false && (
+              <a
+                href={`/${slug}?chat=1&msg=${encodeURIComponent(`Quero saber mais sobre "${aberto_.nome}" (${paginaTitulo})`)}`}
+                onClick={() => trackClick({ businessId, kind: "zara", contentItemId: paginaId })}
+                className="mt-2.5 flex min-h-[46px] items-center justify-center gap-1.5 rounded-full border border-divider text-[14px] font-medium text-text-secondary active:scale-[0.98]"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" aria-hidden />
+                Perguntar à Orbi
+              </a>
+            )}
           </div>
         </div>
       )}

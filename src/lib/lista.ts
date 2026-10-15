@@ -3,7 +3,7 @@
  * Instagram", com boxes de foto, nome e preço. Sem carrinho, estoque ou
  * variações. O dono escolhe o destino do botão que aparece ao tocar num item.
  */
-export type ListaDestino = "whatsapp" | "link" | "nenhum";
+export type ListaDestino = "whatsapp" | "delivery" | "link" | "nenhum";
 
 export type ListaItem = {
   id: string;
@@ -19,6 +19,8 @@ export type ListaItem = {
 export type Lista = {
   titulo: string;
   destino: ListaDestino;
+  /** Mostra "Perguntar à Orbi" embaixo do botão principal. Padrão: ligado. */
+  orbi?: boolean;
   itens: ListaItem[];
 };
 
@@ -36,10 +38,11 @@ export function lerLista(raw: unknown): Lista | null {
   if (!raw || typeof raw !== "object") return null;
   const l = raw as Partial<Lista>;
   if (!Array.isArray(l.itens)) return null;
-  const destino: ListaDestino = l.destino === "link" || l.destino === "nenhum" ? l.destino : "whatsapp";
+  const destino: ListaDestino = l.destino === "link" || l.destino === "nenhum" || l.destino === "delivery" ? l.destino : "whatsapp";
   return {
     titulo: typeof l.titulo === "string" ? l.titulo : "",
     destino,
+    orbi: l.orbi !== false,
     itens: l.itens
       .filter((i): i is ListaItem => !!i && typeof (i as ListaItem).nome === "string")
       .slice(0, MAX_LISTA)

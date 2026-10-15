@@ -270,6 +270,8 @@ export function VisitorExperience({
     const msg = searchParams.get("msg");
     // ?v=ID: link de um voucher específico, abre direto nele.
     if (searchParams.get("v") && hasVouchers) chooseIntent("cupom");
+    // ?delivery=1: vindo de um item de lista com destino Delivery, abre os apps direto.
+    else if (searchParams.get("delivery") === "1") chooseIntent("delivery");
     else if (chat === "1" && hasAiChat) chooseIntent("duvida", msg || undefined);
     else if (tab === "conhecer") chooseIntent("conhecer");
     else if (tab === "vitrine") chooseIntent("comprar");

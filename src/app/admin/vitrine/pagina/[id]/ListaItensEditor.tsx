@@ -12,6 +12,7 @@ const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py
 
 const DESTINOS: { id: ListaDestino; rotulo: string; ajuda: string }[] = [
   { id: "whatsapp", rotulo: "WhatsApp", ajuda: "O cliente toca em um item, vê os detalhes e chama no WhatsApp do negócio." },
+  { id: "delivery", rotulo: "Delivery", ajuda: "O cliente toca em um item e vai direto aos seus apps de delivery (iFood, Rappi e outros)." },
   { id: "link", rotulo: "Link do item", ajuda: "Cada item leva ao link que você colar nele, como a página do produto no seu site." },
   { id: "nenhum", rotulo: "Sem botão", ajuda: "Os itens só mostram foto, preço e detalhes." },
 ];
@@ -214,6 +215,16 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
       </div>
       <p className="mt-2 text-[12.5px] leading-snug text-text-tertiary">{destino.ajuda}</p>
       {lista.destino === "whatsapp" && !temWhatsapp && <p className="mt-1 text-[12.5px] leading-snug text-[#9A4F06]">Cadastre o WhatsApp do negócio para esse botão aparecer.</p>}
+
+      <button type="button" role="switch" aria-checked={lista.orbi !== false} onClick={() => onChange({ ...lista, orbi: lista.orbi === false })} className="mt-3 flex min-h-[48px] w-full items-center justify-between rounded-2xl bg-surface-soft px-4 text-left text-[14px]">
+        <span>
+          <span className="block font-medium">Perguntar à Orbi</span>
+          <span className="block text-[12px] text-text-tertiary">Botão discreto embaixo do principal, pra tirar dúvidas do item</span>
+        </span>
+        <span className={`h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ${lista.orbi !== false ? "orbi-gradient" : "bg-divider"}`}>
+          <span className={`block h-5 w-5 rounded-full bg-surface-white shadow transition-transform ${lista.orbi !== false ? "translate-x-5" : ""}`} />
+        </span>
+      </button>
 
       <ul className="mt-4 grid grid-cols-3 gap-2.5">
         {lista.itens.map((i) => (

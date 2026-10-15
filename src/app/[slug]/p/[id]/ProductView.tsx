@@ -236,7 +236,7 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
 
         {(() => {
           const lista = lerLista(item.lista);
-          return lista ? <ListaItensView lista={lista} businessId={business.id} paginaId={item.id} paginaTitulo={item.title} negocio={business.name} whatsapp={business.contact_whatsapp} /> : null;
+          return lista ? <ListaItensView lista={lista} slug={business.slug} businessId={business.id} paginaId={item.id} paginaTitulo={item.title} negocio={business.name} whatsapp={business.contact_whatsapp} /> : null;
         })()}
 
         {(item.orbi_hook?.trim() || !item.description?.trim()) && (
