@@ -5,6 +5,7 @@ import { CardapioFlow } from "./CardapioFlow";
 import { lerSecoes } from "@/lib/cardapio";
 import { appsAtivos, linkDoApp } from "@/lib/delivery";
 import Link from "next/link";
+import { LapisDono } from "@/components/mobile/LapisDono";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -817,6 +818,22 @@ export function VisitorExperience({
           </button>
         </div>
       )}
+      {showOwnerControls && intent !== null && (() => {
+        // Em qualquer tela de conteúdo, o dono tem um lápis fixo que leva ao editor daquela tela.
+        const destino: Partial<Record<NonNullable<typeof intent>, { href: string; rotulo: string }>> = {
+          comprar: { href: "/admin/vitrine", rotulo: "Editar vitrine" },
+          presentear: { href: "/admin/gift", rotulo: "Editar gift card" },
+          cupom: { href: "/admin/vouchers", rotulo: "Editar vouchers" },
+          delivery: { href: "/admin/delivery", rotulo: "Editar delivery" },
+          duvida: { href: "/admin/agent", rotulo: "Editar a Orbi" },
+        };
+        const d = destino[intent];
+        return d ? (
+          <Link href={d.href} aria-label={d.rotulo} className="fixed right-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur">
+            <span aria-hidden>✎</span> {d.rotulo}
+          </Link>
+        ) : null;
+      })()}
       {isOwner && intent === null && previewMode && !previewTravado && (
         <button
           onClick={() => setPreviewMode(false)}
@@ -1435,7 +1452,7 @@ export function VisitorExperience({
 
         {((intent === "comprar") || (intent === "presentear" && !giftEnabled)) && (
           <div className="w-full">
-            <VitrineCoverBleed business={business} />
+            <VitrineCoverBleed business={business} podeEditar={showOwnerControls} />
             <button onClick={voltarAoInicio} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
             {hasAiChat && content.length >= 3 && (
               <div className="mt-1">
@@ -1443,31 +1460,39 @@ export function VisitorExperience({
               </div>
             )}
 
-            <h2 className="mt-6 font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">
-              {intent === "presentear" ? "Para presentear" : (business.catalog_title || `${business.name}, Catálogo`)}
-            </h2>
-            <p className="mt-1 text-[15px] text-text-secondary">
-              {intent === "presentear" ? "Seleções que fazem sentido para dar de presente" : (business.catalog_subtitle || "Explore nossas soluções.")}
-            </p>
+            <div className="mt-6 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">
+                  {intent === "presentear" ? "Para presentear" : (business.catalog_title || `${business.name}, Catálogo`)}
+                </h2>
+                <p className="mt-1 text-[15px] text-text-secondary">
+                  {intent === "presentear" ? "Seleções que fazem sentido para dar de presente" : (business.catalog_subtitle || "Explore nossas soluções.")}
+                </p>
+              </div>
+              {showOwnerControls && intent === "comprar" && <LapisDono href="/admin/vitrine#vitrine-ajustes" rotulo="Editar título e texto" />}
+            </div>
 
             {/* Faixa de "receber novidades" no topo, só se o dono ligou. */}
             {business.vitrine_lead_top && (
-              <LeadCapture
-                businessId={business.id}
-                businessName={business.name}
-                sessionId={sessionId}
-                orbiColors={orbiColors}
-                contexto="vitrine"
-                variant="compact"
-                className="mt-4"
-              />
+              <div className="relative">
+                <LeadCapture
+                  businessId={business.id}
+                  businessName={business.name}
+                  sessionId={sessionId}
+                  orbiColors={orbiColors}
+                  contexto="vitrine"
+                  variant="compact"
+                  className="mt-4"
+                />
+                {showOwnerControls && <LapisDono href="/admin/vitrine#vitrine-novidades" rotulo="Editar faixa de novidades" className="absolute -right-1 -top-1" />}
+              </div>
             )}
 
             {content.length === 0 ? (
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
             ) : (
               <>
-                <Showcase categoriaInicial={categoriaInicial} content={content} business={business} sessionId={sessionId} orbiColors={orbiColors} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
+                <Showcase podeEditar={showOwnerControls} categoriaInicial={categoriaInicial} content={content} business={business} sessionId={sessionId} orbiColors={orbiColors} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
                 {/* Captura discreta no fim do catálogo: quem chegou até aqui
                     olhou tudo, é o momento certo de oferecer aviso. */}
                 {!business.vitrine_lead_top && (
@@ -2715,7 +2740,7 @@ function BarraContato({ business, sessionId, onOrbi }: { business: Business; ses
   );
 }
 
-function VitrineCoverBleed({ business }: { business: Business }) {
+function VitrineCoverBleed({ business, podeEditar = false }: { business: Business; podeEditar?: boolean }) {
   const covers = business.vitrine_cover_urls ?? [];
   const [idx, setIdx] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -2734,10 +2759,17 @@ function VitrineCoverBleed({ business }: { business: Business }) {
     el.scrollTo({ left: idx * el.clientWidth, behavior: "smooth" });
   }, [idx]);
 
-  if (covers.length === 0) return null;
+  if (covers.length === 0) {
+    return podeEditar ? (
+      <div className="mt-2 flex justify-start">
+        <Link href="/admin/vitrine#vitrine-capa" className="rounded-full border border-dashed border-on-background/25 px-4 py-2 text-[13px] font-medium text-text-secondary">+ Adicionar banner</Link>
+      </div>
+    ) : null;
+  }
 
   return (
-    <div className="-mx-6 -mt-16">
+    <div className="relative -mx-6 -mt-16">
+      {podeEditar && <LapisDono href="/admin/vitrine#vitrine-capa" rotulo="Editar banner" className="absolute bottom-6 right-4 z-10" />}
       <div
         ref={trackRef}
         className="flex snap-x snap-mandatory gap-0 overflow-x-auto no-scrollbar rounded-b-[28px]"
@@ -2772,7 +2804,7 @@ function VitrineCoverBleed({ business }: { business: Business }) {
   );
 }
 
-function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaInicial = null }: { categoriaInicial?: string | null; content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
+function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaInicial = null, podeEditar = false }: { podeEditar?: boolean; categoriaInicial?: string | null; content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
   const sections = groupByCategory(content, business.vitrine_categories ?? []);
   // Chips e títulos só pras categorias de verdade; itens sem categoria
   // aparecem no topo, sem título.
@@ -2866,16 +2898,25 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                 visitante vê aqui, sem surpresa. items-start: card sem rodapé
                 não estica até a altura do vizinho. */}
             <div className="flex flex-wrap items-start gap-5">
-              {sec.items.map((item) => (
-                <CartaoItem
-                  key={item.id}
-                  item={item}
-                  slug={business.slug}
-                  businessId={business.id}
-                  sessionId={sessionId}
-                  largura={sizeOf(item.layout_size) === "medio" ? "w-[calc(50%-10px)] lg:w-[calc(25%-15px)]" : "w-full lg:w-[calc(50%-10px)]"}
-                />
-              ))}
+              {sec.items.map((item) => {
+                const largura = sizeOf(item.layout_size) === "medio" ? "w-[calc(50%-10px)] lg:w-[calc(25%-15px)]" : "w-full lg:w-[calc(50%-10px)]";
+                const cartao = (
+                  <CartaoItem
+                    key={item.id}
+                    item={item}
+                    slug={business.slug}
+                    businessId={business.id}
+                    sessionId={sessionId}
+                    largura={podeEditar ? "w-full" : largura}
+                  />
+                );
+                return podeEditar ? (
+                  <div key={item.id} className={`relative ${largura}`}>
+                    {cartao}
+                    <LapisDono href={`/admin/vitrine/pagina/${item.id}`} rotulo={`Editar ${item.title}`} className="absolute right-2 top-2 z-10" />
+                  </div>
+                ) : cartao;
+              })}
             </div>
             {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} onOrbi={onOrbi} orbiColors={orbiColors} /></div>}
           </div>

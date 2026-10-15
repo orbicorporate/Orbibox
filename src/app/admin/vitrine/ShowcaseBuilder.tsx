@@ -1161,7 +1161,7 @@ export function ShowcaseBuilder({
       </div>
       {/* Faixa opcional "Receba novidades" no topo da Vitrine.
           Desligada, a captura continua só no fim do catálogo, discreta. */}
-      <div className="mt-4 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
+      <div id="vitrine-novidades" className="mt-4 scroll-mt-24 rounded-[24px] bg-surface-white p-5 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold text-on-background">Botão de novidades</p>
