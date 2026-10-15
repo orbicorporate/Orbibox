@@ -28,6 +28,7 @@ export function ListaItensView({ lista, businessId, paginaId, paginaTitulo, nego
 
   const itens = lista.itens.filter((i) => i.nome.trim());
   if (itens.length === 0) return null;
+  const semFotos = itens.every((i) => !i.foto);
 
   function abrir(i: ListaItem) {
     trackClick({ businessId, kind: "lista_item", contentItemId: paginaId });
@@ -40,20 +41,41 @@ export function ListaItensView({ lista, businessId, paginaId, paginaTitulo, nego
   return (
     <section className="mt-8" aria-label={lista.titulo || "Itens"}>
       {lista.titulo.trim() && <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight">{lista.titulo}</h2>}
+      {semFotos ? (
+        // Nenhum item tem foto: lista limpa de linhas (nome, preço, seta), sem caixas cinzas vazias.
+        <ul className="mt-3 overflow-hidden rounded-[20px] bg-surface-white ring-1 ring-black/[0.05]">
+          {itens.map((i, idx) => {
+            const preco = precoDoItem(i.preco);
+            return (
+              <li key={i.id} className={idx > 0 ? "border-t border-divider" : ""}>
+                <button type="button" onClick={() => abrir(i)} className="flex min-h-[52px] w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-soft">
+                  <span className="min-w-0 flex-1">
+                    <span className="line-clamp-2 block break-words text-[15px] font-medium leading-snug">{i.nome}</span>
+                    {i.esgotado && <span className="mt-0.5 block text-[12px] text-text-tertiary">Esgotado</span>}
+                  </span>
+                  {preco && <span className="shrink-0 text-[14px] text-text-secondary">{preco}</span>}
+                  <span className="shrink-0 text-text-tertiary" aria-hidden>›</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
       <ul className="mt-3 grid grid-cols-2 gap-3">
         {itens.map((i) => {
           const preco = precoDoItem(i.preco);
           return (
             <li key={i.id}>
               <button type="button" onClick={() => abrir(i)} className="block w-full overflow-hidden rounded-[20px] bg-surface-white text-left ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]">
-                <span className={`relative block w-full overflow-hidden bg-surface-soft ${i.foto ? "aspect-[4/5]" : "aspect-[4/3]"}`}>
-                  {i.foto && (
-                    // eslint-disable-next-line @next/next/no-img-element
+                {i.foto && (
+                  <span className="relative block aspect-[4/5] w-full overflow-hidden bg-surface-soft">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={i.foto} alt="" loading="lazy" className="h-full w-full object-cover" />
-                  )}
-                  {i.esgotado && <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-text-secondary">Esgotado</span>}
-                </span>
+                    {i.esgotado && <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-text-secondary">Esgotado</span>}
+                  </span>
+                )}
                 <span className="block px-3 pb-3 pt-2.5">
+                  {!i.foto && i.esgotado && <span className="mb-1 block text-[11px] font-medium text-text-tertiary">Esgotado</span>}
                   <span className="line-clamp-2 block break-words text-[14px] font-medium leading-snug">{i.nome}</span>
                   {preco && <span className="mt-0.5 block text-[13.5px] text-text-secondary">{preco}</span>}
                 </span>
@@ -62,6 +84,7 @@ export function ListaItensView({ lista, businessId, paginaId, paginaTitulo, nego
           );
         })}
       </ul>
+      )}
 
       {aberto_ && (
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={aberto_.nome}>
