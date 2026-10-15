@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useSyncExternalStore } from "react";
+import type { Json } from "@/lib/supabase/types";
+import { lerLista, type Lista } from "@/lib/lista";
+import { ListaItensEditor } from "./ListaItensEditor";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { galleryRatioOf, formatPrice, isVideoUrl, youtubeId, instagramReelId, type GalleryRatio } from "@/lib/showcase";
@@ -37,6 +40,7 @@ type Item = {
   type: string;
   highlights: string[] | null;
   orbi_hook: string | null;
+  lista?: unknown;
 };
 
 const EYEBROW_LABEL: Record<string, string> = { product: "Produtos", service: "Serviços" };
@@ -57,6 +61,7 @@ type Campos = Partial<{
   orbi_hook: string | null;
   gallery_urls: string[];
   gallery_ratio: string | null;
+  lista: Json | null;
 }>;
 
 function novoCaminho(businessId: string, ext: string) {
@@ -94,6 +99,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const [titulo, setTitulo] = useState(item.title);
   const [descricao, setDescricao] = useState(item.description ?? "");
   const [rotulo, setRotulo] = useState(item.brand_label ?? "");
+  const [lista, setLista] = useState<Lista | null>(() => lerLista(item.lista));
   const [diferenciais, setDiferenciais] = useState<string[]>(item.highlights ?? []);
   const [pergunta, setPergunta] = useState(item.orbi_hook ?? "");
   const [midias, setMidias] = useState<string[]>(item.gallery_urls ?? []);
@@ -140,6 +146,11 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   function salvarDiferenciais(lista: string[]) {
     const limpa = lista.map((d) => d.trim()).filter(Boolean);
     salvar({ highlights: limpa.length ? limpa : null });
+  }
+
+  function salvarLista(l: Lista | null) {
+    setLista(l);
+    salvar({ lista: l as unknown as Json });
   }
 
   function salvarMidias(lista: string[]) {
@@ -575,6 +586,8 @@ export function ProductPageEditor({ business, item }: { business: Business; item
               )}
             </div>
           </div>
+
+          <ListaItensEditor businessId={business.id} lista={lista} temWhatsapp={!!business.contact_whatsapp} onChange={salvarLista} />
 
           {/* Pergunta pronta pra Orbi */}
           <div className="mt-5 rounded-2xl border border-dashed border-on-background/15 bg-surface-soft px-4 py-3.5">

@@ -26,6 +26,17 @@ Regras:
 - Ignore endereço, telefone, redes sociais, horário e frases de propaganda.
 - No máximo 150 itens. Texto em português do Brasil.`;
 
+const SISTEMA_LISTA = `Você transforma um texto colado ou foto de uma lista de produtos (roupas, acessórios, presentes, serviços etc.) em itens para uma lista dentro da página de um negócio brasileiro.
+
+Regras:
+- Copie fielmente o que está no material. Nunca invente item, detalhe nem preço.
+- Coloque todos os itens numa única categoria chamada "Itens", na ordem em que aparecem.
+- titulo: nome do item, com capitalização normal (não tudo em maiúsculas). Sem preço no título.
+- descricao: detalhe curto do item (material, tamanhos, cor), só se estiver no material. Vazio se não houver.
+- preco: número em reais (ex: 89.9). Se o preço não aparece, null. Se há tamanhos com preços diferentes, use o MENOR preço, preco_tipo "a_partir" e escreva os tamanhos na descricao.
+- Ignore endereço, telefone, redes sociais e frases de propaganda.
+- No máximo 60 itens. Texto em português do Brasil.`;
+
 const SCHEMA = {
   type: "object",
   properties: {
@@ -58,7 +69,8 @@ const SCHEMA = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessId, texto, imagens } = (await req.json()) as { businessId?: string; texto?: string; imagens?: string[] };
+    const { businessId, texto, imagens, modo } = (await req.json()) as { businessId?: string; texto?: string; imagens?: string[]; modo?: string };
+    const lista = modo === "lista";
     const textoLimpo = (texto ?? "").trim().slice(0, MAX_TEXTO);
     const fotos = Array.isArray(imagens) ? imagens.slice(0, MAX_FOTOS) : [];
     if (!businessId || (!textoLimpo && fotos.length === 0)) {
@@ -90,12 +102,12 @@ export async function POST(req: NextRequest) {
         /* foto ilegível: segue com as outras */
       }
     }
-    if (textoLimpo) content.push({ type: "text", text: `Texto do cardápio:\n\n${textoLimpo}` });
-    content.push({ type: "text", text: "Monte os itens do cardápio." });
+    if (textoLimpo) content.push({ type: "text", text: `${lista ? "Texto da lista" : "Texto do cardápio"}:\n\n${textoLimpo}` });
+    content.push({ type: "text", text: lista ? "Monte os itens da lista." : "Monte os itens do cardápio." });
     if (content.length <= 1) return NextResponse.json({ error: "Não consegui ler as fotos. Tente outra foto, ou cole o texto." }, { status: 422 });
 
     const { data, truncated } = await askClaudeJSON<Proposta>({
-      system: SISTEMA,
+      system: lista ? SISTEMA_LISTA : SISTEMA,
       messages: [{ role: "user", content: content as never }],
       schema: SCHEMA,
       toolName: "montar_cardapio",
