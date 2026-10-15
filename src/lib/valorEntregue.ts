@@ -42,7 +42,7 @@ export async function calcularValorEntregue(supabase: SupabaseClient<any>, busin
 export function linhasDoValor(v: ValorEntregue): { n: number; texto: string; chave: string }[] {
   const l: { n: number; texto: string; chave: string }[] = [
     { n: v.visitas, chave: "visitas", texto: v.visitas === 1 ? "pessoa visitou seu Orbibox" : "pessoas visitaram seu Orbibox" },
-    { n: v.produtos, chave: "produtos", texto: v.produtos === 1 ? "vez olharam um produto" : "vezes olharam seus produtos" },
+    { n: v.produtos, chave: "produtos", texto: v.produtos === 1 ? "vez que um produto seu foi aberto" : "vezes que um produto seu foi aberto" },
     { n: v.conversas, chave: "conversas", texto: v.conversas === 1 ? "pessoa conversou com sua IA" : "pessoas conversaram com sua IA" },
     { n: v.whatsapp, chave: "whatsapp", texto: v.whatsapp === 1 ? "chamou no seu WhatsApp" : "chamaram no seu WhatsApp" },
     { n: v.contatos, chave: "contatos", texto: v.contatos === 1 ? "novo contato capturado" : "novos contatos capturados" },

@@ -98,7 +98,7 @@ export function ValorEntregueCard({ rotulo, titulo, linhas, vazio, fecho }: { ro
         </h1>
 
         {destaque && est && (
-          <div className="valor-entra mt-5 flex items-center gap-4 rounded-[24px] bg-white/80 p-4 shadow-[0_8px_24px_-12px_rgba(16,35,26,0.35)]" style={{ animationDelay: "0.1s" }}>
+          <div className="valor-entra mt-5 flex items-center gap-4 rounded-[24px] bg-gradient-to-br from-white/85 to-white/45 p-4 shadow-[0_8px_24px_-12px_rgba(16,35,26,0.35)] ring-1 ring-white/70 backdrop-blur-md" style={{ animationDelay: "0.1s" }}>
             <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: est.fundo, color: est.cor }}>
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>{est.icone}</svg>
             </span>
@@ -119,14 +119,16 @@ export function ValorEntregueCard({ rotulo, titulo, linhas, vazio, fecho }: { ro
               return (
                 <li
                   key={l.chave}
-                  className={`valor-entra rounded-[20px] p-3.5 ${ultimoImpar ? "col-span-2" : ""}`}
-                  style={{ backgroundColor: e.fundo, color: e.cor, animationDelay: `${0.25 + i * 0.09}s` }}
+                  className={`valor-entra rounded-[20px] bg-gradient-to-br from-white/80 to-white/40 p-3.5 shadow-[0_6px_20px_-12px_rgba(16,35,26,0.35)] ring-1 ring-white/70 backdrop-blur-md ${ultimoImpar ? "col-span-2" : ""}`}
+                  style={{ animationDelay: `${0.25 + i * 0.09}s` }}
                 >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>{e.icone}</svg>
-                  <p className="mt-2 font-[family-name:var(--font-manrope)] text-[30px] font-semibold leading-none tabular-nums tracking-[-0.02em]">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full" style={{ backgroundColor: e.fundo, color: e.cor }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>{e.icone}</svg>
+                  </span>
+                  <p className="mt-2.5 font-[family-name:var(--font-manrope)] text-[30px] font-semibold leading-none tabular-nums tracking-[-0.02em]" style={{ color: e.cor }}>
                     <Contador alvo={l.n} atraso={450 + i * 90} />
                   </p>
-                  <p className="mt-1 text-[13px] leading-snug opacity-90">{l.texto}</p>
+                  <p className="mt-1 text-[13px] leading-snug text-[#2B3A33]">{l.texto}</p>
                 </li>
               );
             })}
