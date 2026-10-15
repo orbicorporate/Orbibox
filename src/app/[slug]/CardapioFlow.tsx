@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { precoCardapio, type CardapioSecao } from "@/lib/cardapio";
+import { precoCardapio, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 
@@ -16,7 +16,7 @@ export function CardapioFlow({
   sessionId,
   titulo,
   subtitulo,
-  pdfUrl,
+  pdfs = [],
   donoVendo = false,
   onPedir,
   onBack,
@@ -26,14 +26,16 @@ export function CardapioFlow({
   sessionId: string | null;
   titulo: string;
   subtitulo: string;
-  /** PDF do cardápio para baixar, se o dono enviou. */
-  pdfUrl?: string | null;
+  /** PDFs do cardápio para baixar, se o dono enviou (Cardápio, Bebidas...). */
+  pdfs?: CardapioPdf[];
   /** O dono olhando a própria página: mostra orientação em vez do aviso do cliente. */
   donoVendo?: boolean;
   onPedir?: () => void;
   onBack: () => void;
 }) {
   const [ativa, setAtiva] = useState<string | null>(null);
+  const temPdf = pdfs.length > 0;
+  const unico = pdfs.length === 1;
 
   useEffect(() => {
     trackClick({ businessId: business.id, kind: "cardapio", sessionId });
@@ -57,42 +59,50 @@ export function CardapioFlow({
       </div>
       <h2 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.01em]">{titulo}</h2>
       <p className="mt-1 text-[14px] text-text-secondary">{subtitulo}</p>
-      {pdfUrl && preenchidas.length > 0 && (
-        <a href={pdfUrl} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: pdfUrl })} className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="M7 11l5 5 5-5" /><path d="M5 21h14" /></svg>
-          Baixar cardápio em PDF
-        </a>
+      {temPdf && preenchidas.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {pdfs.map((p) => (
+            <a key={p.id} href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="M7 11l5 5 5-5" /><path d="M5 21h14" /></svg>
+              {unico ? "Baixar cardápio em PDF" : `Baixar ${p.nome.trim() || "PDF"}`}
+            </a>
+          ))}
+        </div>
       )}
 
       {preenchidas.length === 0 && donoVendo && (
         <div className="mt-6 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
           <p className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Só você vê este aviso</p>
           <p className="mt-1.5 text-[16px] font-semibold leading-snug">
-            {pdfUrl ? "Seu cardápio está só em PDF, e tudo bem." : "Seu cardápio ainda está vazio."}
+            {temPdf ? (unico ? "Seu cardápio está só em PDF, e tudo bem." : "Seu cardápio está só em PDFs, e tudo bem.") : "Seu cardápio ainda está vazio."}
           </p>
           <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">
-            {pdfUrl
-              ? "Seus clientes veem o botão de abrir o PDF. Se quiser mostrar os pratos também, monte a lista:"
+            {temPdf
+              ? (unico ? "Seus clientes veem o botão de abrir o PDF. Se quiser mostrar os pratos também, monte a lista:" : "Seus clientes veem um botão para cada PDF. Se quiser mostrar os pratos também, monte a lista:")
               : "Você tem dois caminhos, e pode usar só um deles:"}
           </p>
           <ul className="mt-3 flex flex-col gap-2.5 text-[13.5px] leading-snug">
             <li className="flex gap-2.5"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[11px] font-semibold">1</span><span><span className="font-medium">Montar pelos pratos.</span> Cole o texto do seu cardápio e a Orbi monta sozinha, ou inclua categorias e pratos um por um.</span></li>
-            {!pdfUrl && <li className="flex gap-2.5"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[11px] font-semibold">2</span><span><span className="font-medium">Deixar só o PDF.</span> Envie o arquivo e ele vira o cardápio, sem cadastrar nenhum prato.</span></li>}
+            {!temPdf && <li className="flex gap-2.5"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[11px] font-semibold">2</span><span><span className="font-medium">Deixar só o PDF.</span> Envie o arquivo e ele vira o cardápio, sem cadastrar nenhum prato.</span></li>}
           </ul>
           <AbrirEditor href="/admin/cardapio" rotulo="Editar cardápio" className="mt-4 inline-flex min-h-[44px] items-center rounded-full bg-on-background px-5 text-[14px] font-semibold text-white active:scale-[0.98]">
-            {pdfUrl ? "Montar pratos" : "Montar meu cardápio"}
+            {temPdf ? "Montar pratos" : "Montar meu cardápio"}
           </AbrirEditor>
         </div>
       )}
 
       {preenchidas.length === 0 && !donoVendo && (
-        pdfUrl ? (
+        temPdf ? (
           <div className="mt-6 rounded-[24px] bg-surface-white p-5 text-center ring-1 ring-black/[0.05]">
-            <p className="text-[15px] font-medium">Nosso cardápio completo está em PDF.</p>
-            <a href={pdfUrl} target="_blank" rel="noopener" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: pdfUrl })} className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="M7 11l5 5 5-5" /><path d="M5 21h14" /></svg>
-              Abrir cardápio em PDF
-            </a>
+            <p className="text-[15px] font-medium">{unico ? "Nosso cardápio completo está em PDF." : "Nossos cardápios estão em PDF."}</p>
+            <div className="mt-4 flex flex-col gap-2.5">
+              {pdfs.map((p) => (
+                <a key={p.id} href={p.url} target="_blank" rel="noopener" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="M7 11l5 5 5-5" /><path d="M5 21h14" /></svg>
+                  {unico ? "Abrir cardápio em PDF" : `Abrir ${p.nome.trim() || "PDF"}`}
+                </a>
+              ))}
+            </div>
           </div>
         ) : (
           <p className="mt-8 rounded-[22px] border border-dashed border-divider p-6 text-center text-[14px] text-text-tertiary">Em breve o cardápio estará por aqui.</p>

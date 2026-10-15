@@ -76,13 +76,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
   }
 
   return (
-    <div className="mt-6">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Pratos do cardápio</h2>
-          <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Escolha uma das duas formas abaixo.</p>
-        </div>
-      </div>
+    <div className="mt-3">
       <input ref={inputFoto} type="file" accept="image/*" className="hidden" onChange={(e) => enviarFoto(e.target.files?.[0])} />
       {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
 

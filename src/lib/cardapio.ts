@@ -49,3 +49,22 @@ export function precoCardapio(i: Pick<CardapioItem, "preco" | "aPartir">): strin
   const v = i.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   return i.aPartir ? `A partir de ${v}` : v;
 }
+
+/** Um PDF do cardápio (ex.: Cardápio, Bebidas, Sobremesas). */
+export type CardapioPdf = { id: string; nome: string; url: string };
+
+export const MAX_PDFS = 6;
+
+/** Lê os PDFs do botão. Quem só tinha o PDF único (pdf_url) continua funcionando como o primeiro da lista. */
+export function lerPdfs(config: unknown): CardapioPdf[] {
+  const c = (config ?? {}) as { pdfs?: unknown; pdf_url?: unknown };
+  if (Array.isArray(c.pdfs)) {
+    const lista = c.pdfs
+      .map((p) => p as Partial<CardapioPdf>)
+      .filter((p) => typeof p?.url === "string" && p.url)
+      .map((p, i) => ({ id: typeof p.id === "string" && p.id ? p.id : `pdf${i}`, nome: typeof p.nome === "string" ? p.nome : "", url: p.url as string }));
+    return lista;
+  }
+  if (typeof c.pdf_url === "string" && c.pdf_url) return [{ id: "principal", nome: "Cardápio", url: c.pdf_url }];
+  return [];
+}

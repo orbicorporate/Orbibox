@@ -14,7 +14,7 @@ function completar(salvos: DeliveryApp[]): DeliveryApp[] {
   return [...salvos, ...resto];
 }
 
-export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: salvos, ativo: ativoInicial, totalBoxes }: { businessId: string; boxId: string | null; config: Record<string, unknown>; apps: DeliveryApp[]; ativo: boolean; totalBoxes: number }) {
+export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: salvos, ativo: ativoInicial, totalBoxes, embutido = false }: { businessId: string; boxId: string | null; config: Record<string, unknown>; apps: DeliveryApp[]; ativo: boolean; totalBoxes: number; /** Dentro da tela de Cardápio: sem cabeçalho de página, num bloco que abre e fecha. */ embutido?: boolean }) {
   const supabase = useRef(createClient()).current;
   const [boxId, setBoxId] = useState(boxInicial);
   const [cfg, setCfg] = useState(config);
@@ -77,12 +77,8 @@ export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: sa
 
   const ligados = apps.filter((a) => a.ativo && linkDoApp(a)).length;
 
-  return (
-    <div className="flex flex-col pb-10">
-      <Link href="/admin/boxes" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Botões da home</Link>
-      <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.02em]">Delivery</h1>
-      <p className="mt-1 text-[14px] leading-snug text-text-secondary">Um botão na sua página com os apps onde seus clientes pedem. Cada um leva direto à sua loja, e cada toque aparece no Pulse.</p>
-
+  const corpo = (
+    <>
       {!boxId ? (
         <div className="mt-5 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
           <p className="text-[15px] font-medium">Ainda não há botão de delivery</p>
@@ -141,6 +137,36 @@ export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: sa
           <p className="mt-4 text-[12.5px] leading-snug text-text-tertiary">A ordem aqui é a ordem que o cliente vê. Use as setas para mudar.</p>
         </>
       )}
+    </>
+  );
+
+  if (embutido) {
+    return (
+      <details className="group rounded-[22px] bg-surface-white ring-1 ring-black/[0.06]">
+        <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-3 px-4 py-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]" aria-hidden>🛵</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold leading-snug">Delivery</span>
+            <span className="block text-[12.5px] leading-snug text-text-tertiary">
+              {!boxId ? "Ainda não ligado" : ligados === 0 ? "Nenhum app ligado" : ligados === 1 ? "1 app ligado" : `${ligados} apps ligados`}
+            </span>
+          </span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+        </summary>
+        <div className="px-4 pb-4">
+          <p className="text-[13px] leading-snug text-text-secondary">Os apps onde seus clientes pedem. Cada um leva direto à sua loja, e cada toque aparece no Pulse.</p>
+          {corpo}
+        </div>
+      </details>
+    );
+  }
+
+  return (
+    <div className="flex flex-col pb-10">
+      <Link href="/admin/boxes" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Botões da home</Link>
+      <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.02em]">Delivery</h1>
+      <p className="mt-1 text-[14px] leading-snug text-text-secondary">Um botão na sua página com os apps onde seus clientes pedem. Cada um leva direto à sua loja, e cada toque aparece no Pulse.</p>
+      {corpo}
     </div>
   );
 }
