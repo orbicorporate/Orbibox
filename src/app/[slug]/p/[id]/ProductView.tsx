@@ -210,8 +210,6 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
 
         {(() => {
           const blocos = blocosDaDescricao(item.description);
-          const noTexto = new Set(blocos.filter((x) => x.t === "li").map((x) => x.texto.toLowerCase()));
-          const diferenciais = (item.highlights ?? []).map((h) => h.trim()).filter((h) => h && !noTexto.has(h.toLowerCase()));
           return (
             <>
               {blocos.length > 0 && (
@@ -230,19 +228,6 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
                     }
                     return <p key={i} className={i > 0 ? "mt-3" : ""}>{b.texto}</p>;
                   })}
-                </div>
-              )}
-              {diferenciais.length > 0 && (
-                <div className="mt-6">
-                  <p className="text-[12.5px] font-semibold uppercase tracking-[0.1em] text-on-background">Diferenciais</p>
-                  <div className="mt-2 flex flex-col">
-                    {diferenciais.map((line, i) => (
-                      <div key={i} className={`flex items-start gap-2.5 py-3 text-[15px] leading-snug ${i > 0 ? "border-t border-divider" : ""}`}>
-                        <Check />
-                        <span className="min-w-0 flex-1 break-words">{line}</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
             </>
