@@ -1100,7 +1100,7 @@ export function ShowcaseBuilder({
       {/* Título e subtítulo que aparecem no topo da página de catálogo pro
           visitante. Em branco, usa o padrão: "[Nome], Catálogo" / "Explore
           nossas soluções." */}
-      <div className="mt-6 rounded-[24px] bg-surface-soft p-6">
+      <div id="vitrine-titulo" className="mt-6 rounded-[24px] bg-surface-soft p-6">
         <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Título da página de catálogo</p>
         <HelperText>O que o visitante vê no topo, ao abrir “O que fazemos”. Deixe em branco pra usar o padrão.</HelperText>
         <input

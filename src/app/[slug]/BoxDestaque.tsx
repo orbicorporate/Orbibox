@@ -173,7 +173,7 @@ export function BoxDestaque({
     const cartao = "v" in c && c.v ? cartaoVoucher(c.v, largo) : "b" in c && c.b ? cartaoBotao(c.b, largo) : "i" in c && c.i ? cartaoItem(c.i, largo) : null;
     if (!cartao || !podeEditar) return cartao;
     // Dono: lapisinho em cada cartão, levando direto ao lugar certo de editar.
-    const editar = "v" in c && c.v ? { href: "/admin/vouchers", rotulo: "Editar voucher" } : "b" in c && c.b ? { href: "/admin/boxes", rotulo: "Editar botão" } : "i" in c && c.i ? { href: `/admin/vitrine/pagina/${c.i.id}`, rotulo: "Editar produto" } : null;
+    const editar = "v" in c && c.v ? { href: `/admin/vouchers/${c.v.id}`, rotulo: "Editar voucher" } : "b" in c && c.b ? { href: `/admin/boxes?box=${c.b.key}#box-${c.b.key}`, rotulo: "Editar botão" } : "i" in c && c.i ? { href: `/admin/vitrine/pagina/${c.i.id}`, rotulo: "Editar produto" } : null;
     return (
       <div className={`relative ${larguraBase(largo)}`}>
         {cartao}

@@ -42,7 +42,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
       <GuiaBotao className="mt-3 self-start" />
       <ShowcaseBuilder
         abrirNovo={novo === "1"}
-        abrirCapa={abrir === "capa"}
+        abrirCapa={abrir === "capa" || abrir === "ajustes" || abrir === "novidades"}
         items={items ?? []}
         slug={business!.slug}
         businessId={business!.id}
