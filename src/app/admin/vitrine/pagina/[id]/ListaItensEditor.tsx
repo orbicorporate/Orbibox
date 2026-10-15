@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
 import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
+import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { MAX_LISTA, listaVazia, novoIdLista, precoDoItem, reduzirFoto, type Lista, type ListaDestino, type ListaItem } from "@/lib/lista";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background";
@@ -35,14 +36,32 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
   const [erro, setErro] = useState<string | null>(null);
   const [galeria, setGaleria] = useState(false);
   const [prontas, setProntas] = useState(false);
+  const [recorte, setRecorte] = useState<File | null>(null);
 
-  async function enviar(f: File | undefined) {
+  // Toda foto passa pelo recorte: o dono arrasta e aproxima dentro da forma do item (retrato).
+  function enviar(f: File | undefined) {
     if (input.current) input.current.value = "";
     if (!f) return;
     if (!f.type.startsWith("image/")) return setErro("Envie uma foto (JPG ou PNG).");
     setErro(null);
+    setRecorte(f);
+  }
+
+  async function ajustarAtual(url: string) {
+    setErro(null);
+    try {
+      const r = await fetch(url);
+      const b = await r.blob();
+      setRecorte(new File([b], "foto.jpg", { type: b.type || "image/jpeg" }));
+    } catch {
+      setErro("Não consegui abrir a foto para ajustar. Envie de novo.");
+    }
+  }
+
+  async function subirRecortada(cortada: Blob) {
+    setRecorte(null);
     setSubindo(true);
-    const blob = await reduzirFoto(f);
+    const blob = await reduzirFoto(new File([cortada], "item.jpg", { type: cortada.type || "image/jpeg" }));
     const path = `${businessId}/lista-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.jpg`;
     const { error } = await supabase.storage.from("box-images").upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: blob.type || "image/jpeg" });
     setSubindo(false);
@@ -67,7 +86,7 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
         <input ref={input} type="file" accept="image/*" className="hidden" onChange={(e) => enviar(e.target.files?.[0])} />
 
         <div className="mt-4 flex items-center gap-3">
-          <button type="button" onClick={() => input.current?.click()} disabled={subindo} aria-label={foto ? "Trocar foto" : "Adicionar foto"} className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-surface-soft text-text-tertiary active:scale-[0.98]">
+          <button type="button" onClick={() => input.current?.click()} disabled={subindo} aria-label={foto ? "Trocar foto" : "Adicionar foto"} className="flex h-[100px] w-20 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-surface-soft text-text-tertiary active:scale-[0.98]">
             {foto ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={foto} alt="" className="h-full w-full object-cover" />
@@ -78,9 +97,10 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
           <div className="min-w-0 flex-1">
             <p className="text-[13.5px] font-medium">{subindo ? "Enviando…" : foto ? "Foto do item" : "Foto (opcional)"}</p>
             <div className="mt-1.5 flex flex-wrap gap-2">
-              <button type="button" onClick={() => setGaleria(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-on-background px-3.5 text-[13px] font-medium text-white">Banco de imagens</button>
-              <button type="button" onClick={() => setProntas(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Fotos prontas</button>
+              <button type="button" onClick={() => setGaleria(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-on-background px-3.5 text-[13px] font-medium text-white">Suas fotos</button>
+              <button type="button" onClick={() => setProntas(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Banco externo</button>
               <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Enviar</button>
+              {foto && <button type="button" onClick={() => ajustarAtual(foto)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Ajustar</button>}
               {foto && <button type="button" onClick={() => setFoto(null)} className="min-h-[36px] rounded-full px-3 text-[13px] font-medium text-text-secondary">Tirar</button>}
             </div>
           </div>
@@ -110,7 +130,8 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
           <button type="button" onClick={salvar} disabled={!nome.trim() || subindo} className="min-h-[48px] flex-1 rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">{novo ? "Adicionar item" : "Salvar"}</button>
         </div>
       </div>
-      {galeria && <MinhaGaleriaPicker businessId={businessId} atual={foto} onFechar={() => setGaleria(false)} onEscolher={(url) => { setGaleria(false); setFoto(url); }} />}
+      {recorte && <ImageCropModal file={recorte} lockedRatio="retrato" lockedReason="A foto do item aparece no formato retrato. Arraste e aproxime para enquadrar." onCancel={() => setRecorte(null)} onConfirm={(blob) => subirRecortada(blob)} />}
+      {galeria && <MinhaGaleriaPicker businessId={businessId} atual={foto} onFechar={() => setGaleria(false)} onEscolher={(url) => { setGaleria(false); ajustarAtual(url); }} />}
       {prontas && <FotoProntaPicker businessId={businessId} assunto={nome} formato="retrato" onFechar={() => setProntas(false)} onEscolher={(f) => { setProntas(false); enviar(f); }} />}
     </div>,
     document.body,
