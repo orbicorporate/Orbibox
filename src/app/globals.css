@@ -1164,3 +1164,23 @@ html[data-embed] .sistema-vidro { max-width: none; padding-left: 0; }
 html[data-embed] .embed-save { top: 4px; }
 html[data-embed] main { padding-bottom: 4rem; }
 html[data-embed] [data-embed-oculto="1"] { display: none !important; }
+
+/* Plano Nióbio: borda que gira, brilho que respira, varredura de luz, estrelas e itens que entram em fila. */
+@property --ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes niobioGira { to { --ang: 360deg; } }
+@keyframes niobioVarre { 0%, 55% { transform: translateX(-130%) skewX(-18deg); } 100% { transform: translateX(330%) skewX(-18deg); } }
+@keyframes niobioPisca { 0%, 100% { opacity: 0.15; transform: scale(0.7) rotate(0deg); } 50% { opacity: 1; transform: scale(1.15) rotate(25deg); } }
+@keyframes niobioItem { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes niobioRespira { 0%, 100% { opacity: 0.28; } 50% { opacity: 0.5; } }
+.niobio-wrap { position: relative; isolation: isolate; }
+.niobio-wrap::before { content: ""; position: absolute; inset: -12px; z-index: -1; border-radius: 40px; background: conic-gradient(from var(--ang), #B7F34A, #6EE7D8, #A78BFA, #7DB4FF, #B7F34A); filter: blur(26px); animation: niobioGira 7s linear infinite, niobioRespira 3.6s ease-in-out infinite; }
+.niobio-borda { background: conic-gradient(from var(--ang), #B7F34A, #6EE7D8, #A78BFA, #7DB4FF, #B7F34A); animation: niobioGira 7s linear infinite; }
+.niobio-corpo { background-image: linear-gradient(160deg, rgba(255,255,255,0.96), rgba(240,255,248,0.9) 55%, rgba(244,240,255,0.92)); }
+.niobio-varre { position: absolute; top: 0; bottom: 0; left: 0; width: 38%; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent); animation: niobioVarre 5.5s ease-in-out infinite; }
+.niobio-estrela { position: absolute; font-size: 13px; line-height: 1; color: #6EC5D6; pointer-events: none; animation: niobioPisca 2.8s ease-in-out infinite; }
+.niobio-item { animation: niobioItem 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards; animation-delay: calc(var(--i) * 80ms + 250ms); }
+.btn-brilho::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent); animation: niobioVarre 4s ease-in-out infinite 1s; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .niobio-wrap::before, .niobio-borda, .niobio-varre, .niobio-estrela, .niobio-item, .btn-brilho::after { animation: none !important; }
+  .niobio-estrela { opacity: 0.6; }
+}

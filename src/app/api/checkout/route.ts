@@ -66,11 +66,26 @@ export async function POST(req: NextRequest) {
     const diasBase = restanteSemCartao != null ? Math.max(0, restanteSemCartao) : alreadyUsedTrial ? 0 : indicado ? DIAS_TESTE_INDICADO : DIAS_TESTE;
     const diasTeste = diasBase + 30 * (banco?.meses ?? 0);
 
+    // Fim do teste sem assinar: 15% no primeiro ano do plano anual, nos dois planos.
+    // O cupom é criado no Stripe na primeira vez que alguém usa.
+    const fimDoTeste = !existing?.stripe_subscription_id && !!existing?.trial_ends_at && new Date(existing.trial_ends_at).getTime() < Date.now();
+    let cupom: string | null = null;
+    if (billingCycle === "yearly" && fimDoTeste) {
+      const idCupom = "fim-do-teste-15";
+      try {
+        await stripe.coupons.retrieve(idCupom);
+      } catch {
+        await stripe.coupons.create({ id: idCupom, percent_off: 15, duration: "once", name: "Fim do teste, 15% no 1º ano" });
+      }
+      cupom = idCupom;
+    }
+
     const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://orbibox-orbi-app.vercel.app";
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
+      ...(cupom ? { discounts: [{ coupon: cupom }] } : {}),
       customer: existing?.stripe_customer_id ?? undefined,
       customer_email: existing?.stripe_customer_id ? undefined : user.email ?? undefined,
       client_reference_id: user.id,
