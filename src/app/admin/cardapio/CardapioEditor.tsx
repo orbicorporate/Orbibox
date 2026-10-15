@@ -9,7 +9,7 @@ import { PdfCardapio } from "./PdfCardapio";
 import { PratosEditor } from "./PratosEditor";
 import { GuiaPrato } from "./GuiaPrato";
 import type { Json } from "@/lib/supabase/types";
-import { lerSecoes, novoId, totalItens, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
+import { lerPdfs, lerSecoes, novoId, totalItens, type CardapioItem, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
 
 export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: ativoInicial, totalBoxes, slug }: { businessId: string; boxId: string | null; config: Record<string, unknown>; ativo: boolean; totalBoxes: number; slug: string }) {
   const supabase = useRef(createClient()).current;
@@ -65,9 +65,10 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     else mudarSecoes([...secoes, { id: novoId(), nome: categoria.trim(), itens: [item] }]);
   }
 
-  async function trocarPdf(url: string) {
+  async function trocarPdfs(pdfs: CardapioPdf[]) {
     if (!boxId) return;
-    const novo = { ...cfgRef.current, pdf_url: url || null };
+    // pdf_url guarda o primeiro, pra tudo que ainda lê o PDF único continuar funcionando.
+    const novo = { ...cfgRef.current, pdfs, pdf_url: pdfs[0]?.url ?? null } as Record<string, Json>;
     const res = await supabase.from("smart_boxes").update({ config: novo }).eq("id", boxId);
     if (conferirSalvo(res)) { setCfg(novo); cfgRef.current = novo; }
   }
@@ -105,7 +106,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
             )}
           </PratosEditor>
 
-          <details className="group mt-2" open={!!cfg.pdf_url || !secoes.some((x) => x.itens.some((i) => i.nome.trim()))}>
+          <details className="group mt-2" open={lerPdfs(cfg).length > 0 || !secoes.some((x) => x.itens.some((i) => i.nome.trim()))}>
             <summary className="mt-3 flex min-h-[44px] cursor-pointer list-none items-center justify-between rounded-[22px] bg-surface-white px-4 text-[14px] font-medium ring-1 ring-black/[0.06]">
               <span>
                 Prefere só o PDF? Envie aqui
@@ -113,7 +114,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
               </span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
             </summary>
-            <PdfCardapio businessId={businessId} url={(cfg.pdf_url as string) || ""} onChange={trocarPdf} />
+            <PdfCardapio businessId={businessId} pdfs={lerPdfs(cfg)} onChange={trocarPdfs} />
           </details>
 
           <section className="mt-8" aria-label="Texto do botão">
