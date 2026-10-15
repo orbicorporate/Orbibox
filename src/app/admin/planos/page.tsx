@@ -94,30 +94,35 @@ export default async function PlanosPage({
       {/* Medidor de uso da IA no mês */}
       {u && (u.conteudo_limite > 0 || u.chat_limite > 0) && (
         <div className="mt-5 rounded-[22px] border border-divider bg-surface-white p-5">
-          <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Uso da Orbi este mês</p>
-          <p className="mt-1 text-[12px] text-text-tertiary">Renova todo dia 1º.</p>
-          {u.conteudo_limite > 0 && (
-            <div className="mt-4">
-              <div className="flex items-center justify-between text-[13px]">
-                <span className="font-medium">Textos gerados (legenda, story, WhatsApp)</span>
-                <span className="text-text-secondary">{u.conteudo_usado} de {u.conteudo_limite}</span>
+          <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold">Sua Orbi neste mês</p>
+          <p className="mt-0.5 text-[12.5px] text-text-tertiary">O que ainda dá pra usar no seu plano. Zera no dia 1º de cada mês.</p>
+          {[
+            u.conteudo_limite > 0 && { chave: "textos", titulo: "Textos que a Orbi escreve", sub: "Legendas, stories e mensagens de WhatsApp", usado: u.conteudo_usado, limite: u.conteudo_limite },
+            u.chat_limite > 0 && { chave: "chat", titulo: "Conversas com seus visitantes", sub: "Quando alguém fala com a Orbi no seu link", usado: u.chat_usado, limite: u.chat_limite },
+          ].map((l) => {
+            if (!l) return null;
+            const restam = Math.max(0, l.limite - l.usado);
+            const pct = Math.min(100, (l.usado / l.limite) * 100);
+            const quase = pct >= 80;
+            return (
+              <div key={l.chave} className="mt-5">
+                <div className="flex items-end justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[14.5px] font-medium leading-tight">{l.titulo}</p>
+                    <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">{l.sub}</p>
+                  </div>
+                  <p className="shrink-0 text-right leading-none">
+                    <span className={`block font-[family-name:var(--font-manrope)] text-[26px] font-semibold tabular-nums ${quase ? "text-[#B45309]" : ""}`}>{restam}</span>
+                    <span className="mt-1 block text-[11.5px] text-text-tertiary">{restam === 1 ? "disponível" : "disponíveis"}</span>
+                  </p>
+                </div>
+                <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-black/[0.07]">
+                  <div className={`h-full rounded-full ${quase ? "bg-[#F59E0B]" : "orbi-gradient"}`} style={{ width: `${l.usado > 0 ? Math.max(4, pct) : 0}%` }} />
+                </div>
+                <p className="mt-1.5 text-[12px] text-text-tertiary">{l.usado} de {l.limite} usados</p>
               </div>
-              <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-surface-soft">
-                <div className="h-full rounded-full orbi-gradient" style={{ width: `${Math.min(100, (u.conteudo_usado / u.conteudo_limite) * 100)}%` }} />
-              </div>
-            </div>
-          )}
-          {u.chat_limite > 0 && (
-            <div className="mt-4">
-              <div className="flex items-center justify-between text-[13px]">
-                <span className="font-medium">Conversas da Orbi com visitantes</span>
-                <span className="text-text-secondary">{u.chat_usado} de {u.chat_limite}</span>
-              </div>
-              <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-surface-soft">
-                <div className="h-full rounded-full orbi-gradient" style={{ width: `${Math.min(100, (u.chat_usado / u.chat_limite) * 100)}%` }} />
-              </div>
-            </div>
-          )}
+            );
+          })}
         </div>
       )}
 
