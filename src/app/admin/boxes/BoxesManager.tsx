@@ -203,6 +203,7 @@ export function BoxesManager({
   // ?box=<id> (vindo de outra tela, ex: painel de vouchers) já abre esse box
   // em modo de edição e rola até ele.
   const [reordenando, setReordenando] = useState(false);
+  const [grupoAberto, setGrupoAberto] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(
     () => (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("box") : null),
   );
@@ -509,6 +510,64 @@ export function BoxesManager({
           const isHero = false;
           const isCustom = box.box_type === "custom";
           const cfg = box.config as BoxConfig | null;
+          // Cardápio e Delivery viram um quadrado só no painel (na página do visitante seguem separados).
+          const bCardapio = visibleBoxes.find((b) => (b.config as BoxConfig | null)?.action === "cardapio");
+          const bDelivery = visibleBoxes.find((b) => (b.config as BoxConfig | null)?.action === "delivery");
+          if (bCardapio && bDelivery) {
+            if (box.id === bDelivery.id) return null;
+            if (box.id === bCardapio.id) {
+              const linhas = [
+                { b: bCardapio, nome: "Cardápio", href: "/admin/cardapio", sub: "Pratos por categoria, com foto" },
+                { b: bDelivery, nome: "Delivery", href: "/admin/delivery", sub: "iFood, Rappi, 99Food e mais" },
+              ];
+              return (
+                <div key="grupo-cardapio-delivery" className={`relative overflow-hidden rounded-[22px] border border-divider bg-surface-white p-3.5 ${grupoAberto ? "col-span-2" : ""}`}>
+                  <button type="button" onClick={() => setGrupoAberto((v) => !v)} aria-expanded={grupoAberto} className="flex w-full cursor-pointer flex-col gap-2.5 text-left">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-surface-soft text-on-background">
+                      <IconeBotao icone={(bCardapio.config as BoxConfig | null)?.icon || "🍴"} size={22} />
+                    </span>
+                    <span className="block">
+                      <span className="block text-[15px] font-semibold leading-snug">Cardápio e delivery</span>
+                      <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">
+                        {linhas.map((l) => `${l.nome} ${l.b.is_active ? "ligado" : "desligado"}`).join(" · ")}
+                      </span>
+                    </span>
+                  </button>
+                  {grupoAberto && (
+                    <div className="mt-3 flex flex-col gap-2">
+                      {linhas.map((l) => (
+                        <div key={l.b.id} className={`flex items-center gap-3 rounded-2xl bg-surface-soft p-3 ${l.b.is_active ? "" : "opacity-70"}`}>
+                          <Link href={l.href} className="min-w-0 flex-1">
+                            <span className="block text-[14.5px] font-semibold">{l.nome}</span>
+                            <span className="block text-[12px] text-text-secondary">{l.sub}</span>
+                            <span className="mt-1 inline-block text-[12.5px] font-medium underline underline-offset-2">Configurar →</span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => toggleActive(l.b)}
+                            className={`h-6 w-11 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors ${l.b.is_active ? "orbi-gradient" : "bg-divider"}`}
+                            aria-label={l.b.is_active ? `Desativar ${l.nome}` : `Ativar ${l.nome}`}
+                          >
+                            <span className={`block h-5 w-5 rounded-full bg-surface-white shadow transition-transform ${l.b.is_active ? "translate-x-5" : ""}`} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {reordenando && (
+                    <div className="mt-3 flex gap-2">
+                      <button type="button" onClick={() => move(box, -1)} disabled={idx === 0} aria-label="Mover pra trás" className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 18l-6-6 6-6" /></svg>
+                      </button>
+                      <button type="button" onClick={() => move(box, 1)} disabled={idx === visibleBoxes.length - 1} aria-label="Mover pra frente" className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 18l6-6-6-6" /></svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+          }
           const mBase = META[box.box_type] ?? { name: cfg?.label || box.title || "Botão livre", explica: (cfg?.action && CUSTOM_EXPLICA[cfg.action]) || CUSTOM_EXPLICA_GENERICA, icon: cfg?.icon || "◆" };
           // "Presentear" é a porta do Gift Card: com ele ativo, abre o
           // vale-presente; sem ele, mostra a vitrine pra quem vai presentear.
