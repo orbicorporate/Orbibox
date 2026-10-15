@@ -100,7 +100,6 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const [descricao, setDescricao] = useState(item.description ?? "");
   const [rotulo, setRotulo] = useState(item.brand_label ?? "");
   const [lista, setLista] = useState<Lista | null>(() => lerLista(item.lista));
-  const [diferenciais, setDiferenciais] = useState<string[]>(item.highlights ?? []);
   const [pergunta, setPergunta] = useState(item.orbi_hook ?? "");
   const [midias, setMidias] = useState<string[]>(item.gallery_urls ?? []);
   const arrastoFotos = useArrastarOrdem(midias, true, (nova) => {
@@ -141,11 +140,6 @@ export function ProductPageEditor({ business, item }: { business: Business; item
     setEstado("salvando");
     const { error } = await supabase.from("content_items").update(campos).eq("id", item.id);
     setEstado(error ? "erro" : "salvo");
-  }
-
-  function salvarDiferenciais(lista: string[]) {
-    const limpa = lista.map((d) => d.trim()).filter(Boolean);
-    salvar({ highlights: limpa.length ? limpa : null });
   }
 
   function salvarLista(l: Lista | null) {
@@ -220,11 +214,9 @@ export function ProductPageEditor({ business, item }: { business: Business; item
         body: JSON.stringify({ contentItemId: item.id }),
       });
       if (res.ok) {
-        const { highlights, orbiHook } = await res.json();
-        const lista: string[] = Array.isArray(highlights) ? highlights : [];
-        setDiferenciais(lista);
+        const { orbiHook } = await res.json();
         setPergunta(orbiHook ?? "");
-        await salvar({ highlights: lista.length ? lista : null, orbi_hook: orbiHook || null });
+        await salvar({ orbi_hook: orbiHook || null });
       }
     } finally {
       setSugerindo(false);
@@ -532,10 +524,15 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             className={`${EDITAVEL} -mx-1 mt-4 w-[calc(100%+8px)] resize-none px-2 py-1.5 text-[15px] leading-relaxed text-text-secondary`}
           />
 
-          {/* Diferenciais */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Diferenciais</p>
+          <ListaItensEditor businessId={business.id} lista={lista} temWhatsapp={!!business.contact_whatsapp} onChange={salvarLista} />
+
+          {/* Pergunta pronta pra Orbi */}
+          <div className="mt-5 rounded-2xl border border-dashed border-on-background/15 bg-surface-soft px-4 py-3.5">
+            <span className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-[12px] font-medium text-text-tertiary">
+                <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
+                Pergunte à Orbi, IA da {business.name}
+              </span>
               <button
                 onClick={sugerir}
                 disabled={sugerindo}
@@ -543,57 +540,6 @@ export function ProductPageEditor({ business, item }: { business: Business; item
               >
                 {sugerindo ? <OrbiWorking label="Pensando…" variant="inline" /> : "✦ Orbi sugere"}
               </button>
-            </div>
-            <div className="mt-2 flex flex-col gap-1.5">
-              {diferenciais.map((d, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <span className="orbi-gradient mt-2.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px]">✓</span>
-                  <textarea
-                    value={d}
-                    ref={crescer}
-                    rows={1}
-                    autoFocus={!d}
-                    onChange={(e) => {
-                      crescer(e.target);
-                      setDiferenciais((l) => l.map((x, k) => (k === i ? e.target.value : x)));
-                    }}
-                    onBlur={() => salvarDiferenciais(diferenciais)}
-                    placeholder="ex: 18 anos de experiência"
-                    maxLength={90}
-                    className={`${EDITAVEL} min-w-0 flex-1 resize-none px-2 py-1.5 text-[14.5px] leading-snug`}
-                  />
-                  <button
-                    onClick={() => {
-                      const nova = diferenciais.filter((_, k) => k !== i);
-                      setDiferenciais(nova);
-                      salvarDiferenciais(nova);
-                    }}
-                    className="mt-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] text-text-tertiary hover:bg-surface-soft"
-                    aria-label="Remover diferencial"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              {diferenciais.length < 6 && (
-                <button
-                  onClick={() => setDiferenciais((l) => [...l, ""])}
-                  className="mt-1 flex items-center gap-2.5 rounded-xl border border-dashed border-on-background/15 px-2 py-2.5 text-left text-[14px] text-text-tertiary hover:border-on-background/30"
-                >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-on-background text-[12px] leading-none text-white">+</span>
-                  Adicionar diferencial
-                </button>
-              )}
-            </div>
-          </div>
-
-          <ListaItensEditor businessId={business.id} lista={lista} temWhatsapp={!!business.contact_whatsapp} onChange={salvarLista} />
-
-          {/* Pergunta pronta pra Orbi */}
-          <div className="mt-5 rounded-2xl border border-dashed border-on-background/15 bg-surface-soft px-4 py-3.5">
-            <span className="flex items-center gap-1.5 text-[12px] font-medium text-text-tertiary">
-              <span className="h-1.5 w-1.5 rounded-full bg-orbi-gradient-start" />
-              Pergunte à Orbi, IA da {business.name}
             </span>
             <textarea
               value={pergunta}
