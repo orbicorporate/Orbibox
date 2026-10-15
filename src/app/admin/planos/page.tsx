@@ -92,7 +92,8 @@ export default async function PlanosPage({
       </Link>
 
       {/* Medidor de uso da IA no mês */}
-      {u && (u.conteudo_limite > 0 || u.chat_limite > 0) && (
+      {/* Só aparece com plano ou teste valendo: depois que o teste acaba, números "disponíveis" confundem com a oferta de assinar. */}
+      {access.isActive && u && (u.conteudo_limite > 0 || u.chat_limite > 0) && (
         <div className="mt-5 rounded-[22px] border border-divider bg-surface-white p-5">
           <p className="font-[family-name:var(--font-manrope)] text-[17px] font-semibold">Sua Orbi neste mês</p>
           <p className="mt-0.5 text-[12.5px] text-text-tertiary">O que ainda dá pra usar no seu plano. Zera no dia 1º de cada mês.</p>
