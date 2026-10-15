@@ -97,7 +97,7 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
           <div className="min-w-0 flex-1">
             <p className="text-[13.5px] font-medium">{subindo ? "Enviando…" : foto ? "Foto do item" : "Foto (opcional)"}</p>
             <div className="mt-1.5 flex flex-wrap gap-2">
-              <button type="button" onClick={() => setGaleria(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-on-background px-3.5 text-[13px] font-medium text-white">Banco de imagens</button>
+              <button type="button" onClick={() => setGaleria(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-on-background px-3.5 text-[13px] font-medium text-white">Suas fotos</button>
               <button type="button" onClick={() => setProntas(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Banco externo</button>
               <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Enviar</button>
               {foto && <button type="button" onClick={() => ajustarAtual(foto)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Ajustar</button>}
