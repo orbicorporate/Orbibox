@@ -115,7 +115,7 @@ export function CuradoriaOrbi({
         {/* Pergunta da Orbi, em balão de conversa. */}
         <div className="flex items-end gap-2">
           <OrbiParticleSphere size={28} colors={orbiColors ?? undefined} vivid className="shrink-0 rounded-full" />
-          <div className="relative max-w-[88%] rounded-2xl rounded-bl-md bg-surface-white px-3.5 py-2.5 shadow-[0_2px_10px_rgba(17,19,24,0.06)]">
+          <div className="relative max-w-[88%] rounded-2xl rounded-bl-md bg-white/45 backdrop-blur-md ring-1 ring-white/70 px-3.5 py-2.5 shadow-[0_2px_10px_rgba(17,19,24,0.06)]">
             {loadingQ ? (
               <p className="text-[14px] text-text-tertiary">Pensando numa pergunta pra você…</p>
             ) : (
@@ -143,7 +143,7 @@ export function CuradoriaOrbi({
               <button
                 key={o}
                 onClick={() => escolher(o)}
-                className="cursor-pointer rounded-full border border-divider bg-surface-white px-3.5 py-1.5 text-[13px] font-medium transition-colors hover:border-on-background"
+                className="cursor-pointer rounded-full border border-white/70 bg-white/45 backdrop-blur-md px-3.5 py-1.5 text-[13px] font-medium transition-colors hover:border-on-background"
               >
                 {o}
               </button>
@@ -160,14 +160,14 @@ export function CuradoriaOrbi({
             {curating ? (
               <div className="flex items-end gap-2">
                 <OrbiParticleSphere size={28} colors={orbiColors ?? undefined} vivid className="shrink-0 rounded-full" />
-                <p className="rounded-2xl rounded-bl-md bg-surface-white px-3.5 py-2.5 text-[13.5px] text-text-tertiary shadow-[0_2px_10px_rgba(17,19,24,0.06)]">Separando as melhores pra você…</p>
+                <p className="rounded-2xl rounded-bl-md bg-white/45 backdrop-blur-md ring-1 ring-white/70 px-3.5 py-2.5 text-[13.5px] text-text-tertiary shadow-[0_2px_10px_rgba(17,19,24,0.06)]">Separando as melhores pra você…</p>
               </div>
             ) : (
               <>
                 {frase && (
                   <div className="flex items-end gap-2">
                     <OrbiParticleSphere size={28} colors={orbiColors ?? undefined} vivid className="shrink-0 rounded-full" />
-                    <button onClick={() => setExpanded(true)} className="max-w-[88%] cursor-pointer rounded-2xl rounded-bl-md bg-surface-white px-3.5 py-2.5 text-left shadow-[0_2px_10px_rgba(17,19,24,0.06)]">
+                    <button onClick={() => setExpanded(true)} className="max-w-[88%] cursor-pointer rounded-2xl rounded-bl-md bg-white/45 backdrop-blur-md ring-1 ring-white/70 px-3.5 py-2.5 text-left shadow-[0_2px_10px_rgba(17,19,24,0.06)]">
                       <span className="line-clamp-3 text-[14px] leading-snug">{frase}</span>
                     </button>
                   </div>
@@ -178,7 +178,7 @@ export function CuradoriaOrbi({
                       <a
                         key={p.id}
                         href={`/${slug}/p/${p.id}`}
-                        className="flex items-center gap-3 rounded-2xl bg-surface-white p-2 shadow-[0_2px_10px_rgba(17,19,24,0.05)]"
+                        className="flex items-center gap-3 rounded-2xl bg-white/45 backdrop-blur-md ring-1 ring-white/70 p-2 shadow-[0_2px_10px_rgba(17,19,24,0.05)]"
                       >
                         {p.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
