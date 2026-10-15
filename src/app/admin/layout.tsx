@@ -15,6 +15,7 @@ import { getCurrentBusinessId, listMyBusinesses } from "@/lib/business";
 import { AbrirInternoNoApp } from "@/components/AbrirInternoNoApp";
 import { AvisoSalvarHost, BotaoSalvar } from "@/components/ui/AvisoSalvar";
 import { VerComoFicou } from "@/components/ui/VerComoFicou";
+import { BarraSalvar } from "@/components/ui/BarraSalvar";
 import { EmbedMarker } from "@/components/mobile/EmbedMarker";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -134,12 +135,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
       <main className="admin-zoom mx-auto w-full flex-1 px-6 pb-32 pt-5 lg:max-w-[960px] lg:px-10 lg:pb-16">
         {/* Botão salvar discreto, sempre à vista logo abaixo do topo. */}
-        <div className="embed-save pointer-events-none sticky top-[84px] z-20 mb-3 h-10">
-          <div className="pointer-events-none relative flex h-full items-center justify-end gap-2">
-            <span className="pointer-events-auto"><VerComoFicou slug={business.slug} /></span>
-            <BotaoSalvar className="pointer-events-auto" />
-          </div>
-        </div>
+        <BarraSalvar>
+          <span className="pointer-events-auto"><VerComoFicou slug={business.slug} /></span>
+          <BotaoSalvar className="pointer-events-auto" />
+        </BarraSalvar>
         {children}
       </main>
       <AvisoSalvarHost />
