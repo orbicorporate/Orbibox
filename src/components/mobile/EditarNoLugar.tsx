@@ -11,7 +11,8 @@ import { useRouter } from "next/navigation";
  */
 function urlEmbutida(href: string) {
   const [caminho, ancora] = href.split("#");
-  return `${caminho}${caminho.includes("?") ? "&" : "?"}embed=1${ancora ? `#${ancora}` : ""}`;
+  // foco=<id>: o painel mostra só aquela parte da tela (o banner, o título...).
+  return `${caminho}${caminho.includes("?") ? "&" : "?"}embed=1${ancora ? `&foco=${ancora}#${ancora}` : ""}`;
 }
 
 function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string; onFechar: () => void }) {

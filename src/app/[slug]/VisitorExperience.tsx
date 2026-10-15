@@ -1470,7 +1470,7 @@ export function VisitorExperience({
                   {intent === "presentear" ? "Seleções que fazem sentido para dar de presente" : (business.catalog_subtitle || "Explore nossas soluções.")}
                 </p>
               </div>
-              {showOwnerControls && intent === "comprar" && <LapisDono href="/admin/vitrine#vitrine-ajustes" rotulo="Editar título e texto" />}
+              {showOwnerControls && intent === "comprar" && <LapisDono href="/admin/vitrine?abrir=ajustes#vitrine-titulo" rotulo="Editar título e texto" />}
             </div>
 
             {/* Faixa de "receber novidades" no topo, só se o dono ligou. */}
@@ -1485,7 +1485,7 @@ export function VisitorExperience({
                   variant="compact"
                   className="mt-4"
                 />
-                {showOwnerControls && <LapisDono href="/admin/vitrine#vitrine-novidades" rotulo="Editar faixa de novidades" className="absolute -right-1 -top-1" />}
+                {showOwnerControls && <LapisDono href="/admin/vitrine?abrir=novidades#vitrine-novidades" rotulo="Editar faixa de novidades" className="absolute -right-1 -top-1" />}
               </div>
             )}
 
@@ -2763,14 +2763,14 @@ function VitrineCoverBleed({ business, podeEditar = false }: { business: Busines
   if (covers.length === 0) {
     return podeEditar ? (
       <div className="mt-2 flex justify-start">
-        <AbrirEditor href="/admin/vitrine#vitrine-capa" rotulo="Editar banner" className="rounded-full border border-dashed border-on-background/25 px-4 py-2 text-[13px] font-medium text-text-secondary">+ Adicionar banner</AbrirEditor>
+        <AbrirEditor href="/admin/vitrine?abrir=capa#vitrine-capa" rotulo="Editar banner" className="rounded-full border border-dashed border-on-background/25 px-4 py-2 text-[13px] font-medium text-text-secondary">+ Adicionar banner</AbrirEditor>
       </div>
     ) : null;
   }
 
   return (
     <div className="relative -mx-6 -mt-16">
-      {podeEditar && <LapisDono href="/admin/vitrine#vitrine-capa" rotulo="Editar banner" className="absolute bottom-6 right-4 z-10" />}
+      {podeEditar && <LapisDono href="/admin/vitrine?abrir=capa#vitrine-capa" rotulo="Editar banner" className="absolute bottom-6 right-4 z-10" />}
       <div
         ref={trackRef}
         className="flex snap-x snap-mandatory gap-0 overflow-x-auto no-scrollbar rounded-b-[28px]"

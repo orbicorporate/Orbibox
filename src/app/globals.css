@@ -1163,3 +1163,4 @@ html[data-embed] .admin-chrome { display: none !important; }
 html[data-embed] .sistema-vidro { max-width: none; padding-left: 0; }
 html[data-embed] .embed-save { top: 4px; }
 html[data-embed] main { padding-bottom: 4rem; }
+html[data-embed] [data-embed-oculto="1"] { display: none !important; }
