@@ -274,11 +274,11 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
 export function ListaItensEditor({ businessId, lista, temWhatsapp, onChange }: { businessId: string; lista: Lista | null; temWhatsapp: boolean; onChange: (l: Lista | null) => void }) {
   if (!lista) {
     return (
-      <button type="button" onClick={() => onChange(listaVazia())} className="mt-6 flex w-full items-start gap-3 rounded-[22px] border border-dashed border-on-background/20 p-4 text-left active:scale-[0.99]">
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-background text-[14px] leading-none text-white" aria-hidden>+</span>
-        <span>
-          <span className="block text-[14.5px] font-medium">Adicionar lista de itens</span>
-          <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">Opcional. Mostra vários itens em boxes com foto e preço, como uma lojinha.</span>
+      <button type="button" onClick={() => onChange(listaVazia())} className="mt-7 flex w-full items-center gap-3.5 rounded-[26px] bg-on-background p-4 text-left text-white shadow-[0_8px_22px_rgba(17,19,24,0.22)] active:scale-[0.99]">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[22px] font-light leading-none text-on-background" aria-hidden>+</span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[16px] font-semibold">Adicionar itens</span>
+          <span className="mt-0.5 block text-[12.5px] leading-snug text-white/70">Mostre vários itens com foto, nome e preço, como uma lojinha.</span>
         </span>
       </button>
     );

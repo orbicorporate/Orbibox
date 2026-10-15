@@ -46,11 +46,6 @@ type Item = {
 const EYEBROW_LABEL: Record<string, string> = { product: "Produtos", service: "Serviços" };
 const MAX_MIDIAS = 6;
 
-// Contorno tracejado discreto: deixa claro que dá pra tocar e editar, sem
-// deixar a página com cara de formulário.
-const EDITAVEL =
-  "rounded-xl border border-dashed border-on-background/15 bg-transparent outline-none transition-colors hover:border-on-background/30 focus:border-on-background/40 focus:bg-white";
-
 const noop = () => () => {};
 
 type Campos = Partial<{
@@ -489,14 +484,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
         </div>
 
         <div className="px-5 pt-6">
-          <input
-            value={rotulo}
-            onChange={(e) => setRotulo(e.target.value)}
-            onBlur={() => salvar({ brand_label: rotulo.trim() || null })}
-            placeholder={EYEBROW_LABEL[item.type] ?? "Categoria (opcional)"}
-            maxLength={80}
-            className={`${EDITAVEL} -mx-1 w-[calc(100%+8px)] px-2 py-1 text-[13px] font-medium uppercase tracking-wide text-text-tertiary placeholder:text-text-tertiary/60`}
-          />
+          <p className="text-[13px] font-semibold text-text-secondary">Título</p>
           <textarea
             value={titulo}
             ref={crescer}
@@ -504,15 +492,16 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             onChange={(e) => { setTitulo(e.target.value); crescer(e.target); }}
             onBlur={() => titulo.trim() && salvar({ title: titulo.trim() })}
             maxLength={200}
-            className={`${EDITAVEL} -mx-1 mt-1.5 w-[calc(100%+8px)] resize-none px-2 py-1 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight`}
+            className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight outline-none focus:border-on-background"
           />
           {preco && (
-            <p className="mt-2 px-1 font-[family-name:var(--font-manrope)] text-[20px] font-medium">
+            <p className="mt-2 px-1 font-[family-name:var(--font-manrope)] text-[18px] font-medium">
               {preco}
-              <span className="ml-2 align-middle text-[11.5px] font-normal text-text-tertiary">preço se edita no card</span>
+              <span className="ml-2 align-middle text-[11.5px] font-normal text-text-tertiary">o preço se edita no card</span>
             </p>
           )}
 
+          <p className="mt-5 text-[13px] font-semibold text-text-secondary">Fale mais</p>
           <textarea
             value={descricao}
             ref={crescer}
@@ -521,7 +510,17 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             onBlur={() => salvar({ description: descricao.trim() || null })}
             placeholder="Conte o que é, pra quem é e o que inclui."
             maxLength={1500}
-            className={`${EDITAVEL} -mx-1 mt-4 w-[calc(100%+8px)] resize-none px-2 py-1.5 text-[15px] leading-relaxed text-text-secondary`}
+            className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] leading-relaxed outline-none focus:border-on-background"
+          />
+
+          <p className="mt-5 text-[13px] font-semibold text-text-secondary">Categoria <span className="font-normal text-text-tertiary">(opcional)</span></p>
+          <input
+            value={rotulo}
+            onChange={(e) => setRotulo(e.target.value)}
+            onBlur={() => salvar({ brand_label: rotulo.trim() || null })}
+            placeholder={EYEBROW_LABEL[item.type] ?? "Ex: Sorvetes"}
+            maxLength={80}
+            className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
           />
 
           <ListaItensEditor businessId={business.id} lista={lista} temWhatsapp={!!business.contact_whatsapp} onChange={salvarLista} />
