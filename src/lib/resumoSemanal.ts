@@ -19,7 +19,7 @@ export type ResumoSemanal = {
   /** Canal que trouxe 40% ou mais das visitas, se houver. */
   origem: string | null;
   frases: string[];
-  dica: { texto: string; href: string; rotulo: string };
+  dica: { texto: string; href: string; rotulo: string; /** Versão de uma linha, para o cartão pequeno do Pulse. */ curta: string };
 };
 
 const DIA = 24 * 60 * 60 * 1000;
@@ -104,15 +104,15 @@ export async function calcularResumoSemanal(supabase: SupabaseClient<any>, busin
 
   let dica: ResumoSemanal["dica"];
   if (visitas === 0) {
-    dica = { texto: "Mande o link pra 10 clientes no WhatsApp e coloque na bio do Instagram. É o jeito mais rápido de ter as primeiras visitas.", href: "/admin", rotulo: "Compartilhar meu link" };
+    dica = { texto: "Mande o link pra 10 clientes no WhatsApp e coloque na bio do Instagram. É o jeito mais rápido de ter as primeiras visitas.", href: "/admin", rotulo: "Compartilhar meu link", curta: "Envie em grupos de WhatsApp ou compartilhe nos stories." };
   } else if (acoes / visitas < 0.2) {
-    dica = { texto: "Muita gente olha e pouca gente toca. Deixe o WhatsApp ou o Catálogo como primeiro botão da página.", href: "/admin/boxes", rotulo: "Organizar botões" };
+    dica = { texto: "Muita gente olha e pouca gente toca. Deixe o WhatsApp ou o Catálogo como primeiro botão da página.", href: "/admin/boxes", rotulo: "Organizar botões", curta: "Deixe o WhatsApp ou o Catálogo como primeiro botão." };
   } else if (topTitulo) {
-    dica = { texto: `“${topTitulo}” está chamando atenção. Um voucher pra ele pode transformar curiosidade em venda.`, href: "/admin/vouchers?novo=1", rotulo: "Criar voucher" };
+    dica = { texto: `“${topTitulo}” está chamando atenção. Um voucher pra ele pode transformar curiosidade em venda.`, href: "/admin/vouchers?novo=1", rotulo: "Criar voucher", curta: "Crie um voucher para o item mais procurado." };
   } else if (origemTop === "Instagram") {
-    dica = { texto: "O Instagram está trazendo gente. Repita o link nos stories esta semana.", href: "/admin", rotulo: "Compartilhar de novo" };
+    dica = { texto: "O Instagram está trazendo gente. Repita o link nos stories esta semana.", href: "/admin", rotulo: "Compartilhar de novo", curta: "O Instagram traz gente. Repita o link nos stories." };
   } else {
-    dica = { texto: "Está funcionando. Mantenha o catálogo com fotos e preços atualizados pra quem volta.", href: "/admin/vitrine", rotulo: "Revisar catálogo" };
+    dica = { texto: "Está funcionando. Mantenha o catálogo com fotos e preços atualizados pra quem volta.", href: "/admin/vitrine", rotulo: "Revisar catálogo", curta: "Mantenha fotos e preços do catálogo em dia." };
   }
 
   const origem = origemTop && visitas > 0 && origemQtd / visitas >= 0.4 ? origemTop : null;

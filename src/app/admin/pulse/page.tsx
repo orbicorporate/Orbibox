@@ -16,7 +16,7 @@ import { ResumoSemana } from "./ResumoSemana";
 export default async function PulsePage({
   searchParams,
 }: {
-  searchParams: Promise<{ since?: string; until?: string; label?: string }>;
+  searchParams: Promise<{ since?: string; until?: string; label?: string; aba?: string }>;
 }) {
   const sp = await searchParams;
   const { since, until } = rangeFromParams(sp);
@@ -160,6 +160,7 @@ export default async function PulsePage({
       <ResumoSemana resumo={resumoSemana} businessId={business!.id} emailLigado={business!.resumo_semanal ?? true} />
 
       <PulseTabs
+        abaInicial={sp.aba === "marketing" ? "marketing" : "visitantes"}
         visitantes={
           <div className="flex flex-col">
             <TaxaConversao taxa={taxa} visitas={visitas} totalCliques={totalCliques} businessId={business!.id} orbiColors={pulseOrbiColors} />

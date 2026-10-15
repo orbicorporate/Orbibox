@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 
-export function PulseTabs({ visitantes, marketing }: { visitantes: ReactNode; marketing: ReactNode }) {
-  const [aba, setAba] = useState<"visitantes" | "marketing">("visitantes");
+export function PulseTabs({ visitantes, marketing, abaInicial = "visitantes" }: { visitantes: ReactNode; marketing: ReactNode; abaInicial?: "visitantes" | "marketing" }) {
+  const [aba, setAba] = useState<"visitantes" | "marketing">(abaInicial);
 
   return (
     <div className="flex flex-col">

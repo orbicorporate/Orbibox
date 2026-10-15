@@ -109,9 +109,9 @@ export function ResumoCarrossel({ resumo }: { resumo: ResumoSemanal }) {
         ))}
         <div className="flex min-h-[148px] w-[48%] max-w-[176px] shrink-0 snap-start flex-col rounded-[24px] bg-[linear-gradient(170deg,#1B1E26_0%,#0D0F14_100%)] p-4 text-white">
           <p className="text-[12.5px] text-white/60">O que fazer agora</p>
-          <p className="mt-2 line-clamp-5 text-[14px] leading-snug">{resumo.dica.texto}</p>
-          <Link href={resumo.dica.href} className="mt-3 inline-flex min-h-[42px] w-fit items-center gap-1.5 rounded-full bg-white px-5 text-[14px] text-on-background active:scale-[0.98]">
-            {resumo.dica.rotulo} <span aria-hidden>→</span>
+          <p className="mt-2 text-[15px] font-medium leading-snug">{resumo.dica.curta}</p>
+          <Link href="/admin/pulse?aba=marketing" className="mt-auto inline-flex min-h-[44px] w-fit items-center gap-1 pt-2 text-[13px] text-white/70 underline underline-offset-4 active:text-white">
+            Ver mais dicas <span aria-hidden>→</span>
           </Link>
         </div>
       </div>
