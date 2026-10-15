@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
@@ -119,13 +120,13 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
           <span aria-hidden>⊞</span> Ver catálogo
         </Link>
         {isOwner && (
-          <Link
+          <AbrirEditor
             href={`/admin/vitrine/pagina/${item.id}`}
-            aria-label="Editar esta página"
+            rotulo="Editar esta página"
             className="flex shrink-0 items-center gap-1.5 rounded-full bg-on-background px-3.5 py-2 text-[13px] font-medium text-white shadow-lg"
           >
             <span aria-hidden>✎</span> Editar
-          </Link>
+          </AbrirEditor>
         )}
       </div>
 

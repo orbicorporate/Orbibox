@@ -15,6 +15,7 @@ import { getCurrentBusinessId, listMyBusinesses } from "@/lib/business";
 import { AbrirInternoNoApp } from "@/components/AbrirInternoNoApp";
 import { AvisoSalvarHost, BotaoSalvar } from "@/components/ui/AvisoSalvar";
 import { VerComoFicou } from "@/components/ui/VerComoFicou";
+import { EmbedMarker } from "@/components/mobile/EmbedMarker";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -115,6 +116,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="sistema-vidro mx-auto flex min-h-screen w-full max-w-[440px] flex-col lg:max-w-none lg:pl-[232px]">
       <div className="prisma-campo" aria-hidden><i /><i /><i /><i /><i /></div>
+      <EmbedMarker />
+      <div className="admin-chrome contents">
       <AppHeader
         unseenConversas={(unseenConversas ?? 0) + (unseenNotifs ?? 0)}
         progressPct={headerProgress.pct}
@@ -128,9 +131,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {celebrateNotif && (
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />
       )}
+      </div>
       <main className="admin-zoom mx-auto w-full flex-1 px-6 pb-32 pt-5 lg:max-w-[960px] lg:px-10 lg:pb-16">
         {/* Botão salvar discreto, sempre à vista logo abaixo do topo. */}
-        <div className="pointer-events-none sticky top-[84px] z-20 mb-3 h-10">
+        <div className="embed-save pointer-events-none sticky top-[84px] z-20 mb-3 h-10">
           <div className="pointer-events-none relative flex h-full items-center justify-end gap-2">
             <span className="pointer-events-auto"><VerComoFicou slug={business.slug} /></span>
             <BotaoSalvar className="pointer-events-auto" />
@@ -139,6 +143,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {children}
       </main>
       <AvisoSalvarHost />
+      <div className="admin-chrome contents">
       <BottomNav />
       <SideNav />
       <AbrirInternoNoApp />
@@ -154,6 +159,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <TourOverlay businessId={business.id} />
       </Suspense>
       <GuiaOrbi semItens={(adminProducts ?? []).length === 0} slug={business.slug} />
+      </div>
     </div>
   );
 }

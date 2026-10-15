@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { precoCardapio, type CardapioSecao } from "@/lib/cardapio";
-import Link from "next/link";
+import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 
 /**
@@ -50,9 +50,9 @@ export function CardapioFlow({
       <div className="mb-3 flex items-center justify-between">
         <button onClick={onBack} className="text-[14px] text-text-tertiary hover:underline">← voltar</button>
         {donoVendo && preenchidas.length > 0 && (
-          <Link href="/admin/cardapio" aria-label="Editar cardápio" className="flex items-center gap-1.5 rounded-full bg-on-background px-3.5 py-2 text-[13px] font-medium text-white shadow-lg">
+          <AbrirEditor href="/admin/cardapio" rotulo="Editar cardápio" className="flex items-center gap-1.5 rounded-full bg-on-background px-3.5 py-2 text-[13px] font-medium text-white shadow-lg">
             <span aria-hidden>✎</span> Editar
-          </Link>
+          </AbrirEditor>
         )}
       </div>
       <h2 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.01em]">{titulo}</h2>
@@ -79,9 +79,9 @@ export function CardapioFlow({
             <li className="flex gap-2.5"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[11px] font-semibold">1</span><span><span className="font-medium">Montar pelos pratos.</span> Cole o texto do seu cardápio e a Orbi monta sozinha, ou inclua categorias e pratos um por um.</span></li>
             {!pdfUrl && <li className="flex gap-2.5"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[11px] font-semibold">2</span><span><span className="font-medium">Deixar só o PDF.</span> Envie o arquivo e ele vira o cardápio, sem cadastrar nenhum prato.</span></li>}
           </ul>
-          <Link href="/admin/cardapio" className="mt-4 inline-flex min-h-[44px] items-center rounded-full bg-on-background px-5 text-[14px] font-semibold text-white active:scale-[0.98]">
+          <AbrirEditor href="/admin/cardapio" rotulo="Editar cardápio" className="mt-4 inline-flex min-h-[44px] items-center rounded-full bg-on-background px-5 text-[14px] font-semibold text-white active:scale-[0.98]">
             {pdfUrl ? "Montar pratos" : "Montar meu cardápio"}
-          </Link>
+          </AbrirEditor>
         </div>
       )}
 

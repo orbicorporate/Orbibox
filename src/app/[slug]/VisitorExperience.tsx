@@ -5,6 +5,7 @@ import { CardapioFlow } from "./CardapioFlow";
 import { lerSecoes } from "@/lib/cardapio";
 import { appsAtivos, linkDoApp } from "@/lib/delivery";
 import Link from "next/link";
+import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { LapisDono } from "@/components/mobile/LapisDono";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
@@ -2762,7 +2763,7 @@ function VitrineCoverBleed({ business, podeEditar = false }: { business: Busines
   if (covers.length === 0) {
     return podeEditar ? (
       <div className="mt-2 flex justify-start">
-        <Link href="/admin/vitrine#vitrine-capa" className="rounded-full border border-dashed border-on-background/25 px-4 py-2 text-[13px] font-medium text-text-secondary">+ Adicionar banner</Link>
+        <AbrirEditor href="/admin/vitrine#vitrine-capa" rotulo="Editar banner" className="rounded-full border border-dashed border-on-background/25 px-4 py-2 text-[13px] font-medium text-text-secondary">+ Adicionar banner</AbrirEditor>
       </div>
     ) : null;
   }

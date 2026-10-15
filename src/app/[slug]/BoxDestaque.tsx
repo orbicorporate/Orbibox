@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { descontoGrande } from "@/lib/voucherDesconto";
 import Link from "next/link";
+import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 import { formatPrice } from "@/lib/showcase";
 import type { ItemCartao } from "./CartaoItem";
@@ -177,9 +178,9 @@ export function BoxDestaque({
       <div className={`relative ${larguraBase(largo)}`}>
         {cartao}
         {editar && (
-          <Link href={editar.href} aria-label={editar.rotulo} className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white text-[13px] text-text-secondary shadow-md active:scale-95">
+          <AbrirEditor href={editar.href} rotulo={editar.rotulo} className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white text-[13px] text-text-secondary shadow-md active:scale-95">
             ✎
-          </Link>
+          </AbrirEditor>
         )}
       </div>
     );

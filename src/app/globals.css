@@ -1152,3 +1152,14 @@ body {
   .valor-entra, .valor-estrela { animation: none; }
   .valor-confete { display: none; }
 }
+
+/* Edição no lugar: painel por cima da vitrine e painel admin dentro dele. */
+@keyframes editorEntra { from { opacity: 0; transform: translateY(24px) scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes editorFundo { from { opacity: 0; } to { opacity: 1; } }
+.editor-painel { animation: editorEntra 260ms cubic-bezier(0.22, 1, 0.36, 1); }
+.editor-fundo { animation: editorFundo 200ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .editor-painel, .editor-fundo { animation: none; } }
+html[data-embed] .admin-chrome { display: none !important; }
+html[data-embed] .sistema-vidro { max-width: none; padding-left: 0; }
+html[data-embed] .embed-save { top: 4px; }
+html[data-embed] main { padding-bottom: 4rem; }
