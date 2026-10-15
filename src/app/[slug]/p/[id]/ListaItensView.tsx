@@ -35,6 +35,39 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
     setAberto(i);
   }
 
+  function linhas(lista_: ListaItem[], className: string) {
+    return (
+      <ul className={className}>
+        {lista_.map((i, idx) => {
+          const preco = precoDoItem(i.preco);
+          return (
+            <li key={i.id} className={idx > 0 ? "border-t border-divider" : ""}>
+              <button type="button" onClick={() => abrir(i)} className="flex min-h-[52px] w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-soft">
+                <span className="min-w-0 flex-1">
+                  <span className="line-clamp-2 block break-words text-[15px] font-medium leading-snug">{i.nome}</span>
+                  {i.descricao?.trim() && <span className="mt-0.5 line-clamp-2 block break-words text-[13px] leading-snug text-text-secondary">{i.descricao}</span>}
+                  {i.esgotado && <span className="mt-0.5 block text-[12px] text-text-tertiary">Esgotado</span>}
+                </span>
+                {preco && <span className="shrink-0 text-[14px] text-text-secondary">{preco}</span>}
+                <span className="shrink-0 text-text-tertiary" aria-hidden>›</span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  // Itens sem foto seguidos viram uma faixa só, de largura total, entre os
+  // cartões com foto: sem buraco ao lado de foto alta e sem mudar a ordem.
+  const blocos: { foto: boolean; itens: ListaItem[] }[] = [];
+  for (const i of itens) {
+    const foto = !!i.foto;
+    const ultimo = blocos[blocos.length - 1];
+    if (ultimo && ultimo.foto === foto) ultimo.itens.push(i);
+    else blocos.push({ foto, itens: [i] });
+  }
+
   const aberto_ = aberto;
   const linkItem = aberto_ ? urlSegura(aberto_.link) : null;
 
@@ -43,49 +76,38 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
       {lista.titulo.trim() && <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight">{lista.titulo}</h2>}
       {semFotos ? (
         // Nenhum item tem foto: lista limpa de linhas (nome, preço, seta), sem caixas cinzas vazias.
-        <ul className="mt-3 overflow-hidden rounded-[20px] bg-surface-white ring-1 ring-black/[0.05]">
-          {itens.map((i, idx) => {
+        linhas(itens, "mt-3 overflow-hidden rounded-[20px] bg-surface-white ring-1 ring-black/[0.05]")
+      ) : (
+      <div className="mt-3 flex flex-col gap-3">
+        {blocos.map((bl, bi) => bl.foto ? (
+        <ul key={bi} className="grid grid-cols-2 gap-3">
+          {bl.itens.map((i) => {
             const preco = precoDoItem(i.preco);
             return (
-              <li key={i.id} className={idx > 0 ? "border-t border-divider" : ""}>
-                <button type="button" onClick={() => abrir(i)} className="flex min-h-[52px] w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-soft">
-                  <span className="min-w-0 flex-1">
-                    <span className="line-clamp-2 block break-words text-[15px] font-medium leading-snug">{i.nome}</span>
-                    {i.descricao?.trim() && <span className="mt-0.5 line-clamp-2 block break-words text-[13px] leading-snug text-text-secondary">{i.descricao}</span>}
-                    {i.esgotado && <span className="mt-0.5 block text-[12px] text-text-tertiary">Esgotado</span>}
+              <li key={i.id}>
+                <button type="button" onClick={() => abrir(i)} className="block w-full overflow-hidden rounded-[20px] bg-surface-white text-left ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]">
+                  {i.foto && (
+                    <span className="relative block aspect-[4/5] w-full overflow-hidden bg-surface-soft">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={i.foto} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      {i.esgotado && <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-text-secondary">Esgotado</span>}
+                    </span>
+                  )}
+                  <span className="block px-3 pb-3 pt-2.5">
+                    {!i.foto && i.esgotado && <span className="mb-1 block text-[11px] font-medium text-text-tertiary">Esgotado</span>}
+                    <span className="line-clamp-2 block break-words text-[14px] font-medium leading-snug">{i.nome}</span>
+                    {i.descricao?.trim() && <span className="mt-0.5 line-clamp-2 block break-words text-[12.5px] leading-snug text-text-secondary">{i.descricao}</span>}
+                    {preco && <span className="mt-1 block text-[13.5px] font-medium">{preco}</span>}
                   </span>
-                  {preco && <span className="shrink-0 text-[14px] text-text-secondary">{preco}</span>}
-                  <span className="shrink-0 text-text-tertiary" aria-hidden>›</span>
                 </button>
               </li>
             );
           })}
         </ul>
-      ) : (
-      <ul className="mt-3 grid grid-cols-2 gap-3">
-        {itens.map((i) => {
-          const preco = precoDoItem(i.preco);
-          return (
-            <li key={i.id}>
-              <button type="button" onClick={() => abrir(i)} className="block w-full overflow-hidden rounded-[20px] bg-surface-white text-left ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]">
-                {i.foto && (
-                  <span className="relative block aspect-[4/5] w-full overflow-hidden bg-surface-soft">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={i.foto} alt="" loading="lazy" className="h-full w-full object-cover" />
-                    {i.esgotado && <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-text-secondary">Esgotado</span>}
-                  </span>
-                )}
-                <span className="block px-3 pb-3 pt-2.5">
-                  {!i.foto && i.esgotado && <span className="mb-1 block text-[11px] font-medium text-text-tertiary">Esgotado</span>}
-                  <span className="line-clamp-2 block break-words text-[14px] font-medium leading-snug">{i.nome}</span>
-                  {i.descricao?.trim() && <span className="mt-0.5 line-clamp-2 block break-words text-[12.5px] leading-snug text-text-secondary">{i.descricao}</span>}
-                  {preco && <span className="mt-1 block text-[13.5px] font-medium">{preco}</span>}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+        ) : (
+          <div key={bi}>{linhas(bl.itens, "overflow-hidden rounded-[20px] bg-surface-white ring-1 ring-black/[0.05]")}</div>
+        ))}
+      </div>
       )}
 
       {aberto_ && (
