@@ -203,7 +203,6 @@ export function BoxesManager({
   // ?box=<id> (vindo de outra tela, ex: painel de vouchers) já abre esse box
   // em modo de edição e rola até ele.
   const [reordenando, setReordenando] = useState(false);
-  const [grupoAberto, setGrupoAberto] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(
     () => (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("box") : null),
   );
@@ -521,8 +520,8 @@ export function BoxesManager({
                 { b: bDelivery, nome: "Delivery", href: "/admin/delivery", sub: "iFood, Rappi, 99Food e mais" },
               ];
               return (
-                <div key="grupo-cardapio-delivery" className={`relative overflow-hidden rounded-[22px] border border-divider bg-surface-white p-3.5 ${grupoAberto ? "col-span-2" : ""}`}>
-                  <button type="button" onClick={() => setGrupoAberto((v) => !v)} aria-expanded={grupoAberto} className="flex w-full cursor-pointer flex-col gap-2.5 text-left">
+                <div key="grupo-cardapio-delivery" className="relative overflow-hidden rounded-[22px] border border-divider bg-surface-white p-3.5">
+                  <Link href="/admin/cardapio" className="flex w-full cursor-pointer flex-col gap-2.5 text-left">
                     <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-surface-soft text-on-background">
                       <IconeBotao icone={(bCardapio.config as BoxConfig | null)?.icon || "🍴"} size={22} />
                     </span>
@@ -532,28 +531,7 @@ export function BoxesManager({
                         {linhas.map((l) => `${l.nome} ${l.b.is_active ? "ligado" : "desligado"}`).join(" · ")}
                       </span>
                     </span>
-                  </button>
-                  {grupoAberto && (
-                    <div className="mt-3 flex flex-col gap-2">
-                      {linhas.map((l) => (
-                        <div key={l.b.id} className={`flex items-center gap-3 rounded-2xl bg-surface-soft p-3 ${l.b.is_active ? "" : "opacity-70"}`}>
-                          <Link href={l.href} className="min-w-0 flex-1">
-                            <span className="block text-[14.5px] font-semibold">{l.nome}</span>
-                            <span className="block text-[12px] text-text-secondary">{l.sub}</span>
-                            <span className="mt-1 inline-block text-[12.5px] font-medium underline underline-offset-2">Configurar →</span>
-                          </Link>
-                          <button
-                            type="button"
-                            onClick={() => toggleActive(l.b)}
-                            className={`h-6 w-11 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors ${l.b.is_active ? "orbi-gradient" : "bg-divider"}`}
-                            aria-label={l.b.is_active ? `Desativar ${l.nome}` : `Ativar ${l.nome}`}
-                          >
-                            <span className={`block h-5 w-5 rounded-full bg-surface-white shadow transition-transform ${l.b.is_active ? "translate-x-5" : ""}`} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  </Link>
                   {reordenando && (
                     <div className="mt-3 flex gap-2">
                       <button type="button" onClick={() => move(box, -1)} disabled={idx === 0} aria-label="Mover pra trás" className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-surface-soft text-text-secondary disabled:opacity-30">

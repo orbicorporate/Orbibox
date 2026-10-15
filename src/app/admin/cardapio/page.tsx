@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
+import { lerApps } from "@/lib/delivery";
 import { CardapioEditor } from "./CardapioEditor";
 
 export const metadata = { title: "Cardápio" };
@@ -14,6 +15,8 @@ export default async function CardapioPage() {
     supabase.from("businesses").select("slug").eq("id", businessId!).maybeSingle(),
   ]);
   const box = (boxes ?? []).find((b) => (b.config as { action?: string } | null)?.action === "cardapio") ?? null;
+  const delivery = (boxes ?? []).find((b) => (b.config as { action?: string } | null)?.action === "delivery") ?? null;
+  const cfgDelivery = (delivery?.config ?? {}) as Record<string, unknown>;
   return (
     <CardapioEditor
       businessId={businessId!}
@@ -22,6 +25,7 @@ export default async function CardapioPage() {
       ativo={box?.is_active ?? true}
       totalBoxes={totalBoxes ?? 0}
       slug={negocio?.slug ?? ""}
+      delivery={{ boxId: delivery?.id ?? null, config: cfgDelivery, apps: lerApps(cfgDelivery.apps), ativo: delivery?.is_active ?? true }}
     />
   );
 }

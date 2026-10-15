@@ -12,7 +12,7 @@ type Secao = { nome: string; itens: ItemProposto[] };
  * Orbi monta os pratos por categoria. Antes de entrar no cardápio tudo passa por
  * uma revisão (marcar, trocar nome e preço), porque a leitura de foto pode errar.
  */
-export function ImportarCardapio({ businessId, onAdicionar, onManual }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void; onManual: () => void }) {
+export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto = false }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void; onManual: () => void; /** Já há pratos: mostra só atalhos pequenos. */ compacto?: boolean }) {
   const supabase = useRef(createClient()).current;
   const inputFoto = useRef<HTMLInputElement>(null);
   const [aberto, setAberto] = useState(false);
@@ -95,16 +95,30 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual }: { busine
   const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
 
   if (!aberto && feito === null) {
+    if (compacto) {
+      return (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={() => setAberto(true)} className="min-h-[44px] rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white active:scale-[0.98]">Colar mais pratos</button>
+          <button type="button" onClick={onManual} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-5 text-[13.5px] font-medium active:scale-[0.98]">+ Categoria ou prato</button>
+        </div>
+      );
+    }
     return (
-      <div className="mt-4 flex flex-col gap-2.5">
-        <button type="button" onClick={() => setAberto(true)} className="flex min-h-[56px] w-full items-center gap-3 rounded-full bg-on-background pl-3 pr-5 text-left text-[15px] font-semibold text-white active:scale-[0.99]">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-[14px]" aria-hidden>1</span>
-          Colar texto completo e a Orbi monta
-        </button>
-        <button type="button" onClick={onManual} className="flex min-h-[56px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white pl-3 pr-5 text-left text-[15px] font-semibold active:scale-[0.99]">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[14px]" aria-hidden>2</span>
-          Incluir itens e categorias, um por um
-        </button>
+      <div className="mt-3 flex flex-col gap-4">
+        <div>
+          <button type="button" onClick={() => setAberto(true)} className="flex min-h-[56px] w-full items-center gap-3 rounded-full bg-on-background pl-3 pr-5 text-left text-[15px] font-semibold text-white active:scale-[0.99]">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-[15px]" aria-hidden>✦</span>
+            Colar o texto e a Orbi monta
+          </button>
+          <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Mais rápido. Cole o cardápio do jeito que estiver, ou envie foto, e a Orbi separa por categoria. Você revisa antes de entrar.</p>
+        </div>
+        <div>
+          <button type="button" onClick={onManual} className="flex min-h-[56px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white pl-3 pr-5 text-left text-[15px] font-semibold active:scale-[0.99]">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px]" aria-hidden>+</span>
+            Adicionar um por um
+          </button>
+          <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Crie a categoria e depois cada prato, com nome e preço. Foto e descrição são opcionais.</p>
+        </div>
       </div>
     );
   }

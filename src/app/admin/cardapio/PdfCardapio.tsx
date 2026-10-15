@@ -92,10 +92,10 @@ export function PdfCardapio({ businessId, pdfs, onChange }: { businessId: string
   const temDrive = pdfs.some((p) => /drive\.google\.com|docs\.google\.com/i.test(p.url));
 
   return (
-    <div className="mt-4 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
-      <p className="text-[14.5px] font-medium">{pdfs.length > 1 ? "PDFs do cardápio" : "Cardápio em PDF"}</p>
+    <div className="mt-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
+      <p className="text-[14.5px] font-medium">{pdfs.length === 0 ? "Envie seu cardápio em PDF" : pdfs.length === 1 ? "Seu PDF" : "Seus PDFs"}</p>
       <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">
-        Cada PDF vira um botão na tela do cardápio. Dê um nome a cada um, como Cardápio, Bebidas ou Sobremesas.
+        Cada PDF vira um botão para o cliente abrir. Dê um nome a cada um, como Cardápio, Bebidas ou Sobremesas. Até {MAX_PDFS} arquivos de {LIMITE_MB} MB.
       </p>
 
       {pdfs.length > 0 && (
