@@ -102,12 +102,12 @@ export function BoxDestaque({
     const restam = v.quantity_total - v.quantity_claimed;
     const apoio = v.discount_type === "gift" ? "Brinde" : v.show_discount === false ? (v.description?.trim() || "Voucher") : descontoGrande(v);
     return (
-      <div className={`flex items-center gap-3 rounded-[20px] p-2 pr-3 text-left text-white ${largura(largo)}`} style={{ background: voucherGradient(v.color as never), boxShadow: `0 6px 16px ${tema.glow}` }}>
+      <div className={`flex items-center gap-3 rounded-full p-2 pr-2 text-left text-white ${largura(largo)}`} style={{ background: voucherGradient(v.color as never), boxShadow: `0 6px 16px ${tema.glow}` }}>
         {v.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={v.image_url} alt="" className="h-14 w-14 shrink-0 rounded-[14px] object-cover" />
+          <img src={v.image_url} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
         ) : (
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] bg-white/20 text-[18px]" aria-hidden>🎟</span>
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/20 text-[18px]" aria-hidden>🎟</span>
         )}
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[14.5px] font-semibold leading-tight">{v.title}</span>
@@ -121,12 +121,12 @@ export function BoxDestaque({
   };
 
   const cartaoBotao = (b: BotaoDestaque, largo: boolean) => (
-    <div className={`flex items-center gap-3 rounded-[20px] border border-divider bg-surface-white p-2 pr-3 text-left shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`}>
+    <div className={`flex items-center gap-3 rounded-full border border-divider bg-surface-white p-2 pr-2 text-left shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`}>
       {b.logo ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={b.logo} alt="" className="h-14 w-14 shrink-0 rounded-[14px] object-cover" />
+        <img src={b.logo} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
       ) : (
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] text-[22px] text-white" style={{ background: b.cor }} aria-hidden><IconeBotao icone={b.icone} size={24} /></span>
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-[22px] text-white" style={{ background: b.cor }} aria-hidden><IconeBotao icone={b.icone} size={24} /></span>
       )}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.titulo}</span>
@@ -147,9 +147,9 @@ export function BoxDestaque({
       <>
         {i.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={i.image_url} alt="" className="h-14 w-14 shrink-0 rounded-[14px] object-cover" />
+          <img src={i.image_url} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
         ) : (
-          <span className="h-14 w-14 shrink-0 rounded-[14px] bg-surface-soft" />
+          <span className="h-14 w-14 shrink-0 rounded-full bg-surface-soft" />
         )}
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[14.5px] font-semibold leading-tight">{i.title}</span>
@@ -158,7 +158,7 @@ export function BoxDestaque({
         {destino && <span className="shrink-0 rounded-full bg-on-background px-3.5 py-1.5 text-[12.5px] font-semibold text-white">Ver</span>}
       </>
     );
-    const classe = `flex items-center gap-3 rounded-[20px] text-left border border-divider bg-surface-white p-2 pr-3 shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`;
+    const classe = `flex items-center gap-3 rounded-full text-left border border-divider bg-surface-white p-2 pr-2 shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`;
     return destino ? (
       <Link href={destino} target={externo ? "_blank" : undefined} onClick={() => trackClick({ businessId, kind, contentItemId: i.id, sessionId, targetUrl: destino })} className={classe}>
         {miolo}
