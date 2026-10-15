@@ -513,7 +513,11 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] leading-relaxed outline-none focus:border-on-background"
           />
 
-          <p className="mt-5 text-[13px] font-semibold text-text-secondary">Categoria <span className="font-normal text-text-tertiary">(opcional)</span></p>
+          <ListaItensEditor businessId={business.id} lista={lista} temWhatsapp={!!business.contact_whatsapp} onChange={salvarLista} />
+
+          <details className="mt-6">
+            <summary className="inline-flex min-h-[40px] cursor-pointer list-none items-center rounded-full bg-surface-soft px-4 text-[13.5px] font-medium text-text-secondary">Mais opções</summary>
+          <p className="mt-3 text-[13px] font-semibold text-text-secondary">Categoria <span className="font-normal text-text-tertiary">(opcional)</span></p>
           <input
             value={rotulo}
             onChange={(e) => setRotulo(e.target.value)}
@@ -523,7 +527,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
           />
 
-          <ListaItensEditor businessId={business.id} lista={lista} temWhatsapp={!!business.contact_whatsapp} onChange={salvarLista} />
+          </details>
 
           {/* Pergunta pronta pra Orbi */}
           <div className="mt-5 rounded-2xl border border-dashed border-on-background/15 bg-surface-soft px-4 py-3.5">

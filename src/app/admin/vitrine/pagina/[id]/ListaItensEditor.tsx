@@ -177,9 +177,9 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
   }
 
   return (
-    <div className="mt-6 rounded-[22px] border border-dashed border-on-background/15 p-4">
+    <div className="mt-8 rounded-[26px] border border-divider bg-surface-white p-4 shadow-[0_6px_18px_rgba(17,19,24,0.06)]">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Lista de itens</p>
+        <p className="text-[16px] font-semibold">Lista de itens</p>
         <button type="button" onClick={removerLista} className="min-h-[36px] rounded-full px-2 text-[12.5px] font-medium text-text-tertiary">Remover lista</button>
       </div>
 
@@ -285,8 +285,8 @@ export function ListaItensEditor({ businessId, lista, temWhatsapp, onChange }: {
       <button type="button" onClick={() => onChange(listaVazia())} className="mt-7 flex w-full items-center gap-3.5 rounded-[26px] bg-on-background p-4 text-left text-white shadow-[0_8px_22px_rgba(17,19,24,0.22)] active:scale-[0.99]">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[22px] font-light leading-none text-on-background" aria-hidden>+</span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[16px] font-semibold">Adicionar itens</span>
-          <span className="mt-0.5 block text-[12.5px] leading-snug text-white/70">Mostre vários itens com foto, nome e preço, como uma lojinha.</span>
+          <span className="block text-[16px] font-semibold">Quer listar itens nesta página?</span>
+          <span className="mt-0.5 block text-[12.5px] leading-snug text-white/70">Comece aqui.</span>
         </span>
       </button>
     );
