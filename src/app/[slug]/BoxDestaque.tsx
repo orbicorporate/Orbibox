@@ -186,7 +186,7 @@ export function BoxDestaque({
   };
 
   const maisQuadrado = podeEditar && (
-    <button type="button" onClick={() => setAberto(true)} aria-label="Fixar ou tirar itens do destaque" className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[20px] border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
+    <button type="button" onClick={() => setAberto(true)} aria-label="Fixar ou tirar itens do destaque" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
   );
 
   return (
