@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
+import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
+import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { MAX_LISTA, listaVazia, novoIdLista, precoDoItem, reduzirFoto, type Lista, type ListaDestino, type ListaItem } from "@/lib/lista";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background";
@@ -31,6 +33,8 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
   const [foto, setFoto] = useState<string | null>(inicial.foto ?? null);
   const [subindo, setSubindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [galeria, setGaleria] = useState(false);
+  const [prontas, setProntas] = useState(false);
 
   async function enviar(f: File | undefined) {
     if (input.current) input.current.value = "";
@@ -74,7 +78,9 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
           <div className="min-w-0 flex-1">
             <p className="text-[13.5px] font-medium">{subindo ? "Enviando…" : foto ? "Foto do item" : "Foto (opcional)"}</p>
             <div className="mt-1.5 flex flex-wrap gap-2">
-              <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">{foto ? "Trocar" : "Adicionar foto"}</button>
+              <button type="button" onClick={() => setGaleria(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-on-background px-3.5 text-[13px] font-medium text-white">Banco de imagens</button>
+              <button type="button" onClick={() => setProntas(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Fotos prontas</button>
+              <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Enviar</button>
               {foto && <button type="button" onClick={() => setFoto(null)} className="min-h-[36px] rounded-full px-3 text-[13px] font-medium text-text-secondary">Tirar</button>}
             </div>
           </div>
@@ -104,6 +110,8 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
           <button type="button" onClick={salvar} disabled={!nome.trim() || subindo} className="min-h-[48px] flex-1 rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">{novo ? "Adicionar item" : "Salvar"}</button>
         </div>
       </div>
+      {galeria && <MinhaGaleriaPicker businessId={businessId} atual={foto} onFechar={() => setGaleria(false)} onEscolher={(url) => { setGaleria(false); setFoto(url); }} />}
+      {prontas && <FotoProntaPicker businessId={businessId} assunto={nome} formato="retrato" onFechar={() => setProntas(false)} onEscolher={(f) => { setProntas(false); enviar(f); }} />}
     </div>,
     document.body,
   );
