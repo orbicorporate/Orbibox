@@ -26,7 +26,6 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
   const [nome, setNome] = useState(inicial.nome);
   const [preco, setPreco] = useState(inicial.preco == null ? "" : String(inicial.preco).replace(".", ","));
   const [descricao, setDescricao] = useState(inicial.descricao ?? "");
-  const [comDescricao, setComDescricao] = useState(!!inicial.descricao);
   const [link, setLink] = useState(inicial.link ?? "");
   const [esgotado, setEsgotado] = useState(!!inicial.esgotado);
   const [foto, setFoto] = useState<string | null>(inicial.foto ?? null);
@@ -63,23 +62,23 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
         </div>
         <input ref={input} type="file" accept="image/*" className="hidden" onChange={(e) => enviar(e.target.files?.[0])} />
 
-        <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="mt-4 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[22px] bg-surface-soft text-text-tertiary active:scale-[0.99]">
-          {foto ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={foto} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <span className="flex flex-col items-center gap-1.5 text-[13.5px]">
+        <div className="mt-4 flex items-center gap-3">
+          <button type="button" onClick={() => input.current?.click()} disabled={subindo} aria-label={foto ? "Trocar foto" : "Adicionar foto"} className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-surface-soft text-text-tertiary active:scale-[0.98]">
+            {foto ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={foto} alt="" className="h-full w-full object-cover" />
+            ) : (
               <IconeCamera />
-              {subindo ? "Enviando…" : "Adicionar foto"}
-            </span>
-          )}
-        </button>
-        {foto && (
-          <div className="mt-2 flex gap-2">
-            <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">{subindo ? "Enviando…" : "Trocar foto"}</button>
-            <button type="button" onClick={() => setFoto(null)} className="min-h-[40px] rounded-full px-3 text-[13px] font-medium text-text-secondary">Tirar foto</button>
+            )}
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13.5px] font-medium">{subindo ? "Enviando…" : foto ? "Foto do item" : "Foto (opcional)"}</p>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">{foto ? "Trocar" : "Adicionar foto"}</button>
+              {foto && <button type="button" onClick={() => setFoto(null)} className="min-h-[36px] rounded-full px-3 text-[13px] font-medium text-text-secondary">Tirar</button>}
+            </div>
           </div>
-        )}
+        </div>
         {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
 
         <div className="mt-3 flex flex-col gap-2.5">
@@ -88,11 +87,7 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
             R$
             <input value={preco} onChange={(e) => setPreco(e.target.value.replace(/[^0-9.,]/g, ""))} inputMode="decimal" placeholder="Preço (opcional)" aria-label="Preço" className="min-w-0 flex-1 bg-transparent text-[15px] text-on-background outline-none" />
           </label>
-          {comDescricao ? (
-            <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={3} maxLength={600} placeholder="Material, tamanhos, cor, o que acompanha" aria-label="Descrição" className={`${campo} resize-y text-[14px] leading-snug`} />
-          ) : (
-            <button type="button" onClick={() => setComDescricao(true)} className="min-h-[44px] w-fit rounded-full bg-surface-soft px-4 text-[13.5px] font-medium text-text-secondary">+ Descrição</button>
-          )}
+          <textarea value={descricao} onChange={(e) => setDescricao(e.target.value.replace(/\n/g, " "))} rows={2} maxLength={120} placeholder="Descrição curta (até 2 linhas)" aria-label="Descrição" className={`${campo} resize-none text-[14px] leading-snug`} />
           {destino === "link" && (
             <input value={link} onChange={(e) => setLink(e.target.value)} inputMode="url" placeholder="Link do item (ex: loja.com/blusa)" aria-label="Link do item" className={campo} />
           )}

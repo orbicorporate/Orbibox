@@ -51,6 +51,7 @@ export function ListaItensView({ lista, businessId, paginaId, paginaTitulo, nego
                 <button type="button" onClick={() => abrir(i)} className="flex min-h-[52px] w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-soft">
                   <span className="min-w-0 flex-1">
                     <span className="line-clamp-2 block break-words text-[15px] font-medium leading-snug">{i.nome}</span>
+                    {i.descricao?.trim() && <span className="mt-0.5 line-clamp-2 block break-words text-[13px] leading-snug text-text-secondary">{i.descricao}</span>}
                     {i.esgotado && <span className="mt-0.5 block text-[12px] text-text-tertiary">Esgotado</span>}
                   </span>
                   {preco && <span className="shrink-0 text-[14px] text-text-secondary">{preco}</span>}
@@ -77,7 +78,8 @@ export function ListaItensView({ lista, businessId, paginaId, paginaTitulo, nego
                 <span className="block px-3 pb-3 pt-2.5">
                   {!i.foto && i.esgotado && <span className="mb-1 block text-[11px] font-medium text-text-tertiary">Esgotado</span>}
                   <span className="line-clamp-2 block break-words text-[14px] font-medium leading-snug">{i.nome}</span>
-                  {preco && <span className="mt-0.5 block text-[13.5px] text-text-secondary">{preco}</span>}
+                  {i.descricao?.trim() && <span className="mt-0.5 line-clamp-2 block break-words text-[12.5px] leading-snug text-text-secondary">{i.descricao}</span>}
+                  {preco && <span className="mt-1 block text-[13.5px] font-medium">{preco}</span>}
                 </span>
               </button>
             </li>
