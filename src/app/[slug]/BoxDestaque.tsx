@@ -103,7 +103,7 @@ export function BoxDestaque({
     const restam = v.quantity_total - v.quantity_claimed;
     const apoio = v.discount_type === "gift" ? "Brinde" : v.show_discount === false ? (v.description?.trim() || "Voucher") : descontoGrande(v);
     return (
-      <div className={`flex items-center gap-3 rounded-full p-2 pr-2 text-left text-white ${largura(largo)}`} style={{ background: voucherGradient(v.color as never), boxShadow: `0 6px 16px ${tema.glow}` }}>
+      <div className={`flex items-center gap-3 rounded-full p-2 pr-4 text-left text-white ${largura(largo)}`} style={{ background: voucherGradient(v.color as never), boxShadow: `0 6px 16px ${tema.glow}` }}>
         {v.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={v.image_url} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
@@ -114,7 +114,7 @@ export function BoxDestaque({
           <span className="block truncate text-[14.5px] font-semibold leading-tight">{v.title}</span>
           <span className="mt-0.5 block truncate text-[12px] opacity-80">{apoio}</span>
         </span>
-        <button type="button" onClick={() => onVoucher(v.id)} disabled={restam <= 0} className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-[12.5px] font-bold disabled:opacity-50" style={{ color: tema.ctaText }}>
+        <button type="button" onClick={() => onVoucher(v.id)} disabled={restam <= 0} className="shrink-0 rounded-full bg-white px-4 py-2 text-[12.5px] font-bold disabled:opacity-50" style={{ color: tema.ctaText }}>
           {restam > 0 ? "Pegar" : "Esgotado"}
         </button>
       </div>
@@ -122,7 +122,7 @@ export function BoxDestaque({
   };
 
   const cartaoBotao = (b: BotaoDestaque, largo: boolean) => (
-    <div className={`flex items-center gap-3 rounded-full border border-divider bg-surface-white p-2 pr-2 text-left shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`}>
+    <div className={`flex items-center gap-3 rounded-full border border-divider bg-surface-white p-2 pr-4 text-left shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`}>
       {b.logo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={b.logo} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
@@ -133,7 +133,7 @@ export function BoxDestaque({
         <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.titulo}</span>
         {b.sub && <span className="mt-0.5 block truncate text-[12px] text-text-secondary">{b.sub}</span>}
       </span>
-      <button type="button" onClick={b.onClick} className="shrink-0 rounded-full bg-on-background px-3.5 py-1.5 text-[12.5px] font-semibold text-white">
+      <button type="button" onClick={b.onClick} className="shrink-0 rounded-full bg-on-background px-4 py-2 text-[12.5px] font-semibold text-white">
         {b.acao}
       </button>
     </div>
@@ -156,10 +156,10 @@ export function BoxDestaque({
           <span className="block truncate text-[14.5px] font-semibold leading-tight">{i.title}</span>
           {apoio && <span className="mt-0.5 block truncate text-[12px] text-text-secondary">{apoio}</span>}
         </span>
-        {destino && <span className="shrink-0 rounded-full bg-on-background px-3.5 py-1.5 text-[12.5px] font-semibold text-white">Ver</span>}
+        {destino && <span className="shrink-0 rounded-full bg-on-background px-4 py-2 text-[12.5px] font-semibold text-white">Ver</span>}
       </>
     );
-    const classe = `flex items-center gap-3 rounded-full text-left border border-divider bg-surface-white p-2 pr-2 shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`;
+    const classe = `flex items-center gap-3 rounded-full text-left border border-divider bg-surface-white p-2 pr-4 shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`;
     return destino ? (
       <Link href={destino} target={externo ? "_blank" : undefined} onClick={() => trackClick({ businessId, kind, contentItemId: i.id, sessionId, targetUrl: destino })} className={classe}>
         {miolo}
