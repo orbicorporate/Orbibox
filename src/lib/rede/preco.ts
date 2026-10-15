@@ -5,7 +5,7 @@
  */
 export type PlanoRede = "titanio" | "niobio";
 
-export const PRECO_MENSAL: Record<PlanoRede, number> = { titanio: 79, niobio: 109 };
+export const PRECO_MENSAL: Record<PlanoRede, number> = { titanio: 97, niobio: 147 };
 export const NOME_PLANO: Record<PlanoRede, string> = { titanio: "Titânio", niobio: "Nióbio" };
 
 export const FAIXAS = [
