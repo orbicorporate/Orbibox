@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MAX_PDFS, novoId, type CardapioPdf } from "@/lib/cardapio";
+import { comprimirPdf } from "@/lib/comprimirPdf";
 
 const LIMITE_MB = 10;
 
@@ -22,7 +23,8 @@ export function PdfCardapio({ businessId, pdfs, onChange }: { businessId: string
   const [erro, setErro] = useState<string | null>(null);
   const [modoLink, setModoLink] = useState(false);
   const [link, setLink] = useState("");
-  const [grande, setGrande] = useState<number | null>(null);
+  const [grande, setGrande] = useState<{ tamanho: number; arquivo: File } | null>(null);
+  const [reduzindo, setReduzindo] = useState(false);
 
   const cheio = pdfs.length >= MAX_PDFS;
 
@@ -48,7 +50,7 @@ export function PdfCardapio({ businessId, pdfs, onChange }: { businessId: string
     setErro(null);
     setGrande(null);
     if (f.type !== "application/pdf") return setErro("Envie um arquivo PDF.");
-    if (f.size > LIMITE_MB * 1024 * 1024) return setGrande(f.size);
+    if (f.size > LIMITE_MB * 1024 * 1024) return setGrande({ tamanho: f.size, arquivo: f });
     setEnviando(true);
     const path = `${businessId}/cardapio-${Date.now()}.pdf`;
     const { error } = await supabase.storage.from("cardapios-pdf").upload(path, f, { cacheControl: "3600", upsert: false, contentType: "application/pdf" });
@@ -65,6 +67,26 @@ export function PdfCardapio({ businessId, pdfs, onChange }: { businessId: string
     } else {
       onChange([...pdfs, { id: novoId(), nome: nomePadrao(), url }]);
     }
+  }
+
+  async function reduzir() {
+    if (!grande) return;
+    const original = grande.arquivo;
+    setReduzindo(true);
+    setErro(null);
+    try {
+      const menor = await comprimirPdf(original, LIMITE_MB * 1024 * 1024 * 0.9);
+      if (!menor) {
+        setErro("Não consegui reduzir esse PDF aqui. Use um dos caminhos abaixo.");
+      } else {
+        setReduzindo(false);
+        await enviar(menor);
+        return;
+      }
+    } catch {
+      setErro("Não consegui reduzir esse PDF aqui. Use um dos caminhos abaixo.");
+    }
+    setReduzindo(false);
   }
 
   function salvarLink() {
@@ -149,8 +171,12 @@ export function PdfCardapio({ businessId, pdfs, onChange }: { businessId: string
 
       {grande !== null && (
         <div role="alert" className="mt-3 rounded-2xl bg-[#FDEEDF] p-3.5 ring-1 ring-[#C2650A]/25">
-          <p className="text-[14px] font-semibold text-[#9A4F06]">Esse PDF tem {(grande / 1024 / 1024).toFixed(1).replace(".", ",")} MB e o limite é {LIMITE_MB} MB</p>
-          <p className="mt-1 text-[12.5px] leading-snug text-[#9A4F06]/90">Arquivo grande demora pra baixar no celular do cliente, principalmente com internet fraca, e muita gente desiste. Um cardápio bem feito costuma ficar abaixo de 5 MB. Como reduzir:</p>
+          <p className="text-[14px] font-semibold text-[#9A4F06]">Esse PDF tem {(grande.tamanho / 1024 / 1024).toFixed(1).replace(".", ",")} MB e o limite é {LIMITE_MB} MB</p>
+          <button type="button" onClick={reduzir} disabled={reduzindo} className="mt-3 min-h-[44px] rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white disabled:opacity-60">
+            {reduzindo ? "Reduzindo…" : "Reduzir e enviar automático"}
+          </button>
+          <p className="mt-1.5 text-[12px] leading-snug text-[#9A4F06]/90">Funciona bem para cardápio feito de imagem. Se o seu PDF tem texto para copiar ou links, a redução transforma cada página em imagem.</p>
+          <p className="mt-3 text-[12.5px] leading-snug text-[#9A4F06]/90">Arquivo grande demora pra baixar no celular do cliente, principalmente com internet fraca, e muita gente desiste. Um cardápio bem feito costuma ficar abaixo de 5 MB. Ou reduza por conta própria:</p>
           <ol className="mt-2 list-decimal pl-5 text-[12.5px] leading-relaxed text-[#9A4F06]/90">
             <li>Abra o PDF em um compressor grátis, como ilovepdf.com/pt/comprimir_pdf ou smallpdf.com/pt/comprimir-pdf, e escolha compressão recomendada.</li>
             <li>No Mac: abra no Preview, vá em Arquivo, Exportar, e em Filtro Quartz escolha &quot;Reduce File Size&quot;.</li>
