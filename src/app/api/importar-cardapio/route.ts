@@ -11,7 +11,7 @@ const MAX_FOTOS = 8;
 const MAX_TEXTO = 24000;
 
 type Proposta = {
-  categorias: { nome: string; itens: { titulo: string; descricao?: string; preco?: number | null; preco_tipo?: "exato" | "a_partir" }[] }[];
+  categorias: { nome: string; itens: { titulo: string; descricao?: string; preco?: number | null; preco_tipo?: "exato" | "a_partir"; foto?: { imagem?: number; x?: number; y?: number; largura?: number; altura?: number } | null }[] }[];
 };
 
 const SISTEMA = `Você transforma um cardápio (texto colado ou foto) em itens organizados para o catálogo de um restaurante, lanchonete, sorveteria ou similar do Brasil.
@@ -20,10 +20,12 @@ Regras:
 - Copie fielmente o que está no cardápio. Nunca invente item, ingrediente nem preço.
 - Agrupe por categoria, na ordem em que aparecem (ex: Lanches, Bebidas, Sobremesas). Se não houver categorias claras, use categorias simples e óbvias.
 - titulo: nome do item, com capitalização normal (não tudo em maiúsculas). Sem preço no título.
-- descricao: ingredientes ou detalhe do item, curto, só se estiver no cardápio. Vazio se não houver.
+- descricao: tudo o que o cardápio escreve sobre o item além do nome e do preço: ingredientes, composição, sabor, tamanho, o que acompanha. Costuma estar logo abaixo ou ao lado do nome, em letra menor. Leia com atenção até o texto pequeno e copie fielmente, em uma frase curta (até 200 caracteres). Deixe vazio só se o cardápio realmente não escreve nada sobre aquele item.
+- Uma descrição que vale para toda a categoria (ex.: "todos os shakes vêm com chantilly") não é de um item só: repita-a na descricao de cada item da categoria.
 - preco: número em reais (ex: 12.5). Se o preço não aparece, null.
 - Se o item tem tamanhos ou variações com preços diferentes (P, M, G), crie UM item só, com o MENOR preço, preco_tipo "a_partir", e escreva os tamanhos e valores na descricao (ex: "P R$ 12, M R$ 15, G R$ 18"). Com preço único, preco_tipo "exato".
 - Ignore endereço, telefone, redes sociais, horário e frases de propaganda.
+- foto: quando o item tem uma foto ou ilustração própria no cardápio, informe onde ela está. "imagem" é o número da imagem enviada (os rótulos "Imagem 1", "Imagem 2"...). x e y são o canto superior esquerdo da foto, largura e altura são o tamanho dela, tudo em fração de 0 a 1 da imagem inteira (x 0.5 é o meio). Enquadre só a foto do prato, sem o nome e sem o preço. Se o item não tem foto própria, ou se não tiver certeza de onde ela está, use null. Nunca invente.
 - No máximo 150 itens. Texto em português do Brasil.`;
 
 const SISTEMA_LISTA = `Você transforma um texto colado ou foto de uma lista de produtos (roupas, acessórios, presentes, serviços etc.) em itens para uma lista dentro da página de um negócio brasileiro.
@@ -55,6 +57,16 @@ const SCHEMA = {
                 descricao: { type: "string" },
                 preco: { type: ["number", "null"] },
                 preco_tipo: { type: "string", enum: ["exato", "a_partir"] },
+                foto: {
+                  type: ["object", "null"],
+                  properties: {
+                    imagem: { type: "integer" },
+                    x: { type: "number" },
+                    y: { type: "number" },
+                    largura: { type: "number" },
+                    altura: { type: "number" },
+                  },
+                },
               },
               required: ["titulo"],
             },
@@ -66,6 +78,21 @@ const SCHEMA = {
   },
   required: ["categorias"],
 };
+
+/** Só aceita uma posição de foto que faça sentido (dentro da imagem e com tamanho razoável). */
+function caixaValida(f: { imagem?: number; x?: number; y?: number; largura?: number; altura?: number } | null | undefined, total: number) {
+  if (!f || typeof f !== "object") return null;
+  const { imagem, x, y, largura, altura } = f;
+  if (![imagem, x, y, largura, altura].every((n) => typeof n === "number" && Number.isFinite(n))) return null;
+  const im = Math.round(imagem as number);
+  if (im < 1 || im > total) return null;
+  const cx = Math.min(Math.max(x as number, 0), 1);
+  const cy = Math.min(Math.max(y as number, 0), 1);
+  const w = Math.min(largura as number, 1 - cx);
+  const h = Math.min(altura as number, 1 - cy);
+  if (w < 0.04 || h < 0.04 || w > 0.9 || h > 0.9) return null;
+  return { imagem: im, x: cx, y: cy, largura: w, altura: h };
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -86,17 +113,18 @@ export async function POST(req: NextRequest) {
     // Só aceita fotos do próprio armazenamento do negócio.
     const base = supabase.storage.from("box-images").getPublicUrl(`${businessId}/`).data.publicUrl;
     const content: unknown[] = [];
-    for (const url of fotos) {
+    for (const [pos, url] of fotos.entries()) {
       if (!url.startsWith(base)) continue;
       try {
         const r = await fetch(url);
         if (!r.ok) continue;
         const jpg = await sharp(Buffer.from(await r.arrayBuffer()))
           .rotate()
-          .resize(1800, 1800, { fit: "inside", withoutEnlargement: true })
+          .resize(2400, 2400, { fit: "inside", withoutEnlargement: true })
           .flatten({ background: "#ffffff" })
-          .jpeg({ quality: 82 })
+          .jpeg({ quality: 88 })
           .toBuffer();
+        content.push({ type: "text", text: `Imagem ${pos + 1}:` });
         content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: jpg.toString("base64") } });
       } catch {
         /* foto ilegível: segue com as outras */
@@ -119,6 +147,7 @@ export async function POST(req: NextRequest) {
         itens: (c.itens ?? [])
           .filter((i) => i && String(i.titulo ?? "").trim())
           .map((i) => ({
+            foto: caixaValida(i.foto, fotos.length),
             titulo: String(i.titulo).trim().slice(0, 80),
             descricao: String(i.descricao ?? "").trim().slice(0, 300),
             preco: typeof i.preco === "number" && i.preco > 0 ? Math.round(i.preco * 100) / 100 : null,
