@@ -181,11 +181,11 @@ export function CardapioFlow({
         const cor = corBotoes ?? est.cor;
         return (
           <section key={s.id} className="relative isolate mt-8" aria-label={s.nome || "Pratos"}>
-            {/* Brilho de cor bem espalhado atrás dos cartões: vários pontos largos e fracos ao longo da lista, para o vidro pegar cor sem manchas fortes. */}
+            {/* Brilho de cor bem espalhado atrás dos cartões. Cada brilho termina dentro da caixa (nunca encosta na borda), para não aparecer corte. */}
             <span
               aria-hidden
               className="pointer-events-none absolute -inset-x-8 -inset-y-6 -z-10"
-              style={{ background: [`radial-gradient(75% 15% at 6% 8%, ${cor}38, transparent 72%)`, `radial-gradient(70% 15% at 96% 32%, ${est.cor}30, transparent 72%)`, `radial-gradient(75% 15% at 4% 58%, ${cor}30, transparent 72%)`, `radial-gradient(70% 15% at 95% 88%, ${est.cor}38, transparent 72%)`].join(", ") }}
+              style={{ background: [`radial-gradient(ellipse 40% 11% at 28% 14%, ${cor}38, transparent 100%)`, `radial-gradient(ellipse 40% 11% at 74% 38%, ${est.cor}30, transparent 100%)`, `radial-gradient(ellipse 40% 11% at 26% 62%, ${cor}30, transparent 100%)`, `radial-gradient(ellipse 40% 11% at 72% 86%, ${est.cor}38, transparent 100%)`].join(", ") }}
             />
             {s.nome.trim() && (
               <div className="flex items-center gap-3">
