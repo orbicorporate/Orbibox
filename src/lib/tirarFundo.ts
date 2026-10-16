@@ -5,6 +5,9 @@
  */
 export const FUNDO_NEUTRO = "#F4F1EA";
 
+/** Modelo e motor hospedados no próprio site (public/imgly), sem depender de CDN de terceiros. */
+const CAMINHO_MODELO = () => `${window.location.origin}/imgly/`;
+
 /** Já funcionou nesta sessão: o modelo está carregado e o limite de espera é menor. */
 let modeloPronto = false;
 /** Estourou o tempo uma vez: o resto da sessão segue sem tirar o fundo, em vez de travar de novo. */
@@ -18,7 +21,7 @@ export function fundoIndisponivel(): boolean {
 export function prepararTirarFundo(aoProgresso?: (fracao: number) => void): void {
   if (modeloPronto || indisponivel || typeof window === "undefined") return;
   void import("@imgly/background-removal")
-    .then((m) => m.preload({ model: "isnet_quint8", progress: progresso(aoProgresso) }))
+    .then((m) => m.preload({ model: "small", publicPath: CAMINHO_MODELO(), progress: progresso(aoProgresso) }))
     .then(() => { modeloPronto = true; })
     .catch(() => undefined);
 }
@@ -26,11 +29,13 @@ export function prepararTirarFundo(aoProgresso?: (fracao: number) => void): void
 /** Junta o andamento de vários arquivos (modelo, motor) numa fração única de 0 a 1. */
 function progresso(aoProgresso?: (fracao: number) => void) {
   const itens = new Map<string, { a: number; t: number }>();
+  let maior = 0;
   return (chave: string, atual: number, total: number) => {
     if (total > 0) itens.set(chave, { a: atual, t: total });
     let a = 0, t = 0;
     itens.forEach((v) => { a += v.a; t += v.t; });
-    if (t > 0) aoProgresso?.(Math.min(1, a / t));
+    // Nunca volta para trás quando um arquivo novo entra na conta.
+    if (t > 0) { maior = Math.max(maior, Math.min(1, a / t)); aoProgresso?.(maior); }
   };
 }
 
@@ -45,7 +50,7 @@ export async function tirarFundo(origem: Blob, aoProgresso?: (fracao: number) =>
   let png: Blob;
   try {
     png = await Promise.race([
-      removeBackground(origem, { model: "isnet_quint8", output: { format: "image/png" }, progress: progresso(aoProgresso) }),
+      removeBackground(origem, { model: "small", publicPath: CAMINHO_MODELO(), output: { format: "image/png" }, progress: progresso(aoProgresso) }),
       espera,
     ]);
     modeloPronto = true;

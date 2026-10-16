@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Modelo de recorte de fundo hospedado em public/imgly: arquivos com nome por conteúdo, podem ficar em cache para sempre.
+  async headers() {
+    return [{ source: "/imgly/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] }];
+  },
   // Fotos do Supabase Storage passam pelo otimizador de imagens: chegam
   // redimensionadas pro tamanho da tela e em WebP/AVIF, em vez do original
   // de 1 a 2 MB (ex.: galeria do Inspire-se).
