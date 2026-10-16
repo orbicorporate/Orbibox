@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
+import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 
 const MAX_FOTOS = 8;
@@ -196,7 +197,13 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
         <button type="button" onClick={() => { setAberto(false); setSecoes(null); setErro(null); }} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px]">✕</button>
       </div>
 
-      {secoes === null ? (
+      {lendo ? (
+        <div role="status" aria-live="polite" className="flex flex-col items-center px-2 py-10 text-center">
+          <OrbiParticleSphere size={112} vivid className="rounded-full" />
+          <p className="mt-5 text-[16px] font-semibold">A Orbi está lendo o cardápio</p>
+          <p className="mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">Separando por categoria, com nome e preço. Pode levar alguns segundos.</p>
+        </div>
+      ) : secoes === null ? (
         <>
           <p className="mt-1 text-[13px] leading-snug text-text-secondary">Cole o cardápio do jeito que estiver (pode ser bagunçado) ou envie foto ou PDF. A Orbi separa por categoria, com nome, descrição e preço, e você revisa antes de entrar. Nada disso mexe no seu Catálogo.</p>
           <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={7} placeholder={"Ex:\nLANCHES\nX-Burger  pão, carne, queijo  R$ 22,00\nX-Salada  R$ 25,00\n\nBEBIDAS\nCoca-Cola lata  R$ 6"} className={`${campo} mt-3 resize-y text-[14px] leading-relaxed`} />
@@ -217,7 +224,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
 
           {erro && <p role="alert" className="mt-3 text-[13px] text-red-600">{erro}</p>}
           <button type="button" onClick={() => ler()} disabled={lendo || enviando || (!texto.trim() && fotos.length === 0)} className="mt-4 min-h-[48px] w-full rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">
-            {lendo ? "A Orbi está lendo o cardápio…" : "Orbi, monta meu cardápio"}
+            Orbi, monta meu cardápio
           </button>
         </>
       ) : (
