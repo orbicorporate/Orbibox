@@ -7,6 +7,8 @@ import { MAX_PDFS, novoId, pesoLegivel, type CardapioPdf } from "@/lib/cardapio"
 import { comprimirPdf } from "@/lib/comprimirPdf";
 
 const LIMITE_MB = 10;
+// Acima disso o PDF é otimizado sozinho antes de enviar (abre rápido no celular do cliente).
+const AUTO_MB = 5;
 
 /**
  * PDFs do cardápio para o cliente baixar (por exemplo Cardápio, Bebidas e
@@ -21,6 +23,8 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
   // Qual PDF está sendo trocado (null = enviando um novo).
   const trocando = useRef<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [otimizando, setOtimizando] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [modoLink, setModoLink] = useState(false);
   const [link, setLink] = useState("");
@@ -63,7 +67,7 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
       if (!menor) throw new Error("comprimir");
       setReduzindoId(null);
       trocando.current = p.id;
-      await enviar(menor);
+      await enviar(menor, true);
       return;
     } catch {
       setErro("Não consegui reduzir esse PDF aqui. Use um compressor externo, ou divida o arquivo em dois.");
@@ -88,12 +92,26 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
     input.current?.click();
   }
 
-  async function enviar(f: File | null | undefined) {
-    if (!f) return;
+  async function enviar(entrada: File | null | undefined, jaOtimizado = false) {
+    if (!entrada) return;
+    let f = entrada;
     setErro(null);
+    setAviso(null);
     setGrande(null);
     if (f.type !== "application/pdf") return setErro("Envie um arquivo PDF.");
-    if (f.size > LIMITE_MB * 1024 * 1024) return setGrande({ tamanho: f.size, arquivo: f });
+    // PDF pesado: otimiza sozinho antes de enviar. Se não der para reduzir, segue com o original (até o limite).
+    if (!jaOtimizado && f.size > AUTO_MB * 1024 * 1024) {
+      setOtimizando(true);
+      try {
+        const menor = await comprimirPdf(f, 4.5 * 1024 * 1024);
+        if (menor && menor.size < f.size) {
+          setAviso(`A Orbi otimizou o PDF para abrir rápido no celular: de ${pesoLegivel(f.size)} para ${pesoLegivel(menor.size)}. O texto do PDF deixa de ser selecionável.`);
+          f = menor;
+        }
+      } catch { /* segue com o original */ }
+      setOtimizando(false);
+    }
+    if (f.size > LIMITE_MB * 1024 * 1024) { setAviso(null); return setGrande({ tamanho: f.size, arquivo: f }); }
     setEnviando(true);
     const path = `${businessId}/cardapio-${Date.now()}.pdf`;
     const { error } = await supabase.storage.from("cardapios-pdf").upload(path, f, { cacheControl: "3600", upsert: false, contentType: "application/pdf" });
@@ -123,7 +141,7 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
         setErro("Não consegui reduzir esse PDF aqui. Use um dos caminhos abaixo.");
       } else {
         setReduzindo(false);
-        await enviar(menor);
+        await enviar(menor, true);
         return;
       }
     } catch {
@@ -189,7 +207,7 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
                   </button>
                 )}
                 <a href={p.url} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.06]">Ver o PDF ↗</a>
-                <button type="button" onClick={() => abrirEscolha(p.id)} disabled={enviando} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium disabled:opacity-60">Trocar arquivo</button>
+                <button type="button" onClick={() => abrirEscolha(p.id)} disabled={enviando || otimizando} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium disabled:opacity-60">Trocar arquivo</button>
                 <button type="button" onClick={() => remover(p)} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary">Remover</button>
                 {onMontar && <button type="button" onClick={() => onMontar(p)} className="min-h-[44px] rounded-full bg-on-background px-4 text-[13.5px] font-semibold text-white active:scale-[0.98]"><span aria-hidden>✦ </span>Monte os itens</button>}
               </div>
@@ -200,8 +218,8 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
 
       {!cheio ? (
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => abrirEscolha(null)} disabled={enviando} className={`min-h-[44px] rounded-full px-5 text-[13.5px] font-semibold ${enviando ? "bg-surface-white text-on-background ring-1 ring-black/10" : pdfs.length === 0 ? "bg-on-background text-white" : "border border-divider"}`}>
-            {enviando ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Enviando…</span> : pdfs.length === 0 ? "Enviar PDF" : "Enviar outro PDF"}
+          <button type="button" onClick={() => abrirEscolha(null)} disabled={enviando || otimizando} className={`min-h-[44px] rounded-full px-5 text-[13.5px] font-semibold ${enviando || otimizando ? "bg-surface-white text-on-background ring-1 ring-black/10" : pdfs.length === 0 ? "bg-on-background text-white" : "border border-divider"}`}>
+            {enviando || otimizando ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />{otimizando ? "Otimizando o PDF…" : "Enviando…"}</span> : pdfs.length === 0 ? "Enviar PDF" : "Enviar outro PDF"}
           </button>
           <button type="button" onClick={() => setModoLink((m) => !m)} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium">
             {pdfs.length === 0 ? "Já tenho um link" : "Adicionar por link"}
@@ -222,6 +240,7 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
         </div>
       )}
       {temDrive && <p className="mt-2 text-[12px] leading-snug text-[#9A4F06]">Um dos PDFs é link do Drive. Se o cliente ver &quot;pedir acesso&quot;, mude o compartilhamento para &quot;Qualquer pessoa com o link&quot; ou envie o arquivo aqui.</p>}
+      {aviso && <p role="status" className="mt-2 text-[12.5px] leading-snug text-text-secondary">{aviso}</p>}
       {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
 
       {grande !== null && (
