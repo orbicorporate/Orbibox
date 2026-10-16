@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { precoCardapio, textoSobre, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
+import { pesoLegivel, precoCardapio, textoSobre, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 import { estiloCategoria, IconeCategoria } from "./categoriaCardapio";
@@ -67,16 +67,18 @@ export function CardapioFlow({
       {temPdf && preenchidas.length > 0 && (
         <div className="mt-5 rounded-[24px] bg-white/55 p-3.5 ring-1 ring-white/80 backdrop-blur-xl shadow-[0_6px_24px_rgba(17,19,24,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
           <p className="px-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">{unico ? "Cardápio em PDF" : "Cardápios em PDF"}</p>
-          <ul className="mt-2 flex flex-col gap-2">
+          <ul className={`mt-2 grid gap-2 ${unico ? "grid-cols-1" : "grid-cols-2"}`}>
             {pdfs.map((p) => (
               <li key={p.id}>
-                <a href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="flex min-h-[56px] items-center gap-3 rounded-[18px] bg-white/70 px-3 py-2 ring-1 ring-black/[0.04] transition-transform active:scale-[0.98]">
+                <a href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className={`flex h-full min-h-[56px] rounded-[18px] bg-white/70 ring-1 ring-black/[0.04] transition-transform active:scale-[0.98] ${unico ? "items-center gap-3 px-3 py-2" : "flex-col gap-2 p-3"}`}>
                   <span className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-xl text-[9.5px] font-bold leading-none tracking-wide" style={corBotoes ? { backgroundColor: `${corBotoes}1A`, color: `color-mix(in srgb, ${corBotoes} 75%, black)` } : { backgroundColor: "#FDECEC", color: "#B42318" }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4" /></svg>
                     <span className="mt-0.5">PDF</span>
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-[14.5px] font-medium">{unico ? "Baixar cardápio" : (p.nome.trim() || "PDF")}</span>
-                  <span className="shrink-0 rounded-full bg-black/[0.05] px-3 py-1.5 text-[12.5px] font-medium text-text-secondary">Baixar</span>
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-[14.5px] font-medium leading-snug ${unico ? "truncate" : "line-clamp-2"}`}>{unico ? "Baixar cardápio" : (p.nome.trim() || "PDF")}</span>
+                    <span className="mt-0.5 block text-[12px] text-text-tertiary">PDF{p.bytes ? ` · ${pesoLegivel(p.bytes)}` : ""} · Baixar</span>
+                  </span>
                 </a>
               </li>
             ))}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { MAX_PDFS, novoId, type CardapioPdf } from "@/lib/cardapio";
+import { MAX_PDFS, novoId, pesoLegivel, type CardapioPdf } from "@/lib/cardapio";
 import { comprimirPdf } from "@/lib/comprimirPdf";
 
 const LIMITE_MB = 10;
@@ -27,6 +27,48 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
   const [reduzindo, setReduzindo] = useState(false);
 
   const cheio = pdfs.length >= MAX_PDFS;
+  const [reduzindoId, setReduzindoId] = useState<string | null>(null);
+
+  // PDFs enviados antes de guardarmos o peso: descobre o tamanho uma vez e salva.
+  const pesoTentado = useRef(false);
+  useEffect(() => {
+    if (pesoTentado.current) return;
+    const faltam = pdfs.filter((p) => !p.bytes && p.url.includes("/object/public/cardapios-pdf/"));
+    if (faltam.length === 0) return;
+    pesoTentado.current = true;
+    (async () => {
+      const pesos = new Map<string, number>();
+      for (const p of faltam) {
+        try {
+          const r = await fetch(p.url, { method: "HEAD" });
+          const n = Number(r.headers.get("content-length"));
+          if (r.ok && n > 0) pesos.set(p.id, n);
+        } catch { /* sem peso, segue */ }
+      }
+      if (pesos.size > 0) onChange(pdfs.map((p) => (pesos.has(p.id) ? { ...p, bytes: pesos.get(p.id) } : p)));
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Reduz um PDF que já está enviado: baixa, comprime no navegador e troca o arquivo.
+  async function reduzirExistente(p: CardapioPdf) {
+    setErro(null);
+    setReduzindoId(p.id);
+    try {
+      const r = await fetch(p.url);
+      if (!r.ok) throw new Error("baixar");
+      const original = new File([await r.blob()], "cardapio.pdf", { type: "application/pdf" });
+      const menor = await comprimirPdf(original, 4.5 * 1024 * 1024);
+      if (!menor) throw new Error("comprimir");
+      setReduzindoId(null);
+      trocando.current = p.id;
+      await enviar(menor);
+      return;
+    } catch {
+      setErro("Não consegui reduzir esse PDF aqui. Use um compressor externo, ou divida o arquivo em dois.");
+    }
+    setReduzindoId(null);
+  }
 
   // Apaga do armazenamento o PDF antigo quando ele é trocado ou removido, pra não acumular arquivo esquecido.
   async function apagarAntigo(antigo: string) {
@@ -62,10 +104,10 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
     trocando.current = null;
     if (alvo) {
       const antigo = pdfs.find((p) => p.id === alvo)?.url;
-      onChange(pdfs.map((p) => (p.id === alvo ? { ...p, url } : p)));
+      onChange(pdfs.map((p) => (p.id === alvo ? { ...p, url, bytes: f.size } : p)));
       if (antigo) void apagarAntigo(antigo);
     } else {
-      onChange([...pdfs, { id: novoId(), nome: nomePadrao(), url }]);
+      onChange([...pdfs, { id: novoId(), nome: nomePadrao(), url, bytes: f.size }]);
     }
   }
 
@@ -133,7 +175,18 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
                 onBlur={(e) => renomear(p.id, e.target.value)}
                 className="mt-1 w-full rounded-xl border border-divider bg-surface-white px-3.5 py-2.5 text-[14px] outline-none focus:border-on-background"
               />
+              {p.bytes != null && (
+                <p className={`mt-2 text-[12.5px] leading-snug ${p.bytes > 5 * 1024 * 1024 ? "text-[#9A4F06]" : "text-text-tertiary"}`}>
+                  {pesoLegivel(p.bytes)}
+                  {p.bytes > 5 * 1024 * 1024 ? ". Acima de 5 MB demora para abrir no celular do cliente." : ""}
+                </p>
+              )}
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                {p.bytes != null && p.bytes > 5 * 1024 * 1024 && (
+                  <button type="button" onClick={() => reduzirExistente(p)} disabled={reduzindoId !== null || enviando} className="min-h-[44px] rounded-full border border-[#C2650A]/40 bg-[#FDEEDF] px-4 text-[13.5px] font-semibold text-[#9A4F06] disabled:opacity-60">
+                    {reduzindoId === p.id ? "Reduzindo…" : "Reduzir este PDF"}
+                  </button>
+                )}
                 <a href={p.url} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.06]">Ver o PDF ↗</a>
                 <button type="button" onClick={() => abrirEscolha(p.id)} disabled={enviando} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium disabled:opacity-60">Trocar arquivo</button>
                 <button type="button" onClick={() => remover(p)} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary">Remover</button>
