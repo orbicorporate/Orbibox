@@ -66,8 +66,7 @@ export function CardapioFlow({
       {temPdf && preenchidas.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {pdfs.map((p) => (
-            <a key={p.id} href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="M7 11l5 5 5-5" /><path d="M5 21h14" /></svg>
+            <a key={p.id} href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="inline-flex min-h-[44px] items-center rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
               {unico ? "Baixar cardápio em PDF" : `Baixar ${p.nome.trim() || "PDF"}`}
             </a>
           ))}
@@ -101,8 +100,7 @@ export function CardapioFlow({
             <p className="text-[15px] font-medium">{unico ? "Nosso cardápio completo está em PDF." : "Nossos cardápios estão em PDF."}</p>
             <div className="mt-4 flex flex-col gap-2.5">
               {pdfs.map((p) => (
-                <a key={p.id} href={p.url} target="_blank" rel="noopener" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} style={estiloBotao} className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="M7 11l5 5 5-5" /><path d="M5 21h14" /></svg>
+                <a key={p.id} href={p.url} target="_blank" rel="noopener" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} style={estiloBotao} className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]">
                   {unico ? "Abrir cardápio em PDF" : `Abrir ${p.nome.trim() || "PDF"}`}
                 </a>
               ))}
