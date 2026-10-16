@@ -5,15 +5,53 @@
  */
 export const FUNDO_NEUTRO = "#F4F1EA";
 
+/** Já funcionou nesta sessão: o modelo está carregado e o limite de espera é menor. */
+let modeloPronto = false;
+/** Estourou o tempo uma vez: o resto da sessão segue sem tirar o fundo, em vez de travar de novo. */
+let indisponivel = false;
+
+export function fundoIndisponivel(): boolean {
+  return indisponivel;
+}
+
+/** Baixa o modelo antes de precisar, para a primeira foto não esperar. Não faz nada se já deu certo ou falhou. */
+export function prepararTirarFundo(aoProgresso?: (fracao: number) => void): void {
+  if (modeloPronto || indisponivel || typeof window === "undefined") return;
+  void import("@imgly/background-removal")
+    .then((m) => m.preload({ model: "isnet_quint8", progress: progresso(aoProgresso) }))
+    .then(() => { modeloPronto = true; })
+    .catch(() => undefined);
+}
+
+/** Junta o andamento de vários arquivos (modelo, motor) numa fração única de 0 a 1. */
+function progresso(aoProgresso?: (fracao: number) => void) {
+  const itens = new Map<string, { a: number; t: number }>();
+  return (chave: string, atual: number, total: number) => {
+    if (total > 0) itens.set(chave, { a: atual, t: total });
+    let a = 0, t = 0;
+    itens.forEach((v) => { a += v.a; t += v.t; });
+    if (t > 0) aoProgresso?.(Math.min(1, a / t));
+  };
+}
+
 export async function tirarFundo(origem: Blob, aoProgresso?: (fracao: number) => void): Promise<Blob> {
+  if (indisponivel) throw new Error("tirar fundo indisponível");
   const { removeBackground } = await import("@imgly/background-removal");
-  const png = await removeBackground(origem, {
-    model: "isnet_quint8",
-    output: { format: "image/png" },
-    progress: (_chave, atual, total) => {
-      if (total > 0) aoProgresso?.(Math.min(1, atual / total));
-    },
+  const limite = modeloPronto ? 45_000 : 150_000;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const espera = new Promise<never>((_, falha) => {
+    timer = setTimeout(() => { indisponivel = true; falha(new Error("tempo esgotado")); }, limite);
   });
+  let png: Blob;
+  try {
+    png = await Promise.race([
+      removeBackground(origem, { model: "isnet_quint8", output: { format: "image/png" }, progress: progresso(aoProgresso) }),
+      espera,
+    ]);
+    modeloPronto = true;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
   const img = await carregar(png);
   const { w, h } = { w: img.naturalWidth, h: img.naturalHeight };
 

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
 import { OrbiConcluido, OrbiEncher } from "@/components/orbi/OrbiConcluido";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
-import { tirarFundo } from "@/lib/tirarFundo";
+import { fundoIndisponivel, prepararTirarFundo, tirarFundo } from "@/lib/tirarFundo";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 
 const MAX_FOTOS = 8;
@@ -27,6 +27,8 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
   const [enviando, setEnviando] = useState(false);
   const [lendo, setLendo] = useState(false);
   const [recorte, setRecorte] = useState<{ n: number; total: number } | null>(null);
+  const [baixando, setBaixando] = useState<number | null>(null);
+  const [semFundoAviso, setSemFundoAviso] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [secoes, setSecoes] = useState<Secao[] | null>(null);
   const [feito, setFeito] = useState<number | null>(null);
@@ -107,6 +109,11 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doPdf]);
 
+  // Começa a baixar o recortador de fundo assim que a pessoa abre a importação, para a primeira foto não esperar.
+  useEffect(() => {
+    if (aberto) prepararTirarFundo();
+  }, [aberto]);
+
   async function ler(usar?: { nome: string; url: string }[]) {
     setErro(null);
     setLendo(true);
@@ -127,6 +134,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
       // Depois tira o fundo de cada recorte (fundo claro e neutro). Se isso falhar, fica o recorte como veio.
       const comFoto = propostas.reduce((n, c) => n + c.itens.filter((i) => i.foto && base[i.foto.imagem - 1]).length, 0);
       let n = 0;
+      setSemFundoAviso(false);
       setRecorte({ n: 0, total: comFoto });
       for (const c of propostas) {
         for (const i of c.itens) {
@@ -136,7 +144,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
           try {
             let blob = await recortarFoto(url, cx);
             if (blob) {
-              try { blob = await tirarFundo(blob); } catch { /* mantém o recorte com o fundo original */ }
+              try { blob = await tirarFundo(blob, setBaixando); } catch { setSemFundoAviso(true); /* mantém o recorte com o fundo original */ }
               i.fotoBlob = blob; i.fotoPreview = URL.createObjectURL(blob); i.usarFoto = true;
             }
           } catch { /* sem foto para este prato */ }
@@ -150,6 +158,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
     } finally {
       setLendo(false);
       setRecorte(null);
+      setBaixando(null);
     }
   }
 
@@ -230,7 +239,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
         <div role="status" aria-live="polite" className="flex flex-col items-center px-2 py-10 text-center">
           <OrbiEncher size={112} estado="carregando" progresso={recorte && recorte.total > 0 ? 0.55 + 0.4 * (recorte.n / recorte.total) : undefined} />
           <p className="mt-5 text-[16px] font-semibold">{recorte ? "A Orbi está recortando as fotos" : "A Orbi está lendo o cardápio"}</p>
-          <p className="mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">{recorte ? `Tirando o fundo de cada prato: ${recorte.n} de ${recorte.total}. Na primeira vez leva um pouco mais.` : "Separando por categoria, com nome e preço. Pode levar alguns segundos."}</p>
+          <p className="mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">{recorte ? (recorte.n === 0 && baixando !== null && baixando < 1 ? `Baixando o recortador de fundo, só na primeira vez: ${Math.round(baixando * 100)}%.` : fundoIndisponivel() ? `Não consegui tirar o fundo agora. Deixando só o recorte dos pratos: ${recorte.n} de ${recorte.total}.` : `Tirando o fundo de cada prato: ${recorte.n} de ${recorte.total}.`) : "Separando por categoria, com nome e preço. Pode levar alguns segundos."}</p>
         </div>
       ) : secoes === null ? (
         <>
@@ -259,6 +268,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
       ) : (
         <>
           <p className="mt-1 text-[13px] leading-snug text-text-secondary">A Orbi encontrou {secoes.reduce((n, s) => n + s.itens.length, 0)} pratos{secoes.some((x) => x.itens.some((i) => i.fotoPreview)) ? " e recortou as fotos que estavam no cardápio. Toque na foto para tirar a que não ficou boa" : ""}. Confira, ajuste nome e preço e desmarque o que não quiser.</p>
+          {semFundoAviso && <p role="status" className="mt-2 rounded-2xl bg-surface-soft px-3.5 py-2.5 text-[12.5px] leading-snug text-text-secondary">Não consegui tirar o fundo de algumas fotos (a internet pode estar lenta). Elas ficaram só com o recorte. Depois, em cada prato, toque na foto e use Tirar fundo.</p>}
           <div className="mt-3 flex flex-col gap-4">
             {secoes.map((s, si) => (
               <div key={si}>
