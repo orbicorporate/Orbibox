@@ -1269,3 +1269,12 @@ html[data-embed] [data-embed-oculto="1"] { display: none !important; }
   .orbi-ponto-atual, .orbi-ponto-atual .orbi-ponto-tinta, .orbi-ponto-pronto { animation: none; }
   .orbi-ponto-atual .orbi-ponto-tinta { transform: scaleY(0.5); }
 }
+
+.modo-desc { animation: modoDescEntra 200ms ease-out; }
+@keyframes modoDescEntra {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modo-desc { animation: none; }
+}

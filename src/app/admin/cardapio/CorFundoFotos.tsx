@@ -2,12 +2,13 @@
 
 import { CORES_FUNDO } from "@/lib/recorteIA";
 
-/** Escolha da cor de fundo das fotos dos pratos (a mesma em todas, para a lista ficar uniforme). */
+/** Cor de fundo das fotos dos pratos (a mesma em todas, para a lista ficar uniforme). */
 export default function CorFundoFotos({ valor, onChange, disabled }: { valor: string; onChange: (cor: string) => void; disabled?: boolean }) {
+  const atual = CORES_FUNDO.find((c) => c.cor.toLowerCase() === valor.toLowerCase());
   return (
-    <div className="mt-3">
-      <p className="text-[13px] font-medium">Cor de fundo das fotos</p>
-      <div role="radiogroup" aria-label="Cor de fundo das fotos" className="mt-1.5 flex flex-wrap gap-2">
+    <div className="mt-3 flex items-center justify-between gap-3">
+      <p className="text-[12.5px] text-text-secondary">Fundo <span className="text-text-tertiary">· {atual?.nome ?? "Personalizada"}</span></p>
+      <div role="radiogroup" aria-label="Cor de fundo das fotos" className="flex items-center">
         {CORES_FUNDO.map((c) => {
           const ativa = c.cor.toLowerCase() === valor.toLowerCase();
           return (
@@ -19,15 +20,16 @@ export default function CorFundoFotos({ valor, onChange, disabled }: { valor: st
               aria-label={c.nome}
               disabled={disabled}
               onClick={() => onChange(c.cor)}
-              className={`flex h-11 w-11 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60 ${ativa ? "ring-2 ring-on-background ring-offset-2" : "ring-1 ring-black/15"}`}
-              style={{ backgroundColor: c.cor }}
+              className="flex h-11 w-9 items-center justify-center disabled:opacity-60"
             >
-              {ativa && <span className="text-[13px] font-bold text-on-background" aria-hidden="true">✓</span>}
+              <span
+                className={`block h-6 w-6 rounded-full transition-transform duration-150 ${ativa ? "scale-110 ring-2 ring-on-background ring-offset-2 ring-offset-white" : "ring-1 ring-black/15"}`}
+                style={{ backgroundColor: c.cor }}
+              />
             </button>
           );
         })}
       </div>
-      <p className="mt-1 text-[12px] text-text-tertiary">{CORES_FUNDO.find((c) => c.cor.toLowerCase() === valor.toLowerCase())?.nome ?? "Personalizada"}. Todas as fotos usam a mesma cor, com sombra suave.</p>
     </div>
   );
 }
