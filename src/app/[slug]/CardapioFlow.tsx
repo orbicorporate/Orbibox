@@ -70,7 +70,7 @@ export function CardapioFlow({
       <h2 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.01em]">{titulo}</h2>
       <p className="mt-1 text-[14px] text-text-secondary">{subtitulo}</p>
       {temPdf && preenchidas.length > 0 && (
-        <div className="mt-5 rounded-[24px] bg-white/55 p-3.5 ring-1 ring-white/80 backdrop-blur-xl shadow-[0_6px_24px_rgba(17,19,24,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
+        <div className="mt-5">
           <p className="px-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">{unico ? "Cardápio em PDF" : "Cardápios em PDF"}</p>
           {unico ? (
             <ul className="mt-2 grid grid-cols-1 gap-2">
@@ -78,8 +78,7 @@ export function CardapioFlow({
                 <li key={p.id}>
                   <a href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="flex h-full min-h-[56px] items-center gap-3 rounded-[18px] bg-white/70 px-3 py-2 ring-1 ring-black/[0.04] transition-transform active:scale-[0.98]">
                     <span className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-xl text-[9.5px] font-bold leading-none tracking-wide" style={corBotoes ? { backgroundColor: `${corBotoes}1A`, color: `color-mix(in srgb, ${corBotoes} 75%, black)` } : { backgroundColor: "#FDECEC", color: "#B42318" }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4" /></svg>
-                      <span className="mt-0.5">PDF</span>
+                      <span className="text-[11px]">PDF</span>
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[14.5px] font-medium leading-snug">Baixar cardápio</span>
@@ -106,8 +105,7 @@ export function CardapioFlow({
                       style={{ background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0) 48%), ${cor}`, boxShadow: `inset 0 -7px 12px -5px rgba(0,0,0,0.22), inset 0 1.5px 2px rgba(255,255,255,0.28), 0 6px 16px -6px ${cor}99`, color: textoSobre(cor) }}
                       className="flex h-[64px] w-[64px] flex-col items-center justify-center rounded-full transition-transform active:scale-95"
                     >
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4" /></svg>
-                      <span className="mt-0.5 text-[9px] font-bold leading-none tracking-wide">PDF</span>
+                      <span className="text-[14px] font-bold leading-none tracking-[0.08em]">PDF</span>
                     </a>
                     <span className="mt-1.5 line-clamp-2 w-full break-words text-center text-[12px] font-medium leading-tight">{p.nome.trim() || "PDF"}</span>
                     {p.bytes ? <span className="mt-0.5 text-[10.5px] leading-none text-text-tertiary">{pesoLegivel(p.bytes)}</span> : null}
