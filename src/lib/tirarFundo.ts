@@ -39,7 +39,7 @@ function progresso(aoProgresso?: (fracao: number) => void) {
   };
 }
 
-export async function tirarFundo(origem: Blob, aoProgresso?: (fracao: number) => void): Promise<Blob> {
+export async function tirarFundo(origem: Blob, aoProgresso?: (fracao: number) => void, cor: string = FUNDO_NEUTRO): Promise<Blob> {
   if (indisponivel) throw new Error("tirar fundo indisponível");
   const { removeBackground } = await import("@imgly/background-removal");
   const limite = modeloPronto ? 45_000 : 150_000;
@@ -97,7 +97,7 @@ export async function tirarFundo(origem: Blob, aoProgresso?: (fracao: number) =>
   saida.height = lado;
   const sc = saida.getContext("2d");
   if (!sc) throw new Error("canvas indisponível");
-  sc.fillStyle = FUNDO_NEUTRO;
+  sc.fillStyle = cor;
   sc.fillRect(0, 0, lado, lado);
   sc.imageSmoothingQuality = "high";
   sc.drawImage(img, x0, y0, bw, bh, (lado - dw) / 2, (lado - dh) / 2, dw, dh);

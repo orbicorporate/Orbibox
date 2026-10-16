@@ -1,5 +1,28 @@
 import { tirarFundo } from "@/lib/tirarFundo";
 
+export const COR_PADRAO = "#F4F1EA";
+export const CORES_FUNDO = [
+  { nome: "Creme", cor: "#F4F1EA" },
+  { nome: "Branco", cor: "#FFFFFF" },
+  { nome: "Cinza claro", cor: "#ECEDEF" },
+  { nome: "Rosa claro", cor: "#F7E9EC" },
+  { nome: "Verde claro", cor: "#E8F2EA" },
+  { nome: "Azul claro", cor: "#E7EEF6" },
+];
+const CHAVE_COR = "orbibox:corFundoFotos";
+
+/** Última cor escolhida neste aparelho (só comodidade, nunca obrigatória). */
+export function lerCorFundo(): string {
+  try {
+    const v = window.localStorage.getItem(CHAVE_COR);
+    if (v && CORES_FUNDO.some((c) => c.cor === v)) return v;
+  } catch { /* sem armazenamento */ }
+  return COR_PADRAO;
+}
+export function guardarCorFundo(cor: string) {
+  try { window.localStorage.setItem(CHAVE_COR, cor); } catch { /* sem armazenamento */ }
+}
+
 let semChave = false;
 let cadeiaLocal: Promise<unknown> = Promise.resolve();
 
@@ -9,10 +32,11 @@ export function recorteIAIndisponivel() {
 }
 
 /** Recorte com IA (só o produto, fundo claro e neutro). Devolve um JPEG de até 900 px, ou lança erro. */
-export async function recorteComIA(origem: Blob): Promise<Blob> {
+export async function recorteComIA(origem: Blob, cor: string = COR_PADRAO): Promise<Blob> {
   if (semChave) throw new Error("indisponivel");
   const form = new FormData();
   form.append("imagem", origem, "prato.jpg");
+  form.append("cor", cor);
   const r = await fetch("/api/recorte-ia", { method: "POST", body: form });
   if (r.status === 501) { semChave = true; throw new Error("indisponivel"); }
   if (!r.ok) throw new Error("falhou");
@@ -31,12 +55,12 @@ export async function recorteComIA(origem: Blob): Promise<Blob> {
  * Melhor recorte possível: tenta a IA e, se não houver chave ou ela falhar, cai no recorte local
  * (uma foto por vez, porque o modelo local é pesado).
  */
-export async function melhorRecorte(recorte: Blob, aoBaixar?: (p: number) => void): Promise<{ blob: Blob; ia: boolean; semFundo: boolean }> {
+export async function melhorRecorte(recorte: Blob, aoBaixar?: (p: number) => void, cor: string = COR_PADRAO): Promise<{ blob: Blob; ia: boolean; semFundo: boolean }> {
   try {
-    return { blob: await recorteComIA(recorte), ia: true, semFundo: true };
+    return { blob: await recorteComIA(recorte, cor), ia: true, semFundo: true };
   } catch { /* cai no local */ }
   const vez = cadeiaLocal.then(async () => {
-    try { return { blob: await tirarFundo(recorte, aoBaixar), ia: false, semFundo: true }; }
+    try { return { blob: await tirarFundo(recorte, aoBaixar, cor), ia: false, semFundo: true }; }
     catch { return { blob: recorte, ia: false, semFundo: false }; }
   });
   cadeiaLocal = vez.catch(() => undefined);

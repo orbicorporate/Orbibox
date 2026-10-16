@@ -6,10 +6,13 @@ export const maxDuration = 120;
 
 const MAX_BYTES = 4 * 1024 * 1024;
 
-const PEDIDO = `This is a cropped piece of a restaurant menu. Extract ONLY the product shown (the drink, dessert or dish itself) and place it centered on a plain, clean, very light warm-neutral background (#F4F1EA), square framing, with a small even margin around it.
+function pedido(cor: string) {
+  return `This is a cropped piece of a restaurant menu. Make a clean studio product photo of ONLY the product shown (the drink, dessert or dish itself), centered, square framing, with a small even margin around it.
+Background: a seamless, flat surface in the exact solid color ${cor}, the same tone from edge to edge, no texture, no pattern, no gradient, no horizon line. Lighting: soft, even light from above, with a soft, realistic contact shadow right under the product and a very subtle gentle shadow falloff on the surface, so it looks naturally placed on the surface.
 Remove everything that is not the product: price badges or circles, prices, product names, letters, numbers, logos, decorative borders, other menu elements and the original background.
 Keep the product exactly as it is in the image: same shape, colors, toppings, quantity and details. Do not invent, add, redraw or beautify anything, and do not change the packaging or its text. If part of the product is cut off by the edge of the crop, keep it as it is, do not complete it.
-No text, no shadows other than a very soft natural contact shadow, no extra objects.`;
+No text, no extra objects, no props, no hands.`;
+}
 
 /** Recorte com IA: devolve só o produto, centralizado, em fundo claro e neutro. */
 export async function POST(req: NextRequest) {
@@ -21,10 +24,13 @@ export async function POST(req: NextRequest) {
   if (!userData.user) return NextResponse.json({ error: "Entre na sua conta." }, { status: 401 });
 
   let imagem: File | null = null;
+  let cor = "#F4F1EA";
   try {
     const form = await req.formData();
     const f = form.get("imagem");
     if (f instanceof File) imagem = f;
+    const c = form.get("cor");
+    if (typeof c === "string" && /^#[0-9a-fA-F]{6}$/.test(c)) cor = c;
   } catch { /* trata abaixo */ }
   if (!imagem || imagem.size === 0 || imagem.size > MAX_BYTES) {
     return NextResponse.json({ error: "Imagem inválida." }, { status: 400 });
@@ -33,7 +39,7 @@ export async function POST(req: NextRequest) {
   const corpo = new FormData();
   corpo.append("model", "gpt-image-1");
   corpo.append("image", imagem, "prato.jpg");
-  corpo.append("prompt", PEDIDO);
+  corpo.append("prompt", pedido(cor));
   corpo.append("size", "1024x1024");
   corpo.append("quality", "medium");
   corpo.append("input_fidelity", "high");

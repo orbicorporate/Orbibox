@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
 import { OrbiConcluido, OrbiEncher } from "@/components/orbi/OrbiConcluido";
-import { melhorRecorte, emParalelo } from "@/lib/recorteIA";
+import { melhorRecorte, emParalelo, lerCorFundo, guardarCorFundo, COR_PADRAO } from "@/lib/recorteIA";
+import CorFundoFotos from "./CorFundoFotos";
 import OrbiPontos from "@/components/orbi/OrbiPontos";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
 import { fundoIndisponivel, prepararTirarFundo } from "@/lib/tirarFundo";
@@ -31,6 +32,8 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
   const [recorte, setRecorte] = useState<{ n: number; total: number } | null>(null);
   const [baixando, setBaixando] = useState<number | null>(null);
   const [semFundoAviso, setSemFundoAviso] = useState(false);
+  const [corFundo, setCorFundo] = useState(COR_PADRAO);
+  useEffect(() => { const c = lerCorFundo(); if (c !== COR_PADRAO) setCorFundo(c); }, []); // eslint-disable-line react-hooks/set-state-in-effect
   const [erro, setErro] = useState<string | null>(null);
   const [secoes, setSecoes] = useState<Secao[] | null>(null);
   const [feito, setFeito] = useState<number | null>(null);
@@ -144,7 +147,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
         try {
           let blob = await recortarFoto(base[cx.imagem - 1], cx);
           if (blob) {
-            const r = await melhorRecorte(blob, setBaixando);
+            const r = await melhorRecorte(blob, setBaixando, corFundo);
             if (!r.semFundo) setSemFundoAviso(true);
             blob = r.blob;
             i.fotoBlob = blob; i.fotoPreview = URL.createObjectURL(blob); i.usarFoto = true;
@@ -260,6 +263,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
               </span>
             ))}
           </div>
+          <CorFundoFotos valor={corFundo} onChange={(c) => { setCorFundo(c); guardarCorFundo(c); }} />
           <p className="mt-1.5 text-[12px] text-text-tertiary">Até 8 fotos ou páginas de PDF. Quanto mais nítido, melhor a leitura.</p>
 
           {erro && <p role="alert" className="mt-3 text-[13px] text-red-600">{erro}</p>}
