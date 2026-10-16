@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { createClient } from "@/lib/supabase/client";
 import type { InspireThemeData } from "@/lib/inspirePhotos";
 
@@ -260,7 +261,7 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
         </div>
 
         <label className="mt-3 flex cursor-pointer items-center justify-center rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
-          {busy ? "Enviando…" : items.length > 0 ? "Adicionar mais fotos" : "Escolher fotos e enviar"}
+          {busy ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Enviando…</span> : items.length > 0 ? "Adicionar mais fotos" : "Escolher fotos e enviar"}
           <input type="file" accept="image/*" multiple onChange={handleFiles} disabled={busy} className="hidden" />
         </label>
       </div>
@@ -308,7 +309,7 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
             disabled={saving}
             className="mt-4 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
           >
-            {saving ? "Salvando…" : `Salvar tema "${theme}" no Inspire-se`}
+            {saving ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Salvando…</span> : `Salvar tema "${theme}" no Inspire-se`}
           </button>
           {saveMsg && <p className={`mt-2 text-center text-[12px] font-medium ${saveMsg.startsWith("✓") ? "text-green-700" : "text-red-600"}`}>{saveMsg}</p>}
         </div>
