@@ -7,6 +7,7 @@ import { OrbiConcluido, OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { pdfParaImagens } from "@/lib/pdfParaImagens";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
 import { tirarFundo } from "@/lib/tirarFundo";
+import OrbiPontos from "@/components/orbi/OrbiPontos";
 
 type Resposta = { categorias?: { nome: string; itens: { titulo: string; foto?: CaixaFoto | null }[] }[]; error?: string };
 
@@ -117,6 +118,7 @@ export function RefazerFotos({ businessId, secoes, pdfs, onChange }: { businessI
       <button type="button" onClick={refazer} disabled={ocupado} className={`mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full px-5 text-[14.5px] font-semibold active:scale-[0.98] ${ocupado ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-on-background text-white"}`}>
         {fase === "lendo" ? <><OrbiMiniVerde size={20} />A Orbi está lendo o PDF…</> : fase === "fotos" ? <><OrbiMiniVerde size={20} progresso={feitas.total ? feitas.n / feitas.total : 0} />Refazendo {feitas.n} de {feitas.total}…</> : "Refazer fotos"}
       </button>
+      {fase === "fotos" && feitas.total > 0 && <OrbiPontos n={feitas.n} total={feitas.total} className="mx-auto mt-3" />}
       {semFundo && <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">Na primeira vez baixa o recorte de fundo (uns 40 MB) e leva alguns segundos por foto. Pode deixar aberto.</p>}
     </div>
   );

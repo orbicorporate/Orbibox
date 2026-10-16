@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
 import { OrbiConcluido, OrbiEncher } from "@/components/orbi/OrbiConcluido";
+import OrbiPontos from "@/components/orbi/OrbiPontos";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
 import { fundoIndisponivel, prepararTirarFundo, tirarFundo } from "@/lib/tirarFundo";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
@@ -239,7 +240,8 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
         <div role="status" aria-live="polite" className="flex flex-col items-center px-2 py-10 text-center">
           <OrbiEncher size={112} estado="carregando" progresso={recorte && recorte.total > 0 ? 0.55 + 0.4 * (recorte.n / recorte.total) : undefined} />
           <p className="mt-5 text-[16px] font-semibold">{recorte ? "A Orbi está recortando as fotos" : "A Orbi está lendo o cardápio"}</p>
-          <p className="mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">{recorte ? (recorte.n === 0 && baixando !== null && baixando < 1 ? `Baixando o recortador de fundo, só na primeira vez: ${Math.round(baixando * 100)}%.` : fundoIndisponivel() ? `Não consegui tirar o fundo agora. Deixando só o recorte dos pratos: ${recorte.n} de ${recorte.total}.` : `Tirando o fundo de cada prato: ${recorte.n} de ${recorte.total}.`) : "Separando por categoria, com nome e preço. Pode levar alguns segundos."}</p>
+          {recorte && recorte.total > 0 && !(recorte.n === 0 && baixando !== null && baixando < 1) && <OrbiPontos n={recorte.n} total={recorte.total} className="mt-4" />}
+          <p className="mt-3 max-w-[300px] text-[13px] leading-snug text-text-secondary">{recorte ? (recorte.n === 0 && baixando !== null && baixando < 1 ? `Baixando o recortador de fundo, só na primeira vez: ${Math.round(baixando * 100)}%.` : fundoIndisponivel() ? `Não consegui tirar o fundo agora. Deixando só o recorte dos pratos: ${recorte.n} de ${recorte.total}.` : `Tirando o fundo de cada prato: ${recorte.n} de ${recorte.total}.`) : "Separando por categoria, com nome e preço. Pode levar alguns segundos."}</p>
         </div>
       ) : secoes === null ? (
         <>

@@ -1220,3 +1220,52 @@ html[data-embed] [data-embed-oculto="1"] { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .orbi-encher { animation: none; clip-path: inset(50% 0 0 0); }
 }
+
+/* Bolinhas sendo pintadas (progresso do recorte de fundo) */
+.orbi-ponto {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.07);
+  transition: background-color 240ms ease-out;
+}
+.orbi-ponto-tinta {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, #5be08f, #16c45b 55%, #0f9f48);
+  transform: scaleY(0);
+  transform-origin: bottom;
+}
+.orbi-ponto-atual {
+  animation: orbiPontoRespira 1.6s ease-in-out infinite;
+}
+.orbi-ponto-atual .orbi-ponto-tinta {
+  animation: orbiPontoPinta 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.orbi-ponto-pronto {
+  animation: orbiPontoSalta 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.orbi-ponto-pronto .orbi-ponto-tinta {
+  transform: scaleY(1);
+}
+@keyframes orbiPontoPinta {
+  0% { transform: scaleY(0); }
+  70%, 100% { transform: scaleY(1); }
+}
+@keyframes orbiPontoRespira {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+@keyframes orbiPontoSalta {
+  0% { transform: scale(0.8); }
+  60% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbi-ponto-atual, .orbi-ponto-atual .orbi-ponto-tinta, .orbi-ponto-pronto { animation: none; }
+  .orbi-ponto-atual .orbi-ponto-tinta { transform: scaleY(0.5); }
+}
