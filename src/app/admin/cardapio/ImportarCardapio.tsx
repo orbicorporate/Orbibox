@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
 import { OrbiConcluido, OrbiEncher } from "@/components/orbi/OrbiConcluido";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
+import { tirarFundo } from "@/lib/tirarFundo";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 
 const MAX_FOTOS = 8;
@@ -25,6 +26,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
   const [fotos, setFotos] = useState<{ nome: string; url: string }[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [lendo, setLendo] = useState(false);
+  const [recorte, setRecorte] = useState<{ n: number; total: number } | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [secoes, setSecoes] = useState<Secao[] | null>(null);
   const [feito, setFeito] = useState<number | null>(null);
@@ -122,15 +124,24 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
       const base = (usar ?? fotos).map((f) => f.url);
       const propostas = (json.categorias as { nome: string; itens: Omit<ItemProposto, "marcado">[] }[]).map((c) => ({ nome: c.nome, itens: c.itens.map((i) => ({ ...i, marcado: true })) }));
       // Recorta a foto de cada prato da própria imagem lida. Se um recorte falhar, o prato segue sem foto.
+      // Depois tira o fundo de cada recorte (fundo claro e neutro). Se isso falhar, fica o recorte como veio.
+      const comFoto = propostas.reduce((n, c) => n + c.itens.filter((i) => i.foto && base[i.foto.imagem - 1]).length, 0);
+      let n = 0;
+      setRecorte({ n: 0, total: comFoto });
       for (const c of propostas) {
         for (const i of c.itens) {
           const cx = i.foto;
           const url = cx ? base[cx.imagem - 1] : null;
           if (!cx || !url) continue;
           try {
-            const blob = await recortarFoto(url, cx);
-            if (blob) { i.fotoBlob = blob; i.fotoPreview = URL.createObjectURL(blob); i.usarFoto = true; }
+            let blob = await recortarFoto(url, cx);
+            if (blob) {
+              try { blob = await tirarFundo(blob); } catch { /* mantém o recorte com o fundo original */ }
+              i.fotoBlob = blob; i.fotoPreview = URL.createObjectURL(blob); i.usarFoto = true;
+            }
           } catch { /* sem foto para este prato */ }
+          n += 1;
+          setRecorte({ n, total: comFoto });
         }
       }
       setSecoes(propostas);
@@ -138,6 +149,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
       setErro("Sem conexão. Tente de novo.");
     } finally {
       setLendo(false);
+      setRecorte(null);
     }
   }
 
@@ -216,9 +228,9 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
 
       {lendo ? (
         <div role="status" aria-live="polite" className="flex flex-col items-center px-2 py-10 text-center">
-          <OrbiEncher size={112} estado="carregando" />
-          <p className="mt-5 text-[16px] font-semibold">A Orbi está lendo o cardápio</p>
-          <p className="mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">Separando por categoria, com nome e preço. Pode levar alguns segundos.</p>
+          <OrbiEncher size={112} estado="carregando" progresso={recorte && recorte.total > 0 ? 0.55 + 0.4 * (recorte.n / recorte.total) : undefined} />
+          <p className="mt-5 text-[16px] font-semibold">{recorte ? "A Orbi está recortando as fotos" : "A Orbi está lendo o cardápio"}</p>
+          <p className="mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">{recorte ? `Tirando o fundo de cada prato: ${recorte.n} de ${recorte.total}. Na primeira vez leva um pouco mais.` : "Separando por categoria, com nome e preço. Pode levar alguns segundos."}</p>
         </div>
       ) : secoes === null ? (
         <>
