@@ -11,7 +11,27 @@ export type CardapioItem = {
   /** "a partir de" quando o prato tem tamanhos com preços diferentes. */
   aPartir?: boolean;
   foto?: string | null;
+  /** Enquadramento da foto dentro do quadrado: zoom (1 a 3) e deslocamento em % do quadrado. */
+  fotoAjuste?: FotoAjuste | null;
 };
+
+export type FotoAjuste = { z: number; x: number; y: number };
+export const ZOOM_MAX = 3;
+
+/** Mantém a foto sempre cobrindo o quadrado: o deslocamento máximo cresce com o zoom. */
+export function limitarAjuste(a: FotoAjuste): FotoAjuste {
+  const z = Math.min(ZOOM_MAX, Math.max(1, Number.isFinite(a.z) ? a.z : 1));
+  const m = ((z - 1) / 2) * 100;
+  const c = (v: number) => Math.min(m, Math.max(-m, Number.isFinite(v) ? v : 0));
+  return { z, x: c(a.x), y: c(a.y) };
+}
+
+/** Estilo da imagem para o enquadramento salvo (o mesmo no editor e na página pública). */
+export function estiloFoto(a?: FotoAjuste | null): { transform: string } | undefined {
+  if (!a || (a.z <= 1 && a.x === 0 && a.y === 0)) return undefined;
+  const l = limitarAjuste(a);
+  return { transform: `translate(${l.x}%, ${l.y}%) scale(${l.z})` };
+}
 
 export type CardapioSecao = {
   id: string;
@@ -35,7 +55,7 @@ export function lerSecoes(config: unknown): CardapioSecao[] {
         nome: String(sec.nome ?? ""),
         itens: itens
           .filter((i) => i && typeof i.nome === "string")
-          .map((i) => ({ id: String(i.id || novoId()), nome: i.nome, descricao: i.descricao || "", preco: typeof i.preco === "number" ? i.preco : null, aPartir: !!i.aPartir, foto: i.foto || null })),
+          .map((i) => ({ id: String(i.id || novoId()), nome: i.nome, descricao: i.descricao || "", preco: typeof i.preco === "number" ? i.preco : null, aPartir: !!i.aPartir, foto: i.foto || null, fotoAjuste: i.fotoAjuste && typeof i.fotoAjuste.z === "number" ? limitarAjuste(i.fotoAjuste) : null })),
       };
     });
 }
@@ -90,4 +110,9 @@ export function textoSobre(hex: string): string {
 export function pesoLegivel(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+/** Nome único para um arquivo enviado (fora do componente, para manter a renderização pura). */
+export function nomeArquivoUnico(prefixo: string, ext: string): string {
+  return `${prefixo}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
 }

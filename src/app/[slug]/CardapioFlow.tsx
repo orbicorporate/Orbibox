@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { pesoLegivel, precoCardapio, textoSobre, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
+import { estiloFoto, pesoLegivel, precoCardapio, textoSobre, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 import { estiloCategoria, IconeCategoria } from "./categoriaCardapio";
@@ -190,7 +190,7 @@ export function CardapioFlow({
                     {i.foto && (
                       <span className="relative h-[84px] w-[84px] shrink-0 overflow-hidden rounded-[18px] bg-surface-soft ring-1 ring-white/80">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={i.foto} alt="" loading="lazy" className="h-full w-full object-cover" />
+                        <img src={i.foto} alt="" loading="lazy" style={estiloFoto(i.fotoAjuste)} className="h-full w-full object-cover" />
                       </span>
                     )}
                     <span className="min-w-0 flex-1 px-0.5">

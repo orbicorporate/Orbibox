@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { novoId, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
+import { AjustarFoto } from "./AjustarFoto";
+import { estiloFoto, nomeArquivoUnico, novoId, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
 
@@ -20,6 +21,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
   // Categorias recolhidas. Com mais de uma, só a primeira começa aberta; categoria nova ou importada nasce aberta.
   const [fechadas, setFechadas] = useState<string[]>(() => (secoes.length > 1 ? secoes.slice(1).map((x) => x.id) : []));
   const [comDesc, setComDesc] = useState<string[]>([]);
+  const [ajustando, setAjustando] = useState<string | null>(null);
   const [apagado, setApagado] = useState<{ s: string; idx: number; item: CardapioItem } | null>(null);
   const timerDesfazer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -65,6 +67,15 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
     onChange(c);
   }
 
+  /** Sobe a foto já sem fundo e a coloca no prato (apaga o enquadramento, que valia para a antiga). */
+  async function trocarFotoPor(sid: string, iid: string, b: Blob): Promise<boolean> {
+    const path = `${businessId}/${nomeArquivoUnico("cardapio-prato", "jpg")}`;
+    const { error } = await supabase.storage.from("box-images").upload(path, b, { cacheControl: "3600", upsert: false, contentType: "image/jpeg" });
+    if (error) return false;
+    mudarItem(sid, iid, { foto: supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl, fotoAjuste: null });
+    return true;
+  }
+
   async function enviarFoto(f: File | undefined) {
     const a = alvo.current;
     if (inputFoto.current) inputFoto.current.value = "";
@@ -77,7 +88,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
     const { error } = await supabase.storage.from("box-images").upload(path, f, { cacheControl: "3600", upsert: false, contentType: f.type });
     setSubindo(null);
     if (error) return setErro("Não consegui enviar a foto. Tente de novo.");
-    mudarItem(a.s, a.i, { foto: supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl });
+    mudarItem(a.s, a.i, { fotoAjuste: null, foto: supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl });
   }
 
   return (
@@ -133,7 +144,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                       <button type="button" onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} disabled={subindo === i.id} aria-label={i.foto ? "Trocar foto do prato" : "Adicionar foto do prato"} className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary active:scale-[0.96]">
                         {i.foto ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={i.foto} alt="" className="h-full w-full object-cover" />
+                          <img src={i.foto} alt="" style={estiloFoto(i.fotoAjuste)} className="h-full w-full object-cover" />
                         ) : subindo === i.id ? (
                           <span className="text-[11px]">Enviando</span>
                         ) : (
@@ -170,6 +181,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                         {(comDesc.includes(i.id) || !!i.descricao) && (
                           <textarea value={i.descricao ?? ""} onChange={(e) => mudarItem(s.id, i.id, { descricao: e.target.value })} rows={3} maxLength={600} placeholder="Ingredientes, tamanho, o que acompanha" aria-label="Descrição do prato" className={`${campo} resize-y text-[14px] leading-snug`} />
                         )}
+                        {i.foto && ajustando === i.id && <AjustarFoto key={i.foto} foto={i.foto} ajuste={i.fotoAjuste} onChange={(a) => mudarItem(s.id, i.id, { fotoAjuste: a })} onNovaFoto={(b) => trocarFotoPor(s.id, i.id, b)} />}
                         <div className="flex flex-wrap items-center gap-2">
                           {!(comDesc.includes(i.id) || !!i.descricao) && (
                             <button type="button" onClick={() => setComDesc((p) => [...p, i.id])} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">+ Descrição</button>
@@ -177,7 +189,8 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                           {i.preco != null && (
                             <button type="button" role="checkbox" aria-checked={!!i.aPartir} onClick={() => mudarItem(s.id, i.id, { aPartir: !i.aPartir })} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${i.aPartir ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>A partir de</button>
                           )}
-                          {i.foto && <button type="button" onClick={() => mudarItem(s.id, i.id, { foto: null })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Tirar foto</button>}
+                          {i.foto && <button type="button" aria-expanded={ajustando === i.id} onClick={() => setAjustando(ajustando === i.id ? null : i.id)} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${ajustando === i.id ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>Ajustar foto</button>}
+                          {i.foto && <button type="button" onClick={() => mudarItem(s.id, i.id, { foto: null, fotoAjuste: null })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Tirar foto</button>}
                           <button type="button" onClick={() => removerPrato(s.id, i.id)} className="ml-auto min-h-[40px] rounded-full px-3 text-[13px] font-medium text-text-tertiary">Apagar</button>
                         </div>
                       </div>
