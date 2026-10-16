@@ -141,10 +141,11 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                 return (
                   <li key={i.id} className="rounded-2xl border border-divider">
                     <div className="flex items-center gap-3 p-2.5">
-                      <button type="button" onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} disabled={subindo === i.id} aria-label={i.foto ? "Trocar foto do prato" : "Adicionar foto do prato"} className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary active:scale-[0.96]">
+                      <button type="button" onClick={() => { if (i.foto) { setAberto(i.id); setAjustando(i.id); } else { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); } }} disabled={subindo === i.id} aria-label={i.foto ? "Ajustar foto do prato" : "Adicionar foto do prato"} className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary active:scale-[0.96]">
                         {i.foto ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={i.foto} alt="" style={estiloFoto(i.fotoAjuste)} className="h-full w-full object-cover" />
+                            <span aria-hidden className="absolute bottom-0.5 right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-on-background/85 text-white"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" /></svg></span>
                         ) : subindo === i.id ? (
                           <span className="text-[11px]">Enviando</span>
                         ) : (
@@ -190,6 +191,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                             <button type="button" role="checkbox" aria-checked={!!i.aPartir} onClick={() => mudarItem(s.id, i.id, { aPartir: !i.aPartir })} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${i.aPartir ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>A partir de</button>
                           )}
                           {i.foto && <button type="button" aria-expanded={ajustando === i.id} onClick={() => setAjustando(ajustando === i.id ? null : i.id)} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${ajustando === i.id ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>Ajustar foto</button>}
+                          {i.foto && <button type="button" onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} disabled={subindo === i.id} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary disabled:opacity-60">{subindo === i.id ? "Enviando…" : "Trocar foto"}</button>}
                           {i.foto && <button type="button" onClick={() => mudarItem(s.id, i.id, { foto: null, fotoAjuste: null })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Tirar foto</button>}
                           <button type="button" onClick={() => removerPrato(s.id, i.id)} className="ml-auto min-h-[40px] rounded-full px-3 text-[13px] font-medium text-text-tertiary">Apagar</button>
                         </div>
