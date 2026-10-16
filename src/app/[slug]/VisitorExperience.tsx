@@ -2,6 +2,8 @@
 
 import { DeliveryFlow } from "./DeliveryFlow";
 import { CardapioFlow } from "./CardapioFlow";
+import { MateriaisFlow } from "./MateriaisFlow";
+import { lerMateriais } from "@/lib/materiais";
 import { lerCorBotoes, lerPdfs, lerSecoes } from "@/lib/cardapio";
 import { appsAtivos, linkDoApp } from "@/lib/delivery";
 import Link from "next/link";
@@ -116,9 +118,9 @@ type ContentItem = {
   link_kind: string | null;
 };
 
-type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio";
+type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio"; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; esferaCor?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; botaoPrincipal?: BotaoPrincipal; esferaCor?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -334,6 +336,8 @@ export function VisitorExperience({
             chooseIntent("presentear");
           } else if (cfg.action === "cardapio") {
             chooseIntent("cardapio");
+          } else if (cfg.action === "materiais") {
+            chooseIntent("materiais");
           } else if (cfg.action === "delivery") {
             // Um app só: abre direto, sem tela no meio.
             const ativos = appsAtivos(cfg.apps);
@@ -346,7 +350,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || cfg.action === "cardapio" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || cfg.action === "cardapio" || cfg.action === "materiais" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
@@ -549,6 +553,7 @@ export function VisitorExperience({
       else if (o.acao === "presentear" || o.acao === "gift") out.push({ ...base, rotulo: o.t || "Presentear", tipo: "presente", onClick: o.onClick });
       else if (o.acao === "conhecer") out.push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
       else if (o.acao === "cardapio") out.push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
+      else if (o.acao === "materiais") out.push({ ...base, rotulo: o.t || "Materiais", tipo: "materiais", onClick: o.onClick });
     }
     if (!out.some((b) => b.tipo === "whatsapp") && whatsAtalho) {
       out.unshift({ key: "zap", estilo: "cor", editavel: false, rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
@@ -661,7 +666,7 @@ export function VisitorExperience({
         ? { tipo: "whatsapp", rotulo: "Falar no WhatsApp", onClick: zapBolinha?.onClick ?? (() => {}) }
         : { tipo: "vitrine", rotulo: vitOpcao?.t || "Ver catálogo", onClick: () => chooseIntent("comprar") };
   const extrasVitrine = todasOpcoes
-    .filter((o) => !o.rede && !o.atalho && !o.cupom && o.acao !== "vitrine" && o.acao !== "comprar" && o.acao !== "presentear" && o.acao !== "gift" && o.acao !== "conhecer" && o.acao !== "cardapio")
+    .filter((o) => !o.rede && !o.atalho && !o.cupom && o.acao !== "vitrine" && o.acao !== "comprar" && o.acao !== "presentear" && o.acao !== "gift" && o.acao !== "conhecer" && o.acao !== "cardapio" && o.acao !== "materiais")
     .filter((o) => !(ctaVitrine.tipo === "orbi" && (o.ai || o.acao === "zara" || o.acao === "duvida")))
     .map((o) => ({ key: o.key, rotulo: o.t, onClick: o.onClick }));
 
@@ -1529,6 +1534,22 @@ export function VisitorExperience({
         {intent === "duvida" && (
           <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} initialInput={orbiPrefill} onBack={voltarAoInicio} />
         )}
+
+        {intent === "materiais" && (() => {
+          const cfgMateriais = (boxList.find((b) => b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "materiais")?.config ?? {}) as CustomConfig;
+          return (
+            <MateriaisFlow
+              business={business}
+              materiais={lerMateriais(cfgMateriais)}
+              sessionId={sessionId}
+              titulo={cfgMateriais.label || "Materiais"}
+              subtitulo={cfgMateriais.subtitle || `Baixe os conteúdos de ${business.name}.`}
+              corBotoes={lerCorBotoes(cfgMateriais)}
+              donoVendo={showOwnerControls}
+              onBack={voltarAoInicio}
+            />
+          );
+        })()}
 
         {intent === "cardapio" && (() => {
           const cfgCardapio = (boxList.find((b) => b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "cardapio")?.config ?? {}) as CustomConfig;
