@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { tirarFundo } from "@/lib/tirarFundo";
 import { ZOOM_MAX, estiloFoto, limitarAjuste, type FotoAjuste } from "@/lib/cardapio";
 
 const PADRAO: FotoAjuste = { z: 1, x: 0, y: 0 };
@@ -10,17 +11,33 @@ const PADRAO: FotoAjuste = { z: 1, x: 0, y: 0 };
  * para aproximar. Serve para tirar da vista pedaços do cardápio que vieram no
  * recorte (preço, nome escrito). O resultado vale igual na página do cliente.
  */
-export function AjustarFoto({ foto, ajuste, onChange }: { foto: string; ajuste?: FotoAjuste | null; onChange: (a: FotoAjuste | null) => void }) {
+export function AjustarFoto({ foto, ajuste, onChange, onNovaFoto }: { foto: string; ajuste?: FotoAjuste | null; onChange: (a: FotoAjuste | null) => void; onNovaFoto: (b: Blob) => Promise<boolean> }) {
   const inicial = ajuste ? limitarAjuste(ajuste) : PADRAO;
   const [a, setA] = useState<FotoAjuste>(inicial);
   const caixa = useRef<HTMLDivElement>(null);
   const arrasto = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
+  const [fundo, setFundo] = useState<{ fase: "parado" | "baixando" | "tirando" | "enviando"; pct: number; erro: string | null }>({ fase: "parado", pct: 0, erro: null });
   const mexido = a.z !== 1 || a.x !== 0 || a.y !== 0;
 
   function aplicar(prox: FotoAjuste, salvar: boolean) {
     const l = limitarAjuste(prox);
     setA(l);
     if (salvar) onChange(l.z === 1 && l.x === 0 && l.y === 0 ? null : l);
+  }
+
+  async function semFundo() {
+    setFundo({ fase: "baixando", pct: 0, erro: null });
+    try {
+      const r = await fetch(foto, { mode: "cors" });
+      if (!r.ok) throw new Error("leitura");
+      const original = await r.blob();
+      const pronto = await tirarFundo(original, (p) => setFundo((f) => (f.fase === "parado" ? f : { ...f, fase: p >= 1 ? "tirando" : "baixando", pct: p })));
+      setFundo((f) => ({ ...f, fase: "enviando" }));
+      const ok = await onNovaFoto(pronto);
+      setFundo({ fase: "parado", pct: 0, erro: ok ? null : "Não consegui salvar a foto nova. Tente de novo." });
+    } catch {
+      setFundo({ fase: "parado", pct: 0, erro: "Não consegui tirar o fundo dessa foto. Tente com outra foto ou ajuste o enquadramento." });
+    }
   }
 
   function baixo(e: React.PointerEvent) {
@@ -78,6 +95,13 @@ export function AjustarFoto({ foto, ajuste, onChange }: { foto: string; ajuste?:
           className="h-11 min-w-0 flex-1 accent-[#111318]"
         />
       </label>
+      <div className="flex w-full max-w-[260px] flex-col items-center gap-1.5">
+        <button type="button" onClick={semFundo} disabled={fundo.fase !== "parado"} className="min-h-[44px] w-full rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white active:scale-[0.98] disabled:opacity-60">
+          {fundo.fase === "baixando" ? (fundo.pct > 0 ? `Preparando… ${Math.round(fundo.pct * 100)}%` : "Preparando…") : fundo.fase === "tirando" ? "Tirando o fundo…" : fundo.fase === "enviando" ? "Salvando…" : "Tirar fundo"}
+        </button>
+        <p className="text-center text-[12px] leading-snug text-text-tertiary">Recorta só o prato e deixa um fundo claro e neutro. Na primeira vez pode levar um pouco mais para preparar.</p>
+        {fundo.erro && <p role="alert" className="text-center text-[12.5px] text-red-600">{fundo.erro}</p>}
+      </div>
       {mexido && (
         <button type="button" onClick={() => aplicar(PADRAO, true)} className="min-h-[40px] rounded-full bg-surface-white px-4 text-[13px] font-medium text-text-secondary">Voltar ao original</button>
       )}

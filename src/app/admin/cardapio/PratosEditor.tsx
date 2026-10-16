@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AjustarFoto } from "./AjustarFoto";
-import { estiloFoto, novoId, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
+import { estiloFoto, nomeArquivoUnico, novoId, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
 
@@ -65,6 +65,15 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
     const c = [...secoes];
     [c[idx], c[j]] = [c[j], c[idx]];
     onChange(c);
+  }
+
+  /** Sobe a foto já sem fundo e a coloca no prato (apaga o enquadramento, que valia para a antiga). */
+  async function trocarFotoPor(sid: string, iid: string, b: Blob): Promise<boolean> {
+    const path = `${businessId}/${nomeArquivoUnico("cardapio-prato", "jpg")}`;
+    const { error } = await supabase.storage.from("box-images").upload(path, b, { cacheControl: "3600", upsert: false, contentType: "image/jpeg" });
+    if (error) return false;
+    mudarItem(sid, iid, { foto: supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl, fotoAjuste: null });
+    return true;
   }
 
   async function enviarFoto(f: File | undefined) {
@@ -172,7 +181,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                         {(comDesc.includes(i.id) || !!i.descricao) && (
                           <textarea value={i.descricao ?? ""} onChange={(e) => mudarItem(s.id, i.id, { descricao: e.target.value })} rows={3} maxLength={600} placeholder="Ingredientes, tamanho, o que acompanha" aria-label="Descrição do prato" className={`${campo} resize-y text-[14px] leading-snug`} />
                         )}
-                        {i.foto && ajustando === i.id && <AjustarFoto key={i.foto} foto={i.foto} ajuste={i.fotoAjuste} onChange={(a) => mudarItem(s.id, i.id, { fotoAjuste: a })} />}
+                        {i.foto && ajustando === i.id && <AjustarFoto key={i.foto} foto={i.foto} ajuste={i.fotoAjuste} onChange={(a) => mudarItem(s.id, i.id, { fotoAjuste: a })} onNovaFoto={(b) => trocarFotoPor(s.id, i.id, b)} />}
                         <div className="flex flex-wrap items-center gap-2">
                           {!(comDesc.includes(i.id) || !!i.descricao) && (
                             <button type="button" onClick={() => setComDesc((p) => [...p, i.id])} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">+ Descrição</button>
