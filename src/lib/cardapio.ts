@@ -98,6 +98,13 @@ export function lerCorBotoes(config: unknown): string | null {
   return typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v : null;
 }
 
+export type LayoutItens = "lista" | "cards";
+
+/** Como o dono quer mostrar os pratos para o cliente (padrão: lista). */
+export function lerLayoutItens(config: unknown): LayoutItens {
+  return (config as { layoutItens?: unknown } | null)?.layoutItens === "cards" ? "cards" : "lista";
+}
+
 /** Texto branco ou escuro, o que ler melhor sobre a cor do botão. */
 export function textoSobre(hex: string): string {
   const n = parseInt(hex.slice(1), 16);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { estiloFoto, pesoLegivel, precoCardapio, textoSobre, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
+import { estiloFoto, pesoLegivel, precoCardapio, textoSobre, type CardapioPdf, type CardapioSecao, type LayoutItens } from "@/lib/cardapio";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 import { estiloCategoria, IconeCategoria } from "./categoriaCardapio";
@@ -19,6 +19,7 @@ export function CardapioFlow({
   subtitulo,
   pdfs = [],
   corBotoes = null,
+  layoutInicial = "lista",
   donoVendo = false,
   onPedir,
   onBack,
@@ -32,12 +33,16 @@ export function CardapioFlow({
   pdfs?: CardapioPdf[];
   /** Cor que o dono escolheu para os botões principais (#RRGGBB). */
   corBotoes?: string | null;
+  /** Como o dono quer mostrar os pratos (o cliente pode alternar). */
+  layoutInicial?: LayoutItens;
   /** O dono olhando a própria página: mostra orientação em vez do aviso do cliente. */
   donoVendo?: boolean;
   onPedir?: () => void;
   onBack: () => void;
 }) {
   const [ativa, setAtiva] = useState<string | null>(null);
+  const [layout, setLayout] = useState<LayoutItens>(layoutInicial);
+  const [abertos, setAbertos] = useState<Set<string>>(() => new Set());
   const temPdf = pdfs.length > 0;
   const unico = pdfs.length === 1;
   const estiloBotao = corBotoes ? { backgroundColor: corBotoes, color: textoSobre(corBotoes) } : undefined;
@@ -161,6 +166,18 @@ export function CardapioFlow({
         </div>
       )}
 
+      {preenchidas.length > 0 && (
+        <div className="mt-5 flex justify-end">
+          <div role="radiogroup" aria-label="Como ver os pratos" className="flex rounded-full bg-black/[0.05] p-1">
+            {([["lista", "Ver em lista", "M4 6h16M4 12h16M4 18h16"], ["cards", "Ver em cards grandes", "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"]] as const).map(([v, r, d]) => (
+              <button key={v} type="button" role="radio" aria-checked={layout === v} aria-label={r} onClick={() => setLayout(v)} className={`flex h-10 w-11 items-center justify-center rounded-full transition-colors ${layout === v ? "bg-white text-on-background shadow-[0_1px_3px_rgba(0,0,0,0.12)]" : "text-text-tertiary"}`}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={d} /></svg>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {visiveis.map((s) => {
         const est = estiloCategoria(s.nome);
         const cor = corBotoes ?? est.cor;
@@ -178,6 +195,47 @@ export function CardapioFlow({
                 <span className="shrink-0 rounded-full bg-white/60 px-2.5 py-1 text-[12px] font-medium text-text-secondary ring-1 ring-white/80 backdrop-blur-md">{s.itens.length}</span>
               </div>
             )}
+            {layout === "cards" ? (
+              <ul className="mt-3.5 grid grid-cols-2 gap-3">
+                {s.itens.map((i, n) => {
+                  const preco = precoCardapio(i);
+                  const longa = (i.descricao?.trim().length ?? 0) > 70;
+                  const aberto = abertos.has(i.id);
+                  return (
+                    <li
+                      key={i.id}
+                      style={{ animationDelay: `${Math.min(n, 8) * 45}ms` }}
+                      className="cardapio-item-in flex flex-col rounded-[24px] bg-white/55 p-2.5 ring-1 ring-white/80 backdrop-blur-xl shadow-[0_6px_24px_rgba(17,19,24,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                    >
+                      <span className="relative block aspect-square w-full overflow-hidden rounded-[18px] bg-surface-soft ring-1 ring-white/80">
+                        {i.foto ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={i.foto} alt="" loading="lazy" style={estiloFoto(i.fotoAjuste)} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="flex h-full w-full items-center justify-center opacity-60 [&_svg]:h-9 [&_svg]:w-9" style={{ color: cor }}><IconeCategoria chave={est.chave} /></span>
+                        )}
+                      </span>
+                      <span className="mt-2.5 block break-words px-1 text-[14.5px] font-semibold leading-snug">{i.nome}</span>
+                      {i.descricao?.trim() && (
+                        longa ? (
+                          <button type="button" aria-expanded={aberto} onClick={() => setAbertos((p) => { const q = new Set(p); if (q.has(i.id)) q.delete(i.id); else q.add(i.id); return q; })} className="px-1 text-left">
+                            <span className={`mt-0.5 block whitespace-pre-line break-words text-[12.5px] leading-snug text-text-secondary ${aberto ? "" : "line-clamp-3"}`}>{i.descricao}</span>
+                            <span className="mt-0.5 inline-block text-[12px] font-medium" style={{ color: `color-mix(in srgb, ${cor} 75%, black)` }}>{aberto ? "ver menos" : "ver mais"}</span>
+                          </button>
+                        ) : (
+                          <span className="mt-0.5 block whitespace-pre-line break-words px-1 text-[12.5px] leading-snug text-text-secondary">{i.descricao}</span>
+                        )
+                      )}
+                      {preco && (
+                        <span className="mt-auto pt-2.5">
+                          <span className="inline-block rounded-full px-3 py-1.5 text-[13.5px] font-semibold tabular-nums" style={{ backgroundColor: `${cor}1A`, color: `color-mix(in srgb, ${cor} 75%, black)` }}>{preco}</span>
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
             <ul className="mt-3.5 flex flex-col gap-2.5">
               {s.itens.map((i, n) => {
                 const preco = precoCardapio(i);
@@ -204,6 +262,7 @@ export function CardapioFlow({
                 );
               })}
             </ul>
+            )}
           </section>
         );
       })}

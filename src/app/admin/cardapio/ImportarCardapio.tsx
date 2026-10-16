@@ -14,7 +14,7 @@ import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 
 const MAX_FOTOS = 8;
 
-type ItemProposto = { titulo: string; descricao: string; preco: number | null; preco_tipo: "exato" | "a_partir"; marcado: boolean; foto?: CaixaFoto | null; fotoBlob?: Blob | null; fotoPreview?: string | null; usarFoto?: boolean };
+type ItemProposto = { titulo: string; descricao: string; preco: number | null; preco_tipo: "exato" | "a_partir"; marcado: boolean; foto?: CaixaFoto | null; fotoBlob?: Blob | null; fotoPreview?: string | null; usarFoto?: boolean; aberto?: boolean };
 type Secao = { nome: string; itens: ItemProposto[] };
 
 /**
@@ -286,7 +286,8 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
                 <input value={s.nome} onChange={(e) => setSecoes((p) => (p ?? []).map((x, a) => (a === si ? { ...x, nome: e.target.value } : x)))} maxLength={40} aria-label="Nome da categoria" className="w-full bg-transparent font-[family-name:var(--font-manrope)] text-[16px] font-semibold outline-none" />
                 <div className="mt-1.5 flex flex-col gap-1.5">
                   {s.itens.map((i, ii) => (
-                    <div key={ii} className={`flex items-start gap-2.5 rounded-2xl border p-2.5 ${i.marcado ? "border-divider" : "border-transparent bg-surface-soft opacity-60"}`}>
+                    <div key={ii} className={`rounded-2xl border p-2.5 ${i.marcado ? "border-divider" : "border-transparent bg-surface-soft opacity-60"}`}>
+                    <div className="flex items-start gap-2.5">
                       <button type="button" role="checkbox" aria-checked={i.marcado} onClick={() => mudar(si, ii, { marcado: !i.marcado })} className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] ${i.marcado ? "bg-on-background text-white" : "border border-divider text-transparent"}`}>✓</button>
                       {i.fotoPreview && (
                         <button type="button" onClick={() => mudar(si, ii, { usarFoto: !i.usarFoto })} aria-pressed={!!i.usarFoto} aria-label={i.usarFoto ? "Tirar a foto deste prato" : "Usar a foto deste prato"} className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-surface-soft ring-1 ring-black/[0.06] active:scale-[0.96]">
@@ -311,6 +312,29 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
                           className="w-[58px] rounded-lg border border-divider bg-surface-white px-2 py-1 text-right text-[13.5px] outline-none focus:border-on-background"
                         />
                       </label>
+                    </div>
+                    {(i.fotoPreview || i.descricao) && (
+                      <button type="button" aria-expanded={!!i.aberto} onClick={() => mudar(si, ii, { aberto: !i.aberto })} className="mt-1.5 ml-[34px] inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium text-text-secondary active:scale-[0.97]">
+                        {i.aberto ? "Recolher" : "Expandir"}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className={`transition-transform duration-200 ${i.aberto ? "rotate-180" : ""}`}><path d="M6 9l6 6 6-6" /></svg>
+                      </button>
+                    )}
+                    {i.aberto && (
+                      <div className="mt-2 ml-[34px] flex flex-col gap-2.5">
+                        {i.fotoPreview && (
+                          <div className="relative aspect-square w-full max-w-[280px] overflow-hidden rounded-[20px] bg-surface-soft ring-1 ring-black/[0.06]">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={i.fotoPreview} alt={`Foto de ${i.titulo}`} className={`h-full w-full object-cover transition-opacity ${i.usarFoto ? "" : "opacity-30"}`} />
+                          </div>
+                        )}
+                        {i.fotoPreview && (
+                          <button type="button" role="switch" aria-checked={!!i.usarFoto} onClick={() => mudar(si, ii, { usarFoto: !i.usarFoto })} className={`inline-flex min-h-[40px] w-fit items-center rounded-full px-4 text-[13px] font-medium ${i.usarFoto ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>
+                            {i.usarFoto ? "Usando esta foto" : "Usar esta foto"}
+                          </button>
+                        )}
+                        <textarea value={i.descricao} onChange={(e) => mudar(si, ii, { descricao: e.target.value })} rows={3} placeholder="Descrição" aria-label={`Descrição de ${i.titulo}`} className="w-full resize-y rounded-2xl border border-divider bg-surface-white px-3.5 py-2.5 text-[13px] leading-snug outline-none focus:border-on-background" />
+                      </div>
+                    )}
                     </div>
                   ))}
                 </div>

@@ -26,8 +26,6 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
   const [otimizando, setOtimizando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
-  const [modoLink, setModoLink] = useState(false);
-  const [link, setLink] = useState("");
   const [grande, setGrande] = useState<{ tamanho: number; arquivo: File } | null>(null);
   const [reduzindo, setReduzindo] = useState(false);
 
@@ -150,16 +148,6 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
     setReduzindo(false);
   }
 
-  function salvarLink() {
-    const v = link.trim();
-    if (!v) return;
-    if (!/^https?:\/\//i.test(v)) return setErro("Cole um link que comece com https://");
-    setErro(null);
-    onChange([...pdfs, { id: novoId(), nome: nomePadrao(), url: v }]);
-    setModoLink(false);
-    setLink("");
-  }
-
   function remover(p: CardapioPdf) {
     onChange(pdfs.filter((x) => x.id !== p.id));
     void apagarAntigo(p.url);
@@ -218,11 +206,8 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
 
       {!cheio ? (
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => abrirEscolha(null)} disabled={enviando || otimizando} className={`min-h-[44px] rounded-full px-5 text-[13.5px] font-semibold ${enviando || otimizando ? "bg-surface-white text-on-background ring-1 ring-black/10" : pdfs.length === 0 ? "bg-on-background text-white" : "border border-divider"}`}>
+          <button type="button" onClick={() => abrirEscolha(null)} disabled={enviando || otimizando} className={`min-h-[44px] rounded-full px-5 text-[13.5px] font-semibold ${enviando || otimizando ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-[#FCE4EE] text-[#A61E5B] ring-1 ring-[#E8A0BF]/60"}`}>
             {enviando || otimizando ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />{otimizando ? "Otimizando o PDF…" : "Enviando…"}</span> : pdfs.length === 0 ? "Enviar PDF" : "Enviar outro PDF"}
-          </button>
-          <button type="button" onClick={() => setModoLink((m) => !m)} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium">
-            {pdfs.length === 0 ? "Já tenho um link" : "Adicionar por link"}
           </button>
         </div>
       ) : (
@@ -230,15 +215,6 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
       )}
       <input ref={input} type="file" accept="application/pdf" className="hidden" onChange={(e) => enviar(e.target.files?.[0])} />
 
-      {modoLink && !cheio && (
-        <div className="mt-3">
-          <div className="flex gap-2">
-            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://..." inputMode="url" className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
-            <button type="button" onClick={salvarLink} className="min-h-[44px] rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white">Salvar</button>
-          </div>
-          <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">Link do Google Drive: deixe como &quot;Qualquer pessoa com o link&quot;, senão o cliente vê um pedido de acesso. Enviar o arquivo aqui é mais seguro.</p>
-        </div>
-      )}
       {temDrive && <p className="mt-2 text-[12px] leading-snug text-[#9A4F06]">Um dos PDFs é link do Drive. Se o cliente ver &quot;pedir acesso&quot;, mude o compartilhamento para &quot;Qualquer pessoa com o link&quot; ou envie o arquivo aqui.</p>}
       {aviso && <p role="status" className="mt-2 text-[12.5px] leading-snug text-text-secondary">{aviso}</p>}
       {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}

@@ -12,7 +12,7 @@ import { GuiaPrato } from "./GuiaPrato";
 import { DeliveryEditor } from "../delivery/DeliveryEditor";
 import type { DeliveryApp } from "@/lib/delivery";
 import type { Json } from "@/lib/supabase/types";
-import { CORES_BOTAO, lerCorBotoes, lerPdfs, lerSecoes, textoSobre, novoId, totalItens, type CardapioItem, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
+import { CORES_BOTAO, lerLayoutItens, type LayoutItens, lerCorBotoes, lerPdfs, lerSecoes, textoSobre, novoId, totalItens, type CardapioItem, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
 
 const ICONES_CARDAPIO = ["🍴", "🍽️", "🍔", "🍕", "🥗", "🍣", "🥩", "🍰", "🥤", "☕"];
 
@@ -90,6 +90,13 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     if (!boxId) return;
     // A mesma cor vale para o botão da home e para os botões de dentro do cardápio.
     const novo = { ...cfgRef.current, corBotoes: cor, color: cor ?? "#111318" } as Record<string, Json>;
+    const res = await supabase.from("smart_boxes").update({ config: novo }).eq("id", boxId);
+    if (conferirSalvo(res)) { setCfg(novo); cfgRef.current = novo; }
+  }
+
+  async function trocarLayout(layoutItens: LayoutItens) {
+    if (!boxId) return;
+    const novo = { ...cfgRef.current, layoutItens } as Record<string, Json>;
     const res = await supabase.from("smart_boxes").update({ config: novo }).eq("id", boxId);
     if (conferirSalvo(res)) { setCfg(novo); cfgRef.current = novo; }
   }
@@ -230,6 +237,16 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
                       Outra
                       <input type="color" value={corAtual} onChange={(e) => trocarCor(e.target.value)} aria-label="Escolher outra cor" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
                     </label>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Como mostrar os pratos</p>
+                  <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">O cliente também pode alternar na página do cardápio.</p>
+                  <div role="radiogroup" aria-label="Como mostrar os pratos" className="relative mt-2 flex rounded-full bg-black/[0.05] p-1">
+                    <span aria-hidden="true" className="pointer-events-none absolute inset-y-1 left-1 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.04] transition-transform duration-200 ease-out motion-reduce:transition-none" style={{ width: "calc((100% - 8px) / 2)", transform: `translateX(${lerLayoutItens(cfg) === "cards" ? 100 : 0}%)` }} />
+                    {([["lista", "Lista"], ["cards", "Cards grandes"]] as const).map(([v, r]) => (
+                      <button key={v} type="button" role="radio" aria-checked={lerLayoutItens(cfg) === v} onClick={() => trocarLayout(v)} className={`relative z-10 min-h-[40px] flex-1 rounded-full px-2 text-[13.5px] ${lerLayoutItens(cfg) === v ? "font-semibold text-on-background" : "font-medium text-text-secondary"}`}>{r}</button>
+                    ))}
                   </div>
                 </div>
                 <div>
