@@ -24,6 +24,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
   const [gerenciando, setGerenciando] = useState(false);
   const [moverAberto, setMoverAberto] = useState(false);
   const [nomeNova, setNomeNova] = useState("");
+  const [focoNova, setFocoNova] = useState(false);
   const [criandoNova, setCriandoNova] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [tipo, setTipo] = useState<"todos" | "sem" | TipoImagem>("todos");
@@ -473,10 +474,10 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
 
       {/* Barra de ações da seleção */}
       {selecionando && marcadas.size > 0 && (
-        <div className="fixed inset-x-0 bottom-[84px] z-40 mx-auto flex w-full max-w-[420px] items-center gap-2 rounded-full bg-on-background px-3 py-2.5 shadow-xl lg:bottom-8">
-          <span className="pl-2 text-[13px] font-medium text-white">{marcadas.size} {marcadas.size === 1 ? "selecionada" : "selecionadas"}</span>
-          <span className="flex-1" />
-          <button type="button" onClick={() => setMoverAberto(true)} className="min-h-[40px] rounded-full bg-white/15 px-4 text-[13px] font-semibold text-white">Mover para</button>
+        <div className="fixed inset-x-3 bottom-[84px] z-40 mx-auto flex max-w-[460px] flex-wrap items-center justify-end gap-2 rounded-[28px] bg-on-background px-3 py-2.5 shadow-xl lg:bottom-8">
+          <span className="min-w-[110px] flex-1 pl-2 text-[13px] font-medium text-white">{marcadas.size} {marcadas.size === 1 ? "selecionada" : "selecionadas"}</span>
+          <button type="button" onClick={() => { setFocoNova(true); setMoverAberto(true); }} className="min-h-[40px] rounded-full bg-white px-4 text-[13px] font-semibold text-on-background">+ Categoria</button>
+          <button type="button" onClick={() => { setFocoNova(false); setMoverAberto(true); }} className="min-h-[40px] rounded-full bg-white/15 px-4 text-[13px] font-semibold text-white">Mover para</button>
           <button type="button" onClick={() => setTipoAberto(true)} className="min-h-[40px] rounded-full bg-white/15 px-4 text-[13px] font-semibold text-white">Tipo</button>
           <button type="button" onClick={() => excluir((imagens ?? []).filter((i) => marcadas.has(i.id)))} className="min-h-[40px] rounded-full bg-[#E4264C] px-4 text-[13px] font-semibold text-white">Excluir</button>
         </div>
@@ -491,6 +492,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
                 value={nomeNova}
                 onChange={(e) => setNomeNova(e.target.value)}
                 maxLength={40}
+                autoFocus={focoNova}
                 placeholder="Nova categoria, ex.: Milk shakes"
                 aria-label="Nome da nova categoria"
                 className="min-h-[48px] min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 text-[14.5px] outline-none focus:border-on-background"
