@@ -43,12 +43,17 @@ export function OrbiParticleSphere({
   colors,
   className = "",
   vivid = false,
+  verde,
 }: {
   size?: number;
   bg?: string;
   variant?: "sphere" | "check" | "whatsapp";
   holdCheck?: boolean;
   vivid?: boolean;
+  /** Tinge a esfera inteira de verde, sem linha de corte: 0 = cores normais, 1 = toda verde.
+   * Cada partícula vira num instante um pouco diferente, então a mudança é suave e uniforme.
+   * "auto" sobe sozinho e devagar (para esperas sem andamento medido) e quase completa. */
+  verde?: number | "auto";
   /** Cores escolhidas pela pessoa em Configurações da Orbi: [primária,
    * secundária, detalhe?]. A esfera interpola entre a primária e a
    * secundária; a cor de detalhe (opcional) aparece em ~10% das partículas,
@@ -60,6 +65,10 @@ export function OrbiParticleSphere({
   const colorA = colors?.[0];
   const colorB = colors?.[1];
   const colorC = colors?.[2];
+  const verdeRef = useRef<number | "auto" | undefined>(verde);
+  useEffect(() => {
+    verdeRef.current = verde;
+  }, [verde]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -239,6 +248,11 @@ export function OrbiParticleSphere({
     const syA = new Float32Array(TOTAL);
     const szA = new Float32Array(TOTAL);
     const order = new Uint16Array(TOTAL);
+    // Cada partícula tem um atraso próprio para virar verde: a mudança aparece como um
+    // tom que toma a esfera toda, e não como uma faixa que sobe.
+    const atraso = new Float32Array(TOTAL);
+    for (let i = 0; i < TOTAL; i++) atraso[i] = ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
+    let verdeAtual = 0;
     for (let i = 0; i < TOTAL; i++) order[i] = i;
 
     let raf = 0;
@@ -266,6 +280,8 @@ export function OrbiParticleSphere({
       if (pequena && now - ultimo < 32) { raf = requestAnimationFrame(frame); return; }
       ultimo = now;
       const time = (now - start) / 1000;
+      const alvoVerde = verdeRef.current === "auto" ? 0.94 * (1 - Math.exp(-time / 9)) : (verdeRef.current ?? 0);
+      verdeAtual += (alvoVerde - verdeAtual) * 0.08;
       ctx.clearRect(0, 0, size, size);
       if (bg !== "transparent") {
         ctx.fillStyle = bg;
@@ -313,6 +329,13 @@ export function OrbiParticleSphere({
           r += (morphColor[0] - r) * kMorph;
           g += (morphColor[1] - g) * kMorph;
           b0 += (morphColor[2] - b0) * kMorph;
+        }
+        if (verdeAtual > 0.002) {
+          const t = Math.min(1, Math.max(0, (verdeAtual - atraso[i] * 0.5) / 0.5));
+          const k = t * t * (3 - 2 * t);
+          r += (22 - r) * k;
+          g += (196 - g) * k;
+          b0 += (91 - b0) * k;
         }
         // Brilho mais contido no vivid: cores ficam saturadas e opacas em vez
         // de estouradas pro branco (menos "brilho de vidro", mais cor real).

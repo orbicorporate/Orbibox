@@ -7,19 +7,19 @@ import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 export const VERDE_CONCLUIDO = ["#0E9F4A", "#16C45B", "#3EE07F"];
 
 /**
- * Esfera que se enche de verde de baixo para cima. Enquanto a Orbi trabalha
- * ("carregando"), o verde sobe devagar e quase enche; ao concluir ("cheio") a
- * esfera aparece toda verde.
+ * Esfera da Orbi que vai ficando verde por inteiro, sem faixa nem linha de
+ * corte. Enquanto a Orbi trabalha ("carregando") o verde toma a esfera devagar
+ * e quase completa; ao concluir ("cheio") ela fica toda verde.
  */
 export function OrbiEncher({ size, estado, colors, progresso }: { size: number; estado: "carregando" | "cheio"; colors?: string[]; progresso?: number }) {
-  const medido = typeof progresso === "number";
   return (
-    <div className="relative rounded-full" style={{ width: size, height: size }}>
-      <OrbiParticleSphere size={size} vivid colors={colors} className="absolute inset-0 rounded-full" />
-      <div aria-hidden className={`absolute inset-0 ${estado === "carregando" && !medido ? "orbi-encher" : ""}`} style={estado === "cheio" ? { clipPath: "inset(0)" } : medido ? { clipPath: `inset(${(1 - Math.min(1, Math.max(0, progresso))) * 100}% 0 0 0)`, transition: "clip-path 400ms cubic-bezier(0.23, 1, 0.32, 1)" } : { clipPath: "inset(100% 0 0 0)" }}>
-        <OrbiParticleSphere size={size} vivid colors={VERDE_CONCLUIDO} className="rounded-full" />
-      </div>
-    </div>
+    <OrbiParticleSphere
+      size={size}
+      vivid
+      colors={colors}
+      verde={estado === "cheio" ? 1 : typeof progresso === "number" ? Math.min(1, Math.max(0, progresso)) : "auto"}
+      className="rounded-full"
+    />
   );
 }
 
