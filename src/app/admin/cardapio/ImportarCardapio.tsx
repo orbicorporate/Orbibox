@@ -6,6 +6,7 @@ import { novoId, type CardapioSecao } from "@/lib/cardapio";
 import { OrbiConcluido, OrbiEncher } from "@/components/orbi/OrbiConcluido";
 import { melhorRecorte, emParalelo, lerCorFundo, guardarCorFundo, COR_PADRAO } from "@/lib/recorteIA";
 import CorFundoFotos from "./CorFundoFotos";
+import ModoFotos, { type ModoFoto } from "./ModoFotos";
 import OrbiPontos from "@/components/orbi/OrbiPontos";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
 import { fundoIndisponivel, prepararTirarFundo } from "@/lib/tirarFundo";
@@ -32,6 +33,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
   const [recorte, setRecorte] = useState<{ n: number; total: number } | null>(null);
   const [baixando, setBaixando] = useState<number | null>(null);
   const [semFundoAviso, setSemFundoAviso] = useState(false);
+  const [modo, setModo] = useState<ModoFoto>("recortar");
   const [corFundo, setCorFundo] = useState(COR_PADRAO);
   useEffect(() => { const c = lerCorFundo(); if (c !== COR_PADRAO) setCorFundo(c); }, []); // eslint-disable-line react-hooks/set-state-in-effect
   const [erro, setErro] = useState<string | null>(null);
@@ -116,8 +118,8 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
 
   // Começa a baixar o recortador de fundo assim que a pessoa abre a importação, para a primeira foto não esperar.
   useEffect(() => {
-    if (aberto) prepararTirarFundo();
-  }, [aberto]);
+    if (aberto && modo === "recortar") prepararTirarFundo();
+  }, [aberto, modo]);
 
   async function ler(usar?: { nome: string; url: string }[]) {
     setErro(null);
@@ -137,19 +139,21 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
       const propostas = (json.categorias as { nome: string; itens: Omit<ItemProposto, "marcado">[] }[]).map((c) => ({ nome: c.nome, itens: c.itens.map((i) => ({ ...i, marcado: true })) }));
       // Recorta a foto de cada prato da própria imagem lida. Se um recorte falhar, o prato segue sem foto.
       // Depois tira o fundo de cada recorte (fundo claro e neutro). Se isso falhar, fica o recorte como veio.
-      const comFoto = propostas.reduce((n, c) => n + c.itens.filter((i) => i.foto && base[i.foto.imagem - 1]).length, 0);
+      const tarefas = modo === "sem" ? [] : propostas.flatMap((c) => c.itens).filter((i) => i.foto && base[i.foto.imagem - 1]);
+      const comFoto = tarefas.length;
       let n = 0;
       setSemFundoAviso(false);
-      setRecorte({ n: 0, total: comFoto });
-      const tarefas = propostas.flatMap((c) => c.itens).filter((i) => i.foto && base[i.foto.imagem - 1]);
+      if (comFoto > 0) setRecorte({ n: 0, total: comFoto });
       await emParalelo(tarefas, 3, async (i) => {
         const cx = i.foto!;
         try {
           let blob = await recortarFoto(base[cx.imagem - 1], cx);
           if (blob) {
-            const r = await melhorRecorte(blob, setBaixando, corFundo);
-            if (!r.semFundo) setSemFundoAviso(true);
-            blob = r.blob;
+            if (modo === "recortar") {
+              const r = await melhorRecorte(blob, setBaixando, corFundo);
+              if (!r.semFundo) setSemFundoAviso(true);
+              blob = r.blob;
+            }
             i.fotoBlob = blob; i.fotoPreview = URL.createObjectURL(blob); i.usarFoto = true;
           }
         } catch { /* sem foto para este prato */ }
@@ -244,7 +248,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
           <OrbiEncher size={112} estado="carregando" progresso={recorte && recorte.total > 0 ? 0.55 + 0.4 * (recorte.n / recorte.total) : undefined} />
           <p className="mt-5 text-[16px] font-semibold">{recorte ? "A Orbi está recortando as fotos" : "A Orbi está lendo o cardápio"}</p>
           {recorte && recorte.total > 0 && !(recorte.n === 0 && baixando !== null && baixando < 1) && <OrbiPontos n={recorte.n} total={recorte.total} className="mt-4" />}
-          <p className="mt-3 max-w-[300px] text-[13px] leading-snug text-text-secondary">{recorte ? (recorte.n === 0 && baixando !== null && baixando < 1 ? `Baixando o recortador de fundo, só na primeira vez: ${Math.round(baixando * 100)}%.` : fundoIndisponivel() ? `Não consegui tirar o fundo agora. Deixando só o recorte dos pratos: ${recorte.n} de ${recorte.total}.` : `Tirando o fundo de cada prato: ${recorte.n} de ${recorte.total}.`) : "Separando por categoria, com nome e preço. Pode levar alguns segundos."}</p>
+          <p className="mt-3 max-w-[300px] text-[13px] leading-snug text-text-secondary">{recorte ? (recorte.n === 0 && baixando !== null && baixando < 1 ? `Baixando o recortador de fundo, só na primeira vez: ${Math.round(baixando * 100)}%.` : modo === "original" ? `Recortando a foto de cada prato: ${recorte.n} de ${recorte.total}.` : fundoIndisponivel() ? `Não consegui tirar o fundo agora. Deixando só o recorte dos pratos: ${recorte.n} de ${recorte.total}.` : `Tirando o fundo de cada prato: ${recorte.n} de ${recorte.total}.`) : "Separando por categoria, com nome e preço. Pode levar alguns segundos."}</p>
         </div>
       ) : secoes === null ? (
         <>
@@ -263,7 +267,8 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
               </span>
             ))}
           </div>
-          <CorFundoFotos valor={corFundo} onChange={(c) => { setCorFundo(c); guardarCorFundo(c); }} />
+          <ModoFotos valor={modo} onChange={setModo} />
+          {modo === "recortar" && <CorFundoFotos valor={corFundo} onChange={(c) => { setCorFundo(c); guardarCorFundo(c); }} />}
           <p className="mt-1.5 text-[12px] text-text-tertiary">Até 8 fotos ou páginas de PDF. Quanto mais nítido, melhor a leitura.</p>
 
           {erro && <p role="alert" className="mt-3 text-[13px] text-red-600">{erro}</p>}

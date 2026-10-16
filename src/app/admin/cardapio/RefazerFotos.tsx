@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import CorFundoFotos from "./CorFundoFotos";
+import ModoFotos, { type ModoFoto } from "./ModoFotos";
 import { createClient } from "@/lib/supabase/client";
 import { nomeArquivoUnico, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
 import { OrbiConcluido, OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
@@ -24,7 +25,7 @@ export function RefazerFotos({ businessId, secoes, pdfs, onChange }: { businessI
   const supabase = useRef(createClient()).current;
   const [fase, setFase] = useState<"parado" | "lendo" | "fotos" | "pronto">("parado");
   const [feitas, setFeitas] = useState({ n: 0, total: 0 });
-  const [semFundo, setSemFundo] = useState(true);
+  const [modo, setModo] = useState<ModoFoto>("recortar");
   const [cor, setCor] = useState(COR_PADRAO);
   useEffect(() => { const c = lerCorFundo(); if (c !== COR_PADRAO) setCor(c); }, []); // eslint-disable-line react-hooks/set-state-in-effect
   const [erro, setErro] = useState<string | null>(null);
@@ -81,7 +82,7 @@ export function RefazerFotos({ businessId, secoes, pdfs, onChange }: { businessI
           if (!a) continue;
           try {
             let blob = await recortarFoto(a.url, a.caixa);
-            if (blob && semFundo) {
+            if (blob && modo === "recortar") {
               blob = (await melhorRecorte(blob, undefined, cor)).blob;
             }
             const u = blob ? await subir(blob, "image/jpeg", "cardapio-prato") : null;
@@ -112,18 +113,15 @@ export function RefazerFotos({ businessId, secoes, pdfs, onChange }: { businessI
   return (
     <div className="mt-4 rounded-[22px] bg-surface-soft p-4">
       <p className="text-[14.5px] font-semibold">Refazer as fotos pelo PDF</p>
-      <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">A Orbi lê o PDF de novo e troca a foto de cada prato por um recorte só do prato, sem o selo de preço e sem o texto. Nome, preço e descrição não mudam.</p>
-      <button type="button" role="checkbox" aria-checked={semFundo} onClick={() => setSemFundo(!semFundo)} disabled={ocupado} className="mt-3 flex min-h-[44px] items-center gap-2.5 text-left text-[13.5px] disabled:opacity-60">
-        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${semFundo ? "bg-on-background text-white" : "bg-white text-transparent ring-1 ring-black/20"}`}>✓</span>
-        Tirar o fundo e aplicar a cor abaixo
-      </button>
-      {semFundo && <CorFundoFotos valor={cor} onChange={(c) => { setCor(c); guardarCorFundo(c); }} disabled={ocupado} />}
+      <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">A Orbi lê o PDF de novo e troca a foto de cada prato pelo recorte da foto no PDF. Nome, preço e descrição não mudam.</p>
+      <ModoFotos valor={modo} onChange={setModo} disabled={ocupado} semOpcaoSem />
+      {modo === "recortar" && <CorFundoFotos valor={cor} onChange={(c) => { setCor(c); guardarCorFundo(c); }} disabled={ocupado} />}
       {erro && <p role="alert" className="mt-1 text-[13px] text-red-600">{erro}</p>}
       <button type="button" onClick={refazer} disabled={ocupado} className={`mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full px-5 text-[14.5px] font-semibold active:scale-[0.98] ${ocupado ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-on-background text-white"}`}>
         {fase === "lendo" ? <><OrbiMiniVerde size={20} />A Orbi está lendo o PDF…</> : fase === "fotos" ? <><OrbiMiniVerde size={20} progresso={feitas.total ? feitas.n / feitas.total : 0} />Refazendo {feitas.n} de {feitas.total}…</> : "Refazer fotos"}
       </button>
       {fase === "fotos" && feitas.total > 0 && <OrbiPontos n={feitas.n} total={feitas.total} className="mx-auto mt-3" />}
-      {semFundo && <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">Na primeira vez baixa o recorte de fundo (uns 40 MB) e leva alguns segundos por foto. Pode deixar aberto.</p>}
+      {modo === "recortar" && <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">Na primeira vez baixa o recorte de fundo (uns 40 MB) e leva alguns segundos por foto. Pode deixar aberto.</p>}
     </div>
   );
 }
