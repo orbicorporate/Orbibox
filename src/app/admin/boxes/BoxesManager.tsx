@@ -3,6 +3,7 @@
 import { avisarErroSalvar, conferirSalvo, excluirComDesfazer } from "@/components/ui/AvisoSalvar";
 import { IconeRede, nomeDaRede, redeDoLink } from "@/lib/redesSociais";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect, type CSSProperties, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
@@ -210,6 +211,7 @@ export function BoxesManager({
   // ?box=<id> (vindo de outra tela, ex: painel de vouchers) já abre esse box
   // em modo de edição e rola até ele.
   const [reordenando, setReordenando] = useState(false);
+  const router = useRouter();
   const [editingId, setEditingId] = useState<string | null>(
     () => (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("box") : null),
   );
@@ -567,12 +569,15 @@ export function BoxesManager({
           const fg = contrastFg(color);
           const off = !box.is_active && !m.fixo;
           const editing = editingId === box.id;
+          // Delivery e Cardápio têm tela própria: tocar leva direto pra ela, sem abrir o cartão aqui.
+          const telaPropria = cfg?.action === "delivery" ? "/admin/delivery" : cfg?.action === "cardapio" ? "/admin/cardapio" : null;
+          const abrirOuFechar = () => (telaPropria ? router.push(telaPropria) : setEditingId(editing ? null : box.id));
           return (
 <div key={box.id} id={`box-${box.id}`} className={`relative scroll-mt-24 overflow-hidden rounded-[22px] border border-divider bg-surface-white p-3.5 ${editing ? "col-span-2" : ""} ${off ? "opacity-60" : ""}`}>
               <div className={`flex ${editing ? "items-center gap-3" : "flex-col gap-3"}`}>
                 <button
                   type="button"
-                  onClick={() => setEditingId(editing ? null : box.id)}
+                  onClick={abrirOuFechar}
                   aria-expanded={editing}
                   className={`flex min-w-0 cursor-pointer text-left ${editing ? "flex-1 items-center gap-3" : "w-full flex-col gap-2.5"}`}
                 >
@@ -619,7 +624,7 @@ export function BoxesManager({
                 <div className={`flex shrink-0 items-center gap-1.5 ${editing ? "" : "absolute right-3.5 top-3.5"}`}>
                   <button
                     type="button"
-                    onClick={() => setEditingId(editing ? null : box.id)}
+                    onClick={abrirOuFechar}
                     aria-label={editing ? "Fechar edição" : "Editar botão"}
                     className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors ${editing ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
                   >
