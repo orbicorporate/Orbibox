@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
-import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
-import { OrbiConcluido } from "@/components/orbi/OrbiConcluido";
+import { OrbiConcluido, OrbiEncher } from "@/components/orbi/OrbiConcluido";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 
@@ -217,7 +216,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
 
       {lendo ? (
         <div role="status" aria-live="polite" className="flex flex-col items-center px-2 py-10 text-center">
-          <OrbiParticleSphere size={112} vivid className="rounded-full" />
+          <OrbiEncher size={112} estado="carregando" />
           <p className="mt-5 text-[16px] font-semibold">A Orbi está lendo o cardápio</p>
           <p className="mt-1 max-w-[300px] text-[13px] leading-snug text-text-secondary">Separando por categoria, com nome e preço. Pode levar alguns segundos.</p>
         </div>

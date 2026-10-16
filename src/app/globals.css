@@ -1210,3 +1210,13 @@ html[data-embed] [data-embed-oculto="1"] { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .cardapio-item-in { animation: none; }
 }
+
+/* Esfera da Orbi enchendo de verde de baixo para cima enquanto ela trabalha. */
+@keyframes orbiEncher {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(8% 0 0 0); }
+}
+.orbi-encher { animation: orbiEncher 28s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .orbi-encher { animation: none; clip-path: inset(50% 0 0 0); }
+}
