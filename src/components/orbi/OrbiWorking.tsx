@@ -1,6 +1,6 @@
 "use client";
 
-import { OrbiParticleSphere } from "./OrbiParticleSphere";
+import { OrbiEncher } from "./OrbiConcluido";
 
 /**
  * Selo de "IA trabalhando", a esfera de partículas (assinatura da Orbi) com
@@ -24,14 +24,14 @@ export function OrbiWorking({
   if (variant === "inline") {
     return (
       <span className="inline-flex items-center gap-2">
-        <OrbiParticleSphere size={22} colors={colors} className="rounded-full" />
+        <OrbiEncher size={22} estado="carregando" colors={colors} />
         <span className="text-[13px] text-text-secondary">{label}</span>
       </span>
     );
   }
   return (
     <div className="flex items-center gap-3 px-1 py-3">
-      <OrbiParticleSphere size={30} colors={colors} className="rounded-full" />
+      <OrbiEncher size={30} estado="carregando" colors={colors} />
       <span className="text-[14px] font-medium text-text-secondary">{label}</span>
     </div>
   );

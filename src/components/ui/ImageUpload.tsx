@@ -6,6 +6,7 @@ import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropMod
 import { FotoProntaPicker } from "./FotoProntaPicker";
 import { MinhaGaleriaPicker } from "./MinhaGaleriaPicker";
 import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
+import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { AbrirChatGPT } from "@/components/ui/AbrirChatGPT";
 import { PassosPrompt } from "@/components/ui/PassosPrompt";
 
@@ -165,7 +166,7 @@ export function ImageUpload({
                 disabled={uploading}
                 className="rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-medium text-on-background shadow backdrop-blur disabled:opacity-60"
               >
-                {uploading ? "Enviando…" : "Trocar"}
+                {uploading ? <span className="inline-flex items-center gap-1.5"><OrbiMiniVerde size={14} />Enviando…</span> : "Trocar"}
               </button>
               <button
                 type="button"
@@ -186,7 +187,7 @@ export function ImageUpload({
             style={{ aspectRatio: aspect, minHeight: 120 }}
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-white text-[18px] leading-none text-on-background shadow-sm">+</span>
-            <span className="text-[13px] font-medium text-on-background">{uploading ? "Enviando…" : "Enviar foto de capa"}</span>
+            <span className="text-[13px] font-medium text-on-background">{uploading ? <span className="inline-flex items-center gap-1.5"><OrbiMiniVerde size={16} />Enviando…</span> : "Enviar foto de capa"}</span>
             <span className="text-[11.5px] text-text-tertiary">{medida}</span>
           </button>
         )}
@@ -333,7 +334,7 @@ export function ImageUpload({
             disabled={uploading}
             className="rounded-full bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white disabled:opacity-50"
           >
-            {uploading ? "Enviando…" : value ? "Trocar foto" : "Enviar foto"}
+            {uploading ? <span className="inline-flex items-center gap-1.5"><OrbiMiniVerde size={16} />Enviando…</span> : value ? "Trocar foto" : "Enviar foto"}
           </button>
           {value && (
             <button

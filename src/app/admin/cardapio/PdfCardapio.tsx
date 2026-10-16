@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { createClient } from "@/lib/supabase/client";
 import { MAX_PDFS, novoId, pesoLegivel, type CardapioPdf } from "@/lib/cardapio";
 import { comprimirPdf } from "@/lib/comprimirPdf";
@@ -200,7 +201,7 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
       {!cheio ? (
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={() => abrirEscolha(null)} disabled={enviando} className={`min-h-[44px] rounded-full px-5 text-[13.5px] font-semibold disabled:opacity-60 ${pdfs.length === 0 ? "bg-on-background text-white" : "border border-divider"}`}>
-            {enviando ? "Enviando…" : pdfs.length === 0 ? "Enviar PDF" : "Enviar outro PDF"}
+            {enviando ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Enviando…</span> : pdfs.length === 0 ? "Enviar PDF" : "Enviar outro PDF"}
           </button>
           <button type="button" onClick={() => setModoLink((m) => !m)} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium">
             {pdfs.length === 0 ? "Já tenho um link" : "Adicionar por link"}

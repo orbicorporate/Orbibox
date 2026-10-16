@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { createClient } from "@/lib/supabase/client";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import type { Json } from "@/lib/supabase/types";
@@ -216,7 +217,7 @@ export function MateriaisEditor({ businessId, boxId: boxInicial, config, ativo: 
                         {m.capa ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={m.capa} alt="" className="h-full w-full object-cover" />
-                        ) : subindo === m.id ? <span className="text-[11px]">Enviando</span> : (
+                        ) : subindo === m.id ? <OrbiMiniVerde size={22} /> : (
                           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
                         )}
                       </button>
@@ -253,7 +254,7 @@ export function MateriaisEditor({ businessId, boxId: boxInicial, config, ativo: 
                           <div className="mt-1.5 flex flex-wrap items-center gap-2">
                             {m.url && <a href={m.url} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center rounded-full bg-surface-soft px-4 text-[13.5px] font-medium">Ver o arquivo ↗</a>}
                             <button type="button" onClick={() => { alvo.current = m.id; inputArquivo.current?.click(); }} disabled={subindo === m.id} className={`min-h-[44px] rounded-full px-5 text-[13.5px] font-semibold disabled:opacity-60 ${m.url ? "border border-divider" : "bg-on-background text-white"}`}>
-                              {subindo === m.id ? "Enviando…" : m.url ? "Trocar PDF" : "Enviar PDF"}
+                              {subindo === m.id ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Enviando…</span> : m.url ? "Trocar PDF" : "Enviar PDF"}
                             </button>
                             <button type="button" onClick={() => { setLinkDe(linkDe === m.id ? null : m.id); setLink(""); }} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium">{m.url ? "Usar outro link" : "Colar link"}</button>
                           </div>
@@ -342,7 +343,7 @@ export function MateriaisEditor({ businessId, boxId: boxInicial, config, ativo: 
                   <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Imagem do botão</p>
                   <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">Aparece no lugar do ícone, ou como fundo se você escolher Box com imagem.</p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <button type="button" onClick={() => inputBotao.current?.click()} disabled={subindo === "botao"} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium disabled:opacity-60">{subindo === "botao" ? "Enviando…" : imagemBotao ? "Trocar imagem" : "Enviar imagem"}</button>
+                    <button type="button" onClick={() => inputBotao.current?.click()} disabled={subindo === "botao"} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium disabled:opacity-60">{subindo === "botao" ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Enviando…</span> : imagemBotao ? "Trocar imagem" : "Enviar imagem"}</button>
                     {imagemBotao && <button type="button" onClick={() => gravarConfig({ logo_url: null })} className="min-h-[44px] rounded-full px-4 text-[13.5px] font-medium text-text-tertiary">Tirar</button>}
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import {
@@ -325,7 +326,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
           disabled={!!enviando || cheio}
           className="mt-3.5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-on-background px-5 text-[14.5px] font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
         >
-          {enviando ? `Enviando ${enviando.feitas} de ${enviando.total}…` : <>Enviar imagens <span aria-hidden>+</span></>}
+          {enviando ? <><OrbiMiniVerde size={20} progresso={enviando.total ? enviando.feitas / enviando.total : 0} />{`Enviando ${enviando.feitas} de ${enviando.total}…`}</> : <>Enviar imagens <span aria-hidden>+</span></>}
         </button>
         <p className="mt-2 text-[12px] text-text-tertiary">
           {filtro !== "todas" && filtro !== "sem" ? `As novas vão para "${nomeDe(filtro)}". ` : ""}Pode escolher várias de uma vez.
