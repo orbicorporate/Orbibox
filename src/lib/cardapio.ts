@@ -68,3 +68,20 @@ export function lerPdfs(config: unknown): CardapioPdf[] {
   if (typeof c.pdf_url === "string" && c.pdf_url) return [{ id: "principal", nome: "Cardápio", url: c.pdf_url }];
   return [];
 }
+
+/** Cores sugeridas para os botões do cardápio. A primeira é o preto padrão. */
+export const CORES_BOTAO = ["#14161B", "#B3261E", "#D9620B", "#B7791F", "#2F7D4F", "#0F766E", "#1D4ED8", "#7C3AED", "#BE185D", "#6B4E3D"];
+
+/** Lê a cor escolhida pelo dono para os botões do cardápio (só aceita #RRGGBB). */
+export function lerCorBotoes(config: unknown): string | null {
+  const v = (config as { corBotoes?: unknown } | null)?.corBotoes;
+  return typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v : null;
+}
+
+/** Texto branco ou escuro, o que ler melhor sobre a cor do botão. */
+export function textoSobre(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const lin = (c: number) => { const x = c / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+  const l = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  return l > 0.4 ? "#14161B" : "#FFFFFF";
+}

@@ -11,7 +11,7 @@ import { GuiaPrato } from "./GuiaPrato";
 import { DeliveryEditor } from "../delivery/DeliveryEditor";
 import type { DeliveryApp } from "@/lib/delivery";
 import type { Json } from "@/lib/supabase/types";
-import { lerPdfs, lerSecoes, novoId, totalItens, type CardapioItem, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
+import { CORES_BOTAO, lerCorBotoes, lerPdfs, lerSecoes, textoSobre, novoId, totalItens, type CardapioItem, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
 
 export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: ativoInicial, totalBoxes, delivery }: { businessId: string; boxId: string | null; config: Record<string, unknown>; ativo: boolean; totalBoxes: number; slug?: string; delivery: { boxId: string | null; config: Record<string, unknown>; apps: DeliveryApp[]; ativo: boolean } }) {
   const supabase = useRef(createClient()).current;
@@ -76,6 +76,13 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     if (conferirSalvo(res)) { setCfg(novo); cfgRef.current = novo; }
   }
 
+  async function trocarCor(cor: string | null) {
+    if (!boxId) return;
+    const novo = { ...cfgRef.current, corBotoes: cor } as Record<string, Json>;
+    const res = await supabase.from("smart_boxes").update({ config: novo }).eq("id", boxId);
+    if (conferirSalvo(res)) { setCfg(novo); cfgRef.current = novo; }
+  }
+
   async function alternar() {
     if (!boxId) return;
     const novo = !ativo;
@@ -85,6 +92,8 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
   }
 
   const pdfs = lerPdfs(cfg);
+  const corBotoes = lerCorBotoes(cfg);
+  const corAtual = corBotoes ?? CORES_BOTAO[0];
   const nPratos = totalItens(secoes);
   const nPdfs = pdfs.length;
   const clienteVe =
@@ -147,6 +156,34 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
             </div>
 
             <p className="mt-3 rounded-2xl bg-surface-soft px-4 py-3 text-[13px] leading-snug text-text-secondary">{clienteVe}</p>
+          </section>
+
+          <section className="mt-8" aria-label="Cor dos botões">
+            <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Cor dos botões</h2>
+            <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Vale para os botões de abrir PDF e de pedir por delivery que o cliente vê.</p>
+            <div className="mt-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
+              <div role="radiogroup" aria-label="Escolha a cor" className="flex flex-wrap gap-2.5">
+                {CORES_BOTAO.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    role="radio"
+                    aria-checked={corAtual.toLowerCase() === c.toLowerCase()}
+                    aria-label={`Cor ${c}`}
+                    onClick={() => trocarCor(c === CORES_BOTAO[0] ? null : c)}
+                    style={{ backgroundColor: c }}
+                    className={`h-11 w-11 rounded-full ring-offset-2 transition-transform active:scale-95 ${corAtual.toLowerCase() === c.toLowerCase() ? "ring-2 ring-on-background" : "ring-1 ring-black/10"}`}
+                  />
+                ))}
+                <label className="relative flex h-11 min-w-[44px] cursor-pointer items-center justify-center rounded-full border border-divider px-3.5 text-[13px] font-medium text-text-secondary">
+                  Outra
+                  <input type="color" value={corAtual} onChange={(e) => trocarCor(e.target.value)} aria-label="Escolher outra cor" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                </label>
+              </div>
+              <div className="mt-4 flex flex-col gap-2" aria-hidden>
+                <span style={{ backgroundColor: corAtual, color: textoSobre(corAtual) }} className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full text-[14.5px] font-semibold">Abrir {pdfs[0]?.nome?.trim() || "Cardápio"}</span>
+              </div>
+            </div>
           </section>
 
           <section className="mt-8" aria-label="Delivery">
