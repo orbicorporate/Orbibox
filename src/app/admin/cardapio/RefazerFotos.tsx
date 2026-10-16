@@ -6,7 +6,7 @@ import { nomeArquivoUnico, type CardapioPdf, type CardapioSecao } from "@/lib/ca
 import { OrbiConcluido, OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { pdfParaImagens } from "@/lib/pdfParaImagens";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
-import { tirarFundo } from "@/lib/tirarFundo";
+import { melhorRecorte } from "@/lib/recorteIA";
 import OrbiPontos from "@/components/orbi/OrbiPontos";
 
 type Resposta = { categorias?: { nome: string; itens: { titulo: string; foto?: CaixaFoto | null }[] }[]; error?: string };
@@ -79,7 +79,7 @@ export function RefazerFotos({ businessId, secoes, pdfs, onChange }: { businessI
           try {
             let blob = await recortarFoto(a.url, a.caixa);
             if (blob && semFundo) {
-              try { blob = await tirarFundo(blob); } catch { /* mantém o recorte com o fundo original */ }
+              blob = (await melhorRecorte(blob)).blob;
             }
             const u = blob ? await subir(blob, "image/jpeg", "cardapio-prato") : null;
             if (u) novas.set(i.id, u);

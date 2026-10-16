@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
 import { OrbiConcluido, OrbiEncher } from "@/components/orbi/OrbiConcluido";
+import { melhorRecorte, emParalelo } from "@/lib/recorteIA";
 import OrbiPontos from "@/components/orbi/OrbiPontos";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
-import { fundoIndisponivel, prepararTirarFundo, tirarFundo } from "@/lib/tirarFundo";
+import { fundoIndisponivel, prepararTirarFundo } from "@/lib/tirarFundo";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 
 const MAX_FOTOS = 8;
@@ -137,22 +138,21 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
       let n = 0;
       setSemFundoAviso(false);
       setRecorte({ n: 0, total: comFoto });
-      for (const c of propostas) {
-        for (const i of c.itens) {
-          const cx = i.foto;
-          const url = cx ? base[cx.imagem - 1] : null;
-          if (!cx || !url) continue;
-          try {
-            let blob = await recortarFoto(url, cx);
-            if (blob) {
-              try { blob = await tirarFundo(blob, setBaixando); } catch { setSemFundoAviso(true); /* mantém o recorte com o fundo original */ }
-              i.fotoBlob = blob; i.fotoPreview = URL.createObjectURL(blob); i.usarFoto = true;
-            }
-          } catch { /* sem foto para este prato */ }
-          n += 1;
-          setRecorte({ n, total: comFoto });
-        }
-      }
+      const tarefas = propostas.flatMap((c) => c.itens).filter((i) => i.foto && base[i.foto.imagem - 1]);
+      await emParalelo(tarefas, 3, async (i) => {
+        const cx = i.foto!;
+        try {
+          let blob = await recortarFoto(base[cx.imagem - 1], cx);
+          if (blob) {
+            const r = await melhorRecorte(blob, setBaixando);
+            if (!r.semFundo) setSemFundoAviso(true);
+            blob = r.blob;
+            i.fotoBlob = blob; i.fotoPreview = URL.createObjectURL(blob); i.usarFoto = true;
+          }
+        } catch { /* sem foto para este prato */ }
+        n += 1;
+        setRecorte({ n, total: comFoto });
+      });
       setSecoes(propostas);
     } catch {
       setErro("Sem conexão. Tente de novo.");
