@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ImportarCardapio } from "./ImportarCardapio";
+import { RefazerFotos } from "./RefazerFotos";
 import { PdfCardapio } from "./PdfCardapio";
 import { PratosEditor } from "./PratosEditor";
 import { GuiaPrato } from "./GuiaPrato";
@@ -164,6 +165,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
                 <PdfCardapio businessId={businessId} pdfs={pdfs} onChange={trocarPdfs} onMontar={montarDoPdf} />
               ) : (
                 <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes}>
+                  {!guia && <RefazerFotos businessId={businessId} secoes={secoes} pdfs={pdfs} onChange={mudarSecoes} />}
                   {guia ? (
                     <GuiaPrato businessId={businessId} categorias={secoes.map((x) => x.nome)} onSalvar={adicionarPrato} onFechar={() => setGuia(false)} />
                   ) : (
