@@ -42,22 +42,15 @@ export function OrbiConcluido({ titulo, texto, children, className = "" }: { tit
 }
 
 /**
- * Orbi pequena para dentro de botões e linhas: uma bolinha que se enche de
- * verde de baixo para cima. Com "progresso" (0 a 1) mostra o avanço real;
- * sem ele, sobe devagar enquanto a espera dura. Leve (só CSS), serve em fundo
- * claro ou escuro.
+ * Orbi pequena para dentro de botões e linhas: a própria esfera da Orbi se
+ * enchendo de verde forte de baixo para cima. Com "progresso" (0 a 1) mostra o
+ * avanço real; sem ele, sobe devagar enquanto a espera dura. Os botões de
+ * carregamento ficam claros, sem fundo escuro, para a esfera aparecer bem.
  */
 export function OrbiMiniVerde({ size = 18, progresso, className = "" }: { size?: number; progresso?: number; className?: string }) {
-  const medido = typeof progresso === "number";
   return (
-    <span aria-hidden className={`relative inline-block shrink-0 overflow-hidden rounded-full bg-current/25 ring-1 ring-current/30 ${className}`} style={{ width: size, height: size }}>
-      <span
-        className={`absolute inset-0 rounded-full ${medido ? "" : "orbi-encher"}`}
-        style={{
-          background: "radial-gradient(circle at 32% 24%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 45%), linear-gradient(to top, #0E9F4A, #3EE07F)",
-          ...(medido ? { clipPath: `inset(${(1 - Math.min(1, Math.max(0, progresso))) * 100}% 0 0 0)`, transition: "clip-path 400ms cubic-bezier(0.23, 1, 0.32, 1)" } : { clipPath: "inset(100% 0 0 0)" }),
-        }}
-      />
+    <span aria-hidden className={`inline-flex shrink-0 ${className}`}>
+      <OrbiEncher size={Math.max(26, size + 6)} estado="carregando" progresso={progresso} />
     </span>
   );
 }

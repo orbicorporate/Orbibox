@@ -345,7 +345,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={!!enviando || cheio}
-          className="mt-3.5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-on-background px-5 text-[14.5px] font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
+          className={`mt-3.5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full px-5 text-[14.5px] font-semibold transition-transform active:scale-[0.98] ${enviando ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-on-background text-white disabled:opacity-50"}`}
         >
           {enviando ? <><OrbiMiniVerde size={20} progresso={enviando.total ? enviando.feitas / enviando.total : 0} />{`Enviando ${enviando.feitas} de ${enviando.total}…`}</> : <>Enviar imagens <span aria-hidden>+</span></>}
         </button>

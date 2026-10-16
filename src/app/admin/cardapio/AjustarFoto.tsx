@@ -97,7 +97,7 @@ export function AjustarFoto({ foto, ajuste, onChange, onNovaFoto }: { foto: stri
         />
       </label>
       <div className="flex w-full max-w-[260px] flex-col items-center gap-1.5">
-        <button type="button" onClick={semFundo} disabled={fundo.fase !== "parado"} className="min-h-[44px] w-full rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white active:scale-[0.98] disabled:opacity-60">
+        <button type="button" onClick={semFundo} disabled={fundo.fase !== "parado"} className={`min-h-[44px] w-full rounded-full px-5 text-[13.5px] font-semibold active:scale-[0.98] ${fundo.fase !== "parado" ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-on-background text-white"}`}>
           {fundo.fase === "parado" ? "Tirar fundo" : <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={18} progresso={fundo.fase === "baixando" ? fundo.pct * 0.7 : fundo.fase === "tirando" ? 0.85 : 0.97} />{fundo.fase === "baixando" ? (fundo.pct > 0 ? `Preparando… ${Math.round(fundo.pct * 100)}%` : "Preparando…") : fundo.fase === "tirando" ? "Tirando o fundo…" : "Salvando…"}</span>}
         </button>
         <p className="text-center text-[12px] leading-snug text-text-tertiary">Recorta só o prato e deixa um fundo claro e neutro. Na primeira vez pode levar um pouco mais para preparar.</p>
