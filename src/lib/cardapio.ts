@@ -51,7 +51,7 @@ export function precoCardapio(i: Pick<CardapioItem, "preco" | "aPartir">): strin
 }
 
 /** Um PDF do cardápio (ex.: Cardápio, Bebidas, Sobremesas). */
-export type CardapioPdf = { id: string; nome: string; url: string };
+export type CardapioPdf = { id: string; nome: string; url: string; /** Peso do arquivo em bytes, quando conhecido. */ bytes?: number };
 
 export const MAX_PDFS = 6;
 
@@ -62,7 +62,7 @@ export function lerPdfs(config: unknown): CardapioPdf[] {
     const lista = c.pdfs
       .map((p) => p as Partial<CardapioPdf>)
       .filter((p) => typeof p?.url === "string" && p.url)
-      .map((p, i) => ({ id: typeof p.id === "string" && p.id ? p.id : `pdf${i}`, nome: typeof p.nome === "string" ? p.nome : "", url: p.url as string }));
+      .map((p, i) => ({ id: typeof p.id === "string" && p.id ? p.id : `pdf${i}`, nome: typeof p.nome === "string" ? p.nome : "", url: p.url as string, ...(typeof p.bytes === "number" && p.bytes > 0 ? { bytes: p.bytes } : {}) }));
     return lista;
   }
   if (typeof c.pdf_url === "string" && c.pdf_url) return [{ id: "principal", nome: "Cardápio", url: c.pdf_url }];
@@ -84,4 +84,10 @@ export function textoSobre(hex: string): string {
   const lin = (c: number) => { const x = c / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
   const l = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
   return l > 0.4 ? "#14161B" : "#FFFFFF";
+}
+
+/** "2,1 MB" ou "480 KB". */
+export function pesoLegivel(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
