@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AjustarFoto } from "./AjustarFoto";
+import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
 import { estiloFoto, nomeArquivoUnico, novoId, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
@@ -22,6 +23,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
   const [fechadas, setFechadas] = useState<string[]>(() => (secoes.length > 1 ? secoes.slice(1).map((x) => x.id) : []));
   const [comDesc, setComDesc] = useState<string[]>([]);
   const [ajustando, setAjustando] = useState<string | null>(null);
+  const [galeriaPara, setGaleriaPara] = useState<{ s: string; i: string } | null>(null);
   const [apagado, setApagado] = useState<{ s: string; idx: number; item: CardapioItem } | null>(null);
   const timerDesfazer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -193,7 +195,8 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                             <button type="button" role="checkbox" aria-checked={!!i.aPartir} onClick={() => mudarItem(s.id, i.id, { aPartir: !i.aPartir })} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${i.aPartir ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>A partir de</button>
                           )}
                           {i.foto && <button type="button" aria-expanded={ajustando === i.id} onClick={() => setAjustando(ajustando === i.id ? null : i.id)} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${ajustando === i.id ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>Ajustar foto</button>}
-                          {i.foto && <button type="button" onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} disabled={subindo === i.id} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary disabled:opacity-60">{subindo === i.id ? "Enviando…" : "Trocar foto"}</button>}
+                          <button type="button" onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} disabled={subindo === i.id} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary disabled:opacity-60">{subindo === i.id ? "Enviando…" : i.foto ? "Trocar foto" : "Enviar foto"}</button>
+                          <button type="button" onClick={() => setGaleriaPara({ s: s.id, i: i.id })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Da galeria</button>
                           {i.foto && <button type="button" onClick={() => mudarItem(s.id, i.id, { foto: null, fotoAjuste: null })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Tirar foto</button>}
                           <button type="button" onClick={() => removerPrato(s.id, i.id)} className="ml-auto min-h-[40px] rounded-full px-3 text-[13px] font-medium text-text-tertiary">Apagar</button>
                         </div>
@@ -213,6 +216,18 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
           );
         })}
       </div>
+
+      {galeriaPara && (
+        <MinhaGaleriaPicker
+          businessId={businessId}
+          atual={secoes.find((x) => x.id === galeriaPara.s)?.itens.find((x) => x.id === galeriaPara.i)?.foto ?? null}
+          onFechar={() => setGaleriaPara(null)}
+          onEscolher={(url) => {
+            mudarItem(galeriaPara.s, galeriaPara.i, { foto: url, fotoAjuste: null });
+            setGaleriaPara(null);
+          }}
+        />
+      )}
 
       {apagado && (
         <div role="status" className="fixed inset-x-0 bottom-28 z-40 mx-auto flex w-[calc(100%-48px)] max-w-[392px] items-center justify-between gap-3 rounded-full bg-on-background py-2 pl-5 pr-2 text-[13.5px] text-white shadow-[0_10px_30px_rgba(17,19,24,0.3)]">
