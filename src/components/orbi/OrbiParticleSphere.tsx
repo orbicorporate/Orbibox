@@ -280,7 +280,7 @@ export function OrbiParticleSphere({
       if (pequena && now - ultimo < 32) { raf = requestAnimationFrame(frame); return; }
       ultimo = now;
       const time = (now - start) / 1000;
-      const alvoVerde = verdeRef.current === "auto" ? 0.94 * (1 - Math.exp(-time / 9)) : (verdeRef.current ?? 0);
+      const alvoVerde = verdeRef.current === "auto" ? 1 - Math.exp(-time / 6) : (verdeRef.current ?? 0);
       verdeAtual += (alvoVerde - verdeAtual) * 0.08;
       ctx.clearRect(0, 0, size, size);
       if (bg !== "transparent") {
@@ -331,7 +331,9 @@ export function OrbiParticleSphere({
           b0 += (morphColor[2] - b0) * kMorph;
         }
         if (verdeAtual > 0.002) {
-          const t = Math.min(1, Math.max(0, (verdeAtual - atraso[i] * 0.5) / 0.5));
+          // Chega à esfera toda verde antes do fim (verde ≥ ~0.87), sem sobrar partícula azulada.
+          const v = Math.min(1, verdeAtual * 1.15);
+          const t = Math.min(1, Math.max(0, (v - atraso[i] * 0.4) / 0.6));
           const k = t * t * (3 - 2 * t);
           r += (22 - r) * k;
           g += (196 - g) * k;
