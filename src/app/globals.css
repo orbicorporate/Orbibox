@@ -1278,3 +1278,12 @@ html[data-embed] [data-embed-oculto="1"] { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .modo-desc { animation: none; }
 }
+
+/* Cartões do cardápio em vidro: reflexo no topo, desfoque forte e cor atrás aparecendo. */
+.cardapio-vidro {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.64) 0%, rgba(255, 255, 255, 0.26) 55%, rgba(255, 255, 255, 0.42) 100%);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow: 0 12px 32px -12px rgba(17, 19, 24, 0.16), inset 0 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.35);
+}

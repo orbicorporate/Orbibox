@@ -182,8 +182,9 @@ export function CardapioFlow({
         return (
           <section key={s.id} className="relative isolate mt-8" aria-label={s.nome || "Pratos"}>
             {/* Manchas de cor suaves atrás dos cartões: é o que faz o vidro aparecer. */}
-            <span aria-hidden className="pointer-events-none absolute -left-10 top-10 -z-10 h-40 w-40 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: cor }} />
-            <span aria-hidden className="pointer-events-none absolute -right-12 bottom-6 -z-10 h-44 w-44 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: est.cor }} />
+            <span aria-hidden className="pointer-events-none absolute -left-14 top-6 -z-10 h-56 w-56 rounded-full opacity-50 blur-3xl" style={{ backgroundColor: cor }} />
+            <span aria-hidden className="pointer-events-none absolute -right-14 bottom-4 -z-10 h-60 w-60 rounded-full opacity-40 blur-3xl" style={{ backgroundColor: est.cor }} />
+            <span aria-hidden className="pointer-events-none absolute -right-16 top-1/3 -z-10 h-48 w-48 rounded-full opacity-35 blur-3xl" style={{ backgroundColor: cor }} />
             {s.nome.trim() && (
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 ring-1 ring-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(17,19,24,0.06)]" style={{ color: cor }}>
@@ -203,7 +204,7 @@ export function CardapioFlow({
                     <li
                       key={i.id}
                       style={{ animationDelay: `${Math.min(n, 8) * 45}ms` }}
-                      className="cardapio-item-in flex flex-col rounded-[24px] bg-white/55 p-2.5 ring-1 ring-white/80 backdrop-blur-xl shadow-[0_6px_24px_rgba(17,19,24,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                      className="cardapio-item-in cardapio-vidro flex flex-col rounded-[24px] p-2.5"
                     >
                       <span className="relative block aspect-square w-full overflow-hidden rounded-[18px] bg-surface-soft ring-1 ring-white/80">
                         {i.foto ? (
@@ -241,7 +242,7 @@ export function CardapioFlow({
                   <li
                     key={i.id}
                     style={{ animationDelay: `${Math.min(n, 8) * 45}ms` }}
-                    className="cardapio-item-in flex w-full items-center gap-3.5 rounded-[24px] bg-white/55 p-3.5 ring-1 ring-white/80 backdrop-blur-xl shadow-[0_6px_24px_rgba(17,19,24,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                    className="cardapio-item-in cardapio-vidro flex w-full items-center gap-3.5 rounded-[24px] p-3.5"
                   >
                     {i.foto && (
                       <span className="relative h-[84px] w-[84px] shrink-0 overflow-hidden rounded-[18px] bg-surface-soft ring-1 ring-white/80">
