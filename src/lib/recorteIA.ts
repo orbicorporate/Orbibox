@@ -31,11 +31,25 @@ export function recorteIAIndisponivel() {
   return semChave;
 }
 
+async function reduzir(b: Blob, max: number): Promise<Blob> {
+  try {
+    const bmp = await createImageBitmap(b);
+    if (Math.max(bmp.width, bmp.height) <= max) return b;
+    const k = max / Math.max(bmp.width, bmp.height);
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext("2d")!.drawImage(bmp, 0, 0, c.width, c.height);
+    return (await new Promise<Blob | null>((ok) => c.toBlob(ok, "image/jpeg", 0.9))) ?? b;
+  } catch { return b; }
+}
+
 /** Recorte com IA (só o produto, fundo claro e neutro). Devolve um JPEG de até 900 px, ou lança erro. */
 export async function recorteComIA(origem: Blob, cor: string = COR_PADRAO): Promise<Blob> {
   if (semChave) throw new Error("indisponivel");
+  // Envia a foto menor (até 640 px): a IA cobra pelo tamanho da imagem de entrada e o produto continua nítido.
+  const entrada = await reduzir(origem, 640);
   const form = new FormData();
-  form.append("imagem", origem, "prato.jpg");
+  form.append("imagem", entrada, "prato.jpg");
   form.append("cor", cor);
   const r = await fetch("/api/recorte-ia", { method: "POST", body: form });
   if (r.status === 501) { semChave = true; throw new Error("indisponivel"); }

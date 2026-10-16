@@ -36,24 +36,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Imagem inválida." }, { status: 400 });
   }
 
-  const corpo = new FormData();
-  corpo.append("model", "gpt-image-1");
-  corpo.append("image", imagem, "prato.jpg");
-  corpo.append("prompt", pedido(cor));
-  corpo.append("size", "1024x1024");
-  corpo.append("quality", "medium");
-  corpo.append("input_fidelity", "high");
-  corpo.append("n", "1");
+  // Modelo, qualidade e fidelidade vêm de variáveis de ambiente, para trocar sem mexer no código.
+  // Padrão: gpt-image-1-mini em qualidade média (bem mais barato). O gpt-image-1 antigo sai do ar em 23/10/2026.
+  const modelo = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1-mini";
+  const qualidade = process.env.OPENAI_IMAGE_QUALITY || "medium";
+  const comFidelidade = modelo === "gpt-image-1" || modelo === "gpt-image-1.5";
 
-  try {
-    const r = await fetch("https://api.openai.com/v1/images/edits", {
+  async function chamar(usarFidelidade: boolean) {
+    const corpo = new FormData();
+    corpo.append("model", modelo);
+    corpo.append("image", imagem as File, "prato.jpg");
+    corpo.append("prompt", pedido(cor));
+    corpo.append("size", "1024x1024");
+    corpo.append("quality", qualidade);
+    if (usarFidelidade) corpo.append("input_fidelity", "high");
+    corpo.append("n", "1");
+    return fetch("https://api.openai.com/v1/images/edits", {
       method: "POST",
       headers: { Authorization: `Bearer ${chave}` },
       body: corpo,
       signal: AbortSignal.timeout(110_000),
     });
+  }
+
+  try {
+    let r = await chamar(comFidelidade);
+    if (r.status === 400 && comFidelidade) r = await chamar(false); // se o modelo não aceitar a fidelidade, tenta sem
     if (!r.ok) {
-      console.error("recorte-ia", r.status, (await r.text()).slice(0, 300));
+      console.error("recorte-ia", modelo, r.status, (await r.text()).slice(0, 300));
       return NextResponse.json({ error: "A IA não conseguiu agora." }, { status: 502 });
     }
     const json = (await r.json()) as { data?: { b64_json?: string }[] };
