@@ -260,7 +260,7 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
           </button>
         </div>
 
-        <label className="mt-3 flex cursor-pointer items-center justify-center rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white">
+        <label className={`mt-3 flex cursor-pointer items-center justify-center rounded-full py-2.5 text-[13px] font-medium ${busy ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-button-primary text-white"}`}>
           {busy ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Enviando…</span> : items.length > 0 ? "Adicionar mais fotos" : "Escolher fotos e enviar"}
           <input type="file" accept="image/*" multiple onChange={handleFiles} disabled={busy} className="hidden" />
         </label>
@@ -307,7 +307,7 @@ export function InspireUploader({ existing }: { existing: Record<string, Inspire
           <button
             onClick={salvarTema}
             disabled={saving}
-            className="mt-4 w-full rounded-full bg-button-primary py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
+            className={`mt-4 w-full rounded-full py-2.5 text-[13px] font-medium ${saving ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-button-primary text-white disabled:opacity-40"}`}
           >
             {saving ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Salvando…</span> : `Salvar tema "${theme}" no Inspire-se`}
           </button>

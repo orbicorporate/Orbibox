@@ -332,7 +332,7 @@ export function ImageUpload({
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="rounded-full bg-button-primary px-4 py-2.5 text-[13px] font-medium text-white disabled:opacity-50"
+            className={`rounded-full px-4 py-2.5 text-[13px] font-medium ${uploading ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-button-primary text-white disabled:opacity-50"}`}
           >
             {uploading ? <span className="inline-flex items-center gap-1.5"><OrbiMiniVerde size={16} />Enviando…</span> : value ? "Trocar foto" : "Enviar foto"}
           </button>

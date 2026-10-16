@@ -253,7 +253,7 @@ export function MateriaisEditor({ businessId, boxId: boxInicial, config, ativo: 
                           <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Arquivo</p>
                           <div className="mt-1.5 flex flex-wrap items-center gap-2">
                             {m.url && <a href={m.url} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center rounded-full bg-surface-soft px-4 text-[13.5px] font-medium">Ver o arquivo ↗</a>}
-                            <button type="button" onClick={() => { alvo.current = m.id; inputArquivo.current?.click(); }} disabled={subindo === m.id} className={`min-h-[44px] rounded-full px-5 text-[13.5px] font-semibold disabled:opacity-60 ${m.url ? "border border-divider" : "bg-on-background text-white"}`}>
+                            <button type="button" onClick={() => { alvo.current = m.id; inputArquivo.current?.click(); }} disabled={subindo === m.id} className={`min-h-[44px] rounded-full px-5 text-[13.5px] font-semibold ${subindo === m.id ? "bg-surface-white text-on-background ring-1 ring-black/10" : m.url ? "border border-divider" : "bg-on-background text-white"}`}>
                               {subindo === m.id ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Enviando…</span> : m.url ? "Trocar PDF" : "Enviar PDF"}
                             </button>
                             <button type="button" onClick={() => { setLinkDe(linkDe === m.id ? null : m.id); setLink(""); }} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium">{m.url ? "Usar outro link" : "Colar link"}</button>
@@ -343,7 +343,7 @@ export function MateriaisEditor({ businessId, boxId: boxInicial, config, ativo: 
                   <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Imagem do botão</p>
                   <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">Aparece no lugar do ícone, ou como fundo se você escolher Box com imagem.</p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <button type="button" onClick={() => inputBotao.current?.click()} disabled={subindo === "botao"} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium disabled:opacity-60">{subindo === "botao" ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Enviando…</span> : imagemBotao ? "Trocar imagem" : "Enviar imagem"}</button>
+                    <button type="button" onClick={() => inputBotao.current?.click()} disabled={subindo === "botao"} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium">{subindo === "botao" ? <span className="inline-flex items-center gap-2"><OrbiMiniVerde size={16} />Enviando…</span> : imagemBotao ? "Trocar imagem" : "Enviar imagem"}</button>
                     {imagemBotao && <button type="button" onClick={() => gravarConfig({ logo_url: null })} className="min-h-[44px] rounded-full px-4 text-[13.5px] font-medium text-text-tertiary">Tirar</button>}
                   </div>
                 </div>

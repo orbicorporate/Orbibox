@@ -114,7 +114,7 @@ export function RefazerFotos({ businessId, secoes, pdfs, onChange }: { businessI
         Deixar o fundo claro e neutro
       </button>
       {erro && <p role="alert" className="mt-1 text-[13px] text-red-600">{erro}</p>}
-      <button type="button" onClick={refazer} disabled={ocupado} className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-on-background px-5 text-[14.5px] font-semibold text-white active:scale-[0.98] disabled:opacity-70">
+      <button type="button" onClick={refazer} disabled={ocupado} className={`mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full px-5 text-[14.5px] font-semibold active:scale-[0.98] ${ocupado ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-on-background text-white"}`}>
         {fase === "lendo" ? <><OrbiMiniVerde size={20} />A Orbi está lendo o PDF…</> : fase === "fotos" ? <><OrbiMiniVerde size={20} progresso={feitas.total ? feitas.n / feitas.total : 0} />Refazendo {feitas.n} de {feitas.total}…</> : "Refazer fotos"}
       </button>
       {semFundo && <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">Na primeira vez baixa o recorte de fundo (uns 40 MB) e leva alguns segundos por foto. Pode deixar aberto.</p>}
