@@ -5,11 +5,12 @@ import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { OrbiConcluido } from "@/components/orbi/OrbiConcluido";
+import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 
 const MAX_FOTOS = 8;
 
-type ItemProposto = { titulo: string; descricao: string; preco: number | null; preco_tipo: "exato" | "a_partir"; marcado: boolean };
+type ItemProposto = { titulo: string; descricao: string; preco: number | null; preco_tipo: "exato" | "a_partir"; marcado: boolean; foto?: CaixaFoto | null; fotoBlob?: Blob | null; fotoPreview?: string | null; usarFoto?: boolean };
 type Secao = { nome: string; itens: ItemProposto[] };
 
 /**
@@ -28,6 +29,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
   const [erro, setErro] = useState<string | null>(null);
   const [secoes, setSecoes] = useState<Secao[] | null>(null);
   const [feito, setFeito] = useState<number | null>(null);
+  const [salvando, setSalvando] = useState(false);
 
   async function subirImagem(f: Blob, tipo: string): Promise<{ nome: string; url: string } | null> {
     const ext = tipo === "image/png" ? "png" : tipo === "image/webp" ? "webp" : "jpg";
@@ -118,7 +120,21 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
         setErro(json.error ?? "A Orbi não conseguiu ler o cardápio agora.");
         return;
       }
-      setSecoes((json.categorias as { nome: string; itens: Omit<ItemProposto, "marcado">[] }[]).map((c) => ({ nome: c.nome, itens: c.itens.map((i) => ({ ...i, marcado: true })) })));
+      const base = (usar ?? fotos).map((f) => f.url);
+      const propostas = (json.categorias as { nome: string; itens: Omit<ItemProposto, "marcado">[] }[]).map((c) => ({ nome: c.nome, itens: c.itens.map((i) => ({ ...i, marcado: true })) }));
+      // Recorta a foto de cada prato da própria imagem lida. Se um recorte falhar, o prato segue sem foto.
+      for (const c of propostas) {
+        for (const i of c.itens) {
+          const cx = i.foto;
+          const url = cx ? base[cx.imagem - 1] : null;
+          if (!cx || !url) continue;
+          try {
+            const blob = await recortarFoto(url, cx);
+            if (blob) { i.fotoBlob = blob; i.fotoPreview = URL.createObjectURL(blob); i.usarFoto = true; }
+          } catch { /* sem foto para este prato */ }
+        }
+      }
+      setSecoes(propostas);
     } catch {
       setErro("Sem conexão. Tente de novo.");
     } finally {
@@ -132,15 +148,20 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
     setSecoes((p) => (p ?? []).map((s, a) => (a !== si ? s : { ...s, itens: s.itens.map((i, b) => (b === ii ? { ...i, ...patch } : i)) })));
   }
 
-  function adicionar() {
+  async function adicionar() {
     if (!secoes || total === 0) return;
-    const novas: CardapioSecao[] = secoes
-      .map((sec) => ({
-        id: novoId(),
-        nome: sec.nome.trim(),
-        itens: sec.itens.filter((i) => i.marcado && i.titulo.trim()).map((i) => ({ id: novoId(), nome: i.titulo.trim(), descricao: i.descricao.trim(), preco: i.preco, aPartir: i.preco != null && i.preco_tipo === "a_partir", foto: null })),
-      }))
-      .filter((sec) => sec.itens.length > 0);
+    setSalvando(true);
+    const novas: CardapioSecao[] = [];
+    for (const sec of secoes) {
+      const itens = [];
+      for (const i of sec.itens.filter((x) => x.marcado && x.titulo.trim())) {
+        let foto: string | null = null;
+        if (i.usarFoto && i.fotoBlob) foto = (await subirImagem(i.fotoBlob, "image/jpeg"))?.url ?? null;
+        itens.push({ id: novoId(), nome: i.titulo.trim(), descricao: i.descricao.trim(), preco: i.preco, aPartir: i.preco != null && i.preco_tipo === "a_partir", foto });
+      }
+      if (itens.length > 0) novas.push({ id: novoId(), nome: sec.nome.trim(), itens });
+    }
+    setSalvando(false);
     onAdicionar(novas);
     setFeito(novas.reduce((n, sec) => n + sec.itens.length, 0));
     setSecoes(null);
@@ -226,7 +247,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
         </>
       ) : (
         <>
-          <p className="mt-1 text-[13px] leading-snug text-text-secondary">A Orbi encontrou {secoes.reduce((n, s) => n + s.itens.length, 0)} pratos. Confira, ajuste nome e preço e desmarque o que não quiser.</p>
+          <p className="mt-1 text-[13px] leading-snug text-text-secondary">A Orbi encontrou {secoes.reduce((n, s) => n + s.itens.length, 0)} pratos{secoes.some((x) => x.itens.some((i) => i.fotoPreview)) ? " e recortou as fotos que estavam no cardápio. Toque na foto para tirar a que não ficou boa" : ""}. Confira, ajuste nome e preço e desmarque o que não quiser.</p>
           <div className="mt-3 flex flex-col gap-4">
             {secoes.map((s, si) => (
               <div key={si}>
@@ -235,6 +256,13 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
                   {s.itens.map((i, ii) => (
                     <div key={ii} className={`flex items-start gap-2.5 rounded-2xl border p-2.5 ${i.marcado ? "border-divider" : "border-transparent bg-surface-soft opacity-60"}`}>
                       <button type="button" role="checkbox" aria-checked={i.marcado} onClick={() => mudar(si, ii, { marcado: !i.marcado })} className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] ${i.marcado ? "bg-on-background text-white" : "border border-divider text-transparent"}`}>✓</button>
+                      {i.fotoPreview && (
+                        <button type="button" onClick={() => mudar(si, ii, { usarFoto: !i.usarFoto })} aria-pressed={!!i.usarFoto} aria-label={i.usarFoto ? "Tirar a foto deste prato" : "Usar a foto deste prato"} className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-surface-soft ring-1 ring-black/[0.06] active:scale-[0.96]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={i.fotoPreview} alt="" className={`h-full w-full object-cover transition-opacity ${i.usarFoto ? "" : "opacity-30"}`} />
+                          {!i.usarFoto && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-text-secondary">sem foto</span>}
+                        </button>
+                      )}
                       <div className="min-w-0 flex-1">
                         <input value={i.titulo} onChange={(e) => mudar(si, ii, { titulo: e.target.value })} aria-label="Nome do item" className="w-full bg-transparent text-[14.5px] font-medium outline-none" />
                         {i.descricao && <p className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-text-tertiary">{i.descricao}</p>}
@@ -260,8 +288,8 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
           {erro && <p role="alert" className="mt-3 text-[13px] text-red-600">{erro}</p>}
           <div className="mt-4 flex gap-2">
             <button type="button" onClick={() => setSecoes(null)} className="min-h-[48px] flex-1 rounded-full bg-surface-soft text-[14px] font-medium">Voltar</button>
-            <button type="button" onClick={adicionar} disabled={total === 0} className="min-h-[48px] flex-[2] rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">
-              {`Adicionar ${total} ${total === 1 ? "prato" : "pratos"}`}
+            <button type="button" onClick={adicionar} disabled={total === 0 || salvando} className="min-h-[48px] flex-[2] rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">
+              {salvando ? "Salvando fotos…" : `Adicionar ${total} ${total === 1 ? "prato" : "pratos"}`}
             </button>
           </div>
           <p className="mt-2 text-[12px] text-text-tertiary">Pratos sem preço ficam sem preço no cardápio.</p>

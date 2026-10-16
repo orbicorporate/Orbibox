@@ -13,7 +13,7 @@ export async function pdfParaImagens(origem: File | Blob): Promise<{ imagens: Bl
   for (let n = 1; n <= total; n++) {
     const pagina = await doc.getPage(n);
     const base = pagina.getViewport({ scale: 1 });
-    const vp = pagina.getViewport({ scale: 2200 / Math.max(base.width, base.height) });
+    const vp = pagina.getViewport({ scale: 3000 / Math.max(base.width, base.height) });
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(vp.width);
     canvas.height = Math.round(vp.height);
