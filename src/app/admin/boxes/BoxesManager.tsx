@@ -23,7 +23,7 @@ import { DateTimeField } from "./DateTimeField";
 import { IconeBotao } from "@/app/[slug]/IconeBotao";
 
 type BrandColor = { hex: string; role?: string };
-type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown; starts_at: string | null; ends_at: string | null };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
@@ -53,6 +53,7 @@ const ACTION_LABEL: Record<NonNullable<BoxConfig["action"]>, string> = {
   gift: "Abre o gift card",
   delivery: "Abre os apps de delivery",
   cardapio: "Abre o cardápio",
+  materiais: "Abre os materiais",
 };
 
 /** Explicação curta de onde o cliente vai parar e de onde aquilo vem, pros
@@ -70,6 +71,12 @@ const ACAO_EXPLICA: Partial<Record<NonNullable<BoxConfig["action"]>, { titulo: s
     texto: "Os pratos do seu cardápio, por categoria, com nome, preço e, se quiser, foto e descrição. É separado do Catálogo.",
     href: "/admin/cardapio",
     link: "Configurar o cardápio →",
+  },
+  materiais: {
+    titulo: "Abre a página de materiais",
+    texto: "Guias, cursos e documentos para o cliente baixar. Cada material pode ser livre ou pedir nome e WhatsApp antes.",
+    href: "/admin/materiais",
+    link: "Gerenciar materiais →",
   },
   delivery: {
     titulo: "Abre seus apps de delivery",
@@ -973,6 +980,13 @@ export function BoxesManager({
             texto="O cliente toca e já dá as estrelas."
             acao="Adicionar"
             onClick={novoBoxAvaliacao}
+          />
+          <LinhaPronta
+            icone={<span className="text-[20px]" aria-hidden>📚</span>}
+            titulo="Botão de materiais"
+            texto="Guias, cursos e documentos para baixar, livres ou com contato antes."
+            acao={visibleBoxes.some((b) => (b.config as BoxConfig | null)?.action === "materiais") ? "Gerenciar" : "Adicionar"}
+            href="/admin/materiais"
           />
           <LinhaPronta
             icone={<OrbiMapPin size={30} />}

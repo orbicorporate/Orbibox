@@ -41,7 +41,7 @@ export function ContatoForm({
   businessId: string;
   conversationId?: string | null;
   sessionId: string | null;
-  origem: "chat" | "vitrine" | "produto" | "voucher";
+  origem: "chat" | "vitrine" | "produto" | "voucher" | "material";
   interesse?: string;
   /** No chat, a Orbi registra a confirmação na conversa. */
   confirmar?: boolean;

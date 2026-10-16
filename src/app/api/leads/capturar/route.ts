@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { digitosBR, mensagemContatoAnotado } from "@/lib/telefone";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const ORIGENS = ["chat", "vitrine", "produto", "voucher"] as const;
+const ORIGENS = ["chat", "vitrine", "produto", "voucher", "material"] as const;
 
 /**
  * Captura de contato feita pela própria pessoa (cartão no chat, folha de
