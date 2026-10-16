@@ -22,6 +22,8 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
   const [enviando, setEnviando] = useState<{ feitas: number; total: number } | null>(null);
   const [gerenciando, setGerenciando] = useState(false);
   const [moverAberto, setMoverAberto] = useState(false);
+  const [nomeNova, setNomeNova] = useState("");
+  const [criandoNova, setCriandoNova] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [tipo, setTipo] = useState<"todos" | "sem" | TipoImagem>("todos");
   const [tipoAberto, setTipoAberto] = useState(false);
@@ -142,6 +144,24 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
       .select("id, name, position")
       .single();
     if (data) { setCategorias((p) => [...p, data as Categoria]); setFiltro((data as Categoria).id); }
+  }
+
+  /** Cria a categoria a partir das fotos marcadas e já move todas para ela. */
+  async function criarEMover() {
+    const limpo = nomeNova.trim();
+    if (!limpo || criandoNova) return;
+    if (categorias.length >= MAX_CATEGORIAS) { setMoverAberto(false); await alert(`O máximo é ${MAX_CATEGORIAS} categorias.`); return; }
+    setCriandoNova(true);
+    const { data } = await supabase
+      .from("image_categories")
+      .insert({ business_id: businessId, name: limpo.slice(0, 40), position: categorias.length })
+      .select("id, name, position")
+      .single();
+    setCriandoNova(false);
+    if (!data) { setErro("Não consegui criar a categoria. Tente de novo."); return; }
+    setCategorias((p) => [...p, data as Categoria]);
+    setNomeNova("");
+    await moverSelecionadas((data as Categoria).id);
   }
 
   async function criarExemplos() {
@@ -465,12 +485,25 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 sm:items-center" onClick={() => setMoverAberto(false)}>
           <div className="w-full max-w-md rounded-t-[28px] bg-surface-white p-5 sm:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
             <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold">Mover para qual categoria?</p>
+            <form onSubmit={(e) => { e.preventDefault(); void criarEMover(); }} className="mt-3 flex items-center gap-2">
+              <input
+                value={nomeNova}
+                onChange={(e) => setNomeNova(e.target.value)}
+                maxLength={40}
+                placeholder="Nova categoria, ex.: Milk shakes"
+                aria-label="Nome da nova categoria"
+                className="min-h-[48px] min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 text-[14.5px] outline-none focus:border-on-background"
+              />
+              <button type="submit" disabled={!nomeNova.trim() || criandoNova} className="min-h-[48px] shrink-0 rounded-full bg-on-background px-5 text-[14px] font-semibold text-white disabled:opacity-40">
+                {criandoNova ? "Criando…" : "Criar e mover"}
+              </button>
+            </form>
+            <p className="mt-1.5 px-1 text-[12px] text-text-tertiary">Cria a pasta com {marcadas.size} {marcadas.size === 1 ? "foto" : "fotos"} dentro. Ou escolha uma que já existe:</p>
             <div className="mt-3 flex flex-col gap-2">
               {categorias.map((c) => (
                 <button key={c.id} type="button" onClick={() => moverSelecionadas(c.id)} className="min-h-[48px] rounded-2xl border border-divider px-4 text-left text-[14.5px] font-medium">{c.name}</button>
               ))}
               <button type="button" onClick={() => moverSelecionadas(null)} className="min-h-[48px] rounded-2xl border border-divider px-4 text-left text-[14.5px] text-text-secondary">Sem categoria</button>
-              {categorias.length === 0 && <p className="text-[13px] text-text-tertiary">Crie uma categoria primeiro, em + Nova categoria.</p>}
             </div>
           </div>
         </div>
