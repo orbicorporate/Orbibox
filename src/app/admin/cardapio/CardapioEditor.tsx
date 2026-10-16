@@ -26,6 +26,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
   const [sub, setSub] = useState((config.subtitle as string) || "Veja os pratos e preços");
   const [ativo, setAtivo] = useState(ativoInicial);
   const [guia, setGuia] = useState(false);
+  const [lerPdf, setLerPdf] = useState<{ url: string; nome: string; chave: number } | null>(null);
   const [aba, setAba] = useState<"pdf" | "pratos">(() => (totalItens(lerSecoes(config)) > 0 ? "pratos" : "pdf"));
   const [criando, setCriando] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -76,6 +77,12 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     const novo = { ...cfgRef.current, pdfs, pdf_url: pdfs[0]?.url ?? null } as Record<string, Json>;
     const res = await supabase.from("smart_boxes").update({ config: novo }).eq("id", boxId);
     if (conferirSalvo(res)) { setCfg(novo); cfgRef.current = novo; }
+  }
+
+  function montarDoPdf(p: CardapioPdf) {
+    setGuia(false);
+    setAba("pratos");
+    setLerPdf({ url: p.url, nome: p.nome.trim() || "Cardápio", chave: Date.now() });
   }
 
   async function trocarCor(cor: string | null) {
@@ -154,13 +161,13 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
 
             <div role="tabpanel">
               {aba === "pdf" ? (
-                <PdfCardapio businessId={businessId} pdfs={pdfs} onChange={trocarPdfs} />
+                <PdfCardapio businessId={businessId} pdfs={pdfs} onChange={trocarPdfs} onMontar={montarDoPdf} />
               ) : (
                 <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes}>
                   {guia ? (
                     <GuiaPrato businessId={businessId} categorias={secoes.map((x) => x.nome)} onSalvar={adicionarPrato} onFechar={() => setGuia(false)} />
                   ) : (
-                    <ImportarCardapio businessId={businessId} compacto={nPratos > 0} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={() => setGuia(true)} />
+                    <ImportarCardapio businessId={businessId} doPdf={lerPdf} onConsumido={() => setLerPdf(null)} compacto={nPratos > 0} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={() => setGuia(true)} />
                   )}
                 </PratosEditor>
               )}

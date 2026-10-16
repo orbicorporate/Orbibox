@@ -7,7 +7,7 @@ import { askClaudeJSON } from "@/lib/anthropic";
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
-const MAX_FOTOS = 4;
+const MAX_FOTOS = 8;
 const MAX_TEXTO = 24000;
 
 type Proposta = {

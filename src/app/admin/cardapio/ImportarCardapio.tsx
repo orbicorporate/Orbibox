@@ -1,8 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
+import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
+
+const MAX_FOTOS = 8;
 
 type ItemProposto = { titulo: string; descricao: string; preco: number | null; preco_tipo: "exato" | "a_partir"; marcado: boolean };
 type Secao = { nome: string; itens: ItemProposto[] };
@@ -12,7 +15,7 @@ type Secao = { nome: string; itens: ItemProposto[] };
  * Orbi monta os pratos por categoria. Antes de entrar no cardápio tudo passa por
  * uma revisão (marcar, trocar nome e preço), porque a leitura de foto pode errar.
  */
-export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto = false }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void; onManual: () => void; /** Já há pratos: mostra só atalhos pequenos. */ compacto?: boolean }) {
+export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto = false, doPdf = null, onConsumido }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void; onManual: () => void; /** Já há pratos: mostra só atalhos pequenos. */ compacto?: boolean; /** PDF já enviado que a Orbi deve ler agora. */ doPdf?: { url: string; nome: string; chave: number } | null; onConsumido?: () => void }) {
   const supabase = useRef(createClient()).current;
   const inputFoto = useRef<HTMLInputElement>(null);
   const [aberto, setAberto] = useState(false);
@@ -24,38 +27,89 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
   const [secoes, setSecoes] = useState<Secao[] | null>(null);
   const [feito, setFeito] = useState<number | null>(null);
 
+  async function subirImagem(f: Blob, tipo: string): Promise<{ nome: string; url: string } | null> {
+    const ext = tipo === "image/png" ? "png" : tipo === "image/webp" ? "webp" : "jpg";
+    const path = `${businessId}/cardapio-import-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+    const { error } = await supabase.storage.from("box-images").upload(path, f, { cacheControl: "3600", upsert: false, contentType: tipo });
+    if (error) return null;
+    return { nome: path, url: supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl };
+  }
+
+  /** Aceita fotos e PDFs. Cada página do PDF vira uma imagem para a Orbi ler. */
   async function enviarFotos(lista: FileList | null) {
     if (!lista || lista.length === 0) return;
     setErro(null);
     setEnviando(true);
     const novas: { nome: string; url: string }[] = [];
-    for (const f of Array.from(lista).slice(0, 4 - fotos.length)) {
-      if (!f.type.startsWith("image/")) {
-        setErro("Envie fotos (JPG ou PNG). Para PDF, cole o texto.");
+    for (const f of Array.from(lista)) {
+      if (fotos.length + novas.length >= MAX_FOTOS) break;
+      let partes: { blob: Blob; tipo: string }[] = [];
+      if (f.type === "application/pdf") {
+        try {
+          const { imagens, paginas } = await pdfParaImagens(f);
+          partes = imagens.map((blob) => ({ blob, tipo: "image/jpeg" }));
+          if (paginas > MAX_PAGINAS_LEITURA) setErro(`Li as ${MAX_PAGINAS_LEITURA} primeiras páginas do PDF. Depois importe o resto.`);
+        } catch {
+          setErro("Não consegui abrir esse PDF. Tente enviar foto ou colar o texto.");
+          continue;
+        }
+      } else if (f.type.startsWith("image/")) {
+        partes = [{ blob: f, tipo: f.type }];
+      } else {
+        setErro("Envie foto (JPG ou PNG) ou PDF.");
         continue;
       }
-      const ext = f.type === "image/png" ? "png" : f.type === "image/webp" ? "webp" : "jpg";
-      const path = `${businessId}/cardapio-import-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-      const { error } = await supabase.storage.from("box-images").upload(path, f, { cacheControl: "3600", upsert: false, contentType: f.type });
-      if (error) {
-        setErro("Não consegui enviar a foto. Tente de novo.");
-        continue;
+      for (const { blob, tipo } of partes) {
+        if (fotos.length + novas.length >= MAX_FOTOS) break;
+        const up = await subirImagem(blob, tipo);
+        if (up) novas.push({ nome: f.name, url: up.url });
+        else setErro("Não consegui enviar o arquivo. Tente de novo.");
       }
-      novas.push({ nome: f.name, url: supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl });
     }
     setFotos((p) => [...p, ...novas]);
     setEnviando(false);
     if (inputFoto.current) inputFoto.current.value = "";
   }
 
-  async function ler() {
+  // PDF já enviado no cardápio: baixa, transforma em imagens e a Orbi já lê.
+  const chaveFeita = useRef<number | null>(null);
+  useEffect(() => {
+    if (!doPdf || chaveFeita.current === doPdf.chave) return;
+    chaveFeita.current = doPdf.chave;
+    onConsumido?.();
+    (async () => {
+      setAberto(true);
+      setFeito(null);
+      setErro(null);
+      setLendo(true);
+      try {
+        const r = await fetch(doPdf.url);
+        if (!r.ok) throw new Error("baixar");
+        const { imagens } = await pdfParaImagens(await r.blob());
+        const subidas: { nome: string; url: string }[] = [];
+        for (const blob of imagens) {
+          const up = await subirImagem(blob, "image/jpeg");
+          if (up) subidas.push({ nome: `${doPdf.nome}.pdf`, url: up.url });
+        }
+        if (subidas.length === 0) throw new Error("vazio");
+        setFotos(subidas);
+        await ler(subidas);
+      } catch {
+        setLendo(false);
+        setErro("Não consegui ler esse PDF aqui. Se ele for um link do Drive, envie o arquivo. Ou cole o texto abaixo.");
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doPdf]);
+
+  async function ler(usar?: { nome: string; url: string }[]) {
     setErro(null);
     setLendo(true);
     try {
       const res = await fetch("/api/importar-cardapio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, texto, imagens: fotos.map((f) => f.url) }),
+        body: JSON.stringify({ businessId, texto, imagens: (usar ?? fotos).map((f) => f.url) }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -110,7 +164,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-[15px]" aria-hidden>✦</span>
             Colar o texto e a Orbi monta
           </button>
-          <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Mais rápido. Cole o cardápio do jeito que estiver, ou envie foto, e a Orbi separa por categoria. Você revisa antes de entrar.</p>
+          <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Mais rápido. Cole o cardápio do jeito que estiver, ou envie foto ou PDF, e a Orbi separa por categoria. Você revisa antes de entrar.</p>
         </div>
         <div>
           <button type="button" onClick={onManual} className="flex min-h-[56px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white pl-3 pr-5 text-left text-[15px] font-semibold active:scale-[0.99]">
@@ -144,25 +198,25 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
 
       {secoes === null ? (
         <>
-          <p className="mt-1 text-[13px] leading-snug text-text-secondary">Cole o cardápio do jeito que estiver (pode ser bagunçado) ou envie foto. A Orbi separa por categoria, com nome, descrição e preço, e você revisa antes de entrar. Nada disso mexe no seu Catálogo.</p>
+          <p className="mt-1 text-[13px] leading-snug text-text-secondary">Cole o cardápio do jeito que estiver (pode ser bagunçado) ou envie foto ou PDF. A Orbi separa por categoria, com nome, descrição e preço, e você revisa antes de entrar. Nada disso mexe no seu Catálogo.</p>
           <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={7} placeholder={"Ex:\nLANCHES\nX-Burger  pão, carne, queijo  R$ 22,00\nX-Salada  R$ 25,00\n\nBEBIDAS\nCoca-Cola lata  R$ 6"} className={`${campo} mt-3 resize-y text-[14px] leading-relaxed`} />
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <input ref={inputFoto} type="file" accept="image/*" multiple className="hidden" onChange={(e) => enviarFotos(e.target.files)} />
-            <button type="button" onClick={() => inputFoto.current?.click()} disabled={enviando || fotos.length >= 4} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium disabled:opacity-50">
-              {enviando ? "Enviando…" : fotos.length > 0 ? "Adicionar outra foto" : "Enviar foto do cardápio"}
+            <input ref={inputFoto} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={(e) => enviarFotos(e.target.files)} />
+            <button type="button" onClick={() => inputFoto.current?.click()} disabled={enviando || fotos.length >= MAX_FOTOS} className="min-h-[44px] rounded-full border border-divider px-5 text-[13.5px] font-medium disabled:opacity-50">
+              {enviando ? "Enviando…" : fotos.length > 0 ? "Adicionar outro arquivo" : "Enviar foto ou PDF do cardápio"}
             </button>
             {fotos.map((f, n) => (
               <span key={f.url} className="inline-flex items-center gap-1.5 rounded-full bg-surface-soft py-1.5 pl-3 pr-1.5 text-[12.5px] text-text-secondary">
-                Foto {n + 1}
-                <button type="button" onClick={() => setFotos((p) => p.filter((x) => x.url !== f.url))} aria-label="Remover foto" className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[11px]">✕</button>
+                {f.nome.toLowerCase().endsWith(".pdf") ? `Página ${n + 1}` : `Foto ${n + 1}`}
+                <button type="button" onClick={() => setFotos((p) => p.filter((x) => x.url !== f.url))} aria-label="Remover arquivo" className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[11px]">✕</button>
               </span>
             ))}
           </div>
-          <p className="mt-1.5 text-[12px] text-text-tertiary">Até 4 fotos. Quanto mais nítida, melhor a leitura.</p>
+          <p className="mt-1.5 text-[12px] text-text-tertiary">Até 8 fotos ou páginas de PDF. Quanto mais nítido, melhor a leitura.</p>
 
           {erro && <p role="alert" className="mt-3 text-[13px] text-red-600">{erro}</p>}
-          <button type="button" onClick={ler} disabled={lendo || enviando || (!texto.trim() && fotos.length === 0)} className="mt-4 min-h-[48px] w-full rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">
+          <button type="button" onClick={() => ler()} disabled={lendo || enviando || (!texto.trim() && fotos.length === 0)} className="mt-4 min-h-[48px] w-full rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">
             {lendo ? "A Orbi está lendo o cardápio…" : "Orbi, monta meu cardápio"}
           </button>
         </>
