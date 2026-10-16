@@ -17,6 +17,8 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
   const [subindo, setSubindo] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
+  // Categorias recolhidas. Com mais de uma, só a primeira começa aberta; categoria nova ou importada nasce aberta.
+  const [fechadas, setFechadas] = useState<string[]>(() => (secoes.length > 1 ? secoes.slice(1).map((x) => x.id) : []));
   const [comDesc, setComDesc] = useState<string[]>([]);
   const [apagado, setApagado] = useState<{ s: string; idx: number; item: CardapioItem } | null>(null);
   const timerDesfazer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -52,6 +54,9 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
     if (s.itens.length > 0 && !window.confirm(`Apagar a categoria "${s.nome || "sem nome"}" e os ${s.itens.length} pratos dela?`)) return;
     onChange(secoes.filter((x) => x.id !== s.id));
   }
+  function alternarSecao(id: string) {
+    setFechadas((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  }
   function mover(idx: number, d: -1 | 1) {
     const j = idx + d;
     if (j < 0 || j >= secoes.length) return;
@@ -82,10 +87,28 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
 
       {children}
 
+      {secoes.length > 1 && (
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <p className="text-[12.5px] text-text-tertiary">{secoes.length} categorias · {secoes.reduce((n, x) => n + x.itens.length, 0)} pratos</p>
+          <button
+            type="button"
+            onClick={() => setFechadas(fechadas.length >= secoes.length ? [] : secoes.map((x) => x.id))}
+            className="min-h-[40px] rounded-full border border-divider bg-surface-white px-4 text-[13px] font-medium active:scale-[0.98]"
+          >
+            {fechadas.length >= secoes.length ? "Expandir tudo" : "Recolher tudo"}
+          </button>
+        </div>
+      )}
+
       <div className="mt-3 flex flex-col gap-4">
-        {secoes.map((s, idx) => (
+        {secoes.map((s, idx) => {
+          const recolhida = fechadas.includes(s.id);
+          return (
           <section key={s.id} id={`cat-${s.id}`} className="scroll-mt-28 rounded-[24px] bg-surface-white p-4 ring-1 ring-black/[0.06]" aria-label={s.nome || "Categoria"}>
             <div className="flex items-center gap-2">
+              <button type="button" onClick={() => alternarSecao(s.id)} aria-expanded={!recolhida} aria-label={recolhida ? `Expandir ${s.nome || "categoria"}` : `Recolher ${s.nome || "categoria"}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-on-background active:scale-[0.96]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200 ${recolhida ? "-rotate-90" : ""}`} aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+              </button>
               <label className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl bg-surface-soft px-3.5 py-2 focus-within:ring-2 focus-within:ring-on-background/30">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" /></svg>
                 <input value={s.nome} onChange={(e) => mudarSecao(s.id, { nome: e.target.value })} maxLength={40} placeholder="Nome da categoria" aria-label="Nome da categoria" className="min-w-0 flex-1 bg-transparent font-[family-name:var(--font-manrope)] text-[16.5px] font-semibold outline-none placeholder:font-normal placeholder:text-text-tertiary" />
@@ -94,6 +117,13 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
               <button type="button" onClick={() => mover(idx, 1)} disabled={idx === secoes.length - 1} aria-label="Descer categoria" className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px] text-on-background disabled:opacity-25">↓</button>
             </div>
 
+            {recolhida && (
+              <button type="button" onClick={() => alternarSecao(s.id)} className="mt-2.5 flex min-h-[44px] w-full items-center justify-between rounded-2xl px-3.5 text-left text-[13.5px] text-text-secondary active:bg-surface-soft">
+                <span>{s.itens.length} {s.itens.length === 1 ? "prato" : "pratos"}{s.itens.some((x) => !x.foto) ? ` · ${s.itens.filter((x) => !x.foto).length} sem foto` : ""}</span>
+                <span className="font-medium text-on-background">Expandir</span>
+              </button>
+            )}
+            {!recolhida && (<>
             <ul className="mt-3 flex flex-col gap-2">
               {s.itens.map((i) => {
                 const aberta = aberto === i.id;
@@ -115,7 +145,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                           <span className="block truncate text-[14.5px] font-medium">{i.nome || "Prato sem nome"}</span>
                           <span className="block truncate text-[12.5px] text-text-tertiary">{i.preco != null ? i.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Sem preço"}{i.descricao ? " · com descrição" : ""}{i.foto ? "" : " · sem foto"}</span>
                         </span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${aberta ? "rotate-180" : ""}`} aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-text-secondary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200 ${aberta ? "rotate-180" : ""}`} aria-hidden><path d="M6 9l6 6 6-6" /></svg></span>
                       </button>
                     </div>
 
@@ -161,8 +191,10 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
               <button type="button" onClick={() => novoPrato(s.id)} className="min-h-[44px] rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white active:scale-[0.98]">+ Adicionar prato</button>
               <button type="button" onClick={() => removerSecao(s)} className="min-h-[44px] rounded-full px-3 text-[13px] font-medium text-text-tertiary">Apagar categoria</button>
             </div>
+            </>)}
           </section>
-        ))}
+          );
+        })}
       </div>
 
       {apagado && (
