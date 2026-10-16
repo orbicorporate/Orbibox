@@ -2,7 +2,7 @@
 
 import { DeliveryFlow } from "./DeliveryFlow";
 import { CardapioFlow } from "./CardapioFlow";
-import { lerPdfs, lerSecoes } from "@/lib/cardapio";
+import { lerCorBotoes, lerPdfs, lerSecoes } from "@/lib/cardapio";
 import { appsAtivos, linkDoApp } from "@/lib/delivery";
 import Link from "next/link";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
@@ -1542,6 +1542,7 @@ export function VisitorExperience({
               titulo={cfgCardapio.label || "Cardápio"}
               subtitulo={cfgCardapio.subtitle || `Veja o que ${business.name} tem para você.`}
               pdfs={lerPdfs(cfgCardapio)}
+              corBotoes={lerCorBotoes(cfgCardapio)}
               donoVendo={showOwnerControls}
               onPedir={apps.length > 0 ? () => {
                 if (apps.length === 1) {

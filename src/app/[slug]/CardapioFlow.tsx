@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { precoCardapio, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
+import { precoCardapio, textoSobre, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 
@@ -17,6 +17,7 @@ export function CardapioFlow({
   titulo,
   subtitulo,
   pdfs = [],
+  corBotoes = null,
   donoVendo = false,
   onPedir,
   onBack,
@@ -28,6 +29,8 @@ export function CardapioFlow({
   subtitulo: string;
   /** PDFs do cardápio para baixar, se o dono enviou (Cardápio, Bebidas...). */
   pdfs?: CardapioPdf[];
+  /** Cor que o dono escolheu para os botões principais (#RRGGBB). */
+  corBotoes?: string | null;
   /** O dono olhando a própria página: mostra orientação em vez do aviso do cliente. */
   donoVendo?: boolean;
   onPedir?: () => void;
@@ -36,6 +39,7 @@ export function CardapioFlow({
   const [ativa, setAtiva] = useState<string | null>(null);
   const temPdf = pdfs.length > 0;
   const unico = pdfs.length === 1;
+  const estiloBotao = corBotoes ? { backgroundColor: corBotoes, color: textoSobre(corBotoes) } : undefined;
 
   useEffect(() => {
     trackClick({ businessId: business.id, kind: "cardapio", sessionId });
@@ -62,8 +66,7 @@ export function CardapioFlow({
       {temPdf && preenchidas.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {pdfs.map((p) => (
-            <a key={p.id} href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="M7 11l5 5 5-5" /><path d="M5 21h14" /></svg>
+            <a key={p.id} href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="inline-flex min-h-[44px] items-center rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
               {unico ? "Baixar cardápio em PDF" : `Baixar ${p.nome.trim() || "PDF"}`}
             </a>
           ))}
@@ -97,8 +100,7 @@ export function CardapioFlow({
             <p className="text-[15px] font-medium">{unico ? "Nosso cardápio completo está em PDF." : "Nossos cardápios estão em PDF."}</p>
             <div className="mt-4 flex flex-col gap-2.5">
               {pdfs.map((p) => (
-                <a key={p.id} href={p.url} target="_blank" rel="noopener" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="M7 11l5 5 5-5" /><path d="M5 21h14" /></svg>
+                <a key={p.id} href={p.url} target="_blank" rel="noopener" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} style={estiloBotao} className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]">
                   {unico ? "Abrir cardápio em PDF" : `Abrir ${p.nome.trim() || "PDF"}`}
                 </a>
               ))}
@@ -146,7 +148,7 @@ export function CardapioFlow({
 
       {onPedir && (
         <div className="fixed inset-x-0 bottom-0 z-30 mx-auto w-full max-w-[440px] bg-gradient-to-t from-background-main via-background-main/95 to-transparent px-6 pb-6 pt-8">
-          <button type="button" onClick={onPedir} className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[15px] font-semibold text-white shadow-[0_10px_30px_rgba(17,19,24,0.25)] active:scale-[0.98]">
+          <button type="button" onClick={onPedir} style={estiloBotao} className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[15px] font-semibold text-white shadow-[0_10px_30px_rgba(17,19,24,0.25)] active:scale-[0.98]">
             Pedir por delivery <span aria-hidden>→</span>
           </button>
         </div>

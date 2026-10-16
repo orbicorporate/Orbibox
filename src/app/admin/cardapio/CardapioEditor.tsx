@@ -11,7 +11,9 @@ import { GuiaPrato } from "./GuiaPrato";
 import { DeliveryEditor } from "../delivery/DeliveryEditor";
 import type { DeliveryApp } from "@/lib/delivery";
 import type { Json } from "@/lib/supabase/types";
-import { lerPdfs, lerSecoes, novoId, totalItens, type CardapioItem, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
+import { CORES_BOTAO, lerCorBotoes, lerPdfs, lerSecoes, textoSobre, novoId, totalItens, type CardapioItem, type CardapioPdf, type CardapioSecao } from "@/lib/cardapio";
+
+const ICONES_CARDAPIO = ["🍴", "🍽️", "🍔", "🍕", "🥗", "🍣", "🥩", "🍰", "🥤", "☕"];
 
 export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: ativoInicial, totalBoxes, delivery }: { businessId: string; boxId: string | null; config: Record<string, unknown>; ativo: boolean; totalBoxes: number; slug?: string; delivery: { boxId: string | null; config: Record<string, unknown>; apps: DeliveryApp[]; ativo: boolean } }) {
   const supabase = useRef(createClient()).current;
@@ -76,6 +78,21 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
     if (conferirSalvo(res)) { setCfg(novo); cfgRef.current = novo; }
   }
 
+  async function trocarCor(cor: string | null) {
+    if (!boxId) return;
+    // A mesma cor vale para o botão da home e para os botões de dentro do cardápio.
+    const novo = { ...cfgRef.current, corBotoes: cor, color: cor ?? "#111318" } as Record<string, Json>;
+    const res = await supabase.from("smart_boxes").update({ config: novo }).eq("id", boxId);
+    if (conferirSalvo(res)) { setCfg(novo); cfgRef.current = novo; }
+  }
+
+  async function trocarIcone(icon: string) {
+    if (!boxId) return;
+    const novo = { ...cfgRef.current, icon } as Record<string, Json>;
+    const res = await supabase.from("smart_boxes").update({ config: novo }).eq("id", boxId);
+    if (conferirSalvo(res)) { setCfg(novo); cfgRef.current = novo; }
+  }
+
   async function alternar() {
     if (!boxId) return;
     const novo = !ativo;
@@ -85,6 +102,9 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
   }
 
   const pdfs = lerPdfs(cfg);
+  const corBotoes = lerCorBotoes(cfg);
+  const corAtual = corBotoes ?? lerCorBotoes({ corBotoes: (cfg as { color?: string } | null)?.color }) ?? CORES_BOTAO[0];
+  const iconeAtual = (cfg as { icon?: string } | null)?.icon || "🍴";
   const nPratos = totalItens(secoes);
   const nPdfs = pdfs.length;
   const clienteVe =
@@ -158,7 +178,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
           <section className="mt-8" aria-label="Botão na página">
             <details className="group rounded-[22px] bg-surface-white ring-1 ring-black/[0.06]">
               <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-3 px-4 py-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-on-background text-[17px] text-white" aria-hidden>🍴</span>
+                <span style={{ backgroundColor: corAtual, color: textoSobre(corAtual) }} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[17px]" aria-hidden>{iconeAtual}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[15px] font-semibold leading-snug">Botão na sua página</span>
                   <span className="block truncate text-[12.5px] leading-snug text-text-tertiary">{ativo ? "Aparece" : "Escondido"} · {nome || "Cardápio"} · {sub}</span>
@@ -166,11 +186,11 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
               </summary>
               <div className="flex flex-col gap-3 px-4 pb-4">
-                <div className="flex items-center gap-3 rounded-[22px] bg-on-background p-4 text-white" aria-hidden>
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-[18px]">🍴</span>
+                <div style={{ backgroundColor: corAtual, color: textoSobre(corAtual) }} className="flex items-center gap-3 rounded-[22px] p-4" aria-hidden>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-[18px]">{iconeAtual}</span>
                   <span className="min-w-0">
                     <span className="block truncate text-[15px] font-semibold">{nome || "Cardápio"}</span>
-                    <span className="block truncate text-[12.5px] text-white/70">{sub}</span>
+                    <span className="block truncate text-[12.5px] opacity-70">{sub}</span>
                   </span>
                 </div>
                 <div>
@@ -180,6 +200,44 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
                 <div>
                   <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase pequena embaixo do título</p>
                   <input value={sub} onChange={(e) => { setSub(e.target.value); gravarTexto(nome, e.target.value); }} maxLength={60} className="mt-1.5 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+                </div>
+                <div>
+                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor do botão</p>
+                  <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">Também colore os botões de abrir PDF e de pedir por delivery dentro do cardápio.</p>
+                  <div role="radiogroup" aria-label="Escolha a cor" className="mt-2 flex flex-wrap gap-2.5">
+                    {CORES_BOTAO.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        role="radio"
+                        aria-checked={corAtual.toLowerCase() === c.toLowerCase()}
+                        aria-label={`Cor ${c}`}
+                        onClick={() => trocarCor(c === CORES_BOTAO[0] ? null : c)}
+                        style={{ backgroundColor: c }}
+                        className={`h-11 w-11 rounded-full ring-offset-2 transition-transform active:scale-95 ${corAtual.toLowerCase() === c.toLowerCase() ? "ring-2 ring-on-background" : "ring-1 ring-black/10"}`}
+                      />
+                    ))}
+                    <label className="relative flex h-11 min-w-[44px] cursor-pointer items-center justify-center rounded-full border border-divider px-3.5 text-[13px] font-medium text-text-secondary">
+                      Outra
+                      <input type="color" value={corAtual} onChange={(e) => trocarCor(e.target.value)} aria-label="Escolher outra cor" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Ícone</p>
+                  <div role="radiogroup" aria-label="Escolha o ícone" className="mt-2 flex flex-wrap gap-2">
+                    {ICONES_CARDAPIO.map((ic) => (
+                      <button
+                        key={ic}
+                        type="button"
+                        role="radio"
+                        aria-checked={iconeAtual === ic}
+                        aria-label={`Ícone ${ic}`}
+                        onClick={() => trocarIcone(ic)}
+                        className={`flex h-11 w-11 items-center justify-center rounded-full border text-[20px] active:scale-95 ${iconeAtual === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}
+                      >{ic}</button>
+                    ))}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-2xl bg-surface-soft p-3.5">
                   <p className="text-[14.5px] font-medium">{ativo ? "Aparece na sua página" : "Escondido do cliente"}</p>
