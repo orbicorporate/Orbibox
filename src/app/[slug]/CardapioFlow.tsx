@@ -65,12 +65,22 @@ export function CardapioFlow({
       <h2 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.01em]">{titulo}</h2>
       <p className="mt-1 text-[14px] text-text-secondary">{subtitulo}</p>
       {temPdf && preenchidas.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {pdfs.map((p) => (
-            <a key={p.id} href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="inline-flex min-h-[44px] items-center rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
-              {unico ? "Baixar cardápio em PDF" : `Baixar ${p.nome.trim() || "PDF"}`}
-            </a>
-          ))}
+        <div className="mt-5 rounded-[24px] bg-white/55 p-3.5 ring-1 ring-white/80 backdrop-blur-xl shadow-[0_6px_24px_rgba(17,19,24,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <p className="px-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">{unico ? "Cardápio em PDF" : "Cardápios em PDF"}</p>
+          <ul className="mt-2 flex flex-col gap-2">
+            {pdfs.map((p) => (
+              <li key={p.id}>
+                <a href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="flex min-h-[56px] items-center gap-3 rounded-[18px] bg-white/70 px-3 py-2 ring-1 ring-black/[0.04] transition-transform active:scale-[0.98]">
+                  <span className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-xl text-[9.5px] font-bold leading-none tracking-wide" style={corBotoes ? { backgroundColor: `${corBotoes}1A`, color: `color-mix(in srgb, ${corBotoes} 75%, black)` } : { backgroundColor: "#FDECEC", color: "#B42318" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4" /></svg>
+                    <span className="mt-0.5">PDF</span>
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[14.5px] font-medium">{unico ? "Baixar cardápio" : (p.nome.trim() || "PDF")}</span>
+                  <span className="shrink-0 rounded-full bg-black/[0.05] px-3 py-1.5 text-[12.5px] font-medium text-text-secondary">Baixar</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -113,7 +123,7 @@ export function CardapioFlow({
       )}
 
       {nomeadas.length > 1 && (
-        <div className="no-scrollbar -mx-6 mt-5 flex gap-2 overflow-x-auto px-6">
+        <div className="no-scrollbar -mx-6 mt-7 flex gap-2 overflow-x-auto px-6" aria-label="Categorias">
           <button type="button" onClick={() => setAtiva(null)} className={`shrink-0 min-h-[40px] rounded-full px-4 text-[13.5px] font-medium ${ativa === null ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>Tudo</button>
           {nomeadas.map((s) => (
             <button key={s.id} type="button" onClick={() => setAtiva(s.id)} className={`shrink-0 min-h-[40px] rounded-full px-4 text-[13.5px] font-medium ${ativa === s.id ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{s.nome}</button>
