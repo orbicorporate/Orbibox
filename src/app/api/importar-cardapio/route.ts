@@ -20,7 +20,8 @@ Regras:
 - Copie fielmente o que está no cardápio. Nunca invente item, ingrediente nem preço.
 - Agrupe por categoria, na ordem em que aparecem (ex: Lanches, Bebidas, Sobremesas). Se não houver categorias claras, use categorias simples e óbvias.
 - titulo: nome do item, com capitalização normal (não tudo em maiúsculas). Sem preço no título.
-- descricao: ingredientes ou detalhe do item, curto, só se estiver no cardápio. Vazio se não houver.
+- descricao: tudo o que o cardápio escreve sobre o item além do nome e do preço: ingredientes, composição, sabor, tamanho, o que acompanha. Costuma estar logo abaixo ou ao lado do nome, em letra menor. Leia com atenção até o texto pequeno e copie fielmente, em uma frase curta (até 200 caracteres). Deixe vazio só se o cardápio realmente não escreve nada sobre aquele item.
+- Uma descrição que vale para toda a categoria (ex.: "todos os shakes vêm com chantilly") não é de um item só: repita-a na descricao de cada item da categoria.
 - preco: número em reais (ex: 12.5). Se o preço não aparece, null.
 - Se o item tem tamanhos ou variações com preços diferentes (P, M, G), crie UM item só, com o MENOR preço, preco_tipo "a_partir", e escreva os tamanhos e valores na descricao (ex: "P R$ 12, M R$ 15, G R$ 18"). Com preço único, preco_tipo "exato".
 - Ignore endereço, telefone, redes sociais, horário e frases de propaganda.
@@ -93,9 +94,9 @@ export async function POST(req: NextRequest) {
         if (!r.ok) continue;
         const jpg = await sharp(Buffer.from(await r.arrayBuffer()))
           .rotate()
-          .resize(1800, 1800, { fit: "inside", withoutEnlargement: true })
+          .resize(2400, 2400, { fit: "inside", withoutEnlargement: true })
           .flatten({ background: "#ffffff" })
-          .jpeg({ quality: 82 })
+          .jpeg({ quality: 88 })
           .toBuffer();
         content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: jpg.toString("base64") } });
       } catch {
