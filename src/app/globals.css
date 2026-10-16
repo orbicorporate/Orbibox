@@ -1184,3 +1184,19 @@ html[data-embed] [data-embed-oculto="1"] { display: none !important; }
   .niobio-wrap::before, .niobio-borda, .niobio-varre, .niobio-estrela, .niobio-item, .btn-brilho::after { animation: none !important; }
   .niobio-estrela { opacity: 0.6; }
 }
+
+/* Orbi concluiu algo: o cartão entra suave e um anel verde se abre atrás da esfera. */
+@keyframes orbiConcluidoIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes orbiConcluidoAnel {
+  0% { transform: scale(0.75); opacity: 0.55; }
+  100% { transform: scale(2); opacity: 0; }
+}
+.orbi-concluido-in { animation: orbiConcluidoIn 360ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+.orbi-concluido-anel { animation: orbiConcluidoAnel 1200ms cubic-bezier(0.23, 1, 0.32, 1) 220ms 2 both; }
+@media (prefers-reduced-motion: reduce) {
+  .orbi-concluido-in, .orbi-concluido-anel { animation: none; }
+  .orbi-concluido-anel { opacity: 0; }
+}

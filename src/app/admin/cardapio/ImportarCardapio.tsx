@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioSecao } from "@/lib/cardapio";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { OrbiConcluido } from "@/components/orbi/OrbiConcluido";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 
 const MAX_FOTOS = 8;
@@ -180,13 +181,9 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
 
   if (feito !== null) {
     return (
-      <div className="mt-5 rounded-[22px] bg-[#DEF3E3] p-4">
-        <p className="text-[15px] font-semibold text-[#14733A]">{feito} {feito === 1 ? "prato adicionado" : "pratos adicionados"} ao cardápio</p>
-        <p className="mt-1 text-[13px] leading-snug text-[#14733A]/85">Já estão na lista logo abaixo. Se quiser, coloque foto em cada um.</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => { setFeito(null); setAberto(true); }} className="min-h-[44px] rounded-full bg-white px-5 text-[13.5px] font-medium">Importar mais</button>
-        </div>
-      </div>
+      <OrbiConcluido className="mt-5" titulo={`${feito} ${feito === 1 ? "prato adicionado" : "pratos adicionados"} ao cardápio`} texto="Já estão na lista logo abaixo. Se quiser, coloque foto em cada um.">
+        <button type="button" onClick={() => { setFeito(null); setAberto(true); }} className="min-h-[44px] rounded-full bg-white px-5 text-[13.5px] font-medium active:scale-[0.98]">Importar mais</button>
+      </OrbiConcluido>
     );
   }
 
