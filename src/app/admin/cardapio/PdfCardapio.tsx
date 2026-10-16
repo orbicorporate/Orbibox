@@ -135,9 +135,9 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
               />
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 <a href={p.url} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.06]">Ver o PDF ↗</a>
-                {onMontar && <button type="button" onClick={() => onMontar(p)} className="min-h-[44px] rounded-full bg-on-background px-4 text-[13.5px] font-semibold text-white active:scale-[0.98]"><span aria-hidden>✦ </span>Orbi, monta os pratos</button>}
                 <button type="button" onClick={() => abrirEscolha(p.id)} disabled={enviando} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium disabled:opacity-60">Trocar arquivo</button>
                 <button type="button" onClick={() => remover(p)} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary">Remover</button>
+                {onMontar && <button type="button" onClick={() => onMontar(p)} className="min-h-[44px] rounded-full bg-on-background px-4 text-[13.5px] font-semibold text-white active:scale-[0.98]"><span aria-hidden>✦ </span>Monte os itens</button>}
               </div>
             </li>
           ))}
