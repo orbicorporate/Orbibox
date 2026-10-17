@@ -114,9 +114,9 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
       {aberto_ && (
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={aberto_.nome}>
           <button type="button" aria-label="Fechar" onClick={() => setAberto(null)} className="veu-entra absolute inset-0 bg-black/40" />
-          <div className="folha-sobe absolute inset-x-0 bottom-0 mx-auto max-h-[88vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-background-main p-5 pb-8">
-            <div className="flex justify-end">
-              <button ref={fechar} type="button" onClick={() => setAberto(null)} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px]">✕</button>
+          <div className="folha-sobe absolute inset-0 mx-auto h-full w-full max-w-[440px] overflow-y-auto overscroll-contain bg-background-main px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
+            <div className="sticky top-0 z-10 -mx-5 flex justify-end px-5 pb-1 pt-[max(1rem,env(safe-area-inset-top))]">
+              <button ref={fechar} type="button" onClick={() => setAberto(null)} aria-label="Fechar" className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[15px] shadow-[0_2px_10px_rgba(17,19,24,0.12)] active:scale-95">✕</button>
             </div>
             <CarrosselItem fotos={fotosDoItem(aberto_)} nome={aberto_.nome} />
             <h3 className="mt-4 break-words font-[family-name:var(--font-manrope)] text-[22px] font-medium leading-tight">{aberto_.nome}</h3>
