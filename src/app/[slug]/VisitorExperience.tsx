@@ -78,6 +78,7 @@ type Business = {
   vitrine_lead_top?: boolean | null;
   home_mode?: string | null;
   home_destaques?: unknown;
+  home_ocultar_nome?: boolean;
   share_description?: string | null;
 };
 
@@ -527,6 +528,13 @@ export function VisitorExperience({
   }
   const frase = fraseDoNegocio(business);
   const [textos, setTextos] = useState<{ nome: string; frase?: string; pergunta: string | null }>({ nome: business.name, frase: textoApagado(business.share_description) ? "" : undefined, pergunta: textoApagado(business.hero_question) ? "" : business.hero_question });
+  // Quem já tem logo pode esconder o nome em cima da pergunta (o nome do negócio segue valendo no resto).
+  const [ocultarNome, setOcultarNome] = useState(!!business.home_ocultar_nome);
+  async function alternarNome() {
+    const novo = !ocultarNome;
+    setOcultarNome(novo);
+    conferirSalvo(await supabase.from("businesses").update({ home_ocultar_nome: novo }).eq("id", business.id));
+  }
   async function salvarTexto(campo: "nome" | "frase" | "pergunta", valor: string) {
     if (campo === "nome" && !valor.trim()) return;
     setTextos((t) => ({ ...t, [campo]: valor }));
@@ -926,9 +934,11 @@ export function VisitorExperience({
                   ✎
                 </button>
               )}
-              <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
-                {textos.nome}
-              </p>
+              {!ocultarNome && (
+                <p className="text-[14px] uppercase tracking-wide text-text-tertiary">
+                  {textos.nome}
+                </p>
+              )}
               {(textos.frase ?? frase) ? (
                 <p className="mt-1.5 max-w-[320px] text-[14px] leading-snug text-text-secondary">{textos.frase ?? frase}</p>
               ) : null}
@@ -965,6 +975,12 @@ export function VisitorExperience({
                       />
                     </label>
                   ))}
+                  <button type="button" role="switch" aria-checked={!ocultarNome} onClick={alternarNome} className="mb-2 mt-1 flex min-h-[44px] w-full items-center justify-between rounded-xl bg-surface-soft px-3 text-[14px]">
+                    Mostrar o nome na tela inicial
+                    <span className={`relative h-6 w-10 rounded-full transition-colors ${!ocultarNome ? "bg-on-background" : "bg-divider"}`}>
+                      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${!ocultarNome ? "left-[18px]" : "left-0.5"}`} />
+                    </span>
+                  </button>
                   <p className="text-[12px] text-text-tertiary">Deixe a frase ou a pergunta vazia para esconder.</p>
                   <button type="button" onClick={() => setTextosAberto(false)} className="mt-3 min-h-[44px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white">Pronto</button>
                 </div>
