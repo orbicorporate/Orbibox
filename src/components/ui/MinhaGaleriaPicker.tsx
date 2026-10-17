@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { TIPOS_IMAGEM, classificarImagens, clienteBanco, sincronizarBiblioteca, urlDaImagem, type Categoria, type TipoImagem } from "@/lib/bancoImagens";
+import { TIPOS_IMAGEM, classificarImagens, clienteBanco, enviarImagem, sincronizarBiblioteca, urlDaImagem, type Categoria, type TipoImagem } from "@/lib/bancoImagens";
 
 type Item = { id: string; nome: string; url: string; category_id: string | null; auto_tipo: TipoImagem | null };
 
@@ -30,6 +30,25 @@ export function MinhaGaleriaPicker({
   const [erro, setErro] = useState<string | null>(null);
   const [organizando, setOrganizando] = useState(false);
   const [quebradas, setQuebradas] = useState<Set<string>>(new Set());
+  const arquivo = useRef<HTMLInputElement>(null);
+  const [subindo, setSubindo] = useState(0);
+
+  async function subir(files: FileList | null) {
+    const lista = Array.from(files ?? []).slice(0, 20);
+    if (lista.length === 0) return;
+    setErro(null);
+    setSubindo(lista.length);
+    for (const f of lista) {
+      try {
+        const nova = await enviarImagem(supabase, businessId, f, null);
+        setItens((p) => [{ id: nova.id, nome: nova.path, url: nova.url, category_id: nova.category_id, auto_tipo: nova.auto_tipo }, ...(p ?? [])]);
+      } catch {
+        setErro("Algumas fotos não subiram. Tente de novo.");
+      }
+      setSubindo((n) => n - 1);
+    }
+    if (arquivo.current) arquivo.current.value = "";
+  }
 
   useEffect(() => {
     let vivo = true;
@@ -76,7 +95,7 @@ export function MinhaGaleriaPicker({
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 sm:items-center" onClick={onFechar}>
       <div className="flex max-h-[88vh] w-full max-w-lg flex-col rounded-t-[28px] bg-surface-white sm:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between gap-2 px-5 pt-5">
+        <div className="flex shrink-0 items-start justify-between gap-2 px-5 pt-5">
           <div>
             <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold">Minha galeria</p>
             <p className="text-[12.5px] text-text-tertiary">Seu banco de imagens. Toque numa pra usar.</p>
@@ -87,7 +106,7 @@ export function MinhaGaleriaPicker({
         </div>
 
         {categorias.length > 0 && (
-          <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto px-5">
+          <div className="no-scrollbar mt-3 flex shrink-0 gap-2 overflow-x-auto px-5 py-0.5">
             <button type="button" onClick={() => setFiltro("todas")} className={chip(filtro === "todas")}>Todas</button>
             {categorias.map((c) => (
               <button key={c.id} type="button" onClick={() => setFiltro(c.id)} className={chip(filtro === c.id)}>{c.name}</button>
@@ -98,7 +117,7 @@ export function MinhaGaleriaPicker({
 
         {temTipos && (
           <>
-          <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto px-5">
+          <div className="no-scrollbar mt-2 flex shrink-0 gap-2 overflow-x-auto px-5 py-0.5">
             <button type="button" onClick={() => setTipo("todos")} className={chip(tipo === "todos")}>Todos os tipos</button>
             {TIPOS_IMAGEM.map((t) => (
               <button key={t.id} type="button" onClick={() => setTipo(t.id)} className={chip(tipo === t.id)}>{t.nome} {contagemTipo(t.id)}</button>
@@ -117,14 +136,26 @@ export function MinhaGaleriaPicker({
             </div>
           )}
           {erro && <p className="text-[13px] text-red-600">{erro}</p>}
-          {itens && !erro && visiveis.length === 0 && (
+          {itens && !erro && visiveis.length === 0 && subindo === 0 && (
             <div className="rounded-[20px] border border-dashed border-divider p-6 text-center">
               <p className="text-[14px] font-medium">Sua galeria está vazia</p>
               <p className="mt-1 text-[13px] text-text-tertiary">{filtro === "todas" ? "As fotos que você enviar aparecem aqui para usar de novo." : "Nenhuma foto nesta categoria ainda."}</p>
             </div>
           )}
-          {visiveis.length > 0 && (
+          <input ref={arquivo} type="file" accept="image/*" multiple className="hidden" onChange={(e) => subir(e.target.files)} />
+          {itens && (
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+              <button
+                type="button"
+                onClick={() => arquivo.current?.click()}
+                disabled={subindo > 0}
+                aria-label="Subir fotos para a galeria"
+                className="flex aspect-square items-center justify-center rounded-xl border border-dashed border-text-tertiary/50 bg-surface-soft/60 text-text-secondary transition-transform active:scale-[0.96]"
+              >
+                {subindo > 0 ? <span className="text-[12px] font-medium">{subindo}…</span> : (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg>
+                )}
+              </button>
               {visiveis.map((i) => {
                 const emUso = atual === i.url;
                 return (
