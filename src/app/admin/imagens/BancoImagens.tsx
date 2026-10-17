@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
+import { agrupar, calcularHashes } from "@/lib/parecidas";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import {
@@ -27,7 +28,8 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
   const [focoNova, setFocoNova] = useState(false);
   const [criandoNova, setCriandoNova] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [tipo, setTipo] = useState<"todos" | "sem" | TipoImagem>("todos");
+  const [tipo, setTipo] = useState<"todos" | "sem" | "repetidas" | TipoImagem>("todos");
+  const hashes = useRef<Map<string, string>>(new Map());
   const [tipoAberto, setTipoAberto] = useState(false);
   const [organizando, setOrganizando] = useState(false);
   const classificando = useRef(false);
@@ -91,11 +93,38 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
     return { porCategoria: m, sem };
   }, [imagens]);
 
-  const visiveis = (imagens ?? []).filter(
-    (i) =>
-      (filtro === "todas" ? true : filtro === "sem" ? !i.category_id : i.category_id === filtro) &&
-      (tipo === "todos" ? true : tipo === "sem" ? !i.auto_tipo : i.auto_tipo === tipo),
-  );
+  // Fotos repetidas ou quase iguais, achadas pela aparência (calculada aqui no aparelho).
+  const [grupos, setGrupos] = useState<string[][]>([]);
+  const idsRepetidos = useMemo(() => new Set(grupos.flat()), [grupos]);
+  const visiveis = (imagens ?? [])
+    .filter(
+      (i) =>
+        (tipo === "repetidas" ? idsRepetidos.has(i.id) : true) &&
+        (filtro === "todas" ? true : filtro === "sem" ? !i.category_id : i.category_id === filtro) &&
+        (tipo === "todos" || tipo === "repetidas" ? true : tipo === "sem" ? !i.auto_tipo : i.auto_tipo === tipo),
+    );
+  if (tipo === "repetidas") {
+    const pos = new Map<string, number>();
+    grupos.forEach((g, n) => g.forEach((id) => pos.set(id, n)));
+    visiveis.sort((a, b) => (pos.get(a.id) ?? 0) - (pos.get(b.id) ?? 0) || a.created_at.localeCompare(b.created_at));
+  }
+  useEffect(() => {
+    if (!imagens) return;
+    let vivo = true;
+    calcularHashes(imagens, hashes.current).then(() => {
+      if (!vivo) return;
+      const ordem = [...imagens].sort((a, b) => a.created_at.localeCompare(b.created_at)).map((i) => i.id);
+      setGrupos(agrupar(ordem, hashes.current));
+    });
+    return () => { vivo = false; };
+  }, [imagens]);
+  function marcarCopias() {
+    // Mantém a mais antiga de cada grupo e marca as outras.
+    const marcar = new Set<string>();
+    for (const g of grupos) g.slice(1).forEach((id) => marcar.add(id));
+    setSelecionando(true);
+    setMarcadas(marcar);
+  }
   const porTipo = useMemo(() => {
     const m = new Map<string, number>();
     let sem = 0;
@@ -420,11 +449,12 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
           </button>
         ))}
         {porTipo.sem > 0 && !organizando && <button type="button" onClick={() => setTipo("sem")} className={chip(tipo === "sem")}>Sem tipo {porTipo.sem}</button>}
+        {idsRepetidos.size > 0 && <button type="button" onClick={() => setTipo("repetidas")} className={chip(tipo === "repetidas")}>Repetidas {idsRepetidos.size}</button>}
       </div>
 
       {/* Grade de miniaturas */}
       <div className="mt-5 flex items-center justify-between">
-        <p className="text-[15px] font-semibold">{filtro === "todas" ? "Todas as imagens" : filtro === "sem" ? "Sem categoria" : nomeDe(filtro)}{tipo !== "todos" ? ` · ${tipo === "sem" ? "Sem tipo" : TIPOS_IMAGEM.find((t) => t.id === tipo)?.nome}` : ""}</p>
+        <p className="text-[15px] font-semibold">{filtro === "todas" ? "Todas as imagens" : filtro === "sem" ? "Sem categoria" : nomeDe(filtro)}{tipo !== "todos" ? ` · ${tipo === "repetidas" ? "Repetidas" : tipo === "sem" ? "Sem tipo" : TIPOS_IMAGEM.find((t) => t.id === tipo)?.nome}` : ""}</p>
         {visiveis.length > 0 && (
           <button type="button" onClick={() => (selecionando ? sair() : setSelecionando(true))} className="min-h-[40px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-2">
             {selecionando ? "Cancelar" : "Selecionar"}
@@ -435,6 +465,12 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
       {imagens === null && (
         <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
           {Array.from({ length: 9 }).map((_, i) => <span key={i} className="aspect-square animate-pulse rounded-2xl bg-surface-soft" />)}
+        </div>
+      )}
+      {tipo === "repetidas" && grupos.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-surface-soft px-4 py-3">
+          <p className="min-w-[180px] flex-1 text-[13px] text-text-secondary">Fotos iguais ou muito parecidas ficam lado a lado. Marco as cópias e deixo a mais antiga de cada uma.</p>
+          <button type="button" onClick={marcarCopias} className="min-h-[40px] rounded-full bg-on-background px-4 text-[13px] font-semibold text-white">Marcar cópias</button>
         </div>
       )}
       {imagens && visiveis.length === 0 && (

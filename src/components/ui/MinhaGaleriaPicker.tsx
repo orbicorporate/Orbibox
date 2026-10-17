@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { calcularHashes, hashDeArquivo, pareceCom } from "@/lib/parecidas";
 import { TIPOS_IMAGEM, classificarImagens, clienteBanco, comprimirImagem, enviarImagem, sincronizarBiblioteca, urlDaImagem, type Categoria, type TipoImagem } from "@/lib/bancoImagens";
 
 type Item = { id: string; nome: string; url: string; category_id: string | null; auto_tipo: TipoImagem | null; tamanho: number | null };
@@ -32,6 +33,7 @@ export function MinhaGaleriaPicker({
   const [quebradas, setQuebradas] = useState<Set<string>>(new Set());
   const arquivo = useRef<HTMLInputElement>(null);
   const [subindo, setSubindo] = useState(0);
+  const hashes = useRef<Map<string, string>>(new Map());
   const [aviso, setAviso] = useState<string | null>(null);
 
   async function subir(files: FileList | null) {
@@ -40,6 +42,7 @@ export function MinhaGaleriaPicker({
     setErro(null);
     setAviso(null);
     setSubindo(lista.length);
+    await calcularHashes((itens ?? []).map((i) => ({ id: i.id, url: i.url })), hashes.current);
     let repetidas = 0;
     let falhou = false;
     const tamanhos = new Set((itens ?? []).map((i) => i.tamanho).filter((n): n is number => !!n));
@@ -47,11 +50,13 @@ export function MinhaGaleriaPicker({
       try {
         const blob = await comprimirImagem(f);
         // A mesma foto, depois de otimizada, sempre sai com o mesmo tamanho: serve para achar repetidas.
-        if (tamanhos.has(blob.size)) {
+        const h = await hashDeArquivo(blob).catch(() => null);
+        if (tamanhos.has(blob.size) || (h && pareceCom(h, hashes.current.values()))) {
           repetidas++;
         } else {
           const nova = await enviarImagem(supabase, businessId, f, null, blob);
           tamanhos.add(blob.size);
+          if (h) hashes.current.set(nova.id, h);
           setItens((p) => [{ id: nova.id, nome: nova.path, url: nova.url, category_id: nova.category_id, auto_tipo: nova.auto_tipo, tamanho: blob.size }, ...(p ?? [])]);
         }
       } catch {
@@ -59,7 +64,7 @@ export function MinhaGaleriaPicker({
       }
       setSubindo((n) => n - 1);
     }
-    setAviso(repetidas > 0 ? (repetidas === 1 ? "Essa foto já está na sua galeria, não enviei de novo." : `${repetidas} fotos já estavam na sua galeria, não enviei de novo.`) : null);
+    setAviso(repetidas > 0 ? (repetidas === 1 ? "Essa foto já existe na sua galeria (igual ou muito parecida), não enviei de novo." : `${repetidas} fotos já existiam na sua galeria (iguais ou muito parecidas), não enviei de novo.`) : null);
     if (falhou) setErro("Algumas fotos não subiram. Tente de novo.");
     if (arquivo.current) arquivo.current.value = "";
   }
