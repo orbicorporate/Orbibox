@@ -39,6 +39,7 @@ export function CartaoItem({
   largura,
   tamanho,
   proporcao,
+  origem,
 }: {
   item: ItemCartao;
   slug: string;
@@ -50,6 +51,8 @@ export function CartaoItem({
   tamanho?: BoxSize;
   /** Força a proporção da foto; sem isso vale a do tamanho do item. */
   proporcao?: "quadrado" | "retrato" | "paisagem" | "banner";
+  /** "home": veio do Destaque da tela inicial, então o Voltar da página do item volta pra lá. */
+  origem?: "home";
 }) {
     const c = colorOf(item.box_color);
     const fc = item.footer_color ? colorOf(item.footer_color) : null;
@@ -66,7 +69,7 @@ export function CartaoItem({
         ? item.target_url
         : item.target_url && item.link_kind === "externo"
           ? item.target_url
-          : `/${slug}/p/${item.id}`;
+          : `/${slug}/p/${item.id}${origem === "home" ? "?de=home" : ""}`;
     const isExterno = item.link_kind === "categoria" || item.link_kind === "externo";
     const kindClique: "categoria" | "produto" | "link" =
       item.link_kind === "categoria" ? "categoria" : item.link_kind === "produto" ? "produto" : "link";

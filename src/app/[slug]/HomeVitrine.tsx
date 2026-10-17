@@ -327,7 +327,7 @@ export function HomeVitrine({
                 <button type="button" onClick={() => setEditandoFormato(true)} aria-label="Editar formato dos itens" className="flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60">✎</button>
               )}
               <button type="button" onClick={() => onVerTudo(ativo?.name ?? null)} className="min-h-[36px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-4">
-                {itens.length > mostrar.length ? `Ver todos (${itens.length})` : "Ver tudo"}
+                {itens.length > mostrar.length ? `Ver vitrine (${itens.length})` : "Ver vitrine"}
               </button>
             </div>
           </div>
@@ -358,7 +358,7 @@ export function HomeVitrine({
                 const largo = tam === "destaque" || tam === "largo";
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`transition-transform duration-150 ${largo ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
-                    <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
+                    <CartaoItem origem="home" item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
                   </li>
                 );
               })}
@@ -367,7 +367,7 @@ export function HomeVitrine({
             <ul data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-2">
               {mostrarNaOrdem.map((i) => (
                 <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
-                  <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
+                  <CartaoItem origem="home" item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
                 </li>
               ))}
             </ul>
@@ -377,7 +377,7 @@ export function HomeVitrine({
                 const grande = formato === "destaque" && n === 0;
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`transition-transform duration-150 ${grande ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
-                    <CartaoItem item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
+                    <CartaoItem origem="home" item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
                   </li>
                 );
               })}

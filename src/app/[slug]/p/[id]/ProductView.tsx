@@ -97,17 +97,30 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
   // registrar um evento por pixel arrastado, só a intenção de folhear).
   const scrolledRef = useRef(false);
 
+  // Quem abriu o item pelo Destaque da tela inicial volta pra tela inicial.
+  // Quem veio da vitrine (ou de uma recomendação da Orbi) volta pra vitrine.
+  const [deHome, setDeHome] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDeHome(new URLSearchParams(window.location.search).get("de") === "home");
+  }, []);
+  function voltar() {
+    if (deHome && window.history.length > 1) router.back();
+    else router.push(deHome ? `/${business.slug}` : `/${business.slug}?tab=vitrine`);
+  }
+
   return (
     <main className="mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
       <NudgeLead businessId={business.id} businessName={business.name} modo="pagina" interesse={item.title} />
       {/* Voltar, fora da imagem, igual qualquer app, não sobrepõe a foto.
-          Voltar leva sempre pra vitrine: voltar pelo histórico caía na
-          tela inicial, porque a vitrine aberta não fica no endereço. "Ver catálogo" sempre
+          Voltar leva pra vitrine, exceto quando o item foi aberto pelo Destaque
+          da tela inicial (?de=home): aí volta pra ela. Pelo histórico direto, a vitrine
+          caía na tela inicial, porque a vitrine aberta não fica no endereço. "Ver catálogo" sempre
           leva pro catálogo, útil sobretudo pra quem chegou aqui por uma
           recomendação da Orbi no chat e quer continuar olhando produtos. */}
       <div className="flex items-center justify-between gap-2 px-4 pt-4">
         <button
-          onClick={() => router.push(`/${business.slug}?tab=vitrine`)}
+          onClick={voltar}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px]"
           aria-label="Voltar"
         >
