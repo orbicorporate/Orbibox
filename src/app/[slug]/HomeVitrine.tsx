@@ -11,7 +11,7 @@ import { ORBI_SPHERE_COLORS, sizeOf } from "@/lib/showcase";
 export type BolinhaVitrine = {
   key: string;
   rotulo: string;
-  tipo: "whatsapp" | "endereco" | "site" | "rede" | "voucher" | "sobre" | "presente" | "cardapio" | "materiais";
+  tipo: "whatsapp" | "endereco" | "site" | "rede" | "voucher" | "sobre" | "presente" | "cardapio" | "materiais" | "catalogo";
   rede?: Rede;
   endereco?: string;
   /** "cor" = bolinha cheia de cor; "linha" = minimalista, só contorno e ícone. */
@@ -56,6 +56,7 @@ function Icone({ tipo, rede, linha }: { tipo: BolinhaVitrine["tipo"]; rede?: Red
   if (tipo === "presente") return <svg {...p}><rect x="3.5" y="8.5" width="17" height="4" rx="1" /><path d="M5 12.5V20h14v-7.5" /><path d="M12 8.5V20" /><path d="M12 8.5C10 8.5 8 7.8 8 6.2 8 4.9 9 4 10.1 4 11.4 4 12 5.2 12 8.5Zm0 0C14 8.5 16 7.8 16 6.2 16 4.9 15 4 13.9 4 12.6 4 12 5.2 12 8.5Z" /></svg>;
   if (tipo === "cardapio") return <svg {...p}><path d="M7 3v8a2 2 0 0 0 2 2v8" /><path d="M5 3v6a2 2 0 0 0 2 2" /><path d="M9 3v6" /><path d="M17 21V3c-2.2 1.2-3.5 3.6-3.5 6.5 0 2 1 3.2 3.5 3.5" /></svg>;
   if (tipo === "materiais") return <svg {...p}><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4" /><path d="M10 13h5M10 16.5h5" /></svg>;
+  if (tipo === "catalogo") return <svg {...p}><rect x="4" y="4" width="7" height="7" rx="1.6" /><rect x="13" y="4" width="7" height="7" rx="1.6" /><rect x="4" y="13" width="7" height="7" rx="1.6" /><rect x="13" y="13" width="7" height="7" rx="1.6" /></svg>;
   if (tipo === "sobre") return <svg {...p}><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5" /><circle cx="12" cy="7.8" r="0.6" fill="currentColor" /></svg>;
   if (tipo === "rede" && rede) return <IconeRede rede={rede} size={24} />;
   return <svg {...p}><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3c2.6 2.6 3.8 5.6 3.8 9S14.6 18.4 12 21c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3Z" /></svg>;
@@ -76,6 +77,7 @@ function corDe(b: BolinhaVitrine): { fundo: string; sombra: string } {
   if (b.tipo === "sobre") return { fundo: "#3B5BDB", sombra: "#3B5BDB" };
   if (b.tipo === "cardapio") return { fundo: "#F29D38", sombra: "#F29D38" };
   if (b.tipo === "materiais") return { fundo: "#7B4FE0", sombra: "#7B4FE0" };
+  if (b.tipo === "catalogo") return { fundo: "#0E9AA7", sombra: "#0E9AA7" };
   if (b.tipo === "rede" && b.rede) return { fundo: FUNDO_DA_REDE[b.rede], sombra: COR_DA_REDE[b.rede] };
   return { fundo: "#111318", sombra: "#111318" };
 }
@@ -101,7 +103,6 @@ export function HomeVitrine({
   slug,
   businessId,
   sessionId,
-  onVerTudo,
   extras,
   podeEditar,
   onReordenarItens,
@@ -326,9 +327,6 @@ export function HomeVitrine({
               {podeEditar && onFormato && (
                 <button type="button" onClick={() => setEditandoFormato(true)} aria-label="Editar formato dos itens" className="flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60">✎</button>
               )}
-              <button type="button" onClick={() => onVerTudo(ativo?.name ?? null)} className="min-h-[36px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-4">
-                {itens.length > mostrar.length ? `Ver catálogo (${itens.length})` : "Ver catálogo"}
-              </button>
             </div>
           </div>
           <div className="mt-3 flex w-full min-w-0 flex-col items-center empty:hidden">{destaque}</div>

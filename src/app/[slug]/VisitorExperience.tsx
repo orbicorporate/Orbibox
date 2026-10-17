@@ -569,6 +569,12 @@ export function VisitorExperience({
     if (!out.some((b) => b.tipo === "whatsapp") && whatsAtalho) {
       out.unshift({ key: "zap", estilo: "cor", editavel: false, rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
     }
+    // O catálogo também é uma bolinha: quem tem itens chega nele direto, sem link de texto.
+    if (content.length > 0) {
+      const ref = out.find((b) => b.editavel);
+      const pos = out.findIndex((b) => b.tipo === "whatsapp") + 1;
+      out.splice(pos, 0, { key: "catalogo", estilo: ref?.estilo ?? "cor", editavel: false, rotulo: "Catálogo", tipo: "catalogo", onClick: () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
+    }
     return out;
   })();
   const [adicionando, setAdicionando] = useState(false);
