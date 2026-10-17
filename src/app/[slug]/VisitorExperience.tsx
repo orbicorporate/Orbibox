@@ -1466,7 +1466,7 @@ export function VisitorExperience({
               <button onClick={voltarAoInicio} aria-label="Voltar ao início" className="flex h-9 items-center gap-1.5 rounded-full bg-surface-soft px-3.5 text-[13.5px] font-medium active:scale-[0.97]">
                 <span aria-hidden>←</span> Início
               </button>
-              <span className="text-[13.5px] font-medium text-text-secondary">{intent === "presentear" ? "Presentear" : "Vitrine"}</span>
+              <span className="text-[13.5px] font-medium text-text-secondary">{intent === "presentear" ? "Presentear" : "Catálogo"}</span>
             </div>
             {hasAiChat && content.length >= 3 && (
               <div className="mt-1">

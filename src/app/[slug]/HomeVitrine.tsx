@@ -327,7 +327,7 @@ export function HomeVitrine({
                 <button type="button" onClick={() => setEditandoFormato(true)} aria-label="Editar formato dos itens" className="flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60">✎</button>
               )}
               <button type="button" onClick={() => onVerTudo(ativo?.name ?? null)} className="min-h-[36px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-4">
-                {itens.length > mostrar.length ? `Ver vitrine (${itens.length})` : "Ver vitrine"}
+                {itens.length > mostrar.length ? `Ver catálogo (${itens.length})` : "Ver catálogo"}
               </button>
             </div>
           </div>
