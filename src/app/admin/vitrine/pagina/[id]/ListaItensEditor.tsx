@@ -100,7 +100,7 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
             <div className="mt-1.5 flex flex-wrap gap-2">
               <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="min-h-[36px] rounded-full bg-on-background px-3.5 text-[13px] font-medium text-white">Upload</button>
               <button type="button" onClick={() => setGaleria(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Álbum Orbibox</button>
-              <button type="button" onClick={() => setProntas(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Buscar fora</button>
+              <button type="button" onClick={() => setProntas(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Busca web</button>
               {foto && <button type="button" onClick={() => ajustarAtual(foto)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Ajustar</button>}
               {foto && <button type="button" onClick={() => setFoto(null)} className="min-h-[36px] rounded-full px-3 text-[13px] font-medium text-text-secondary">Tirar</button>}
             </div>
