@@ -22,8 +22,7 @@ const ICONES = {
 const MENU_ITEMS = [
   { href: "/admin/config", label: "Sua marca", desc: "Logo, cores e contatos", icon: ICONES.marca, marca: true },
   { href: "/admin/imagens", label: "Banco de imagens", desc: "Fotos da marca, por categoria", icon: ICONES.imagens, marca: false },
-  { href: "/admin/cardapio", label: "Cardápio", desc: "Pratos por categoria, com foto", icon: ICONES.cardapio, marca: false },
-  { href: "/admin/delivery", label: "Delivery", desc: "iFood, Rappi, 99Food e mais", icon: ICONES.delivery, marca: false },
+  { href: "/admin/cardapio", label: "Cardápio e delivery", desc: "Pratos com foto e apps de pedido", icon: ICONES.cardapio, marca: false },
   { href: "/admin/agent", label: "Sua IA", desc: "Tom de voz e o que sabe", icon: ICONES.ia, marca: false },
 ] as const;
 
