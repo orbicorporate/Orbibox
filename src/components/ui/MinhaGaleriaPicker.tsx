@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { TIPOS_IMAGEM, classificarImagens, clienteBanco, enviarImagem, sincronizarBiblioteca, urlDaImagem, type Categoria, type TipoImagem } from "@/lib/bancoImagens";
+import { TIPOS_IMAGEM, classificarImagens, clienteBanco, comprimirImagem, enviarImagem, sincronizarBiblioteca, urlDaImagem, type Categoria, type TipoImagem } from "@/lib/bancoImagens";
 
-type Item = { id: string; nome: string; url: string; category_id: string | null; auto_tipo: TipoImagem | null };
+type Item = { id: string; nome: string; url: string; category_id: string | null; auto_tipo: TipoImagem | null; tamanho: number | null };
 
 /**
  * Folha com todas as imagens do banco de imagens da marca, em miniaturas
@@ -32,21 +32,35 @@ export function MinhaGaleriaPicker({
   const [quebradas, setQuebradas] = useState<Set<string>>(new Set());
   const arquivo = useRef<HTMLInputElement>(null);
   const [subindo, setSubindo] = useState(0);
+  const [aviso, setAviso] = useState<string | null>(null);
 
   async function subir(files: FileList | null) {
     const lista = Array.from(files ?? []).slice(0, 20);
     if (lista.length === 0) return;
     setErro(null);
+    setAviso(null);
     setSubindo(lista.length);
+    let repetidas = 0;
+    let falhou = false;
+    const tamanhos = new Set((itens ?? []).map((i) => i.tamanho).filter((n): n is number => !!n));
     for (const f of lista) {
       try {
-        const nova = await enviarImagem(supabase, businessId, f, null);
-        setItens((p) => [{ id: nova.id, nome: nova.path, url: nova.url, category_id: nova.category_id, auto_tipo: nova.auto_tipo }, ...(p ?? [])]);
+        const blob = await comprimirImagem(f);
+        // A mesma foto, depois de otimizada, sempre sai com o mesmo tamanho: serve para achar repetidas.
+        if (tamanhos.has(blob.size)) {
+          repetidas++;
+        } else {
+          const nova = await enviarImagem(supabase, businessId, f, null, blob);
+          tamanhos.add(blob.size);
+          setItens((p) => [{ id: nova.id, nome: nova.path, url: nova.url, category_id: nova.category_id, auto_tipo: nova.auto_tipo, tamanho: blob.size }, ...(p ?? [])]);
+        }
       } catch {
-        setErro("Algumas fotos não subiram. Tente de novo.");
+        falhou = true;
       }
       setSubindo((n) => n - 1);
     }
+    setAviso(repetidas > 0 ? (repetidas === 1 ? "Essa foto já está na sua galeria, não enviei de novo." : `${repetidas} fotos já estavam na sua galeria, não enviei de novo.`) : null);
+    if (falhou) setErro("Algumas fotos não subiram. Tente de novo.");
     if (arquivo.current) arquivo.current.value = "";
   }
 
@@ -57,12 +71,12 @@ export function MinhaGaleriaPicker({
         await sincronizarBiblioteca(supabase, businessId);
         const [{ data: cats }, { data: imgs, error }] = await Promise.all([
           supabase.from("image_categories").select("id, name, position").eq("business_id", businessId).order("position"),
-          supabase.from("image_library").select("id, path, category_id, auto_tipo").eq("business_id", businessId).order("created_at", { ascending: false }).limit(1000),
+          supabase.from("image_library").select("id, path, category_id, auto_tipo, size_bytes").eq("business_id", businessId).order("created_at", { ascending: false }).limit(1000),
         ]);
         if (!vivo) return;
         if (error) throw error;
         setCategorias((cats as Categoria[]) ?? []);
-        const lista = ((imgs as { id: string; path: string; category_id: string | null; auto_tipo: TipoImagem | null }[]) ?? []).map((o) => ({ id: o.id, nome: o.path, category_id: o.category_id, auto_tipo: o.auto_tipo, url: urlDaImagem(supabase, o.path) }));
+        const lista = ((imgs as { id: string; path: string; category_id: string | null; auto_tipo: TipoImagem | null; size_bytes: number | null }[]) ?? []).map((o) => ({ id: o.id, nome: o.path, category_id: o.category_id, auto_tipo: o.auto_tipo, tamanho: o.size_bytes, url: urlDaImagem(supabase, o.path) }));
         setItens(lista);
         // As fotos sem tipo são classificadas aqui mesmo, em lotes, sem precisar abrir o Banco de imagens.
         const pendentes = lista.filter((i) => !i.auto_tipo).map((i) => i.id);
@@ -136,6 +150,7 @@ export function MinhaGaleriaPicker({
             </div>
           )}
           {erro && <p className="text-[13px] text-red-600">{erro}</p>}
+          {aviso && <p role="status" className="mb-2 rounded-xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary">{aviso}</p>}
           {itens && !erro && visiveis.length === 0 && subindo === 0 && (
             <div className="rounded-[20px] border border-dashed border-divider p-6 text-center">
               <p className="text-[14px] font-medium">Sua galeria está vazia</p>

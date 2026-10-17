@@ -94,8 +94,8 @@ export async function comprimirImagem(file: File): Promise<Blob> {
 }
 
 /** Envia uma imagem já comprimida e registra no banco. Devolve a linha criada. */
-export async function enviarImagem(supabase: ClienteBanco, businessId: string, file: File, categoryId: string | null): Promise<ImagemBanco> {
-  const blob = await comprimirImagem(file);
+export async function enviarImagem(supabase: ClienteBanco, businessId: string, file: File, categoryId: string | null, jaComprimido?: Blob): Promise<ImagemBanco> {
+  const blob = jaComprimido ?? (await comprimirImagem(file));
   const ext = blob.type === "image/webp" ? "webp" : blob.type === "image/png" ? "png" : blob.type === "image/gif" ? "gif" : "jpg";
   const path = `${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: blob.type || "image/jpeg" });
