@@ -110,7 +110,7 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
+    <main className="pagina-entra mx-auto min-h-screen max-w-[440px] bg-background-main pb-16">
       <NudgeLead businessId={business.id} businessName={business.name} modo="pagina" interesse={item.title} />
       {/* Voltar, fora da imagem, igual qualquer app, não sobrepõe a foto.
           Voltar leva pra vitrine, exceto quando o item foi aberto pelo Destaque
@@ -126,12 +126,6 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
         >
           ←
         </button>
-        <Link
-          href={`/${business.slug}?tab=vitrine`}
-          className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface-soft px-3.5 py-2 text-[13px] font-medium text-text-secondary"
-        >
-          <span aria-hidden>⊞</span> Ver catálogo
-        </Link>
         {isOwner && (
           <AbrirEditor
             href={`/admin/vitrine/pagina/${item.id}`}
@@ -338,6 +332,13 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
             )
           )}
         </div>
+
+        <Link
+          href={`/${business.slug}?tab=vitrine`}
+          className="mt-3 flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-divider text-[14px] font-medium text-text-secondary"
+        >
+          <span aria-hidden>⊞</span> Ver catálogo completo
+        </Link>
       </div>
     </main>
   );

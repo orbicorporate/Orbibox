@@ -81,7 +81,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
   return (
     <div className="flex flex-col pb-4">
       <DialogRenderer />
-      <Link href="/admin/vouchers" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Gerenciar vouchers</Link>
+      <Link href="/admin/vouchers" className="embed-oculta mt-2 text-[14px] text-text-tertiary hover:underline">← Gerenciar vouchers</Link>
 
       {/* Seus vouchers: todos numerados, o aberto fica em destaque. */}
       <p className="mt-5 text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Seus vouchers</p>
@@ -100,7 +100,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
                 )}
                 <span className="absolute left-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-black/55 px-1 text-[11px] font-bold">{n + 1}</span>
               </span>
-              <span className="w-full truncate text-center text-[11.5px] font-medium">{t.title}</span>
+              <span className="line-clamp-2 min-h-[2.4em] w-full break-words text-center text-[11.5px] font-medium leading-tight">{t.title}</span>
             </Link>
           );
         })}
@@ -113,30 +113,25 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
       <FaixaStatusVoucher ativo={v.is_active} onAlternar={toggleActive} className="mt-4" />
 
       {/* O voucher aberto, igual ao da galeria da sua página, com o painel ao lado. */}
-      <div className={`mt-3 flex items-start gap-4 ${v.is_active ? "" : "opacity-70"}`}>
+      <div className={`mt-3 flex flex-col items-center gap-4 ${v.is_active ? "" : "opacity-70"}`}>
         <VoucherQuadrado v={v} />
-        <div className="flex min-w-0 flex-1 flex-col gap-3">
-          <p className="text-[12.5px] text-text-tertiary">{v.is_active ? "Assim ele aparece na sua página." : "Assim ele vai aparecer quando você ativar."}</p>
-          <button type="button" onClick={() => setEditando(true)} className="min-h-[44px] w-fit rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white">Editar voucher</button>
-          <div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-surface-soft">
-              <div className="h-full rounded-full bg-on-background" style={{ width: `${pct}%` }} />
-            </div>
-            <p className="mt-1.5 text-[12px] text-text-secondary">{pct}% do estoque já saiu</p>
-          </div>
+        <p className="text-[12.5px] text-text-tertiary">{v.is_active ? "Assim ele aparece na sua página." : "Assim ele vai aparecer quando você ativar."}</p>
+      </div>
+      <button type="button" onClick={() => setEditando(true)} className="mt-3 min-h-[48px] w-full rounded-full bg-on-background px-5 text-[14px] font-semibold text-white">Alterar dados do voucher</button>
+
+      {/* Uma linha só pro estoque, em vez de repetir o mesmo número em quatro lugares. */}
+      <div className="mt-5">
+        <div className="flex items-baseline justify-between">
+          <p className="text-[14px] font-semibold">{v.quantity_claimed} de {v.quantity_total} resgatados</p>
+          <p className="text-[12.5px] text-text-secondary">{restam} ainda sobram</p>
+        </div>
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-soft">
+          <div className="h-full rounded-full bg-on-background" style={{ width: `${pct}%` }} />
         </div>
       </div>
 
-      {/* Estatísticas, coloridas, cada uma com seu próprio tom */}
+      {/* O que importa no dia a dia: quem tem o código e ainda não usou, e quem já usou. */}
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-[20px] p-4" style={{ backgroundColor: "#E7EAFC" }}>
-          <p className="text-[26px] font-bold" style={{ color: "#4453D6" }}>{v.quantity_claimed}</p>
-          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#4453D6" }}>resgataram o voucher<br /><span className="opacity-70">de {v.quantity_total} disponíveis</span></p>
-        </div>
-        <div className="rounded-[20px] p-4" style={{ backgroundColor: "#F1F0EE" }}>
-          <p className="text-[26px] font-bold" style={{ color: "#6B7280" }}>{restam}</p>
-          <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#6B7280" }}>ainda sobram<br /><span className="opacity-70">pra novos clientes</span></p>
-        </div>
         <div className="rounded-[20px] p-4" style={{ backgroundColor: "#FDEEDF" }}>
           <p className="text-[26px] font-bold" style={{ color: "#C2650A" }}>{aguardando}</p>
           <p className="mt-0.5 text-[12.5px] font-medium leading-tight" style={{ color: "#C2650A" }}>ainda não usaram<br /><span className="opacity-70">têm o código na mão</span></p>

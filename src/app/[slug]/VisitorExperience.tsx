@@ -1459,7 +1459,12 @@ export function VisitorExperience({
         {((intent === "comprar") || (intent === "presentear" && !giftEnabled)) && (
           <div className="w-full">
             <VitrineCoverBleed business={business} podeEditar={showOwnerControls} />
-            <button onClick={voltarAoInicio} className="mb-5 mt-5 text-[14px] text-text-tertiary hover:underline">← voltar</button>
+            <div className="sticky top-3 z-30 mb-5 mt-5 flex w-fit items-center gap-2.5 rounded-full bg-background-main/85 py-1 pl-1 pr-4 shadow-[0_2px_12px_rgba(17,19,24,0.1)] ring-1 ring-black/[0.05] backdrop-blur">
+              <button onClick={voltarAoInicio} aria-label="Voltar ao início" className="flex h-9 items-center gap-1.5 rounded-full bg-surface-soft px-3.5 text-[13.5px] font-medium active:scale-[0.97]">
+                <span aria-hidden>←</span> Início
+              </button>
+              <span className="text-[13.5px] font-medium text-text-secondary">{intent === "presentear" ? "Presentear" : "Vitrine"}</span>
+            </div>
             {hasAiChat && content.length >= 3 && (
               <div className="mt-1">
                 <CuradoriaOrbi businessId={business.id} slug={business.slug} orbiColors={orbiColors} products={content} agentName={agentName} onAskOrbi={hasAiChat ? (q) => chooseIntent("duvida", q) : undefined} compact />

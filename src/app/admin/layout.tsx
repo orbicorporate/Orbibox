@@ -137,7 +137,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {/* Botão salvar discreto, sempre à vista logo abaixo do topo. */}
         <BarraSalvar>
           <span className="pointer-events-auto"><VerComoFicou slug={business.slug} /></span>
-          <BotaoSalvar className="pointer-events-auto" />
+          <span className="embed-oculta pointer-events-auto"><BotaoSalvar className="pointer-events-auto" /></span>
         </BarraSalvar>
         {children}
       </main>

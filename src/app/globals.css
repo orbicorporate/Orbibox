@@ -1287,3 +1287,14 @@ html[data-embed] [data-embed-oculto="1"] { display: none !important; }
   border: 1px solid rgba(255, 255, 255, 0.78);
   box-shadow: 0 12px 32px -12px rgba(17, 19, 24, 0.16), inset 0 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.35);
 }
+
+/* Editor aberto no lugar (iframe): fundo neutro, sem o degradê colorido; o que
+   só faz sentido na tela cheia (voltar pra lista, Salvar avulso) some. */
+html[data-embed] .prisma-campo { background: #F6F6F4; }
+html[data-embed] .prisma-campo i, html[data-embed] .prisma-campo::after { display: none; }
+html[data-embed] .embed-oculta { display: none !important; }
+
+/* Página do item: entra deslizando de leve pela direita (transform e opacity). */
+@keyframes paginaEntra { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+.pagina-entra { animation: paginaEntra .22s cubic-bezier(.23,1,.32,1) both; }
+@media (prefers-reduced-motion: reduce) { .pagina-entra { animation: veuEntra .15s ease-out both; } }

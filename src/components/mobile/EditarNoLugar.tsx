@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 
@@ -17,6 +17,20 @@ function urlEmbutida(href: string) {
 
 function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string; onFechar: () => void }) {
   const [carregou, setCarregou] = useState(false);
+  const quadro = useRef<HTMLIFrameElement>(null);
+  const [salvando, setSalvando] = useState(false);
+
+  // Tudo no editor salva ao sair do campo. Concluir tira o foco do campo aberto,
+  // espera o salvamento começar e só então fecha: nada digitado se perde.
+  function concluir() {
+    if (salvando) return;
+    setSalvando(true);
+    try {
+      const doc = quadro.current?.contentDocument;
+      (doc?.activeElement as HTMLElement | null)?.blur?.();
+    } catch { /* outro domínio: segue */ }
+    window.setTimeout(onFechar, 450);
+  }
 
   useEffect(() => {
     const anterior = document.body.style.overflow;
@@ -35,8 +49,8 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
       <div className="editor-painel relative flex h-[92dvh] w-full max-w-[1000px] flex-col overflow-hidden rounded-t-3xl bg-surface-white shadow-2xl sm:h-[90dvh] sm:rounded-3xl">
         <div className="flex items-center justify-between gap-3 border-b border-divider px-5 py-3">
           <p className="min-w-0 truncate text-[15px] font-semibold text-on-background">{rotulo}</p>
-          <button onClick={onFechar} className="min-h-[40px] shrink-0 rounded-full bg-on-background px-5 text-[13px] font-semibold text-white active:scale-[0.97]">
-            Concluir
+          <button onClick={concluir} disabled={salvando} className="min-h-[40px] shrink-0 rounded-full bg-on-background px-5 text-[13px] font-semibold text-white active:scale-[0.97] disabled:opacity-60">
+            {salvando ? "Salvando…" : "Concluir"}
           </button>
         </div>
         <div className="relative min-h-0 flex-1 bg-background">
@@ -44,6 +58,7 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
             <div className="absolute inset-0 flex items-center justify-center text-[13px] text-text-secondary">Abrindo o editor...</div>
           )}
           <iframe
+            ref={quadro}
             src={urlEmbutida(href)}
             title={rotulo}
             onLoad={() => setCarregou(true)}
