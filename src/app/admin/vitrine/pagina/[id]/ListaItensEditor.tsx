@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
 import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
-import { MAX_LISTA, listaVazia, novoIdLista, precoDoItem, reduzirFoto, type Lista, type ListaDestino, type ListaItem } from "@/lib/lista";
+import { MAX_FOTOS, MAX_LISTA, fotosDoItem, listaVazia, novoIdLista, precoDoItem, reduzirFoto, type Lista, type ListaDestino, type ListaItem } from "@/lib/lista";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background";
 
@@ -32,7 +32,11 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
   const [descricao, setDescricao] = useState(inicial.descricao ?? "");
   const [link, setLink] = useState(inicial.link ?? "");
   const [esgotado, setEsgotado] = useState(!!inicial.esgotado);
-  const [foto, setFoto] = useState<string | null>(inicial.foto ?? null);
+  const [fotos, setFotos] = useState<string[]>(fotosDoItem(inicial));
+  const [sel, setSel] = useState(0);
+  const alvoCorte = useRef<number | null>(null);
+  const foto = fotos[sel] ?? null;
+  const cheiaFotos = fotos.length >= MAX_FOTOS;
   const [subindo, setSubindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [galeria, setGaleria] = useState(false);
@@ -44,11 +48,15 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
     if (input.current) input.current.value = "";
     if (!f) return;
     if (!f.type.startsWith("image/")) return setErro("Envie uma foto (JPG ou PNG).");
+    if (cheiaFotos) return setErro(`Cada item aceita até ${MAX_FOTOS} fotos. Tire uma para adicionar outra.`);
     setErro(null);
+    alvoCorte.current = null;
     setRecorte(f);
   }
 
-  async function ajustarAtual(url: string) {
+  async function ajustarAtual(url: string, substituir = true) {
+    if (!substituir && cheiaFotos) return setErro(`Cada item aceita até ${MAX_FOTOS} fotos. Tire uma para adicionar outra.`);
+    alvoCorte.current = substituir ? sel : null;
     setErro(null);
     try {
       const r = await fetch(url);
@@ -67,13 +75,30 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
     const { error } = await supabase.storage.from("box-images").upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: blob.type || "image/jpeg" });
     setSubindo(false);
     if (error) return setErro("Não consegui enviar a foto. Tente de novo.");
-    setFoto(supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl);
+    const url = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
+    const alvo = alvoCorte.current;
+    if (alvo !== null && alvo < fotos.length) {
+      setFotos((p) => p.map((f, n) => (n === alvo ? url : f)));
+    } else {
+      setFotos((p) => [...p, url].slice(0, MAX_FOTOS));
+      setSel(Math.min(fotos.length, MAX_FOTOS - 1));
+    }
+  }
+
+  function tirarAtual() {
+    setFotos((p) => p.filter((_, n) => n !== sel));
+    setSel((n) => Math.max(0, n - 1));
+  }
+
+  function tornarCapa() {
+    setFotos((p) => [p[sel], ...p.filter((_, n) => n !== sel)]);
+    setSel(0);
   }
 
   function salvar() {
     if (!nome.trim()) return;
     const n = preco.trim() === "" ? null : Number(preco.replace(",", "."));
-    onSalvar({ id: inicial.id, nome: nome.trim(), preco: n != null && !Number.isNaN(n) ? n : null, descricao: descricao.trim(), foto, link: link.trim(), esgotado });
+    onSalvar({ id: inicial.id, nome: nome.trim(), preco: n != null && !Number.isNaN(n) ? n : null, descricao: descricao.trim(), foto: fotos[0] ?? null, fotos, link: link.trim(), esgotado });
   }
 
   return createPortal(
@@ -96,17 +121,35 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
             )}
           </button>
           <div className="min-w-0 flex-1">
-            <p className="text-[13.5px] font-medium">{subindo ? "Enviando…" : foto ? "Foto do item" : "Foto (opcional)"}</p>
+            <p className="text-[13.5px] font-medium">{subindo ? "Enviando…" : fotos.length > 1 ? `Fotos do item (${fotos.length} de ${MAX_FOTOS})` : foto ? "Foto do item" : "Foto (opcional)"}</p>
             <div className="mt-1.5 flex flex-wrap gap-2">
               <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="min-h-[36px] rounded-full bg-on-background px-3.5 text-[13px] font-medium text-white">Upload</button>
               <button type="button" onClick={() => setGaleria(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Álbum Orbibox</button>
               <button type="button" onClick={() => setProntas(true)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Busca web</button>
               {foto && <button type="button" onClick={() => ajustarAtual(foto)} disabled={subindo} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Ajustar</button>}
-              {foto && <button type="button" onClick={() => setFoto(null)} className="min-h-[36px] rounded-full px-3 text-[13px] font-medium text-text-secondary">Tirar</button>}
+              {foto && sel > 0 && <button type="button" onClick={tornarCapa} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Tornar capa</button>}
+              {foto && <button type="button" onClick={tirarAtual} className="min-h-[36px] rounded-full px-3 text-[13px] font-medium text-text-secondary">Tirar</button>}
             </div>
           </div>
         </div>
         {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
+
+        {fotos.length > 0 && (
+          <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto py-0.5" role="listbox" aria-label="Fotos do item">
+            {fotos.map((f, n) => (
+              <button key={f + n} type="button" role="option" aria-selected={n === sel} onClick={() => setSel(n)} aria-label={n === 0 ? "Foto de capa" : `Foto ${n + 1}`} className={`relative h-[60px] w-12 shrink-0 overflow-hidden rounded-xl bg-surface-soft transition-transform active:scale-[0.96] ${n === sel ? "ring-2 ring-on-background ring-offset-2 ring-offset-background-main" : ""}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={f} alt="" className="h-full w-full object-cover" />
+                {n === 0 && <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[9px] font-semibold text-white">Capa</span>}
+              </button>
+            ))}
+            {!cheiaFotos && (
+              <button type="button" onClick={() => input.current?.click()} disabled={subindo} aria-label="Adicionar outra foto" className="flex h-[60px] w-12 shrink-0 items-center justify-center rounded-xl border border-dashed border-text-tertiary/50 text-text-secondary active:scale-[0.96]">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="mt-3 flex flex-col gap-2.5">
           <input value={nome} onChange={(e) => setNome(e.target.value)} maxLength={80} placeholder="Nome do item" aria-label="Nome do item" autoFocus={novo} className={campo} />
@@ -132,7 +175,7 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
         </div>
       </div>
       {recorte && <ImageCropModal file={recorte} lockedRatio="retrato" lockedReason="A foto do item aparece no formato retrato. Arraste e aproxime para enquadrar." onCancel={() => setRecorte(null)} onConfirm={(blob) => subirRecortada(blob)} />}
-      {galeria && <MinhaGaleriaPicker businessId={businessId} atual={foto} onFechar={() => setGaleria(false)} onEscolher={(url) => { setGaleria(false); ajustarAtual(url); }} />}
+      {galeria && <MinhaGaleriaPicker businessId={businessId} atual={foto} onFechar={() => setGaleria(false)} onEscolher={(url) => { setGaleria(false); ajustarAtual(url, false); }} />}
       {prontas && <FotoProntaPicker businessId={businessId} assunto={nome} formato="retrato" onFechar={() => setProntas(false)} onEscolher={(f) => { setProntas(false); enviar(f); }} />}
     </div>,
     document.body,
@@ -237,6 +280,7 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
                 ) : (
                   <IconeCamera />
                 )}
+                {fotosDoItem(i).length > 1 && <span className="absolute bottom-1 right-1 rounded-full bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white">{fotosDoItem(i).length} fotos</span>}
                 {i.esgotado && <span className="absolute left-1 top-1 rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] text-text-secondary">Esgotado</span>}
               </span>
               <span className="mt-1 block truncate text-[12.5px] font-medium">{i.nome || "Sem nome"}</span>

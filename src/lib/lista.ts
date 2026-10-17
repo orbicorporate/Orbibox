@@ -11,6 +11,8 @@ export type ListaItem = {
   preco?: number | null;
   descricao?: string;
   foto?: string | null;
+  /** Carrossel: até MAX_FOTOS fotos; a primeira é a capa e fica igual a `foto`. */
+  fotos?: string[];
   /** Usado quando o destino da lista é "link". */
   link?: string;
   esgotado?: boolean;
@@ -25,6 +27,14 @@ export type Lista = {
 };
 
 export const MAX_LISTA = 60;
+export const MAX_FOTOS = 8;
+
+/** Todas as fotos do item, capa primeiro. Itens antigos só têm `foto`. */
+export function fotosDoItem(i: Pick<ListaItem, "foto" | "fotos">): string[] {
+  const lista = Array.isArray(i.fotos) ? i.fotos.filter((f): f is string => typeof f === "string" && !!f) : [];
+  const todas = lista.length > 0 ? lista : i.foto ? [i.foto] : [];
+  return todas.slice(0, MAX_FOTOS);
+}
 
 export function novoIdLista(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -51,7 +61,8 @@ export function lerLista(raw: unknown): Lista | null {
         nome: i.nome,
         preco: typeof i.preco === "number" ? i.preco : null,
         descricao: typeof i.descricao === "string" ? i.descricao : "",
-        foto: typeof i.foto === "string" && i.foto ? i.foto : null,
+        foto: fotosDoItem(i)[0] ?? null,
+        fotos: fotosDoItem(i),
         link: typeof i.link === "string" ? i.link : "",
         esgotado: !!i.esgotado,
       })),

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { trackClick, whatsappLink } from "@/lib/track";
-import { precoDoItem, urlSegura, type Lista, type ListaItem } from "@/lib/lista";
+import { fotosDoItem, precoDoItem, urlSegura, type Lista, type ListaItem } from "@/lib/lista";
 
 /**
  * Lista de itens da página própria: boxes de foto, nome e preço. Ao tocar,
@@ -91,6 +91,7 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={i.foto} alt="" loading="lazy" className="h-full w-full object-cover" />
                       {i.esgotado && <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-text-secondary">Esgotado</span>}
+                      {fotosDoItem(i).length > 1 && <span className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white">1/{fotosDoItem(i).length}</span>}
                     </span>
                   )}
                   <span className="block px-3 pb-3 pt-2.5">
@@ -117,12 +118,7 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
             <div className="flex justify-end">
               <button ref={fechar} type="button" onClick={() => setAberto(null)} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px]">✕</button>
             </div>
-            {aberto_.foto && (
-              <div className="mt-1 overflow-hidden rounded-[22px] bg-surface-soft">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={aberto_.foto} alt={aberto_.nome} className="aspect-[4/5] w-full object-cover" />
-              </div>
-            )}
+            <CarrosselItem fotos={fotosDoItem(aberto_)} nome={aberto_.nome} />
             <h3 className="mt-4 break-words font-[family-name:var(--font-manrope)] text-[22px] font-medium leading-tight">{aberto_.nome}</h3>
             {precoDoItem(aberto_.preco) && <p className="mt-1 font-[family-name:var(--font-manrope)] text-[18px] font-medium">{precoDoItem(aberto_.preco)}</p>}
             {aberto_.descricao?.trim() && <p className="mt-3 whitespace-pre-line break-words text-[14.5px] leading-relaxed text-text-secondary">{aberto_.descricao}</p>}
@@ -172,5 +168,44 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
         </div>
       )}
     </section>
+  );
+}
+
+/** Fotos do item em carrossel: desliza com o dedo, com pontinhos embaixo. Uma foto só, sem pontos. */
+function CarrosselItem({ fotos, nome }: { fotos: string[]; nome: string }) {
+  const trilho = useRef<HTMLDivElement>(null);
+  const [atual, setAtual] = useState(0);
+  if (fotos.length === 0) return null;
+  return (
+    <div className="mt-1">
+      <div
+        ref={trilho}
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          setAtual(Math.round(el.scrollLeft / el.clientWidth));
+        }}
+        className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto rounded-[22px] bg-surface-soft"
+      >
+        {fotos.map((f, n) => (
+          <div key={f + n} className="aspect-[4/5] w-full shrink-0 snap-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={f} alt={fotos.length > 1 ? `${nome}, foto ${n + 1} de ${fotos.length}` : nome} loading={n === 0 ? "eager" : "lazy"} draggable={false} className="h-full w-full object-cover" />
+          </div>
+        ))}
+      </div>
+      {fotos.length > 1 && (
+        <div className="mt-2.5 flex justify-center gap-1.5" aria-hidden>
+          {fotos.map((_, n) => (
+            <button
+              key={n}
+              type="button"
+              tabIndex={-1}
+              onClick={() => trilho.current?.scrollTo({ left: n * trilho.current.clientWidth, behavior: "smooth" })}
+              className={`h-1.5 rounded-full transition-[width,background-color] duration-200 ${n === atual ? "w-5 bg-on-background" : "w-1.5 bg-on-background/25"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
