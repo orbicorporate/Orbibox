@@ -1,3 +1,4 @@
+import { voucherTheme } from "@/lib/voucherThemes";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
@@ -130,6 +131,12 @@ export default async function VisitorPage({
   // mesmo estando "publicado"/"ativo", assim não precisa lembrar de
   // desligar manualmente uma promoção que já venceu.
   const giftEnabled = !!giftRes.data?.enabled;
+  // O botão de Vouchers da tela inicial usa a cor do voucher mais novo no ar,
+  // então trocar a cor do voucher já troca o botão.
+  const { data: primeiroVoucher } = hasVouchers
+    ? await supabase.from("vouchers").select("color").eq("business_id", business.id).eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle()
+    : { data: null };
+  const corVoucher = primeiroVoucher?.color ? voucherTheme(primeiroVoucher.color).via : null;
   const content = filterLive(contentRes.data ?? []);
   const boxes = filterLive(boxesRes.data ?? []);
   const agentConfig = agentRes.data;
@@ -148,6 +155,7 @@ export default async function VisitorPage({
       isOwner={isOwner}
       hasAiChat={hasAiChat}
       hasVouchers={hasVouchers}
+      corVoucher={corVoucher}
       giftEnabled={giftEnabled}
     />
   );
