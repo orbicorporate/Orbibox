@@ -9,6 +9,7 @@ import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { AbrirChatGPT } from "@/components/ui/AbrirChatGPT";
 import { PassosPrompt } from "@/components/ui/PassosPrompt";
+import { reduzirFoto } from "@/lib/lista";
 
 type Marca = { name: string; brand_colors: unknown; about_business: string | null; brand_voice_summary: string | null };
 
@@ -60,6 +61,77 @@ export function ImageUpload({
   const [showGaleria, setShowGaleria] = useState(false);
   // Dados da marca pro prompt da capa ficar com a cara dela (cores, tom).
   const [marca, setMarca] = useState<Marca | null>(null);
+
+  // Gerar a capa aqui dentro com a IA, a partir (ou não) de uma foto de base.
+  const baseInput = useRef<HTMLInputElement>(null);
+  const [base, setBase] = useState<{ file: File; previa: string } | null>(null);
+  const [showGaleriaBase, setShowGaleriaBase] = useState(false);
+  const [gerando, setGerando] = useState(false);
+  const [geradaUrl, setGeradaUrl] = useState<string | null>(null);
+  const [erroIA, setErroIA] = useState<string | null>(null);
+  const [iaIndisponivel, setIaIndisponivel] = useState(false);
+
+  async function escolherBase(file: File) {
+    setErroIA(null);
+    if (!file.type.startsWith("image/")) return setErroIA("Escolha um arquivo de imagem.");
+    try {
+      const reduzida = await reduzirFoto(file, 1024);
+      const f = new File([reduzida], "base.jpg", { type: reduzida.type || "image/jpeg" });
+      setBase((antes) => {
+        if (antes) URL.revokeObjectURL(antes.previa);
+        return { file: f, previa: URL.createObjectURL(f) };
+      });
+    } catch {
+      setErroIA("Não consegui abrir essa foto.");
+    }
+  }
+
+  async function baseDaGaleria(url: string) {
+    setShowGaleriaBase(false);
+    try {
+      const b = await (await fetch(url)).blob();
+      await escolherBase(new File([b], "base.jpg", { type: b.type || "image/jpeg" }));
+    } catch {
+      setErroIA("Não consegui abrir essa foto da galeria.");
+    }
+  }
+
+  async function gerarCapa() {
+    setErroIA(null);
+    setGerando(true);
+    setGeradaUrl(null);
+    try {
+      const corpo = new FormData();
+      corpo.append("businessId", businessId);
+      corpo.append("assunto", promptSubject || "");
+      corpo.append("formato", lockedRatio ?? "quadrado");
+      if (base) corpo.append("imagem", base.file);
+      const r = await fetch("/api/gerar-capa", { method: "POST", body: corpo });
+      const json = (await r.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (r.status === 501) {
+        setIaIndisponivel(true);
+        return;
+      }
+      if (!r.ok || !json.url) return setErroIA(json.error ?? "A IA não conseguiu agora. Tente de novo.");
+      setGeradaUrl(json.url);
+    } catch {
+      setErroIA("Sem conexão. Tente de novo.");
+    } finally {
+      setGerando(false);
+    }
+  }
+
+  async function usarGerada() {
+    if (!geradaUrl) return;
+    try {
+      const b = await (await fetch(geradaUrl)).blob();
+      // Passa pelo mesmo enquadramento de qualquer foto, pra sair no formato certo.
+      setPendingFile(new File([b], "capa.jpg", { type: b.type || "image/webp" }));
+      setGeradaUrl(null);
+    } catch {
+      setErroIA("Não consegui abrir a capa gerada.");
+    }
+  }
 
   async function abrirPrompt() {
     const abrir = !showPrompt;
@@ -252,7 +324,7 @@ export function ImageUpload({
               <OrbiSimbolo size={36} />
               <span className="min-w-0 flex-1">
                 <span className="block text-[14px] font-medium text-on-background">Criar com a cara da marca</span>
-                <span className="block text-[12px] text-text-tertiary">Prompt pronto pro ChatGPT, com suas cores</span>
+                <span className="block text-[12px] text-text-tertiary">{iaIndisponivel ? "Prompt pronto pro ChatGPT, com suas cores" : "A Orbi cria aqui, com suas cores"}</span>
               </span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${showPrompt ? "rotate-180" : ""}`} aria-hidden>
                 <path d="M6 9l6 6 6-6" />
@@ -260,6 +332,44 @@ export function ImageUpload({
             </button>
             {showPrompt && (
               <div className="px-3.5 pb-3.5">
+                {!iaIndisponivel && (
+                  <div className="mb-4">
+                    <input ref={baseInput} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void escolherBase(f); e.target.value = ""; }} />
+                    <p className="text-[12.5px] font-medium text-on-background">Foto de base <span className="font-normal text-text-tertiary">(opcional)</span></p>
+                    <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">O produto, o ambiente ou a logo que a capa deve usar.</p>
+                    <div className="mt-2 flex items-center gap-2.5">
+                      <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface-soft text-text-tertiary">
+                        {base ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={base.previa} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <span aria-hidden className="text-[18px]">▣</span>
+                        )}
+                      </span>
+                      <button type="button" onClick={() => setShowGaleriaBase(true)} disabled={gerando} className="min-h-[40px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary disabled:opacity-60">Minha galeria</button>
+                      <button type="button" onClick={() => baseInput.current?.click()} disabled={gerando} className="min-h-[40px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary disabled:opacity-60">Enviar foto</button>
+                    </div>
+
+                    {geradaUrl ? (
+                      <div className="mt-3">
+                        <div className="overflow-hidden rounded-2xl bg-surface-soft" style={{ aspectRatio: aspect, maxHeight: 320 }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={geradaUrl} alt="Capa criada pela Orbi" className="h-full w-full object-cover" />
+                        </div>
+                        <div className="mt-2.5 flex gap-2">
+                          <button type="button" onClick={usarGerada} className="min-h-[44px] flex-1 rounded-full bg-on-background text-[14px] font-semibold text-white">Usar como capa</button>
+                          <button type="button" onClick={gerarCapa} disabled={gerando} className="min-h-[44px] rounded-full bg-surface-soft px-4 text-[13.5px] font-medium text-text-secondary disabled:opacity-60">{gerando ? "Criando…" : "Gerar outra"}</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={gerarCapa} disabled={gerando} className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[14px] font-semibold text-white disabled:opacity-70">
+                        {gerando ? (<><OrbiMiniVerde size={16} />Criando sua capa… até 1 minuto</>) : "Criar capa com a Orbi"}
+                      </button>
+                    )}
+                    {erroIA && <p role="alert" className="mt-2 text-[12.5px] text-red-600">{erroIA}</p>}
+                    <p className="mt-4 text-[12px] font-medium text-text-tertiary">Ou use o prompt no ChatGPT</p>
+                  </div>
+                )}
                 <div className="rounded-xl bg-surface-soft p-3">
                   <p className="select-text whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{promptTexto}</p>
                 </div>
@@ -298,6 +408,10 @@ export function ImageUpload({
               onChange(url);
             }}
           />
+        )}
+
+        {showGaleriaBase && (
+          <MinhaGaleriaPicker businessId={businessId} onFechar={() => setShowGaleriaBase(false)} onEscolher={(url) => void baseDaGaleria(url)} />
         )}
 
         {pendingFile && (
