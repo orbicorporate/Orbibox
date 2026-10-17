@@ -152,7 +152,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
             <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Envie um PDF, monte a lista de pratos, ou use os dois.</p>
 
             <div role="tablist" aria-label="Como mostrar o cardápio" className="mt-3 flex rounded-full bg-surface-soft p-1">
-              {([["pdf", "PDF", nPdfs], ["pratos", "Pratos", nPratos]] as const).map(([id, rotulo, n]) => (
+              {([["pdf", "PDF", nPdfs], ["pratos", "Itens", nPratos]] as const).map(([id, rotulo, n]) => (
                 <button
                   key={id}
                   type="button"
