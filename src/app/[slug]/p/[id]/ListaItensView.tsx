@@ -58,10 +58,10 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
     );
   }
 
-  // Itens sem foto seguidos viram uma faixa só, de largura total, entre os
-  // cartões com foto: sem buraco ao lado de foto alta e sem mudar a ordem.
+  // Os itens com foto vêm primeiro, na ordem do dono. Os sem foto ficam juntos no
+  // final, numa faixa só de largura total: sem buraco ao lado de foto alta.
   const blocos: { foto: boolean; itens: ListaItem[] }[] = [];
-  for (const i of itens) {
+  for (const i of [...itens.filter((x) => !!x.foto), ...itens.filter((x) => !x.foto)]) {
     const foto = !!i.foto;
     const ultimo = blocos[blocos.length - 1];
     if (ultimo && ultimo.foto === foto) ultimo.itens.push(i);
