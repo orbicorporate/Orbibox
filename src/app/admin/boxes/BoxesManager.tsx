@@ -724,6 +724,7 @@ export function BoxesManager({
                 <BoxEditor
                   initial={cfg ?? { subtitle: "", icon: m.icon, color: "#111318", action: "link", url: "" }}
                   isCustom={isCustom}
+                  boxType={box.box_type}
                   brandColors={brandColors}
                   onSave={(next) => saveConfig(box, { ...next, label })}
                   onDelete={isCustom ? () => removeCustom(box) : undefined}
@@ -1014,6 +1015,7 @@ function BoxEditor({
   onSave,
   onDelete,
   liveOnly,
+  boxType,
   logoUrl,
   logoGallery,
   onNewLogo,
@@ -1026,6 +1028,8 @@ function BoxEditor({
   onSave: (cfg: BoxConfig) => void;
   onDelete?: () => void;
   liveOnly?: boolean;
+  /** Tipo do box, pra mostrar o destino dos botões nativos (o do catálogo, por exemplo). */
+  boxType?: string;
   logoUrl?: string | null;
   logoGallery?: string[];
   onNewLogo?: (url: string) => void;
@@ -1040,7 +1044,8 @@ function BoxEditor({
   const animated = isAnimatedIcon(cfg.icon);
   // Ações que vêm prontas do atalho de criação e não se troca por outra:
   // o box existe justamente pra fazer isso.
-  const acaoFixa = cfg.action === "cupom" || cfg.action === "endereco" || cfg.action === "avaliar" || cfg.action === "gift";
+  const acaoFixa = cfg.action === "cupom" || cfg.action === "endereco" || cfg.action === "avaliar" || cfg.action === "gift" || cfg.action === "cardapio" || cfg.action === "materiais" || cfg.action === "delivery";
+  const destinoNativo = !isCustom && boxType === "product" ? { titulo: "Abre o catálogo", texto: "Todos os itens da sua vitrine, por categoria, com busca.", href: "/admin/vitrine", link: "Editar o catálogo →" } : null;
 
   function update(next: Partial<BoxConfig>) {
     const merged = { ...cfg, ...next };
@@ -1066,6 +1071,14 @@ function BoxEditor({
 
   return (
     <div className="mt-3 flex flex-col gap-2.5">
+      {destinoNativo && (
+        <div className="rounded-2xl bg-surface-soft px-4 py-3">
+          <p className="text-[12px] text-text-tertiary">Quando o cliente toca</p>
+          <p className="mt-0.5 text-[14px] font-medium">{destinoNativo.titulo}</p>
+          <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">{destinoNativo.texto}</p>
+          <Link href={destinoNativo.href} className="mt-2 inline-block text-[12.5px] font-medium underline underline-offset-2">{destinoNativo.link}</Link>
+        </div>
+      )}
       {isCustom && (
         <>
           {/* Boxes de cupom, endereço e avaliação já nascem com a ação
