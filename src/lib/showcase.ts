@@ -332,6 +332,12 @@ export function isInstagramReel(url: string): boolean {
 
 /** Diz se uma entrada da galeria é um vídeo de qualquer tipo suportado
  * (YouTube ou Instagram), útil pra filtrar fotos de vídeos de forma genérica. */
+/** Capa do item: a foto de capa; sem ela, a primeira foto (não vídeo) da página do item. */
+export function capaDoItem(imageUrl: string | null | undefined, galeria: string[] | null | undefined): string | null {
+  if (imageUrl) return imageUrl;
+  return (galeria ?? []).find((u) => !!u && !isVideoUrl(u)) ?? null;
+}
+
 export function isVideoUrl(url: string): boolean {
   return isYoutube(url) || isInstagramReel(url);
 }

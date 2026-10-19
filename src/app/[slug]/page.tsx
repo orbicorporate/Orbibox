@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnerHasAiChat, getOwnerHasVouchers } from "@/lib/plans";
 import { filterLive } from "@/lib/scheduling";
+import { capaDoItem } from "@/lib/showcase";
 import { VisitorExperience } from "./VisitorExperience";
 
 /**
@@ -113,7 +114,7 @@ export default async function VisitorPage({
   const [contentRes, boxesRes, agentRes, hasAiChat, hasVouchers, giftRes] = await Promise.all([
     supabase
       .from("content_items")
-      .select("id, title, description, price, price_type, price_max, image_url, brand_label, type, position, layout_size, box_color, footer_color, box_style, title_placement, target_url, link_kind, starts_at, ends_at")
+      .select("id, title, description, price, price_type, price_max, image_url, gallery_urls, brand_label, type, position, layout_size, box_color, footer_color, box_style, title_placement, target_url, link_kind, starts_at, ends_at")
       .eq("business_id", business.id)
       .eq("status", "published")
       .order("position", { ascending: true }),
@@ -137,7 +138,8 @@ export default async function VisitorPage({
     ? await supabase.from("vouchers").select("color").eq("business_id", business.id).eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle()
     : { data: null };
   const corVoucher = primeiroVoucher?.color ? voucherTheme(primeiroVoucher.color).via : null;
-  const content = filterLive(contentRes.data ?? []);
+  // Sem foto de capa, vale a primeira foto da página do item (o dono costuma colocar só lá).
+  const content = filterLive(contentRes.data ?? []).map(({ gallery_urls, ...i }) => ({ ...i, image_url: capaDoItem(i.image_url, gallery_urls) }));
   const boxes = filterLive(boxesRes.data ?? []);
   const agentConfig = agentRes.data;
   const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length >= 2

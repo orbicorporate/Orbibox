@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getInspirePhotos } from "@/lib/inspirePhotos";
 import { ShowcaseBuilder } from "./ShowcaseBuilder";
+import { capaDoItem } from "@/lib/showcase";
 import { GuiaBotao } from "@/components/guia/GuiaOrbi";
 
 type BrandColor = { hex: string; role?: string };
@@ -46,7 +47,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
       <ShowcaseBuilder
         abrirNovo={novo === "1"}
         abrirCapa={abrir === "capa" || abrir === "ajustes" || abrir === "novidades"}
-        items={items ?? []}
+        items={(items ?? []).map((i) => ({ ...i, image_url: capaDoItem(i.image_url, i.gallery_urls) }))}
         slug={business!.slug}
         businessId={business!.id}
         businessName={business!.name}
