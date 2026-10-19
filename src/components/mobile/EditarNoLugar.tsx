@@ -19,6 +19,24 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
   const [carregou, setCarregou] = useState(false);
   const quadro = useRef<HTMLIFrameElement>(null);
   const [salvando, setSalvando] = useState(false);
+  // Se o painel abrir e não mostrar nada (a parte pedida não apareceu), mostra a tela inteira
+  // e, se nem assim houver conteúdo, oferece abrir em página cheia. Nunca fica em branco.
+  const [semConteudo, setSemConteudo] = useState(false);
+
+  function conferirConteudo() {
+    window.setTimeout(() => {
+      try {
+        const doc = quadro.current?.contentDocument;
+        const main = doc?.querySelector("main");
+        if (!doc || !main) return setSemConteudo(true);
+        const texto = () => Array.from(main.children).filter((c) => !c.classList.contains("embed-save")).reduce((n, c) => n + ((c as HTMLElement).innerText?.trim().length ?? 0), 0);
+        if (texto() >= 3) return;
+        // A parte pedida sumiu: mostra a tela toda do editor.
+        doc.querySelectorAll("[data-embed-oculto]").forEach((el) => el.removeAttribute("data-embed-oculto"));
+        window.setTimeout(() => { if (texto() < 3) setSemConteudo(true); }, 400);
+      } catch { /* outro domínio: não dá pra conferir */ }
+    }, 3500);
+  }
 
   // Tudo no editor salva ao sair do campo. Concluir tira o foco do campo aberto,
   // espera o salvamento começar e só então fecha: nada digitado se perde.
@@ -54,6 +72,13 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
           </button>
         </div>
         <div className="relative min-h-0 flex-1 bg-background">
+          {semConteudo && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-surface-white/95 px-8 text-center">
+              <p className="text-[15px] font-medium">Não consegui abrir essa parte aqui.</p>
+              <p className="text-[13px] text-text-secondary">Abra em página inteira, é a mesma tela.</p>
+              <a href={href} className="inline-flex min-h-[44px] items-center rounded-full bg-on-background px-5 text-[14px] font-medium text-white">Abrir em página inteira</a>
+            </div>
+          )}
           {!carregou && (
             <div className="absolute inset-0 flex items-center justify-center text-[13px] text-text-secondary">Abrindo o editor...</div>
           )}
@@ -61,7 +86,7 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
             ref={quadro}
             src={urlEmbutida(href)}
             title={rotulo}
-            onLoad={() => setCarregou(true)}
+            onLoad={() => { setCarregou(true); conferirConteudo(); }}
             className={`h-full w-full border-0 transition-opacity duration-200 ${carregou ? "opacity-100" : "opacity-0"}`}
           />
         </div>
