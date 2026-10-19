@@ -104,6 +104,16 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   });
   const [formato, setFormato] = useState<GalleryRatio>(galleryRatioOf(item.gallery_ratio, item.layout_size));
   const [estado, setEstado] = useState<"salvo" | "salvando" | "erro">("salvo");
+  // Capa do card (a foto que aparece na Home e no catálogo). Sem capa própria, vale a primeira foto da galeria.
+  const [capa, setCapa] = useState<string | null>(item.image_url);
+  async function definirCapa(src: string | null) {
+    const anterior = capa;
+    setCapa(src);
+    setEstado("salvando");
+    const { error } = await supabase.from("content_items").update({ image_url: src }).eq("id", item.id);
+    if (error) setCapa(anterior);
+    setEstado(error ? "erro" : "salvo");
+  }
 
   const [ativo, setAtivo] = useState(0);
   const [painel, setPainel] = useState<"video" | "ia" | null>(null);
@@ -225,8 +235,9 @@ export function ProductPageEditor({ business, item }: { business: Business; item
 
   const aspect = RATIOS[formato].value;
   // Sem carrossel próprio, a página mostra a capa do card, então o editor também.
-  const slides = midias.length > 0 ? midias : item.image_url ? [item.image_url] : [];
-  const soCapa = midias.length === 0 && !!item.image_url;
+  const slides = midias.length > 0 ? midias : capa ? [capa] : [];
+  const soCapa = midias.length === 0 && !!capa;
+  const capaAtual = capa || midias.find((u) => !isVideoUrl(u) && !youtubeId(u) && !instagramReelId(u)) || null;
   const preco = formatPrice(item);
 
   if (!montado) return null;
@@ -287,6 +298,21 @@ export function ProductPageEditor({ business, item }: { business: Business; item
                     </span>
                   ) : (
                     <>
+                      {!yt && !ig && (
+                        src === capaAtual ? (
+                          <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1.5 text-[11.5px] font-medium text-white backdrop-blur">
+                            {capa ? "Capa do card" : "Capa do card (1ª foto)"}
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => definirCapa(src)}
+                            className="absolute left-3 top-3 min-h-[36px] rounded-full bg-white/90 px-3.5 text-[12px] font-medium text-on-background shadow-sm backdrop-blur active:scale-95"
+                          >
+                            Usar como capa do card
+                          </button>
+                        )
+                      )}
                       <button
                         onClick={() => salvarMidias(midias.filter((_, k) => k !== i))}
                         className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-[15px] text-white backdrop-blur"
@@ -312,6 +338,11 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             )}
           </div>
 
+          {midias.length > 0 && (
+            <p className="mt-2 text-center text-[12.5px] leading-snug text-text-tertiary">
+              {capa ? "A foto marcada como capa é a que aparece no card, na Home e no catálogo." : "Este item ainda não tem capa própria, então o card usa a primeira foto. Toque em “Usar como capa do card” numa foto pra escolher outra."}
+            </p>
+          )}
           <div className="mt-3 flex items-center justify-between gap-2">
             <div className="flex gap-1.5">
               {slides.length > 1 &&
