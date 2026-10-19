@@ -23,6 +23,8 @@ export type BolinhaVitrine = {
   cor?: string;
   /** Selinho pequeno sobre a bolinha, ex.: "oferta". */
   selo?: string;
+  /** Logo escolhida pelo dono pra bolinha (no lugar do ícone padrão). */
+  logo?: string | null;
   onClick: () => void;
 };
 
@@ -668,7 +670,12 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
       style={(linha ? {} : { background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0) 48%), ${c.fundo}`, boxShadow: `inset 0 -7px 12px -5px rgba(0,0,0,0.22), inset 0 1.5px 2px rgba(255,255,255,0.28), 0 6px 16px -6px ${c.sombra}99` }) as CSSProperties}
       className={`relative flex h-[60px] w-[60px] items-center justify-center rounded-full transition-transform active:scale-95 ${linha ? "border-[1.5px] border-on-background/70 bg-transparent text-on-background" : "text-white"}`}
     >
-      <Icone tipo={b.tipo} rede={b.rede} linha={linha} />
+      {b.logo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={b.logo} alt="" className={`h-full w-full rounded-full object-cover ${linha ? "p-[3px]" : ""}`} />
+      ) : (
+        <Icone tipo={b.tipo} rede={b.rede} linha={linha} />
+      )}
       {b.selo && (
         <span className="absolute -right-3 -top-1 rounded-full bg-[#FF5A36] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-white shadow">
           {b.selo}

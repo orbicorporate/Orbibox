@@ -555,7 +555,7 @@ export function VisitorExperience({
     const out: BolinhaVitrine[] = [];
     for (const o of todasOpcoes) {
       const estilo = o.bolinha === "linha" ? "linha" : "cor";
-      const base = { key: o.key, estilo, editavel: true, cor: o.bolinhaCor } as const;
+      const base = { key: o.key, estilo, editavel: true, cor: o.bolinhaCor, logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual) : null } as const;
       if (o.atalho === "whatsapp") out.push({ ...base, rotulo: "WhatsApp", tipo: "whatsapp", onClick: o.onClick });
       else if (o.atalho === "endereco" && o.address) out.push({ ...base, rotulo: "Local", tipo: "endereco", endereco: o.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
       else if (o.rede) out.push({ ...base, rotulo: o.t || nomeDaRede(o.rede), tipo: "rede", rede: o.rede, onClick: o.onClick });
