@@ -76,18 +76,22 @@ export function AbrirEditor({
   rotulo,
   className,
   children,
+  aoFechar,
 }: {
   href: string;
   rotulo: string;
   className?: string;
   children: React.ReactNode;
+  /** Chamado depois que o painel fecha e a página atualiza. */
+  aoFechar?: () => void;
 }) {
   const router = useRouter();
   const [aberto, setAberto] = useState(false);
   const fechar = useCallback(() => {
     setAberto(false);
     router.refresh();
-  }, [router]);
+    aoFechar?.();
+  }, [router, aoFechar]);
 
   return (
     <>

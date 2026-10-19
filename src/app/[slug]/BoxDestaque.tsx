@@ -67,6 +67,9 @@ export function BoxDestaque({
   const supabase = useMemo(() => createClient(), []);
   const [vouchers, setVouchers] = useState<V[]>([]);
   const [aberto, setAberto] = useState(false);
+  // Folha em dois caminhos: destacar algo que já existe, ou criar algo novo.
+  const [vista, setVista] = useState<"inicio" | "existente" | "novo">("inicio");
+  const abrirFolha = () => { setVista("inicio"); setAberto(true); };
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
 
   useEffect(() => {
@@ -195,13 +198,13 @@ export function BoxDestaque({
   };
 
   const maisQuadrado = podeEditar && (
-    <button type="button" onClick={() => setAberto(true)} aria-label="Fixar ou tirar itens do destaque" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
+    <button type="button" onClick={abrirFolha} aria-label="Fixar ou tirar itens do destaque" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
   );
 
   return (
     <section className="w-full" aria-label="Destaque">
       {cartoes.length === 0 ? (
-        <button type="button" onClick={() => setAberto(true)} className="flex min-h-[72px] w-full max-w-[300px] flex-col items-start justify-center gap-1 rounded-[20px] border-2 border-dashed border-divider px-4 text-left text-text-secondary">
+        <button type="button" onClick={abrirFolha} className="flex min-h-[72px] w-full max-w-[300px] flex-col items-start justify-center gap-1 rounded-[20px] border-2 border-dashed border-divider px-4 text-left text-text-secondary">
           <span className="text-[15px] font-medium">+ Fixar no destaque</span>
           <span className="text-[12.5px] text-text-tertiary">Fixe um botão, voucher ou produto aqui. Só você vê este aviso.</span>
         </button>
@@ -225,26 +228,59 @@ export function BoxDestaque({
         <>
           <button type="button" aria-label="Fechar" onClick={() => setAberto(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
           <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-h-[80vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
-            <div className="flex items-center justify-between">
-              <span className="text-[17px] font-medium">Fixar no destaque</span>
-              <button type="button" onClick={() => setAberto(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                {vista !== "inicio" && (
+                  <button type="button" onClick={() => setVista("inicio")} aria-label="Voltar" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px] active:scale-95">‹</button>
+                )}
+                <span className="truncate text-[17px] font-medium">{vista === "existente" ? "Destacar o que já existe" : vista === "novo" ? "Criar algo novo" : "Fixar no destaque"}</span>
+              </div>
+              <button type="button" onClick={() => setAberto(false)} className="min-h-[40px] shrink-0 rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
             </div>
-            <p className="mt-1 text-[13px] text-text-secondary">Marque o que você quer em evidência: botões, vouchers ou produtos. Eles aparecem no começo da seção, na ordem em que você marcar. Desmarque para tirar.</p>
 
-            <p className="mt-4 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Criar novo</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {[
-                { href: "/admin/boxes", rotulo: "Criar botão", texto: "+ Botão" },
-                { href: "/admin/vouchers?novo=1", rotulo: "Criar voucher", texto: "+ Voucher" },
-                { href: "/admin/vitrine?novo=1", rotulo: "Criar produto", texto: "+ Produto" },
-                { href: "/admin/gift", rotulo: "Criar gift card", texto: "+ Gift card" },
-              ].map((n) => (
-                <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium active:scale-95">
-                  {n.texto}
-                </AbrirEditor>
-              ))}
-            </div>
-            <p className="mt-2 text-[12px] leading-snug text-text-tertiary">Ao fechar, o que você criou aparece na lista abaixo, pronto para marcar.</p>
+            {vista === "inicio" && (
+              <div className="mt-4 flex flex-col gap-3">
+                <p className="text-[13px] text-text-secondary">O destaque fica no começo da página, na ordem em que você marcar. O que você quer fazer?</p>
+                <button type="button" onClick={() => setVista("existente")} className="flex min-h-[76px] items-center gap-3 rounded-2xl border-2 border-divider p-3.5 text-left active:scale-[0.99]">
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15.5px] font-semibold">Destacar o que já existe</span>
+                    <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">Escolha entre seus botões, vouchers e produtos.</span>
+                  </span>
+                  <span aria-hidden className="text-[20px] text-text-tertiary">›</span>
+                </button>
+                <button type="button" onClick={() => setVista("novo")} className="flex min-h-[76px] items-center gap-3 rounded-2xl border-2 border-divider p-3.5 text-left active:scale-[0.99]">
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15.5px] font-semibold">Criar algo novo</span>
+                    <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">Voucher, gift card, produto ou botão. Quando terminar, você volta aqui para destacar.</span>
+                  </span>
+                  <span aria-hidden className="text-[20px] text-text-tertiary">›</span>
+                </button>
+              </div>
+            )}
+
+            {vista === "novo" && (
+              <div className="mt-4 flex flex-col gap-2">
+                {[
+                  { href: "/admin/vouchers?novo=1", rotulo: "Criar voucher", titulo: "Voucher", sub: "Desconto ou brinde para o cliente resgatar." },
+                  { href: "/admin/gift", rotulo: "Criar gift card", titulo: "Gift card", sub: "Vale-presente que o cliente compra ou ganha." },
+                  { href: "/admin/vitrine?novo=1", rotulo: "Criar produto", titulo: "Produto", sub: "Um item novo no catálogo." },
+                  { href: "/admin/boxes", rotulo: "Criar botão", titulo: "Botão", sub: "WhatsApp, link, endereço, cardápio e outros." },
+                ].map((n) => (
+                  <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} aoFechar={() => setVista("existente")} className="flex min-h-[64px] w-full items-center gap-3 rounded-2xl border-2 border-divider p-3 text-left active:scale-[0.99]">
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[14.5px] font-semibold">{n.titulo}</span>
+                      <span className="mt-0.5 block text-[12px] leading-snug text-text-secondary">{n.sub}</span>
+                    </span>
+                    <span aria-hidden className="text-[18px] text-text-tertiary">+</span>
+                  </AbrirEditor>
+                ))}
+              </div>
+            )}
+
+            {vista === "existente" && (
+              <>
+                <p className="mt-1 text-[13px] text-text-secondary">Marque o que você quer em evidência. Desmarque para tirar.</p>
+                <button type="button" onClick={() => setVista("novo")} className="mt-3 min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary active:scale-95">Não achou? Criar algo novo</button>
 
             <p className="mt-4 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Botões</p>
             <div className="mt-2 flex flex-col gap-2">
@@ -269,6 +305,8 @@ export function BoxDestaque({
                 <Linha key={i.id} ligado={marcado("item", i.id)} titulo={i.title} sub={i.brand_label ?? ""} foto={i.image_url} onClick={() => alternar("item", i.id)} />
               ))}
             </div>
+              </>
+            )}
           </div>
         </>,
         document.body,
