@@ -241,7 +241,7 @@ export function BoxDestaque({
             {vista === "inicio" && (
               <div className="mt-4 flex flex-col gap-3">
                 <p className="text-[13px] text-text-secondary">O destaque fica no começo da página, na ordem em que você marcar. O que você quer fazer?</p>
-                <button type="button" onClick={() => setVista("existente")} className="flex min-h-[80px] items-center gap-3 rounded-[22px] p-3.5 text-left transition-transform active:scale-[0.98]" style={{ background: CORES_NOVO.existe.fundo }}>
+                <button type="button" onClick={() => setVista("existente")} className="flex min-h-[80px] items-center gap-3 rounded-[22px] border-2 border-divider bg-surface-white p-3.5 text-left transition-transform active:scale-[0.98]">
                   <TileNovo k="existe" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[15.5px] font-semibold">Destacar o que já existe</span>
@@ -249,7 +249,7 @@ export function BoxDestaque({
                   </span>
                   <span aria-hidden className="text-[20px] text-text-tertiary">›</span>
                 </button>
-                <button type="button" onClick={() => setVista("novo")} className="flex min-h-[80px] items-center gap-3 rounded-[22px] p-3.5 text-left transition-transform active:scale-[0.98]" style={{ background: CORES_NOVO.novo.fundo }}>
+                <button type="button" onClick={() => setVista("novo")} className="flex min-h-[80px] items-center gap-3 rounded-[22px] border-2 border-divider bg-surface-white p-3.5 text-left transition-transform active:scale-[0.98]">
                   <TileNovo k="novo" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[15.5px] font-semibold">Criar algo novo</span>
@@ -268,13 +268,13 @@ export function BoxDestaque({
                   { k: "produto", href: "/admin/vitrine?novo=1", rotulo: "Criar produto", titulo: "Produto", sub: "Um item novo no catálogo." },
                   { k: "botao", href: "/admin/boxes", rotulo: "Criar botão", titulo: "Botão", sub: "WhatsApp, link, endereço, cardápio e outros." },
                 ].map((n) => (
-                  <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} aoFechar={() => setVista("existente")} className={`flex min-h-[68px] w-full items-center gap-3 rounded-[22px] p-3 text-left transition-transform active:scale-[0.98] ${FUNDO_NOVO[n.k]}`}>
+                  <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} aoFechar={() => setVista("existente")} className={`flex min-h-[68px] w-full items-center gap-3 rounded-[22px] p-3 text-left transition-transform active:scale-[0.98] border-2 border-divider bg-surface-white`}>
                     <TileNovo k={n.k as keyof typeof CORES_NOVO} />
                     <span className="min-w-0 flex-1">
                       <span className="block text-[15px] font-semibold">{n.titulo}</span>
                       <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{n.sub}</span>
                     </span>
-                    <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/80 text-[18px] leading-none" style={{ color: CORES_NOVO[n.k as keyof typeof CORES_NOVO].tile }}>+</span>
+                    <span aria-hidden className="text-[20px] leading-none text-text-tertiary">›</span>
                   </AbrirEditor>
                 ))}
               </div>
@@ -327,8 +327,6 @@ const ICONES_NOVO: Record<string, React.ReactNode> = {
   existe: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" /></svg>),
   novo: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="M12 4v16M4 12h16" /><path d="M19 3v4M17 5h4" /></svg>),
 };
-// Classes escritas por extenso para o Tailwind enxergar.
-const FUNDO_NOVO: Record<string, string> = { voucher: "bg-[#FDECF2]", gift: "bg-[#FFF2E0]", produto: "bg-[#E3F5F6]", botao: "bg-[#ECEBFD]" };
 const CORES_NOVO: Record<string, { fundo: string; tile: string }> = {
   voucher: { fundo: "#FDECF2", tile: "#E5487F" },
   gift: { fundo: "#FFF2E0", tile: "#F29A1F" },
@@ -338,8 +336,9 @@ const CORES_NOVO: Record<string, { fundo: string; tile: string }> = {
   novo: { fundo: "#F3E8FF", tile: "#9B5CF0" },
 };
 function TileNovo({ k }: { k: keyof typeof CORES_NOVO }) {
+  // Só o ícone, solto e colorido, sem quadradinho por trás.
   return (
-    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_4px_10px_rgba(17,19,24,0.14)]" style={{ background: CORES_NOVO[k].tile }} aria-hidden>
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center [&>svg]:h-[28px] [&>svg]:w-[28px]" style={{ color: CORES_NOVO[k].tile }} aria-hidden>
       {ICONES_NOVO[k]}
     </span>
   );
