@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
 import { groupByCategory } from "@/lib/showcase";
@@ -542,7 +543,18 @@ function ListaBolinhas({
             ) : (
               <span className="w-7 shrink-0" />
             )}
-            <div className="-mr-3.5 w-[60px] shrink-0 origin-left scale-[0.7]"><Bolinha b={b} aberto={false} onClick={() => {}} /></div>
+            <div className="relative -mr-3.5 w-[60px] shrink-0">
+              <div className="origin-left scale-[0.7]"><Bolinha b={b} aberto={false} onClick={() => {}} /></div>
+              {b.editavel && (
+                <AbrirEditor
+                  href={`/admin/boxes?box=${b.key}#box-${b.key}`}
+                  rotulo="Trocar o ícone ou logo"
+                  className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border border-divider bg-surface-white text-[11px] text-text-secondary shadow-sm active:scale-90"
+                >
+                  ✎
+                </AbrirEditor>
+              )}
+            </div>
             <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{b.rotulo}</span>
             {b.editavel ? (
               <>
