@@ -29,6 +29,9 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
     ? raw.filter((c): c is BrandColor => !!c && typeof c === "object" && typeof (c as BrandColor).hex === "string")
     : [];
 
+  const { data: caixas } = await supabase.from("smart_boxes").select("config").eq("business_id", business!.id).eq("box_type", "custom");
+  const temCardapio = (caixas ?? []).some((b) => (b.config as { action?: string } | null)?.action === "cardapio");
+
   const inspirePhotos = await getInspirePhotos();
 
   return (
@@ -57,6 +60,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
         initialLeadTop={!!business!.vitrine_lead_top}
         siteSalvo={business!.contact_site || business!.website_url || null}
         inspirePhotos={inspirePhotos}
+        temCardapio={temCardapio}
       />
       <PreviewAoVivo slug={business!.slug} tab="vitrine" />
     </div>

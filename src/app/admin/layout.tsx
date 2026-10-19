@@ -101,6 +101,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .maybeSingle();
 
   const headerProgress = await getBusinessProgress(business.id);
+  // Cardápio e delivery só aparecem de cara pra quem já ativou (ou pediu no cadastro, caso gastronômico).
+  const { data: caixasMenu } = await supabase.from("smart_boxes").select("config").eq("business_id", business.id).eq("box_type", "custom");
+  const temCardapio = (caixasMenu ?? []).some((b) => { const a = (b.config as { action?: string } | null)?.action; return a === "cardapio" || a === "delivery"; });
   // Mesma fila de pendências usada na Home e em "/admin/pendencias", agora
   // também alimenta o sino do header em toda tela do painel.
   const headerPendencias = (await getPendingInsights(business.id)).map((i) => ({ title: i.title, href: i.href }));
@@ -128,6 +131,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         negocios={negocios.map((n) => ({ id: n.id, name: n.name, slug: n.slug, dono: n.dono }))}
         negocioAtual={business.id}
         logoUrl={business.logo_url ?? null}
+        temCardapio={temCardapio}
       />
       {celebrateNotif && (
         <ReferralCelebration id={celebrateNotif.id} title={celebrateNotif.title} body={celebrateNotif.body ?? ""} />

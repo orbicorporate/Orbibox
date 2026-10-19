@@ -305,6 +305,15 @@ export default function OnboardingPage() {
       await supabase.from("businesses").update({ vitrine_categories: seg.categorias }).eq("id", id);
     }
 
+    // Negócio gastronômico: a Orbi já deixa o Cardápio criado (desligado) e avisa na fila de pendências.
+    // Ele aparece no menu e é só montar e ligar.
+    if (seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id)) {
+      await supabase.from("smart_boxes").insert({
+        business_id: id, box_type: "custom", title: "Cardápio", position: 99, is_active: false,
+        config: { label: "Cardápio", subtitle: "Veja os pratos e preços", icon: "🍴", action: "cardapio", color: "transparent" },
+      });
+    }
+
     // Quem quer vender ganha a primeira oferta já no ar. Os outros ficam
     // com ela pronta como rascunho em Vouchers, é só publicar.
     const oferta = result.oferta

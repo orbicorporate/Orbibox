@@ -35,6 +35,7 @@ export function AppHeader({
   negocios = [],
   negocioAtual,
   logoUrl = null,
+  temCardapio = true,
 }: {
   unseenConversas?: number;
   progressPct?: number;
@@ -50,6 +51,8 @@ export function AppHeader({
   negocioAtual?: string;
   /** Logo cadastrado da marca, vira o ícone de "Sua marca". */
   logoUrl?: string | null;
+  /** Cardápio ou delivery já ativos. Sem eles, o bloco vira um convite pra ativar (restaurantes, bares, cafés). */
+  temCardapio?: boolean;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -216,12 +219,15 @@ export function AppHeader({
                   do mesmo tamanho. Vouchers leva a arte 3D de fundo pra se
                   destacar sem precisar de um card enorme. */}
               <div className="grid grid-cols-2 gap-2">
-                {MENU_ITEMS.map((item) => (
+                {MENU_ITEMS.map((base) => {
+                  const convite = base.href === "/admin/cardapio" && !temCardapio;
+                  const item = convite ? { ...base, label: "Ativar cardápio", desc: "Para restaurantes, bares e cafés" } : base;
+                  return (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
-                    className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97]"
+                    className={`flex min-h-[136px] flex-col justify-between rounded-[22px] p-4 text-left transition-transform active:scale-[.97] ${convite ? "border-[1.5px] border-dashed border-on-background/25 bg-transparent" : "bg-white shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07]"}`}
                   >
                     {item.marca && logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -234,7 +240,8 @@ export function AppHeader({
                       <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">{item.desc}</span>
                     </span>
                   </Link>
-                ))}
+                  );
+                })}
 
                 <Link
                   href="/admin/vouchers"

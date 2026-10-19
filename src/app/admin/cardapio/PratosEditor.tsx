@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AjustarFoto } from "./AjustarFoto";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
+import { TrazerItens } from "@/components/ui/TrazerItens";
+import { avisoDoEnvio, enviarAoCatalogo, itensDoCatalogo, mesclarNoCardapio, type ItemDoCatalogo } from "@/lib/cardapioSync";
 import { estiloFoto, nomeArquivoUnico, novoId, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
@@ -18,6 +20,9 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
   const alvo = useRef<{ s: string; i: string } | null>(null);
   const [subindo, setSubindo] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  // Passagem de itens entre Cardápio e Catálogo.
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [trazendo, setTrazendo] = useState<{ carregando: boolean; itens: ItemDoCatalogo[] } | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
   // Categorias recolhidas. Com mais de uma, só a primeira começa aberta; categoria nova ou importada nasce aberta.
   const [fechadas, setFechadas] = useState<string[]>(() => (secoes.length > 1 ? secoes.slice(1).map((x) => x.id) : []));
@@ -53,6 +58,25 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
     const a = apagado;
     setApagado(null);
     onChange(secoes.map((s) => (s.id === a.s ? { ...s, itens: [...s.itens.slice(0, a.idx), a.item, ...s.itens.slice(a.idx)] } : s)));
+  }
+  async function abrirTrazer() {
+    setAviso(null);
+    setTrazendo({ carregando: true, itens: [] });
+    const todos = await itensDoCatalogo(supabase, businessId);
+    const jaTem = new Set(secoes.flatMap((s) => s.itens.map((i) => i.nome.trim().toLowerCase())));
+    setTrazendo({ carregando: false, itens: todos.filter((i) => !jaTem.has(i.titulo.trim().toLowerCase())) });
+  }
+  function trazer(chaves: string[]) {
+    const escolhidos = (trazendo?.itens ?? []).filter((i) => chaves.includes(i.id));
+    const m = mesclarNoCardapio(secoes, escolhidos);
+    onChange(m.secoes);
+    setTrazendo(null);
+    setAviso(m.novos === 0 ? "Nada novo para trazer." : `${m.novos === 1 ? "1 item trazido" : `${m.novos} itens trazidos`} do catálogo.`);
+  }
+  async function mostrarNoCatalogo(s: CardapioSecao, i: CardapioItem) {
+    setAviso(null);
+    const r = await enviarAoCatalogo(supabase, businessId, [{ nome: i.nome, descricao: i.descricao, preco: i.preco, foto: i.foto, categoria: s.nome }]);
+    setAviso(avisoDoEnvio(r, "catálogo"));
   }
   function removerSecao(s: CardapioSecao) {
     if (s.itens.length > 0 && !window.confirm(`Apagar a categoria "${s.nome || "sem nome"}" e os ${s.itens.length} pratos dela?`)) return;
@@ -99,6 +123,11 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
       {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
 
       {children}
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button type="button" onClick={abrirTrazer} className="min-h-[44px] rounded-full bg-surface-soft px-5 text-[13.5px] font-medium text-on-background active:scale-[0.98]">Trazer do catálogo</button>
+        {aviso && <p role="status" className="text-[12.5px] text-text-secondary">{aviso}</p>}
+      </div>
 
       {secoes.length > 1 && (
         <div className="mt-3 flex items-center justify-between gap-2">
@@ -198,6 +227,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                           <button type="button" onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} disabled={subindo === i.id} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary disabled:opacity-60">{subindo === i.id ? "Enviando…" : i.foto ? "Trocar foto" : "Enviar foto"}</button>
                           <button type="button" onClick={() => setGaleriaPara({ s: s.id, i: i.id })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Da galeria</button>
                           {i.foto && <button type="button" onClick={() => mudarItem(s.id, i.id, { foto: null, fotoAjuste: null })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Tirar foto</button>}
+                          {i.nome.trim() && <button type="button" onClick={() => mostrarNoCatalogo(s, i)} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Mostrar no catálogo</button>}
                           <button type="button" onClick={() => removerPrato(s.id, i.id)} className="ml-auto min-h-[40px] rounded-full px-3 text-[13px] font-medium text-text-tertiary">Apagar</button>
                         </div>
                       </div>
@@ -216,6 +246,18 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
           );
         })}
       </div>
+
+      {trazendo && (
+        <TrazerItens
+          titulo="Trazer do catálogo"
+          ajuda="Escolha o que vira prato. É uma cópia: mudar depois num lado não muda o outro. Vai só a foto de capa."
+          itens={trazendo.itens.map((i) => ({ key: i.id, nome: i.titulo, foto: i.foto, preco: i.preco, categoria: i.categoria }))}
+          carregando={trazendo.carregando}
+          rotuloBotao={(n) => (n === 0 ? "Escolha os itens" : n === 1 ? "Trazer 1 item" : `Trazer ${n} itens`)}
+          onConfirmar={trazer}
+          onFechar={() => setTrazendo(null)}
+        />
+      )}
 
       {galeriaPara && (
         <MinhaGaleriaPicker

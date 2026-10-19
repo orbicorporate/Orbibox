@@ -23,7 +23,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
     supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed, objectives, orbi_colors").eq("business_id", businessId).maybeSingle(),
     supabase.from("content_items").select("image_url, image_is_placeholder, description").eq("business_id", businessId).eq("status", "published"),
     supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", businessId).eq("is_active", true),
-    supabase.from("smart_boxes").select("id, box_type, config").eq("business_id", businessId),
+    supabase.from("smart_boxes").select("id, box_type, config, is_active").eq("business_id", businessId),
   ]);
 
   const agentConfig = agentRes.data;
@@ -45,7 +45,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
 
   // Links que já abrem o bloco certo na tela de Botões (e rolam até a parte
   // que falta), pra a pessoa não cair numa página cheia sem saber onde mexer.
-  const caixas = (boxesCfgRes.data ?? []) as { id: string; box_type: string; config: { action?: string; url?: string } | null }[];
+  const caixas = (boxesCfgRes.data ?? []) as { id: string; box_type: string; is_active: boolean; config: { action?: string; url?: string; secoes?: { itens?: unknown[] }[]; pdfs?: unknown[]; pdf_url?: string | null } | null }[];
   const sobreId = caixas.find((b) => b.box_type === "content")?.id ?? null;
   const enderecoBoxId = caixas.find((b) => b.box_type === "custom" && b.config?.action === "endereco")?.id ?? null;
   const hrefSobre = (parte: "fotos" | "diferenciais") => (sobreId ? `/admin/boxes?box=${sobreId}&ir=${parte}` : "/admin/boxes");
@@ -65,6 +65,22 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
       description: "Cole o link do seu site no Catálogo e a Orbi transforma seus produtos em cards automaticamente.",
       ctaLabel: "Abrir Catálogo",
       href: "/admin/vitrine",
+    });
+  }
+  // Cardápio ligado no cadastro (negócio gastronômico) mas ainda vazio: a Orbi lembra de montar.
+  const cardapioBox = caixas.find((b) => b.box_type === "custom" && b.config?.action === "cardapio");
+  const cardapioVazio = !!cardapioBox
+    && !cardapioBox.is_active
+    && !(cardapioBox.config?.secoes ?? []).some((s) => (s.itens?.length ?? 0) > 0)
+    && !(cardapioBox.config?.pdfs?.length) && !cardapioBox.config?.pdf_url;
+  if (cardapioVazio) {
+    insightsQueue.push({
+      title: "Monte o cardápio",
+      description: hasItems
+        ? "Envie o PDF, monte os pratos ou traga itens do seu Catálogo. Quando estiver pronto, é só ligar o botão."
+        : "Envie o PDF do cardápio ou monte os pratos com preço e foto. Quando estiver pronto, é só ligar o botão.",
+      ctaLabel: "Abrir Cardápio",
+      href: "/admin/cardapio",
     });
   }
   if (hasItems && itemsWithoutPhoto > 0) {

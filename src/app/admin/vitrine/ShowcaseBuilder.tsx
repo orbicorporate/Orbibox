@@ -26,6 +26,8 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { whatsappLink } from "@/lib/track";
 import { OrbiInsightCard, OrbiInsightHeader, OrbiInsightMessage, OrbiSparkleMini, orbiInsightCtaClass } from "@/components/orbi/OrbiInsightCard";
 import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
+import { TrazerItens } from "@/components/ui/TrazerItens";
+import { avisoDoEnvio, enviarAoCardapio, enviarAoCatalogo, pratosDoCardapio } from "@/lib/cardapioSync";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -88,6 +90,7 @@ export function ShowcaseBuilder({
   siteSalvo = null,
   abrirNovo = false,
   abrirCapa = false,
+  temCardapio = false,
 }: {
   items: Item[];
   slug: string;
@@ -108,11 +111,16 @@ export function ShowcaseBuilder({
   abrirCapa?: boolean;
   /** Veio de um atalho "Adicionar item agora": já abre um item novo. */
   abrirNovo?: boolean;
+  /** O negócio tem Cardápio ativo: libera passar itens entre os dois. */
+  temCardapio?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
   const { confirm, prompt, alert: alertDialog, DialogRenderer } = useDialogs();
   const [items, setItems] = useState<Item[]>(initial);
+  // Trazer pratos do Cardápio para o Catálogo.
+  const [trazendo, setTrazendo] = useState<{ carregando: boolean; pratos: { nome: string; descricao: string; preco: number | null; foto: string | null; categoria: string }[] } | null>(null);
+  const [avisoTroca, setAvisoTroca] = useState<string | null>(null);
   const [leadTop, setLeadTop] = useState(initialLeadTop);
   async function toggleLeadTop() {
     const next = !leadTop;
@@ -569,6 +577,22 @@ export function ShowcaseBuilder({
     supabase.from("content_items").delete().eq("id", anterior).then(() => {});
   }, [editingId, items, supabase]);
 
+  async function abrirTrazerDoCardapio() {
+    setAvisoTroca(null);
+    setTrazendo({ carregando: true, pratos: [] });
+    const todos = await pratosDoCardapio(supabase, businessId);
+    const jaTem = new Set(items.map((i) => (i.title ?? "").trim().toLowerCase()));
+    setTrazendo({ carregando: false, pratos: todos.filter((p) => !jaTem.has(p.nome.trim().toLowerCase())) });
+  }
+
+  async function trazerDoCardapio(chaves: string[]) {
+    const escolhidos = (trazendo?.pratos ?? []).filter((p) => chaves.includes(p.nome));
+    const r = await enviarAoCatalogo(supabase, businessId, escolhidos);
+    setTrazendo(null);
+    if (r.ok && r.criados?.length) setItems((prev) => [...prev, ...(r.criados as unknown as Item[])]);
+    setAvisoTroca(avisoDoEnvio(r, "catálogo"));
+  }
+
   async function createItem(brandLabel: string | null = null) {
     setCreating(true);
     snapshot();
@@ -801,6 +825,19 @@ export function ShowcaseBuilder({
         </div>
       )}
 
+      {avisoTroca && <p role="status" className="mb-2 text-[13px] text-text-secondary">{avisoTroca}</p>}
+      {trazendo && (
+        <TrazerItens
+          titulo="Trazer do cardápio"
+          ajuda="Escolha o que vira item do catálogo. É uma cópia: mudar depois num lado não muda o outro. Vai só a foto de capa."
+          itens={trazendo.pratos.map((p) => ({ key: p.nome, nome: p.nome, foto: p.foto, preco: p.preco, categoria: p.categoria }))}
+          carregando={trazendo.carregando}
+          rotuloBotao={(n) => (n === 0 ? "Escolha os itens" : n === 1 ? "Trazer 1 item" : `Trazer ${n} itens`)}
+          onConfirmar={trazerDoCardapio}
+          onFechar={() => setTrazendo(null)}
+        />
+      )}
+
       {/* Ação principal visível; o resto fica no menu "Mais". */}
       <div className="flex items-center gap-2">
         <button data-guia="novo-item" onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-5 py-2.5 text-[14px] font-medium text-white disabled:opacity-50">
@@ -820,6 +857,9 @@ export function ShowcaseBuilder({
           {menuAberto && (
             <div className="absolute left-0 top-full z-30 mt-2 w-60 overflow-hidden rounded-2xl border border-divider bg-surface-white py-1.5 shadow-[0_12px_32px_rgba(17,19,24,0.14)]">
               <button onClick={() => { setMenuAberto(false); setShowImport(true); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">✦ Importar do site</button>
+              {temCardapio && (
+                <button onClick={() => { setMenuAberto(false); void abrirTrazerDoCardapio(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Trazer do cardápio</button>
+              )}
               <button onClick={() => { setMenuAberto(false); createCategory(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Nova categoria</button>
               <button disabled={arranging || items.length === 0} onClick={() => { setMenuAberto(false); autoArrange(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">
                 {arranging ? "Organizando…" : "✦ Organizar com a Orbi"}
@@ -1059,6 +1099,7 @@ export function ShowcaseBuilder({
                   improving={improving === item.id}
                   onDelete={() => deleteItem(item)}
                   slug={slug}
+                  temCardapio={temCardapio}
                   whatsapp={whatsapp}
                   showIntroTour={editingId === item.id && !introDone}
                   onIntroDone={finishIntro}
@@ -1446,6 +1487,7 @@ function ItemCard({
   improving,
   onDelete,
   slug,
+  temCardapio = false,
   whatsapp,
   showIntroTour = false,
   onIntroDone,
@@ -1472,6 +1514,7 @@ function ItemCard({
   improving: boolean;
   onDelete: () => void;
   slug: string;
+  temCardapio?: boolean;
   whatsapp?: string | null;
   showIntroTour?: boolean;
   onIntroDone?: () => void;
@@ -2171,6 +2214,7 @@ function ItemCard({
                 Ver página do item ↗
               </Link>
             )}
+            {temCardapio && <EnviarAoCardapio businessId={businessId} item={item} />}
             <ExcluirComConfirmacao onConfirmar={onDelete} variante="texto" />
             </div>
           </div>
@@ -2197,6 +2241,30 @@ const EXEMPLO_FOTO = "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object
 
 /** Mini card de exemplo: com rodapé (nome numa faixa embaixo da foto) ou
  * sem rodapé (nome sobre a foto, com degradê). */
+/** Copia o item para o Cardápio, na categoria dele. Só a foto de capa vai junto. */
+function EnviarAoCardapio({ businessId, item }: { businessId: string; item: Item }) {
+  const supabase = useRef(createClient()).current;
+  const [estado, setEstado] = useState<"parado" | "enviando">("parado");
+  const [aviso, setAviso] = useState<string | null>(null);
+  const nome = (item.title ?? "").trim();
+  if (!nome || nome === "Novo item") return null;
+  async function enviar() {
+    setEstado("enviando");
+    setAviso(null);
+    const r = await enviarAoCardapio(supabase, businessId, [{ titulo: nome, descricao: item.description, preco: item.price, foto: item.image_url, categoria: item.brand_label }]);
+    setEstado("parado");
+    setAviso(avisoDoEnvio(r, "cardápio"));
+  }
+  return (
+    <div>
+      <button type="button" onClick={enviar} disabled={estado === "enviando"} className="block w-full rounded-full border border-divider py-3 text-center text-[13px] font-medium disabled:opacity-60">
+        {estado === "enviando" ? "Enviando…" : "Enviar para o cardápio"}
+      </button>
+      {aviso && <p role="status" className="mt-1.5 text-center text-[12.5px] text-text-secondary">{aviso}</p>}
+    </div>
+  );
+}
+
 function TitlePlacementExample({
   kind,
   footer,
