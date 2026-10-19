@@ -231,6 +231,21 @@ export function BoxDestaque({
             </div>
             <p className="mt-1 text-[13px] text-text-secondary">Marque o que você quer em evidência: botões, vouchers ou produtos. Eles aparecem no começo da seção, na ordem em que você marcar. Desmarque para tirar.</p>
 
+            <p className="mt-4 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Criar novo</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                { href: "/admin/boxes", rotulo: "Criar botão", texto: "+ Botão" },
+                { href: "/admin/vouchers?novo=1", rotulo: "Criar voucher", texto: "+ Voucher" },
+                { href: "/admin/vitrine?novo=1", rotulo: "Criar produto", texto: "+ Produto" },
+                { href: "/admin/gift", rotulo: "Criar gift card", texto: "+ Gift card" },
+              ].map((n) => (
+                <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium active:scale-95">
+                  {n.texto}
+                </AbrirEditor>
+              ))}
+            </div>
+            <p className="mt-2 text-[12px] leading-snug text-text-tertiary">Ao fechar, o que você criou aparece na lista abaixo, pronto para marcar.</p>
+
             <p className="mt-4 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Botões</p>
             <div className="mt-2 flex flex-col gap-2">
               {botoes.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum botão criado ainda.</p>}
