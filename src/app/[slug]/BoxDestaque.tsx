@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { IconeBotao } from "./IconeBotao";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
@@ -91,6 +91,31 @@ export function BoxDestaque({
   const cartoes = destaques
     .map((d) => (d.t === "voucher" ? { d, v: vouchers.find((x) => x.id === d.id) } : d.t === "botao" ? { d, b: botoes.find((x) => x.key === d.id) } : { d, i: itens.find((x) => x.id === d.id) }))
     .filter((c) => ("v" in c ? !!c.v : "b" in c ? !!c.b : !!c.i));
+
+  // Ao voltar de "Criar algo novo", o que acabou de ser criado já entra no destaque
+  // (a pessoa criou justamente pra mostrar). Compara com o que existia antes.
+  const ultimo = useRef({ destaques, itens, vouchers, botoes });
+  useEffect(() => { ultimo.current = { destaques, itens, vouchers, botoes }; });
+  async function fixarOQueFoiCriado(k: "voucher" | "produto" | "botao") {
+    const antes = ultimo.current;
+    let achados: Destaque[] = [];
+    if (k === "produto") {
+      const { data } = await supabase.from("content_items").select("id").eq("business_id", businessId).order("created_at", { ascending: false }).limit(5);
+      const conhecidos = new Set(antes.itens.map((i) => i.id));
+      achados = (data ?? []).filter((r) => !conhecidos.has(r.id)).map((r) => ({ t: "item" as const, id: r.id }));
+    } else if (k === "voucher") {
+      const { data } = await supabase.from("vouchers").select("id").eq("business_id", businessId).eq("is_active", true).order("created_at", { ascending: false }).limit(5);
+      const conhecidos = new Set(antes.vouchers.map((v) => v.id));
+      achados = (data ?? []).filter((r) => !conhecidos.has(r.id)).map((r) => ({ t: "voucher" as const, id: r.id }));
+    } else {
+      const { data } = await supabase.from("smart_boxes").select("id").eq("business_id", businessId).eq("box_type", "custom").order("position", { ascending: false }).limit(5);
+      const conhecidos = new Set(antes.botoes.map((b) => b.key));
+      achados = (data ?? []).filter((r) => !conhecidos.has(r.id)).slice(0, 1).map((r) => ({ t: "botao" as const, id: r.id }));
+    }
+    const jaFixados = new Set(antes.destaques.map((d) => `${d.t}:${d.id}`));
+    const novos = achados.filter((d) => !jaFixados.has(`${d.t}:${d.id}`));
+    if (novos.length > 0) onSalvar([...antes.destaques, ...novos]);
+  }
 
   const marcado = (t: Destaque["t"], id: string) => destaques.some((d) => d.t === t && d.id === id);
   const alternar = (t: Destaque["t"], id: string) => onSalvar(marcado(t, id) ? destaques.filter((d) => !(d.t === t && d.id === id)) : [...destaques, { t, id }]);
@@ -268,7 +293,7 @@ export function BoxDestaque({
                   { k: "produto", href: "/admin/vitrine?novo=1", rotulo: "Criar produto", titulo: "Produto", sub: "Um item novo no catálogo." },
                   { k: "botao", href: "/admin/boxes", rotulo: "Criar botão", titulo: "Botão", sub: "WhatsApp, link, endereço, cardápio e outros." },
                 ].map((n) => (
-                  <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} aoFechar={() => setVista("existente")} className={`flex min-h-[68px] w-full items-center gap-3 rounded-[22px] p-3 text-left transition-transform active:scale-[0.98] border-2 border-divider bg-surface-white`}>
+                  <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} aoFechar={() => { setVista("existente"); if (n.k === "voucher" || n.k === "produto" || n.k === "botao") void fixarOQueFoiCriado(n.k); }} className={`flex min-h-[68px] w-full items-center gap-3 rounded-[22px] p-3 text-left transition-transform active:scale-[0.98] border-2 border-divider bg-surface-white`}>
                     <TileNovo k={n.k as keyof typeof CORES_NOVO} />
                     <span className="min-w-0 flex-1">
                       <span className="block text-[15px] font-semibold">{n.titulo}</span>
