@@ -29,13 +29,14 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
         const doc = quadro.current?.contentDocument;
         const main = doc?.querySelector("main");
         if (!doc || !main) return setSemConteudo(true);
-        const texto = () => Array.from(main.children).filter((c) => !c.classList.contains("embed-save")).reduce((n, c) => n + ((c as HTMLElement).innerText?.trim().length ?? 0), 0);
+        // Conta só o que está na tela de verdade (innerText de elemento escondido ainda devolve texto).
+        const texto = () => Array.from(main.children).filter((c) => !c.classList.contains("embed-save") && (c as HTMLElement).getBoundingClientRect().height > 8).reduce((n, c) => n + ((c as HTMLElement).innerText?.trim().length ?? 0), 0);
         if (texto() >= 3) return;
         // A parte pedida sumiu: mostra a tela toda do editor.
         doc.querySelectorAll("[data-embed-oculto]").forEach((el) => el.removeAttribute("data-embed-oculto"));
         window.setTimeout(() => { if (texto() < 3) setSemConteudo(true); }, 400);
       } catch { /* outro domínio: não dá pra conferir */ }
-    }, 3500);
+    }, 4500);
   }
 
   // Tudo no editor salva ao sair do campo. Concluir tira o foco do campo aberto,

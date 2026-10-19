@@ -15,7 +15,9 @@ export function EmbedMarker() {
     const main = document.querySelector("main");
     if (!main) return;
 
+    let desistiu = false;
     function aplicar() {
+      if (desistiu) return;
       const alvo = document.getElementById(foco!);
       if (!alvo || !main) return;
       let no: HTMLElement | null = alvo;
@@ -35,9 +37,19 @@ export function EmbedMarker() {
     const obs = new MutationObserver(aplicar);
     obs.observe(main, { childList: true, subtree: true });
     const t = window.setTimeout(() => obs.disconnect(), 4000);
+    // Se depois de uns instantes a parte pedida não está visível (não montou, ou ficou
+    // escondida), desiste de filtrar e mostra a tela inteira do editor.
+    const t2 = window.setTimeout(() => {
+      const alvo = document.getElementById(foco!);
+      if (alvo && alvo.getBoundingClientRect().height > 8) return;
+      desistiu = true;
+      obs.disconnect();
+      document.querySelectorAll("[data-embed-oculto]").forEach((el) => el.removeAttribute("data-embed-oculto"));
+    }, 3200);
     return () => {
       obs.disconnect();
       window.clearTimeout(t);
+      window.clearTimeout(t2);
     };
   }, []);
   return null;
