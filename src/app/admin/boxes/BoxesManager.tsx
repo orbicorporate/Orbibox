@@ -196,6 +196,7 @@ export function BoxesManager({
   const [aboutBusiness, setAboutBusiness] = useState(initialAboutBusiness);
   const [cards, setCards] = useState<DifferentialCard[]>(initialDifferentialsCards);
   const [heroQuestion, setHeroQuestion] = useState(initialHeroQuestion ?? "");
+  const perguntaRemovida = heroQuestion.length > 0 && heroQuestion.trim() === "";
   const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
   const [logoGallery, setLogoGallery] = useState<string[]>(initialLogoGallery);
   const [heroAvatar, setHeroAvatar] = useState(initialHeroAvatar ?? "auto");
@@ -305,7 +306,8 @@ export function BoxesManager({
   }
 
   async function saveHeroQuestion(value: string) {
-    conferirSalvo(await supabase.from("businesses").update({ hero_question: value || null }).eq("id", businessId));
+    // Um espaço = removida de propósito; vazio por nunca ter escrito (null) usa a frase padrão.
+    conferirSalvo(await supabase.from("businesses").update({ hero_question: value.trim() ? value : value.length > 0 ? " " : null }).eq("id", businessId));
   }
 
   async function importAbout(url: string) {
@@ -452,9 +454,18 @@ export function BoxesManager({
               value={heroQuestion}
               onChange={(e) => setHeroQuestion(e.target.value)}
               onBlur={(e) => saveHeroQuestion(e.target.value)}
-              placeholder="O que trouxe você aqui hoje?"
+              placeholder={perguntaRemovida ? "Removida. Escreva aqui para voltar." : "O que trouxe você aqui hoje?"}
               className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
             />
+            {!perguntaRemovida && (
+              <button
+                type="button"
+                onClick={() => { setHeroQuestion(" "); saveHeroQuestion(" "); }}
+                className="mt-2 min-h-[40px] rounded-full bg-surface-white px-4 text-[13px] font-medium text-text-secondary ring-1 ring-divider active:scale-95"
+              >
+                Remover a pergunta
+              </button>
+            )}
           </div>
 
           <div className="rounded-[20px] bg-surface-soft p-4">

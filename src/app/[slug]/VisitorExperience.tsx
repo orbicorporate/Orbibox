@@ -907,6 +907,7 @@ export function VisitorExperience({
             nome={business.name}
             descricao={frase}
             pergunta={textoApagado(business.hero_question) ? null : business.hero_question}
+            semPergunta={textos.pergunta === ""}
             logoUrl={logoAtual}
             cores={orbiColors ?? heroGradient}
             agentName={agentName}
@@ -989,18 +990,23 @@ export function VisitorExperience({
                     { campo: "frase", rotulo: "Frase", valor: textos.frase ?? frase ?? "", dica: "Uma frase que diz o que você faz" },
                     { campo: "pergunta", rotulo: "Pergunta", valor: textos.pergunta === "" ? "" : textos.pergunta?.trim() ? textos.pergunta : "", dica: "O que trouxe você aqui hoje?" },
                   ] as const).map((c) => (
-                    <label key={c.campo} className="mb-3 block last:mb-0">
-                      <span className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">{c.rotulo}</span>
+                    <div key={`${c.campo}-${c.valor}`} className="mb-3 block last:mb-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">{c.rotulo}</span>
+                        {c.campo !== "nome" && (c.campo === "pergunta" ? textos.pergunta !== "" : !!(textos.frase ?? frase)) && (
+                          <button type="button" onClick={() => salvarTexto(c.campo, "")} className="min-h-[32px] rounded-full bg-surface-soft px-3 text-[12px] font-medium text-text-secondary active:scale-95">Remover</button>
+                        )}
+                      </div>
                       <input
                         defaultValue={c.valor}
-                        placeholder={c.dica}
+                        placeholder={c.campo !== "nome" && (c.campo === "pergunta" ? textos.pergunta === "" : !(textos.frase ?? frase)) ? "Removida. Escreva aqui para voltar." : c.dica}
                         onBlur={(e) => {
                           const v = e.target.value.trim();
                           if (v !== c.valor.trim()) salvarTexto(c.campo, v);
                         }}
                         className="mt-1 w-full rounded-xl border border-divider px-3 py-2.5 text-[15px] outline-none focus:border-on-background"
                       />
-                    </label>
+                    </div>
                   ))}
                   <button type="button" role="switch" aria-checked={!ocultarNome} onClick={alternarNome} className="mb-2 mt-1 flex min-h-[44px] w-full items-center justify-between rounded-xl bg-surface-soft px-3 text-[14px]">
                     Mostrar o nome na tela inicial
@@ -1008,7 +1014,7 @@ export function VisitorExperience({
                       <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${!ocultarNome ? "left-[18px]" : "left-0.5"}`} />
                     </span>
                   </button>
-                  <p className="text-[12px] text-text-tertiary">Deixe a frase ou a pergunta vazia para esconder.</p>
+                  <p className="text-[12px] text-text-tertiary">Use Remover para esconder a frase ou a pergunta. Para voltar, é só escrever de novo.</p>
                   <button type="button" onClick={() => setTextosAberto(false)} className="mt-3 min-h-[44px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white">Pronto</button>
                 </div>
               )}
