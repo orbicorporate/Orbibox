@@ -19,7 +19,19 @@ const TAMANHOS: Record<string, string> = {
 
 type Cor = { hex?: string };
 
-function pedido(o: { assunto: string; nome: string; cores: string; tom: string; sobre: string; comFoto: boolean }) {
+function pedido(o: { assunto: string; nome: string; cores: string; tom: string; sobre: string; comFoto: boolean; instrucao: string; fotos: number }) {
+  // O dono descreveu o que quer (como num chat): o pedido dele manda, a marca só orienta.
+  if (o.instrucao) {
+    return [
+      o.instrucao,
+      "",
+      o.fotos > 0
+        ? `The ${o.fotos === 1 ? "attached image is a reference" : "attached images are references"} supplied by the user. Follow the request above and use the attachment(s) as the user describes. If an attachment is a product, venue or logo, keep it faithful and recognizable, do not redraw or invent it.`
+        : "",
+      o.cores || o.nome ? `Brand context, only a subtle guide that never overrides the request${o.nome ? ` (brand ${o.nome})` : ""}${o.cores ? `: palette ${o.cores}` : ""}.` : "",
+      "No watermarks or price badges.",
+    ].filter((l, i, a) => l !== "" || (i > 0 && a[i - 1] !== "")).join("\n");
+  }
   return [
     `Create a cover image for "${o.assunto || "the business"}"${o.nome ? `, from the brand ${o.nome}` : ""}.`,
     o.comFoto
@@ -45,17 +57,18 @@ export async function POST(req: NextRequest) {
   let businessId = "";
   let assunto = "";
   let formato = "quadrado";
-  let imagem: File | null = null;
+  let imagens: File[] = [];
+  let instrucao = "";
   try {
     const form = await req.formData();
     businessId = String(form.get("businessId") ?? "");
     assunto = String(form.get("assunto") ?? "").slice(0, 120);
     formato = String(form.get("formato") ?? "quadrado");
-    const f = form.get("imagem");
-    if (f instanceof File && f.size > 0) imagem = f;
+    instrucao = String(form.get("instrucao") ?? "").trim().slice(0, 900);
+    imagens = form.getAll("imagem").filter((f): f is File => f instanceof File && f.size > 0).slice(0, 3);
   } catch { /* trata abaixo */ }
   if (!/^[0-9a-f-]{36}$/i.test(businessId)) return NextResponse.json({ error: "Negócio inválido." }, { status: 400 });
-  if (imagem && imagem.size > MAX_BYTES) return NextResponse.json({ error: "A foto de base é grande demais." }, { status: 400 });
+  if (imagens.some((f) => f.size > MAX_BYTES)) return NextResponse.json({ error: "A foto de base é grande demais." }, { status: 400 });
   const tamanho = TAMANHOS[formato] ?? TAMANHOS.quadrado;
 
   // O negócio precisa ser do usuário (as regras do banco já filtram por dono ou administrador).
@@ -91,7 +104,9 @@ export async function POST(req: NextRequest) {
     cores,
     tom: (negocio.brand_voice_summary ?? "").replace(/\s+/g, " ").slice(0, 160),
     sobre: (negocio.about_business ?? "").replace(/\s+/g, " ").slice(0, 220),
-    comFoto: !!imagem,
+    comFoto: imagens.length > 0,
+    instrucao,
+    fotos: imagens.length,
   });
 
   const modelo = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1-mini";
@@ -99,10 +114,10 @@ export async function POST(req: NextRequest) {
 
   try {
     let r: Response;
-    if (imagem) {
+    if (imagens.length > 0) {
       const corpo = new FormData();
       corpo.append("model", modelo);
-      corpo.append("image", imagem, "base.jpg");
+      imagens.forEach((f, i) => corpo.append("image[]", f, `base-${i}.jpg`));
       corpo.append("prompt", texto);
       corpo.append("size", tamanho);
       corpo.append("quality", qualidade);
