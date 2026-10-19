@@ -55,6 +55,8 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const [creating, setCreating] = useState(false);
   // Criar promoção abre direto o passo a passo; o formulário completo fica como opção.
   const [guiado, setGuiado] = useState(abrirNovo);
+  // A folha guiada usa createPortal(document.body): só existe no navegador. Com ?novo=1 ela já nasce aberta, então no servidor não pode renderizar.
+  const noNavegador = useSyncExternalStore(() => () => {}, () => true, () => false);
   // Fechada por padrão: quem entra normalmente quer criar um voucher novo ou
   // ver o painel, não rolar a lista inteira.
   const [listaAberta, setListaAberta] = useState(false);
@@ -227,7 +229,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   return (
     <div className="mt-6 flex flex-col gap-7">
       <DialogRenderer />
-      {guiado && (
+      {guiado && noNavegador && (
         <PromocaoGuiada
           itemBase={itemBase}
           campanha={campanha}
