@@ -241,14 +241,16 @@ export function BoxDestaque({
             {vista === "inicio" && (
               <div className="mt-4 flex flex-col gap-3">
                 <p className="text-[13px] text-text-secondary">O destaque fica no começo da página, na ordem em que você marcar. O que você quer fazer?</p>
-                <button type="button" onClick={() => setVista("existente")} className="flex min-h-[76px] items-center gap-3 rounded-2xl border-2 border-divider p-3.5 text-left active:scale-[0.99]">
+                <button type="button" onClick={() => setVista("existente")} className="flex min-h-[80px] items-center gap-3 rounded-[22px] p-3.5 text-left transition-transform active:scale-[0.98]" style={{ background: CORES_NOVO.existe.fundo }}>
+                  <TileNovo k="existe" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[15.5px] font-semibold">Destacar o que já existe</span>
                     <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">Escolha entre seus botões, vouchers e produtos.</span>
                   </span>
                   <span aria-hidden className="text-[20px] text-text-tertiary">›</span>
                 </button>
-                <button type="button" onClick={() => setVista("novo")} className="flex min-h-[76px] items-center gap-3 rounded-2xl border-2 border-divider p-3.5 text-left active:scale-[0.99]">
+                <button type="button" onClick={() => setVista("novo")} className="flex min-h-[80px] items-center gap-3 rounded-[22px] p-3.5 text-left transition-transform active:scale-[0.98]" style={{ background: CORES_NOVO.novo.fundo }}>
+                  <TileNovo k="novo" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[15.5px] font-semibold">Criar algo novo</span>
                     <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">Voucher, gift card, produto ou botão. Quando terminar, você volta aqui para destacar.</span>
@@ -261,17 +263,18 @@ export function BoxDestaque({
             {vista === "novo" && (
               <div className="mt-4 flex flex-col gap-2">
                 {[
-                  { href: "/admin/vouchers?novo=1", rotulo: "Criar voucher", titulo: "Voucher", sub: "Desconto ou brinde para o cliente resgatar." },
-                  { href: "/admin/gift", rotulo: "Criar gift card", titulo: "Gift card", sub: "Vale-presente que o cliente compra ou ganha." },
-                  { href: "/admin/vitrine?novo=1", rotulo: "Criar produto", titulo: "Produto", sub: "Um item novo no catálogo." },
-                  { href: "/admin/boxes", rotulo: "Criar botão", titulo: "Botão", sub: "WhatsApp, link, endereço, cardápio e outros." },
+                  { k: "voucher", href: "/admin/vouchers?novo=1", rotulo: "Criar voucher", titulo: "Voucher", sub: "Desconto ou brinde para o cliente resgatar." },
+                  { k: "gift", href: "/admin/gift", rotulo: "Criar gift card", titulo: "Gift card", sub: "Vale-presente que o cliente compra ou ganha." },
+                  { k: "produto", href: "/admin/vitrine?novo=1", rotulo: "Criar produto", titulo: "Produto", sub: "Um item novo no catálogo." },
+                  { k: "botao", href: "/admin/boxes", rotulo: "Criar botão", titulo: "Botão", sub: "WhatsApp, link, endereço, cardápio e outros." },
                 ].map((n) => (
-                  <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} aoFechar={() => setVista("existente")} className="flex min-h-[64px] w-full items-center gap-3 rounded-2xl border-2 border-divider p-3 text-left active:scale-[0.99]">
+                  <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} aoFechar={() => setVista("existente")} className={`flex min-h-[68px] w-full items-center gap-3 rounded-[22px] p-3 text-left transition-transform active:scale-[0.98] ${FUNDO_NOVO[n.k]}`}>
+                    <TileNovo k={n.k as keyof typeof CORES_NOVO} />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[14.5px] font-semibold">{n.titulo}</span>
-                      <span className="mt-0.5 block text-[12px] leading-snug text-text-secondary">{n.sub}</span>
+                      <span className="block text-[15px] font-semibold">{n.titulo}</span>
+                      <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{n.sub}</span>
                     </span>
-                    <span aria-hidden className="text-[18px] text-text-tertiary">+</span>
+                    <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/80 text-[18px] leading-none" style={{ color: CORES_NOVO[n.k as keyof typeof CORES_NOVO].tile }}>+</span>
                   </AbrirEditor>
                 ))}
               </div>
@@ -312,6 +315,33 @@ export function BoxDestaque({
         document.body,
       )}
     </section>
+  );
+}
+
+const TRACOS = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+const ICONES_NOVO: Record<string, React.ReactNode> = {
+  voucher: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="M3 9a2 2 0 0 0 0 6v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a2 2 0 0 1 0-6V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z" /><path d="M14 6v12" strokeDasharray="2 3" /></svg>),
+  gift: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13" /><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" /><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5" /></svg>),
+  produto: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="M6 7h12l1 13H5z" /><path d="M9 7a3 3 0 0 1 6 0" /></svg>),
+  botao: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></svg>),
+  existe: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" /></svg>),
+  novo: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="M12 4v16M4 12h16" /><path d="M19 3v4M17 5h4" /></svg>),
+};
+// Classes escritas por extenso para o Tailwind enxergar.
+const FUNDO_NOVO: Record<string, string> = { voucher: "bg-[#FDECF2]", gift: "bg-[#FFF2E0]", produto: "bg-[#E3F5F6]", botao: "bg-[#ECEBFD]" };
+const CORES_NOVO: Record<string, { fundo: string; tile: string }> = {
+  voucher: { fundo: "#FDECF2", tile: "#E5487F" },
+  gift: { fundo: "#FFF2E0", tile: "#F29A1F" },
+  produto: { fundo: "#E3F5F6", tile: "#0E9AA7" },
+  botao: { fundo: "#ECEBFD", tile: "#6B63E8" },
+  existe: { fundo: "#FFF7D6", tile: "#E3A800" },
+  novo: { fundo: "#F3E8FF", tile: "#9B5CF0" },
+};
+function TileNovo({ k }: { k: keyof typeof CORES_NOVO }) {
+  return (
+    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_4px_10px_rgba(17,19,24,0.14)]" style={{ background: CORES_NOVO[k].tile }} aria-hidden>
+      {ICONES_NOVO[k]}
+    </span>
   );
 }
 
