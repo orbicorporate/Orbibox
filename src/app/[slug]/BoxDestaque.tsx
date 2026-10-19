@@ -177,6 +177,14 @@ export function BoxDestaque({
     return (
       <div className={`relative ${larguraBase(largo)}`}>
         {cartao}
+        <button
+          type="button"
+          onClick={() => alternar(c.d.t, c.d.id)}
+          aria-label="Tirar do destaque"
+          className="absolute -left-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white text-[12px] text-text-secondary shadow-md active:scale-95"
+        >
+          ✕
+        </button>
         {editar && (
           <AbrirEditor href={editar.href} rotulo={editar.rotulo} className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white text-[13px] text-text-secondary shadow-md active:scale-95">
             ✎

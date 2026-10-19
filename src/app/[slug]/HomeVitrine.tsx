@@ -109,6 +109,8 @@ export function HomeVitrine({
   onEstilo,
   onCor,
   onReordenar,
+  onRenomear,
+  onEsconder,
   onAdicionar,
   ordemCategorias,
   formato,
@@ -144,6 +146,10 @@ export function HomeVitrine({
   onCor?: (key: string, cor: string | null) => void;
   /** Nova ordem das bolinhas editáveis (chaves), depois de arrastar ou de usar as setas. */
   onReordenar: (chaves: string[]) => void;
+  /** Muda o nome de uma bolinha editável. */
+  onRenomear?: (key: string, nome: string) => void;
+  /** Esconde uma bolinha editável (desliga o botão). */
+  onEsconder?: (key: string) => void;
   /** Só o dono: abre a folha para adicionar um botão novo. */
   onAdicionar?: () => void;
   /** Só o dono: grava a ordem nova dos itens em destaque (ids na ordem final, só os visíveis). */
@@ -440,7 +446,7 @@ export function HomeVitrine({
               <span className="text-[13.5px] font-medium">Todas</span>
               <Seletor valor={null} onChange={(e) => onEstilo(bolinhas.filter((x) => x.editavel).map((x) => x.key), e)} />
             </div>
-            <ListaBolinhas bolinhas={bolinhas} onEstilo={onEstilo} onCor={onCor} onReordenar={onReordenar} />
+            <ListaBolinhas bolinhas={bolinhas} onEstilo={onEstilo} onCor={onCor} onReordenar={onReordenar} onRenomear={onRenomear} onEsconder={onEsconder} />
           </div>
         </>,
         document.body,
@@ -455,11 +461,15 @@ function ListaBolinhas({
   onEstilo,
   onCor,
   onReordenar,
+  onRenomear,
+  onEsconder,
 }: {
   bolinhas: BolinhaVitrine[];
   onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
   onCor?: (key: string, cor: string | null) => void;
   onReordenar: (chaves: string[]) => void;
+  onRenomear?: (key: string, nome: string) => void;
+  onEsconder?: (key: string) => void;
 }) {
   const itens = useRef<(HTMLLIElement | null)[]>([]);
   const [arrasto, setArrasto] = useState<{ de: number; para: number; dy: number; altura: number } | null>(null);
@@ -553,6 +563,29 @@ function ListaBolinhas({
               </>
             ) : (
               <span className="text-[12px] text-text-tertiary">automática</span>
+            )}
+            {b.editavel && (onRenomear || onEsconder) && (
+              <div className="flex basis-full items-center gap-2 pl-[38px]">
+                {onRenomear && (
+                  <input
+                    key={`${b.key}-${b.rotulo}`}
+                    defaultValue={b.rotulo}
+                    maxLength={24}
+                    aria-label={`Nome de ${b.rotulo}`}
+                    onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== b.rotulo) onRenomear(b.key, v); }}
+                    className="min-h-[40px] min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 text-[14px] outline-none focus:border-on-background"
+                  />
+                )}
+                {onEsconder && (
+                  <button
+                    type="button"
+                    onClick={() => { if (window.confirm(`Esconder "${b.rotulo}" da tela inicial? Você pode religar em Botões.`)) onEsconder(b.key); }}
+                    className="min-h-[40px] shrink-0 rounded-full px-3.5 text-[13px] font-medium text-red-600 active:opacity-60"
+                  >
+                    Esconder
+                  </button>
+                )}
+              </div>
             )}
             {onCor && podeMudarCor(b) && b.estilo === "cor" && maisCores === b.key && (
               <div className="basis-full pl-[38px]">

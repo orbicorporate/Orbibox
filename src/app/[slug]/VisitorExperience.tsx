@@ -359,7 +359,7 @@ export function VisitorExperience({
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
       const fallbackLabel = b.box_type === "content" ? `Sobre a ${business.name}` : base.t;
-      return { key: b.id, interno: true, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || (b.box_type === "campaign" && giftEnabled ? "Monte um vale-presente." : base.d), color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, acao: base.k, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, onClick: () => chooseIntent(base.k) };
+      return { key: b.id, interno: true, icon: cfg.icon || base.icon, boxLogo: cfg.logo_url ?? null, t: cfg.label || fallbackLabel, d: cfg.subtitle?.trim() || (b.box_type === "campaign" && giftEnabled ? "Monte um vale-presente." : base.d), color: cfg.color, ai: base.ai, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, acao: base.k, formatoItens: cfg.formatoItens, botaoPrincipal: cfg.botaoPrincipal, bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, onClick: () => chooseIntent(base.k) };
     })
     .filter((o): o is Option => o !== null);
   // Redes sociais saem da grade de boxes e viram uma fileira de bolinhas
@@ -565,12 +565,14 @@ export function VisitorExperience({
       else if (o.acao === "conhecer") out.push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
       else if (o.acao === "cardapio") out.push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
       else if (o.acao === "materiais") out.push({ ...base, rotulo: o.t || "Materiais", tipo: "materiais", onClick: o.onClick });
+      else if (o.acao === "vitrine" || o.acao === "comprar") out.push({ ...base, rotulo: o.t || "Catálogo", tipo: "catalogo", onClick: () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
     }
     if (!out.some((b) => b.tipo === "whatsapp") && whatsAtalho) {
       out.unshift({ key: "zap", estilo: "cor", editavel: false, rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
     }
     // O catálogo também é uma bolinha: quem tem itens chega nele direto, sem link de texto.
-    if (content.length > 0) {
+    const temBoxCatalogo = boxList.some((b) => b.box_type === "product" || (b.box_type === "custom" && (b.config as CustomConfig | null)?.action === "vitrine"));
+    if (content.length > 0 && !temBoxCatalogo) {
       const ref = out.find((b) => b.editavel);
       const pos = out.findIndex((b) => b.tipo === "whatsapp") + 1;
       out.splice(pos, 0, { key: "catalogo", estilo: ref?.estilo ?? "cor", editavel: false, rotulo: "Catálogo", tipo: "catalogo", onClick: () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
@@ -650,6 +652,25 @@ export function VisitorExperience({
     salvarCorTimer.current = setTimeout(async () => {
       conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", key));
     }, 500);
+  }
+  // Nome da bolinha: guarda no rótulo do box (e no título, que o painel mostra).
+  const salvarNomeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function renomearBolinha(key: string, nome: string) {
+    const box = boxList.find((b) => b.id === key);
+    if (!box) return;
+    const limpo = nome.trim();
+    const cfg = { ...((box.config ?? {}) as CustomConfig) };
+    if (limpo) cfg.label = limpo; else delete cfg.label;
+    setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: cfg, title: limpo || b.title } : b)));
+    if (salvarNomeTimer.current) clearTimeout(salvarNomeTimer.current);
+    salvarNomeTimer.current = setTimeout(async () => {
+      conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg, ...(limpo ? { title: limpo } : {}) }).eq("id", key));
+    }, 500);
+  }
+  // Esconde a bolinha (desliga o botão). Dá pra religar em Botões.
+  async function esconderBolinha(key: string) {
+    setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, is_active: false } : b)));
+    conferirSalvo(await supabase.from("smart_boxes").update({ is_active: false }).eq("id", key));
   }
   // Reordena as bolinhas e renumera todos os boxes em sequência. Antes, a troca
   // só trocava o número de dois boxes, e dois boxes com o mesmo número (comum)
@@ -1031,6 +1052,8 @@ export function VisitorExperience({
                 onEstilo={estiloBolinhas}
                 onCor={corBolinha}
                 onReordenar={reordenarBolinhas}
+                onRenomear={renomearBolinha}
+                onEsconder={esconderBolinha}
                 onAdicionar={() => setAdicionando(true)}
               />
             )}
