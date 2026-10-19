@@ -1018,6 +1018,21 @@ export function BoxesManager({
   );
 }
 
+/** Bloco do editor de box: título e, opcionalmente, uma linha de apoio. */
+function Secao({ titulo, dica, children }: { titulo: string; dica?: string; children: React.ReactNode }) {
+  return (
+    <section className="border-t border-divider pt-5">
+      <h4 className="text-[15px] font-semibold text-on-background">{titulo}</h4>
+      {dica && <p className="mt-0.5 text-[12px] text-text-tertiary">{dica}</p>}
+      <div className="mt-3 flex flex-col gap-3">{children}</div>
+    </section>
+  );
+}
+
+function Sub({ children }: { children: React.ReactNode }) {
+  return <p className="mt-1 text-[12.5px] font-medium text-text-secondary">{children}</p>;
+}
+
 /** Cor, ícone e (só pra blocos personalizados) subtítulo + destino. */
 function BoxEditor({
   initial,
@@ -1081,25 +1096,25 @@ function BoxEditor({
   }
 
   return (
-    <div className="mt-3 flex flex-col gap-2.5">
+    <div className="mt-4 flex flex-col gap-5">
       {destinoNativo && (
-        <div className="rounded-2xl bg-surface-soft px-4 py-3">
-          <p className="text-[12px] text-text-tertiary">Quando o cliente toca</p>
-          <p className="mt-0.5 text-[14px] font-medium">{destinoNativo.titulo}</p>
-          <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">{destinoNativo.texto}</p>
-          <Link href={destinoNativo.href} className="mt-2 inline-block text-[12.5px] font-medium underline underline-offset-2">{destinoNativo.link}</Link>
-        </div>
+        <Secao titulo="Ao tocar">
+          <div className="rounded-2xl bg-surface-soft px-4 py-3">
+            <p className="text-[14px] font-medium">{destinoNativo.titulo}</p>
+            <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">{destinoNativo.texto}</p>
+            <Link href={destinoNativo.href} className="mt-2 inline-block text-[12.5px] font-medium underline underline-offset-2">{destinoNativo.link}</Link>
+          </div>
+        </Secao>
       )}
       {isCustom && (
-        <>
+        <Secao titulo="Ao tocar">
           {/* Boxes de cupom, endereço e avaliação já nascem com a ação
               definida, então oferecer as quatro opções só confundia: nenhuma
               ficava marcada e escolher qualquer uma quebrava o box. Nesses
               casos a gente só diz o que ele faz. */}
           {acaoFixa ? (
             <div className="rounded-2xl bg-surface-soft px-4 py-3">
-              <p className="text-[12px] text-text-tertiary">Quando o cliente toca</p>
-              <p className="mt-0.5 text-[14px] font-medium">{ACAO_EXPLICA[cfg.action!]?.titulo ?? ACTION_LABEL[cfg.action!]}</p>
+              <p className="text-[14px] font-medium">{ACAO_EXPLICA[cfg.action!]?.titulo ?? ACTION_LABEL[cfg.action!]}</p>
               {ACAO_EXPLICA[cfg.action!] && (
                 <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">{ACAO_EXPLICA[cfg.action!]!.texto}</p>
               )}
@@ -1111,7 +1126,6 @@ function BoxEditor({
             </div>
           ) : (
             <>
-              <p className="text-[13px] font-medium text-text-secondary">Ao tocar, o botão…</p>
               <div className="flex flex-wrap gap-2">
                 {(["vitrine", "zara", "whatsapp", "link"] as (keyof typeof ACTION_LABEL)[]).map((a) => (
                   <button
@@ -1191,10 +1205,11 @@ function BoxEditor({
               </p>
             </div>
           )}
-        </>
+        </Secao>
       )}
 
-      <p className="text-[13px] font-medium text-text-secondary">Formato na tela inicial</p>
+      <Secao titulo="Visual" dica="Como o botão aparece na tela inicial.">
+      <Sub>Formato</Sub>
       <div className="flex flex-wrap gap-2">
         {([
           { v: "auto", t: "Automático" },
@@ -1242,7 +1257,7 @@ function BoxEditor({
         </div>
       ) : (
         <>
-          <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Cor</p>
+          <Sub>Cor</Sub>
           <button
             onClick={() => setColorModalOpen(true)}
             className="flex items-center gap-2.5 self-start rounded-full border border-divider py-1.5 pl-1.5 pr-4"
@@ -1253,34 +1268,32 @@ function BoxEditor({
         </>
       )}
 
-      <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícone</p>
+      <Sub>Ícone</Sub>
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => pickIcon("__wadisc__")}
+          className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 ${cfg.icon === "__wadisc__" || cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
+        >
+          <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiContactDisc size={32} /></span>
+          <span className="text-[13px] font-medium">Contato</span>
+        </button>
+        <button
+          onClick={() => pickIcon("__google__")}
+          className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 ${cfg.icon === "__google__" ? "border-on-background" : "border-divider"}`}
+        >
+          <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiGoogleIcon size={32} /></span>
+          <span className="text-[13px] font-medium">Google</span>
+        </button>
+        <button
+          onClick={() => pickIcon("__pin__")}
+          className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 ${cfg.icon === "__pin__" ? "border-on-background" : "border-divider"}`}
+        >
+          <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={22} /></span>
+          <span className="text-[13px] font-medium">Localização</span>
+        </button>
+      </div>
 
-      {/* Emblema 3D animado de contato, ótimo pro box de WhatsApp. */}
-      <button
-        onClick={() => pickIcon("__wadisc__")}
-        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__wadisc__" || cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
-      >
-        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiContactDisc size={32} /></span>
-        <span className="text-[13px] font-medium">Contato</span>
-      </button>
-
-      <button
-        onClick={() => pickIcon("__google__")}
-        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__google__" ? "border-on-background" : "border-divider"}`}
-      >
-        <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiGoogleIcon size={32} /></span>
-        <span className="text-[13px] font-medium">Google</span>
-      </button>
-      <button
-        onClick={() => pickIcon("__pin__")}
-        className={`flex items-center gap-2.5 self-start rounded-full border py-1.5 pl-1.5 pr-4 ${cfg.icon === "__pin__" ? "border-on-background" : "border-divider"}`}
-      >
-        <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={22} /></span>
-        <span className="text-[13px] font-medium">Localização</span>
-      </button>
-
-      {/* Selos de emoji animados: só os ícones, sem nome do lado, pra
-          escolher rápido igual escolhe uma cor. */}
+        <Sub>Animados</Sub>
       <div className="flex flex-wrap gap-2">
         {Object.entries(EMOJI_STICKERS).map(([key, render]) => (
           <button
@@ -1294,14 +1307,11 @@ function BoxEditor({
         ))}
       </div>
 
-      {/* Ícones da marca ou logo: biblioteca de tudo que já foi enviado (em
-          Configurações ou em qualquer box), disponível em todo box, e o
-          cadastro de um novo fica ali mesmo, como mais uma bolinha. */}
       {(() => {
         const gallery = Array.from(new Set([...(logoUrl ? [logoUrl] : []), ...(logoGallery ?? [])]));
         return (
           <div className="flex flex-col gap-2">
-            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">Ícones da marca ou logo</p>
+            <Sub>Logo ou ícone da marca</Sub>
             <div className="flex flex-wrap gap-2">
               {gallery.map((url) => (
                 <button
@@ -1349,6 +1359,7 @@ function BoxEditor({
         );
       })()}
 
+        <Sub>Emojis</Sub>
       <div className="flex flex-wrap gap-1.5">
         {(showAllIcons ? ICON_CHOICES : ICON_CHOICES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (
           <button
@@ -1368,13 +1379,14 @@ function BoxEditor({
           </button>
         )}
       </div>
-
+      </Secao>
 
       {onDelete && (
-        <button onClick={onDelete} className="mt-1 self-start text-[12px] text-red-600">
+        <button onClick={onDelete} className="self-start border-t border-divider pt-4 text-[12.5px] font-medium text-red-600">
           Excluir este botão
         </button>
       )}
+
 
       {colorModalOpen && (
         <ColorPickerModal current={color} brandColors={brandColors} onSelect={pickColor} onClose={() => setColorModalOpen(false)} />
