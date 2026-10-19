@@ -25,6 +25,13 @@ export type ItemCartao = {
   link_kind: string | null;
 };
 
+/** Letreiro do card sem foto: um passo acima do tamanho base quando o nome é curto, pra não ficar tímido num box vazio. */
+function letreiro(title: string, size: BoxSize): string {
+  const base = parseInt(titleFontSize(title, size), 10);
+  const len = (title ?? "").trim().length;
+  return `${base + (len <= 14 ? 4 : len <= 24 ? 2 : 0)}px`;
+}
+
 /**
  * Cartão de item, o mesmo da vitrine (cor, título sobre a foto ou embaixo,
  * rodapé colorido, seta de entrada). A vitrine e a Home usam este componente,
@@ -117,19 +124,31 @@ export function CartaoItem({
             // rodapé branco repetindo a mesma informação embaixo. A fonte
             // se ajusta ao formato do card e ao tamanho do título, pra
             // título longo em card pequeno não estourar nem ficar apertado.
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-6 text-center" style={{ backgroundColor: c.bg }}>
+            <div
+              className="flex h-full w-full flex-col justify-between gap-3 p-4 text-left"
+              style={{ backgroundColor: c.bg, backgroundImage: "radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,0.16), transparent 62%)" }}
+            >
+              {/* Em cima: a categoria, bem discreta (na vitrine o título da seção já diz isso). */}
               <span
-                className="font-[family-name:var(--font-open-sans)] font-bold leading-snug"
-                style={{ color: c.fg, fontSize: titleFontSize(item.title, size) }}
+                className="block min-h-[14px] truncate pr-8 font-[family-name:var(--font-manrope)] text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: c.fg, opacity: 0.62 }}
               >
-                {item.title}
+                {origem === "home" ? item.brand_label?.trim() ?? "" : ""}
               </span>
-              {priceLabel && (
-                <span className="font-[family-name:var(--font-open-sans)] text-[14px]" style={{ color: c.fg }}>
-                  {priceLabel}
+              {/* Embaixo: o nome como letreiro, com peso e espaçamento de título. */}
+              <div className="min-w-0">
+                <span
+                  className="line-clamp-4 block font-[family-name:var(--font-manrope)] font-semibold leading-[1.1] tracking-[-0.02em] [text-wrap:balance]"
+                  style={{ color: c.fg, fontSize: letreiro(item.title, size) }}
+                >
+                  {item.title}
                 </span>
-              )}
-
+                {priceLabel && (
+                  <span className="mt-1.5 block font-[family-name:var(--font-manrope)] text-[13.5px] font-medium" style={{ color: c.fg, opacity: 0.85 }}>
+                    {priceLabel}
+                  </span>
+                )}
+              </div>
             </div>
           )}
           {/* Sem foto já mostra a tag/o destino dentro do próprio box, a setinha

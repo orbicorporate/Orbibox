@@ -44,7 +44,7 @@ const FORMATOS: { v: FormatoItens; titulo: string; texto: string }[] = [
   { v: "carrossel", titulo: "Carrossel", texto: "Uma linha que rola de lado. Ocupa pouca altura." },
 ];
 
-const MINIMO_COM_FOTO = 4;
+const MINIMO_COM_FOTO = 2;
 const MAXIMO = 6;
 
 function Icone({ tipo, rede, linha }: { tipo: BolinhaVitrine["tipo"]; rede?: Rede; linha?: boolean }) {
@@ -84,7 +84,7 @@ function corDe(b: BolinhaVitrine): { fundo: string; sombra: string } {
 
 /**
  * Home em estilo Vitrine: bolinhas com nome no topo (estilo destaques do
- * Instagram), um botão principal e uma fileira curta de itens com foto.
+ * Instagram), um botão principal e uma fileira curta de itens (com ou sem foto).
  * Os itens só aparecem com pelo menos 4 fotos, pra nunca ficar um buraco.
  */
 export function HomeVitrine({
@@ -167,8 +167,9 @@ export function HomeVitrine({
   const [editando, setEditando] = useState(false);
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [enderecoAberto, setEnderecoAberto] = useState<string | null>(null);
-  const comFoto = itens.filter((i) => !!i.image_url);
-  // Chips só com 2 ou mais categorias que tenham ao menos 2 itens com foto.
+  // Item sem foto também entra: o cartão vira um letreiro com o nome.
+  const comFoto = itens;
+  // Chips só com 2 ou mais categorias que tenham ao menos 2 itens.
   const categorias = groupByCategory(comFoto, ordemCategorias).filter((c) => c.name && c.items.length >= 2).slice(0, 5);
   const temChips = categorias.length >= 2;
   const ativo = temChips ? categorias.find((c) => c.name === chip) ?? null : null;
