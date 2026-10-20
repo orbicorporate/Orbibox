@@ -2,6 +2,7 @@
 
 import { useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
+import { LapisDono } from "@/components/mobile/LapisDono";
 import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
 import { groupByCategory } from "@/lib/showcase";
@@ -368,8 +369,9 @@ export function HomeVitrine({
                 const tam = sizeOf(i.layout_size);
                 const largo = tam === "destaque" || tam === "largo";
                 return (
-                  <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`transition-transform duration-150 ${largo ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
+                  <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative transition-transform duration-150 ${largo ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                     <CartaoItem origem="home" item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
+                    {podeEditar && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                   </li>
                 );
               })}
@@ -377,8 +379,9 @@ export function HomeVitrine({
           ) : formato === "carrossel" ? (
             <ul data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-2">
               {mostrarNaOrdem.map((i) => (
-                <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
+                <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                   <CartaoItem origem="home" item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
+                    {podeEditar && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                 </li>
               ))}
             </ul>
@@ -387,8 +390,9 @@ export function HomeVitrine({
               {mostrarNaOrdem.map((i, n) => {
                 const grande = formato === "destaque" && n === 0;
                 return (
-                  <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`transition-transform duration-150 ${grande ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
+                  <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative transition-transform duration-150 ${grande ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                     <CartaoItem origem="home" item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
+                    {podeEditar && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                   </li>
                 );
               })}
