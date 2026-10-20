@@ -932,7 +932,7 @@ export function VisitorExperience({
           </a>
         )}
         {intent === null && modo === "orbita" && (
-          <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} isOwner={showOwnerControls} />
+          <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} />
         )}
 
         {intent === null && modo === "grade" && (
@@ -1026,7 +1026,7 @@ export function VisitorExperience({
                 </div>
               )}
             </div>
-            <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} isOwner={showOwnerControls} />
+            <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} />
             {estiloVitrine && (
               <HomeVitrine
                 bolinhas={bolinhasVitrine}

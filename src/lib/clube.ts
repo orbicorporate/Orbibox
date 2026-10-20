@@ -15,7 +15,7 @@ export function clubeDb(): SupabaseClient {
   return _c;
 }
 
-export type FaLite = { id: string; nome: string | null; foto_url: string | null };
+export type FaLite = { id: string; nome: string | null; foto_url: string | null; nivel?: number };
 export type Resumo = {
   fas: number;
   curtidas: number;
@@ -58,6 +58,9 @@ export async function getResumo(businessId: string): Promise<Resumo> {
   return data ? { ...RESUMO_VAZIO, ...(data as Resumo), nota: (data as Resumo).nota == null ? null : Number((data as Resumo).nota) } : RESUMO_VAZIO;
 }
 export async function getFas(businessId: string): Promise<FaLite[]> {
+  // Com o nível de proximidade (avaliou, comprou, curtiu, só virou fã). Se a função ainda não existe, cai na lista simples.
+  const novo = await clubeDb().rpc("clube_fas_nivel", { p_business: businessId, p_limite: 60 });
+  if (!novo.error && novo.data) return novo.data as FaLite[];
   const { data } = await clubeDb().rpc("clube_fas", { p_business: businessId, p_limite: 60 });
   return (data as FaLite[] | null) ?? [];
 }

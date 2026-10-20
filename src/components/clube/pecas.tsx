@@ -23,12 +23,12 @@ export function corDe(txt: string): string {
   for (let i = 0; i < txt.length; i++) h = (h * 31 + txt.charCodeAt(i)) >>> 0;
   return CORES[h % CORES.length];
 }
-export function Rosto({ url, nome, size, blob = false, className = "" }: { url?: string | null; nome?: string | null; size: number; blob?: boolean; className?: string }) {
+export function Rosto({ url, nome, size, blob = false, className = "", aro }: { url?: string | null; nome?: string | null; size: number; blob?: boolean; className?: string; aro?: string }) {
   const ini = (nome ?? "?").trim().charAt(0).toUpperCase() || "?";
   return (
     <span
       className={`cl-av ${blob ? "cl-blob" : ""} ${className}`}
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.42), backgroundImage: url ? `url("${url}")` : corDe(nome ?? "?") }}
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.42), backgroundImage: url ? `url("${url}")` : corDe(nome ?? "?"), ...(aro ? { borderColor: aro, boxShadow: `0 6px 16px rgba(0,0,0,.18), 0 0 0 4px ${aro}2E` } : null) }}
       aria-hidden
     >
       {url ? null : ini}
@@ -132,7 +132,7 @@ export function Cabecalho({ titulo, sub, fechar, rotuloFechar = "Fechar" }: { ti
 /* ---------- Órbita ---------- */
 export type ItemOrbita = { key: string; size: number; anel: number; node: ReactNode; rotulo: string; aoTocar: () => void };
 
-export function Orbita({ itens, aneis, centro }: { itens: ItemOrbita[]; aneis: { r: number; velocidade: number }[]; centro: ReactNode }) {
+export function Orbita({ itens, aneis, centro }: { itens: ItemOrbita[]; aneis: { r: number; velocidade: number; cor?: string }[]; centro: ReactNode }) {
   const host = useRef<HTMLDivElement>(null);
   const els = useRef<(HTMLDivElement | null)[]>([]);
   const reduzido = useReduzido();
@@ -170,7 +170,7 @@ export function Orbita({ itens, aneis, centro }: { itens: ItemOrbita[]; aneis: {
   return (
     <div ref={host} className="cl-orbita">
       {aneis.map((a, k) => (
-        <span key={k} className="cl-disco" style={{ width: `${a.r * 200 + 11}%`, height: `${a.r * 200 + 11}%`, opacity: 1 - k * 0.12 }} />
+        <span key={k} className="cl-disco" style={{ width: `${a.r * 200 + 11}%`, height: `${a.r * 200 + 11}%`, opacity: 1 - k * 0.12, ...(a.cor ? { background: `${a.cor}14`, boxShadow: `inset 0 0 0 1px ${a.cor}26` } : null) }} />
       ))}
       <div className="cl-centro">{centro}</div>
       {itens.map((it, i) => (

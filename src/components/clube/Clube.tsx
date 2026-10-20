@@ -8,6 +8,7 @@ import {
   sairDoClube, vincularTelefone, virarFa,
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaDoFa, type Resumo,
 } from "@/lib/clube";
+import { OrbiAvatar, lerEsfera } from "@/components/orbi/OrbiAvatar";
 import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
 type Pendente = "fa" | "curtir" | "avaliar";
@@ -20,7 +21,7 @@ const chave = (slug: string) => `clube-pendente-${slug}`;
 /* =====================================================================
    Bloco da Home: Virar fã, curtir e as pílulas coloridas
    ===================================================================== */
-export function ClubeBloco({ businessId, slug, nome, logoUrl, isOwner }: { businessId: string; slug: string; nome: string; logoUrl: string | null; isOwner: boolean }) {
+export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null, isOwner }: { businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar?: string | null; isOwner: boolean }) {
   const [resumo, setResumo] = useState<Resumo | null>(null);
   const [eu, setEu] = useState<Eu | null>(null);
   const [aberta, setAberta] = useState<Aberta>(null);
@@ -158,6 +159,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, isOwner }: { busin
           slug={slug}
           nome={nome}
           logoUrl={logoUrl}
+          heroAvatar={heroAvatar}
           eu={eu}
           isOwner={isOwner}
           resumo={resumo}
@@ -489,13 +491,24 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
 /* =====================================================================
    Fãs: órbita de rostos, e as marcas de cada fã
    ===================================================================== */
-const ANEIS = [{ r: 0.34, velocidade: 0.12 }, { r: 0.6, velocidade: -0.08 }, { r: 0.84, velocidade: 0.055 }];
+const ANEIS = [
+  { r: 0.34, velocidade: 0.12, cor: "#F2556B" },
+  { r: 0.6, velocidade: -0.08, cor: "#9B59D9" },
+  { r: 0.84, velocidade: 0.055, cor: "#3E8BEA" },
+];
+/** Do mais perto da marca (vermelho) ao que só virou fã (azul). */
+const NIVEIS = [
+  { cor: "#3E8BEA", nome: "Só viraram fã" },
+  { cor: "#1DB8A4", nome: "Curtiram" },
+  { cor: "#FF9A3C", nome: "Compraram" },
+  { cor: "#F2556B", nome: "Avaliaram" },
+];
 const ANEIS_MARCAS = [{ r: 0.5, velocidade: 0.14 }, { r: 0.8, velocidade: -0.09 }];
 const CAP_ANEL = [6, 9, 12];
 const TAM = [46, 40, 36];
 
-function FasFolha({ origem, businessId, slug, nome, logoUrl, eu, isOwner, resumo, aoFechar, aoMudar, pedirLogin, confirmarWhats }: {
-  origem: DOMRect | null; businessId: string; slug: string; nome: string; logoUrl: string | null; eu: Eu; isOwner: boolean; resumo: Resumo;
+function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isOwner, resumo, aoFechar, aoMudar, pedirLogin, confirmarWhats }: {
+  origem: DOMRect | null; businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar: string | null; eu: Eu; isOwner: boolean; resumo: Resumo;
   aoFechar: () => void; aoMudar: () => Promise<Eu>; pedirLogin: (el: DOMRect) => void; confirmarWhats: () => void;
 }) {
   const [fas, setFas] = useState<FaLite[] | null>(null);
@@ -525,7 +538,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, eu, isOwner, resumo
       if (noAnel >= CAP_ANEL[anel]) { anel++; noAnel = 0; }
       if (anel > 2) break;
       const s = TAM[anel] - (noAnel % 3) * 3;
-      out.push({ key: f.id, size: s, anel, rotulo: `Fã ${f.nome ?? ""}`, aoTocar: () => void abrirFa(f), node: <Rosto url={f.foto_url} nome={f.nome} size={s} blob /> });
+      out.push({ key: f.id, size: s, anel, rotulo: `Fã ${f.nome ?? ""}`, aoTocar: () => void abrirFa(f), node: <Rosto url={f.foto_url} nome={f.nome} size={s} blob aro={f.nivel != null ? NIVEIS[Math.min(3, Math.max(0, f.nivel))].cor : undefined} /> });
       noAnel++;
     }
     const resto = resumo.fas - out.length;
@@ -537,6 +550,14 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, eu, isOwner, resumo
     }
     return out;
   }, [fas, resumo.fas]);
+
+  const contagem = useMemo(() => {
+    const c = [0, 0, 0, 0];
+    for (const f of fas ?? []) c[Math.min(3, Math.max(0, f.nivel ?? 0))]++;
+    return c;
+  }, [fas]);
+  const temNivel = (fas ?? []).some((f) => f.nivel != null);
+  const esfera = lerEsfera(heroAvatar);
 
   const itensMarcas: ItemOrbita[] = useMemo(() => {
     const lista = (marcas ?? []).slice(0, 12);
@@ -550,7 +571,8 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, eu, isOwner, resumo
     <Folha origem={origem} aoFechar={aoFechar} rotulo="Fãs da marca">
       {(fechar) => (
         <>
-          <Cabecalho titulo={`${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}`} sub={`Quem é fã de ${nome}`} fechar={fechar} />
+          <div className="cl-fas-fundo" aria-hidden />
+          <Cabecalho titulo={`${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}`} sub={`O clube de ${nome}`} fechar={fechar} />
           <div className="flex min-h-0 flex-1 flex-col justify-center px-2">
             {fas === null ? (
               <p className="text-center text-[14px] text-text-tertiary">Carregando...</p>
@@ -560,13 +582,29 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, eu, isOwner, resumo
               <Orbita
                 itens={itens}
                 aneis={ANEIS}
-                centro={<Rosto url={logoUrl} nome={nome} size={92} className="shadow-[0_10px_34px_rgba(0,0,0,0.25)]" />}
+                centro={logoUrl ? <OrbiAvatar logoUrl={logoUrl} size={96} esfera={esfera?.tom} escala={esfera?.escala} /> : <Rosto nome={nome} size={92} className="shadow-[0_10px_34px_rgba(0,0,0,0.25)]" />}
               />
             )}
           </div>
-          <div className="cl-entra min-h-[56px] px-6 text-center" style={{ ["--i" as string]: 5 }}>
-            <b className="block text-[17px] font-extrabold tracking-[-0.02em]">Toque em um fã</b>
-            <span className="text-[13px] text-text-tertiary">e veja de quais marcas ele é fã</span>
+          <div className="cl-entra px-6 text-center" style={{ ["--i" as string]: 5 }}>
+            {temNivel && (
+              <div className="mx-auto mb-3 max-w-[340px]">
+                <div className="h-1.5 rounded-full" style={{ background: "linear-gradient(90deg,#F2556B,#FF9A3C,#1DB8A4,#3E8BEA)" }} aria-hidden />
+                <div className="mt-1.5 flex justify-between text-[11.5px] font-semibold text-text-tertiary">
+                  <span>Mais perto da marca</span>
+                  <span>Acabaram de chegar</span>
+                </div>
+                <ul className="mt-2.5 flex flex-wrap justify-center gap-x-4 gap-y-1.5">
+                  {[3, 2, 1, 0].filter((n) => contagem[n] > 0).map((n) => (
+                    <li key={n} className="flex items-center gap-1.5 text-[12.5px] text-text-secondary">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: NIVEIS[n].cor }} aria-hidden />
+                      {NIVEIS[n].nome} <b className="font-bold text-on-background tabular-nums">{contagem[n]}</b>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <span className="text-[13px] text-text-tertiary">Toque em um fã para ver de quais marcas ele é fã</span>
           </div>
           <div className="cl-entra flex flex-col items-center gap-2 px-5 pb-[max(22px,env(safe-area-inset-bottom))] pt-2" style={{ ["--i" as string]: 6 }}>
             {isOwner ? (

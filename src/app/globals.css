@@ -1346,6 +1346,8 @@ html[data-embed] .embed-oculta { display: none !important; }
 .cl-blob { border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; }
 .cl-folha { position: fixed; inset: 0; z-index: 120; display: flex; flex-direction: column; align-items: center; background: var(--background-main, #fff); overflow: hidden; }
 .cl-folha > .cl-col { width: 100%; max-width: 440px; height: 100%; display: flex; flex-direction: column; min-height: 0; position: relative; }
+.cl-folha > .cl-col { isolation: isolate; }
+.cl-fas-fundo { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(120% 55% at 50% 38%, rgba(242,85,107,.07), rgba(155,89,217,.045) 45%, rgba(62,139,234,.06) 75%, transparent 100%); }
 .cl-entra { opacity: 0; transform: translateY(14px); }
 .cl-folha.on .cl-entra { opacity: 1; transform: none; transition: opacity .38s cubic-bezier(.22,1,.36,1), transform .5s cubic-bezier(.22,1,.36,1); transition-delay: calc(var(--i, 0) * 45ms + 160ms); }
 .cl-x { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--surface-soft, #F2F2EF); }
