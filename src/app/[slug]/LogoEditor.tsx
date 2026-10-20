@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
-import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
+import { OrbiAvatar, lerEsfera } from "@/components/orbi/OrbiAvatar";
 
 type Estilo = "logo" | "esfera-claro" | "esfera-escuro";
 
@@ -22,6 +22,24 @@ function imagemParaCanvas(img: HTMLImageElement): HTMLCanvasElement {
   c.height = lado;
   const ctx = c.getContext("2d")!;
   ctx.drawImage(img, Math.round((lado - w) / 2), Math.round((lado - h) / 2), w, h);
+  return c;
+}
+
+/** Corta as margens transparentes em volta do desenho, para o logo ocupar a esfera. */
+function aparar(origem: HTMLCanvasElement): HTMLCanvasElement {
+  const w = origem.width, h = origem.height;
+  const px = origem.getContext("2d")!.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (px[(y * w + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 < 0) return origem;
+  const m = Math.round(Math.max(x1 - x0, y1 - y0) * 0.02);
+  x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(w - 1, x1 + m); y1 = Math.min(h - 1, y1 + m);
+  const c = document.createElement("canvas");
+  c.width = x1 - x0 + 1;
+  c.height = y1 - y0 + 1;
+  c.getContext("2d")!.drawImage(origem, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
   return c;
 }
 
@@ -133,8 +151,11 @@ export function LogoEditor({
   const [erro, setErro] = useState<string | null>(null);
   const [trocou, setTrocou] = useState(false);
   const previa = useRef<HTMLCanvasElement>(null);
-  const estiloInicial: Estilo = avatar === "esfera-claro" || avatar === "esfera-escuro" ? avatar : "logo";
+  const esferaAtual = lerEsfera(avatar);
+  const estiloInicial: Estilo = esferaAtual ? (`esfera-${esferaAtual.tom}` as Estilo) : "logo";
+  const escalaInicial = esferaAtual?.escala ?? 100;
   const [estilo, setEstilo] = useState<Estilo>(estiloInicial);
+  const [escala, setEscala] = useState(escalaInicial);
 
   function escolherEstilo(e: Estilo) {
     setEstilo(e);
@@ -158,7 +179,8 @@ export function LogoEditor({
     return () => clearTimeout(t);
   }, [base, semFundo, tolerancia]);
 
-  const atual = semFundo && resultado ? resultado : base;
+  const semMargem = useMemo(() => (semFundo && resultado && estilo !== "logo" ? aparar(resultado) : null), [semFundo, resultado, estilo]);
+  const atual = semMargem ?? (semFundo && resultado ? resultado : base);
 
   // Imagem atual como endereço, pra mostrar a esfera de verdade na prévia.
   const urlPrevia = useMemo(() => (estilo === "logo" || !atual ? null : atual.toDataURL("image/png")), [atual, estilo]);
@@ -210,7 +232,7 @@ export function LogoEditor({
         url = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
       }
       // Esfera clara ou escura guarda o estilo em hero_avatar; voltar ao logo simples só mexe se já era esfera.
-      const novoAvatar: string | null = estilo !== "logo" ? estilo : estiloInicial !== "logo" ? "logo" : avatar;
+      const novoAvatar: string | null = estilo !== "logo" ? `${estilo}-${escala}` : estiloInicial !== "logo" ? "logo" : avatar;
       const campos: { logo_url: string; hero_avatar?: string | null } = { logo_url: url! };
       if (novoAvatar !== avatar) campos.hero_avatar = novoAvatar;
       const { error } = await supabase.from("businesses").update(campos).eq("id", businessId);
@@ -226,7 +248,7 @@ export function LogoEditor({
     }
   }
 
-  const mudou = trocou || semFundo || estilo !== estiloInicial;
+  const mudou = trocou || semFundo || estilo !== estiloInicial || (estilo !== "logo" && escala !== escalaInicial);
 
   if (typeof document === "undefined") return null;
   return createPortal(
@@ -237,7 +259,7 @@ export function LogoEditor({
 
         {urlPrevia && estilo !== "logo" ? (
           <div className="mx-auto mt-6 flex h-[200px] w-[200px] items-center justify-center">
-            <OrbiAvatar logoUrl={urlPrevia} size={128} esfera={estilo === "esfera-claro" ? "claro" : "escuro"} />
+            <OrbiAvatar logoUrl={urlPrevia} size={150} esfera={estilo === "esfera-claro" ? "claro" : "escuro"} escala={escala} />
           </div>
         ) : (
         /* Quadriculado deixa claro o que é transparente. */
@@ -279,6 +301,16 @@ export function LogoEditor({
                 </button>
               ))}
             </div>
+            {estilo !== "logo" && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-[12.5px] text-text-tertiary">
+                  <label htmlFor="logo-tamanho">Tamanho do logo</label>
+                  <span className="tabular-nums">{escala}%</span>
+                </div>
+                <input id="logo-tamanho" type="range" min={50} max={130} step={5} value={escala} onChange={(e) => setEscala(Number(e.target.value))} disabled={salvando} className="mt-1 h-8 w-full accent-[#14161A]" />
+                <p className="mt-0.5 text-[12.5px] text-text-tertiary">Aumente para o logo preencher mais a esfera.</p>
+              </div>
+            )}
           </div>
         )}
 

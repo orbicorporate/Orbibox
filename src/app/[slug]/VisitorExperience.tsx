@@ -25,7 +25,7 @@ import { ContatoForm, chaveLead, lerVisitante } from "@/components/mobile/Contat
 import { NudgeLead } from "@/components/mobile/NudgeLead";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
-import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
+import { OrbiAvatar, lerEsfera } from "@/components/orbi/OrbiAvatar";
 import { COVER_RATIO_BY_SIZE, formatPrice, groupByCategory, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
 import { heroBackground } from "@/lib/heroStyle";
@@ -942,7 +942,7 @@ export function VisitorExperience({
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               ) : logoAtual ? (
                 // "logo" ou "auto" (padrão): logo se tiver, senão a esfera.
-                <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} esfera={heroAvatar === "esfera-claro" ? "claro" : heroAvatar === "esfera-escuro" ? "escuro" : undefined} />
+                <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} esfera={lerEsfera(heroAvatar)?.tom} escala={lerEsfera(heroAvatar)?.escala} />
               ) : (
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               )}
