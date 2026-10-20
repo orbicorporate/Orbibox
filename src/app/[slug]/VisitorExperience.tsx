@@ -201,6 +201,7 @@ export function VisitorExperience({
   // Logo editável na própria página (lapinho no modo de edição).
   const [logoAtual, setLogoAtual] = useState<string | null>(business.logo_url);
   const [editandoLogo, setEditandoLogo] = useState(false);
+  const [heroAvatar, setHeroAvatar] = useState<string | null>(business.hero_avatar);
   // Modo Órbita x Modo Grade. O dono define o padrão da página; o visitante
   // pode trocar e a escolha dele vale só no aparelho dele.
   const [modoPadrao, setModoPadrao] = useState<ModoHome>(business.home_mode === "orbita" ? "orbita" : "grade");
@@ -774,8 +775,9 @@ export function VisitorExperience({
         <LogoEditor
           businessId={business.id}
           logoUrl={logoAtual}
+          avatar={heroAvatar}
           onClose={() => setEditandoLogo(false)}
-          onSaved={(url) => { setLogoAtual(url); setEditandoLogo(false); }}
+          onSaved={(url, av) => { setLogoAtual(url); setHeroAvatar(av); setEditandoLogo(false); }}
         />
       )}
       {iconeBox && showOwnerControls && (() => {
@@ -931,11 +933,11 @@ export function VisitorExperience({
         {intent === null && modo === "grade" && (
           <div className="flex w-full min-w-0 flex-col items-center text-center">
             <div className="relative mb-8">
-              {business.hero_avatar === "particle" || business.hero_avatar === "sphere" ? (
+              {heroAvatar === "particle" || heroAvatar === "sphere" ? (
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               ) : logoAtual ? (
                 // "logo" ou "auto" (padrão): logo se tiver, senão a esfera.
-                <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} />
+                <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} esfera={heroAvatar === "esfera-claro" ? "claro" : heroAvatar === "esfera-escuro" ? "escuro" : undefined} />
               ) : (
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               )}

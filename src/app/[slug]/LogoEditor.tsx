@@ -1,9 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
+import { OrbiAvatar } from "@/components/orbi/OrbiAvatar";
+
+type Estilo = "logo" | "esfera-claro" | "esfera-escuro";
 
 const LADO = 800;
 
@@ -108,13 +111,16 @@ function carregar(src: string): Promise<HTMLImageElement> {
 export function LogoEditor({
   businessId,
   logoUrl,
+  avatar = null,
   onClose,
   onSaved,
 }: {
   businessId: string;
   logoUrl: string | null;
+  /** Valor atual de businesses.hero_avatar. */
+  avatar?: string | null;
   onClose: () => void;
-  onSaved: (url: string) => void;
+  onSaved: (url: string, avatar: string | null) => void;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -127,6 +133,14 @@ export function LogoEditor({
   const [erro, setErro] = useState<string | null>(null);
   const [trocou, setTrocou] = useState(false);
   const previa = useRef<HTMLCanvasElement>(null);
+  const estiloInicial: Estilo = avatar === "esfera-claro" || avatar === "esfera-escuro" ? avatar : "logo";
+  const [estilo, setEstilo] = useState<Estilo>(estiloInicial);
+
+  function escolherEstilo(e: Estilo) {
+    setEstilo(e);
+    // Na esfera o logo fica sobre um disco: o fundo do arquivo atrapalharia, então já tira.
+    if (e !== "logo" && !semFundo) setSemFundo(true);
+  }
 
   useEffect(() => {
     if (!logoUrl) return;
@@ -145,6 +159,9 @@ export function LogoEditor({
   }, [base, semFundo, tolerancia]);
 
   const atual = semFundo && resultado ? resultado : base;
+
+  // Imagem atual como endereço, pra mostrar a esfera de verdade na prévia.
+  const urlPrevia = useMemo(() => (estilo === "logo" || !atual ? null : atual.toDataURL("image/png")), [atual, estilo]);
 
   // Mostra no quadro de prévia.
   useEffect(() => {
@@ -182,24 +199,34 @@ export function LogoEditor({
     setSalvando(true);
     setErro(null);
     try {
-      const blob: Blob | null = await new Promise((ok) => atual.toBlob(ok, "image/png"));
-      if (!blob) throw new Error("blob");
-      const path = `${businessId}/logo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.png`;
-      const { error: upErr } = await supabase.storage.from("box-images").upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: "image/png" });
-      if (upErr) throw upErr;
-      const url = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
-      const { error } = await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);
+      let url = logoUrl;
+      // Só envia imagem nova quando a imagem mudou (trocou o arquivo ou tirou o fundo).
+      if (trocou || semFundo || !url) {
+        const blob: Blob | null = await new Promise((ok) => atual.toBlob(ok, "image/png"));
+        if (!blob) throw new Error("blob");
+        const path = `${businessId}/logo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.png`;
+        const { error: upErr } = await supabase.storage.from("box-images").upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: "image/png" });
+        if (upErr) throw upErr;
+        url = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
+      }
+      // Esfera clara ou escura guarda o estilo em hero_avatar; voltar ao logo simples só mexe se já era esfera.
+      const novoAvatar: string | null = estilo !== "logo" ? estilo : estiloInicial !== "logo" ? "logo" : avatar;
+      const campos: { logo_url: string; hero_avatar?: string | null } = { logo_url: url! };
+      if (novoAvatar !== avatar) campos.hero_avatar = novoAvatar;
+      const { error } = await supabase.from("businesses").update(campos).eq("id", businessId);
       if (error) throw error;
-      const { data } = await supabase.from("businesses").select("logo_gallery").eq("id", businessId).maybeSingle();
-      await addToLogoGallery(supabase, businessId, parseLogoGallery(data?.logo_gallery), url);
-      onSaved(url);
+      if (url !== logoUrl) {
+        const { data } = await supabase.from("businesses").select("logo_gallery").eq("id", businessId).maybeSingle();
+        await addToLogoGallery(supabase, businessId, parseLogoGallery(data?.logo_gallery), url!);
+      }
+      onSaved(url!, novoAvatar);
     } catch {
       setErro("Não consegui salvar o logo. Tente de novo.");
       setSalvando(false);
     }
   }
 
-  const mudou = trocou || semFundo;
+  const mudou = trocou || semFundo || estilo !== estiloInicial;
 
   if (typeof document === "undefined") return null;
   return createPortal(
@@ -208,7 +235,12 @@ export function LogoEditor({
         <span className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" />
         <p className="text-center font-[family-name:var(--font-manrope)] text-[18px] font-medium">Logo da sua página</p>
 
-        {/* Quadriculado deixa claro o que é transparente. */}
+        {urlPrevia && estilo !== "logo" ? (
+          <div className="mx-auto mt-6 flex h-[200px] w-[200px] items-center justify-center">
+            <OrbiAvatar logoUrl={urlPrevia} size={128} esfera={estilo === "esfera-claro" ? "claro" : "escuro"} />
+          </div>
+        ) : (
+        /* Quadriculado deixa claro o que é transparente. */
         <div
           className="mx-auto mt-4 flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-full ring-1 ring-black/10"
           style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "20px 20px" }}
@@ -221,11 +253,34 @@ export function LogoEditor({
             <span className="px-6 text-center text-[13px] text-text-tertiary">Ainda sem logo. Envie uma imagem.</span>
           )}
         </div>
+        )}
 
         <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { escolherArquivo(e.target.files?.[0]); e.target.value = ""; }} />
         <button type="button" onClick={() => inputRef.current?.click()} disabled={salvando} className="mt-4 w-full rounded-full bg-surface-soft py-3 text-[14px] font-medium">
           {base ? "Trocar imagem" : "Enviar logo"}
         </button>
+
+        {base && (
+          <div className="mt-3 rounded-2xl border border-divider p-4">
+            <p className="text-[14px] font-medium">Aparência</p>
+            <p className="mt-0.5 text-[12.5px] text-text-tertiary">Esfera: o logo vai sobre um disco com luz de vidro girando em volta.</p>
+            <div role="radiogroup" aria-label="Aparência do logo" className="mt-3 flex flex-wrap gap-2">
+              {([["logo", "Logo simples"], ["esfera-claro", "Esfera clara"], ["esfera-escuro", "Esfera escura"]] as const).map(([v, t]) => (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={estilo === v}
+                  onClick={() => escolherEstilo(v)}
+                  disabled={salvando}
+                  className={`min-h-[40px] rounded-full px-4 text-[13.5px] font-medium ${estilo === v ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {base && (
           <div className="mt-3 rounded-2xl border border-divider p-4">
