@@ -212,6 +212,9 @@ export function HomeVitrine({
               placeholder="Pergunte o que quiser..."
               aria-label={ctaRotulo}
               enterKeyHint="send"
+              // Tocar no campo vazio já abre a conversa, com as sugestões de tema na tela
+              // antes de a pessoa digitar (e o campo de escrever lá embaixo).
+              onFocus={(e) => { if (!pergunta.trim() && !podeEditar) { e.currentTarget.blur(); onPerguntar(""); } }}
               className="min-w-0 flex-1 bg-transparent text-[16px] text-on-background outline-none placeholder:text-text-tertiary"
             />
             <button type="submit" aria-label="Enviar pergunta" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-on-background text-white transition-transform active:scale-95">
