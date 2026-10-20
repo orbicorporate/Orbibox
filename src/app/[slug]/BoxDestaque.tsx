@@ -100,7 +100,10 @@ export function BoxDestaque({
     const antes = ultimo.current;
     let achados: Destaque[] = [];
     if (k === "produto") {
-      const { data } = await supabase.from("content_items").select("id").eq("business_id", businessId).order("created_at", { ascending: false }).limit(5);
+      // Rascunhos não aparecem em antes.itens (só publicados): por isso só vale o mais novo,
+      // criado agora há pouco, pra não fixar rascunho antigo esquecido.
+      const desde = new Date(new Date().getTime() - 30 * 60 * 1000).toISOString();
+      const { data } = await supabase.from("content_items").select("id").eq("business_id", businessId).gte("created_at", desde).order("created_at", { ascending: false }).limit(1);
       const conhecidos = new Set(antes.itens.map((i) => i.id));
       achados = (data ?? []).filter((r) => !conhecidos.has(r.id)).map((r) => ({ t: "item" as const, id: r.id }));
     } else if (k === "voucher") {
