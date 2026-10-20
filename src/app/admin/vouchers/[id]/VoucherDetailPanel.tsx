@@ -118,6 +118,10 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
         <p className="text-[12.5px] text-text-tertiary">{v.is_active ? "Assim ele aparece na sua página." : "Assim ele vai aparecer quando você ativar."}</p>
       </div>
       <button type="button" onClick={() => setEditando(true)} className="mt-3 min-h-[48px] w-full rounded-full bg-on-background px-5 text-[14px] font-semibold text-white">Alterar dados do voucher</button>
+      <button type="button" onClick={deleteVoucher} className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#FDECEE] px-5 text-[14px] font-semibold text-[#E5484D] active:scale-[0.98]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3" /></svg>
+        Excluir voucher
+      </button>
 
       {/* Uma linha só pro estoque, em vez de repetir o mesmo número em quatro lugares. */}
       <div className="mt-5">
@@ -221,9 +225,6 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
 
       {editando && <EditarVoucherSheet voucher={v} travado={travado} onSalvo={(novo) => { setV(novo); setEditando(false); }} onFechar={() => setEditando(false)} />}
 
-      <button onClick={deleteVoucher} className="mt-8 text-[13px] font-medium text-red-600">
-        Excluir este voucher
-      </button>
     </div>
   );
 }
