@@ -8,7 +8,6 @@
 export function OrbiAvatar({ logoUrl, size = 96, className = "" }: { logoUrl: string; size?: number; className?: string; color?: string | null }) {
   return (
     <div className={`orbi-av relative shrink-0 ${className}`} style={{ width: size, height: size }} aria-hidden>
-      <span className="orbi-av-vidro" />
       <span className="orbi-av-brilho" />
       <span className="orbi-av-anel" />
       <span className="orbi-av-anel orbi-av-anel-b" />
