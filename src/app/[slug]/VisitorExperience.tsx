@@ -1000,13 +1000,23 @@ export function VisitorExperience({
                     <div key={`${c.campo}-${c.valor}`} className="mb-3 block last:mb-0">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">{c.rotulo}</span>
-                        {c.campo !== "nome" && (c.campo === "pergunta" ? textos.pergunta !== "" : !!(textos.frase ?? frase)) && (
-                          <button type="button" onClick={() => salvarTexto(c.campo, "")} className="min-h-[32px] rounded-full bg-surface-soft px-3 text-[12px] font-medium text-text-secondary active:scale-95">Remover</button>
-                        )}
+                        {c.campo === "nome" ? (
+                          ocultarNome ? (
+                            <button type="button" onClick={alternarNome} className="min-h-[32px] rounded-full bg-surface-soft px-3 text-[12px] font-medium text-text-secondary active:scale-95">Mostrar</button>
+                          ) : (
+                            <button type="button" onClick={alternarNome} aria-label="Remover o nome da tela inicial" className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FDECEE] text-[#E5484D] active:scale-90">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3" /></svg>
+                            </button>
+                          )
+                        ) : (c.campo === "pergunta" ? textos.pergunta !== "" : !!(textos.frase ?? frase)) ? (
+                          <button type="button" onClick={() => salvarTexto(c.campo, "")} aria-label={`Remover ${c.rotulo.toLowerCase()}`} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FDECEE] text-[#E5484D] active:scale-90">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3" /></svg>
+                          </button>
+                        ) : null}
                       </div>
                       <input
                         defaultValue={c.valor}
-                        placeholder={c.campo !== "nome" && (c.campo === "pergunta" ? textos.pergunta === "" : !(textos.frase ?? frase)) ? "Removida. Escreva aqui para voltar." : c.dica}
+                        placeholder={c.campo === "nome" && ocultarNome ? "Oculto. Toque em Mostrar para voltar." : c.campo !== "nome" && (c.campo === "pergunta" ? textos.pergunta === "" : !(textos.frase ?? frase)) ? "Removida. Escreva aqui para voltar." : c.dica}
                         onBlur={(e) => {
                           const v = e.target.value.trim();
                           if (v !== c.valor.trim()) salvarTexto(c.campo, v);
@@ -1015,13 +1025,7 @@ export function VisitorExperience({
                       />
                     </div>
                   ))}
-                  <button type="button" role="switch" aria-checked={!ocultarNome} onClick={alternarNome} className="mb-2 mt-1 flex min-h-[44px] w-full items-center justify-between rounded-xl bg-surface-soft px-3 text-[14px]">
-                    Mostrar o nome na tela inicial
-                    <span className={`relative h-6 w-10 rounded-full transition-colors ${!ocultarNome ? "bg-on-background" : "bg-divider"}`}>
-                      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${!ocultarNome ? "left-[18px]" : "left-0.5"}`} />
-                    </span>
-                  </button>
-                  <p className="text-[12px] text-text-tertiary">Use Remover para esconder a frase ou a pergunta. Para voltar, é só escrever de novo.</p>
+                  <p className="text-[12px] text-text-tertiary">Toque na lixeira vermelha para esconder o nome, a frase ou a pergunta. Para voltar, escreva de novo ou toque em Mostrar.</p>
                   <button type="button" onClick={() => setTextosAberto(false)} className="mt-3 min-h-[44px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white">Pronto</button>
                 </div>
               )}
