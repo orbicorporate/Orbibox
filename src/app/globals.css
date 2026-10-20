@@ -1317,3 +1317,9 @@ html[data-embed] .embed-oculta { display: none !important; }
   .orbi-av-anel, .orbi-av-brilho, .orbi-av-passagem { animation: none; }
   .orbi-av-passagem { display: none; }
 }
+
+/* Reflexo de água de piscina na esfera: manchas de cor suaves que derivam por baixo do vidro. */
+.orbi-av-agua { position: absolute; inset: -22%; border-radius: 50%; pointer-events: none; opacity: 0.36; filter: blur(0.9cqw); animation: orbi-av-agua 11s ease-in-out infinite alternate; background: radial-gradient(38% 34% at 26% 30%, rgba(56, 200, 255, 0.7), transparent 70%), radial-gradient(34% 38% at 72% 26%, rgba(177, 77, 255, 0.55), transparent 70%), radial-gradient(40% 34% at 62% 74%, rgba(255, 176, 32, 0.5), transparent 70%), radial-gradient(34% 34% at 20% 80%, rgba(91, 108, 255, 0.55), transparent 70%); }
+.orbi-av-agua-b { opacity: 0.28; animation-duration: 15s; animation-direction: alternate-reverse; background: radial-gradient(36% 40% at 70% 70%, rgba(56, 200, 255, 0.65), transparent 70%), radial-gradient(34% 34% at 30% 22%, rgba(255, 90, 60, 0.45), transparent 70%), radial-gradient(40% 34% at 18% 62%, rgba(177, 77, 255, 0.5), transparent 70%); }
+@keyframes orbi-av-agua { 0% { transform: translate(-6%, -4%) rotate(0deg) scale(1.05); } 50% { transform: translate(5%, 6%) rotate(70deg) scale(1.2); } 100% { transform: translate(-4%, 5%) rotate(140deg) scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .orbi-av-agua { animation: none; } }

@@ -14,6 +14,8 @@ export function OrbiAvatar({ logoUrl, size = 96, className = "" }: { logoUrl: st
       <div className="orbi-av-miolo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoUrl} alt="" className="h-full w-full object-cover" />
+        <span className="orbi-av-agua" />
+        <span className="orbi-av-agua orbi-av-agua-b" />
         <span className="orbi-av-reflexo" />
         <span className="orbi-av-passagem" />
       </div>
