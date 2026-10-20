@@ -381,7 +381,7 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
     setEnviando(true);
     const ok = await enviarAvaliacao(businessId, eu.userId, { nota, comentario: coment, completo, foto });
     setEnviando(false);
-    if (!ok) return setMsg("Não consegui enviar. Só quem resgatou um voucher pode avaliar.");
+    if (!ok) return setMsg("Não consegui enviar a avaliação. Tente de novo.");
     setMsg("Obrigado! Sua avaliação já aparece na lista.");
     await Promise.all([carregar(), aoMudar()]);
   }
@@ -396,7 +396,7 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
     <Folha origem={origem} aoFechar={aoFechar} rotulo="Avaliações">
       {(fechar) => (
         <>
-          <Cabecalho titulo="Avaliações" sub="Todas de quem resgatou um voucher" fechar={fechar} />
+          <Cabecalho titulo="Avaliações" sub="O que os fãs dizem" fechar={fechar} />
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-1">
             <div className="cl-entra grid grid-cols-[auto_1fr] items-center gap-5 rounded-[28px] bg-surface-white p-5 ring-1 ring-divider" style={{ ["--i" as string]: 1 }}>
               <div>
@@ -423,7 +423,7 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
                 <Rosto url={r.foto_url} nome={r.nome} size={48} className="ring-2 ring-white/60" />
                 <div className="min-w-0 text-[15px] font-bold leading-tight">
                   <span className="block truncate">{r.nome || "Cliente"}</span>
-                  <small className="mt-0.5 block text-[11.5px] font-semibold opacity-85">Voucher resgatado · {new Date(r.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</small>
+                  <small className="mt-0.5 block text-[11.5px] font-semibold opacity-85">{new Date(r.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</small>
                 </div>
                 <div className="font-[family-name:var(--font-manrope)] text-[30px] font-extrabold tabular-nums tracking-[-0.03em]">{r.nota}</div>
                 {r.comentario ? <p className="col-span-full mt-1 text-[14px] leading-snug">{r.comentario}</p> : null}
@@ -453,11 +453,11 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
                 <p className="text-[15px] font-bold">{eu.minhaAvaliacao ? "Sua avaliação" : "Avaliar esta marca"}</p>
                 {!eu.logado ? (
                   <>
-                    <p className="mt-1 text-[13.5px] text-text-secondary">Entre para avaliar. Só quem resgatou um voucher da marca pode deixar nota.</p>
+                    <p className="mt-1 text-[13.5px] text-text-secondary">Entre com Google ou WhatsApp para deixar sua nota e seu comentário.</p>
                     <button type="button" onClick={pedirLogin} className="mt-3 min-h-[48px] w-full rounded-full bg-button-primary text-[15px] font-semibold text-white active:scale-[0.98]">Entrar para avaliar</button>
                   </>
                 ) : !eu.podeAvaliar && !eu.minhaAvaliacao ? (
-                  <p className="mt-1 text-[13.5px] text-text-secondary">Você poderá avaliar depois de resgatar um voucher desta marca. Se já resgatou usando seu WhatsApp, confirme o número no seu perfil de fã.</p>
+                  <p className="mt-1 text-[13.5px] text-text-secondary">Não foi possível liberar a avaliação agora. Tente entrar de novo.</p>
                 ) : (
                   <>
                     <div className="mt-2 flex justify-center gap-1" role="radiogroup" aria-label="Sua nota">
