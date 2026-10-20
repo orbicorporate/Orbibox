@@ -219,15 +219,12 @@ export function AppHeader({
                   do mesmo tamanho. Vouchers leva a arte 3D de fundo pra se
                   destacar sem precisar de um card enorme. */}
               <div className="grid grid-cols-2 gap-2">
-                {MENU_ITEMS.map((base) => {
-                  const convite = base.href === "/admin/cardapio" && !temCardapio;
-                  const item = convite ? { ...base, label: "Ativar cardápio", desc: "Para restaurantes, bares e cafés" } : base;
-                  return (
+                {MENU_ITEMS.filter((base) => base.href !== "/admin/cardapio" || temCardapio).map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`flex min-h-[136px] flex-col justify-between rounded-[22px] p-4 text-left transition-transform active:scale-[.97] ${convite ? "border-[1.5px] border-dashed border-on-background/25 bg-transparent" : "bg-white shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07]"}`}
+                    className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97]"
                   >
                     {item.marca && logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -240,8 +237,7 @@ export function AppHeader({
                       <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">{item.desc}</span>
                     </span>
                   </Link>
-                  );
-                })}
+                ))}
 
                 <Link
                   href="/admin/vouchers"
@@ -262,7 +258,7 @@ export function AppHeader({
                 <Link
                   href="/admin/gift"
                   onClick={() => setMenuOpen(false)}
-                  className="flex min-h-[136px] flex-col justify-between rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97]"
+                  className={`flex flex-col justify-between rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97] ${temCardapio ? "min-h-[136px]" : "col-span-2 min-h-[100px]"}`}
                 >
                   <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-on-background">{ICONES.gift}</span>
                   <span>
@@ -271,6 +267,16 @@ export function AppHeader({
                   </span>
                 </Link>
               </div>
+
+              {!temCardapio && (
+                <Link
+                  href="/admin/cardapio"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-2 block px-2 py-1.5 text-center text-[12.5px] text-text-tertiary underline-offset-2 active:opacity-60"
+                >
+                  Vende alimentos ou bebidas? <span className="font-medium text-text-secondary underline">Ativar cardápio</span>
+                </Link>
+              )}
 
               {/* Rede de lojas: linha simples, visível mas sem competir com as ações do dia a dia */}
               {podeRede && (
