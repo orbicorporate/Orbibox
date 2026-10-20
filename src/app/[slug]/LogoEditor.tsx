@@ -26,7 +26,7 @@ function imagemParaCanvas(img: HTMLImageElement): HTMLCanvasElement {
 }
 
 /** Corta as margens transparentes em volta do desenho, para o logo ocupar a esfera. */
-function aparar(origem: HTMLCanvasElement): HTMLCanvasElement {
+function aparar(origem: HTMLCanvasElement, margem = 0.02): HTMLCanvasElement {
   const w = origem.width, h = origem.height;
   const px = origem.getContext("2d")!.getImageData(0, 0, w, h).data;
   let x0 = w, y0 = h, x1 = -1, y1 = -1;
@@ -34,7 +34,7 @@ function aparar(origem: HTMLCanvasElement): HTMLCanvasElement {
     if (px[(y * w + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
   }
   if (x1 < 0) return origem;
-  const m = Math.round(Math.max(x1 - x0, y1 - y0) * 0.02);
+  const m = Math.round(Math.max(x1 - x0, y1 - y0) * margem);
   x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(w - 1, x1 + m); y1 = Math.min(h - 1, y1 + m);
   const c = document.createElement("canvas");
   c.width = x1 - x0 + 1;
@@ -48,7 +48,9 @@ function aparar(origem: HTMLCanvasElement): HTMLCanvasElement {
  * cor do fundo (média dos cantos), parando nos traços do desenho. As bordas
  * ganham transparência gradual pra não ficar serrilhado.
  */
-function removerFundo(origem: HTMLCanvasElement, tolerancia: number): HTMLCanvasElement {
+function removerFundo(entrada: HTMLCanvasElement, tolerancia: number): HTMLCanvasElement {
+  // Se a imagem já tem margem transparente em volta de um retângulo de fundo, corta até o desenho.
+  const origem = aparar(entrada, 0);
   const w = origem.width;
   const h = origem.height;
   const saida = document.createElement("canvas");
