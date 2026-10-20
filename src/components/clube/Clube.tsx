@@ -687,7 +687,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
               <>
                 <Cabecalho titulo={fa.nome || "Fã"} sub={marcas ? (marcas.length ? `Fã de ${marcas.length} ${marcas.length === 1 ? "marca" : "marcas"}` : "Perfil de fã") : "Carregando..."} fechar={() => setFa(null)} rotuloFechar="Voltar aos fãs" />
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-2">
-                  <div className="flex items-center gap-4 rounded-[28px] bg-surface-white p-4 ring-1 ring-divider">
+                  <div className="flex items-center gap-4 px-1 py-2">
                     <Rosto url={fa.foto_url} nome={fa.nome} size={72} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
                     <div className="min-w-0">
                       <p className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">{fa.nome || "Fã"}</p>

@@ -1368,7 +1368,7 @@ html[data-embed] .embed-oculta { display: none !important; }
 .cl-item > button:hover > .cl-av, .cl-item > button:focus-visible > .cl-av { transform: scale(1.14); }
 .cl-centro { position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 2; }
 @keyframes cl-pop { from { transform: scale(0); } to { transform: scale(1); } }
-.cl-camada { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--background-main, #fff); opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 3; }
+.cl-camada { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--background-main, #fff); opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 10; }
 .cl-camada.on { opacity: 1; pointer-events: auto; }
 .cl-camada::before { content: ""; position: fixed; inset: 0; background: var(--background-main, #fff); z-index: -1; }
 .cl-item > button { border-radius: 50%; }
