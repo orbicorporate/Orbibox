@@ -714,7 +714,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                     </div>
                   )}
 
-                  <p className="mb-2 mt-5 px-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Marcas que {fa.nome || "o fã"} segue</p>
+                  <p className="mb-2 mt-5 px-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Marcas que {fa.nome ? `o ${fa.nome}` : "esse fã"} é fã</p>
                   {marcas === null ? (
                     <p className="px-1 text-[14px] text-text-tertiary">Carregando...</p>
                   ) : marcas.length === 0 ? (
