@@ -1,42 +1,23 @@
 /**
- * Avatar redondo com o logotipo do negócio, no lugar da esfera da Orbi,
- * pra quem prefere a própria marca na tela inicial. Em volta do logo, uma
- * única bolinha de luz na cor da Orbi configurada acende e apaga em posições
- * diferentes, como estrelinhas piscando (uma de cada vez).
+ * Avatar redondo com o logotipo do negócio, no lugar da esfera da Orbi.
+ * Em volta do logo, um anel de luz prismática gira devagar (sinal de que ali
+ * tem IA) e, sobre a esfera, um reflexo de vidro passa de tempos em tempos.
+ * As medidas são em cqw (largura do avatar), então escala com o `size`.
+ * O parâmetro `color` ficou só por compatibilidade com quem já chama.
  */
-const ESTRELAS: { x: number; y: number }[] = [
-  { x: 8, y: 14 },
-  { x: 96, y: 30 },
-  { x: 30, y: 104 },
-  { x: 102, y: 82 },
-  { x: -4, y: 66 },
-  { x: 62, y: -6 },
-];
-
-export function OrbiAvatar({ logoUrl, size = 96, className = "", color }: { logoUrl: string; size?: number; className?: string; color?: string | null }) {
-  const cor = color || "#B7F34A";
-  const k = size / 96;
+export function OrbiAvatar({ logoUrl, size = 96, className = "" }: { logoUrl: string; size?: number; className?: string; color?: string | null }) {
   return (
-    <div className={`relative shrink-0 ${className}`} style={{ width: size, height: size }} aria-hidden>
-      <div className="relative h-full w-full overflow-hidden rounded-full bg-background-main">
+    <div className={`orbi-av relative shrink-0 ${className}`} style={{ width: size, height: size }} aria-hidden>
+      <span className="orbi-av-vidro" />
+      <span className="orbi-av-brilho" />
+      <span className="orbi-av-anel" />
+      <span className="orbi-av-anel orbi-av-anel-b" />
+      <div className="orbi-av-miolo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoUrl} alt="" className="h-full w-full object-cover" />
+        <span className="orbi-av-reflexo" />
+        <span className="orbi-av-passagem" />
       </div>
-      {ESTRELAS.map((e, i) => (
-        <span
-          key={i}
-          className="orbi-estrela absolute rounded-full"
-          style={{
-            left: e.x * k,
-            top: e.y * k,
-            width: 7,
-            height: 7,
-            background: cor,
-            boxShadow: `0 0 9px 2px ${cor}`,
-            animationDelay: `${i * 1.3}s`,
-          }}
-        />
-      ))}
     </div>
   );
 }
