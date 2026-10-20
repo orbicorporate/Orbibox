@@ -9,7 +9,7 @@ import {
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaDoFa, type Resumo,
 } from "@/lib/clube";
 import { OrbiAvatar, lerEsfera } from "@/components/orbi/OrbiAvatar";
-import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
+import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
 type Pendente = "fa" | "curtir" | "avaliar";
 type Aberta = { tipo: "avaliacoes" | "fas" | "entrar"; origem: DOMRect | null; modo?: "entrar" | "vincular" } | null;
@@ -565,8 +565,33 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
     <Folha origem={origem} aoFechar={aoFechar} rotulo="Fãs da marca">
       {(fechar) => (
         <>
-          <Cabecalho titulo={`${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}`} sub={`O clube de ${nome}`} fechar={fechar} />
-          <div className="flex min-h-0 flex-1 flex-col justify-center px-2">
+          <div className="cl-entra flex items-start justify-between gap-3 px-5 pb-3 pt-[max(18px,env(safe-area-inset-top))]" style={{ ["--i" as string]: 0 }}>
+            <div className="min-w-0">
+              <p className="text-[11.5px] font-bold uppercase tracking-[0.14em] text-text-tertiary">Clube de fãs</p>
+              <div className="mt-1 flex items-center gap-3">
+                <h2 className="flex items-baseline gap-2 font-[family-name:var(--font-manrope)] font-extrabold tracking-[-0.03em] text-on-background">
+                  <span className="text-[44px] leading-none tabular-nums">{resumo.fas}</span>
+                  <span className="text-[20px]">{resumo.fas === 1 ? "fã" : "fãs"}</span>
+                </h2>
+                {resumo.recentes.length > 0 && (
+                  <div className="flex pl-1" aria-hidden>
+                    {resumo.recentes.slice(0, 4).map((r, i) => (
+                      <span key={r.id} className="-ml-2.5 rounded-full ring-2 ring-[var(--background-main,#fff)] first:ml-0" style={{ zIndex: 4 - i }}>
+                        <Rosto url={r.foto} nome={r.nome} size={30} />
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="mt-2 max-w-[260px] text-[13.5px] leading-snug text-text-secondary">
+                {resumo.fas === 0 ? `Seja a primeira pessoa a entrar no clube de ${nome}.` : `Quem faz parte do clube de ${nome}. Toque em um fã para conhecer.`}
+              </p>
+            </div>
+            <button type="button" onClick={fechar} aria-label="Fechar" className="-mr-1 grid h-11 w-11 flex-none place-items-center rounded-full text-on-background active:scale-95">
+              <IcX />
+            </button>
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col justify-center px-2 pt-2">
             {fas === null ? (
               <p className="text-center text-[14px] text-text-tertiary">Carregando...</p>
             ) : fas.length === 0 ? (
@@ -597,7 +622,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                 </ul>
               </div>
             )}
-            <span className="text-[13px] text-text-tertiary">Toque em um fã para ver de quais marcas ele é fã</span>
+            
           </div>
           <div className="cl-entra flex flex-col items-center gap-2 px-5 pb-[max(22px,env(safe-area-inset-bottom))] pt-2" style={{ ["--i" as string]: 6 }}>
             {isOwner ? (
