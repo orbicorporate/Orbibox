@@ -675,7 +675,7 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
     >
       {b.logo ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={b.logo} alt="" className={`h-full w-full rounded-full object-cover ${linha ? "p-[3px]" : ""}`} />
+        <img src={b.logo} alt="" style={linha ? { filter: "grayscale(1) contrast(1.15)" } : undefined} className={`h-full w-full rounded-full object-cover ${linha ? "p-[3px]" : ""}`} />
       ) : (
         <Icone tipo={b.tipo} rede={b.rede} linha={linha} />
       )}
