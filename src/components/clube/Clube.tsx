@@ -571,7 +571,6 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
     <Folha origem={origem} aoFechar={aoFechar} rotulo="Fãs da marca">
       {(fechar) => (
         <>
-          <div className="cl-fas-fundo" aria-hidden />
           <Cabecalho titulo={`${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}`} sub={`O clube de ${nome}`} fechar={fechar} />
           <div className="flex min-h-0 flex-1 flex-col justify-center px-2">
             {fas === null ? (
