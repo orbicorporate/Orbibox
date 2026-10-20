@@ -13,6 +13,8 @@ import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties }
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { BotaoVirarFa, ClubeBloco } from "@/components/clube/Clube";
+import { souFa } from "@/lib/clube";
 import { Card } from "@/components/ui/Card";
 import { OrbiFloatingButton } from "./OrbiFloatingButton";
 import { GiftFlow } from "./GiftFlow";
@@ -929,6 +931,9 @@ export function VisitorExperience({
             Falar no WhatsApp
           </a>
         )}
+        {intent === null && modo === "orbita" && (
+          <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} isOwner={showOwnerControls} />
+        )}
 
         {intent === null && modo === "grade" && (
           <div className="flex w-full min-w-0 flex-col items-center text-center">
@@ -1021,6 +1026,7 @@ export function VisitorExperience({
                 </div>
               )}
             </div>
+            <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} isOwner={showOwnerControls} />
             {estiloVitrine && (
               <HomeVitrine
                 bolinhas={bolinhasVitrine}
@@ -1662,7 +1668,7 @@ export function VisitorExperience({
   );
 }
 
-type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null; color: string | null; show_discount?: boolean | null };
+type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null; color: string | null; show_discount?: boolean | null; apenas_fas?: boolean | null };
 
 function voucherDiscountLabel(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
   return descontoLongo(v);
@@ -1722,11 +1728,17 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
   const [error, setError] = useState<string | null>(null);
   const [meusVouchers, setMeusVouchers] = useState<MeuVoucher[]>([]);
   const [copied, setCopied] = useState<string | null>(null);
+  const [ehFa, setEhFa] = useState(false);
+  useEffect(() => {
+    let vivo = true;
+    souFa(business.id).then((v) => { if (vivo) setEhFa(v); });
+    return () => { vivo = false; };
+  }, [business.id]);
 
   useEffect(() => {
     supabase
       .from("vouchers")
-      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge, color, show_discount")
+      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge, color, show_discount, apenas_fas")
       .eq("business_id", business.id)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
@@ -1881,6 +1893,19 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                       <button onClick={() => resgatar(v.id)} className="flex-1 rounded-full bg-button-primary py-3 text-[14px] font-medium text-white">Confirmar</button>
                     </div>
                   </div>
+                </div>
+              );
+            }
+
+            if (v.apenas_fas && !ehFa) {
+              return (
+                <div key={v.id} className={`relative overflow-hidden rounded-[26px] p-5 text-white ${larga}`} style={{ background: voucherGradient(v.color) }}>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide opacity-90">Exclusivo para fãs</p>
+                  <p className="mt-1 text-[18px] font-bold leading-tight">{v.title}</p>
+                  <p className="mt-1 text-[13.5px] opacity-90">Vire fã de {business.name} para liberar este voucher.</p>
+                  <BotaoVirarFa businessId={business.id} slug={business.slug} aoVirarFa={() => setEhFa(true)} className="mt-4 min-h-[44px] rounded-full bg-white px-6 text-[14px] font-semibold text-[#14161A] active:scale-[0.97]">
+                    Virar fã
+                  </BotaoVirarFa>
                 </div>
               );
             }

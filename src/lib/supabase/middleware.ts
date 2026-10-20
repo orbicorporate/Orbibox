@@ -76,6 +76,22 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // Conta de fã (criada ao virar fã de uma marca) que abre o painel sem ter negócio
+  // nem ser da equipe de um: vai pro onboarding em vez de cair numa tela quebrada.
+  if (user && isAdmin) {
+    const { data: dono } = await supabase.from("businesses").select("id").eq("owner_id", user.id).limit(1).maybeSingle();
+    if (!dono) {
+      const { data: equipe } = await supabase.from("business_admins").select("id").or(`user_id.eq.${user.id},email.eq.${user.email ?? "-"}`).limit(1).maybeSingle();
+      const { data: fa } = equipe ? { data: null } : await supabase.from("customers").select("id").eq("id", user.id).maybeSingle();
+      if (!equipe && fa) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/onboarding";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   // Assinatura que já existiu mas está com problema (pagamento falhou,
   // cancelada, etc), manda pra tela de planos pra reativar. Quem nunca
   // teve assinatura (ainda não passou pelo checkout) não é bloqueado aqui;

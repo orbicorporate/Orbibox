@@ -32,6 +32,7 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
   const [quantityTotal, setQuantityTotal] = useState(String(voucher.quantity_total));
   const [expiresHours, setExpiresHours] = useState(voucher.expires_hours ? String(voucher.expires_hours) : "");
   const [mostrarDesconto, setMostrarDesconto] = useState(voucher.show_discount !== false);
+  const [apenasFas, setApenasFas] = useState(voucher.apenas_fas === true);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -53,6 +54,7 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
       quantity_total: qtd,
       expires_hours: expiresHours.trim() ? Number(expiresHours) : null,
       show_discount: mostrarDesconto,
+      apenas_fas: apenasFas,
     };
     if (!travado) {
       campos.discount_type = discountType;
@@ -156,6 +158,17 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
               </button>
             </div>
           )}
+
+          <div className="flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-medium">Só para fãs</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Quem ainda não é fã da sua marca vê o voucher com cadeado e só pega depois de virar fã.</p>
+            </div>
+            <button type="button" role="switch" aria-checked={apenasFas} onClick={() => setApenasFas((m) => !m)} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${apenasFas ? "bg-on-background" : "bg-divider"}`}>
+              <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${apenasFas ? "left-7" : "left-1"}`} />
+              <span className="sr-only">{apenasFas ? "Ligado" : "Desligado"}</span>
+            </button>
+          </div>
 
           <div>
             <p className={rotulo}>Quantos vouchers disponíveis</p>

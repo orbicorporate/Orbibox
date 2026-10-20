@@ -22,8 +22,8 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["campaigns"]["Insert"]>
         Relationships: []
       }
-      content_items: { Row: { target_url: string | null; link_kind: string | null; ai_optimized: boolean; ai_score: number | null; box_color: string; footer_color: string | null; title_placement: string; box_style: string; starts_at: string | null; ends_at: string | null; brand_label: string | null; layout_size: string; business_id: string; created_at: string; description: string | null; gallery_urls: string[]; gallery_ratio: string | null; photo_format: string | null; id: string; image_is_placeholder: boolean; image_url: string | null; images: Json; position: number; price: number | null; price_type: string; price_max: number | null; source_url: string | null; status: string; title: string; type: string; updated_at: string; highlight_stat: string | null; orbi_hook: string | null; highlights: string[] | null; lista: Json | null }
-        Insert: { target_url?: string | null; link_kind?: string | null; ai_optimized?: boolean; ai_score?: number | null; box_color?: string; footer_color?: string | null; title_placement?: string; box_style?: string; starts_at?: string | null; ends_at?: string | null; brand_label?: string | null; layout_size?: string; business_id: string; created_at?: string; description?: string | null; gallery_urls?: string[]; gallery_ratio?: string | null; photo_format?: string | null; id?: string; image_is_placeholder?: boolean; image_url?: string | null; images?: Json; position?: number; price?: number | null; price_type?: string; price_max?: number | null; source_url?: string | null; status?: string; title: string; type: string; updated_at?: string; highlight_stat?: string | null; orbi_hook?: string | null; highlights?: string[] | null; lista?: Json | null }
+      content_items: { Row: { target_url: string | null; link_kind: string | null; ai_optimized: boolean; ai_score: number | null; box_color: string; footer_color: string | null; title_placement: string; box_style: string; starts_at: string | null; ends_at: string | null; brand_label: string | null; layout_size: string; business_id: string; created_at: string; description: string | null; gallery_urls: string[]; gallery_ratio: string | null; photo_format: string | null; id: string; image_is_placeholder: boolean; image_url: string | null; images: Json; position: number; price: number | null; price_type: string; price_max: number | null; source_url: string | null; status: string; title: string; type: string; updated_at: string; highlight_stat: string | null; orbi_hook: string | null; highlights: string[] | null; lista: Json | null; apenas_fas: boolean }
+        Insert: { target_url?: string | null; link_kind?: string | null; ai_optimized?: boolean; ai_score?: number | null; box_color?: string; footer_color?: string | null; title_placement?: string; box_style?: string; starts_at?: string | null; ends_at?: string | null; brand_label?: string | null; layout_size?: string; business_id: string; created_at?: string; description?: string | null; gallery_urls?: string[]; gallery_ratio?: string | null; photo_format?: string | null; id?: string; image_is_placeholder?: boolean; image_url?: string | null; images?: Json; position?: number; price?: number | null; price_type?: string; price_max?: number | null; source_url?: string | null; status?: string; title: string; type: string; updated_at?: string; highlight_stat?: string | null; orbi_hook?: string | null; highlights?: string[] | null; lista?: Json | null; apenas_fas?: boolean }
         Update: Partial<Database["public"]["Tables"]["content_items"]["Insert"]>
         Relationships: []
       }
@@ -78,14 +78,38 @@ export type Database = {
         Relationships: []
       }
       vouchers: {
-        Row: { id: string; business_id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; expires_hours: number | null; is_active: boolean; image_url: string | null; badge: string | null; color: string; show_discount: boolean; created_at: string; updated_at: string }
-        Insert: { id?: string; business_id: string; title: string; description?: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed?: number; expires_hours?: number | null; is_active?: boolean; image_url?: string | null; badge?: string | null; color?: string; show_discount?: boolean; created_at?: string; updated_at?: string }
+        Row: { id: string; business_id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; expires_hours: number | null; is_active: boolean; image_url: string | null; badge: string | null; color: string; show_discount: boolean; created_at: string; updated_at: string; apenas_fas: boolean }
+        Insert: { id?: string; business_id: string; title: string; description?: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed?: number; expires_hours?: number | null; is_active?: boolean; image_url?: string | null; badge?: string | null; color?: string; show_discount?: boolean; created_at?: string; updated_at?: string; apenas_fas?: boolean }
         Update: Partial<Database["public"]["Tables"]["vouchers"]["Insert"]>
         Relationships: []
       }
+      customers: {
+        Row: { id: string; nome: string | null; foto_url: string | null; telefone: string | null; telefone_verificado: boolean; mostrar_marcas: boolean; criado_em: string }
+        Insert: { id: string; nome?: string | null; foto_url?: string | null; telefone?: string | null; telefone_verificado?: boolean; mostrar_marcas?: boolean; criado_em?: string }
+        Update: Partial<Database["public"]["Tables"]["customers"]["Insert"]>
+        Relationships: []
+      }
+      fans: {
+        Row: { business_id: string; customer_id: string; criado_em: string; visivel: boolean; aceite_whatsapp: boolean; aceite_em: string | null }
+        Insert: { business_id: string; customer_id: string; criado_em?: string; visivel?: boolean; aceite_whatsapp?: boolean; aceite_em?: string | null }
+        Update: Partial<Database["public"]["Tables"]["fans"]["Insert"]>
+        Relationships: []
+      }
+      likes: {
+        Row: { customer_id: string; business_id: string; alvo: string; alvo_id: string; criado_em: string }
+        Insert: { customer_id: string; business_id: string; alvo?: string; alvo_id: string; criado_em?: string }
+        Update: Partial<Database["public"]["Tables"]["likes"]["Insert"]>
+        Relationships: []
+      }
+      reviews: {
+        Row: { id: string; business_id: string; customer_id: string; nota: number; comentario: string | null; nome_visivel: string; mostrar_foto: boolean; resposta_dono: string | null; resposta_em: string | null; revisao_pedida: boolean; status: string; criado_em: string }
+        Insert: { id?: string; business_id: string; customer_id: string; nota: number; comentario?: string | null; nome_visivel?: string; mostrar_foto?: boolean; resposta_dono?: string | null; resposta_em?: string | null; revisao_pedida?: boolean; status?: string; criado_em?: string }
+        Update: Partial<Database["public"]["Tables"]["reviews"]["Insert"]>
+        Relationships: []
+      }
       voucher_redemptions: {
-        Row: { id: string; voucher_id: string; business_id: string; code: string; visitor_name: string | null; visitor_whatsapp: string | null; status: string; claimed_at: string; expires_at: string | null; redeemed_at: string | null; created_at: string }
-        Insert: { id?: string; voucher_id: string; business_id: string; code: string; visitor_name?: string | null; visitor_whatsapp?: string | null; status?: string; claimed_at?: string; expires_at?: string | null; redeemed_at?: string | null; created_at?: string }
+        Row: { id: string; voucher_id: string; business_id: string; code: string; visitor_name: string | null; visitor_whatsapp: string | null; status: string; claimed_at: string; expires_at: string | null; redeemed_at: string | null; created_at: string; customer_id: string | null }
+        Insert: { id?: string; voucher_id: string; business_id: string; code: string; visitor_name?: string | null; visitor_whatsapp?: string | null; status?: string; claimed_at?: string; expires_at?: string | null; redeemed_at?: string | null; created_at?: string; customer_id?: string | null }
         Update: Partial<Database["public"]["Tables"]["voucher_redemptions"]["Insert"]>
         Relationships: []
       }
