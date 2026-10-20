@@ -503,7 +503,6 @@ const NIVEIS = [
   { cor: "#FF9A3C", nome: "Compraram" },
   { cor: "#F2556B", nome: "Avaliaram" },
 ];
-const ANEIS_MARCAS = [{ r: 0.5, velocidade: 0.14 }, { r: 0.8, velocidade: -0.09 }];
 const CAP_ANEL = [6, 9, 12];
 const TAM = [46, 40, 36];
 
@@ -514,19 +513,20 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   const [fas, setFas] = useState<FaLite[] | null>(null);
   const [fa, setFa] = useState<FaLite | null>(null);
   const [marcas, setMarcas] = useState<MarcaDoFa[] | null>(null);
-  const [marcaSel, setMarcaSel] = useState<MarcaDoFa | null>(null);
+  const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
   const [contatos, setContatos] = useState<ContatoWhats[] | null>(null);
   const [verContatos, setVerContatos] = useState(false);
 
   useEffect(() => {
     let vivo = true;
     getFas(businessId).then((l) => { if (vivo) setFas(l); });
+    getAvaliacoes(businessId).then((l) => { if (vivo) setAvaliacoes(l); });
     if (isOwner) getContatos(businessId).then((c) => { if (vivo) setContatos(c); });
     return () => { vivo = false; };
   }, [businessId, isOwner]);
 
   async function abrirFa(f: FaLite) {
-    setFa(f); setMarcas(null); setMarcaSel(null);
+    setFa(f); setMarcas(null);
     setMarcas(await getMarcasDoFa(f.id));
   }
 
@@ -559,13 +559,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   const temNivel = (fas ?? []).some((f) => f.nivel != null);
   const esfera = lerEsfera(heroAvatar);
 
-  const itensMarcas: ItemOrbita[] = useMemo(() => {
-    const lista = (marcas ?? []).slice(0, 12);
-    return lista.map((m, i) => ({
-      key: m.id, size: 58, anel: i < 3 ? 0 : 1, rotulo: m.name, aoTocar: () => setMarcaSel(m),
-      node: <Rosto url={m.logo_url} nome={m.name} size={58} blob />,
-    }));
-  }, [marcas]);
+  const avaliacaoDoFa = fa ? avaliacoes.find((a) => a.customer_id === fa.id) ?? null : null;
 
   return (
     <Folha origem={origem} aoFechar={aoFechar} rotulo="Fãs da marca">
@@ -665,38 +659,68 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
             )}
           </div>
 
-          {/* Marcas do fã */}
+          {/* Painel do fã: marcas de que ele é fã e a avaliação dele */}
           <div className={`cl-camada ${fa ? "on" : ""}`} aria-hidden={!fa}>
             {fa && (
               <>
-                <Cabecalho titulo={fa.nome || "Fã"} sub={marcas ? (marcas.length ? `Fã de ${marcas.length} ${marcas.length === 1 ? "marca" : "marcas"}` : "") : "Carregando..."} fechar={() => setFa(null)} rotuloFechar="Voltar aos fãs" />
-                <div className="flex min-h-0 flex-1 flex-col justify-center px-2">
-                  {marcas && marcas.length === 0 ? (
-                    <div className="flex flex-col items-center gap-4 px-8 text-center">
-                      <Rosto url={fa.foto_url} nome={fa.nome} size={110} />
-                      <p className="text-[15px] text-text-secondary">{fa.nome || "Esse fã"} prefere não mostrar de quais outras marcas é fã.</p>
+                <Cabecalho titulo={fa.nome || "Fã"} sub={marcas ? (marcas.length ? `Fã de ${marcas.length} ${marcas.length === 1 ? "marca" : "marcas"}` : "Perfil de fã") : "Carregando..."} fechar={() => setFa(null)} rotuloFechar="Voltar aos fãs" />
+                <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-2">
+                  <div className="flex items-center gap-4 rounded-[28px] bg-surface-white p-4 ring-1 ring-divider">
+                    <Rosto url={fa.foto_url} nome={fa.nome} size={72} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
+                    <div className="min-w-0">
+                      <p className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">{fa.nome || "Fã"}</p>
+                      <p className="text-[13.5px] text-text-secondary">Fã de {nome}</p>
+                      {fa.nivel != null && (
+                        <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold" style={{ background: `${NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor}1F`, color: NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor }}>
+                          <span className="h-2 w-2 rounded-full" style={{ background: NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor }} aria-hidden />
+                          {["Acabou de chegar", "Curtiu a marca", "Já comprou", "Já avaliou"][Math.min(3, Math.max(0, fa.nivel))]}
+                        </span>
+                      )}
                     </div>
-                  ) : marcas ? (
-                    <Orbita
-                      key={fa.id}
-                      itens={itensMarcas}
-                      aneis={ANEIS_MARCAS}
-                      centro={<span className="block rounded-full bg-[#D9D2F4] p-1.5"><Rosto url={fa.foto_url} nome={fa.nome} size={104} /></span>}
-                    />
-                  ) : null}
+                  </div>
+
+                  {avaliacaoDoFa && (
+                    <div className="mt-3 rounded-[28px] bg-surface-white p-4 ring-1 ring-divider">
+                      <p className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Avaliação de {nome}</p>
+                      <div className="mt-1.5 flex items-center gap-0.5" aria-label={`Nota ${avaliacaoDoFa.nota} de 5`}>
+                        {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= avaliacaoDoFa.nota} tam={18} />)}
+                      </div>
+                      {avaliacaoDoFa.comentario ? <p className="mt-2 text-[14.5px] leading-snug text-on-background">{avaliacaoDoFa.comentario}</p> : null}
+                      {avaliacaoDoFa.resposta_dono ? (
+                        <p className="mt-2 rounded-2xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary"><b className="font-semibold text-on-background">Resposta da marca:</b> {avaliacaoDoFa.resposta_dono}</p>
+                      ) : null}
+                    </div>
+                  )}
+
+                  <p className="mb-2 mt-5 px-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Marcas que {fa.nome || "o fã"} segue</p>
+                  {marcas === null ? (
+                    <p className="px-1 text-[14px] text-text-tertiary">Carregando...</p>
+                  ) : marcas.length === 0 ? (
+                    <p className="rounded-[24px] bg-surface-soft px-4 py-4 text-[14px] leading-snug text-text-secondary">{fa.nome || "Esse fã"} prefere não mostrar de quais outras marcas é fã.</p>
+                  ) : (
+                    <ul className="flex flex-col gap-2">
+                      {marcas.map((m) => (
+                        <li key={m.id}>
+                          <a href={`/${m.slug}`} className="flex min-h-[64px] items-center gap-3 rounded-full bg-surface-white py-2 pl-2 pr-4 ring-1 ring-divider transition-transform active:scale-[0.98]">
+                            <span className="grid h-12 w-12 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
+                              {m.logo_url ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={m.logo_url} alt="" className="h-full w-full object-contain p-1.5" />
+                              ) : <span className="text-[16px] font-extrabold">{m.name.charAt(0).toUpperCase()}</span>}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-[15.5px] font-bold tracking-[-0.01em]">{m.name}</span>
+                              <span className="block text-[12.5px] text-text-tertiary">{m.slug === slug ? "Você está aqui" : "Abrir o Orbibox desta marca"}</span>
+                            </span>
+                            <span className="text-text-tertiary"><IcChev /></span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <div className="min-h-[64px] px-6 text-center">
-                  {marcaSel ? (
-                    <>
-                      <b className="block text-[18px] font-extrabold tracking-[-0.02em]">{marcaSel.name}</b>
-                      {marcaSel.slug === slug ? <span className="text-[13px] text-text-tertiary">Você está aqui</span> : <a href={`/${marcaSel.slug}`} className="text-[13.5px] font-semibold underline underline-offset-4">Abrir o Orbibox desta marca</a>}
-                    </>
-                  ) : marcas && marcas.length > 0 ? (
-                    <span className="text-[13px] text-text-tertiary">Toque em uma marca. Só aparecem as que {fa.nome || "o fã"} deixou visíveis.</span>
-                  ) : null}
-                </div>
-                <div className="flex justify-center px-5 pb-[max(22px,env(safe-area-inset-bottom))]">
-                  <button type="button" onClick={() => setFa(null)} className="min-h-[44px] rounded-full bg-surface-soft px-6 text-[14px] font-semibold active:scale-95">Voltar aos fãs</button>
+                <div className="flex justify-center px-5 pb-[max(22px,env(safe-area-inset-bottom))] pt-2">
+                  <button type="button" onClick={() => setFa(null)} className="min-h-[48px] rounded-full bg-surface-soft px-7 text-[15px] font-semibold active:scale-95">Voltar aos fãs</button>
                 </div>
               </>
             )}
