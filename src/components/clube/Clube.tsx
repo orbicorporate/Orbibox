@@ -567,8 +567,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
         <>
           <div className="cl-entra flex items-start justify-between gap-3 px-5 pb-3 pt-[max(18px,env(safe-area-inset-top))]" style={{ ["--i" as string]: 0 }}>
             <div className="min-w-0">
-              <p className="text-[11.5px] font-bold uppercase tracking-[0.14em] text-text-tertiary">Clube de fãs</p>
-              <div className="mt-1 flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <h2 className="flex items-baseline gap-2 font-[family-name:var(--font-manrope)] font-extrabold tracking-[-0.03em] text-on-background">
                   <span className="text-[44px] leading-none tabular-nums">{resumo.fas}</span>
                   <span className="text-[20px]">{resumo.fas === 1 ? "fã" : "fãs"}</span>
@@ -583,9 +582,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                   </div>
                 )}
               </div>
-              <p className="mt-2 max-w-[260px] text-[13.5px] leading-snug text-text-secondary">
-                {resumo.fas === 0 ? `Seja a primeira pessoa a entrar no clube de ${nome}.` : `Quem faz parte do clube de ${nome}. Toque em um fã para conhecer.`}
-              </p>
+              <p className="mt-1.5 truncate text-[13.5px] text-text-secondary">{resumo.fas === 0 ? "Seja o primeiro fã" : `Clube de ${nome}`}</p>
             </div>
             <button type="button" onClick={fechar} aria-label="Fechar" className="-mr-1 grid h-11 w-11 flex-none place-items-center rounded-full text-on-background active:scale-95">
               <IcX />
