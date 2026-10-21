@@ -619,7 +619,9 @@ export function ShowcaseBuilder({
     novoJaAberto.current = true;
     const t = setTimeout(() => {
       createItem();
-      router.replace("/admin/vitrine");
+      // Só limpa o ?novo=1 do endereço. Sem navegar: dentro do painel de edição, navegar de novo dava 404.
+      const emb = new URLSearchParams(window.location.search).get("embed");
+      window.history.replaceState(null, "", emb ? `/admin/vitrine?embed=${emb}` : "/admin/vitrine");
     }, 0);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

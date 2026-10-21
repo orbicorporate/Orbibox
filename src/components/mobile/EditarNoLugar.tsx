@@ -22,8 +22,14 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
   // Se o painel abrir e não mostrar nada (a parte pedida não apareceu), mostra a tela inteira
   // e, se nem assim houver conteúdo, oferece abrir em página cheia. Nunca fica em branco.
   const [semConteudo, setSemConteudo] = useState(false);
+  // Se a tela do editor vier como 404 (acontece logo depois de uma publicação nova), tenta de novo uma vez sozinho.
+  const [tentativa, setTentativa] = useState(0);
 
   function conferirConteudo() {
+    try {
+      const d = quadro.current?.contentDocument;
+      if (d && /could not be found/i.test(d.body?.innerText ?? "") && tentativa === 0) { setCarregou(false); setTentativa(1); return; }
+    } catch { /* outro domínio */ }
     window.setTimeout(() => {
       try {
         const doc = quadro.current?.contentDocument;
@@ -84,8 +90,9 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
             <div className="absolute inset-0 flex items-center justify-center text-[13px] text-text-secondary">Abrindo o editor...</div>
           )}
           <iframe
+            key={tentativa}
             ref={quadro}
-            src={urlEmbutida(href)}
+            src={tentativa ? `${urlEmbutida(href)}${urlEmbutida(href).includes("?") ? "&" : "?"}r=${tentativa}` : urlEmbutida(href)}
             title={rotulo}
             onLoad={() => { setCarregou(true); conferirConteudo(); }}
             className={`h-full w-full border-0 transition-opacity duration-200 ${carregou ? "opacity-100" : "opacity-0"}`}
