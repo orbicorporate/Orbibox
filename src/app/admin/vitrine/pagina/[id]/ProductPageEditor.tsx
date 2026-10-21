@@ -12,6 +12,7 @@ import { galleryRatioOf, formatPrice, isVideoUrl, youtubeId, instagramReelId, ty
 import { ImageCropModal, RATIOS, RATIO_PIXELS } from "@/components/ui/ImageCropModal";
 import { PromptParaIA } from "@/components/ui/LinhaExpansivel";
 import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
+import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 
@@ -122,6 +123,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [erroFoto, setErroFoto] = useState<string | null>(null);
+  const [daGaleria, setDaGaleria] = useState(false);
   const [sugerindo, setSugerindo] = useState(false);
   const [fotosProntas, setFotosProntas] = useState(false);
   const [marca, setMarca] = useState<MarcaPrompt | null>(null);
@@ -448,7 +450,14 @@ export function ProductPageEditor({ business, item }: { business: Business; item
                   <span className="shrink-0 rounded-full bg-on-background px-3.5 py-2 text-[12.5px] font-semibold text-white">Buscar</span>
                 </span>
               </button>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2 min-[420px]:grid-cols-4">
+                <button
+                  onClick={() => setDaGaleria(true)}
+                  className="flex flex-col items-center gap-1 rounded-2xl border border-divider bg-surface-white py-3 text-[12.5px] font-medium"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="9" cy="9" r="1.8" /><path d="M21 15l-5-5L5 21" /></svg>
+                  Da galeria
+                </button>
                 <button
                   onClick={() => inputRef.current?.click()}
                   disabled={enviando}
@@ -601,6 +610,19 @@ export function ProductPageEditor({ business, item }: { business: Business; item
         </div>
       </main>
 
+      {daGaleria && (
+        <MinhaGaleriaPicker
+          businessId={business.id}
+          onFechar={() => setDaGaleria(false)}
+          onEscolher={(url) => {
+            setDaGaleria(false);
+            if (midias.includes(url)) return irPara(midias.indexOf(url));
+            const nova = [...midias, url];
+            salvarMidias(nova);
+            irPara(nova.length - 1);
+          }}
+        />
+      )}
       {fotosProntas && (
         <FotoProntaPicker
           businessId={business.id}
