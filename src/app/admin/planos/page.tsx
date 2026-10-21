@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { VOUCHERS_GRATIS } from "@/lib/vouchersFranquia";
 import { createClient } from "@/lib/supabase/server";
 import { getAccessInfo, getAllPlans } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
@@ -33,6 +34,14 @@ export default async function PlanosPage({
     .select("id", { count: "exact", head: true })
     .eq("owner_id", user!.id)
     .eq("billing_period", billingPeriod);
+
+  const { data: meusNegocios } = await supabase.from("businesses").select("id").eq("owner_id", user!.id);
+  const { count: vouchersUsadosTotal } = await supabase
+    .from("voucher_redemptions")
+    .select("id", { count: "exact", head: true })
+    .in("business_id", (meusNegocios ?? []).map((n) => n.id))
+    .eq("status", "redeemed");
+  const gratisUsados = Math.min(vouchersUsadosTotal ?? 0, VOUCHERS_GRATIS);
 
   // Paywall por valor: durante e depois do teste sem cartão, a tela começa
   // pelo que o Orbibox fez de verdade, não pela tabela de preços.
@@ -127,10 +136,15 @@ export default async function PlanosPage({
         </div>
       )}
 
+      {gratisUsados > 0 && (
+        <p className="mt-5 rounded-2xl bg-surface-soft px-4 py-3 text-[13px] text-text-secondary">
+          Vouchers usados: {gratisUsados} de {VOUCHERS_GRATIS} grátis{gratisUsados >= VOUCHERS_GRATIS ? ". A partir do próximo, R$ 1,00 por voucher usado." : "."}
+        </p>
+      )}
       {!!vouchersCobrados && vouchersCobrados > 0 && (
         <div className="mt-5 rounded-[22px] border border-divider bg-surface-white p-5">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Vouchers usados este ciclo</p>
-          <p className="mt-1 text-[12px] text-text-tertiary">R$ 1,00 por voucher usado, ou seja, cada vez que você confirma o código de um cliente. Soma tudo e cobra junto da próxima fatura. Não cobra durante o teste grátis.</p>
+          <p className="mt-1 text-[12px] text-text-tertiary">R$ 1,00 por voucher usado, ou seja, cada vez que você confirma o código de um cliente. Soma tudo e cobra junto da próxima fatura. Os primeiros 20 são grátis. Não cobra durante o teste grátis.</p>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold">{vouchersCobrados}</span>
             <span className="text-[13px] text-text-secondary">{vouchersCobrados === 1 ? "voucher" : "vouchers"}</span>

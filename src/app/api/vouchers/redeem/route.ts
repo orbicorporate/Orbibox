@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { stripe } from "@/lib/stripe";
+import { VOUCHERS_GRATIS } from "@/lib/vouchersFranquia";
 
 /**
  * Cobra 1 real do dono do Orbibox por voucher resgatado (não do cliente
- * final). Não é uma cobrança avulsa na hora: cria um item de fatura
+ * final), depois dos primeiros VOUCHERS_GRATIS resgates da conta, que são
+ * grátis (contados em todos os negócios do dono, inclusive no teste). Não é uma cobrança avulsa na hora: cria um item de fatura
  * pendente no Stripe, que se acumula e entra automaticamente na próxima
  * fatura da assinatura, junto com o plano. Só cobra quando a assinatura já
  * está paga (status "active"), nunca durante o período de trial.
@@ -23,6 +25,16 @@ async function cobrarVoucherResgatado(redemptionId: string, businessId: string) 
     .eq("id", businessId)
     .maybeSingle();
   if (!business) return;
+
+  // Franquia grátis: o resgate atual já está confirmado, então ele entra na conta.
+  const { data: meusNegocios } = await service.from("businesses").select("id").eq("owner_id", business.owner_id);
+  const ids = (meusNegocios ?? []).map((n) => n.id);
+  const { count: resgatados } = await service
+    .from("voucher_redemptions")
+    .select("id", { count: "exact", head: true })
+    .in("business_id", ids.length > 0 ? ids : [businessId])
+    .eq("status", "redeemed");
+  if ((resgatados ?? 0) <= VOUCHERS_GRATIS) return;
 
   const { data: subscription } = await service
     .from("subscriptions")
