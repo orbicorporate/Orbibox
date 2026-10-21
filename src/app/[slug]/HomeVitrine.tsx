@@ -174,6 +174,7 @@ export function HomeVitrine({
   const [editandoTitulo, setEditandoTitulo] = useState(false);
   const [escolhendo, setEscolhendo] = useState(false);
   const [busca, setBusca] = useState("");
+  const [avisoCheio, setAvisoCheio] = useState(false);
   const [editandoCta, setEditandoCta] = useState(false);
   const [pergunta, setPergunta] = useState("");
   const [editando, setEditando] = useState(false);
@@ -440,25 +441,29 @@ export function HomeVitrine({
               placeholder="Buscar item"
               className="mt-3 w-full shrink-0 rounded-full border border-divider px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
             />
+            {avisoCheio && <p role="status" className="mt-2 shrink-0 rounded-xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary">Já são {MAXIMO} itens. Toque num dos marcados para tirar e depois escolha outro.</p>}
             <ul className="mt-3 min-h-0 flex-1 overflow-y-auto">
-              {itens
-                .filter((i) => i.title.toLowerCase().includes(busca.trim().toLowerCase()))
-                .map((i) => {
+              {(() => {
+                const termo = busca.trim().toLowerCase();
+                const filtrados = itens.filter((i) => i.title.toLowerCase().includes(termo));
+                const marcados = naSelecao.map((e) => filtrados.find((i) => i.id === e.id)).filter((i): i is ItemVitrine => !!i);
+                const outros = filtrados.filter((i) => !naSelecao.some((e) => e.id === i.id));
+                const linha = (i: ItemVitrine) => {
                   const ordem = naSelecao.findIndex((e) => e.id === i.id);
                   const marcado = ordem >= 0;
-                  const cheio = !marcado && naSelecao.length >= MAXIMO;
                   return (
                     <li key={i.id}>
                       <button
                         type="button"
-                        disabled={cheio}
                         aria-pressed={marcado}
                         onClick={() => {
                           const atuais = naSelecao.map((e) => e.id);
+                          if (!marcado && atuais.length >= MAXIMO) { setAvisoCheio(true); return; }
+                          setAvisoCheio(false);
                           const novos = marcado ? atuais.filter((id) => id !== i.id) : [...atuais, i.id];
                           onEscolherItens(novos.length > 0 ? novos : null);
                         }}
-                        className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl px-1 py-1.5 text-left disabled:opacity-40"
+                        className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl px-1 py-1.5 text-left"
                       >
                         {i.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -476,7 +481,16 @@ export function HomeVitrine({
                       </button>
                     </li>
                   );
-                })}
+                };
+                return (
+                  <>
+                    {marcados.length > 0 && <li className="px-1 pb-1 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Na Home agora</li>}
+                    {marcados.map(linha)}
+                    {marcados.length > 0 && outros.length > 0 && <li className="px-1 pb-1 pt-4 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros itens</li>}
+                    {outros.map(linha)}
+                  </>
+                );
+              })()}
             </ul>
             {personalizado && (
               <button type="button" onClick={() => onEscolherItens(null)} className="mt-3 min-h-[44px] w-full shrink-0 rounded-full border border-divider text-[14px] font-medium active:scale-[0.98]">
