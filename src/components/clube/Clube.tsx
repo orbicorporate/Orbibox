@@ -6,9 +6,9 @@ import { carregarCurtidas } from "@/lib/clube-curtidas";
 import type { PedidoFa } from "./CurtirItem";
 import {
   aceitarWhatsapp, atualizarPerfil, confirmarCodigo, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, enviarCodigoWhatsapp,
-  entrarComGoogle, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
+  enviarFotoPerfil, entrarComGoogle, getAfinidade, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
   sairDoClube, salvarContatoWhatsapp, virarFa,
-  type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaDoFa, type Resumo,
+  type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type Resumo,
 } from "@/lib/clube";
 import { OrbiAvatar, lerEsfera, lerLogoEscala } from "@/components/orbi/OrbiAvatar";
 import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
@@ -601,9 +601,12 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
   const [contatos, setContatos] = useState<ContatoWhats[] | null>(null);
   const [verContatos, setVerContatos] = useState(false);
+  const [afins, setAfins] = useState<MarcaAfim[]>([]);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
 
   useEffect(() => {
     let vivo = true;
+    getAfinidade(businessId).then((l) => { if (vivo) setAfins(l); });
     getFas(businessId).then((l) => { if (vivo) setFas(l); });
     getAvaliacoes(businessId).then((l) => { if (vivo) setAvaliacoes(l); });
     if (isOwner) getContatos(businessId).then((c) => { if (vivo) setContatos(c); });
@@ -623,7 +626,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
       if (noAnel >= CAP_ANEL[anel]) { anel++; noAnel = 0; }
       if (anel > 2) break;
       const s = TAM[anel] - (noAnel % 3) * 3;
-      out.push({ key: f.id, size: s, anel, rotulo: `Fã ${f.nome ?? ""}`, aoTocar: () => void abrirFa(f), node: <Rosto url={f.foto_url} nome={f.nome} size={s} blob aro={f.nivel != null ? NIVEIS[Math.min(3, Math.max(0, f.nivel))].cor : undefined} /> });
+      out.push({ key: f.id, size: s, anel, legenda: f.nome, rotulo: `Fã ${f.nome ?? ""}`, aoTocar: () => void abrirFa(f), node: <Rosto url={f.foto_url} nome={f.nome} size={s} blob aro={f.nivel != null ? NIVEIS[Math.min(3, Math.max(0, f.nivel))].cor : undefined} /> });
       noAnel++;
     }
     const resto = resumo.fas - out.length;
@@ -687,6 +690,30 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
             )}
           </div>
           <div className="cl-entra px-6 text-center" style={{ ["--i" as string]: 5 }}>
+            {afins.length > 0 && (
+              <div className="mx-auto mb-3 max-w-[340px]">
+                <p className="text-[12.5px] text-text-secondary">
+                  {afins[0].fas} {afins[0].fas === 1 ? "fã deste radar também gosta" : "fãs deste radar também gostam"} de <b className="font-semibold text-on-background">{afins[0].name}</b>
+                  {afins.length > 1 ? <>{afins.length > 2 ? ", " : " e "}<b className="font-semibold text-on-background">{afins[1].name}</b></> : null}
+                  {afins.length > 2 ? <> e <b className="font-semibold text-on-background">{afins[2].name}</b></> : null}
+                </p>
+                <ul className="mt-2 flex flex-wrap justify-center gap-2">
+                  {afins.slice(0, 6).map((m) => (
+                    <li key={m.id}>
+                      <a href={`/${m.slug}`} className="flex min-h-[36px] items-center gap-1.5 rounded-full bg-surface-white py-1 pl-1 pr-3 text-[12.5px] font-semibold ring-1 ring-divider active:scale-95">
+                        <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
+                          {m.logo_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={m.logo_url} alt="" className="h-full w-full object-contain p-0.5" />
+                          ) : <span className="text-[11px] font-extrabold">{m.name.charAt(0).toUpperCase()}</span>}
+                        </span>
+                        {m.name}<span className="text-text-tertiary tabular-nums">{m.fas}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {temNivel && (
               <div className="mx-auto mb-3 max-w-[340px]">
                 <div className="h-1.5 rounded-full" style={{ background: "linear-gradient(90deg,#F2556B,#FF9A3C,#1DB8A4,#3E8BEA)" }} aria-hidden />
@@ -755,6 +782,27 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                       }}
                     />
                     Mostrar de quais marcas sou fã
+                  </label>
+                )}
+                {eu.logado && eu.userId && (
+                  <label className="flex min-h-[44px] cursor-pointer items-center gap-2.5 text-[14px] text-text-secondary">
+                    <Rosto url={eu.foto} nome={eu.nome} size={30} />
+                    <span className="underline underline-offset-4">{enviandoFoto ? "Enviando..." : eu.foto ? "Trocar minha foto" : "Colocar minha foto"}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={async (e) => {
+                        const arq = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!arq || !eu.userId) return;
+                        setEnviandoFoto(true);
+                        try { await enviarFotoPerfil(eu.userId, arq); } catch { /* mantém a foto atual */ }
+                        setEnviandoFoto(false);
+                        await aoMudar();
+                        getFas(businessId).then(setFas);
+                      }}
+                    />
                   </label>
                 )}
                 {eu.logado && (

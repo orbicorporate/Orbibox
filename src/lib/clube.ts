@@ -51,6 +51,7 @@ export type Eu = {
   minhaAvaliacao: { id: string; nota: number; comentario: string | null; resposta_dono: string | null } | null;
 };
 export type MarcaDoFa = { id: string; name: string; slug: string; logo_url: string | null };
+export type MarcaAfim = MarcaDoFa & { fas: number };
 export type ContatoWhats = { nome: string | null; telefone: string; desde: string };
 
 const RESUMO_VAZIO: Resumo = { fas: 0, curtidas: 0, avaliacoes: 0, nota: null, distribuicao: [0, 0, 0, 0, 0], recentes: [] };
@@ -212,4 +213,28 @@ export async function souFa(businessId: string): Promise<boolean> {
   if (!user) return false;
   const { data } = await db.from("fans").select("customer_id").eq("business_id", businessId).eq("customer_id", user.id).maybeSingle();
   return !!data;
+}
+
+/** Outras marcas que os fãs deste radar também seguem (só de quem deixou as marcas públicas). */
+export async function getAfinidade(businessId: string): Promise<MarcaAfim[]> {
+  const { data } = await clubeDb().rpc("clube_afinidade", { p_business: businessId });
+  return (data as MarcaAfim[] | null) ?? [];
+}
+
+/** Foto de perfil do fã: recorta em quadrado, reduz e guarda no banco de imagens. */
+export async function enviarFotoPerfil(userId: string, arquivo: File): Promise<string | null> {
+  const bmp = await createImageBitmap(arquivo);
+  const lado = Math.min(bmp.width, bmp.height);
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 320;
+  cv.getContext("2d")!.drawImage(bmp, (bmp.width - lado) / 2, (bmp.height - lado) / 2, lado, lado, 0, 0, 320, 320);
+  const blob: Blob | null = await new Promise((ok) => cv.toBlob(ok, "image/jpeg", 0.86));
+  if (!blob) return null;
+  const db = clubeDb();
+  const caminho = `fas/${userId}/${Date.now()}.jpg`;
+  const { error } = await db.storage.from("box-images").upload(caminho, blob, { contentType: "image/jpeg", upsert: false });
+  if (error) return null;
+  const url = db.storage.from("box-images").getPublicUrl(caminho).data.publicUrl;
+  await db.from("customers").update({ foto_url: url }).eq("id", userId);
+  return url;
 }

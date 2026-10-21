@@ -130,7 +130,7 @@ export function Cabecalho({ titulo, sub, fechar, rotuloFechar = "Fechar" }: { ti
 }
 
 /* ---------- Órbita ---------- */
-export type ItemOrbita = { key: string; size: number; anel: number; node: ReactNode; rotulo: string; aoTocar: () => void };
+export type ItemOrbita = { legenda?: string | null; key: string; size: number; anel: number; node: ReactNode; rotulo: string; aoTocar: () => void };
 
 export function Orbita({ itens, aneis, centro }: { itens: ItemOrbita[]; aneis: { r: number; velocidade: number; cor?: string }[]; centro: ReactNode }) {
   const host = useRef<HTMLDivElement>(null);
@@ -178,6 +178,7 @@ export function Orbita({ itens, aneis, centro }: { itens: ItemOrbita[]; aneis: {
           <button type="button" aria-label={it.rotulo} onClick={it.aoTocar} style={{ width: it.size, height: it.size, animationDelay: `${220 + i * 28}ms` }}>
             {it.node}
           </button>
+          {it.legenda ? <span className="cl-legenda" style={{ top: it.size / 2 + 2 }}>{it.legenda}</span> : null}
         </div>
       ))}
     </div>
