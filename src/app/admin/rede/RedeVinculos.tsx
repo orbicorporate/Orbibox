@@ -14,8 +14,8 @@ type Previa = { business_id: string; name: string; instagram_handle: string | nu
 
 function textoDoErro(msg: string | undefined): string {
   if (!msg) return "Não consegui agora. Tente de novo.";
-  if (msg.includes("codigo_invalido")) return "Código não encontrado, já usado ou vencido. Peça um novo para a loja.";
-  if (msg.includes("ja_esta_em_rede")) return "Esta loja já faz parte de uma rede.";
+  if (msg.includes("codigo_invalido")) return "Código não encontrado, já usado ou vencido. Peça um novo para o negócio.";
+  if (msg.includes("ja_esta_em_rede")) return "Este negócio já faz parte de uma rede.";
   if (msg.includes("sem_permissao")) return "Você precisa criar a sua rede antes.";
   return "Não consegui agora. Tente de novo.";
 }
@@ -32,7 +32,7 @@ function Avatar({ nome, logo }: { nome: string; logo: string | null }) {
 }
 
 /**
- * Lojas reais da rede: o dono da rede cria a rede, cola o código que a loja gerou,
+ * Lojas reais da rede: o dono da rede cria a rede, cola o código que o negócio gerou,
  * confere quem é e adiciona. Os números da rede (abaixo) ainda são de exemplo.
  */
 export function RedeVinculos() {
@@ -116,7 +116,7 @@ export function RedeVinculos() {
       {!rede ? (
         <>
           <h2 id="titulo-vinculos" className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Crie a sua rede</h2>
-          <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Depois disso, cada loja gera um código no Orbibox dela e você adiciona aqui.</p>
+          <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Depois disso, cada negócio gera um código no Orbibox dela e você adiciona aqui.</p>
           <label className="mt-3 block text-[13px] text-text-secondary" htmlFor="nome-rede">Nome da rede</label>
           <input
             id="nome-rede"
@@ -133,7 +133,7 @@ export function RedeVinculos() {
       ) : (
         <>
           <h2 id="titulo-vinculos" className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Lojas da rede {rede.name}</h2>
-          <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Peça o código que a loja gerou em Configurações, na parte Rede.</p>
+          <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Peça o código que o negócio gerou em Configurações, na parte Rede.</p>
 
           <div className="mt-3 flex gap-2">
             <input
@@ -141,7 +141,7 @@ export function RedeVinculos() {
               onChange={(e) => { setCodigo(e.target.value.toUpperCase()); setPrevia(null); setErro(null); }}
               onKeyDown={(e) => { if (e.key === "Enter" && codigo.trim()) buscar(); }}
               placeholder="ORB-XXXXXX"
-              aria-label="Código da loja"
+              aria-label="Código do negócio"
               autoCapitalize="characters"
               spellCheck={false}
               className="min-h-[48px] min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 font-mono text-[15px] tracking-[0.1em] outline-none focus:border-on-background/40"
@@ -160,7 +160,7 @@ export function RedeVinculos() {
                   <p className="truncate text-[13px] text-text-tertiary">{[previa.instagram_handle ? `@${previa.instagram_handle.replace(/^@/, "")}` : null, previa.address].filter(Boolean).join(" · ") || "Sem endereço informado"}</p>
                 </div>
               </div>
-              <p className="mt-2 text-[12.5px] text-text-tertiary">Confira se é a loja certa antes de adicionar.</p>
+              <p className="mt-2 text-[12.5px] text-text-tertiary">Confira se é o negócio certo antes de adicionar.</p>
               <button type="button" onClick={vincular} disabled={ocupado} className="mt-2 min-h-[48px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white disabled:opacity-50">
                 {ocupado ? "Adicionando..." : "Adicionar à minha rede"}
               </button>
@@ -184,7 +184,7 @@ export function RedeVinculos() {
               ))}
             </ul>
           ) : (
-            <p className="mt-4 text-[13px] text-text-tertiary">Nenhuma loja adicionada ainda.</p>
+            <p className="mt-4 text-[13px] text-text-tertiary">Nenhum negócio adicionado ainda.</p>
           )}
         </>
       )}

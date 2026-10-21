@@ -37,6 +37,7 @@ export function AppHeader({
   negocioAtual,
   logoUrl = null,
   temCardapio = true,
+  sugerirCardapio = false,
 }: {
   unseenConversas?: number;
   progressPct?: number;
@@ -54,6 +55,8 @@ export function AppHeader({
   logoUrl?: string | null;
   /** Cardápio ou delivery já ativos. Sem eles, o bloco vira um convite pra ativar (restaurantes, bares, cafés). */
   temCardapio?: boolean;
+  /** A Orbi percebeu que o negócio vende comida ou bebida e ainda não ativou o cardápio. */
+  sugerirCardapio?: boolean;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -269,7 +272,7 @@ export function AppHeader({
                 </Link>
               </div>
 
-              {!temCardapio && (
+              {!temCardapio && sugerirCardapio && (
                 <Link
                   href="/admin/cardapio"
                   onClick={() => setMenuOpen(false)}
@@ -279,14 +282,14 @@ export function AppHeader({
                 </Link>
               )}
 
-              {/* Rede de lojas: linha simples, visível mas sem competir com as ações do dia a dia */}
+              {/* Rede de negócios: linha simples, visível mas sem competir com as ações do dia a dia */}
               {podeRede && (
               <Link
                 href="/admin/rede"
                 onClick={() => setMenuOpen(false)}
                 className="mt-2 flex min-h-[48px] items-center justify-between gap-3 rounded-full px-4 text-[14px] text-text-secondary ring-1 ring-black/[0.07] transition-transform active:scale-[.98]"
               >
-                <span>Rede de lojas</span>
+                <span>Rede de negócios</span>
                 <span className="text-text-tertiary" aria-hidden>→</span>
               </Link>
               )}

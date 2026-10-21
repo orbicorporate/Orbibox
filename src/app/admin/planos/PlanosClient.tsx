@@ -36,7 +36,7 @@ const FEATURES: Record<string, { label: string; highlight?: boolean; nota?: stri
     { label: "Recomenda produtos no chat", highlight: true, nota: "Sugere o item certo e leva a pessoa até a compra." },
     { label: "Captura contatos sozinha", highlight: true, nota: "Quem conversa deixa o WhatsApp, sem formulário." },
     { label: "Vouchers com código único", highlight: true, nota: "Cada cliente resgata o seu, e cada código vale uma vez." },
-    { label: "Rede de lojas com código", highlight: true, nota: "Franquia ou várias lojas? Acompanhe todas num painel só." },
+    { label: "Rede de negócios com código", highlight: true, nota: "Franquia ou vários negócios? Acompanhe todas num painel só." },
     { label: "Vários administradores", highlight: true, nota: "Sua equipe edita junto, cada um com o seu acesso." },
   ],
 };

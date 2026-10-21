@@ -75,7 +75,7 @@ export function CodigoRede({ businessId }: { businessId: string }) {
   }
 
   async function sair() {
-    if (!window.confirm("Sair da rede? A marca deixa de ver os números desta loja.")) return;
+    if (!window.confirm("Sair da rede? A marca deixa de ver os números deste negócio.")) return;
     setSaindo(true);
     const { error } = await cliente().from("network_members").delete().eq("business_id", businessId);
     setSaindo(false);
@@ -94,7 +94,7 @@ export function CodigoRede({ businessId }: { businessId: string }) {
         {rede ? (
           <>
             <p className="text-[15px] font-semibold">Faz parte da rede {rede}</p>
-            <p className="mt-1 text-[13px] leading-snug text-text-tertiary">A marca acompanha esta loja na rede dela. Suas conversas e seus contatos continuam só seus.</p>
+            <p className="mt-1 text-[13px] leading-snug text-text-tertiary">A marca acompanha este negócio na rede dela. Suas conversas e seus contatos continuam só seus.</p>
             <button type="button" onClick={sair} disabled={saindo} className="mt-3 min-h-[44px] rounded-full border border-divider px-5 text-[14px] font-medium text-red-600 disabled:opacity-50">
               {saindo ? "Saindo..." : "Sair da rede"}
             </button>
@@ -102,7 +102,7 @@ export function CodigoRede({ businessId }: { businessId: string }) {
         ) : (
           <>
             <p className="text-[15px] font-semibold">Código da rede</p>
-            <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Sua marca tem uma rede de lojas? Gere um código e passe para ela. Ela adiciona esta loja no painel dela.</p>
+            <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Sua marca tem uma rede de negócios? Gere um código e passe para ela. Ela adiciona esta loja no painel dela.</p>
             {codigo ? (
               <div className="mt-3">
                 <div className="flex items-center justify-between gap-3 rounded-2xl border border-dashed border-on-background/30 px-4 py-3">

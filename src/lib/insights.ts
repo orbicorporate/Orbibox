@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { pareceGastronomico } from "@/lib/gastronomia";
 
 export type Insight = { title: string; description: string; ctaLabel: string; href: string };
 
@@ -14,14 +15,14 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("logo_url, contact_whatsapp, address, story_photos, differentials_cards, differentials")
+    .select("logo_url, contact_whatsapp, address, story_photos, differentials_cards, differentials, vitrine_categories")
     .eq("id", businessId)
     .single();
   if (!business) return [];
 
   const [agentRes, itemsPhotoRes, activeBoxesRes, boxesCfgRes] = await Promise.all([
     supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed, objectives, orbi_colors").eq("business_id", businessId).maybeSingle(),
-    supabase.from("content_items").select("image_url, image_is_placeholder, description").eq("business_id", businessId).eq("status", "published"),
+    supabase.from("content_items").select("title, image_url, image_is_placeholder, description").eq("business_id", businessId).eq("status", "published"),
     supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", businessId).eq("is_active", true),
     supabase.from("smart_boxes").select("id, box_type, config, is_active").eq("business_id", businessId),
   ]);
@@ -80,6 +81,16 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
         ? "Envie o PDF, monte os pratos ou traga itens do seu Catálogo. Quando estiver pronto, é só ligar o botão."
         : "Envie o PDF do cardápio ou monte os pratos com preço e foto. Quando estiver pronto, é só ligar o botão.",
       ctaLabel: "Abrir Cardápio",
+      href: "/admin/cardapio",
+    });
+  }
+  // A Orbi percebe sozinha quando o negócio vende comida ou bebida e sugere o Cardápio.
+  // Quem não vende não recebe essa sugestão.
+  if (!cardapioBox && pareceGastronomico(business.vitrine_categories as string[] | null, items.map((i) => i.title ?? ""))) {
+    insightsQueue.push({
+      title: "Parece que você vende comida ou bebida",
+      description: "Ative o Cardápio para mostrar pratos, preços e PDFs do jeito que o cliente espera. Se não for o seu caso, pode ignorar.",
+      ctaLabel: "Ativar cardápio",
       href: "/admin/cardapio",
     });
   }

@@ -188,7 +188,7 @@ export function RedeMarketing() {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 id="titulo-marketing" className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Marketing da rede</h2>
-          <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Números reais das lojas que já entraram. Você vê só os totais, nunca conversas nem dados de clientes.</p>
+          <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Números reais dos negócios que já entraram. Você vê só os totais, nunca conversas nem dados de clientes.</p>
         </div>
       </div>
 
@@ -254,10 +254,10 @@ export function RedeMarketing() {
       {!semNada && aba === "vouchers" && (
         <div className="mt-4 flex flex-col gap-5">
           <div>
-            <p className="text-[14.5px] font-medium">Por loja</p>
-            <p className="text-[12.5px] text-text-tertiary">Pego é quando o cliente garante o voucher. Usado é quando ele resgata na loja.</p>
+            <p className="text-[14.5px] font-medium">Por negócio</p>
+            <p className="text-[12.5px] text-text-tertiary">Pego é quando o cliente garante o voucher. Usado é quando ele resgata no negócio.</p>
             {porLoja.length === 0 ? (
-              <p className="mt-2 text-[13px] text-text-tertiary">Nenhuma loja criou vouchers ainda.</p>
+              <p className="mt-2 text-[13px] text-text-tertiary">Nenhum negócio criou vouchers ainda.</p>
             ) : (
               <ul className="mt-2 flex flex-col divide-y divide-divider">
                 {porLoja.map((l) => (
@@ -293,7 +293,7 @@ export function RedeMarketing() {
 
           <div>
             <p className="text-[14.5px] font-medium">Campanhas que mais convertem</p>
-            <p className="text-[12.5px] text-text-tertiary">Em ordem de quantos vouchers pegos viraram uso na loja.</p>
+            <p className="text-[12.5px] text-text-tertiary">Em ordem de quantos vouchers pegos viraram uso no negócio.</p>
             {campanhas.length === 0 ? (
               <p className="mt-2 text-[13px] text-text-tertiary">Nenhum voucher foi pego neste período.</p>
             ) : (
@@ -342,8 +342,8 @@ export function RedeMarketing() {
                 </ol>
               </div>
               <div>
-                <p className="text-[14.5px] font-medium">Por loja</p>
-                <p className="text-[12.5px] text-text-tertiary">Quais lojas mais levam clientes para pedir por app.</p>
+                <p className="text-[14.5px] font-medium">Por negócio</p>
+                <p className="text-[12.5px] text-text-tertiary">Quais negócios mais levam clientes para pedir por app.</p>
                 <ol className="mt-2 flex flex-col gap-2.5">
                   {deliveryPorLoja.map((l, i) => (
                     <li key={l.nome + i} className="rounded-2xl bg-surface-soft px-3.5 py-3">

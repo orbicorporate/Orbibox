@@ -64,7 +64,7 @@ export type HomeViewProps = {
   progressoPct: number;
   pelaMetade: { businessId: string; semItens: boolean; semBotoes: boolean; site: string | null; instagram: string | null } | null;
   mostrarConvite: boolean;
-  /** Dono com a Orbi (plano ou teste): vê a pergunta sobre rede de lojas até dispensar. */
+  /** Dono com a Orbi (plano ou teste): vê a pergunta sobre rede de negócios até dispensar. */
   perguntaRede?: boolean;
   pendencias: { title: string; href: string }[];
   /** Próxima pendência de cadastro, em linha fina embaixo do card principal quando ele está ocupado por uma oportunidade. */

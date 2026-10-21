@@ -396,7 +396,7 @@ function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
                       </div>
                       <div className="mt-4">
                         <div className="flex items-baseline justify-between">
-                          <p className="text-[14px] font-semibold">Vouchers desta loja</p>
+                          <p className="text-[14px] font-semibold">Vouchers deste negócio</p>
                           <p className="text-[12px] text-text-tertiary">Resultado da semana</p>
                         </div>
                         <ul className="mt-2 flex flex-col gap-2">
