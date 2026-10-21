@@ -5,6 +5,7 @@ import { getInspirePhotos } from "@/lib/inspirePhotos";
 import { ShowcaseBuilder } from "./ShowcaseBuilder";
 import { capaDoItem } from "@/lib/showcase";
 import { GuiaBotao } from "@/components/guia/GuiaOrbi";
+import Link from "next/link";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -33,6 +34,8 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
   const { data: caixas } = await supabase.from("smart_boxes").select("config").eq("business_id", business!.id).eq("box_type", "custom");
   const temCardapio = (caixas ?? []).some((b) => (b.config as { action?: string } | null)?.action === "cardapio");
 
+  const semFoto = (items ?? []).filter((i) => !i.image_url && !(Array.isArray(i.gallery_urls) && i.gallery_urls.length > 0)).length;
+
   const inspirePhotos = await getInspirePhotos();
 
   return (
@@ -44,6 +47,12 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
         O que o cliente vê no seu link.
       </p>
       <GuiaBotao className="mt-3 self-start" />
+      {semFoto >= 3 && (
+        <Link href="/admin/vitrine/fotos" className="mt-3 flex min-h-[52px] items-center justify-between gap-3 rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] active:scale-[0.99]">
+          <span><span className="font-medium">{semFoto} itens estão sem foto.</span> <span className="text-text-secondary">Escolher da sua galeria</span></span>
+          <span aria-hidden className="text-text-tertiary">›</span>
+        </Link>
+      )}
       <ShowcaseBuilder
         abrirNovo={novo === "1"}
         abrirCapa={abrir === "capa" || abrir === "ajustes" || abrir === "novidades"}
