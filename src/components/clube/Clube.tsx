@@ -75,44 +75,46 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   }
   const rect = (el: HTMLElement) => el.getBoundingClientRect();
 
-  async function alternarFa(el: HTMLElement) {
-    if (!eu?.logado || !eu.userId) return pedirLogin("fa", rect(el));
-    if (eu.ehFa) { await deixarDeSerFa(businessId, eu.userId); await curtirMarca(businessId, eu.userId, false); }
-    else { await virarFa(businessId, eu.userId); await curtirMarca(businessId, eu.userId, true); }
-    await recarregar();
-  }
   if (!resumo || !eu) return null;
   const temNota = resumo.avaliacoes > 0 && resumo.nota != null;
   const vazio = resumo.fas === 0 && resumo.avaliacoes === 0 && resumo.curtidas === 0;
 
+  // Um só elemento, sem fundo: rostos, contagem e coração. Toca e abre o painel dos fãs, para todo mundo.
   const cluster = !isOwner || resumo.fas > 0 ? (
-    <div className="flex items-center gap-2">
+    <button
+      type="button"
+      onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget) })}
+      aria-label={isOwner ? `${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}, abrir radar` : eu.ehFa ? `Você é fã. ${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}, abrir painel` : "Virar fã, abrir painel"}
+      className="flex min-h-[40px] items-center gap-2 text-[13.5px] font-semibold text-on-background transition active:scale-[0.96] [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]"
+    >
       {resumo.fas > 0 && (
-        <button
-          type="button"
-          onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget) })}
-          aria-label={`${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}, abrir radar`}
-          className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-white/55 py-1 pl-1.5 pr-3 text-[13px] font-semibold text-on-background shadow-sm ring-1 ring-black/5 backdrop-blur-md transition active:scale-[0.97]"
-        >
+        <>
           <span className="flex">
             {resumo.recentes.slice(0, 3).map((f, i) => (
               <Rosto key={f.id} url={f.foto} nome={f.nome} size={26} className={i ? "-ml-2 ring-2 ring-white" : "ring-2 ring-white"} />
             ))}
           </span>
           <span className="tabular-nums">{resumo.fas}</span>
-        </button>
+        </>
       )}
-      {!isOwner && <button
-        type="button"
-        onClick={(e) => (eu.ehFa ? setAberta({ tipo: "fas", origem: rect(e.currentTarget) }) : alternarFa(e.currentTarget))}
-        aria-pressed={eu.ehFa}
-        className={`flex min-h-[40px] items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold shadow-sm transition active:scale-[0.97] ${eu.ehFa ? "bg-surface-white/55 text-on-background ring-1 ring-black/5 backdrop-blur-md" : "bg-button-primary text-white"}`}
-      >
-        {eu.ehFa && <span className="text-[#F2556B]"><IcCoracao cheio /></span>}
-        {eu.ehFa ? "Fã" : "Virar fã"}
-      </button>}
-    </div>
+      {!isOwner && (
+        <>
+          <span className={eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}><IcCoracao cheio={eu.ehFa} /></span>
+          {!eu.ehFa && <span>Virar fã</span>}
+        </>
+      )}
+    </button>
   ) : null;
+
+  /** Convite da língua: fã logado com telefone já verificado aceita na hora; os outros passam pelo fluxo de entrada. */
+  async function querContato() {
+    if (eu?.logado && eu.userId && eu.ehFa) {
+      if (eu.telefoneVerificado) { await aceitarWhatsapp(businessId, eu.userId, true); await recarregar(); return; }
+      setAberta({ tipo: "entrar", origem: null, modo: "vincular" });
+      return;
+    }
+    pedirLogin("fa", null);
+  }
 
   async function confirmarPedido() {
     const pd = pedido;
@@ -165,15 +167,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
 
       {isOwner && vazio && <p className="max-w-[300px] text-center text-[13px] text-text-tertiary">Quando seus clientes virarem fãs e avaliarem, os números aparecem aqui.</p>}
       {isOwner && resumo.fas === 0 && resumo.avaliacoes > 0 ? null : null}
-      {!isOwner && eu.logado && eu.ehFa && !eu.aceiteWhatsapp && (
-        <button
-          type="button"
-          onClick={(e) => setAberta({ tipo: eu.telefoneVerificado ? "fas" : "entrar", origem: rect(e.currentTarget), modo: "vincular" })}
-          className="text-[13px] font-medium text-text-secondary underline underline-offset-4"
-        >
-          Receber novidades no WhatsApp
-        </button>
-      )}
+      {!isOwner && <LinguaContato nome={nome} slug={slug} ocupado={aberta !== null || pedido !== null} eu={eu} onQuero={querContato} />}
 
       {aberta?.tipo === "avaliacoes" && (
         <AvaliacoesFolha
@@ -866,5 +860,64 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
         </>
       )}
     </Folha>
+  );
+}
+
+
+const LINGUA_CHAVE = (slug: string) => `clube-lingua-${slug}`;
+
+/**
+ * Língua que sobe de vez em quando, embaixo, convidando o visitante a deixar o contato
+ * para receber novidades e promoções. Some se ele já aceitou; depois de dispensada,
+ * só volta em 3 dias, no máximo 3 vezes.
+ */
+function LinguaContato({ nome, slug, ocupado, eu, onQuero }: { nome: string; slug: string; ocupado: boolean; eu: Eu; onQuero: () => void }) {
+  const [pronta, setPronta] = useState(false);
+  const [aberta, setAberta] = useState(false);
+  const jaAceitou = eu.logado && eu.ehFa && eu.aceiteWhatsapp;
+
+  useEffect(() => {
+    if (jaAceitou) return;
+    let ok = true;
+    try {
+      const v = JSON.parse(localStorage.getItem(LINGUA_CHAVE(slug)) ?? "null") as { n: number; t: number } | null;
+      if (v && (v.n >= 3 || Date.now() - v.t < 3 * 86400000)) ok = false;
+    } catch { /* sem armazenamento: mostra */ }
+    if (!ok) return;
+    const t = setTimeout(() => setPronta(true), 15000);
+    return () => clearTimeout(t);
+  }, [jaAceitou, slug]);
+
+  const mostrar = pronta && !jaAceitou && !ocupado && !aberta;
+  const [visivel, setVisivel] = useState(false);
+  useEffect(() => {
+    if (!mostrar) return;
+    const q = requestAnimationFrame(() => setVisivel(true));
+    return () => cancelAnimationFrame(q);
+  }, [mostrar]);
+
+  function dispensar() {
+    setAberta(true);
+    try {
+      const v = JSON.parse(localStorage.getItem(LINGUA_CHAVE(slug)) ?? "null") as { n: number } | null;
+      localStorage.setItem(LINGUA_CHAVE(slug), JSON.stringify({ n: (v?.n ?? 0) + 1, t: Date.now() }));
+    } catch { /* ignora */ }
+  }
+
+  if (!mostrar) return null;
+  return createPortal(
+    <div
+      role="dialog"
+      aria-label="Receber novidades e promoções"
+      className={`cl-lingua fixed inset-x-0 bottom-0 z-[45] mx-auto w-[min(94vw,400px)] rounded-t-[24px] border border-b-0 border-divider bg-surface-white px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-4 shadow-[0_-8px_30px_rgba(17,19,24,0.14)] ${visivel ? "on" : ""}`}
+    >
+      <p className="text-[15px] font-semibold text-on-background">Quer saber das novidades e promoções?</p>
+      <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Deixe seu contato e {nome} avisa quando tiver algo bom. Só isso, sem spam.</p>
+      <div className="mt-3 flex items-center gap-2">
+        <button type="button" onClick={() => { dispensar(); onQuero(); }} className="min-h-[44px] flex-1 rounded-full bg-button-primary text-[14px] font-semibold text-white active:scale-[0.98]">Deixar meu contato</button>
+        <button type="button" onClick={dispensar} className="min-h-[44px] rounded-full px-4 text-[14px] font-medium text-text-secondary active:scale-[0.98]">Agora não</button>
+      </div>
+    </div>,
+    document.body,
   );
 }
