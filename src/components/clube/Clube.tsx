@@ -5,15 +5,15 @@ import { createPortal } from "react-dom";
 import { carregarCurtidas } from "@/lib/clube-curtidas";
 import type { PedidoFa } from "./CurtirItem";
 import {
-  aceitarWhatsapp, atualizarPerfil, confirmarCodigo, confirmarVinculo, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, enviarCodigoWhatsapp,
+  aceitarWhatsapp, atualizarPerfil, confirmarCodigo, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, enviarCodigoWhatsapp,
   entrarComGoogle, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
-  sairDoClube, vincularTelefone, virarFa,
+  sairDoClube, salvarContatoWhatsapp, virarFa,
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaDoFa, type Resumo,
 } from "@/lib/clube";
 import { OrbiAvatar, lerEsfera, lerLogoEscala } from "@/components/orbi/OrbiAvatar";
 import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
-type Aberta = { tipo: "avaliacoes" | "fas" | "entrar"; origem: DOMRect | null; modo?: "entrar" | "vincular" } | null;
+type Aberta = { tipo: "avaliacoes" | "fas" | "entrar" | "contato"; origem: DOMRect | null } | null;
 
 const GRAD_NOTA: Record<number, string> = { 5: "var(--cl-teal)", 4: "var(--cl-lime)", 3: "var(--cl-orange)", 2: "var(--cl-pink)", 1: "var(--cl-blue)" };
 const fmtNota = (n: number) => n.toFixed(1).replace(".", ",");
@@ -38,6 +38,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
 
   const executar = useCallback(async (p: string, e: Eu) => {
     if (!e.userId) return;
+    if (p === "contato") return setAberta({ tipo: "contato", origem: null });
     if (p === "fa") { await virarFa(businessId, e.userId); await curtirMarca(businessId, e.userId, true); }
     if (p === "curtir") await curtirMarca(businessId, e.userId, true);
     if (p.startsWith("item|")) {
@@ -48,6 +49,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     }
     await recarregar();
     if (p === "avaliar") setAberta({ tipo: "avaliacoes", origem: null });
+    if (p === "contato") setAberta({ tipo: "contato", origem: null });
   }, [businessId, recarregar]);
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       if (!vivo || !e.logado) return;
       let p: string | null = null;
       try { p = sessionStorage.getItem(chave(slug)); sessionStorage.removeItem(chave(slug)); } catch { /* ignora */ }
-      if (p === "fa" || p === "curtir" || p === "avaliar" || p?.startsWith("item|")) await executar(p, e);
+      if (p === "fa" || p === "curtir" || p === "avaliar" || p === "contato" || p?.startsWith("item|")) await executar(p, e);
     })();
     return () => { vivo = false; };
   }, [recarregar, executar, slug]);
@@ -71,7 +73,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
 
   function pedirLogin(p: string, origem: DOMRect | null) {
     try { sessionStorage.setItem(chave(slug), p); } catch { /* ignora */ }
-    setAberta({ tipo: "entrar", origem, modo: "entrar" });
+    setAberta({ tipo: "entrar", origem });
   }
   const rect = (el: HTMLElement) => el.getBoundingClientRect();
 
@@ -106,14 +108,10 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     </button>
   ) : null;
 
-  /** Convite da língua: fã logado com telefone já verificado aceita na hora; os outros passam pelo fluxo de entrada. */
-  async function querContato() {
-    if (eu?.logado && eu.userId && eu.ehFa) {
-      if (eu.telefoneVerificado) { await aceitarWhatsapp(businessId, eu.userId, true); await recarregar(); return; }
-      setAberta({ tipo: "entrar", origem: null, modo: "vincular" });
-      return;
-    }
-    pedirLogin("fa", null);
+  /** Convite da língua e do painel: pede só o número, sem código. Quem não entrou passa antes pelo login. */
+  function querContato() {
+    if (eu?.logado && eu.userId) { setAberta({ tipo: "contato", origem: null }); return; }
+    pedirLogin("contato", null);
   }
 
   async function confirmarPedido() {
@@ -195,24 +193,27 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           aoFechar={() => setAberta(null)}
           aoMudar={recarregar}
           pedirLogin={(el) => pedirLogin("fa", el)}
-          confirmarWhats={() => setAberta({ tipo: "entrar", origem: null, modo: "vincular" })}
+          confirmarWhats={() => setAberta({ tipo: "contato", origem: null })}
+        />
+      )}
+      {aberta?.tipo === "contato" && eu?.userId && (
+        <ContatoFolha
+          businessId={businessId}
+          userId={eu.userId}
+          nome={nome}
+          inicial={eu.contatoWhatsapp ?? eu.telefone}
+          aoFechar={() => setAberta(null)}
+          aoConcluir={async () => { setAberta(null); await recarregar(); }}
         />
       )}
       {aberta?.tipo === "entrar" && (
         <EntrarFolha
           slug={slug}
           businessId={businessId}
-          modo={aberta.modo ?? "entrar"}
           aoFechar={() => setAberta(null)}
           aoConcluir={async () => {
             setAberta(null);
             const e = await recarregar();
-            if (aberta.modo === "vincular" && e.userId && e.telefoneVerificado) {
-              if (!e.ehFa) await virarFa(businessId, e.userId);
-              await aceitarWhatsapp(businessId, e.userId, true);
-              await recarregar();
-              return;
-            }
             let p: string | null = null;
             try { p = sessionStorage.getItem(chave(slug)); sessionStorage.removeItem(chave(slug)); } catch { /* ignora */ }
             if ((p === "fa" || p === "curtir" || p === "avaliar" || p?.startsWith("item|")) && e.logado && p) await executar(p, e);
@@ -267,7 +268,6 @@ export function PedirFaFolha({ businessId, slug, nome }: { businessId: string; s
         <EntrarFolha
           slug={slug}
           businessId={businessId}
-          modo="entrar"
           aoFechar={() => { setEntrando(false); setPedido(null); }}
           aoConcluir={async () => {
             let p: string | null = null;
@@ -299,7 +299,6 @@ export function BotaoVirarFa({ businessId, slug, aoVirarFa, className, children 
         <EntrarFolha
           slug={slug}
           businessId={businessId}
-          modo="entrar"
           aoFechar={() => setAberto(false)}
           aoConcluir={async () => {
             setAberto(false);
@@ -316,7 +315,7 @@ export function BotaoVirarFa({ businessId, slug, aoVirarFa, className, children 
 /* =====================================================================
    Entrar: Google ou código por WhatsApp
    ===================================================================== */
-function EntrarFolha({ slug, businessId, modo, aoFechar, aoConcluir }: { slug: string; businessId: string; modo: "entrar" | "vincular"; aoFechar: () => void; aoConcluir: () => void }) {
+function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string; businessId: string; aoFechar: () => void; aoConcluir: () => void }) {
   const [passo, setPasso] = useState<"inicio" | "codigo" | "nome">("inicio");
   const [tel, setTel] = useState("");
   const [cod, setCod] = useState("");
@@ -325,7 +324,6 @@ function EntrarFolha({ slug, businessId, modo, aoFechar, aoConcluir }: { slug: s
   const [ocupado, setOcupado] = useState(false);
   const [eu, setEu] = useState<Eu | null>(null);
   const reduzido = useReduzido();
-  const vincular = modo === "vincular";
   const telefone = normalizarTelefone(tel);
 
   useEffect(() => {
@@ -342,14 +340,14 @@ function EntrarFolha({ slug, businessId, modo, aoFechar, aoConcluir }: { slug: s
   async function enviar() {
     if (tel.replace(/\D/g, "").length < 10) return setErro("Digite o número com DDD.");
     setOcupado(true); setErro(null);
-    const e = vincular ? await vincularTelefone(telefone) : await enviarCodigoWhatsapp(telefone);
+    const e = await enviarCodigoWhatsapp(telefone);
     setOcupado(false);
     if (e) return setErro(e);
     setPasso("codigo");
   }
   async function confirmar() {
     setOcupado(true); setErro(null);
-    const e = vincular ? await confirmarVinculo(telefone, cod) : await confirmarCodigo(telefone, cod);
+    const e = await confirmarCodigo(telefone, cod);
     if (e) { setOcupado(false); return setErro(e); }
     const eu2 = await getEu(businessId);
     setOcupado(false);
@@ -382,12 +380,10 @@ function EntrarFolha({ slug, businessId, modo, aoFechar, aoConcluir }: { slug: s
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">
-              {vincular ? "Confirmar seu WhatsApp" : passo === "nome" ? "Como quer ser chamado?" : "Entrar no clube"}
+              {passo === "nome" ? "Como quer ser chamado?" : "Entrar no clube"}
             </h2>
             <p className="mt-1 text-[14px] text-text-secondary">
-              {vincular
-                ? "A marca só vê seu número se você confirmar aqui e aceitar receber novidades."
-                : passo === "nome" ? "Esse nome aparece nas suas avaliações e na lista de fãs." : "Vire fã, ganhe vantagens exclusivas e avalie com rosto e nome."}
+              {passo === "nome" ? "Esse nome aparece nas suas avaliações e na lista de fãs." : "Vire fã, ganhe vantagens exclusivas e avalie com rosto e nome."}
             </p>
           </div>
           <button type="button" onClick={aoFechar} aria-label="Fechar" className="cl-x active:scale-95">
@@ -398,7 +394,7 @@ function EntrarFolha({ slug, businessId, modo, aoFechar, aoConcluir }: { slug: s
         <div className="mt-4 flex flex-col gap-3">
           {passo === "inicio" && (
             <>
-              {!vincular && (
+              {(
                 <>
                   <button type="button" onClick={google} disabled={ocupado} className="flex min-h-[48px] w-full items-center justify-center gap-3 rounded-full bg-surface-white text-[15px] font-semibold ring-1 ring-divider active:scale-[0.98] disabled:opacity-50">
                     <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" /><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z" /><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 010-9.4l-7.9-6.1a24 24 0 000 21.6l7.9-6.1z" /><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z" /></svg>
@@ -738,7 +734,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                       checked={eu.aceiteWhatsapp}
                       onChange={async (e) => {
                         if (!eu.userId) return;
-                        if (e.target.checked && !eu.telefoneVerificado) return confirmarWhats();
+                        if (e.target.checked && !eu.telefoneVerificado && !eu.contatoWhatsapp) return confirmarWhats();
                         await aceitarWhatsapp(businessId, eu.userId, e.target.checked);
                         await aoMudar();
                       }}
@@ -916,6 +912,64 @@ function LinguaContato({ nome, slug, ocupado, eu, onQuero }: { nome: string; slu
       <div className="mt-3 flex items-center gap-2">
         <button type="button" onClick={() => { dispensar(); onQuero(); }} className="min-h-[44px] flex-1 rounded-full bg-button-primary text-[14px] font-semibold text-white active:scale-[0.98]">Deixar meu contato</button>
         <button type="button" onClick={dispensar} className="min-h-[44px] rounded-full px-4 text-[14px] font-medium text-text-secondary active:scale-[0.98]">Agora não</button>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+
+/** Folha simples: o fã deixa o número e aceita receber novidades. Sem código de confirmação. */
+function ContatoFolha({ businessId, userId, nome, inicial, aoFechar, aoConcluir }: { businessId: string; userId: string; nome: string; inicial: string | null; aoFechar: () => void; aoConcluir: () => void }) {
+  const [tel, setTel] = useState(() => (inicial ?? "").replace(/^\+?55/, ""));
+  const [erro, setErro] = useState<string | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+  const reduzido = useReduzido();
+
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => { if (e.key === "Escape") aoFechar(); };
+    document.addEventListener("keydown", k);
+    return () => document.removeEventListener("keydown", k);
+  }, [aoFechar]);
+
+  async function salvar() {
+    if (tel.replace(/\D/g, "").length < 10) return setErro("Digite o número com DDD.");
+    setOcupado(true); setErro(null);
+    const e = await salvarContatoWhatsapp(businessId, userId, normalizarTelefone(tel));
+    setOcupado(false);
+    if (e) return setErro(e);
+    aoConcluir();
+  }
+
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[130] flex items-end justify-center bg-black/40" onClick={aoFechar} role="presentation">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Receber novidades no WhatsApp"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[440px] rounded-t-[32px] bg-background-main px-5 pb-[max(24px,env(safe-area-inset-bottom))] pt-5 shadow-[0_-12px_40px_rgba(0,0,0,0.2)]"
+        style={reduzido ? undefined : { animation: "cl-sobe .42s cubic-bezier(.22,1,.36,1) both" }}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">Receber novidades</h2>
+            <p className="mt-1 text-[14px] text-text-secondary">Deixe seu WhatsApp e {nome} avisa das novidades e promoções.</p>
+          </div>
+          <button type="button" onClick={aoFechar} aria-label="Fechar" className="cl-x active:scale-95">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+        <div className="mt-4 flex flex-col gap-3">
+          <label className="sr-only" htmlFor="clube-contato">Seu WhatsApp com DDD</label>
+          <input id="clube-contato" className="min-h-[48px] w-full rounded-full border border-divider bg-surface-white px-4 text-[16px] outline-none focus:border-on-background" inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={tel} onChange={(e) => setTel(e.target.value)} autoFocus />
+          <button type="button" onClick={salvar} disabled={ocupado} className="min-h-[48px] w-full rounded-full bg-button-primary text-[15px] font-semibold text-white disabled:opacity-50 active:scale-[0.98]">{ocupado ? "Salvando..." : "Quero receber"}</button>
+          {erro && <p role="alert" className="text-center text-[13.5px] text-[#C2362E]">{erro}</p>}
+          <p className="text-center text-[12px] leading-snug text-text-tertiary">
+            Seu WhatsApp nunca aparece para outros clientes. Só a marca vê, e você pode parar de receber quando quiser.
+          </p>
+        </div>
       </div>
     </div>,
     document.body,

@@ -639,6 +639,20 @@ export function VisitorExperience({
     setBoxList((prev) => prev.map((b) => (b.id === box.id ? { ...b, config: cfg } : b)));
     conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", box.id));
   }
+  // Destaques da Home escolhidos pelo dono. Ficam no box do catálogo e, se a marca não tem esse box, no box "Tela inicial".
+  const boxItensHome = boxList.find((b) => b.id === boxFormato?.key) ?? boxList.find((b) => b.box_type === "hero");
+  const itensHomeSalvos = (() => {
+    const v = ((boxItensHome?.config ?? {}) as CustomConfig).itensHome;
+    return Array.isArray(v) ? v : null;
+  })();
+  async function guardarItensHome(ids: string[] | null) {
+    if (!boxItensHome) return;
+    const cfg: CustomConfig = { ...((boxItensHome.config ?? {}) as CustomConfig) };
+    if (ids && ids.length > 0) cfg.itensHome = ids;
+    else delete cfg.itensHome;
+    setBoxList((prev) => prev.map((b) => (b.id === boxItensHome.id ? { ...b, config: cfg } : b)));
+    conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", boxItensHome.id));
+  }
   const escolherFormato = (f: FormatoItens) => guardarNaVitrine({ formatoItens: f });
   async function estiloBolinhas(keys: string[], estilo: "cor" | "linha") {
     setBoxList((prev) => prev.map((b) => (keys.includes(b.id) ? { ...b, config: { ...((b.config ?? {}) as CustomConfig), bolinha: estilo } } : b)));
@@ -1087,8 +1101,8 @@ export function VisitorExperience({
                 ordemCategorias={business.vitrine_categories ?? []}
                 formato={boxFormato?.formatoItens ?? "vitrine"}
                 onFormato={boxFormato ? escolherFormato : undefined}
-                itensEscolhidos={boxFormato?.itensHome ?? null}
-                onEscolherItens={boxFormato ? (ids) => guardarNaVitrine({ itensHome: ids }) : undefined}
+                itensEscolhidos={itensHomeSalvos}
+                onEscolherItens={guardarItensHome}
                 extras={extrasVitrine}
                 podeEditar={showOwnerControls}
                 onEstilo={estiloBolinhas}

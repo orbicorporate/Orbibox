@@ -44,6 +44,8 @@ export type Eu = {
   mostrarMarcas: boolean;
   ehFa: boolean;
   aceiteWhatsapp: boolean;
+  /** Número que o fã digitou para receber novidades (sem confirmação por código). */
+  contatoWhatsapp: string | null;
   curtiu: boolean;
   podeAvaliar: boolean;
   minhaAvaliacao: { id: string; nota: number; comentario: string | null; resposta_dono: string | null } | null;
@@ -79,7 +81,7 @@ export async function getContatos(businessId: string): Promise<ContatoWhats[]> {
 
 const EU_ANON: Eu = {
   logado: false, userId: null, nome: null, foto: null, telefone: null, telefoneVerificado: false, mostrarMarcas: false,
-  ehFa: false, aceiteWhatsapp: false, curtiu: false, podeAvaliar: false, minhaAvaliacao: null,
+  ehFa: false, aceiteWhatsapp: false, contatoWhatsapp: null, curtiu: false, podeAvaliar: false, minhaAvaliacao: null,
 };
 
 /** Garante a linha do cliente (nome e foto vêm do Google) e devolve o estado dele nesta marca. */
@@ -90,7 +92,7 @@ export async function getEu(businessId: string): Promise<Eu> {
   await garantirCliente(user);
   const [cli, fan, like, pode, rev] = await Promise.all([
     db.from("customers").select("nome, foto_url, telefone, telefone_verificado, mostrar_marcas").eq("id", user.id).maybeSingle(),
-    db.from("fans").select("aceite_whatsapp").eq("business_id", businessId).eq("customer_id", user.id).maybeSingle(),
+    db.from("fans").select("aceite_whatsapp, contato_whatsapp").eq("business_id", businessId).eq("customer_id", user.id).maybeSingle(),
     db.from("likes").select("alvo_id").eq("customer_id", user.id).eq("alvo", "marca").eq("alvo_id", businessId).maybeSingle(),
     db.rpc("pode_avaliar", { p_business: businessId }),
     db.from("reviews").select("id, nota, comentario, resposta_dono").eq("business_id", businessId).eq("customer_id", user.id).maybeSingle(),
@@ -105,6 +107,7 @@ export async function getEu(businessId: string): Promise<Eu> {
     mostrarMarcas: !!cli.data?.mostrar_marcas,
     ehFa: !!fan.data,
     aceiteWhatsapp: !!fan.data?.aceite_whatsapp,
+    contatoWhatsapp: (fan.data?.contato_whatsapp as string | null | undefined) ?? null,
     curtiu: !!like.data,
     podeAvaliar: pode.data === true,
     minhaAvaliacao: rev.data ?? null,
@@ -190,18 +193,16 @@ export async function sairDoClube() {
   await clubeDb().auth.signOut();
 }
 
-/** Quem entrou com Google confirma o WhatsApp: manda código e depois confirma. */
-export async function vincularTelefone(telefone: string): Promise<string | null> {
-  const { error } = await clubeDb().auth.updateUser({ phone: telefone });
-  return error ? "Não consegui enviar o código agora. Confira o número e tente de novo." : null;
-}
-export async function confirmarVinculo(telefone: string, codigo: string): Promise<string | null> {
-  const { error } = await clubeDb().auth.verifyOtp({ phone: telefone, token: codigo.trim(), type: "phone_change" });
-  if (error) return "Código incorreto ou vencido.";
-  // Reescreve a linha do cliente, o banco copia o telefone confirmado da conta.
-  const { data: { user } } = await clubeDb().auth.getUser();
-  if (user) await clubeDb().from("customers").update({ nome: (await clubeDb().from("customers").select("nome").eq("id", user.id).maybeSingle()).data?.nome ?? null }).eq("id", user.id);
-  return null;
+/**
+ * O fã deixa o número e aceita receber novidades, sem código de confirmação.
+ * Já o torna fã da marca. A marca só vê o número de quem aceitou.
+ */
+export async function salvarContatoWhatsapp(businessId: string, userId: string, telefone: string): Promise<string | null> {
+  const { error } = await clubeDb().from("fans").upsert(
+    { business_id: businessId, customer_id: userId, contato_whatsapp: telefone, aceite_whatsapp: true },
+    { onConflict: "business_id,customer_id" },
+  );
+  return error ? "Não consegui salvar seu número agora. Tente de novo." : null;
 }
 
 /** Leve: só diz se quem está logado já é fã desta marca. */
