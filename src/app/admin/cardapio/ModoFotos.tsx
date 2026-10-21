@@ -35,7 +35,7 @@ export default function ModoFotos({ valor, onChange, disabled, semOpcaoSem = fal
           </button>
         ))}
       </div>
-      <p key={valor} className="modo-desc mt-2.5 min-h-[36px] text-[12.5px] leading-snug text-text-secondary">{opcoes[indice].texto}</p>
+      <p key={valor} className="modo-desc mt-2.5 min-h-[44px] text-[12.5px] leading-snug text-text-secondary">{opcoes[indice].texto}</p>
     </div>
   );
 }

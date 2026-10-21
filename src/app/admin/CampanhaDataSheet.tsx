@@ -231,7 +231,7 @@ export function CampanhaDataSheet({
                 <div key={i} className="rounded-[20px] bg-surface-white p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-[13px] font-medium text-text-secondary">{p.canal}</p>
-                    <button type="button" onClick={() => copiar(i, p.texto)} className="min-h-[36px] shrink-0 rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium" aria-live="polite">
+                    <button type="button" onClick={() => copiar(i, p.texto)} className="min-h-[44px] shrink-0 rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium" aria-live="polite">
                       {copiado === i ? "Copiado ✓" : "Copiar"}
                     </button>
                   </div>

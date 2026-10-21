@@ -440,8 +440,8 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
               <p className="min-w-0 flex-1 truncate text-[14px] font-medium">{c.name}</p>
               <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => mover(c, -1)} className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px] disabled:opacity-30">↑</button>
               <button type="button" aria-label="Descer" disabled={i === categorias.length - 1} onClick={() => mover(c, 1)} className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px] disabled:opacity-30">↓</button>
-              <button type="button" onClick={() => renomear(c)} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium">Renomear</button>
-              <button type="button" onClick={() => excluirCategoria(c)} className="min-h-[36px] rounded-full px-2.5 text-[12.5px] font-medium text-red-600">Excluir</button>
+              <button type="button" onClick={() => renomear(c)} className="min-h-[44px] rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium">Renomear</button>
+              <button type="button" onClick={() => excluirCategoria(c)} className="min-h-[44px] rounded-full px-2.5 text-[12.5px] font-medium text-red-600">Excluir</button>
             </div>
           ))}
         </div>

@@ -700,7 +700,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                 <ul className="mt-2 flex flex-wrap justify-center gap-2">
                   {afins.slice(0, 6).map((m) => (
                     <li key={m.id}>
-                      <a href={`/${m.slug}`} className="flex min-h-[36px] items-center gap-1.5 rounded-full bg-surface-white py-1 pl-1 pr-3 text-[12.5px] font-semibold ring-1 ring-divider active:scale-95">
+                      <a href={`/${m.slug}`} className="flex min-h-[44px] items-center gap-1.5 rounded-full bg-surface-white py-1 pl-1 pr-3 text-[12.5px] font-semibold ring-1 ring-divider active:scale-95">
                         <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
                           {m.logo_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -806,7 +806,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                   </label>
                 )}
                 {eu.logado && (
-                  <button type="button" onClick={async () => { await sairDoClube(); window.location.reload(); }} className="min-h-[36px] text-[12.5px] text-text-tertiary underline underline-offset-4">
+                  <button type="button" onClick={async () => { await sairDoClube(); window.location.reload(); }} className="min-h-[44px] text-[12.5px] text-text-tertiary underline underline-offset-4">
                     Sair da minha conta de fã
                   </button>
                 )}

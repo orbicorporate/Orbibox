@@ -54,7 +54,7 @@ export function PrazoVoucher({ horas, onChange }: { horas: string; onChange: (h:
                 role="radio"
                 aria-checked={unidade === u}
                 onClick={() => { setUnidade(u); digitar(qtd, u); }}
-                className={`min-h-[36px] rounded-full px-3.5 text-[13px] font-medium ${unidade === u ? "bg-on-background text-white" : "text-text-secondary"}`}
+                className={`min-h-[44px] rounded-full px-3.5 text-[13px] font-medium ${unidade === u ? "bg-on-background text-white" : "text-text-secondary"}`}
               >
                 {u === "dias" ? "dias" : "horas"}
               </button>

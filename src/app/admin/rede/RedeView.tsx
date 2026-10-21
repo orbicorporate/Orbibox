@@ -312,7 +312,7 @@ function Lojas({ lojas, foco }: { lojas: LojaDemo[]; foco: string | null }) {
             type="button"
             aria-pressed={uf === u}
             onClick={() => { setUf(u); setAberta(null); }}
-            className={`min-h-[36px] shrink-0 rounded-full px-3.5 text-[13px] transition-colors ${uf === u ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
+            className={`min-h-[44px] shrink-0 rounded-full px-3.5 text-[13px] transition-colors ${uf === u ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
           >
             {u === "Todos" ? "Todos os estados" : u}
           </button>

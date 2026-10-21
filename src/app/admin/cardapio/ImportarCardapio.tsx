@@ -314,7 +314,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
                       </label>
                     </div>
                     {(i.fotoPreview || i.descricao) && (
-                      <button type="button" aria-expanded={!!i.aberto} onClick={() => mudar(si, ii, { aberto: !i.aberto })} className="mt-1.5 ml-[34px] inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium text-text-secondary active:scale-[0.97]">
+                      <button type="button" aria-expanded={!!i.aberto} onClick={() => mudar(si, ii, { aberto: !i.aberto })} className="mt-1.5 ml-[34px] inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium text-text-secondary active:scale-[0.97]">
                         {i.aberto ? "Recolher" : "Expandir"}
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className={`transition-transform duration-200 ${i.aberto ? "rotate-180" : ""}`}><path d="M6 9l6 6 6-6" /></svg>
                       </button>

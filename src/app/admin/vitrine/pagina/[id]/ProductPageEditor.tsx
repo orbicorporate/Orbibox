@@ -329,7 +329,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
                           <button
                             type="button"
                             onClick={() => definirCapa(src)}
-                            className="absolute left-3 top-3 min-h-[36px] rounded-full bg-white/90 px-3.5 text-[12px] font-medium text-on-background shadow-sm backdrop-blur active:scale-95"
+                            className="absolute left-3 top-3 min-h-[44px] rounded-full bg-white/90 px-3.5 text-[12px] font-medium text-on-background shadow-sm backdrop-blur active:scale-95"
                           >
                             Usar como foto do card
                           </button>

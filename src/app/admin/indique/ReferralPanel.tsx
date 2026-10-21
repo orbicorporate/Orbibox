@@ -135,7 +135,7 @@ export function ReferralPanel({ code, amigos, mesesGuardados, statusPlano }: { c
         <p className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Seu link de convite</p>
         <div className="mt-2 flex items-center gap-2 rounded-2xl bg-surface-soft py-2 pl-4 pr-2">
           <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{link.replace(/^https?:\/\//, "")}</span>
-          <button onClick={() => copiar("link")} className="min-h-[36px] shrink-0 rounded-full bg-on-background px-4 text-[12.5px] font-semibold text-white">
+          <button onClick={() => copiar("link")} className="min-h-[44px] shrink-0 rounded-full bg-on-background px-4 text-[12.5px] font-semibold text-white">
             {copiado === "link" ? "Copiado ✓" : "Copiar"}
           </button>
         </div>
@@ -148,7 +148,7 @@ export function ReferralPanel({ code, amigos, mesesGuardados, statusPlano }: { c
               type="button"
               onClick={() => setModelo(i)}
               aria-pressed={modelo === i}
-              className={`min-h-[36px] rounded-full px-3.5 text-[13px] font-medium ${modelo === i ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
+              className={`min-h-[44px] rounded-full px-3.5 text-[13px] font-medium ${modelo === i ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
             >
               {m.rotulo}
             </button>
