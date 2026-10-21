@@ -11,6 +11,7 @@ import OrbiPontos from "@/components/orbi/OrbiPontos";
 import { recortarFoto, type CaixaFoto } from "@/lib/recortarFoto";
 import { fundoIndisponivel, prepararTirarFundo } from "@/lib/tirarFundo";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
+import CampoPreco from "@/components/ui/CampoPreco";
 
 const MAX_FOTOS = 8;
 
@@ -303,10 +304,9 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
                       <label className="flex shrink-0 items-center gap-1 text-[13px] text-text-secondary">
                         {i.preco_tipo === "a_partir" && i.preco != null && <span className="text-[11px] text-text-tertiary">a partir de</span>}
                         <span>R$</span>
-                        <input
-                          value={i.preco == null ? "" : String(i.preco).replace(".", ",")}
-                          onChange={(e) => { const v = e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""); mudar(si, ii, { preco: v === "" ? null : Number(v) || 0 }); }}
-                          inputMode="decimal"
+                        <CampoPreco
+                          valor={i.preco}
+                          onValor={(v) => mudar(si, ii, { preco: v })}
                           placeholder="--"
                           aria-label={`Preço de ${i.titulo}`}
                           className="w-[58px] rounded-lg border border-divider bg-surface-white px-2 py-1 text-right text-[13.5px] outline-none focus:border-on-background"

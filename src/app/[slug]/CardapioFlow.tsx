@@ -81,7 +81,7 @@ export function CardapioFlow({
                       <span className="text-[11px]">PDF</span>
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[14.5px] font-medium leading-snug">Baixar cardápio</span>
+                      <span className="block truncate text-[14.5px] font-medium leading-snug">{p.nome?.trim() || "Baixar cardápio"}</span>
                       <span className="mt-0.5 block text-[12px] text-text-tertiary">PDF{p.bytes ? ` · ${pesoLegivel(p.bytes)}` : ""} · Baixar</span>
                     </span>
                   </a>

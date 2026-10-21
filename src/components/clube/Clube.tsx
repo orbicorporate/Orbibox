@@ -885,7 +885,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
           <div className={`cl-camada ${verContatos ? "on" : ""}`} aria-hidden={!verContatos}>
             {verContatos && (
               <>
-                <Cabecalho titulo="Contatos no WhatsApp" sub="Só de fãs que aceitaram e confirmaram o número" fechar={() => setVerContatos(false)} rotuloFechar="Voltar" />
+                <Cabecalho titulo="Contatos no WhatsApp" sub="Só de fãs que aceitaram receber contato" fechar={() => setVerContatos(false)} rotuloFechar="Voltar" />
                 <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-8 pt-2">
                   {contatos?.length ? contatos.map((c) => (
                     <div key={c.telefone} className="flex items-center gap-3 rounded-full bg-surface-white py-2 pl-2 pr-3 ring-1 ring-divider">

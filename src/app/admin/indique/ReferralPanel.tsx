@@ -225,7 +225,7 @@ export function ReferralPanel({ code, amigos, mesesGuardados, statusPlano }: { c
         <ol className="mt-3 flex flex-col gap-3">
           {[
             ["Mande seu link", "Pelo WhatsApp, stories ou onde quiser."],
-            ["Seu amigo testa 7 dias grátis", "Ele cria a página dele e conhece tudo sem pagar nada."],
+            ["Seu amigo testa 14 dias grátis", "Ele cria a página dele e conhece tudo sem pagar nada."],
             ["Ele assinou, você ganhou", "Quando ele paga a primeira mensalidade, mensal ou anual, entra 1 mês grátis pra você."],
           ].map(([t, d], i) => (
             <li key={t} className="flex gap-3">

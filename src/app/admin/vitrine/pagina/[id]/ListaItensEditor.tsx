@@ -8,6 +8,7 @@ import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 import { MAX_FOTOS, MAX_LISTA, fotosDoItem, listaVazia, novoIdLista, precoDoItem, reduzirFoto, type Lista, type ListaDestino, type ListaItem } from "@/lib/lista";
+import CampoPreco from "@/components/ui/CampoPreco";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background";
 
@@ -357,7 +358,7 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
               {propostos.map((p) => (
                 <li key={p.id} className="flex items-center gap-2 rounded-xl border border-divider bg-surface-white p-2">
                   <input value={p.nome} onChange={(e) => setPropostos((l) => (l ?? []).map((x) => (x.id === p.id ? { ...x, nome: e.target.value } : x)))} aria-label="Nome do item" className="min-w-0 flex-1 bg-transparent text-[14px] outline-none" />
-                  <input value={p.preco == null ? "" : String(p.preco).replace(".", ",")} onChange={(e) => { const v = e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""); setPropostos((l) => (l ?? []).map((x) => (x.id === p.id ? { ...x, preco: v === "" ? null : Number(v) || 0 } : x))); }} inputMode="decimal" placeholder="Preço" aria-label={`Preço de ${p.nome}`} className="w-[64px] rounded-lg border border-divider px-2 py-1 text-right text-[13.5px] outline-none focus:border-on-background" />
+                  <CampoPreco valor={p.preco} onValor={(v) => setPropostos((l) => (l ?? []).map((x) => (x.id === p.id ? { ...x, preco: v } : x)))} placeholder="Preço" aria-label={`Preço de ${p.nome}`} className="w-[64px] rounded-lg border border-divider px-2 py-1 text-right text-[13.5px] outline-none focus:border-on-background" />
                   <button type="button" onClick={() => setPropostos((l) => (l ?? []).filter((x) => x.id !== p.id))} aria-label="Tirar item" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[12px]">✕</button>
                 </li>
               ))}

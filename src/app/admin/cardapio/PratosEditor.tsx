@@ -7,6 +7,7 @@ import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
 import { TrazerItens } from "@/components/ui/TrazerItens";
 import { avisoDoEnvio, enviarAoCatalogo, itensDoCatalogo, mesclarNoCardapio, type ItemDoCatalogo } from "@/lib/cardapioSync";
 import { estiloFoto, nomeArquivoUnico, novoId, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
+import CampoPreco from "@/components/ui/CampoPreco";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
 
@@ -204,11 +205,10 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
                           <input value={i.nome} onChange={(e) => mudarItem(s.id, i.id, { nome: e.target.value })} maxLength={80} placeholder="Nome do prato" aria-label="Nome do prato" className={`${campo} min-w-0 flex-1`} autoFocus={!i.nome} />
                           <label className="flex w-[118px] shrink-0 items-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 py-2.5 text-[14px] text-text-secondary focus-within:border-on-background">
                             R$
-                            <input
-                              value={i.preco == null ? "" : String(i.preco).replace(".", ",")}
-                              onChange={(e) => { const v = e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""); mudarItem(s.id, i.id, { preco: v === "" ? null : Number(v) || 0 }); }}
+                            <CampoPreco
+                              valor={i.preco}
+                              onValor={(v) => mudarItem(s.id, i.id, { preco: v })}
                               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); novoPrato(s.id); } }}
-                              inputMode="decimal"
                               enterKeyHint="next"
                               placeholder="0,00"
                               aria-label="Preço"

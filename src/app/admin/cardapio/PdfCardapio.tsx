@@ -148,7 +148,15 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
     setReduzindo(false);
   }
 
+  // Remover apaga o arquivo de vez, então pede um segundo toque (antes apagava no primeiro).
+  const [querRemover, setQuerRemover] = useState<string | null>(null);
   function remover(p: CardapioPdf) {
+    if (querRemover !== p.id) {
+      setQuerRemover(p.id);
+      window.setTimeout(() => setQuerRemover((atual) => (atual === p.id ? null : atual)), 4000);
+      return;
+    }
+    setQuerRemover(null);
     onChange(pdfs.filter((x) => x.id !== p.id));
     void apagarAntigo(p.url);
   }
@@ -166,7 +174,7 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
     <div className="mt-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
       <p className="text-[14.5px] font-medium">{pdfs.length === 0 ? "Envie seu cardápio em PDF" : pdfs.length === 1 ? "Seu PDF" : "Seus PDFs"}</p>
       <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">
-        Cada PDF vira um botão para o cliente abrir. Dê um nome a cada um, como Cardápio, Bebidas ou Sobremesas. Até {MAX_PDFS} arquivos de {LIMITE_MB} MB.
+        O cliente vê estes PDFs quando abre o Cardápio na sua página, não na tela inicial. Dê um nome a cada um, como Cardápio, Bebidas ou Sobremesas. Para ter um botão de PDF na tela inicial, use Destaque, Criar algo novo, PDF. Até {MAX_PDFS} arquivos de {LIMITE_MB} MB.
       </p>
 
       {pdfs.length > 0 && (
@@ -196,7 +204,7 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
                 )}
                 <a href={p.url} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.06]">Ver o PDF ↗</a>
                 <button type="button" onClick={() => abrirEscolha(p.id)} disabled={enviando || otimizando} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium disabled:opacity-60">Trocar arquivo</button>
-                <button type="button" onClick={() => remover(p)} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary">Remover</button>
+                <button type="button" onClick={() => remover(p)} className={`min-h-[44px] rounded-full border px-4 text-[13.5px] font-medium ${querRemover === p.id ? "border-red-300 bg-red-50 text-red-700" : "border-divider bg-surface-white text-text-secondary"}`}>{querRemover === p.id ? "Toque de novo para apagar o arquivo" : "Remover"}</button>
                 {onMontar && <button type="button" onClick={() => onMontar(p)} className="min-h-[44px] rounded-full bg-on-background px-4 text-[13.5px] font-semibold text-white active:scale-[0.98]"><span aria-hidden>✦ </span>Monte os itens</button>}
               </div>
             </li>
