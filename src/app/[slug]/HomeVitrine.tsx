@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { LapisDono } from "@/components/mobile/LapisDono";
@@ -175,6 +177,45 @@ export function HomeVitrine({
   const [escolhendo, setEscolhendo] = useState(false);
   const [busca, setBusca] = useState("");
   const [avisoCheio, setAvisoCheio] = useState(false);
+  const [avisoNovo, setAvisoNovo] = useState<string | null>(null);
+  const router = useRouter();
+
+  /** Depois de criar um item pelo painel: publica (se já tem foto ou cor), põe nos destaques e descarta rascunho vazio. */
+  async function aposCriarItem() {
+    setAvisoNovo(null);
+    const supabase = createClient();
+    const desde = new Date(new Date().getTime() - 30 * 60 * 1000).toISOString();
+    const { data } = await supabase
+      .from("content_items")
+      .select("id, title, status, image_url, gallery_urls, description, price, box_color")
+      .eq("business_id", businessId)
+      .gte("created_at", desde)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const novo = data?.[0];
+    if (!novo || itens.some((i) => i.id === novo.id)) return;
+    const comFoto = !!novo.image_url || (Array.isArray(novo.gallery_urls) && novo.gallery_urls.length > 0);
+    const vazio = novo.status === "draft" && novo.title === "Novo item" && !comFoto && !novo.description?.trim() && novo.price == null;
+    if (vazio) {
+      await supabase.from("content_items").delete().eq("id", novo.id).eq("status", "draft");
+      return;
+    }
+    if (novo.status !== "published") {
+      if (!comFoto && (novo.box_color ?? "neutro") === "neutro") {
+        setAvisoNovo(`"${novo.title}" ficou como rascunho. Ponha uma foto nele e publique no catálogo para entrar nos destaques.`);
+        return;
+      }
+      await supabase.from("content_items").update({ status: "published" }).eq("id", novo.id);
+    }
+    const atuais = naSelecao.map((e) => e.id);
+    if (atuais.length >= MAXIMO) {
+      setAvisoNovo(`"${novo.title}" foi criado, mas já são ${MAXIMO} destaques. Tire um e marque o novo.`);
+    } else {
+      onEscolherItens?.([...atuais, novo.id]);
+      setAvisoNovo(`"${novo.title}" foi criado e entrou nos destaques.`);
+    }
+    router.refresh();
+  }
   const [editandoCta, setEditandoCta] = useState(false);
   const [pergunta, setPergunta] = useState("");
   const [editando, setEditando] = useState(false);
@@ -455,6 +496,15 @@ export function HomeVitrine({
               placeholder="Buscar item"
               className="mt-3 w-full shrink-0 rounded-full border border-divider px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
             />
+            <AbrirEditor
+              href="/admin/vitrine?novo=1"
+              rotulo="Criar item"
+              aoFechar={() => void aposCriarItem()}
+              className="mt-3 flex min-h-[48px] w-full shrink-0 items-center justify-center gap-2 rounded-full bg-surface-soft text-[14px] font-medium active:scale-[0.98]"
+            >
+              <span className="text-[18px] leading-none" aria-hidden>+</span> Não achou? Criar um item novo
+            </AbrirEditor>
+            {avisoNovo && <p role="status" className="mt-2 shrink-0 rounded-xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary">{avisoNovo}</p>}
             {avisoCheio && <p role="status" className="mt-2 shrink-0 rounded-xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary">Já são {MAXIMO} itens. Toque num dos marcados para tirar e depois escolha outro.</p>}
             <ul className="mt-3 min-h-0 flex-1 overflow-y-auto">
               {(() => {
