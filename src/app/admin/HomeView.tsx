@@ -8,6 +8,7 @@ import { ConviteCard } from "./ConviteCard";
 import { OportunidadeCard } from "./OportunidadeCard";
 import { LinhaExpansivel } from "./LinhaExpansivel";
 import { PerguntaOrbi } from "./PerguntaOrbi";
+import { CartaoTour } from "./CartaoTour";
 import { PerguntaRede } from "@/components/rede/PerguntaRede";
 import type { Oportunidade } from "@/lib/copiloto";
 import type { ComponentProps } from "react";
@@ -102,6 +103,8 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
 
       <ProximaAcao {...proxima} pendencia={null} compacto={oportunidade.selo !== "Deixe sua página mais completa"} />
 
+      {progressoPct < 70 && <CartaoTour />}
+
       {/* Só os 4 números que importam, da semana, com a comparação */}
       <section className="mt-6">
         <div className="flex items-baseline justify-between">
@@ -130,6 +133,11 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
             );
           })}
         </div>
+        {numeros.every((m) => m.n === 0) && (
+          <p className="mt-3 px-1 text-[12.5px] leading-snug text-text-tertiary">
+            Suas próprias visitas não entram na conta. Mande o link para um amigo e ele aparece aqui.
+          </p>
+        )}
       </section>
 
       {passoFaltando && (

@@ -158,8 +158,14 @@ export function ConfigForm({
     | "contact_whatsapp" | "contact_phone" | "contact_email" | "contact_site"
     | "address" | "about_business" | "differentials" | "policies" | "share_description";
 
-  async function save(key: CampoEditavel, value: string) {
-    const patch: Partial<Record<CampoEditavel, string | null>> = { [key]: value.trim() || null };
+  async function save(key: CampoEditavel | "name", value: string) {
+    // O nome nunca fica vazio: sem ele o título da página some.
+    if (key === "name") {
+      if (!value.trim()) return;
+      if (conferirSalvo(await supabase.from("businesses").update({ name: value.trim() }).eq("id", b.id))) setSaved(true);
+      return;
+    }
+    const patch: Partial<Record<CampoEditavel, string | null>> = { [key as CampoEditavel]: value.trim() || null };
     const res = await supabase.from("businesses").update(patch).eq("id", b.id);
     if (conferirSalvo(res)) setSaved(true);
   }
@@ -275,6 +281,18 @@ export function ConfigForm({
     <div className={`${embutido ? "" : "mt-6"} flex flex-col pb-4`}>
       {section === "marca" && (
       <div className="flex flex-col gap-3">
+        <div>
+          <p className={rotulo}>Nome do negócio</p>
+          <input
+            value={b.name}
+            onChange={(e) => set("name", e.target.value)}
+            onBlur={(e) => save("name", e.target.value)}
+            maxLength={80}
+            aria-label="Nome do negócio"
+            className={campo}
+          />
+          <p className="mt-1.5 px-1 text-[12px] leading-snug text-text-tertiary">Aparece no topo da sua página. O endereço do link continua o mesmo.</p>
+        </div>
         <GuiaPassos
           titulo="Sua marca em 3 passos"
           chave={`marca_${b.id}`}

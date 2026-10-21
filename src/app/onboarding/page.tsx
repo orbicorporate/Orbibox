@@ -79,6 +79,8 @@ export default function OnboardingPage() {
   const [frase, setFrase] = useState(0);
   const resultadoRef = useRef<BrandAnalysis | null>(null);
   const respondeuRef = useRef(false);
+  const leituraRef = useRef(0);
+  const perguntaDoisRef = useRef<HTMLDivElement>(null);
   const criouRef = useRef(false);
 
   const [montagem, setMontagem] = useState<{ status: "pending" | "ok"; itens: ItemMontado[]; segundos: number | null }>({ status: "pending", itens: [], segundos: null });
@@ -111,6 +113,15 @@ export default function OnboardingPage() {
     registrarFunil(`onb_${step}`, { umaVez: true, meta: step === "dados" ? { novo_negocio: novoNegocio } : undefined });
   }, [step, novoNegocio]);
 
+  // Cada leitura tem um número. Se a pessoa voltar e corrigir o nome, a leitura antiga é descartada.
+  function voltarParaDados() {
+    leituraRef.current += 1;
+    respondeuRef.current = false;
+    resultadoRef.current = null;
+    setError(null);
+    setStep("dados");
+  }
+
   function comecar(e: React.FormEvent) {
     e.preventDefault();
     if (!temLinks && !description.trim()) {
@@ -119,6 +130,7 @@ export default function OnboardingPage() {
       return;
     }
     setError(null);
+    const minha = ++leituraRef.current;
     respondeuRef.current = false;
     criouRef.current = false;
     resultadoRef.current = null;
@@ -133,11 +145,12 @@ export default function OnboardingPage() {
         body: JSON.stringify({ site: website.trim(), instagram: instagram.trim() }),
       })
         .then((r) => r.json())
-        .then((d) => setDescoberta(d?.ok ? { status: "ok", palavras: d.palavras ?? 0, imagens: d.imagens ?? [], fonte: d.fonte, host: d.host } : { status: "fail" }))
-        .catch(() => setDescoberta({ status: "fail" }));
+        .then((d) => minha === leituraRef.current && setDescoberta(d?.ok ? { status: "ok", palavras: d.palavras ?? 0, imagens: d.imagens ?? [], fonte: d.fonte, host: d.host } : { status: "fail" }))
+        .catch(() => minha === leituraRef.current && setDescoberta({ status: "fail" }));
     }
     analyzeBrand(name, instagram, website, description)
       .then((result) => {
+        if (minha !== leituraRef.current) return;
         const seen = new Set<string>();
         result.colors = (result.colors || []).filter((c) => {
           const k = c.hex.toLowerCase();
@@ -153,11 +166,18 @@ export default function OnboardingPage() {
         // mesma chama a criação quando termina a animação (onDone).
       })
       .catch(() => {
+        if (minha !== leituraRef.current) return;
         registrarFunil("onb_analise_erro", { meta: { tem_site: !!website.trim(), tem_instagram: !!instagram.trim() } });
         setError("A Orbi não conseguiu ler sua marca agora. Confira se o site ou o @ estão certos e tente de novo. Se preferir, apague os links e conte em uma frase o que vocês fazem.");
         if (!temLinks) setSemLinks(true);
         setStep("dados");
       });
+  }
+
+  // Ao escolher o objetivo a segunda pergunta aparece embaixo: leva a tela até ela.
+  function escolherObjetivo(id: NonNullable<typeof objetivo>) {
+    setObjetivo(id);
+    window.setTimeout(() => perguntaDoisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
   }
 
   function confirmarRespostas() {
@@ -207,7 +227,7 @@ export default function OnboardingPage() {
     };
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return voltar("Sessão expirada. Faça login novamente.");
+    if (!user) return voltar("Sua sessão expirou. Toque em Sair, no canto de cima, e entre de novo.");
 
     // O que a pessoa escolheu, ou o que a Orbi sugeriu quando ela deixou decidir.
     const seg = segmentoPorId(result.segmento);
@@ -502,6 +522,9 @@ export default function OnboardingPage() {
 
         {step === "objetivo" && (
           <div>
+            <button type="button" onClick={voltarParaDados} className="mb-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
+              ← Voltar e corrigir o nome ou os links
+            </button>
             {/* A Orbi trabalhando, sempre visível no topo enquanto a pessoa escolhe. */}
             <div className="flex items-center gap-3 rounded-[22px] bg-surface-white px-4 py-3 ring-1 ring-black/[0.06]">
               <BrandOrb colors={orbColors} size={36} />
@@ -520,13 +543,13 @@ export default function OnboardingPage() {
             </h2>
             <div className="mt-4 flex flex-col gap-2" role="radiogroup" aria-label="Objetivo">
               {OBJETIVOS.map((o) => (
-                <Opcao key={o.id} ativa={objetivo === o.id} onClick={() => setObjetivo(o.id)} titulo={o.rotulo} detalhe={o.detalhe} />
+                <Opcao key={o.id} ativa={objetivo === o.id} onClick={() => escolherObjetivo(o.id)} titulo={o.rotulo} detalhe={o.detalhe} />
               ))}
-              <Opcao ativa={objetivo === "orbi"} onClick={() => setObjetivo("orbi")} titulo="Não sei. Deixe a Orbi decidir" detalhe="Ela escolhe pelo que encontrou sobre você" orbi />
+              <Opcao ativa={objetivo === "orbi"} onClick={() => escolherObjetivo("orbi")} titulo="Não sei. Deixe a Orbi decidir" detalhe="Ela escolhe pelo que encontrou sobre você" orbi />
             </div>
 
             {objetivo && (
-              <div className="orbi-linha-entra">
+              <div className="orbi-linha-entra" ref={perguntaDoisRef}>
                 <h2 className="mt-9 font-[family-name:var(--font-manrope)] text-[22px] font-medium leading-tight tracking-[-0.01em]">
                   E o que você mais quer que seus clientes façam?
                 </h2>
@@ -576,7 +599,7 @@ export default function OnboardingPage() {
             )}
 
             <Button className="mt-8 w-full" variant="orbi" disabled={!objetivo || !conversao} onClick={confirmarRespostas}>
-              Ver meu Orbibox ✦
+              {!objetivo ? "Escolha o que você mais quer conseguir" : !conversao ? "Falta responder a pergunta de cima" : "Ver meu Orbibox ✦"}
             </Button>
           </div>
         )}

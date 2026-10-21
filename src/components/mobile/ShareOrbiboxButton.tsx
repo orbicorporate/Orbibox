@@ -86,41 +86,41 @@ export function ShareOrbiboxButton({
                 <p className="mt-2.5 text-center text-[15px] leading-relaxed text-text-secondary">
                   No WhatsApp e no Instagram, quem recebe vê primeiro a capa e a descrição, antes de abrir a página.
                 </p>
-                <Link
-                  href={configHref}
-                  onClick={() => setAsking(false)}
-                  className="mt-6 block rounded-full border border-divider bg-surface-white py-3.5 text-center text-[15px] font-semibold"
-                >
-                  Ver como o link aparece
-                </Link>
                 <button
                   onClick={() => { setAsking(false); doShare(); }}
-                  className="mt-2.5 w-full rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
+                  className="mt-6 w-full rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
                 >
                   Compartilhar agora
                 </button>
+                <Link
+                  href={configHref}
+                  onClick={() => setAsking(false)}
+                  className="mt-2.5 block rounded-full border border-divider bg-surface-white py-3.5 text-center text-[15px] font-semibold"
+                >
+                  Ver como o link aparece
+                </Link>
               </>
             ) : (
               <>
                 <p className="mt-5 text-center font-[family-name:var(--font-manrope)] text-[22px] font-semibold leading-tight tracking-[-0.01em]">
-                  Seu link ainda não tem capa
+                  Falta um detalhe no seu link
                 </p>
                 <p className="mt-2.5 text-center text-[15px] leading-relaxed text-text-secondary">
-                  Sem capa e descrição, o WhatsApp mostra só o endereço cru. Na próxima tela você escolhe a capa e já vê como o link vai aparecer.
+                  Sem capa ou sem descrição, o WhatsApp mostra só o endereço cru. Em Ajustar você vê o que falta e como o link vai aparecer.
                 </p>
-                <Link
-                  href={configHref}
-                  onClick={() => setAsking(false)}
-                  className="mt-6 block rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
-                >
-                  Escolher a capa
-                </Link>
                 <button
                   onClick={() => { setAsking(false); doShare(); }}
-                  className="mt-2 w-full rounded-full py-3 text-center text-[14.5px] font-medium text-text-tertiary"
+                  className="mt-6 w-full rounded-full bg-button-primary py-3.5 text-center text-[15px] font-semibold text-white"
                 >
                   Compartilhar assim mesmo
                 </button>
+                <Link
+                  href={configHref}
+                  onClick={() => setAsking(false)}
+                  className="mt-2.5 block rounded-full border border-divider bg-surface-white py-3.5 text-center text-[15px] font-semibold"
+                >
+                  Ajustar antes
+                </Link>
               </>
             )}
           </div>

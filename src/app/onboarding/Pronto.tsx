@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
-import { PerguntaRede } from "@/components/rede/PerguntaRede";
 import { conversaoPorId, type ConversaoId, type ObjetivoId } from "@/lib/conversao";
 
 export type ProntoDados = {
@@ -82,14 +81,25 @@ export function Pronto({
             />
           </div>
         </div>
-        <a
-          href={`/${d.slug}?preview=1`}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-5 flex w-[300px] items-center justify-center gap-2 rounded-full bg-on-background py-3.5 text-[15px] font-medium text-white transition-transform active:scale-[0.98]"
-        >
-          Ver como meus clientes verão <span aria-hidden>→</span>
-        </a>
+        <div className="mt-5 flex w-[300px] flex-col gap-2">
+          <a
+            href={`/${d.slug}`}
+            className="flex items-center justify-center gap-2 rounded-full bg-on-background py-3.5 text-[15px] font-medium text-white transition-transform active:scale-[0.98]"
+          >
+            Editar minha página <span aria-hidden>→</span>
+          </a>
+          <a
+            href={`/${d.slug}?preview=1`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-center gap-2 rounded-full border border-divider bg-surface-white py-3.5 text-[15px] font-medium text-on-background transition-transform active:scale-[0.98]"
+          >
+            Ver como meus clientes verão
+          </a>
+          <p className="px-2 text-center text-[12.5px] leading-snug text-text-tertiary">
+            Para mudar qualquer texto ou foto, abra a página e toque no lápis ✎ que aparece ao lado.
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-4 lg:col-start-2">
@@ -168,7 +178,6 @@ export function Pronto({
           </div>
         </div>
 
-        <PerguntaRede chave={`orbibox:pergunta-rede:${d.slug}`} aoTenho={() => onPainel("/admin/rede")} />
 
         <button type="button" onClick={() => onPainel()} className="orbi-gradient mt-1 w-full rounded-full py-3.5 text-[15px] font-medium text-on-background transition-transform active:scale-[0.98]">
           Ir para o meu painel →

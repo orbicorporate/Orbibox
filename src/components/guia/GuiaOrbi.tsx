@@ -50,6 +50,11 @@ function marcarFeito() {
   } catch {}
 }
 
+/** Abre o guia de qualquer lugar (a Home usa isso depois de levar a pessoa ao Catálogo). */
+export function iniciarGuia() {
+  window.dispatchEvent(new Event(EVENTO));
+}
+
 /** Botão pequeno pra (re)abrir o guia em qualquer tela. */
 export function GuiaBotao({ className = "" }: { className?: string }) {
   return (
