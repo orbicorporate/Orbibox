@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
-import { OrbiAvatar, lerEsfera } from "@/components/orbi/OrbiAvatar";
+import { OrbiAvatar, lerEsfera, lerSemFundo } from "@/components/orbi/OrbiAvatar";
 
 type Estilo = "logo" | "sem-fundo" | "esfera-claro" | "esfera-escuro";
 
@@ -44,7 +44,7 @@ function aparar(origem: HTMLCanvasElement, margem = 0.02): HTMLCanvasElement {
 }
 
 /**
- * Tira o fundo liso do logo: parte das bordas e apaga o que se parece com a
+ * Tira o fundo liso e deixa o logo solto na página: parte das bordas e apaga o que se parece com a
  * cor do fundo (média dos cantos), parando nos traços do desenho. As bordas
  * ganham transparência gradual pra não ficar serrilhado.
  */
@@ -183,13 +183,15 @@ export function LogoEditor({
   const [trocou, setTrocou] = useState(false);
   const previa = useRef<HTMLCanvasElement>(null);
   const esferaAtual = lerEsfera(avatar);
-  const estiloInicial: Estilo = avatar === "sem-fundo" ? "sem-fundo" : esferaAtual ? (`esfera-${esferaAtual.tom}` as Estilo) : "logo";
-  const escalaInicial = esferaAtual?.escala ?? 100;
+  const soltoAtual = lerSemFundo(avatar);
+  const estiloInicial: Estilo = soltoAtual ? "sem-fundo" : esferaAtual ? (`esfera-${esferaAtual.tom}` as Estilo) : "logo";
+  const escalaInicial = esferaAtual?.escala ?? soltoAtual?.escala ?? 100;
   const [estilo, setEstilo] = useState<Estilo>(estiloInicial);
   const [escala, setEscala] = useState(escalaInicial);
 
   function escolherEstilo(e: Estilo) {
     setEstilo(e);
+    if (e.startsWith("esfera")) setEscala((v) => Math.min(130, v));
     // Na esfera o logo fica sobre um disco: o fundo do arquivo atrapalharia, então já tira.
     if (e !== "logo" && !semFundo) setSemFundo(true);
   }
@@ -263,7 +265,7 @@ export function LogoEditor({
         url = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
       }
       // Esfera clara ou escura guarda o estilo em hero_avatar; voltar ao logo simples só mexe se já era esfera.
-      const novoAvatar: string | null = estilo === "sem-fundo" ? "sem-fundo" : estilo !== "logo" ? `${estilo}-${escala}` : estiloInicial !== "logo" ? "logo" : avatar;
+      const novoAvatar: string | null = estilo === "sem-fundo" ? `sem-fundo-${escala}` : estilo !== "logo" ? `${estilo}-${escala}` : estiloInicial !== "logo" ? "logo" : avatar;
       const campos: { logo_url: string; hero_avatar?: string | null } = { logo_url: url! };
       if (novoAvatar !== avatar) campos.hero_avatar = novoAvatar;
       const { error } = await supabase.from("businesses").update(campos).eq("id", businessId);
@@ -279,7 +281,7 @@ export function LogoEditor({
     }
   }
 
-  const mudou = trocou || semFundo || estilo !== estiloInicial || (estilo.startsWith("esfera") && escala !== escalaInicial);
+  const mudou = trocou || semFundo || estilo !== estiloInicial || ((estilo.startsWith("esfera") || estilo === "sem-fundo") && escala !== escalaInicial);
 
   if (typeof document === "undefined") return null;
   return createPortal(
@@ -294,7 +296,7 @@ export function LogoEditor({
             style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "20px 20px" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={urlPrevia} alt="" className="h-full w-full object-contain" />
+            <img src={urlPrevia} alt="" className="h-full w-full object-contain" style={{ transform: `scale(${escala / 100})` }} />
           </div>
         ) : urlPrevia && estilo !== "logo" ? (
           <div className="mx-auto mt-6 flex h-[200px] w-[200px] items-center justify-center">
@@ -340,14 +342,14 @@ export function LogoEditor({
                 </button>
               ))}
             </div>
-            {estilo.startsWith("esfera") && (
+            {estilo !== "logo" && (
               <div className="mt-4">
                 <div className="flex items-center justify-between text-[12.5px] text-text-tertiary">
                   <label htmlFor="logo-tamanho">Tamanho do logo</label>
                   <span className="tabular-nums">{escala}%</span>
                 </div>
-                <input id="logo-tamanho" type="range" min={50} max={130} step={5} value={escala} onChange={(e) => setEscala(Number(e.target.value))} disabled={salvando} className="mt-1 h-8 w-full accent-[#14161A]" />
-                <p className="mt-0.5 text-[12.5px] text-text-tertiary">Aumente para o logo preencher mais a esfera.</p>
+                <input id="logo-tamanho" type="range" min={50} max={estilo === "sem-fundo" ? 160 : 130} step={5} value={escala} onChange={(e) => setEscala(Number(e.target.value))} disabled={salvando} className="mt-1 h-8 w-full accent-[#14161A]" />
+                <p className="mt-0.5 text-[12.5px] text-text-tertiary">{estilo === "sem-fundo" ? "Aumente para o logo ficar maior na página." : "Aumente para o logo preencher mais a esfera."}</p>
               </div>
             )}
           </div>
@@ -355,7 +357,7 @@ export function LogoEditor({
 
         {base && (
           <div className="mt-3 rounded-2xl border border-divider p-4">
-            <button type="button" role="switch" aria-checked={semFundo} onClick={() => setSemFundo((v) => !v)} disabled={salvando} className="flex w-full items-center justify-between gap-3 text-left">
+            <button type="button" role="switch" aria-checked={semFundo} onClick={() => { const novo = !semFundo; setSemFundo(novo); if (novo && estilo === "logo") setEstilo("sem-fundo"); if (!novo && estilo === "sem-fundo") setEstilo("logo"); }} disabled={salvando} className="flex w-full items-center justify-between gap-3 text-left">
               <span>
                 <span className="block text-[14px] font-medium">Fundo transparente</span>
                 <span className="block text-[12.5px] text-text-tertiary">Tira o fundo liso do logo</span>

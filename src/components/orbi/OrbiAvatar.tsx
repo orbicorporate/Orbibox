@@ -32,3 +32,11 @@ export function lerEsfera(v: string | null | undefined): { tom: "claro" | "escur
   const n = m[2] ? Number(m[2]) : 100;
   return { tom: m[1] as "claro" | "escuro", escala: Math.min(130, Math.max(50, n)) };
 }
+
+/** hero_avatar guarda "sem-fundo" ou "sem-fundo-120" (tamanho do logo solto em %, 50 a 160). */
+export function lerSemFundo(v: string | null | undefined): { escala: number } | null {
+  const m = /^sem-fundo(?:-(\d{2,3}))?$/.exec(v ?? "");
+  if (!m) return null;
+  const n = m[1] ? Number(m[1]) : 100;
+  return { escala: Math.min(160, Math.max(50, n)) };
+}

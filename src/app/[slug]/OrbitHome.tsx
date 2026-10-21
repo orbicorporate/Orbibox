@@ -48,6 +48,7 @@ export function OrbitHome({
   semPergunta = false,
   descricao,
   logoUrl,
+  logoSolto = null,
   cores,
   agentName,
   onPerguntar,
@@ -65,6 +66,8 @@ export function OrbitHome({
   /** Frase curta sobre o negócio, embaixo do nome. */
   descricao?: string | null;
   logoUrl: string | null;
+  /** Tamanho em % do logo solto (sem disco); null mantém a esfera. */
+  logoSolto?: number | null;
   cores: string[];
   agentName: string;
   onPerguntar?: () => void;
@@ -269,12 +272,16 @@ export function OrbitHome({
 
         {/* esfera com o logo */}
         <div className="absolute left-1/2 top-[190px] z-30 h-[84px] w-[84px] -translate-x-1/2 -translate-y-1/2">
-          <span className="orbita-esfera inset-0"><span className="orbita-esfera-halo" /><span className="orbita-esfera-vidro" /></span>
-          {logoUrl && (
+          {logoSolto == null && <span className="orbita-esfera inset-0"><span className="orbita-esfera-halo" /><span className="orbita-esfera-vidro" /></span>}
+          {logoUrl && logoSolto == null && (
             <span className="absolute inset-[3px] overflow-hidden rounded-full bg-surface-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logoUrl} alt="" className="h-full w-full object-cover" />
             </span>
+          )}
+          {logoUrl && logoSolto != null && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="" className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_6px_14px_rgba(17,19,24,0.18)]" style={{ transform: `scale(${logoSolto / 100})` }} />
           )}
           {onEsfera && (
             <button type="button" onClick={() => setEscolhendoEsfera(true)} aria-label="Escolher a cor da esfera" className="pointer-events-auto absolute -right-3 -top-2 z-10 flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60">✎</button>
