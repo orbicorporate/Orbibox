@@ -831,7 +831,7 @@ export function ShowcaseBuilder({
       {trazendo && (
         <TrazerItens
           titulo="Trazer do cardápio"
-          ajuda="Escolha o que vira item do catálogo. É uma cópia: mudar depois num lado não muda o outro. Vai só a foto de capa."
+          ajuda="Escolha o que vira item do catálogo. É uma cópia: mudar depois num lado não muda o outro. Vai só a foto do card."
           itens={trazendo.pratos.map((p) => ({ key: p.nome, nome: p.nome, foto: p.foto, preco: p.preco, categoria: p.categoria }))}
           carregando={trazendo.carregando}
           rotuloBotao={(n) => (n === 0 ? "Escolha os itens" : n === 1 ? "Trazer 1 item" : `Trazer ${n} itens`)}
@@ -1188,7 +1188,7 @@ export function ShowcaseBuilder({
             max={6}
             emptySlots={1}
             lockedRatio="banner"
-            emptyLabel={coverUrls.length === 0 ? "Adicionar foto de capa · 1920 x 830 px" : "Adicionar"}
+            emptyLabel={coverUrls.length === 0 ? "Adicionar foto da capa da página · 1920 x 830 px" : "Adicionar"}
             onChange={async (urls) => {
               snapshot();
               setCoverUrls(urls);
@@ -1759,7 +1759,7 @@ function ItemCard({
               onDone={() => onIntroDone?.()}
               steps={[
                 { id: "item-formato", title: "Formato do card", body: "Escolha como esse item aparece na grade do Catálogo: grande, largo, pequeno ou alto. Dá pra mudar quando quiser." },
-                { id: "item-capa", title: "Foto de capa", body: "É a imagem que aparece no card, dentro do Catálogo. Segue o formato escolhido acima." },
+                { id: "item-capa", title: "Foto do card", body: "É a imagem que aparece no card, dentro do Catálogo. Segue o formato escolhido acima." },
                 { id: "item-destino", title: "Página própria do produto", body: "Ative \"Abrir uma página exclusiva\" pra esse item ganhar sua própria página, com carrossel de fotos, descrição e preço, ótimo pra apresentar bem antes da venda." },
               ]}
             />

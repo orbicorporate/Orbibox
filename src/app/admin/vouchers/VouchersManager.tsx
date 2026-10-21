@@ -221,7 +221,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   }
 
   async function deleteVoucher(v: Voucher) {
-    if (!(await confirm({ title: "Excluir voucher", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
+    if (!(await confirm({ title: "Excluir voucher", message: `Excluir "${v.title}"? Códigos já pegos continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
     if (!conferirSalvo(await supabase.from("vouchers").delete().eq("id", v.id), "Não conseguimos excluir. Tente de novo.")) return;
     setVouchers((p) => p.filter((x) => x.id !== v.id));
   }
@@ -328,7 +328,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
 
               <div className="mt-4">
                 <div className="flex items-center justify-between text-[12px] text-text-tertiary">
-                  <span>{v.quantity_claimed} de {v.quantity_total} resgatados</span>
+                  <span>{v.quantity_claimed} de {v.quantity_total} pegos</span>
                   <span>{restam > 0 ? `${restam} restantes` : "Esgotado"}</span>
                 </div>
                 <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-soft">

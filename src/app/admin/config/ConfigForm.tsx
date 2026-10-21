@@ -299,7 +299,7 @@ export function ConfigForm({
           passos={[
             { titulo: "Logotipo", detalhe: "Aparece na sua página e vira ícone dos botões", feito: !!b.logo_url, onClick: () => abrirERolar("logo") },
             { titulo: "Cores e fundo da página", detalhe: "A esfera da Orbi e a primeira tela do seu link", feito: coresVistas || !!heroGradient, onClick: () => abrirERolar("cores") },
-            { titulo: "Como seu link aparece no WhatsApp", detalhe: "A capa e o texto de quando alguém compartilha", feito: compartilhamentoPronto, onClick: () => abrirERolar("compartilhamento") },
+            { titulo: "Como seu link aparece no WhatsApp", detalhe: "A imagem e o texto de quando alguém compartilha", feito: compartilhamentoPronto, onClick: () => abrirERolar("compartilhamento") },
           ]}
         />
 
@@ -337,7 +337,7 @@ export function ConfigForm({
           onToggle={() => alternar("compartilhamento")}
           icone={<span className="text-[18px]">🔗</span>}
           titulo="Como seu link aparece no WhatsApp"
-          descricao="A capa e o texto de quando alguém compartilha"
+          descricao="A imagem e o texto de quando alguém compartilha"
           status={<StatusTag preenchido={compartilhamentoPronto} />}
         >
           <span id="compartilhamento" />
@@ -381,10 +381,10 @@ export function ConfigForm({
         {!b.share_image_url && (
           <p className={`mt-3 rounded-xl px-3 py-2 text-[12.5px] ${temCapaCompartilhamento ? "bg-surface-soft text-text-tertiary" : "bg-[#FDE7E7] text-[#C0392B]"}`}>
             {(b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && (b.vitrine_cover_urls as string[])[0]))
-              ? "Está usando a capa do Catálogo, que já funciona bem. Envie uma própria se quiser caprichar."
+              ? "Está usando a capa do Catálogo, que já funciona bem. Envie uma imagem do link própria se quiser caprichar."
               : b.logo_url
-              ? "Está usando o logotipo, que já funciona. Envie uma capa se quiser caprichar."
-              : "Ainda não tem nenhuma imagem, o link fica sem capa."}
+              ? "Está usando o logotipo, que já funciona. Envie uma imagem do link se quiser caprichar."
+              : "Ainda não tem nenhuma imagem, o link fica sem imagem."}
           </p>
         )}
       </div>

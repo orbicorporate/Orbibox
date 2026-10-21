@@ -254,7 +254,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
       {trazendo && (
         <TrazerItens
           titulo="Trazer do catálogo"
-          ajuda="Escolha o que vira prato. É uma cópia: mudar depois num lado não muda o outro. Vai só a foto de capa."
+          ajuda="Escolha o que vira prato. É uma cópia: mudar depois num lado não muda o outro. Vai só a foto do card."
           itens={trazendo.itens.map((i) => ({ key: i.id, nome: i.titulo, foto: i.foto, preco: i.preco, categoria: i.categoria }))}
           carregando={trazendo.carregando}
           rotuloBotao={(n) => (n === 0 ? "Escolha os itens" : n === 1 ? "Trazer 1 item" : `Trazer ${n} itens`)}

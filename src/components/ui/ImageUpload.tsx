@@ -404,7 +404,7 @@ export function ImageUpload({
         onClick={() => setShowPrompt((s) => !s)}
         className={`inline-flex items-center gap-1.5 self-start rounded-full px-4 py-2.5 text-[13px] font-medium ${showPrompt ? "border border-divider bg-surface-white text-text-secondary" : "orbi-gradient text-on-background"}`}
       >
-        {showPrompt ? "Esconder prompt" : <>✦ {isAvatar ? "Gerar prompt pra criar o avatar com IA" : "Gerar prompt pra criar a capa com IA"}</>}
+        {showPrompt ? "Esconder prompt" : <>✦ {isAvatar ? "Gerar prompt pra criar o avatar com IA" : "Gerar prompt pra criar a imagem com IA"}</>}
       </button>
 
       {showPrompt && (

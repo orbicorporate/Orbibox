@@ -173,7 +173,7 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   if (insightsQueue.length === 0 && activeBoxes > 0 && hasItems) {
     insightsQueue.push({
       title: "Hora de divulgar mais",
-      description: "Sua página está completa. Vá em Resultados, aba Marketing: a Orbi sugere temas, pesquisa hashtags em alta e já escreve o texto pronto pra postar.",
+      description: "Sua página está completa. Vá em Números, aba Marketing: a Orbi sugere temas, pesquisa hashtags em alta e já escreve o texto pronto pra postar.",
       ctaLabel: "Abrir Marketing",
       href: "/admin/pulse",
     });

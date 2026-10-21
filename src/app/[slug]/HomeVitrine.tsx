@@ -44,7 +44,7 @@ export type FormatoItens = "vitrine" | "destaque" | "grade" | "carrossel";
 
 const FORMATOS: { v: FormatoItens; titulo: string; texto: string }[] = [
   { v: "vitrine", titulo: "Igual à vitrine", texto: "Cada item no tamanho que você escolheu no Catálogo (Grande, Largo, Pequeno ou Alto)." },
-  { v: "destaque", titulo: "Destaque e grade", texto: "O primeiro item grande, os outros em duas colunas." },
+  { v: "destaque", titulo: "Um grande e o resto em grade", texto: "O primeiro item grande, os outros em duas colunas." },
   { v: "grade", titulo: "Grade", texto: "Todos do mesmo tamanho, duas colunas." },
   { v: "carrossel", titulo: "Carrossel", texto: "Uma linha que rola de lado. Ocupa pouca altura." },
 ];
@@ -203,10 +203,10 @@ export function HomeVitrine({
     if (novo.status !== "published") await supabase.from("content_items").update({ status: "published" }).eq("id", novo.id);
     const atuais = naSelecao.map((e) => e.id);
     if (atuais.length >= MAXIMO) {
-      setAvisoNovo(`"${novo.title}" foi criado, mas já são ${MAXIMO} destaques. Tire um e marque o novo.`);
+      setAvisoNovo(`"${novo.title}" foi criado, mas já são ${MAXIMO} itens na Home. Tire um e marque o novo.`);
     } else {
       onEscolherItens?.([...atuais, novo.id]);
-      setAvisoNovo(`"${novo.title}" foi criado e entrou nos destaques.`);
+      setAvisoNovo(`"${novo.title}" foi criado e entrou nos itens da Home.`);
     }
     router.refresh();
   }
@@ -293,7 +293,7 @@ export function HomeVitrine({
           <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex items-center justify-between">
               <span className="text-[17px] font-medium">Botão principal</span>
-              <button type="button" onClick={() => setEditandoCta(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+              <button type="button" onClick={() => setEditandoCta(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
             </div>
             <div role="radiogroup" className="mt-4 flex flex-col gap-2">
               {opcoesCta.map((t) => (
@@ -377,7 +377,7 @@ export function HomeVitrine({
           <div className="mb-5 flex w-full min-w-0 flex-col items-center empty:hidden">{destaque}</div>
           <div className="flex items-center justify-between gap-2">
             {podeEditar && onEscolherItens ? (
-              <button type="button" onClick={() => setEscolhendo(true)} aria-label={`${tituloItens}: escolher e ordenar os destaques da Home`} className="flex min-h-[40px] min-w-0 items-center gap-2 rounded-full text-left active:opacity-70">
+              <button type="button" onClick={() => setEscolhendo(true)} aria-label={`${tituloItens}: escolher e ordenar os itens da Home`} className="flex min-h-[40px] min-w-0 items-center gap-2 rounded-full text-left active:opacity-70">
                 <h2 className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
                 <span className="shrink-0 text-[14px] text-on-background/60" aria-hidden>✎</span>
               </button>
@@ -442,7 +442,7 @@ export function HomeVitrine({
           <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex items-center justify-between">
               <span className="text-[17px] font-medium">Título da seção</span>
-              <button type="button" onClick={() => setEditandoTitulo(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+              <button type="button" onClick={() => setEditandoTitulo(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
             </div>
             <input
               defaultValue={tituloItens === "Destaque" ? "" : tituloItens}
@@ -463,8 +463,8 @@ export function HomeVitrine({
           <button type="button" aria-label="Fechar" onClick={() => setEscolhendo(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
           <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-h-[85vh] w-full max-w-[440px] flex-col rounded-t-[28px] bg-white p-5 pb-6 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex shrink-0 items-center justify-between">
-              <span className="text-[17px] font-medium">Destaques da Home</span>
-              <button type="button" onClick={() => { setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+              <span className="text-[17px] font-medium">Itens da Home</span>
+              <button type="button" onClick={() => { setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
             </div>
             {onTitulo && (
               <label className="mt-3 block shrink-0">
@@ -566,7 +566,7 @@ export function HomeVitrine({
           <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex items-center justify-between">
               <span className="text-[17px] font-medium">Formato dos itens</span>
-              <button type="button" onClick={() => setEditandoFormato(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+              <button type="button" onClick={() => setEditandoFormato(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
             </div>
             <div role="radiogroup" className="mt-4 flex flex-col gap-2">
               {FORMATOS.map((f) => (
@@ -587,7 +587,7 @@ export function HomeVitrine({
           <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-h-[80vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex items-center justify-between">
               <span className="text-[17px] font-medium">Editar bolinhas</span>
-              <button type="button" onClick={() => setEditando(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+              <button type="button" onClick={() => setEditando(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
             </div>
             <p className="mt-1 text-[13px] text-text-secondary">Deixe em cor as que você quer destacar e as outras em linha. Use as setas para mudar a ordem.</p>
             <div className="mt-4 flex items-center justify-between rounded-2xl bg-surface-soft p-3">

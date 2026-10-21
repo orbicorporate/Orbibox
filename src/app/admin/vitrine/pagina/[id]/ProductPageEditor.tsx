@@ -323,7 +323,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
                       {!yt && !ig && (
                         src === capaAtual ? (
                           <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1.5 text-[11.5px] font-medium text-white backdrop-blur">
-                            {capa ? "Capa do card" : "Capa do card (1ª foto)"}
+                            {capa ? "Foto do card" : "Foto do card (1ª foto)"}
                           </span>
                         ) : (
                           <button
@@ -331,7 +331,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
                             onClick={() => definirCapa(src)}
                             className="absolute left-3 top-3 min-h-[36px] rounded-full bg-white/90 px-3.5 text-[12px] font-medium text-on-background shadow-sm backdrop-blur active:scale-95"
                           >
-                            Usar como capa do card
+                            Usar como foto do card
                           </button>
                         )
                       )}
@@ -362,7 +362,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
 
           {midias.length > 0 && (
             <p className="mt-2 text-center text-[12.5px] leading-snug text-text-tertiary">
-              {capa ? "A foto marcada como capa é a que aparece no card, na Home e no catálogo." : "Este item ainda não tem capa própria, então o card usa a primeira foto. Toque em “Usar como capa do card” numa foto pra escolher outra."}
+              {capa ? "A foto marcada como foto do card é a que aparece no card, na Home e no catálogo." : "Este item ainda não tem foto do card própria, então o card usa a primeira foto. Toque em “Usar como foto do card” numa foto pra escolher outra."}
             </p>
           )}
           <div className="mt-3 flex items-center justify-between gap-2">

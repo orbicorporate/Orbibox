@@ -284,7 +284,7 @@ function montarSlides(finalHref: string, finalLabel: string, inspire: InspirePar
       duracaoMs: 15500,
     },
     {
-      rotulo: "Pulse",
+      rotulo: "Números",
       titulo: "Resultados",
       frase: "Quantos entraram, de onde vieram e o que fizeram. E o que fazer a seguir.",
       checks: ["Saiba de onde vêm suas visitas", "Painel de insights valiosos"],

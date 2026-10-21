@@ -129,8 +129,8 @@ export default async function PlanosPage({
 
       {!!vouchersCobrados && vouchersCobrados > 0 && (
         <div className="mt-5 rounded-[22px] border border-divider bg-surface-white p-5">
-          <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Vouchers resgatados este ciclo</p>
-          <p className="mt-1 text-[12px] text-text-tertiary">R$ 1,00 por voucher resgatado por um cliente, somado e cobrado junto da sua próxima fatura.</p>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Vouchers usados este ciclo</p>
+          <p className="mt-1 text-[12px] text-text-tertiary">R$ 1,00 por voucher usado, ou seja, cada vez que você confirma o código de um cliente. Soma tudo e cobra junto da próxima fatura. Não cobra durante o teste grátis.</p>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold">{vouchersCobrados}</span>
             <span className="text-[13px] text-text-secondary">{vouchersCobrados === 1 ? "voucher" : "vouchers"}</span>

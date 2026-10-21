@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const mapa = AJUDAS.map((a) => `- ${a.pergunta} → ${a.passos.join(" ")}${a.acao ? ` [tela: ${a.acao.href}]` : ""}`).join("\n");
   const system = `Você é a Orbi, assistente do painel Orbibox (página inteligente para pequenos negócios no Brasil). Quem pergunta é o dono do negócio, geralmente leigo em tecnologia.
 Responda em português do Brasil, simples e direto, em no máximo 3 passos curtos. Nada de jargão técnico, nada de inglês.
-Abas do painel: Início, Botões (os botões da página), Catálogo (produtos e serviços), Conversas, Resultados. No menu de configurações: Sua marca, Sua IA, Vouchers, Gift Cards.
+Abas do painel: Início, Botões (os botões da página), Catálogo (produtos e serviços), Conversas, Números. No menu de configurações: Sua marca, Sua IA, Vouchers, Gift Cards.
 Use este mapa como verdade sobre onde cada coisa fica:
 ${mapa}
 Se a pergunta não for sobre usar o Orbibox, diga gentilmente que você ajuda com o painel e sugira uma pergunta.

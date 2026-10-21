@@ -101,7 +101,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
 
       <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.02em]">Painel de vouchers</h1>
       <p className="mt-1 text-[14px] text-text-secondary">
-        {ativos} {ativos === 1 ? "voucher ativo" : "vouchers ativos"} · {totalResgatados} {totalResgatados === 1 ? "resgate" : "resgates"} no total
+        {ativos} {ativos === 1 ? "voucher ativo" : "vouchers ativos"} · {totalResgatados} {totalResgatados === 1 ? "voucher pego" : "vouchers pegos"} no total
       </p>
 
       {/* 1. O que se faz todo dia: validar o código do cliente no balcão */}

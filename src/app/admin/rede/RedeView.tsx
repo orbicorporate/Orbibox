@@ -501,7 +501,7 @@ function Convite() {
         <div className="rounded-[22px] bg-[#EAFBC4] p-4 text-[#2F6B00]">
           <p className="text-[13px]">A marca vê</p>
           <ul className="mt-2 flex flex-col gap-1.5 text-[13px] leading-snug">
-            {["Visitas e toques", "Quantas conversas a Orbi teve", "Vouchers resgatados", "Ranking entre os Orbibox"].map((t) => <li key={t} className="flex gap-1.5"><Marca ok />{t}</li>)}
+            {["Visitas e toques", "Quantas conversas a Orbi teve", "Vouchers usados", "Ranking entre os Orbibox"].map((t) => <li key={t} className="flex gap-1.5"><Marca ok />{t}</li>)}
           </ul>
         </div>
         <div className="rounded-[22px] bg-[#FFE6E3] p-4 text-[#A63A2E]">

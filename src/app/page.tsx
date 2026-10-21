@@ -13,7 +13,7 @@ const RECURSOS = [
   { titulo: "Vitrine que vende", texto: "Seus produtos e serviços em cards bonitos, com foto, preço e página própria.", d: "M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z" },
   { titulo: "Orbi, sua IA", texto: "Conhece o seu negócio, responde seus clientes na hora e guarda o contato de quem se interessou.", d: "M12 3v2M12 19v2M5.6 5.6 7 7M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4 7 17M17 7l1.4-1.4M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" },
   { titulo: "Vouchers e gift cards", texto: "Promoções com limite de unidades e vales-presente. Um motivo para o cliente agir hoje.", d: "M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1ZM9 15l6-6" },
-  { titulo: "Pulse", texto: "A Orbi mostra o que está funcionando e o que fazer a seguir, em linguagem simples.", d: "M3 12h4l3-8 4 16 3-8h4" },
+  { titulo: "Números", texto: "A Orbi mostra o que está funcionando e o que fazer a seguir, em linguagem simples.", d: "M3 12h4l3-8 4 16 3-8h4" },
   { titulo: "Conversas e contatos", texto: "Todo mundo que perguntou ou pegou um voucher vira contato seu, pronto para você chamar.", d: "M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.2A8.4 8.4 0 1 1 21 11.5Z" },
   { titulo: "Do seu jeito", texto: "Cores nobres, paletas prontas ou a paleta da sua marca. Tudo muda na hora, com prévia.", d: "M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.6-.2-1-.6-1.4-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2H18a3 3 0 0 0 3-3c0-4.4-4-8.3-9-8.3ZM7.5 11.5h.01M10 7.5h.01M15 7.5h.01" },
 ];

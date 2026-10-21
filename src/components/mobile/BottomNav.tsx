@@ -19,7 +19,7 @@ export const TABS: { href: string; label: string; icon: ReactNode; glow?: boolea
   { href: "/admin/boxes", label: "Botões", icon: "▣" },
   { href: "/admin/vitrine", label: "Catálogo", icon: "◫", glow: true },
   { href: "/admin/conversas", label: "Conversas", icon: <TalkIcon /> },
-  { href: "/admin/pulse", label: "Resultados", icon: "◔" },
+  { href: "/admin/pulse", label: "Números", icon: "◔" },
 ];
 
 export function BottomNav() {

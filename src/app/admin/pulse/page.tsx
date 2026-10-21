@@ -153,7 +153,7 @@ export default async function PulsePage({
   return (
     <div className="flex flex-col">
       <h1 data-tour="pulse" className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
-        Resultados
+        Números
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">Quem visitou seu link, o que tocou e o que fazer agora.</p>
 

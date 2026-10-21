@@ -400,7 +400,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
         <p className="text-[15px] font-semibold">Categorias</p>
         {categorias.length > 0 && (
           <button type="button" onClick={() => setGerenciando((g) => !g)} className="min-h-[40px] px-1 text-[13px] font-medium text-text-secondary underline underline-offset-2">
-            {gerenciando ? "Pronto" : "Gerenciar"}
+            {gerenciando ? "Concluir" : "Gerenciar"}
           </button>
         )}
       </div>

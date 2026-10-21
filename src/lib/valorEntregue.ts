@@ -46,7 +46,7 @@ export function linhasDoValor(v: ValorEntregue): { n: number; texto: string; cha
     { n: v.conversas, chave: "conversas", texto: v.conversas === 1 ? "pessoa conversou com sua IA" : "pessoas conversaram com sua IA" },
     { n: v.whatsapp, chave: "whatsapp", texto: v.whatsapp === 1 ? "chamou no seu WhatsApp" : "chamaram no seu WhatsApp" },
     { n: v.contatos, chave: "contatos", texto: v.contatos === 1 ? "novo contato capturado" : "novos contatos capturados" },
-    { n: v.resgates, chave: "resgates", texto: v.resgates === 1 ? "oferta resgatada" : "ofertas resgatadas" },
+    { n: v.resgates, chave: "resgates", texto: v.resgates === 1 ? "oferta pega" : "ofertas pegas" },
   ];
   return l.filter((x) => x.n > 0);
 }

@@ -830,7 +830,7 @@ export function VisitorExperience({
               >
                 Sem ícone
               </button>
-              <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Destaques</p>
+              <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Ícones em destaque</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {especiais.map((ic) => (
                   <button key={ic} type="button" onClick={() => setBoxIcon(iconeBox, ic)} className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border ${alvo.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}>
@@ -1062,7 +1062,7 @@ export function VisitorExperience({
                     </div>
                   ))}
                   <p className="text-[12px] text-text-tertiary">Toque na lixeira vermelha para esconder o nome, a frase ou a pergunta. Para voltar, escreva de novo ou toque em Mostrar.</p>
-                  <button type="button" onClick={() => setTextosAberto(false)} className="mt-3 min-h-[44px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white">Pronto</button>
+                  <button type="button" onClick={() => setTextosAberto(false)} className="mt-3 min-h-[44px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white">Concluir</button>
                 </div>
               )}
             </div>
@@ -1199,7 +1199,7 @@ export function VisitorExperience({
                             <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-h-[78vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]" onClick={(e) => e.stopPropagation()}>
                               <div className="flex items-center justify-between">
                                 <span className="text-[17px] font-medium">Editar card</span>
-                                <button type="button" onClick={() => { saveTitle(o.key); setMenuBox(null); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+                                <button type="button" onClick={() => { saveTitle(o.key); setMenuBox(null); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
                               </div>
 
                               <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Nome</p>
@@ -2042,7 +2042,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
           {/* Vouchers já resgatados neste aparelho, pra pessoa reencontrar o código */}
           {meusVouchers.length > 0 && (
             <div className={`mt-2 ${larga}`}>
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Meus vouchers resgatados</p>
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Meus vouchers</p>
               <div className="mt-2.5 flex flex-col gap-2">
                 {meusVouchers.map((c) => {
                   const vencido = !!c.expiresAt && new Date(c.expiresAt) < new Date();

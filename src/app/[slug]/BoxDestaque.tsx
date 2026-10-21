@@ -284,10 +284,10 @@ export function BoxDestaque({
   );
 
   return (
-    <section className="w-full" aria-label="Destaque">
+    <section className="w-full" aria-label="Em destaque">
       {cartoes.length === 0 ? (
         <button type="button" onClick={abrirFolha} className="flex min-h-[72px] w-full max-w-[300px] flex-col items-start justify-center gap-1 rounded-[20px] border-2 border-dashed border-divider px-4 text-left text-text-secondary">
-          <span className="text-[15px] font-medium">+ Fixar no destaque</span>
+          <span className="text-[15px] font-medium">+ Fixar em destaque</span>
           <span className="text-[12.5px] text-text-tertiary">Fixe um botão, voucher ou produto aqui. Só você vê este aviso.</span>
         </button>
       ) : cartoes.length === 1 ? (
@@ -315,14 +315,14 @@ export function BoxDestaque({
                 {vista !== "inicio" && (
                   <button type="button" onClick={() => setVista(vista === "pdf" ? "novo" : "inicio")} aria-label="Voltar" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px] active:scale-95">‹</button>
                 )}
-                <span className="truncate text-[17px] font-medium">{vista === "existente" ? "Destacar o que já existe" : vista === "novo" ? "Criar algo novo" : vista === "pdf" ? "Botão de PDF" : "Fixar no destaque"}</span>
+                <span className="truncate text-[17px] font-medium">{vista === "existente" ? "Destacar o que já existe" : vista === "novo" ? "Criar algo novo" : vista === "pdf" ? "Botão de PDF" : "Fixar em destaque"}</span>
               </div>
-              <button type="button" onClick={() => setAberto(false)} className="min-h-[40px] shrink-0 rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+              <button type="button" onClick={() => setAberto(false)} className="min-h-[40px] shrink-0 rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
             </div>
 
             {vista === "inicio" && (
               <div className="mt-4 flex flex-col gap-3">
-                <p className="text-[13px] text-text-secondary">O destaque fica no começo da página, na ordem em que você marcar. O que você quer fazer?</p>
+                <p className="text-[13px] text-text-secondary">O que você fixar fica em destaque no começo da página, na ordem em que você marcar. O que você quer fazer?</p>
                 <button type="button" onClick={() => setVista("existente")} className="flex min-h-[80px] items-center gap-3 rounded-[22px] border-2 border-divider bg-surface-white p-3.5 text-left transition-transform active:scale-[0.98]">
                   <TileNovo k="existe" />
                   <span className="min-w-0 flex-1">
@@ -386,7 +386,7 @@ export function BoxDestaque({
                 <button type="button" onClick={() => void criarBotaoPdf()} disabled={!nomePdf.trim() || !filePdf || criandoPdf} className="min-h-[48px] rounded-full bg-on-background text-[15px] font-semibold text-white disabled:opacity-40 active:scale-[0.98]">
                   {criandoPdf ? "Criando o botão…" : "Criar botão e destacar"}
                 </button>
-                <p className="text-center text-[12.5px] leading-snug text-text-tertiary">O botão abre o PDF direto, entra no Destaque e fica na lista de Botões para você editar a cor e o ícone.</p>
+                <p className="text-center text-[12.5px] leading-snug text-text-tertiary">O botão abre o PDF direto, entra em destaque e fica na lista de Botões para você editar a cor e o ícone.</p>
               </div>
             )}
 

@@ -73,7 +73,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
   const travado = v.quantity_claimed > 0 || redemptions.length > 0;
 
   async function deleteVoucher() {
-    if (!(await confirm({ title: "Excluir voucher", message: `Excluir "${v.title}"? Códigos já resgatados continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
+    if (!(await confirm({ title: "Excluir voucher", message: `Excluir "${v.title}"? Códigos já pegos continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
     await supabase.from("vouchers").delete().eq("id", v.id);
     router.push("/admin/vouchers");
   }
@@ -126,7 +126,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
       {/* Uma linha só pro estoque, em vez de repetir o mesmo número em quatro lugares. */}
       <div className="mt-5">
         <div className="flex items-baseline justify-between">
-          <p className="text-[14px] font-semibold">{v.quantity_claimed} de {v.quantity_total} resgatados</p>
+          <p className="text-[14px] font-semibold">{v.quantity_claimed} de {v.quantity_total} pegos</p>
           <p className="text-[12.5px] text-text-secondary">{restam} ainda sobram</p>
         </div>
         <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-soft">

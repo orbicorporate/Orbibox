@@ -282,7 +282,7 @@ export default async function PendenciasPage() {
         <div className="mt-6 rounded-[24px] bg-[#E4F7EA] p-5 text-center">
           <p className="text-[15px] font-semibold text-[#1F7A45]">✓ Tudo em dia por aqui</p>
           <p className="mt-1 text-[12.5px] text-[#1F7A45]/80">
-            Seu Orbibox está completo. Agora é acompanhar os Resultados e continuar divulgando.
+            Seu Orbibox está completo. Agora é acompanhar os Números e continuar divulgando.
           </p>
         </div>
       )}

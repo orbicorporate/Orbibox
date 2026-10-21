@@ -419,7 +419,7 @@ export function OrbitHome({
           <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex items-center justify-between">
               <span className="text-[17px] font-medium">Cor da esfera</span>
-              <button type="button" onClick={() => setEscolhendoEsfera(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+              <button type="button" onClick={() => setEscolhendoEsfera(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
             </div>
             <p className="mt-1 text-[13px] text-text-secondary">Por padrão ela acompanha o tom do fundo da página.</p>
             <div className="mt-4 flex flex-wrap gap-3">

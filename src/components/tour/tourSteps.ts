@@ -36,7 +36,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: "pulse",
     page: "/admin/pulse",
-    title: "Resultados: números com contexto",
+    title: "Números com contexto",
     body: "Visitas, interesses e conversões, e um guia de marketing sob medida, baseado no que está funcionando pra você.",
   },
   {

@@ -435,7 +435,7 @@ export function BoxesManager({
           onClick={() => setReordenando((v) => !v)}
           className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-medium ring-1 ring-black/[0.08] ${reordenando ? "bg-on-background text-white" : "bg-surface-white text-text-secondary"}`}
         >
-          {reordenando ? "Pronto" : "Reordenar"}
+          {reordenando ? "Concluir" : "Reordenar"}
         </button>
         <span className="text-[12.5px] text-text-tertiary">
           {ativos === 0 ? "Nenhum botão ligado" : `${ativos} ${ativos === 1 ? "botão ligado" : "botões ligados"}`}
