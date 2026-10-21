@@ -177,7 +177,19 @@ export function HomeVitrine({
   const categorias = groupByCategory(comFoto, ordemCategorias).filter((c) => c.name && c.items.length >= 2).slice(0, 5);
   const temChips = categorias.length >= 2;
   const ativo = temChips ? categorias.find((c) => c.name === chip) ?? null : null;
-  const base = ativo ? ativo.items : [...comFoto].sort((a, b) => a.position - b.position);
+  // Em "Tudo", as capas vêm primeiro: itens sem categoria ou de uma categoria com um item só (Rodízio, Buffet, Eventos).
+  // Os pratos de um cardápio importado (várias categorias com vários itens) ficam atrás, nos chips.
+  const porCategoria = new Map<string, number>();
+  for (const i of comFoto) {
+    const c = i.brand_label?.trim();
+    if (c) porCategoria.set(c, (porCategoria.get(c) ?? 0) + 1);
+  }
+  const ehCapa = (i: ItemVitrine) => {
+    const c = i.brand_label?.trim();
+    return !c || (porCategoria.get(c) ?? 0) < 2;
+  };
+  const porPosicao = [...comFoto].sort((a, b) => a.position - b.position);
+  const base = ativo ? ativo.items : [...porPosicao.filter(ehCapa), ...porPosicao.filter((i) => !ehCapa(i))];
   const mostrar = comFoto.length >= MINIMO_COM_FOTO ? base.slice(0, MAXIMO) : [];
 
   function aoClicar(b: BolinhaVitrine) {
