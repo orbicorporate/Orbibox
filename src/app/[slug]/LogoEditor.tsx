@@ -63,6 +63,7 @@ function removerFundo(entrada: HTMLCanvasElement, tolerancia: number, toques: To
   const origem = aparar(entrada, 0);
   const w = origem.width;
   const h = origem.height;
+  const total = w * h;
   const saida = document.createElement("canvas");
   saida.width = w;
   saida.height = h;
@@ -82,52 +83,49 @@ function removerFundo(entrada: HTMLCanvasElement, tolerancia: number, toques: To
   if (n === 0) return saida; // já é transparente nas bordas
   r /= n; g /= n; b /= n;
 
-  const dist = (i: number) => Math.sqrt((px[i] - r) ** 2 + (px[i + 1] - g) ** 2 + (px[i + 2] - b) ** 2);
+  // Distância de cada pixel até a cor do fundo, calculada uma vez só.
+  const dist = new Float32Array(total);
+  for (let p = 0; p < total; p++) {
+    const i = p * 4;
+    const dr = px[i] - r, dg = px[i + 1] - g, db = px[i + 2] - b;
+    dist[p] = Math.sqrt(dr * dr + dg * dg + db * db);
+  }
   const limite = tolerancia * 4.4; // 0 a 100 vira 0 a ~440 (máximo do RGB)
   // Miolos fechados (dentro de letras e laços) são mais difíceis: o antisserrilhado deixa um tom claro, não o fundo exato.
   const limiteBolsao = limite * 1.3;
-  const visitado = new Uint8Array(w * h);
-  const fila: number[] = [];
-  const empurrar = (x: number, y: number) => {
-    const p = y * w + x;
-    if (visitado[p]) return;
-    visitado[p] = 1;
-    if (dist(p * 4) <= limite) fila.push(p);
-  };
-  for (let x = 0; x < w; x++) { empurrar(x, 0); empurrar(x, h - 1); }
-  for (let y = 0; y < h; y++) { empurrar(0, y); empurrar(w - 1, y); }
 
-  const apagado = new Uint8Array(w * h);
-  while (fila.length) {
-    const p = fila.pop()!;
-    apagado[p] = 1;
-    const x = p % w;
-    const y = (p - x) / w;
-    if (x > 0) empurrar(x - 1, y);
-    if (x < w - 1) empurrar(x + 1, y);
-    if (y > 0) empurrar(x, y - 1);
-    if (y < h - 1) empurrar(x, y + 1);
-  }
+  const apagado = new Uint8Array(total);
+  const fila = new Int32Array(total);
 
-  // Bolsões fechados da cor do fundo (dentro de letras, buracos do desenho): some se forem pequenos.
-  const visto2 = new Uint8Array(w * h);
-  const maxBolsao = w * h * 0.04;
-  for (let s0 = 0; s0 < w * h; s0++) {
-    if (apagado[s0] || visto2[s0] || dist(s0 * 4) > limiteBolsao) continue;
-    const comp: number[] = [s0];
-    visto2[s0] = 1;
-    for (let k = 0; k < comp.length; k++) {
-      const q = comp[k];
+  // Preenche a partir de `sementes`, andando só por vizinhos que passam em `ok`. Devolve quantos pixels pegou (ficam em fila[0..n)).
+  const espalhar = (sementes: number[], ok: (p: number) => boolean, marca: Uint8Array, teto = total): number => {
+    let fim = 0;
+    for (const s0 of sementes) if (!marca[s0] && ok(s0)) { marca[s0] = 1; fila[fim++] = s0; }
+    for (let ini = 0; ini < fim && fim <= teto; ini++) {
+      const q = fila[ini];
       const x = q % w;
-      const y = (q - x) / w;
-      const viz = [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, y > 0 ? q - w : -1, y < h - 1 ? q + w : -1];
-      for (const t of viz) {
-        if (t < 0 || visto2[t] || apagado[t]) continue;
-        visto2[t] = 1;
-        if (dist(t * 4) <= limiteBolsao) comp.push(t);
-      }
+      if (x > 0) { const t = q - 1; if (!marca[t] && ok(t)) { marca[t] = 1; fila[fim++] = t; } }
+      if (x < w - 1) { const t = q + 1; if (!marca[t] && ok(t)) { marca[t] = 1; fila[fim++] = t; } }
+      if (q >= w) { const t = q - w; if (!marca[t] && ok(t)) { marca[t] = 1; fila[fim++] = t; } }
+      if (q < total - w) { const t = q + w; if (!marca[t] && ok(t)) { marca[t] = 1; fila[fim++] = t; } }
     }
-    if (comp.length <= maxBolsao) for (const q of comp) apagado[q] = 1;
+    return fim;
+  };
+
+  // Fundo ligado às bordas.
+  const bordas: number[] = [];
+  for (let x = 0; x < w; x++) { bordas.push(x, (h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { bordas.push(y * w, y * w + w - 1); }
+  espalhar(bordas, (p) => dist[p] <= limite, apagado);
+
+  // Bolsões fechados da cor do fundo (dentro de letras, buracos do desenho): somem se forem pequenos.
+  const visto = new Uint8Array(total);
+  const maxBolsao = total * 0.04;
+  for (let s0 = 0; s0 < total; s0++) {
+    if (apagado[s0] || visto[s0] || dist[s0] > limiteBolsao) continue;
+    // Percorre o bolsão inteiro (marca tudo como visto), pra não recomeçar do mesmo lugar.
+    const cont = espalhar([s0], (p) => !apagado[p] && dist[p] <= limiteBolsao, visto);
+    if (cont <= maxBolsao) for (let k = 0; k < cont; k++) apagado[fila[k]] = 1;
   }
 
   // Retoque manual: cada toque apaga a mancha ligada de cor parecida com o ponto tocado.
@@ -138,49 +136,39 @@ function removerFundo(entrada: HTMLCanvasElement, tolerancia: number, toques: To
     if (apagado[p0]) continue;
     const cr = px[p0 * 4], cg = px[p0 * 4 + 1], cb = px[p0 * 4 + 2];
     const lim = Math.max(limite * 0.55, 28);
-    const dc = (i: number) => Math.sqrt((px[i] - cr) ** 2 + (px[i + 1] - cg) ** 2 + (px[i + 2] - cb) ** 2);
-    const lista: number[] = [p0];
-    const marca = new Uint8Array(w * h);
-    marca[p0] = 1;
-    for (let k = 0; k < lista.length && lista.length < w * h * 0.25; k++) {
-      const q = lista[k];
-      apagado[q] = 1;
-      const x = q % w;
-      const y = (q - x) / w;
-      const viz = [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, y > 0 ? q - w : -1, y < h - 1 ? q + w : -1];
-      for (const v of viz) {
-        if (v < 0 || marca[v] || apagado[v]) continue;
-        marca[v] = 1;
-        if (dc(v * 4) <= lim) lista.push(v);
-      }
-    }
+    const parecido = (q: number) => {
+      const i = q * 4;
+      const dr = px[i] - cr, dg = px[i + 1] - cg, db = px[i + 2] - cb;
+      return Math.sqrt(dr * dr + dg * dg + db * db) <= lim;
+    };
+    const cont = espalhar([p0], (q) => !apagado[q] && parecido(q), new Uint8Array(total), total * 0.25);
+    for (let k = 0; k < cont; k++) apagado[fila[k]] = 1;
   }
 
   // Faixa de BANDA pixels em volta do apagado: é onde sobra o halo claro da borda do desenho.
-  const nivel = new Uint8Array(w * h);
-  let borda: number[] = [];
-  for (let p = 0; p < w * h; p++) if (apagado[p]) borda.push(p);
-  for (let n = 1; n <= BANDA; n++) {
+  const nivel = new Uint8Array(total);
+  let atual: number[] = [];
+  for (let p = 0; p < total; p++) {
+    if (apagado[p]) continue;
+    const x = p % w;
+    if ((x > 0 && apagado[p - 1]) || (x < w - 1 && apagado[p + 1]) || (p >= w && apagado[p - w]) || (p < total - w && apagado[p + w])) { nivel[p] = 1; atual.push(p); }
+  }
+  for (let k = 2; k <= BANDA; k++) {
     const prox: number[] = [];
-    for (const q of borda) {
+    for (const q of atual) {
       const x = q % w;
-      const y = (q - x) / w;
-      const viz = [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, y > 0 ? q - w : -1, y < h - 1 ? q + w : -1];
-      for (const v of viz) {
-        if (v < 0 || apagado[v] || nivel[v]) continue;
-        nivel[v] = n;
-        prox.push(v);
-      }
+      const viz = [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, q >= w ? q - w : -1, q < total - w ? q + w : -1];
+      for (const v of viz) if (v >= 0 && !apagado[v] && !nivel[v]) { nivel[v] = k; prox.push(v); }
     }
-    borda = prox;
+    atual = prox;
   }
 
-  for (let p = 0; p < w * h; p++) {
+  for (let p = 0; p < total; p++) {
     const i = p * 4;
     if (apagado[p]) { px[i + 3] = 0; continue; }
     if (nivel[p] === 0) continue;
     // Perto do apagado: cor parecida com o fundo vira meio transparente, tirando o resto de branco da cor.
-    const d = dist(i);
+    const d = dist[p];
     if (d < limite * 1.8) {
       const a = Math.min(1, Math.max(0, (d - limite * 0.6) / (limite * 1.2)));
       if (a > 0.04) {
@@ -338,7 +326,7 @@ export function LogoEditor({
   if (typeof document === "undefined") return null;
   return createPortal(
     <div className="fixed inset-0 z-[90] flex flex-col justify-end bg-black/45" onClick={() => !salvando && onClose()}>
-      <div className="mx-auto w-full max-w-[440px] rounded-t-[28px] bg-surface-white px-5 pb-8 pt-4" onClick={(e) => e.stopPropagation()}>
+      <div className="mx-auto max-h-[94dvh] w-full max-w-[440px] overflow-y-auto overscroll-contain rounded-t-[28px] bg-surface-white px-5 pb-8 pt-4" onClick={(e) => e.stopPropagation()}>
         <span className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" />
         <p className="text-center font-[family-name:var(--font-manrope)] text-[18px] font-medium">Logo da sua página</p>
 
