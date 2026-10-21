@@ -1393,3 +1393,9 @@ html[data-embed] .embed-oculta { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .gv-entra, .gv-foto { animation: none; }
 }
+
+/* Bolinha vermelha pulsante dos avisos que não podem passar despercebidos. */
+.aviso-ponto { position: relative; display: inline-block; width: 9px; height: 9px; flex: none; border-radius: 9999px; background: #E5383B; }
+.aviso-ponto::after { content: ""; position: absolute; inset: 0; border-radius: 9999px; background: #E5383B; animation: aviso-pulso 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
+@keyframes aviso-pulso { 0% { transform: scale(1); opacity: 0.55; } 80%, 100% { transform: scale(2.8); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .aviso-ponto::after { animation: none; opacity: 0.25; transform: scale(1.8); } }

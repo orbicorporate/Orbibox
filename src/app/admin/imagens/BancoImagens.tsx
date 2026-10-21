@@ -387,7 +387,12 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
           {filtro !== "todas" && filtro !== "sem" ? `As novas vão para "${nomeDe(filtro)}". ` : ""}Pode escolher várias de uma vez.
         </p>
         {erro && <p className="mt-2 text-[13px] text-red-600">{erro}</p>}
-        {aviso && <p className="mt-2 text-[13px] text-text-secondary">{aviso}</p>}
+        {aviso && (
+          <p role="status" className="mt-2 flex items-start gap-2.5 rounded-xl border border-red-200 bg-white px-3 py-2.5 text-[13px] font-medium text-text-primary">
+            <span className="aviso-ponto mt-[5px]" aria-hidden />
+            <span>{aviso}</span>
+          </p>
+        )}
       </div>
 
       {/* Categorias criadas pela própria pessoa */}

@@ -157,7 +157,12 @@ export function MinhaGaleriaPicker({
             </div>
           )}
           {erro && <p className="text-[13px] text-red-600">{erro}</p>}
-          {aviso && <p role="status" className="mb-2 rounded-xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary">{aviso}</p>}
+          {aviso && (
+            <p role="status" className="mb-2 flex items-start gap-2.5 rounded-xl border border-red-200 bg-white px-3 py-2.5 text-[13px] font-medium text-text-primary">
+              <span className="aviso-ponto mt-[5px]" aria-hidden />
+              <span>{aviso}</span>
+            </p>
+          )}
           {itens && !erro && visiveis.length === 0 && subindo === 0 && (
             <div className="rounded-[20px] border border-dashed border-divider p-6 text-center">
               <p className="text-[14px] font-medium">Sua galeria está vazia</p>
