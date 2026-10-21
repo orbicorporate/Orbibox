@@ -158,7 +158,7 @@ export function MinhaGaleriaPicker({
           )}
           {erro && <p className="text-[13px] text-red-600">{erro}</p>}
           {aviso && (
-            <p role="status" className="mb-2 flex items-start gap-2.5 rounded-xl border border-red-200 bg-white px-3 py-2.5 text-[13px] font-medium text-text-primary">
+            <p role="status" className="mb-2 flex items-start gap-2.5 rounded-xl border border-red-200 bg-white px-3 py-2.5 text-[13px] font-medium text-on-background">
               <span className="aviso-ponto mt-[5px]" aria-hidden />
               <span>{aviso}</span>
             </p>
