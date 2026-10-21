@@ -597,20 +597,12 @@ export function VisitorExperience({
     return true;
   }
   // Ordem dos itens em destaque, mexida direto na Home (segurar e arrastar).
-  const [posItens, setPosItens] = useState<Record<string, number>>({});
-  const contentHome = content.map((i) => (i.id in posItens ? { ...i, position: posItens[i.id] } : i));
+  // Grava na lista de destaques do dono, nunca na ordem do Catálogo. Se a Home
+  // estava no automático, a ordem arrastada passa a ser a escolha do dono.
+  const contentHome = content;
   async function reordenarItens(ids: string[]) {
-    // Só os itens visíveis trocam de lugar entre si; os outros ficam onde estão.
-    const cheia = [...contentHome].sort((a, b) => a.position - b.position);
-    const slots = cheia.map((i, n) => (ids.includes(i.id) ? n : -1)).filter((n) => n >= 0);
-    const nova = [...cheia];
-    slots.forEach((slot, n) => { const it = cheia.find((x) => x.id === ids[n]); if (it) nova[slot] = it; });
-    const posicoes: Record<string, number> = {};
-    nova.forEach((i, n) => { posicoes[i.id] = n; });
-    setPosItens(posicoes);
-    const mudaram = cheia.filter((i) => posicoes[i.id] !== i.position);
-    const res = await Promise.all(mudaram.map((i) => supabase.from("content_items").update({ position: posicoes[i.id] }).eq("id", i.id)));
-    conferirSalvo(res.find((r) => r.error) ?? { error: null });
+    const resto = (itensHomeSalvos ?? []).filter((id) => !ids.includes(id));
+    await guardarItensHome([...ids, ...resto]);
   }
   // A cor da esfera do meio na Órbita fica guardada no box de entrada (hero).
   const heroBox = boxList.find((b) => b.box_type === "hero");
