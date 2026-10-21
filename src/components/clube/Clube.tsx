@@ -52,6 +52,12 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     if (p === "contato") setAberta({ tipo: "contato", origem: null });
   }, [businessId, recarregar]);
 
+  // Atalho da Home do dono: /slug?clube=fas abre direto a lista de fãs.
+  useEffect(() => {
+    if (!isOwner || typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("clube") === "fas") queueMicrotask(() => setAberta({ tipo: "fas", origem: null }));
+  }, [isOwner]);
+
   useEffect(() => {
     let vivo = true;
     (async () => {

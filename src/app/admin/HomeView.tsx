@@ -20,6 +20,7 @@ const TEMAS_NUMERO: Record<string, { de: string; ate: string; cor: string; icone
   Conversas: { de: "#E3EBFF", ate: "#C4D3FF", cor: "#2F4FB3", icone: "M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z", dica: "Papos com a Orbi" },
   Contatos: { de: "#EFE6FF", ate: "#D2BDFF", cor: "#6A3FC4", icone: "M16 19c0-2.8-2.2-5-5-5s-5 2.2-5 5M11 11a3 3 0 100-6 3 3 0 000 6zM19 8v6M22 11h-6", dica: "Quem deixou o contato" },
   WhatsApp: { de: "#DDF9F4", ate: "#B5EDE3", cor: "#00695F", icone: "M5 19l1.2-3.6A8 8 0 1112 20a8 8 0 01-3.8-1L5 19z", dica: "Toques no botão de WhatsApp" },
+  "Fãs do Clube": { de: "#FFE4EE", ate: "#FFC2D8", cor: "#A3224F", icone: "M12 21s-7-4.4-9.3-9A5.2 5.2 0 0112 6.6 5.2 5.2 0 0121.3 12C19 16.6 12 21 12 21z", dica: "Clientes que viraram fãs" },
   "Vouchers pegos": { de: "#FFEAD7", ate: "#FFCFA6", cor: "#A8481A", icone: "M3 9a2 2 0 010 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 010-4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2zM13 5v14", dica: "Pessoas que pegaram um voucher" },
 };
 
@@ -59,7 +60,7 @@ export type HomeViewProps = {
   oportunidade: Oportunidade;
   proxima: Omit<ComponentProps<typeof ProximaAcao>, "pendencia">;
   marcos: ComponentProps<typeof Marcos>["contagem"];
-  numeros: { rotulo: string; n: number; antes: number; href: string; conversao?: boolean }[];
+  numeros: { rotulo: string; n: number; antes: number; href: string; conversao?: boolean; semVariacao?: boolean }[];
   orbiColors: string[] | null;
   progressoPct: number;
   pelaMetade: { businessId: string; semItens: boolean; semBotoes: boolean; site: string | null; instagram: string | null } | null;
@@ -117,7 +118,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         </div>
         <div className="no-scrollbar -mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-1">
           {[...numeros.filter((m) => !m.conversao), ...numeros.filter((m) => m.conversao)].map((m) => {
-            const v = variacao(m.n, m.antes);
+            const v = m.semVariacao ? { texto: "", sobe: null } : variacao(m.n, m.antes);
             const tema = TEMAS_NUMERO[m.rotulo] ?? TEMA_PADRAO;
             return (
               <Link

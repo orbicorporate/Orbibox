@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getBusinessProgress } from "@/lib/progress";
@@ -83,11 +84,14 @@ export default async function HojePage() {
   const primeiroNome = nomeCompleto.trim().split(/\s+/)[0] || null;
   const orbiColors = Array.isArray(agenteRes.data?.orbi_colors) && agenteRes.data.orbi_colors.length >= 2 ? (agenteRes.data.orbi_colors as string[]) : null;
 
+  const { data: clubeResumo } = await (supabase as unknown as SupabaseClient).rpc("clube_resumo", { p_business: b.id });
+  const totalFas = Number((clubeResumo as { fas?: number } | null)?.fas ?? 0);
   const numeros = [
     { rotulo: "Visitas", n: semana.visitas, antes: semana.visitasAntes, href: "/admin/pulse" },
     { rotulo: "Conversas", n: semana.conversas, antes: semana.conversasAntes, href: "/admin/conversas" },
     { rotulo: "Contatos", n: semana.contatos, antes: semana.contatosAntes, href: "/admin/conversas" },
     { rotulo: "WhatsApp", n: semana.whatsapp, antes: semana.whatsappAntes, href: "/admin/pulse", conversao: true },
+    { rotulo: "Fãs do Clube", n: totalFas, antes: 0, href: `/${b.slug}?clube=fas`, semVariacao: true },
     { rotulo: "Vouchers pegos", n: semana.resgates, antes: semana.resgatesAntes, href: "/admin/vouchers/painel#resgates", conversao: true },
   ];
 
