@@ -5,7 +5,6 @@ import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { LapisDono } from "@/components/mobile/LapisDono";
 import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
-import { groupByCategory } from "@/lib/showcase";
 import { CartaoItem, type ItemCartao } from "./CartaoItem";
 import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import { ORBI_SPHERE_COLORS, sizeOf } from "@/lib/showcase";
@@ -116,7 +115,6 @@ export function HomeVitrine({
   onRenomear,
   onEsconder,
   onAdicionar,
-  ordemCategorias,
   formato,
   onFormato,
   itensEscolhidos,
@@ -169,7 +167,6 @@ export function HomeVitrine({
   /** Só o dono: guarda a escolha (null volta ao automático). Undefined quando não há onde guardar. */
   onEscolherItens?: (ids: string[] | null) => void;
 }) {
-  const [chip, setChip] = useState<string | null>(null);
   const [editandoFormato, setEditandoFormato] = useState(false);
   const [editandoTitulo, setEditandoTitulo] = useState(false);
   const [escolhendo, setEscolhendo] = useState(false);
@@ -181,25 +178,14 @@ export function HomeVitrine({
   const [enderecoAberto, setEnderecoAberto] = useState<string | null>(null);
   // Item sem foto também entra: o cartão vira um letreiro com o nome.
   const comFoto = itens;
-  // Chips só com 2 ou mais categorias que tenham ao menos 2 itens.
-  const categorias = groupByCategory(comFoto, ordemCategorias).filter((c) => c.name && c.items.length >= 2).slice(0, 5);
   const escolhidos = (itensEscolhidos ?? []).map((id) => comFoto.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i).slice(0, MAXIMO);
   const personalizado = escolhidos.length > 0;
-  const temChips = !personalizado && categorias.length >= 2;
-  const ativo = temChips ? categorias.find((c) => c.name === chip) ?? null : null;
-  // Em "Tudo", as capas vêm primeiro: itens sem categoria ou de uma categoria com um item só (Rodízio, Buffet, Eventos).
-  // Os pratos de um cardápio importado (várias categorias com vários itens) ficam atrás, nos chips.
-  const porCategoria = new Map<string, number>();
-  for (const i of comFoto) {
-    const c = i.brand_label?.trim();
-    if (c) porCategoria.set(c, (porCategoria.get(c) ?? 0) + 1);
-  }
-  const ehCapa = (i: ItemVitrine) => {
-    const c = i.brand_label?.trim();
-    return !c || (porCategoria.get(c) ?? 0) < 2;
-  };
+  // Sem escolha do dono, a Home mostra as capas da vitrine: os itens sem categoria (Rodízio, Buffet, Drinks...).
+  // Os pratos de um cardápio importado, que têm categoria, ficam de fora. Sem nenhuma capa, vale a ordem do catálogo.
   const porPosicao = [...comFoto].sort((a, b) => a.position - b.position);
-  const base = personalizado ? escolhidos : ativo ? ativo.items : [...porPosicao.filter(ehCapa), ...porPosicao.filter((i) => !ehCapa(i))];
+  const capas = porPosicao.filter((i) => !i.brand_label?.trim());
+  const base = personalizado ? escolhidos : capas.length > 0 ? capas : porPosicao;
+  const naSelecao = personalizado ? escolhidos : base.slice(0, MAXIMO);
   const mostrar = personalizado || comFoto.length >= MINIMO_COM_FOTO ? base.slice(0, MAXIMO) : [];
 
   function aoClicar(b: BolinhaVitrine) {
@@ -371,25 +357,6 @@ export function HomeVitrine({
             </div>
           </div>
           <div className="mt-3 flex w-full min-w-0 flex-col items-center empty:hidden">{destaque}</div>
-          {temChips && (
-            <div role="tablist" aria-label="Categorias" className="no-scrollbar -mx-6 mt-3 flex gap-2 overflow-x-auto px-6 pb-1">
-              {[{ name: null as string | null, rotulo: "Tudo" }, ...categorias.map((c) => ({ name: c.name as string | null, rotulo: c.name }))].map((c) => {
-                const on = (ativo?.name ?? null) === c.name;
-                return (
-                  <button
-                    key={c.rotulo}
-                    type="button"
-                    role="tab"
-                    aria-selected={on}
-                    onClick={() => setChip(c.name)}
-                    className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-full px-4 text-[13.5px] ${on ? "bg-button-primary font-medium text-white" : "border border-divider bg-surface-white text-text-secondary"}`}
-                  >
-                    {c.rotulo}
-                  </button>
-                );
-              })}
-            </div>
-          )}
           {formato === "vitrine" ? (
             <ul className="relative mt-3 grid grid-flow-dense grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
               {mostrarNaOrdem.map((i) => {
@@ -461,7 +428,7 @@ export function HomeVitrine({
             <p className="mt-1 shrink-0 text-[13px] text-text-secondary">
               {personalizado
                 ? `Você escolheu ${escolhidos.length} de ${MAXIMO}. Toque num item para tirar ou para colocar outro.`
-                : `Agora a Home mostra as capas da vitrine sozinha. Escolha até ${MAXIMO} itens para decidir você mesmo.`}
+                : `Estes são os itens que a Home mostra agora, as capas da vitrine. Toque para tirar ou trocar, até ${MAXIMO}.`}
             </p>
             <input
               type="search"
@@ -474,9 +441,9 @@ export function HomeVitrine({
               {itens
                 .filter((i) => i.title.toLowerCase().includes(busca.trim().toLowerCase()))
                 .map((i) => {
-                  const ordem = escolhidos.findIndex((e) => e.id === i.id);
+                  const ordem = naSelecao.findIndex((e) => e.id === i.id);
                   const marcado = ordem >= 0;
-                  const cheio = !marcado && escolhidos.length >= MAXIMO;
+                  const cheio = !marcado && naSelecao.length >= MAXIMO;
                   return (
                     <li key={i.id}>
                       <button
@@ -484,7 +451,7 @@ export function HomeVitrine({
                         disabled={cheio}
                         aria-pressed={marcado}
                         onClick={() => {
-                          const atuais = escolhidos.map((e) => e.id);
+                          const atuais = naSelecao.map((e) => e.id);
                           const novos = marcado ? atuais.filter((id) => id !== i.id) : [...atuais, i.id];
                           onEscolherItens(novos.length > 0 ? novos : null);
                         }}
