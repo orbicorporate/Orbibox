@@ -499,7 +499,7 @@ export function BoxesManager({
                     <button
                       onClick={pickLogoAvatar}
                       disabled={!availableLogo}
-                      className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 disabled:opacity-40 ${(heroAvatar === "logo" || heroAvatar.startsWith("esfera") || (heroAvatar === "auto" && !!availableLogo)) ? "border-on-background" : "border-transparent"}`}
+                      className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 disabled:opacity-40 ${(heroAvatar === "logo" || heroAvatar === "sem-fundo" || heroAvatar.startsWith("esfera") || (heroAvatar === "auto" && !!availableLogo)) ? "border-on-background" : "border-transparent"}`}
                     >
                       {availableLogo ? <OrbiLogoBadge logoUrl={availableLogo} size={40} /> : <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px]">◎</span>}
                       <span className="text-[11px] font-medium">Logotipo</span>

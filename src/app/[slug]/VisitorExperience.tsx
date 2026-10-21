@@ -940,6 +940,10 @@ export function VisitorExperience({
             <div className="relative mb-8">
               {heroAvatar === "particle" || heroAvatar === "sphere" ? (
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
+              ) : logoAtual && heroAvatar === "sem-fundo" ? (
+                // Só o desenho do logo, solto, sem disco nem anel.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoAtual} alt="" className="h-24 w-24 object-contain drop-shadow-[0_6px_14px_rgba(17,19,24,0.18)]" />
               ) : logoAtual ? (
                 // "logo" ou "auto" (padrão): logo se tiver, senão a esfera.
                 <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} esfera={lerEsfera(heroAvatar)?.tom} escala={lerEsfera(heroAvatar)?.escala} />

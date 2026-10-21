@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
 import { OrbiAvatar, lerEsfera } from "@/components/orbi/OrbiAvatar";
 
-type Estilo = "logo" | "esfera-claro" | "esfera-escuro";
+type Estilo = "logo" | "sem-fundo" | "esfera-claro" | "esfera-escuro";
 
 const LADO = 800;
 
@@ -97,17 +97,46 @@ function removerFundo(entrada: HTMLCanvasElement, tolerancia: number): HTMLCanva
     if (y < h - 1) empurrar(x, y + 1);
   }
 
+  // Bolsões fechados da cor do fundo (dentro de letras, buracos do desenho): some se forem pequenos.
+  const visto2 = new Uint8Array(w * h);
+  const maxBolsao = w * h * 0.04;
+  for (let s0 = 0; s0 < w * h; s0++) {
+    if (apagado[s0] || visto2[s0] || dist(s0 * 4) > limite) continue;
+    const comp: number[] = [s0];
+    visto2[s0] = 1;
+    for (let k = 0; k < comp.length; k++) {
+      const q = comp[k];
+      const x = q % w;
+      const y = (q - x) / w;
+      const viz = [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, y > 0 ? q - w : -1, y < h - 1 ? q + w : -1];
+      for (const t of viz) {
+        if (t < 0 || visto2[t] || apagado[t]) continue;
+        visto2[t] = 1;
+        if (dist(t * 4) <= limite) comp.push(t);
+      }
+    }
+    if (comp.length <= maxBolsao) for (const q of comp) apagado[q] = 1;
+  }
+
   for (let p = 0; p < w * h; p++) {
     const i = p * 4;
     if (apagado[p]) { px[i + 3] = 0; continue; }
-    // Borda: vizinho apagado + cor parecida com o fundo = meio transparente.
+    // Borda: vizinho apagado + cor parecida com o fundo = meio transparente, tirando o resto de branco da cor.
     const x = p % w;
     const y = (p - x) / w;
     const vizinho =
       (x > 0 && apagado[p - 1]) || (x < w - 1 && apagado[p + 1]) || (y > 0 && apagado[p - w]) || (y < h - 1 && apagado[p + w]);
     if (vizinho) {
       const d = dist(i);
-      if (d < limite * 1.8) px[i + 3] = Math.round(px[i + 3] * Math.min(1, Math.max(0, (d - limite * 0.6) / (limite * 1.2))));
+      if (d < limite * 1.8) {
+        const a = Math.min(1, Math.max(0, (d - limite * 0.6) / (limite * 1.2)));
+        if (a > 0.04) {
+          px[i] = Math.max(0, Math.min(255, (px[i] - r * (1 - a)) / a));
+          px[i + 1] = Math.max(0, Math.min(255, (px[i + 1] - g * (1 - a)) / a));
+          px[i + 2] = Math.max(0, Math.min(255, (px[i + 2] - b * (1 - a)) / a));
+        }
+        px[i + 3] = Math.round(px[i + 3] * a);
+      }
     }
   }
   ctx.putImageData(dados, 0, 0);
@@ -154,7 +183,7 @@ export function LogoEditor({
   const [trocou, setTrocou] = useState(false);
   const previa = useRef<HTMLCanvasElement>(null);
   const esferaAtual = lerEsfera(avatar);
-  const estiloInicial: Estilo = esferaAtual ? (`esfera-${esferaAtual.tom}` as Estilo) : "logo";
+  const estiloInicial: Estilo = avatar === "sem-fundo" ? "sem-fundo" : esferaAtual ? (`esfera-${esferaAtual.tom}` as Estilo) : "logo";
   const escalaInicial = esferaAtual?.escala ?? 100;
   const [estilo, setEstilo] = useState<Estilo>(estiloInicial);
   const [escala, setEscala] = useState(escalaInicial);
@@ -234,7 +263,7 @@ export function LogoEditor({
         url = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
       }
       // Esfera clara ou escura guarda o estilo em hero_avatar; voltar ao logo simples só mexe se já era esfera.
-      const novoAvatar: string | null = estilo !== "logo" ? `${estilo}-${escala}` : estiloInicial !== "logo" ? "logo" : avatar;
+      const novoAvatar: string | null = estilo === "sem-fundo" ? "sem-fundo" : estilo !== "logo" ? `${estilo}-${escala}` : estiloInicial !== "logo" ? "logo" : avatar;
       const campos: { logo_url: string; hero_avatar?: string | null } = { logo_url: url! };
       if (novoAvatar !== avatar) campos.hero_avatar = novoAvatar;
       const { error } = await supabase.from("businesses").update(campos).eq("id", businessId);
@@ -250,7 +279,7 @@ export function LogoEditor({
     }
   }
 
-  const mudou = trocou || semFundo || estilo !== estiloInicial || (estilo !== "logo" && escala !== escalaInicial);
+  const mudou = trocou || semFundo || estilo !== estiloInicial || (estilo.startsWith("esfera") && escala !== escalaInicial);
 
   if (typeof document === "undefined") return null;
   return createPortal(
@@ -259,7 +288,15 @@ export function LogoEditor({
         <span className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" />
         <p className="text-center font-[family-name:var(--font-manrope)] text-[18px] font-medium">Logo da sua página</p>
 
-        {urlPrevia && estilo !== "logo" ? (
+        {urlPrevia && estilo === "sem-fundo" ? (
+          <div
+            className="mx-auto mt-4 flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-3xl p-3 ring-1 ring-black/10"
+            style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "20px 20px" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={urlPrevia} alt="" className="h-full w-full object-contain" />
+          </div>
+        ) : urlPrevia && estilo !== "logo" ? (
           <div className="mx-auto mt-6 flex h-[200px] w-[200px] items-center justify-center">
             <OrbiAvatar logoUrl={urlPrevia} size={150} esfera={estilo === "esfera-claro" ? "claro" : "escuro"} escala={escala} />
           </div>
@@ -287,9 +324,9 @@ export function LogoEditor({
         {base && (
           <div className="mt-3 rounded-2xl border border-divider p-4">
             <p className="text-[14px] font-medium">Aparência</p>
-            <p className="mt-0.5 text-[12.5px] text-text-tertiary">Esfera: o logo vai sobre um disco com luz de vidro girando em volta.</p>
+            <p className="mt-0.5 text-[12.5px] text-text-tertiary">Sem fundo: só o desenho do logo, solto na página. Esfera: o logo vai sobre um disco com luz de vidro girando em volta.</p>
             <div role="radiogroup" aria-label="Aparência do logo" className="mt-3 flex flex-wrap gap-2">
-              {([["logo", "Logo simples"], ["esfera-claro", "Esfera clara"], ["esfera-escuro", "Esfera escura"]] as const).map(([v, t]) => (
+              {([["logo", "Logo simples"], ["sem-fundo", "Sem fundo"], ["esfera-claro", "Esfera clara"], ["esfera-escuro", "Esfera escura"]] as const).map(([v, t]) => (
                 <button
                   key={v}
                   type="button"
@@ -303,7 +340,7 @@ export function LogoEditor({
                 </button>
               ))}
             </div>
-            {estilo !== "logo" && (
+            {estilo.startsWith("esfera") && (
               <div className="mt-4">
                 <div className="flex items-center justify-between text-[12.5px] text-text-tertiary">
                   <label htmlFor="logo-tamanho">Tamanho do logo</label>
