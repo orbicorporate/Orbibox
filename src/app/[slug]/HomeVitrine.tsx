@@ -345,13 +345,13 @@ export function HomeVitrine({
               {podeEditar && onTitulo && (
                 <button type="button" onClick={() => setEditandoTitulo(true)} aria-label="Editar o título desta seção" className="flex h-7 w-7 shrink-0 items-center justify-center lapis-edita text-[14px] text-on-background/60">✎</button>
               )}
-            </div>
-            <div className="flex items-center gap-1">
               {podeEditar && onEscolherItens && (
-                <button type="button" onClick={() => setEscolhendo(true)} className="min-h-[32px] rounded-full border border-divider bg-white px-3 text-[12px] font-medium text-on-background active:scale-[0.97]">
+                <button type="button" onClick={() => setEscolhendo(true)} className="ml-1 min-h-[32px] rounded-full border border-divider bg-white px-3 text-[12px] font-medium text-on-background active:scale-[0.97]">
                   {personalizado ? "Trocar destaques" : "Escolher destaques"}
                 </button>
               )}
+            </div>
+            <div className="flex items-center gap-1">
               {podeEditar && onFormato && !onEscolherItens && (
                 <span className="text-[12px] text-text-tertiary">{FORMATOS.find((f) => f.v === formato)?.titulo}</span>
               )}
