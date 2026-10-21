@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { comprimirPdf } from "@/lib/comprimirPdf";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { IconeBotao } from "./IconeBotao";
 import { createPortal } from "react-dom";
@@ -68,9 +70,51 @@ export function BoxDestaque({
   const [vouchers, setVouchers] = useState<V[]>([]);
   const [aberto, setAberto] = useState(false);
   // Folha em dois caminhos: destacar algo que já existe, ou criar algo novo.
-  const [vista, setVista] = useState<"inicio" | "existente" | "novo">("inicio");
+  const [vista, setVista] = useState<"inicio" | "existente" | "novo" | "pdf">("inicio");
   const abrirFolha = () => { setVista("inicio"); setAberto(true); };
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
+  const router = useRouter();
+
+  // Botão de PDF: o dono sobe o arquivo, dá um nome e vira um botão que abre o PDF, já fixado no destaque.
+  const arquivoPdf = useRef<HTMLInputElement>(null);
+  const [nomePdf, setNomePdf] = useState("");
+  const [filePdf, setFilePdf] = useState<File | null>(null);
+  const [criandoPdf, setCriandoPdf] = useState(false);
+  const [erroPdf, setErroPdf] = useState<string | null>(null);
+
+  async function criarBotaoPdf() {
+    const nome = nomePdf.trim();
+    if (!nome || !filePdf || criandoPdf) return;
+    setErroPdf(null);
+    setCriandoPdf(true);
+    try {
+      let arq = filePdf;
+      // PDF pesado abre devagar no celular do cliente: reduz sozinho antes de enviar.
+      if (arq.size > 5 * 1024 * 1024) {
+        try { const menor = await comprimirPdf(arq, 4.5 * 1024 * 1024); if (menor && menor.size < arq.size) arq = menor; } catch { /* segue com o original */ }
+      }
+      if (arq.size > 10 * 1024 * 1024) { setErroPdf("O PDF passou de 10 MB. Reduza o arquivo e tente de novo."); return; }
+      const caminho = `${businessId}/botao-${new Date().getTime()}.pdf`;
+      const { error: errUp } = await supabase.storage.from("cardapios-pdf").upload(caminho, arq, { cacheControl: "3600", upsert: false, contentType: "application/pdf" });
+      if (errUp) { setErroPdf("Não consegui enviar o PDF. Tente de novo."); return; }
+      const url = supabase.storage.from("cardapios-pdf").getPublicUrl(caminho).data.publicUrl;
+      const { data: ult } = await supabase.from("smart_boxes").select("position").eq("business_id", businessId).order("position", { ascending: false }).limit(1);
+      const posicao = (ult?.[0]?.position ?? -1) + 1;
+      const { data: caixa, error } = await supabase
+        .from("smart_boxes")
+        .insert({ business_id: businessId, box_type: "custom", title: nome, position: posicao, is_active: true, config: { label: nome, subtitle: "Abrir PDF", icon: "📄", action: "link", url, icone: false } })
+        .select("id")
+        .single();
+      if (error || !caixa) { setErroPdf("Não consegui criar o botão. Tente de novo."); return; }
+      onSalvar([...destaques, { t: "botao", id: caixa.id }]);
+      setNomePdf("");
+      setFilePdf(null);
+      setAberto(false);
+      router.refresh();
+    } finally {
+      setCriandoPdf(false);
+    }
+  }
 
   useEffect(() => {
     let vivo = true;
@@ -269,9 +313,9 @@ export function BoxDestaque({
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-2">
                 {vista !== "inicio" && (
-                  <button type="button" onClick={() => setVista("inicio")} aria-label="Voltar" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px] active:scale-95">‹</button>
+                  <button type="button" onClick={() => setVista(vista === "pdf" ? "novo" : "inicio")} aria-label="Voltar" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px] active:scale-95">‹</button>
                 )}
-                <span className="truncate text-[17px] font-medium">{vista === "existente" ? "Destacar o que já existe" : vista === "novo" ? "Criar algo novo" : "Fixar no destaque"}</span>
+                <span className="truncate text-[17px] font-medium">{vista === "existente" ? "Destacar o que já existe" : vista === "novo" ? "Criar algo novo" : vista === "pdf" ? "Botão de PDF" : "Fixar no destaque"}</span>
               </div>
               <button type="button" onClick={() => setAberto(false)} className="min-h-[40px] shrink-0 rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
             </div>
@@ -315,6 +359,34 @@ export function BoxDestaque({
                     <span aria-hidden className="text-[20px] leading-none text-text-tertiary">›</span>
                   </AbrirEditor>
                 ))}
+                <button type="button" onClick={() => setVista("pdf")} className="flex min-h-[68px] w-full items-center gap-3 rounded-[22px] border-2 border-divider bg-surface-white p-3 text-left transition-transform active:scale-[0.98]">
+                  <TileNovo k="pdf" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-semibold">PDF</span>
+                    <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">Cardápio de Natal, catálogo, tabela de preços. Vira um botão que abre o arquivo.</span>
+                  </span>
+                  <span aria-hidden className="text-[20px] leading-none text-text-tertiary">›</span>
+                </button>
+              </div>
+            )}
+
+            {vista === "pdf" && (
+              <div className="mt-4 flex flex-col gap-3">
+                <label className="block">
+                  <span className="text-[12px] font-medium text-text-tertiary">Nome do botão</span>
+                  <input value={nomePdf} onChange={(e) => setNomePdf(e.target.value)} maxLength={40} placeholder="Ex: Cardápio de Natal" className="mt-1 w-full rounded-2xl border border-divider px-4 py-3 text-[16px] outline-none focus:border-on-background" />
+                </label>
+                <input ref={arquivoPdf} type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (!f) return; if (f.type !== "application/pdf") return setErroPdf("Envie um arquivo PDF."); setErroPdf(null); setFilePdf(f); if (!nomePdf.trim()) setNomePdf(f.name.replace(/\.pdf$/i, "").replace(/[_-]+/g, " ").slice(0, 40)); }} />
+                <button type="button" onClick={() => arquivoPdf.current?.click()} disabled={criandoPdf} className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl border-2 border-dashed border-divider px-4 text-left active:scale-[0.99]">
+                  <span className="text-[22px]" aria-hidden>📄</span>
+                  <span className="min-w-0 flex-1 truncate text-[14.5px]">{filePdf ? filePdf.name : "Escolher o PDF"}</span>
+                  {filePdf && <span className="shrink-0 text-[12px] text-text-tertiary">{(filePdf.size / 1024 / 1024).toFixed(1)} MB</span>}
+                </button>
+                {erroPdf && <p role="alert" className="text-[13px] text-red-600">{erroPdf}</p>}
+                <button type="button" onClick={() => void criarBotaoPdf()} disabled={!nomePdf.trim() || !filePdf || criandoPdf} className="min-h-[48px] rounded-full bg-on-background text-[15px] font-semibold text-white disabled:opacity-40 active:scale-[0.98]">
+                  {criandoPdf ? "Criando o botão…" : "Criar botão e destacar"}
+                </button>
+                <p className="text-center text-[12.5px] leading-snug text-text-tertiary">O botão abre o PDF direto, entra no Destaque e fica na lista de Botões para você editar a cor e o ícone.</p>
               </div>
             )}
 
@@ -361,6 +433,7 @@ const ICONES_NOVO: Record<string, React.ReactNode> = {
   voucher: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="M3 9a2 2 0 0 0 0 6v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a2 2 0 0 1 0-6V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z" /><path d="M14 6v12" strokeDasharray="2 3" /></svg>),
   gift: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13" /><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" /><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5" /></svg>),
   produto: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="M6 7h12l1 13H5z" /><path d="M9 7a3 3 0 0 1 6 0" /></svg>),
+  pdf: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></svg>),
   botao: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></svg>),
   existe: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" /></svg>),
   novo: (<svg width="22" height="22" viewBox="0 0 24 24" {...TRACOS}><path d="M12 4v16M4 12h16" /><path d="M19 3v4M17 5h4" /></svg>),
@@ -370,6 +443,7 @@ const CORES_NOVO: Record<string, { fundo: string; tile: string }> = {
   gift: { fundo: "#FFF2E0", tile: "#F29A1F" },
   produto: { fundo: "#E3F5F6", tile: "#0E9AA7" },
   botao: { fundo: "#ECEBFD", tile: "#6B63E8" },
+  pdf: { fundo: "#FDECEC", tile: "#E5483F" },
   existe: { fundo: "#FFF7D6", tile: "#E3A800" },
   novo: { fundo: "#F3E8FF", tile: "#9B5CF0" },
 };
