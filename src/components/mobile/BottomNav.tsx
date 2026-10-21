@@ -14,12 +14,24 @@ function TalkIcon() {
   );
 }
 
+function Ico({ children }: { children: ReactNode }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      {children}
+    </svg>
+  );
+}
+const IconeInicio = () => <Ico><path d="M4 11l8-7 8 7" /><path d="M6 10v9a1 1 0 0 0 1 1h3.5v-5h3v5H17a1 1 0 0 0 1-1v-9" /></Ico>;
+const IconeBotoes = () => <Ico><rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" /></Ico>;
+const IconeCatalogo = () => <Ico><path d="M5 8h14l-1 11a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 8Z" /><path d="M9 8V6.5a3 3 0 0 1 6 0V8" /></Ico>;
+const IconeNumeros = () => <Ico><path d="M5 20V11" /><path d="M12 20V5" /><path d="M19 20v-6" /></Ico>;
+
 export const TABS: { href: string; label: string; icon: ReactNode; glow?: boolean }[] = [
-  { href: "/admin", label: "Início", icon: "◈" },
-  { href: "/admin/boxes", label: "Botões", icon: "▣" },
-  { href: "/admin/vitrine", label: "Catálogo", icon: "◫", glow: true },
+  { href: "/admin", label: "Início", icon: <IconeInicio /> },
+  { href: "/admin/boxes", label: "Botões", icon: <IconeBotoes /> },
+  { href: "/admin/vitrine", label: "Catálogo", icon: <IconeCatalogo />, glow: true },
   { href: "/admin/conversas", label: "Conversas", icon: <TalkIcon /> },
-  { href: "/admin/pulse", label: "Números", icon: "◔" },
+  { href: "/admin/pulse", label: "Números", icon: <IconeNumeros /> },
 ];
 
 export function BottomNav() {

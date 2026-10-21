@@ -177,6 +177,16 @@ export function BoxDestaque({
   const marcado = (t: Destaque["t"], id: string) => destaques.some((d) => d.t === t && d.id === id);
   const alternar = (t: Destaque["t"], id: string) => onSalvar(marcado(t, id) ? destaques.filter((d) => !(d.t === t && d.id === id)) : [...destaques, { t, id }]);
 
+  // Muda a posição de um destaque fixado: a ordem do carrossel é a ordem desta lista.
+  const mover = (t: Destaque["t"], id: string, delta: -1 | 1) => {
+    const i = destaques.findIndex((d) => d.t === t && d.id === id);
+    const j = i + delta;
+    if (i < 0 || j < 0 || j >= destaques.length) return;
+    const nova = [...destaques];
+    [nova[i], nova[j]] = [nova[j], nova[i]];
+    onSalvar(nova);
+  };
+
   if (cartoes.length === 0 && !podeEditar) return null;
 
   // Cartões pequenos e delicados: miniatura, nome, uma linha de apoio e um botão discreto.
@@ -274,6 +284,12 @@ export function BoxDestaque({
           <AbrirEditor href={editar.href} rotulo={editar.rotulo} className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white text-[13px] text-text-secondary shadow-md active:scale-95">
             ✎
           </AbrirEditor>
+        )}
+        {destaques.length > 1 && (
+          <div className="mt-1.5 flex items-center justify-center gap-2">
+            <button type="button" onClick={() => mover(c.d.t, c.d.id, -1)} disabled={destaques[0]?.t === c.d.t && destaques[0]?.id === c.d.id} aria-label="Mover para antes" className="flex h-9 min-w-[44px] items-center justify-center rounded-full bg-surface-soft px-3 text-[13px] text-text-secondary disabled:opacity-30 active:scale-95">←</button>
+            <button type="button" onClick={() => mover(c.d.t, c.d.id, 1)} disabled={destaques[destaques.length - 1]?.t === c.d.t && destaques[destaques.length - 1]?.id === c.d.id} aria-label="Mover para depois" className="flex h-9 min-w-[44px] items-center justify-center rounded-full bg-surface-soft px-3 text-[13px] text-text-secondary disabled:opacity-30 active:scale-95">→</button>
+          </div>
         )}
       </div>
     );
@@ -392,7 +408,7 @@ export function BoxDestaque({
 
             {vista === "existente" && (
               <>
-                <p className="mt-1 text-[13px] text-text-secondary">Marque o que você quer em evidência. Desmarque para tirar.</p>
+                <p className="mt-1 text-[13px] text-text-secondary">Marque o que você quer em evidência. Desmarque para tirar. Para mudar a ordem, use as setas embaixo de cada cartão na página.</p>
                 <button type="button" onClick={() => setVista("novo")} className="mt-3 min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary active:scale-95">Não achou? Criar algo novo</button>
 
             <p className="mt-4 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Botões</p>
