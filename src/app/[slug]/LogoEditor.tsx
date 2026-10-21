@@ -217,7 +217,6 @@ export function LogoEditor({
   const [resultado, setResultado] = useState<HTMLCanvasElement | null>(null); // com fundo removido
   const [tolerancia, setTolerancia] = useState(28);
   const [toques, setToques] = useState<Toque[]>([]);
-  const [semFundo, setSemFundo] = useState(false);
   const [carregando, setCarregando] = useState(!!logoUrl);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -228,16 +227,16 @@ export function LogoEditor({
   const escalaInicial = esferaAtual?.escala ?? soltoAtual?.escala ?? lerLogoEscala(avatar) ?? 100;
   const [estilo, setEstilo] = useState<Estilo>(estiloInicial);
   const [escala, setEscala] = useState(escalaInicial);
+  // Solto e esfera ficam por cima da página ou de um disco: o fundo do arquivo atrapalharia, então sai sozinho.
+  const semFundo = estilo !== "logo";
 
   const ultimaEsfera = useRef<Estilo>("esfera-claro");
-  const [autoLigou, setAutoLigou] = useState(false);
+  const [ajustando, setAjustando] = useState(false);
   function escolherEstilo(e: Estilo) {
     if (e.startsWith("esfera")) ultimaEsfera.current = e;
     setEstilo(e);
     const [min, max] = limitesEscala(e);
     setEscala((v) => Math.min(max, Math.max(min, v)));
-    // Solto e esfera ficam por cima da página ou de um disco: o fundo do arquivo atrapalharia, então já tira.
-    if (e !== "logo" && !semFundo) { setSemFundo(true); setAutoLigou(true); }
   }
 
   useEffect(() => {
@@ -256,7 +255,7 @@ export function LogoEditor({
     return () => clearTimeout(t);
   }, [base, semFundo, tolerancia, toques]);
 
-  const semMargem = useMemo(() => (semFundo && resultado && estilo !== "logo" ? aparar(resultado) : null), [semFundo, resultado, estilo]);
+  const semMargem = useMemo(() => (semFundo && resultado ? aparar(resultado) : null), [semFundo, resultado]);
   const atual = semMargem ?? (semFundo && resultado ? resultado : base);
 
   // Imagem atual como endereço, pra mostrar a esfera de verdade na prévia.
@@ -272,7 +271,6 @@ export function LogoEditor({
     try {
       const img = await carregar(url);
       setBase(imagemParaCanvas(img));
-      setSemFundo(false);
       setResultado(null);
       setToques([]);
       setTrocou(true);
@@ -358,7 +356,7 @@ export function LogoEditor({
 
         {base && (
           <div className="mt-3 rounded-2xl border border-divider p-4">
-            <p className="text-[14px] font-medium">1. Estilo</p>
+            <p className="text-[14px] font-medium">Estilo</p>
             <div role="radiogroup" aria-label="Estilo do logo" className="mt-3 flex flex-wrap gap-2">
               {([["logo", "Logo simples"], ["sem-fundo", "Sem fundo"], ["esfera", "Esfera"]] as const).map(([v, t]) => {
                 const ativo = v === "esfera" ? estilo.startsWith("esfera") : estilo === v;
@@ -410,38 +408,31 @@ export function LogoEditor({
         {base && (
           <div className="mt-3 rounded-2xl border border-divider p-4">
             <div className="flex items-center justify-between text-[14px] font-medium">
-              <label htmlFor="logo-tamanho">2. Tamanho do logo</label>
+              <label htmlFor="logo-tamanho">Tamanho do logo</label>
               <span className="tabular-nums text-text-tertiary">{escala}%</span>
             </div>
             <input id="logo-tamanho" type="range" min={limitesEscala(estilo)[0]} max={limitesEscala(estilo)[1]} step={5} value={escala} onChange={(e) => setEscala(Number(e.target.value))} disabled={salvando} className="mt-1 h-8 w-full accent-[#14161A]" />
-            <p className="text-[12.5px] text-text-tertiary">Arraste para a direita para aumentar o logo, para a esquerda para diminuir.</p>
           </div>
         )}
 
-        {base && (
+        {base && semFundo && (
           <div className="mt-3 rounded-2xl border border-divider p-4">
-            <button type="button" role="switch" aria-checked={semFundo} onClick={() => { setSemFundo((v) => !v); setAutoLigou(false); }} disabled={salvando} className="flex w-full items-center justify-between gap-3 text-left">
+            <button type="button" aria-expanded={ajustando} onClick={() => setAjustando((v) => !v)} className="flex w-full items-center justify-between gap-3 text-left">
               <span>
-                <span className="block text-[14px] font-medium">3. Remover o fundo da imagem</span>
-                <span className="block text-[12.5px] text-text-tertiary">Apaga a cor lisa em volta do desenho, como o branco. A prévia acima mostra o resultado.</span>
+                <span className="block text-[14px] font-medium">Ajustar recorte</span>
+                <span className="block text-[12.5px] text-text-tertiary">O fundo já saiu sozinho. Só mexa se sobrou alguma parte.</span>
               </span>
-              <span className={`flex h-7 w-12 shrink-0 items-center rounded-full p-0.5 transition-colors ${semFundo ? "bg-on-background" : "bg-divider"}`}>
-                <span className={`h-6 w-6 rounded-full bg-white shadow transition-transform ${semFundo ? "translate-x-5" : ""}`} />
-              </span>
+              <span aria-hidden className={`text-text-tertiary transition-transform ${ajustando ? "rotate-90" : ""}`}>›</span>
             </button>
-            {semFundo && autoLigou && <p className="mt-2 rounded-xl bg-surface-soft px-3 py-2 text-[12.5px] text-text-secondary">Ligado automaticamente, porque esse estilo precisa do logo sem fundo.</p>}
-            {semFundo && (
+            {ajustando && (
               <div className="mt-4">
-                <div className="flex items-center justify-between text-[13px] font-medium">
-                  <label htmlFor="logo-limpeza">Quanto fundo remover</label>
-                </div>
+                <label htmlFor="logo-limpeza" className="text-[13px] font-medium">Quanto fundo remover</label>
                 <input id="logo-limpeza" type="range" min={5} max={70} value={tolerancia} onChange={(e) => setTolerancia(Number(e.target.value))} className="mt-1 w-full accent-[#111318]" />
                 <div className="flex justify-between text-[12px] text-text-tertiary"><span>Menos</span><span>Mais</span></div>
-                <p className="mt-1 text-[12px] text-text-tertiary">Sobrou fundo em volta? Vá para Mais. Começou a apagar o desenho? Volte para Menos.</p>
                 {urlRetoque && (
                   <div className="mt-4 border-t border-divider pt-4">
-                    <p className="text-[13px] font-medium">Retocar</p>
-                    <p className="mt-0.5 text-[12px] text-text-tertiary">Ficou fundo dentro de uma letra ou num canto? Toque nele para apagar.</p>
+                    <p className="text-[13px] font-medium">Ainda tem fundo em algum ponto?</p>
+                    <p className="mt-0.5 text-[12px] text-text-tertiary">Toque nele na imagem para apagar.</p>
                     <div
                       className="relative mt-2 w-full max-w-[320px] overflow-hidden rounded-2xl ring-1 ring-black/10"
                       style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "16px 16px" }}
@@ -459,8 +450,8 @@ export function LogoEditor({
                       />
                     </div>
                     {toques.length > 0 && (
-                      <button type="button" onClick={() => setToques((t) => t.slice(0, -1))} className="mt-2 min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">
-                        Desfazer último toque ({toques.length})
+                      <button type="button" onClick={() => setToques([])} className="mt-2 min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">
+                        Voltar ao recorte automático
                       </button>
                     )}
                   </div>
