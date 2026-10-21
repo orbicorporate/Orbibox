@@ -174,7 +174,7 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
     <div className="mt-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
       <p className="text-[14.5px] font-medium">{pdfs.length === 0 ? "Envie seu cardápio em PDF" : pdfs.length === 1 ? "Seu PDF" : "Seus PDFs"}</p>
       <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">
-        O cliente vê estes PDFs quando abre o Cardápio na sua página, não na tela inicial. Dê um nome a cada um, como Cardápio, Bebidas ou Sobremesas. Para ter um botão de PDF na tela inicial, use Destaque, Criar algo novo, PDF. Até {MAX_PDFS} arquivos de {LIMITE_MB} MB.
+        O cliente vê estes PDFs quando abre o Cardápio na sua página, não na tela inicial. Dê um nome a cada um, como Cardápio, Bebidas ou Sobremesas. Para ter um botão de PDF na tela inicial, use PDFs da marca, no menu de configurações. Até {MAX_PDFS} arquivos de {LIMITE_MB} MB.
       </p>
 
       {pdfs.length > 0 && (

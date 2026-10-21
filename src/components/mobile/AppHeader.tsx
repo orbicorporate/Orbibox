@@ -23,6 +23,7 @@ const MENU_ITEMS = [
   { href: "/admin/config", label: "Sua marca", desc: "Logo, cores e contatos", icon: ICONES.marca, marca: true },
   { href: "/admin/imagens", label: "Banco de imagens", desc: "Fotos da marca, por categoria", icon: ICONES.imagens, marca: false },
   { href: "/admin/cardapio", label: "Cardápio e delivery", desc: "Pratos com foto e apps de pedido", icon: ICONES.cardapio, marca: false },
+  { href: "/admin/pdfs", label: "PDFs da marca", desc: "Cardápio de Natal, tabelas, catálogos", icon: ICONES.cardapio, marca: false },
   { href: "/admin/agent", label: "Sua IA", desc: "Tom de voz e o que sabe", icon: ICONES.ia, marca: false },
 ] as const;
 
