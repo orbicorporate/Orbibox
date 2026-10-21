@@ -119,6 +119,8 @@ export function HomeVitrine({
   ordemCategorias,
   formato,
   onFormato,
+  itensEscolhidos,
+  onEscolherItens,
 }: {
   bolinhas: BolinhaVitrine[];
   ctaRotulo: string;
@@ -162,10 +164,16 @@ export function HomeVitrine({
   formato: FormatoItens;
   /** Undefined quando não há onde guardar a escolha (sem box da vitrine). */
   onFormato?: (f: FormatoItens) => void;
+  /** Ids que o dono escolheu para a Home, na ordem. Null ou vazio: mostra as capas da vitrine. */
+  itensEscolhidos?: string[] | null;
+  /** Só o dono: guarda a escolha (null volta ao automático). Undefined quando não há onde guardar. */
+  onEscolherItens?: (ids: string[] | null) => void;
 }) {
   const [chip, setChip] = useState<string | null>(null);
   const [editandoFormato, setEditandoFormato] = useState(false);
   const [editandoTitulo, setEditandoTitulo] = useState(false);
+  const [escolhendo, setEscolhendo] = useState(false);
+  const [busca, setBusca] = useState("");
   const [editandoCta, setEditandoCta] = useState(false);
   const [pergunta, setPergunta] = useState("");
   const [editando, setEditando] = useState(false);
@@ -175,7 +183,9 @@ export function HomeVitrine({
   const comFoto = itens;
   // Chips só com 2 ou mais categorias que tenham ao menos 2 itens.
   const categorias = groupByCategory(comFoto, ordemCategorias).filter((c) => c.name && c.items.length >= 2).slice(0, 5);
-  const temChips = categorias.length >= 2;
+  const escolhidos = (itensEscolhidos ?? []).map((id) => comFoto.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i).slice(0, MAXIMO);
+  const personalizado = escolhidos.length > 0;
+  const temChips = !personalizado && categorias.length >= 2;
   const ativo = temChips ? categorias.find((c) => c.name === chip) ?? null : null;
   // Em "Tudo", as capas vêm primeiro: itens sem categoria ou de uma categoria com um item só (Rodízio, Buffet, Eventos).
   // Os pratos de um cardápio importado (várias categorias com vários itens) ficam atrás, nos chips.
@@ -189,8 +199,8 @@ export function HomeVitrine({
     return !c || (porCategoria.get(c) ?? 0) < 2;
   };
   const porPosicao = [...comFoto].sort((a, b) => a.position - b.position);
-  const base = ativo ? ativo.items : [...porPosicao.filter(ehCapa), ...porPosicao.filter((i) => !ehCapa(i))];
-  const mostrar = comFoto.length >= MINIMO_COM_FOTO ? base.slice(0, MAXIMO) : [];
+  const base = personalizado ? escolhidos : ativo ? ativo.items : [...porPosicao.filter(ehCapa), ...porPosicao.filter((i) => !ehCapa(i))];
+  const mostrar = personalizado || comFoto.length >= MINIMO_COM_FOTO ? base.slice(0, MAXIMO) : [];
 
   function aoClicar(b: BolinhaVitrine) {
     if (b.tipo === "endereco" && b.endereco) {
@@ -347,7 +357,12 @@ export function HomeVitrine({
               )}
             </div>
             <div className="flex items-center gap-1">
-              {podeEditar && onFormato && (
+              {podeEditar && onEscolherItens && (
+                <button type="button" onClick={() => setEscolhendo(true)} className="min-h-[32px] rounded-full border border-divider bg-white px-3 text-[12px] font-medium text-on-background active:scale-[0.97]">
+                  {personalizado ? "Trocar destaques" : "Escolher destaques"}
+                </button>
+              )}
+              {podeEditar && onFormato && !onEscolherItens && (
                 <span className="text-[12px] text-text-tertiary">{FORMATOS.find((f) => f.v === formato)?.titulo}</span>
               )}
               {podeEditar && onFormato && (
@@ -430,6 +445,74 @@ export function HomeVitrine({
               className="mt-4 w-full rounded-2xl border border-divider px-4 py-3 text-[16px] outline-none focus:border-on-background"
             />
             <p className="mt-2 text-[13px] text-text-secondary">O padrão é Destaque. Você pode trocar por qualquer nome, como Nossas delícias ou Mais pedidos. Vazio volta ao padrão.</p>
+          </div>
+        </>,
+        document.body,
+      )}
+
+      {escolhendo && montado && onEscolherItens && createPortal(
+        <>
+          <button type="button" aria-label="Fechar" onClick={() => setEscolhendo(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-h-[85vh] w-full max-w-[440px] flex-col rounded-t-[28px] bg-white p-5 pb-6 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+            <div className="flex shrink-0 items-center justify-between">
+              <span className="text-[17px] font-medium">Destaques da Home</span>
+              <button type="button" onClick={() => { setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
+            </div>
+            <p className="mt-1 shrink-0 text-[13px] text-text-secondary">
+              {personalizado
+                ? `Você escolheu ${escolhidos.length} de ${MAXIMO}. Toque num item para tirar ou para colocar outro.`
+                : `Agora a Home mostra as capas da vitrine sozinha. Escolha até ${MAXIMO} itens para decidir você mesmo.`}
+            </p>
+            <input
+              type="search"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar item"
+              className="mt-3 w-full shrink-0 rounded-full border border-divider px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+            />
+            <ul className="mt-3 min-h-0 flex-1 overflow-y-auto">
+              {itens
+                .filter((i) => i.title.toLowerCase().includes(busca.trim().toLowerCase()))
+                .map((i) => {
+                  const ordem = escolhidos.findIndex((e) => e.id === i.id);
+                  const marcado = ordem >= 0;
+                  const cheio = !marcado && escolhidos.length >= MAXIMO;
+                  return (
+                    <li key={i.id}>
+                      <button
+                        type="button"
+                        disabled={cheio}
+                        aria-pressed={marcado}
+                        onClick={() => {
+                          const atuais = escolhidos.map((e) => e.id);
+                          const novos = marcado ? atuais.filter((id) => id !== i.id) : [...atuais, i.id];
+                          onEscolherItens(novos.length > 0 ? novos : null);
+                        }}
+                        className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl px-1 py-1.5 text-left disabled:opacity-40"
+                      >
+                        {i.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={i.image_url} alt="" loading="lazy" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+                        ) : (
+                          <span className="h-11 w-11 shrink-0 rounded-xl bg-surface-soft" />
+                        )}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-[14.5px] font-medium">{i.title}</span>
+                          {i.brand_label?.trim() && <span className="block truncate text-[12px] text-text-tertiary">{i.brand_label.trim()}</span>}
+                        </span>
+                        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-medium ${marcado ? "bg-on-background text-white" : "border border-divider text-transparent"}`}>
+                          {marcado ? ordem + 1 : ""}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+            </ul>
+            {personalizado && (
+              <button type="button" onClick={() => onEscolherItens(null)} className="mt-3 min-h-[44px] w-full shrink-0 rounded-full border border-divider text-[14px] font-medium active:scale-[0.98]">
+                Voltar ao automático (capas da vitrine)
+              </button>
+            )}
           </div>
         </>,
         document.body,
