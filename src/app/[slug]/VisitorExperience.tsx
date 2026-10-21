@@ -14,6 +14,7 @@ import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BotaoVirarFa, ClubeBloco } from "@/components/clube/Clube";
+import { CurtirItem } from "@/components/clube/CurtirItem";
 import { souFa } from "@/lib/clube";
 import { Card } from "@/components/ui/Card";
 import { OrbiFloatingButton } from "./OrbiFloatingButton";
@@ -166,6 +167,7 @@ export function VisitorExperience({
   const searchParams = useSearchParams();
   const router = useRouter();
   const [intent, setIntent] = useState<Intent | null>(null);
+  const [slotTopo, setSlotTopo] = useState<HTMLElement | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   // Cópia local editável dos boxes, o dono pode reordenar e renomear direto
   // na Home (sem precisar ir pro painel), e isso atualiza tanto a tela na
@@ -895,6 +897,7 @@ export function VisitorExperience({
           catálogo, sobre) centralizar empurrava tudo pra baixo e sobrava
           um vazio enorme no topo. */}
       <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 lg:max-w-[960px] ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
+        {intent === null && !showOwnerControls && <div ref={setSlotTopo} className="absolute right-4 top-4 z-20" />}
         {intent === null && !showOwnerControls && (
           <SeletorModo
             modo={modo}
@@ -932,7 +935,7 @@ export function VisitorExperience({
           </a>
         )}
         {intent === null && modo === "orbita" && (
-          <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} />
+          <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} slotTopo={slotTopo} />
         )}
 
         {intent === null && modo === "grade" && (
@@ -1034,7 +1037,7 @@ export function VisitorExperience({
                 </div>
               )}
             </div>
-            <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} />
+            <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} slotTopo={slotTopo} />
             {estiloVitrine && (
               <HomeVitrine
                 bolinhas={bolinhasVitrine}
@@ -1937,6 +1940,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                     {v.badge?.trim() && (
                       <span className="absolute left-2 top-2 rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
                     )}
+                    <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} className="absolute bottom-2 right-2 z-10" />
                   </div>
                   <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
                     <p className="line-clamp-2 text-[15px] font-semibold leading-snug">{v.title}</p>
@@ -1975,6 +1979,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                   {v.badge?.trim() && (
                     <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
                   )}
+                  <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} className="absolute bottom-3 right-3 z-10" />
                 </div>
                 <div className="px-2 pb-1 pt-3.5">
                   <p className="text-[18px] font-semibold leading-snug">{v.title}</p>
@@ -3026,6 +3031,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                     businessId={business.id}
                     sessionId={sessionId}
                     largura={podeEditar ? "w-full" : largura}
+                    curtir={!podeEditar}
                   />
                 );
                 return podeEditar ? (

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { trackClick } from "@/lib/track";
 import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, sizeOf, titleFontSize, type BoxSize } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
+import { CurtirItem } from "@/components/clube/CurtirItem";
 
 export type ItemCartao = {
   id: string;
@@ -38,7 +39,7 @@ function letreiro(title: string, size: BoxSize): string {
  * assim o item tem a mesma cara nos dois lugares. Na Home, o formato escolhido
  * (destaque, grade, carrossel) define tamanho e proporção.
  */
-export function CartaoItem({
+function CartaoBase({
   item,
   slug,
   businessId,
@@ -47,6 +48,7 @@ export function CartaoItem({
   tamanho,
   proporcao,
   origem,
+  curtir,
 }: {
   item: ItemCartao;
   slug: string;
@@ -60,6 +62,8 @@ export function CartaoItem({
   proporcao?: "quadrado" | "retrato" | "paisagem" | "banner";
   /** "home": veio do Destaque da tela inicial, então o Voltar da página do item volta pra lá. */
   origem?: "home";
+  /** Reserva espaço pro coração no canto de baixo. */
+  curtir?: boolean;
 }) {
     const c = colorOf(item.box_color);
     const fc = item.footer_color ? colorOf(item.footer_color) : null;
@@ -108,7 +112,7 @@ export function CartaoItem({
               />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
               {item.title_placement === "sobre" && (
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-5 pt-12">
+                <div className={`pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-5 pt-12 ${curtir ? "pr-16" : ""}`}>
                   <p className="font-[family-name:var(--font-manrope)] font-semibold leading-[1.05] text-white" style={{ fontSize: titleFontSize(item.title, size) }}>
                     {item.title}
                   </p>
@@ -136,7 +140,7 @@ export function CartaoItem({
                 {origem === "home" ? item.brand_label?.trim() ?? "" : ""}
               </span>
               {/* Embaixo: o nome como letreiro, com peso e espaçamento de título. */}
-              <div className="min-w-0">
+              <div className={`min-w-0 ${curtir ? "pr-11" : ""}`}>
                 <span
                   className="line-clamp-4 block font-[family-name:var(--font-manrope)] font-semibold leading-[1.1] tracking-[-0.02em] [text-wrap:balance]"
                   style={{ color: c.fg, fontSize: letreiro(item.title, size) }}
@@ -180,7 +184,7 @@ export function CartaoItem({
           )}
         </div>
         {photo && item.title_placement !== "sobre" && (
-          <div className="flex items-center justify-between gap-3 p-4">
+          <div className={`flex items-center justify-between gap-3 p-4 ${curtir ? "pr-16" : ""}`}>
             <div className="min-w-0 flex-1">
               <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight" style={fc ? { color: fc.fg } : undefined}>{item.title}</p>
               {item.description?.trim() && (
@@ -229,4 +233,14 @@ export function CartaoItem({
       </Link>
     );
 
+}
+
+export function CartaoItem(props: Parameters<typeof CartaoBase>[0]) {
+  if (!props.curtir) return <CartaoBase {...props} />;
+  return (
+    <div className={`relative ${props.largura}`}>
+      <CartaoBase {...props} largura="w-full" />
+      <CurtirItem businessId={props.businessId} alvo="item" id={props.item.id} titulo={props.item.title} className="absolute bottom-3 right-3 z-10" />
+    </div>
+  );
 }

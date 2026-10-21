@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { carregarCurtidas } from "@/lib/clube-curtidas";
+import type { PedidoFa } from "./CurtirItem";
 import {
-  aceitarWhatsapp, atualizarPerfil, confirmarCodigo, confirmarVinculo, curtirMarca, deixarDeSerFa, enviarAvaliacao, enviarCodigoWhatsapp,
+  aceitarWhatsapp, atualizarPerfil, confirmarCodigo, confirmarVinculo, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, enviarCodigoWhatsapp,
   entrarComGoogle, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
   sairDoClube, vincularTelefone, virarFa,
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaDoFa, type Resumo,
@@ -11,7 +13,6 @@ import {
 import { OrbiAvatar, lerEsfera } from "@/components/orbi/OrbiAvatar";
 import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
-type Pendente = "fa" | "curtir" | "avaliar";
 type Aberta = { tipo: "avaliacoes" | "fas" | "entrar"; origem: DOMRect | null; modo?: "entrar" | "vincular" } | null;
 
 const GRAD_NOTA: Record<number, string> = { 5: "var(--cl-teal)", 4: "var(--cl-lime)", 3: "var(--cl-orange)", 2: "var(--cl-pink)", 1: "var(--cl-blue)" };
@@ -21,22 +22,30 @@ const chave = (slug: string) => `clube-pendente-${slug}`;
 /* =====================================================================
    Bloco da Home: Virar fã, curtir e as pílulas coloridas
    ===================================================================== */
-export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null, isOwner }: { businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar?: string | null; isOwner: boolean }) {
+export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null, isOwner, slotTopo = null }: { businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar?: string | null; isOwner: boolean; slotTopo?: HTMLElement | null }) {
   const [resumo, setResumo] = useState<Resumo | null>(null);
   const [eu, setEu] = useState<Eu | null>(null);
   const [aberta, setAberta] = useState<Aberta>(null);
+  const [pedido, setPedido] = useState<PedidoFa | null>(null);
 
   const recarregar = useCallback(async () => {
     const [r, e] = await Promise.all([getResumo(businessId), getEu(businessId)]);
     setResumo(r);
     setEu(e);
+    void carregarCurtidas(businessId);
     return e;
   }, [businessId]);
 
-  const executar = useCallback(async (p: Pendente, e: Eu) => {
+  const executar = useCallback(async (p: string, e: Eu) => {
     if (!e.userId) return;
-    if (p === "fa") await virarFa(businessId, e.userId);
+    if (p === "fa") { await virarFa(businessId, e.userId); await curtirMarca(businessId, e.userId, true); }
     if (p === "curtir") await curtirMarca(businessId, e.userId, true);
+    if (p.startsWith("item|")) {
+      const [, alvo, id] = p.split("|");
+      await virarFa(businessId, e.userId);
+      await curtirMarca(businessId, e.userId, true);
+      if (alvo && id) await curtirAlvo(businessId, e.userId, alvo, id, true);
+    }
     await recarregar();
     if (p === "avaliar") setAberta({ tipo: "avaliacoes", origem: null });
   }, [businessId, recarregar]);
@@ -48,12 +57,19 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       if (!vivo || !e.logado) return;
       let p: string | null = null;
       try { p = sessionStorage.getItem(chave(slug)); sessionStorage.removeItem(chave(slug)); } catch { /* ignora */ }
-      if (p === "fa" || p === "curtir" || p === "avaliar") await executar(p, e);
+      if (p === "fa" || p === "curtir" || p === "avaliar" || p?.startsWith("item|")) await executar(p, e);
     })();
     return () => { vivo = false; };
   }, [recarregar, executar, slug]);
 
-  function pedirLogin(p: Pendente, origem: DOMRect | null) {
+  useEffect(() => {
+    if (isOwner) return;
+    const ouvir = (ev: Event) => setPedido((ev as CustomEvent<PedidoFa>).detail);
+    window.addEventListener("clube:pedir-fa", ouvir);
+    return () => window.removeEventListener("clube:pedir-fa", ouvir);
+  }, [isOwner]);
+
+  function pedirLogin(p: string, origem: DOMRect | null) {
     try { sessionStorage.setItem(chave(slug), p); } catch { /* ignora */ }
     setAberta({ tipo: "entrar", origem, modo: "entrar" });
   }
@@ -61,45 +77,75 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
 
   async function alternarFa(el: HTMLElement) {
     if (!eu?.logado || !eu.userId) return pedirLogin("fa", rect(el));
-    if (eu.ehFa) await deixarDeSerFa(businessId, eu.userId); else await virarFa(businessId, eu.userId);
+    if (eu.ehFa) { await deixarDeSerFa(businessId, eu.userId); await curtirMarca(businessId, eu.userId, false); }
+    else { await virarFa(businessId, eu.userId); await curtirMarca(businessId, eu.userId, true); }
     await recarregar();
   }
-  async function alternarCurtida(el: HTMLElement) {
-    if (!eu?.logado || !eu.userId) return pedirLogin("curtir", rect(el));
-    await curtirMarca(businessId, eu.userId, !eu.curtiu);
-    await recarregar();
-  }
-
   if (!resumo || !eu) return null;
   const temNota = resumo.avaliacoes > 0 && resumo.nota != null;
   const vazio = resumo.fas === 0 && resumo.avaliacoes === 0 && resumo.curtidas === 0;
 
+  const cluster = !isOwner ? (
+    <div className="flex items-center gap-2">
+      {resumo.fas > 0 && (
+        <button
+          type="button"
+          onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget) })}
+          aria-label={`${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}, abrir radar`}
+          className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-white py-1 pl-1.5 pr-3 text-[13px] font-semibold text-on-background shadow-sm ring-1 ring-divider transition active:scale-[0.97]"
+        >
+          <span className="flex">
+            {resumo.recentes.slice(0, 3).map((f, i) => (
+              <Rosto key={f.id} url={f.foto} nome={f.nome} size={26} className={i ? "-ml-2 ring-2 ring-white" : "ring-2 ring-white"} />
+            ))}
+          </span>
+          <span className="tabular-nums">{resumo.fas}</span>
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={(e) => (eu.ehFa ? setAberta({ tipo: "fas", origem: rect(e.currentTarget) }) : alternarFa(e.currentTarget))}
+        aria-pressed={eu.ehFa}
+        className={`flex min-h-[40px] items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold shadow-sm transition active:scale-[0.97] ${eu.ehFa ? "bg-surface-white text-on-background ring-1 ring-divider" : "bg-button-primary text-white"}`}
+      >
+        {eu.ehFa && <span className="text-[#F2556B]"><IcCoracao cheio /></span>}
+        {eu.ehFa ? "Fã" : "Virar fã"}
+      </button>
+    </div>
+  ) : null;
+
+  async function confirmarPedido() {
+    const pd = pedido;
+    if (!pd) return;
+    if (!eu?.logado || !eu.userId) {
+      pedirLogin(`item|${pd.alvo}|${pd.id}`, null);
+      setPedido(null);
+      return;
+    }
+    await virarFa(businessId, eu.userId);
+    await curtirMarca(businessId, eu.userId, true);
+    await curtirAlvo(businessId, eu.userId, pd.alvo, pd.id, true);
+    setPedido(null);
+    await recarregar();
+  }
+
   return (
     <div className="mt-5 flex w-full min-w-0 flex-col items-center gap-3">
-      {!isOwner && (
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={(e) => alternarFa(e.currentTarget)}
-            aria-pressed={eu.ehFa}
-            className={`min-h-[44px] rounded-full px-6 text-[15px] font-semibold transition active:scale-[0.97] ${eu.ehFa ? "bg-surface-soft text-on-background ring-1 ring-divider" : "bg-button-primary text-white"}`}
-          >
-            {eu.ehFa ? "Você é fã" : "Virar fã"}
-          </button>
-          <button
-            type="button"
-            onClick={(e) => alternarCurtida(e.currentTarget)}
-            aria-pressed={eu.curtiu}
-            aria-label={eu.curtiu ? "Descurtir" : "Curtir"}
-            className="flex min-h-[44px] items-center gap-1.5 rounded-full bg-surface-white px-4 text-[14px] font-semibold text-on-background ring-1 ring-divider active:scale-[0.97]"
-          >
-            <IcCoracao cheio={eu.curtiu} />
-            <span className="tabular-nums">{resumo.curtidas}</span>
-          </button>
+      {cluster && (slotTopo ? createPortal(cluster, slotTopo) : <div className="flex flex-wrap items-center justify-center gap-2">{cluster}</div>)}
+
+      {pedido && !isOwner && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setPedido(null)}>
+          <div role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} className="w-full max-w-[400px] rounded-3xl bg-surface-white p-6 text-center shadow-xl">
+            <span className="mx-auto flex h-12 w-12 items-center justify-center text-[#F2556B]"><IcCoracao cheio /></span>
+            <p className="mt-2 text-[18px] font-semibold text-on-background">Vire fã para curtir</p>
+            <p className="mt-1 text-[14px] text-text-secondary">{pedido.titulo ? `Para curtir ${pedido.titulo}, você precisa ser fã de ${nome}.` : `Para curtir, você precisa ser fã de ${nome}.`} {nome} vê o que o público mais gosta.</p>
+            <button type="button" onClick={confirmarPedido} className="mt-5 min-h-[48px] w-full rounded-full bg-button-primary text-[15px] font-semibold text-white active:scale-[0.98]">Virar fã e curtir</button>
+            <button type="button" onClick={() => setPedido(null)} className="mt-2 min-h-[44px] w-full rounded-full text-[14px] font-medium text-text-secondary">Agora não</button>
+          </div>
         </div>
       )}
 
-      {(temNota || resumo.fas > 0) && (
+      {(temNota || (isOwner && resumo.fas > 0)) && (
         <div className="flex flex-wrap items-center justify-center gap-2">
           {temNota && (
             <button type="button" className="cl-pill" style={{ background: "var(--cl-orange)" }} onClick={(e) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) })}>
@@ -114,7 +160,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
               <IcChev />
             </button>
           )}
-          {resumo.fas > 0 && (
+          {isOwner && resumo.fas > 0 && (
             <button type="button" className="cl-pill" style={{ background: "var(--cl-teal)" }} onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget) })}>
               <span className="flex pl-1">
                 {resumo.recentes.slice(0, 3).map((f, i) => (
@@ -186,11 +232,71 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
             }
             let p: string | null = null;
             try { p = sessionStorage.getItem(chave(slug)); sessionStorage.removeItem(chave(slug)); } catch { /* ignora */ }
-            if ((p === "fa" || p === "curtir" || p === "avaliar") && e.logado) await executar(p, e);
+            if ((p === "fa" || p === "curtir" || p === "avaliar" || p?.startsWith("item|")) && e.logado && p) await executar(p, e);
           }}
         />
       )}
     </div>
+  );
+}
+
+/** Convite "vire fã para curtir" para páginas sem o bloco do clube (ex.: página do item). */
+export function PedirFaFolha({ businessId, slug, nome }: { businessId: string; slug: string; nome: string }) {
+  const [pedido, setPedido] = useState<PedidoFa | null>(null);
+  const [entrando, setEntrando] = useState(false);
+
+  useEffect(() => {
+    const ouvir = (ev: Event) => setPedido((ev as CustomEvent<PedidoFa>).detail);
+    window.addEventListener("clube:pedir-fa", ouvir);
+    return () => window.removeEventListener("clube:pedir-fa", ouvir);
+  }, []);
+
+  async function concluir(pd: PedidoFa) {
+    const e = await getEu(businessId);
+    if (!e.logado || !e.userId) return false;
+    await virarFa(businessId, e.userId);
+    await curtirMarca(businessId, e.userId, true);
+    await curtirAlvo(businessId, e.userId, pd.alvo, pd.id, true);
+    await carregarCurtidas(businessId);
+    return true;
+  }
+  async function confirmar() {
+    if (!pedido) return;
+    if (await concluir(pedido)) { setPedido(null); return; }
+    try { sessionStorage.setItem(chave(slug), `item|${pedido.alvo}|${pedido.id}`); } catch { /* ignora */ }
+    setEntrando(true);
+  }
+
+  return (
+    <>
+      {pedido && !entrando && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setPedido(null)}>
+          <div role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} className="w-full max-w-[400px] rounded-3xl bg-surface-white p-6 text-center shadow-xl">
+            <span className="mx-auto flex h-12 w-12 items-center justify-center text-[#F2556B]"><IcCoracao cheio /></span>
+            <p className="mt-2 text-[18px] font-semibold text-on-background">Vire fã para curtir</p>
+            <p className="mt-1 text-[14px] text-text-secondary">{pedido.titulo ? `Para curtir ${pedido.titulo}, você precisa ser fã de ${nome}.` : `Para curtir, você precisa ser fã de ${nome}.`} {nome} vê o que o público mais gosta.</p>
+            <button type="button" onClick={confirmar} className="mt-5 min-h-[48px] w-full rounded-full bg-button-primary text-[15px] font-semibold text-white active:scale-[0.98]">Virar fã e curtir</button>
+            <button type="button" onClick={() => setPedido(null)} className="mt-2 min-h-[44px] w-full rounded-full text-[14px] font-medium text-text-secondary">Agora não</button>
+          </div>
+        </div>
+      )}
+      {entrando && (
+        <EntrarFolha
+          slug={slug}
+          businessId={businessId}
+          modo="entrar"
+          aoFechar={() => { setEntrando(false); setPedido(null); }}
+          aoConcluir={async () => {
+            let p: string | null = null;
+            try { p = sessionStorage.getItem(chave(slug)); sessionStorage.removeItem(chave(slug)); } catch { /* ignora */ }
+            setEntrando(false);
+            const pd = pedido;
+            setPedido(null);
+            if (pd && p?.startsWith("item|")) await concluir(pd);
+          }}
+        />
+      )}
+    </>
   );
 }
 

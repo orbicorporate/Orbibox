@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { CurtirItem } from "@/components/clube/CurtirItem";
+import { PedirFaFolha } from "@/components/clube/Clube";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -111,6 +113,7 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
 
   return (
     <main className="pagina-entra mx-auto min-h-screen w-full max-w-[440px] bg-background-main pb-16">
+      {!isOwner && <PedirFaFolha businessId={business.id} slug={business.slug} nome={business.name} />}
       <NudgeLead businessId={business.id} businessName={business.name} modo="pagina" interesse={item.title} />
       {/* Voltar, fora da imagem, igual qualquer app, não sobrepõe a foto.
           Voltar leva pra vitrine, exceto quando o item foi aberto pelo Destaque
@@ -126,6 +129,7 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
         >
           ←
         </button>
+        {!isOwner && <CurtirItem businessId={business.id} alvo="item" id={item.id} titulo={item.title} className="!static !bg-surface-soft !shadow-none" />}
         {isOwner && (
           <AbrirEditor
             href={`/admin/vitrine/pagina/${item.id}`}

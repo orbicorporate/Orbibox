@@ -141,6 +141,16 @@ export async function curtirMarca(businessId: string, userId: string, curtir: bo
   if (curtir) await db.from("likes").upsert({ customer_id: userId, business_id: businessId, alvo: "marca", alvo_id: businessId }, { onConflict: "customer_id,alvo,alvo_id", ignoreDuplicates: true });
   else await db.from("likes").delete().eq("customer_id", userId).eq("alvo", "marca").eq("alvo_id", businessId);
 }
+/** Curtir item, voucher ou qualquer outra coisa da marca (só fãs, a tela garante). */
+export async function curtirAlvo(businessId: string, userId: string, alvo: string, alvoId: string, curtir: boolean) {
+  const db = clubeDb();
+  if (curtir) {
+    const { error } = await db.from("likes").upsert({ customer_id: userId, business_id: businessId, alvo, alvo_id: alvoId }, { onConflict: "customer_id,alvo,alvo_id", ignoreDuplicates: true });
+    return !error;
+  }
+  const { error } = await db.from("likes").delete().eq("customer_id", userId).eq("alvo", alvo).eq("alvo_id", alvoId);
+  return !error;
+}
 export async function enviarAvaliacao(businessId: string, userId: string, v: { nota: number; comentario: string; completo: boolean; foto: boolean }) {
   const linha = { business_id: businessId, customer_id: userId, nota: v.nota, comentario: v.comentario.trim() || null, nome_visivel: v.completo ? "completo" : "primeiro", mostrar_foto: v.foto };
   const { error } = await clubeDb().from("reviews").upsert(linha, { onConflict: "business_id,customer_id" });
