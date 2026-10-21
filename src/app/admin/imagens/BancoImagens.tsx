@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
-import { agrupar, calcularHashes } from "@/lib/parecidas";
+import { agrupar, calcularHashes, separarRepetidas } from "@/lib/parecidas";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import {
@@ -28,6 +28,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
   const [focoNova, setFocoNova] = useState(false);
   const [criandoNova, setCriandoNova] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [tipo, setTipo] = useState<"todos" | "sem" | "repetidas" | TipoImagem>("todos");
   const hashes = useRef<Map<string, string>>(new Map());
   const [tipoAberto, setTipoAberto] = useState(false);
@@ -142,7 +143,11 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
     const lista = Array.from(files).filter((f) => f.type.startsWith("image/"));
     const vagas = Math.max(0, limite - total);
     if (vagas === 0) { setErro(`Você chegou ao limite de ${limite} imagens. Exclua algumas para enviar novas.`); return; }
-    const aEnviar = lista.slice(0, vagas);
+    setEnviando({ feitas: 0, total: lista.length });
+    const { novos, repetidas } = await separarRepetidas(lista, imagens ?? [], hashes.current);
+    setAviso(repetidas > 0 ? (repetidas === 1 ? "Essa foto já existe na sua galeria (igual ou muito parecida), não enviei de novo." : `${repetidas} fotos já existiam na sua galeria (iguais ou muito parecidas), não enviei de novo.`) : null);
+    const aEnviar = novos.map((n) => n.arquivo).slice(0, vagas);
+    if (aEnviar.length === 0) { setEnviando(null); return; }
     const categoria = filtro !== "todas" && filtro !== "sem" ? filtro : null;
     setEnviando({ feitas: 0, total: aEnviar.length });
     let falhas = 0;
@@ -159,7 +164,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
     }
     setEnviando(null);
     classificar(novas);
-    const cortadas = lista.length - aEnviar.length;
+    const cortadas = novos.length - aEnviar.length;
     if (falhas > 0) setErro(`${falhas} ${falhas === 1 ? "imagem não subiu" : "imagens não subiram"}. Tente de novo.`);
     else if (cortadas > 0) setErro(`Só ${aEnviar.length} ${aEnviar.length === 1 ? "coube" : "couberam"} no limite de ${limite} imagens.`);
   }
@@ -382,6 +387,7 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
           {filtro !== "todas" && filtro !== "sem" ? `As novas vão para "${nomeDe(filtro)}". ` : ""}Pode escolher várias de uma vez.
         </p>
         {erro && <p className="mt-2 text-[13px] text-red-600">{erro}</p>}
+        {aviso && <p className="mt-2 text-[13px] text-text-secondary">{aviso}</p>}
       </div>
 
       {/* Categorias criadas pela própria pessoa */}

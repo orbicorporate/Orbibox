@@ -30,7 +30,9 @@ export function hashDeUrl(url: string): Promise<string> {
       try { ok(hashDe(img)); } catch (e) { falha(e); }
     };
     img.onerror = () => falha(new Error("imagem"));
-    img.src = url;
+    // A mesma foto já carregada na tela (sem CORS) fica no cache do navegador sem permissão de leitura, e o
+    // canvas recusa os pixels. Um parâmetro a mais faz pedir de novo, já com a permissão.
+    img.src = url + (url.includes("?") ? "&" : "?") + "cors=1";
   });
 }
 
@@ -84,4 +86,26 @@ export function agrupar(ids: string[], hashes: Map<string, string>): string[][] 
     else grupos.push([id]);
   }
   return grupos.filter((g) => g.length > 1);
+}
+
+/**
+ * Separa, entre os arquivos escolhidos, os que já existem na galeria (iguais ou muito parecidos)
+ * e os repetidos dentro do próprio lote. Devolve só os novos e quantos foram descartados.
+ */
+export async function separarRepetidas(
+  arquivos: File[],
+  existentes: { id: string; url: string }[],
+  hashes: Map<string, string>,
+): Promise<{ novos: { arquivo: File; hash: string | null }[]; repetidas: number }> {
+  await calcularHashes(existentes, hashes);
+  const conhecidos = new Set(hashes.values());
+  const novos: { arquivo: File; hash: string | null }[] = [];
+  let repetidas = 0;
+  for (const arquivo of arquivos) {
+    const hash = await hashDeArquivo(arquivo).catch(() => null);
+    if (hash && pareceCom(hash, conhecidos)) { repetidas++; continue; }
+    if (hash) conhecidos.add(hash);
+    novos.push({ arquivo, hash });
+  }
+  return { novos, repetidas };
 }
