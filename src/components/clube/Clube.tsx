@@ -92,7 +92,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           type="button"
           onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget) })}
           aria-label={`${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}, abrir radar`}
-          className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-white py-1 pl-1.5 pr-3 text-[13px] font-semibold text-on-background shadow-sm ring-1 ring-divider transition active:scale-[0.97]"
+          className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-white/55 py-1 pl-1.5 pr-3 text-[13px] font-semibold text-on-background shadow-sm ring-1 ring-black/5 backdrop-blur-md transition active:scale-[0.97]"
         >
           <span className="flex">
             {resumo.recentes.slice(0, 3).map((f, i) => (
@@ -106,7 +106,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
         type="button"
         onClick={(e) => (eu.ehFa ? setAberta({ tipo: "fas", origem: rect(e.currentTarget) }) : alternarFa(e.currentTarget))}
         aria-pressed={eu.ehFa}
-        className={`flex min-h-[40px] items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold shadow-sm transition active:scale-[0.97] ${eu.ehFa ? "bg-surface-white text-on-background ring-1 ring-divider" : "bg-button-primary text-white"}`}
+        className={`flex min-h-[40px] items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold shadow-sm transition active:scale-[0.97] ${eu.ehFa ? "bg-surface-white/55 text-on-background ring-1 ring-black/5 backdrop-blur-md" : "bg-button-primary text-white"}`}
       >
         {eu.ehFa && <span className="text-[#F2556B]"><IcCoracao cheio /></span>}
         {eu.ehFa ? "Fã" : "Virar fã"}
