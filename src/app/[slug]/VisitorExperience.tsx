@@ -1860,6 +1860,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
             <p className="mt-4 text-[13.5px] leading-relaxed opacity-90">
               {resultMessage(business.name, result.expiresAt)}
             </p>
+            <p className="mt-3 text-[12.5px] leading-snug opacity-80">Guarde este código: use Compartilhar para mandar para o seu WhatsApp. Se você abrir o link em outro navegador, ele não aparece de novo.</p>
             <div className="mt-5 flex gap-2">
               <button
                 onClick={() => copiar(result.code)}
