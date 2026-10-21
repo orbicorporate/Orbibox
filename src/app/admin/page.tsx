@@ -35,6 +35,11 @@ export default async function HojePage() {
     supabase.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("business_id", b.id),
   ]);
   const activeBoxes = activeBoxesRes.count ?? 0;
+  // Montagem interrompida: o onboarding só marca "ready" no fim. Se a pessoa chegou aqui com outro status, saiu no meio.
+  const pelaMetade = b.onboarding_status === "analyzing";
+  const { count: totalItens } = pelaMetade
+    ? await supabase.from("content_items").select("id", { count: "exact", head: true }).eq("business_id", b.id)
+    : { count: 0 };
 
   const [progress, insightsQueue, semana] = await Promise.all([
     getBusinessProgress(b.id),
@@ -83,7 +88,7 @@ export default async function HojePage() {
     { rotulo: "Conversas", n: semana.conversas, antes: semana.conversasAntes, href: "/admin/conversas" },
     { rotulo: "Contatos", n: semana.contatos, antes: semana.contatosAntes, href: "/admin/conversas" },
     { rotulo: "WhatsApp", n: semana.whatsapp, antes: semana.whatsappAntes, href: "/admin/pulse", conversao: true },
-    { rotulo: "Resgates", n: semana.resgates, antes: semana.resgatesAntes, href: "/admin/vouchers/painel#resgates", conversao: true },
+    { rotulo: "Vouchers pegos", n: semana.resgates, antes: semana.resgatesAntes, href: "/admin/vouchers/painel#resgates", conversao: true },
   ];
 
   return (
@@ -108,6 +113,7 @@ export default async function HojePage() {
       numeros={numeros}
       orbiColors={orbiColors}
       progressoPct={progress.pct}
+      pelaMetade={pelaMetade ? { businessId: b.id, semItens: (totalItens ?? 0) === 0, semBotoes: activeBoxes === 0, site: b.website_url ?? b.contact_site ?? null, instagram: b.instagram_handle ?? null } : null}
       perguntaRede={b.owner_id === user!.id && acesso.hasAiChat}
       mostrarConvite={!acesso.subscription || acesso.subscription.status === "trialing"}
       passoFaltando={insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}

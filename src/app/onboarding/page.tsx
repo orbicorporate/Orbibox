@@ -277,7 +277,8 @@ export default function OnboardingPage() {
       brand_colors: result.colors,
       brand_voice_summary: result.voiceSummary,
       brand_font: result.font || "Manrope",
-      onboarding_status: "ready",
+      // "analyzing" = montando. Só vira "ready" no fim; se a pessoa sair no meio, a Home oferece terminar.
+      onboarding_status: "analyzing",
       objetivo: obj,
       conversao: conv,
       ...(seg ? { hero_question: seg.pergunta } : {}),
@@ -420,6 +421,8 @@ export default function OnboardingPage() {
       category: "descoberta",
       impact_score: 92,
     });
+
+    await supabase.from("businesses").update({ onboarding_status: "ready" }).eq("id", id);
 
     const principal = ordem[0];
     setPronto({

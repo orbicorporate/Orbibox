@@ -9,6 +9,7 @@ import { OportunidadeCard } from "./OportunidadeCard";
 import { LinhaExpansivel } from "./LinhaExpansivel";
 import { PerguntaOrbi } from "./PerguntaOrbi";
 import { CartaoTour } from "./CartaoTour";
+import { PaginaPelaMetade } from "./PaginaPelaMetade";
 import { PerguntaRede } from "@/components/rede/PerguntaRede";
 import type { Oportunidade } from "@/lib/copiloto";
 import type { ComponentProps } from "react";
@@ -19,7 +20,7 @@ const TEMAS_NUMERO: Record<string, { de: string; ate: string; cor: string; icone
   Conversas: { de: "#E3EBFF", ate: "#C4D3FF", cor: "#2F4FB3", icone: "M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z", dica: "Papos com a Orbi" },
   Contatos: { de: "#EFE6FF", ate: "#D2BDFF", cor: "#6A3FC4", icone: "M16 19c0-2.8-2.2-5-5-5s-5 2.2-5 5M11 11a3 3 0 100-6 3 3 0 000 6zM19 8v6M22 11h-6", dica: "Quem deixou o contato" },
   WhatsApp: { de: "#DDF9F4", ate: "#B5EDE3", cor: "#00695F", icone: "M5 19l1.2-3.6A8 8 0 1112 20a8 8 0 01-3.8-1L5 19z", dica: "Toques no botão de WhatsApp" },
-  Resgates: { de: "#FFEAD7", ate: "#FFCFA6", cor: "#A8481A", icone: "M3 9a2 2 0 010 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 010-4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2zM13 5v14", dica: "Pessoas que pegaram um voucher" },
+  "Vouchers pegos": { de: "#FFEAD7", ate: "#FFCFA6", cor: "#A8481A", icone: "M3 9a2 2 0 010 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 010-4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2zM13 5v14", dica: "Pessoas que pegaram um voucher" },
 };
 
 function variacao(agora: number, antes: number): { texto: string; sobe: boolean | null } {
@@ -61,6 +62,7 @@ export type HomeViewProps = {
   numeros: { rotulo: string; n: number; antes: number; href: string; conversao?: boolean }[];
   orbiColors: string[] | null;
   progressoPct: number;
+  pelaMetade: { businessId: string; semItens: boolean; semBotoes: boolean; site: string | null; instagram: string | null } | null;
   mostrarConvite: boolean;
   /** Dono com a Orbi (plano ou teste): vê a pergunta sobre rede de lojas até dispensar. */
   perguntaRede?: boolean;
@@ -70,7 +72,7 @@ export type HomeViewProps = {
 };
 
 /** A home do painel, só apresentação: os dados vêm prontos de page.tsx. */
-export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, mostrarConvite, perguntaRede, pendencias, passoFaltando }: HomeViewProps) {
+export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, pelaMetade, mostrarConvite, perguntaRede, pendencias, passoFaltando }: HomeViewProps) {
   const cartao = "flex min-h-[92px] flex-col justify-between gap-3 rounded-[22px] bg-surface-white p-4 text-left ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]";
 
   return (
@@ -103,7 +105,9 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
 
       <ProximaAcao {...proxima} pendencia={null} compacto={oportunidade.selo !== "Deixe sua página mais completa"} />
 
-      {progressoPct < 70 && <CartaoTour />}
+      {pelaMetade && <PaginaPelaMetade {...pelaMetade} />}
+
+      {progressoPct < 70 && !pelaMetade && <CartaoTour />}
 
       {/* Só os 4 números que importam, da semana, com a comparação */}
       <section className="mt-6">

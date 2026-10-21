@@ -152,7 +152,7 @@ export function GeradorImagemSheet({
                 <img src={resultado} alt="Imagem criada pela Orbi" className="h-full w-full object-cover" />
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" onClick={usar} className="min-h-[46px] flex-1 rounded-full bg-on-background px-5 text-[14px] font-semibold text-white active:scale-[0.98]">Usar como capa</button>
+                <button type="button" onClick={usar} className="min-h-[46px] flex-1 rounded-full bg-on-background px-5 text-[14px] font-semibold text-white active:scale-[0.98]">Usar esta imagem</button>
                 <button type="button" onClick={ajustar} className="min-h-[46px] rounded-full bg-surface-soft px-5 text-[14px] font-medium text-text-secondary active:scale-[0.98]">Pedir ajuste</button>
               </div>
               <button type="button" onClick={() => setResultado(null)} className="mt-2 min-h-[40px] rounded-full px-2 text-[13px] text-text-tertiary">Começar de novo</button>
