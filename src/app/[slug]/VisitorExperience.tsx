@@ -124,7 +124,7 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -293,7 +293,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; onClick: () => void };
+  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; selo?: string; onClick: () => void };
   const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -359,7 +359,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || cfg.action === "cardapio" || cfg.action === "materiais" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.action === "cupom" && corVoucher ? corVoucher : cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, itensHome: Array.isArray(cfg.itensHome) ? cfg.itensHome : undefined, botaoPrincipal: cfg.botaoPrincipal, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || cfg.action === "cardapio" || cfg.action === "materiais" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.action === "cupom" && corVoucher ? corVoucher : cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, itensHome: Array.isArray(cfg.itensHome) ? cfg.itensHome : undefined, botaoPrincipal: cfg.botaoPrincipal, selo: cfg.selo, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
@@ -565,7 +565,7 @@ export function VisitorExperience({
       else if (o.atalho === "endereco" && o.address) out.push({ ...base, rotulo: "Local", tipo: "endereco", endereco: o.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
       else if (o.rede) out.push({ ...base, rotulo: o.t || nomeDaRede(o.rede), tipo: "rede", rede: o.rede, onClick: o.onClick });
       else if (o.atalho === "site") out.push({ ...base, rotulo: o.t || "Site", tipo: "site", onClick: o.onClick });
-      else if (o.cupom) out.push({ ...base, rotulo: "Vouchers", tipo: "voucher", selo: "oferta", onClick: o.onClick });
+      else if (o.cupom) out.push({ ...base, rotulo: "Vouchers", tipo: "voucher", selo: o.selo === undefined ? "oferta" : o.selo, onClick: o.onClick });
       else if (o.acao === "presentear" || o.acao === "gift") out.push({ ...base, rotulo: o.t || "Presentear", tipo: "presente", onClick: o.onClick });
       else if (o.acao === "conhecer") out.push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
       else if (o.acao === "cardapio") out.push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
@@ -676,6 +676,14 @@ export function VisitorExperience({
     salvarNomeTimer.current = setTimeout(async () => {
       conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg, ...(limpo ? { title: limpo } : {}) }).eq("id", key));
     }, 500);
+  }
+  // Etiqueta da bolinha de vouchers: texto livre (vazio esconde). Fica na configuração do box.
+  async function definirSelo(key: string, texto: string) {
+    const box = boxList.find((b) => b.id === key);
+    if (!box) return;
+    const cfg: CustomConfig = { ...((box.config ?? {}) as CustomConfig), selo: texto.trim().slice(0, 10) };
+    setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: cfg } : b)));
+    conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", key));
   }
   // Esconde a bolinha (desliga o botão). Dá pra religar em Botões.
   async function esconderBolinha(key: string) {
@@ -1088,6 +1096,7 @@ export function VisitorExperience({
                 onReordenar={reordenarBolinhas}
                 onRenomear={renomearBolinha}
                 onEsconder={esconderBolinha}
+                onSelo={definirSelo}
                 onAdicionar={() => setAdicionando(true)}
               />
             )}

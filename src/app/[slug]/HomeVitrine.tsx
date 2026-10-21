@@ -114,6 +114,7 @@ export function HomeVitrine({
   onReordenar,
   onRenomear,
   onEsconder,
+  onSelo,
   onAdicionar,
   formato,
   onFormato,
@@ -154,6 +155,8 @@ export function HomeVitrine({
   onRenomear?: (key: string, nome: string) => void;
   /** Esconde uma bolinha editável (desliga o botão). */
   onEsconder?: (key: string) => void;
+  /** Muda a etiqueta da bolinha de vouchers (vazio esconde). */
+  onSelo?: (key: string, texto: string) => void;
   /** Só o dono: abre a folha para adicionar um botão novo. */
   onAdicionar?: () => void;
   /** Só o dono: grava a ordem nova dos itens em destaque (ids na ordem final, só os visíveis). */
@@ -519,7 +522,7 @@ export function HomeVitrine({
               <span className="text-[13.5px] font-medium">Todas</span>
               <Seletor valor={null} onChange={(e) => onEstilo(bolinhas.filter((x) => x.editavel).map((x) => x.key), e)} />
             </div>
-            <ListaBolinhas bolinhas={bolinhas} onEstilo={onEstilo} onCor={onCor} onReordenar={onReordenar} onRenomear={onRenomear} onEsconder={onEsconder} />
+            <ListaBolinhas bolinhas={bolinhas} onEstilo={onEstilo} onCor={onCor} onReordenar={onReordenar} onRenomear={onRenomear} onEsconder={onEsconder} onSelo={onSelo} />
           </div>
         </>,
         document.body,
@@ -536,6 +539,7 @@ function ListaBolinhas({
   onReordenar,
   onRenomear,
   onEsconder,
+  onSelo,
 }: {
   bolinhas: BolinhaVitrine[];
   onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
@@ -543,6 +547,7 @@ function ListaBolinhas({
   onReordenar: (chaves: string[]) => void;
   onRenomear?: (key: string, nome: string) => void;
   onEsconder?: (key: string) => void;
+  onSelo?: (key: string, texto: string) => void;
 }) {
   const itens = useRef<(HTMLLIElement | null)[]>([]);
   const [arrasto, setArrasto] = useState<{ de: number; para: number; dy: number; altura: number } | null>(null);
@@ -671,6 +676,33 @@ function ListaBolinhas({
                 )}
               </div>
             )}
+            {b.editavel && onSelo && b.tipo === "voucher" && (
+              <div className="basis-full pl-[38px]">
+                <p className="text-[12.5px] font-medium text-text-secondary">Etiqueta que vibra sobre a bolinha</p>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {["Oferta", "Promo", "Off", "Sale", "Brinde", "Cortesia", "Só hoje"].map((t) => {
+                    const on = (b.selo ?? "").toLowerCase() === t.toLowerCase();
+                    return (
+                      <button key={t} type="button" aria-pressed={on} onClick={() => onSelo(b.key, t)} className={`min-h-[36px] rounded-full px-3.5 text-[13px] font-medium active:scale-[0.97] ${on ? "bg-on-background text-white" : "border border-divider bg-surface-white text-text-secondary"}`}>
+                        {t}
+                      </button>
+                    );
+                  })}
+                  <button type="button" aria-pressed={!b.selo} onClick={() => onSelo(b.key, "")} className={`min-h-[36px] rounded-full px-3.5 text-[13px] font-medium active:scale-[0.97] ${!b.selo ? "bg-on-background text-white" : "border border-divider bg-surface-white text-text-secondary"}`}>
+                    Sem etiqueta
+                  </button>
+                </div>
+                <input
+                  key={`${b.key}-${b.selo ?? ""}`}
+                  defaultValue={b.selo ?? ""}
+                  maxLength={10}
+                  placeholder="Ou escreva a sua"
+                  aria-label="Texto da etiqueta"
+                  onBlur={(e) => { const v = e.target.value.trim(); if (v !== (b.selo ?? "")) onSelo(b.key, v); }}
+                  className="mt-2 min-h-[40px] w-full rounded-full border border-divider bg-surface-white px-4 text-[14px] outline-none focus:border-on-background"
+                />
+              </div>
+            )}
             {onCor && podeMudarCor(b) && b.estilo === "cor" && maisCores === b.key && (
               <div className="basis-full pl-[38px]">
                 <div role="group" aria-label={`Cor de ${b.rotulo}`} className="flex flex-wrap items-center gap-2">
@@ -746,7 +778,7 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
         <Icone tipo={b.tipo} rede={b.rede} linha={linha} />
       )}
       {b.selo && (
-        <span className="absolute -right-3 -top-1 rounded-full bg-[#FF5A36] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-white shadow">
+        <span className="selo-vibra absolute -right-3 -top-1 whitespace-nowrap rounded-full bg-[#FF5A36] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-white shadow">
           {b.selo}
         </span>
       )}
