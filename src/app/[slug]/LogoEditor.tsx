@@ -10,6 +10,11 @@ type Estilo = "logo" | "sem-fundo" | `esfera-${TomEsfera}`;
 
 const LADO = 800;
 
+/** Toque na prévia de retoque, em fração da largura e da altura (0 a 1). */
+type Toque = { x: number; y: number };
+/** Quantos pixels em volta do que foi apagado ainda ganham transparência gradual. */
+const BANDA = 3;
+
 /** Desenha a imagem num quadrado transparente (sem cortar nada) e devolve os pixels. */
 function imagemParaCanvas(img: HTMLImageElement): HTMLCanvasElement {
   const maior = Math.max(img.naturalWidth, img.naturalHeight) || 1;
@@ -48,7 +53,7 @@ function aparar(origem: HTMLCanvasElement, margem = 0.02): HTMLCanvasElement {
  * cor do fundo (média dos cantos), parando nos traços do desenho. As bordas
  * ganham transparência gradual pra não ficar serrilhado.
  */
-function removerFundo(entrada: HTMLCanvasElement, tolerancia: number): HTMLCanvasElement {
+function removerFundo(entrada: HTMLCanvasElement, tolerancia: number, toques: Toque[] = []): HTMLCanvasElement {
   // Se a imagem já tem margem transparente em volta de um retângulo de fundo, corta até o desenho.
   const origem = aparar(entrada, 0);
   const w = origem.width;
@@ -74,6 +79,8 @@ function removerFundo(entrada: HTMLCanvasElement, tolerancia: number): HTMLCanva
 
   const dist = (i: number) => Math.sqrt((px[i] - r) ** 2 + (px[i + 1] - g) ** 2 + (px[i + 2] - b) ** 2);
   const limite = tolerancia * 4.4; // 0 a 100 vira 0 a ~440 (máximo do RGB)
+  // Miolos fechados (dentro de letras e laços) são mais difíceis: o antisserrilhado deixa um tom claro, não o fundo exato.
+  const limiteBolsao = limite * 1.3;
   const visitado = new Uint8Array(w * h);
   const fila: number[] = [];
   const empurrar = (x: number, y: number) => {
@@ -101,7 +108,7 @@ function removerFundo(entrada: HTMLCanvasElement, tolerancia: number): HTMLCanva
   const visto2 = new Uint8Array(w * h);
   const maxBolsao = w * h * 0.04;
   for (let s0 = 0; s0 < w * h; s0++) {
-    if (apagado[s0] || visto2[s0] || dist(s0 * 4) > limite) continue;
+    if (apagado[s0] || visto2[s0] || dist(s0 * 4) > limiteBolsao) continue;
     const comp: number[] = [s0];
     visto2[s0] = 1;
     for (let k = 0; k < comp.length; k++) {
@@ -112,31 +119,71 @@ function removerFundo(entrada: HTMLCanvasElement, tolerancia: number): HTMLCanva
       for (const t of viz) {
         if (t < 0 || visto2[t] || apagado[t]) continue;
         visto2[t] = 1;
-        if (dist(t * 4) <= limite) comp.push(t);
+        if (dist(t * 4) <= limiteBolsao) comp.push(t);
       }
     }
     if (comp.length <= maxBolsao) for (const q of comp) apagado[q] = 1;
   }
 
+  // Retoque manual: cada toque apaga a mancha ligada de cor parecida com o ponto tocado.
+  for (const t of toques) {
+    const tx = Math.min(w - 1, Math.max(0, Math.round(t.x * (w - 1))));
+    const ty = Math.min(h - 1, Math.max(0, Math.round(t.y * (h - 1))));
+    const p0 = ty * w + tx;
+    if (apagado[p0]) continue;
+    const cr = px[p0 * 4], cg = px[p0 * 4 + 1], cb = px[p0 * 4 + 2];
+    const lim = Math.max(limite * 0.55, 28);
+    const dc = (i: number) => Math.sqrt((px[i] - cr) ** 2 + (px[i + 1] - cg) ** 2 + (px[i + 2] - cb) ** 2);
+    const lista: number[] = [p0];
+    const marca = new Uint8Array(w * h);
+    marca[p0] = 1;
+    for (let k = 0; k < lista.length && lista.length < w * h * 0.25; k++) {
+      const q = lista[k];
+      apagado[q] = 1;
+      const x = q % w;
+      const y = (q - x) / w;
+      const viz = [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, y > 0 ? q - w : -1, y < h - 1 ? q + w : -1];
+      for (const v of viz) {
+        if (v < 0 || marca[v] || apagado[v]) continue;
+        marca[v] = 1;
+        if (dc(v * 4) <= lim) lista.push(v);
+      }
+    }
+  }
+
+  // Faixa de BANDA pixels em volta do apagado: é onde sobra o halo claro da borda do desenho.
+  const nivel = new Uint8Array(w * h);
+  let borda: number[] = [];
+  for (let p = 0; p < w * h; p++) if (apagado[p]) borda.push(p);
+  for (let n = 1; n <= BANDA; n++) {
+    const prox: number[] = [];
+    for (const q of borda) {
+      const x = q % w;
+      const y = (q - x) / w;
+      const viz = [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, y > 0 ? q - w : -1, y < h - 1 ? q + w : -1];
+      for (const v of viz) {
+        if (v < 0 || apagado[v] || nivel[v]) continue;
+        nivel[v] = n;
+        prox.push(v);
+      }
+    }
+    borda = prox;
+  }
+
   for (let p = 0; p < w * h; p++) {
     const i = p * 4;
     if (apagado[p]) { px[i + 3] = 0; continue; }
-    // Borda: vizinho apagado + cor parecida com o fundo = meio transparente, tirando o resto de branco da cor.
-    const x = p % w;
-    const y = (p - x) / w;
-    const vizinho =
-      (x > 0 && apagado[p - 1]) || (x < w - 1 && apagado[p + 1]) || (y > 0 && apagado[p - w]) || (y < h - 1 && apagado[p + w]);
-    if (vizinho) {
-      const d = dist(i);
-      if (d < limite * 1.8) {
-        const a = Math.min(1, Math.max(0, (d - limite * 0.6) / (limite * 1.2)));
-        if (a > 0.04) {
-          px[i] = Math.max(0, Math.min(255, (px[i] - r * (1 - a)) / a));
-          px[i + 1] = Math.max(0, Math.min(255, (px[i + 1] - g * (1 - a)) / a));
-          px[i + 2] = Math.max(0, Math.min(255, (px[i + 2] - b * (1 - a)) / a));
-        }
-        px[i + 3] = Math.round(px[i + 3] * a);
+    if (nivel[p] === 0) continue;
+    // Perto do apagado: cor parecida com o fundo vira meio transparente, tirando o resto de branco da cor.
+    const d = dist(i);
+    if (d < limite * 1.8) {
+      const a = Math.min(1, Math.max(0, (d - limite * 0.6) / (limite * 1.2)));
+      if (a > 0.04) {
+        px[i] = Math.max(0, Math.min(255, (px[i] - r * (1 - a)) / a));
+        px[i + 1] = Math.max(0, Math.min(255, (px[i + 1] - g * (1 - a)) / a));
+        px[i + 2] = Math.max(0, Math.min(255, (px[i + 2] - b * (1 - a)) / a));
       }
+      px[i + 3] = Math.round(px[i + 3] * a);
     }
   }
   ctx.putImageData(dados, 0, 0);
@@ -176,6 +223,7 @@ export function LogoEditor({
   const [base, setBase] = useState<HTMLCanvasElement | null>(null); // imagem sem alteração
   const [resultado, setResultado] = useState<HTMLCanvasElement | null>(null); // com fundo removido
   const [tolerancia, setTolerancia] = useState(28);
+  const [toques, setToques] = useState<Toque[]>([]);
   const [semFundo, setSemFundo] = useState(false);
   const [carregando, setCarregando] = useState(!!logoUrl);
   const [salvando, setSalvando] = useState(false);
@@ -210,14 +258,15 @@ export function LogoEditor({
   // Refaz o recorte quando muda a intensidade (com um respiro pra não travar o slider).
   useEffect(() => {
     if (!base || !semFundo) return;
-    const t = setTimeout(() => setResultado(removerFundo(base, tolerancia)), 120);
+    const t = setTimeout(() => setResultado(removerFundo(base, tolerancia, toques)), 120);
     return () => clearTimeout(t);
-  }, [base, semFundo, tolerancia]);
+  }, [base, semFundo, tolerancia, toques]);
 
   const semMargem = useMemo(() => (semFundo && resultado && estilo !== "logo" ? aparar(resultado) : null), [semFundo, resultado, estilo]);
   const atual = semMargem ?? (semFundo && resultado ? resultado : base);
 
   // Imagem atual como endereço, pra mostrar a esfera de verdade na prévia.
+  const urlRetoque = useMemo(() => (semFundo && resultado ? resultado.toDataURL("image/png") : null), [semFundo, resultado]);
   const urlPrevia = useMemo(() => (estilo === "logo" || !atual ? null : atual.toDataURL("image/png")), [atual, estilo]);
 
   // Mostra no quadro de prévia.
@@ -242,6 +291,7 @@ export function LogoEditor({
       setBase(imagemParaCanvas(img));
       setSemFundo(false);
       setResultado(null);
+      setToques([]);
       setTrocou(true);
     } catch {
       setErro("Não consegui abrir essa imagem.");
@@ -403,6 +453,33 @@ export function LogoEditor({
                 </div>
                 <input type="range" min={5} max={70} value={tolerancia} onChange={(e) => setTolerancia(Number(e.target.value))} aria-label="Intensidade do recorte" className="mt-1 w-full accent-[#111318]" />
                 <p className="mt-1 text-[12px] text-text-tertiary">Se sobrar fundo, aumente. Se comer o desenho, diminua.</p>
+                {urlRetoque && (
+                  <div className="mt-4 border-t border-divider pt-4">
+                    <p className="text-[13px] font-medium">Retocar</p>
+                    <p className="mt-0.5 text-[12px] text-text-tertiary">Ficou fundo dentro de uma letra ou num canto? Toque nele para apagar.</p>
+                    <div
+                      className="relative mt-2 w-full max-w-[320px] overflow-hidden rounded-2xl ring-1 ring-black/10"
+                      style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "16px 16px" }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={urlRetoque}
+                        alt="Logo com fundo transparente. Toque numa parte para apagar."
+                        draggable={false}
+                        className="block h-auto w-full cursor-crosshair select-none"
+                        onClick={(e) => {
+                          const r = e.currentTarget.getBoundingClientRect();
+                          setToques((t) => [...t, { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }]);
+                        }}
+                      />
+                    </div>
+                    {toques.length > 0 && (
+                      <button type="button" onClick={() => setToques((t) => t.slice(0, -1))} className="mt-2 min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">
+                        Desfazer último toque ({toques.length})
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

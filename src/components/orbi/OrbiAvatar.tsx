@@ -19,9 +19,15 @@ export const ESFERAS = [
   { id: "dourado", nome: "Dourado", de: "#F0D58E", ate: "#B0862F" },
   { id: "champanhe", nome: "Champanhe", de: "#FBF0DA", ate: "#DCC49A" },
   { id: "rose", nome: "Rosé", de: "#F6D2CE", ate: "#CF9494" },
+  { id: "nevoa", nome: "Névoa", de: "#E6F0FB", ate: "#B3CDEA" },
+  { id: "menta", nome: "Menta", de: "#E3F5EA", ate: "#ACD8BE" },
+  { id: "lavanda", nome: "Lavanda", de: "#EEE8FA", ate: "#C5B8E6" },
+  { id: "pessego", nome: "Pêssego", de: "#FFEADB", ate: "#F2BE9F" },
+  { id: "pistache", nome: "Pistache", de: "#F1F6DA", ate: "#CBD995" },
+  { id: "perola", nome: "Pérola", de: "#F4F2EE", ate: "#CEC9C0" },
 ] as const;
 export type TomEsfera = (typeof ESFERAS)[number]["id"];
-const CLARAS = new Set<string>(["claro", "dourado", "champanhe", "rose"]);
+const CLARAS = new Set<string>(["claro", "dourado", "champanhe", "rose", "nevoa", "menta", "lavanda", "pessego", "pistache", "perola"]);
 
 export function OrbiAvatar({ logoUrl, size = 96, className = "", esfera, escala = 100 }: { logoUrl: string; size?: number; className?: string; color?: string | null; esfera?: TomEsfera; escala?: number }) {
   const cor = esfera && esfera !== "claro" && esfera !== "escuro" ? ESFERAS.find((e) => e.id === esfera) : undefined;
