@@ -113,3 +113,18 @@ export function kb(bytes: number | null | undefined) {
   if (!bytes) return "";
   return bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
 }
+
+/** Onde uma imagem está em uso hoje (produtos, vouchers, página da marca). */
+export async function usosDaImagem(supabase: ClienteBanco, businessId: string, path: string): Promise<string[]> {
+  const [{ data: itens }, { data: vouchers }, { data: negocio }] = await Promise.all([
+    supabase.from("content_items").select("title, image_url, gallery_urls, images").eq("business_id", businessId),
+    supabase.from("vouchers").select("title, image_url").eq("business_id", businessId),
+    supabase.from("businesses").select("logo_url, logo_gallery, share_image_url, vitrine_cover_url, vitrine_cover_urls, story_photos").eq("id", businessId).maybeSingle(),
+  ]);
+  const fontes: { nome: string; texto: string }[] = [
+    ...((itens as { title: string }[]) ?? []).map((r) => ({ nome: r.title || "Produto", texto: JSON.stringify(r) })),
+    ...((vouchers as { title: string }[]) ?? []).map((r) => ({ nome: `Voucher ${r.title}`, texto: JSON.stringify(r) })),
+    { nome: "Página da marca (logo, capa ou histórias)", texto: JSON.stringify(negocio ?? {}) },
+  ];
+  return fontes.filter((f) => f.texto.includes(path)).map((f) => f.nome);
+}

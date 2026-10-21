@@ -1384,3 +1384,12 @@ html[data-embed] .embed-oculta { display: none !important; }
   .cl-folha.on .cl-entra, .cl-folha.on .cl-fill { transition-duration: .01s; transition-delay: 0s; }
 }
 @keyframes cl-sobe { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* Visualizador de fotos da galeria: entra com leve zoom e fade, rápido para não atrasar a escolha. */
+@keyframes gv-entra { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes gv-foto { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+.gv-entra { animation: gv-entra 200ms cubic-bezier(0.23, 1, 0.32, 1); }
+.gv-foto { animation: gv-foto 220ms cubic-bezier(0.23, 1, 0.32, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .gv-entra, .gv-foto { animation: none; }
+}

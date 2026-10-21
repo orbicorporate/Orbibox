@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { calcularHashes, hashDeArquivo, pareceCom } from "@/lib/parecidas";
+import { FotoVisualizador, type ItemGaleria } from "@/components/ui/FotoVisualizador";
 import { TIPOS_IMAGEM, classificarImagens, clienteBanco, comprimirImagem, enviarImagem, sincronizarBiblioteca, urlDaImagem, type Categoria, type TipoImagem } from "@/lib/bancoImagens";
 
-type Item = { id: string; nome: string; url: string; category_id: string | null; auto_tipo: TipoImagem | null; tamanho: number | null };
+type Item = ItemGaleria;
 
 /**
  * Folha com todas as imagens do banco de imagens da marca, em miniaturas
@@ -35,6 +36,7 @@ export function MinhaGaleriaPicker({
   const [subindo, setSubindo] = useState(0);
   const hashes = useRef<Map<string, string>>(new Map());
   const [aviso, setAviso] = useState<string | null>(null);
+  const [aberta, setAberta] = useState<string | null>(null);
 
   async function subir(files: FileList | null) {
     const lista = Array.from(files ?? []).slice(0, 20);
@@ -117,7 +119,7 @@ export function MinhaGaleriaPicker({
         <div className="flex shrink-0 items-start justify-between gap-2 px-5 pt-5">
           <div>
             <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold">Minha galeria</p>
-            <p className="text-[12.5px] text-text-tertiary">Seu banco de imagens. Toque numa pra usar.</p>
+            <p className="text-[12.5px] text-text-tertiary">Toque numa foto para ver, editar ou usar.</p>
           </div>
           <button onClick={onFechar} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[14px]" aria-label="Fechar">
             ✕
@@ -182,8 +184,8 @@ export function MinhaGaleriaPicker({
                   <button
                     key={i.nome}
                     type="button"
-                    onClick={() => onEscolher(i.url)}
-                    aria-label="Usar esta imagem"
+                    onClick={() => setAberta(i.id)}
+                    aria-label="Abrir esta foto"
                     className={`relative aspect-square overflow-hidden rounded-xl bg-surface-soft transition-transform active:scale-[0.96] ${emUso ? "ring-2 ring-on-background" : ""}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -202,6 +204,21 @@ export function MinhaGaleriaPicker({
           )}
         </div>
       </div>
+      {aberta && (
+        <FotoVisualizador
+          supabase={supabase}
+          businessId={businessId}
+          itens={visiveis}
+          idInicial={aberta}
+          categorias={categorias}
+          atual={atual}
+          onUsar={onEscolher}
+          onFechar={() => setAberta(null)}
+          onNova={(n) => setItens((p) => [n, ...(p ?? [])])}
+          onExcluida={(id) => setItens((p) => (p ?? []).filter((x) => x.id !== id))}
+          onCategoria={(id, cat) => setItens((p) => (p ?? []).map((x) => (x.id === id ? { ...x, category_id: cat } : x)))}
+        />
+      )}
     </div>,
     document.body,
   );
