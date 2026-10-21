@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
-import { OrbiAvatar, lerEsfera, lerSemFundo } from "@/components/orbi/OrbiAvatar";
+import { ESFERAS, OrbiAvatar, lerEsfera, lerSemFundo, type TomEsfera } from "@/components/orbi/OrbiAvatar";
 
-type Estilo = "logo" | "sem-fundo" | "esfera-claro" | "esfera-escuro";
+type Estilo = "logo" | "sem-fundo" | `esfera-${TomEsfera}`;
 
 const LADO = 800;
 
@@ -189,7 +189,9 @@ export function LogoEditor({
   const [estilo, setEstilo] = useState<Estilo>(estiloInicial);
   const [escala, setEscala] = useState(escalaInicial);
 
+  const ultimaEsfera = useRef<Estilo>("esfera-claro");
   function escolherEstilo(e: Estilo) {
+    if (e.startsWith("esfera")) ultimaEsfera.current = e;
     setEstilo(e);
     if (e.startsWith("esfera")) setEscala((v) => Math.min(130, v));
     // Na esfera o logo fica sobre um disco: o fundo do arquivo atrapalharia, então já tira.
@@ -300,7 +302,7 @@ export function LogoEditor({
           </div>
         ) : urlPrevia && estilo !== "logo" ? (
           <div className="mx-auto mt-6 flex h-[200px] w-[200px] items-center justify-center">
-            <OrbiAvatar logoUrl={urlPrevia} size={150} esfera={estilo === "esfera-claro" ? "claro" : "escuro"} escala={escala} />
+            <OrbiAvatar logoUrl={urlPrevia} size={150} esfera={estilo.slice(7) as TomEsfera} escala={escala} />
           </div>
         ) : (
         /* Quadriculado deixa claro o que é transparente. */
@@ -328,20 +330,47 @@ export function LogoEditor({
             <p className="text-[14px] font-medium">Aparência</p>
             <p className="mt-0.5 text-[12.5px] text-text-tertiary">Sem fundo: só o desenho do logo, solto na página. Esfera: o logo vai sobre um disco com luz de vidro girando em volta.</p>
             <div role="radiogroup" aria-label="Aparência do logo" className="mt-3 flex flex-wrap gap-2">
-              {([["logo", "Logo simples"], ["sem-fundo", "Sem fundo"], ["esfera-claro", "Esfera clara"], ["esfera-escuro", "Esfera escura"]] as const).map(([v, t]) => (
+              {([["logo", "Logo simples"], ["sem-fundo", "Sem fundo"], ["esfera", "Esfera"]] as const).map(([v, t]) => {
+                const ativo = v === "esfera" ? estilo.startsWith("esfera") : estilo === v;
+                return (
                 <button
                   key={v}
                   type="button"
                   role="radio"
-                  aria-checked={estilo === v}
-                  onClick={() => escolherEstilo(v)}
+                  aria-checked={ativo}
+                  onClick={() => escolherEstilo(v === "esfera" ? (estilo.startsWith("esfera") ? estilo : ultimaEsfera.current) : v)}
                   disabled={salvando}
-                  className={`min-h-[40px] rounded-full px-4 text-[13.5px] font-medium ${estilo === v ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
+                  className={`min-h-[40px] rounded-full px-4 text-[13.5px] font-medium ${ativo ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
                 >
                   {t}
                 </button>
-              ))}
+                );
+              })}
             </div>
+            {estilo.startsWith("esfera") && (
+              <div className="mt-4">
+                <p className="text-[12.5px] text-text-tertiary">Cor da esfera: {ESFERAS.find((e) => `esfera-${e.id}` === estilo)?.nome}</p>
+                <div role="radiogroup" aria-label="Cor da esfera" className="mt-2 flex flex-wrap gap-2.5">
+                  {ESFERAS.map((e) => {
+                    const sel = estilo === `esfera-${e.id}`;
+                    return (
+                      <button
+                        key={e.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={sel}
+                        aria-label={e.nome}
+                        title={e.nome}
+                        onClick={() => escolherEstilo(`esfera-${e.id}`)}
+                        disabled={salvando}
+                        className={`h-9 w-9 rounded-full ring-offset-2 transition active:scale-95 ${sel ? "ring-2 ring-on-background" : "ring-1 ring-black/10"}`}
+                        style={{ background: `radial-gradient(circle at 35% 25%, ${e.de}, ${e.ate} 74%)` }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {estilo !== "logo" && (
               <div className="mt-4">
                 <div className="flex items-center justify-between text-[12.5px] text-text-tertiary">
