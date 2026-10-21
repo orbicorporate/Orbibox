@@ -26,7 +26,7 @@ import { ContatoForm, chaveLead, lerVisitante } from "@/components/mobile/Contat
 import { NudgeLead } from "@/components/mobile/NudgeLead";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
-import { OrbiAvatar, lerEsfera, lerSemFundo } from "@/components/orbi/OrbiAvatar";
+import { OrbiAvatar, escalaDoAvatar, lerEsfera, lerSemFundo } from "@/components/orbi/OrbiAvatar";
 import { COVER_RATIO_BY_SIZE, formatPrice, groupByCategory, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
 import { heroBackground } from "@/lib/heroStyle";
@@ -917,6 +917,7 @@ export function VisitorExperience({
             semPergunta={textos.pergunta === ""}
             logoUrl={logoAtual}
             logoSolto={lerSemFundo(heroAvatar)?.escala ?? null}
+            logoEscala={escalaDoAvatar(heroAvatar)}
             cores={orbiColors ?? heroGradient}
             agentName={agentName}
             onPerguntar={hasAiChat ? () => chooseIntent("duvida") : undefined}
@@ -950,7 +951,7 @@ export function VisitorExperience({
                 <img src={logoAtual} alt="" className="object-contain drop-shadow-[0_6px_14px_rgba(17,19,24,0.18)]" style={{ width: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100, height: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100 }} />
               ) : logoAtual ? (
                 // "logo" ou "auto" (padrão): logo se tiver, senão a esfera.
-                <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} esfera={lerEsfera(heroAvatar)?.tom} escala={lerEsfera(heroAvatar)?.escala} />
+                <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} esfera={lerEsfera(heroAvatar)?.tom} escala={escalaDoAvatar(heroAvatar)} />
               ) : (
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               )}

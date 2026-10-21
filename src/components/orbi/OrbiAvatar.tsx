@@ -41,7 +41,7 @@ export function OrbiAvatar({ logoUrl, size = 96, className = "", esfera, escala 
         style={cor ? { background: `radial-gradient(circle at 35% 25%, ${cor.de}, ${cor.ate} 74%)` } : undefined}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoUrl} alt="" className={`h-full w-full ${esfera ? "object-contain" : "object-cover"}`} style={esfera && escala !== 100 ? { transform: `scale(${escala / 100})` } : undefined} />
+        <img src={logoUrl} alt="" className={`h-full w-full ${esfera ? "object-contain" : "object-cover"}`} style={escala !== 100 ? { transform: `scale(${escala / 100})` } : undefined} />
         <span className="orbi-av-agua" />
         <span className="orbi-av-agua orbi-av-agua-b" />
         <span className="orbi-av-reflexo" />
@@ -65,4 +65,17 @@ export function lerSemFundo(v: string | null | undefined): { escala: number } | 
   if (!m) return null;
   const n = m[1] ? Number(m[1]) : 100;
   return { escala: Math.min(160, Math.max(50, n)) };
+}
+
+/** hero_avatar guarda o logo simples como "logo" ou "logo-120" (zoom do logo no círculo, em %, 60 a 160). */
+export function lerLogoEscala(v: string | null | undefined): number | null {
+  const m = /^logo(?:-(\d{2,3}))?$/.exec(v ?? "");
+  if (!m) return null;
+  const n = m[1] ? Number(m[1]) : 100;
+  return Math.min(160, Math.max(60, n));
+}
+
+/** Tamanho do logo em %, qualquer que seja o estilo guardado (100 se não houver). */
+export function escalaDoAvatar(v: string | null | undefined): number {
+  return lerEsfera(v)?.escala ?? lerSemFundo(v)?.escala ?? lerLogoEscala(v) ?? 100;
 }

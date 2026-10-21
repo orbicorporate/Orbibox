@@ -10,7 +10,7 @@ import {
   sairDoClube, vincularTelefone, virarFa,
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaDoFa, type Resumo,
 } from "@/lib/clube";
-import { OrbiAvatar, lerEsfera } from "@/components/orbi/OrbiAvatar";
+import { OrbiAvatar, lerEsfera, lerLogoEscala } from "@/components/orbi/OrbiAvatar";
 import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
 type Aberta = { tipo: "avaliacoes" | "fas" | "entrar"; origem: DOMRect | null; modo?: "entrar" | "vincular" } | null;
@@ -692,7 +692,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
               <Orbita
                 itens={itens}
                 aneis={ANEIS}
-                centro={logoUrl ? <OrbiAvatar logoUrl={logoUrl} size={96} esfera={esfera?.tom} escala={esfera?.escala} /> : <Rosto nome={nome} size={92} className="shadow-[0_10px_34px_rgba(0,0,0,0.25)]" />}
+                centro={logoUrl ? <OrbiAvatar logoUrl={logoUrl} size={96} esfera={esfera?.tom} escala={esfera?.escala ?? lerLogoEscala(heroAvatar) ?? 100} /> : <Rosto nome={nome} size={92} className="shadow-[0_10px_34px_rgba(0,0,0,0.25)]" />}
               />
             )}
           </div>

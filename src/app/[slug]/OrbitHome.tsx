@@ -49,6 +49,7 @@ export function OrbitHome({
   descricao,
   logoUrl,
   logoSolto = null,
+  logoEscala = 100,
   cores,
   agentName,
   onPerguntar,
@@ -68,6 +69,8 @@ export function OrbitHome({
   logoUrl: string | null;
   /** Tamanho em % do logo solto (sem disco); null mantém a esfera. */
   logoSolto?: number | null;
+  /** Zoom do logo no círculo (esfera ou logo simples), em %. */
+  logoEscala?: number;
   cores: string[];
   agentName: string;
   onPerguntar?: () => void;
@@ -276,7 +279,7 @@ export function OrbitHome({
           {logoUrl && logoSolto == null && (
             <span className="absolute inset-[3px] overflow-hidden rounded-full bg-surface-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={logoUrl} alt="" className="h-full w-full object-cover" />
+              <img src={logoUrl} alt="" className="h-full w-full object-cover" style={logoEscala !== 100 ? { transform: `scale(${logoEscala / 100})` } : undefined} />
             </span>
           )}
           {logoUrl && logoSolto != null && (

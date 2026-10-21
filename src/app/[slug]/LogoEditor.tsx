@@ -4,11 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
-import { ESFERAS, OrbiAvatar, lerEsfera, lerSemFundo, type TomEsfera } from "@/components/orbi/OrbiAvatar";
+import { ESFERAS, OrbiAvatar, lerEsfera, lerLogoEscala, lerSemFundo, type TomEsfera } from "@/components/orbi/OrbiAvatar";
 
 type Estilo = "logo" | "sem-fundo" | `esfera-${TomEsfera}`;
 
 const LADO = 800;
+
+/** Menor e maior tamanho do logo, em %, para cada estilo. */
+function limitesEscala(e: Estilo): [number, number] {
+  return e === "logo" ? [60, 160] : e === "sem-fundo" ? [50, 160] : [50, 130];
+}
 
 /** Toque na prévia de retoque, em fração da largura e da altura (0 a 1). */
 type Toque = { x: number; y: number };
@@ -229,21 +234,22 @@ export function LogoEditor({
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [trocou, setTrocou] = useState(false);
-  const previa = useRef<HTMLCanvasElement>(null);
   const esferaAtual = lerEsfera(avatar);
   const soltoAtual = lerSemFundo(avatar);
   const estiloInicial: Estilo = soltoAtual ? "sem-fundo" : esferaAtual ? (`esfera-${esferaAtual.tom}` as Estilo) : "logo";
-  const escalaInicial = esferaAtual?.escala ?? soltoAtual?.escala ?? 100;
+  const escalaInicial = esferaAtual?.escala ?? soltoAtual?.escala ?? lerLogoEscala(avatar) ?? 100;
   const [estilo, setEstilo] = useState<Estilo>(estiloInicial);
   const [escala, setEscala] = useState(escalaInicial);
 
   const ultimaEsfera = useRef<Estilo>("esfera-claro");
+  const [autoLigou, setAutoLigou] = useState(false);
   function escolherEstilo(e: Estilo) {
     if (e.startsWith("esfera")) ultimaEsfera.current = e;
     setEstilo(e);
-    if (e.startsWith("esfera")) setEscala((v) => Math.min(130, v));
-    // Na esfera o logo fica sobre um disco: o fundo do arquivo atrapalharia, então já tira.
-    if (e !== "logo" && !semFundo) setSemFundo(true);
+    const [min, max] = limitesEscala(e);
+    setEscala((v) => Math.min(max, Math.max(min, v)));
+    // Solto e esfera ficam por cima da página ou de um disco: o fundo do arquivo atrapalharia, então já tira.
+    if (e !== "logo" && !semFundo) { setSemFundo(true); setAutoLigou(true); }
   }
 
   useEffect(() => {
@@ -267,18 +273,7 @@ export function LogoEditor({
 
   // Imagem atual como endereço, pra mostrar a esfera de verdade na prévia.
   const urlRetoque = useMemo(() => (semFundo && resultado ? resultado.toDataURL("image/png") : null), [semFundo, resultado]);
-  const urlPrevia = useMemo(() => (estilo === "logo" || !atual ? null : atual.toDataURL("image/png")), [atual, estilo]);
-
-  // Mostra no quadro de prévia.
-  useEffect(() => {
-    const c = previa.current;
-    if (!c || !atual) return;
-    c.width = atual.width;
-    c.height = atual.height;
-    const ctx = c.getContext("2d")!;
-    ctx.clearRect(0, 0, c.width, c.height);
-    ctx.drawImage(atual, 0, 0);
-  }, [atual]);
+  const urlPrevia = useMemo(() => (atual ? atual.toDataURL("image/png") : null), [atual]);
 
   const escolherArquivo = useCallback(async (file: File | undefined) => {
     if (!file) return;
@@ -317,7 +312,12 @@ export function LogoEditor({
         url = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
       }
       // Esfera clara ou escura guarda o estilo em hero_avatar; voltar ao logo simples só mexe se já era esfera.
-      const novoAvatar: string | null = estilo === "sem-fundo" ? `sem-fundo-${escala}` : estilo !== "logo" ? `${estilo}-${escala}` : estiloInicial !== "logo" ? "logo" : avatar;
+      const novoAvatar: string | null =
+        estilo === "sem-fundo" ? `sem-fundo-${escala}`
+        : estilo !== "logo" ? `${estilo}-${escala}`
+        : escala !== 100 ? `logo-${escala}`
+        : estiloInicial !== "logo" || /^logo-\d+$/.test(avatar ?? "") ? "logo"
+        : avatar;
       const campos: { logo_url: string; hero_avatar?: string | null } = { logo_url: url! };
       if (novoAvatar !== avatar) campos.hero_avatar = novoAvatar;
       const { error } = await supabase.from("businesses").update(campos).eq("id", businessId);
@@ -333,7 +333,7 @@ export function LogoEditor({
     }
   }
 
-  const mudou = trocou || semFundo || estilo !== estiloInicial || ((estilo.startsWith("esfera") || estilo === "sem-fundo") && escala !== escalaInicial);
+  const mudou = trocou || semFundo || estilo !== estiloInicial || escala !== escalaInicial;
 
   if (typeof document === "undefined") return null;
   return createPortal(
@@ -342,32 +342,25 @@ export function LogoEditor({
         <span className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" />
         <p className="text-center font-[family-name:var(--font-manrope)] text-[18px] font-medium">Logo da sua página</p>
 
-        {urlPrevia && estilo === "sem-fundo" ? (
-          <div
-            className="mx-auto mt-4 flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-3xl p-3 ring-1 ring-black/10"
-            style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "20px 20px" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={urlPrevia} alt="" className="h-full w-full object-contain" style={{ transform: `scale(${escala / 100})` }} />
-          </div>
-        ) : urlPrevia && estilo !== "logo" ? (
-          <div className="mx-auto mt-6 flex h-[200px] w-[200px] items-center justify-center">
-            <OrbiAvatar logoUrl={urlPrevia} size={150} esfera={estilo.slice(7) as TomEsfera} escala={escala} />
-          </div>
-        ) : (
-        /* Quadriculado deixa claro o que é transparente. */
-        <div
-          className="mx-auto mt-4 flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-full ring-1 ring-black/10"
-          style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "20px 20px" }}
-        >
+        <div className="mx-auto mt-4 flex h-[210px] w-full items-center justify-center">
           {carregando ? (
             <span className="h-6 w-6 animate-spin rounded-full border-2 border-black/15 border-t-on-background" />
-          ) : atual ? (
-            <canvas ref={previa} className="h-full w-full object-contain" />
-          ) : (
+          ) : !urlPrevia ? (
             <span className="px-6 text-center text-[13px] text-text-tertiary">Ainda sem logo. Envie uma imagem.</span>
+          ) : estilo === "sem-fundo" ? (
+            <div
+              className="flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-3xl p-3 ring-1 ring-black/10"
+              style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "20px 20px" }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={urlPrevia} alt="" className="h-full w-full object-contain" style={{ transform: `scale(${escala / 100})` }} />
+            </div>
+          ) : (
+            <OrbiAvatar logoUrl={urlPrevia} size={150} esfera={estilo === "logo" ? undefined : (estilo.slice(7) as TomEsfera)} escala={escala} />
           )}
         </div>
+        {urlPrevia && !carregando && (
+          <p className="mt-1 text-center text-[12px] text-text-tertiary">{estilo === "sem-fundo" ? "Prévia. O quadriculado é a parte transparente." : "Prévia de como fica na sua página."}</p>
         )}
 
         <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { escolherArquivo(e.target.files?.[0]); e.target.value = ""; }} />
@@ -377,9 +370,8 @@ export function LogoEditor({
 
         {base && (
           <div className="mt-3 rounded-2xl border border-divider p-4">
-            <p className="text-[14px] font-medium">Aparência</p>
-            <p className="mt-0.5 text-[12.5px] text-text-tertiary">Sem fundo: só o desenho do logo, solto na página. Esfera: o logo vai sobre um disco com luz de vidro girando em volta.</p>
-            <div role="radiogroup" aria-label="Aparência do logo" className="mt-3 flex flex-wrap gap-2">
+            <p className="text-[14px] font-medium">1. Estilo</p>
+            <div role="radiogroup" aria-label="Estilo do logo" className="mt-3 flex flex-wrap gap-2">
               {([["logo", "Logo simples"], ["sem-fundo", "Sem fundo"], ["esfera", "Esfera"]] as const).map(([v, t]) => {
                 const ativo = v === "esfera" ? estilo.startsWith("esfera") : estilo === v;
                 return (
@@ -397,6 +389,9 @@ export function LogoEditor({
                 );
               })}
             </div>
+            <p className="mt-2 text-[12.5px] text-text-tertiary">
+              {estilo === "logo" ? "A imagem preenche um círculo com anel de luz girando." : estilo === "sem-fundo" ? "Só o desenho do logo, solto na página, sem círculo." : "O logo sobre um disco colorido com luz de vidro."}
+            </p>
             {estilo.startsWith("esfera") && (
               <div className="mt-4">
                 <p className="text-[12.5px] text-text-tertiary">Cor da esfera: {ESFERAS.find((e) => `esfera-${e.id}` === estilo)?.nome}</p>
@@ -421,38 +416,40 @@ export function LogoEditor({
                 </div>
               </div>
             )}
-            {estilo !== "logo" && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-[12.5px] text-text-tertiary">
-                  <label htmlFor="logo-tamanho">Tamanho do logo</label>
-                  <span className="tabular-nums">{escala}%</span>
-                </div>
-                <input id="logo-tamanho" type="range" min={50} max={estilo === "sem-fundo" ? 160 : 130} step={5} value={escala} onChange={(e) => setEscala(Number(e.target.value))} disabled={salvando} className="mt-1 h-8 w-full accent-[#14161A]" />
-                <p className="mt-0.5 text-[12.5px] text-text-tertiary">{estilo === "sem-fundo" ? "Aumente para o logo ficar maior na página." : "Aumente para o logo preencher mais a esfera."}</p>
-              </div>
-            )}
           </div>
         )}
 
         {base && (
           <div className="mt-3 rounded-2xl border border-divider p-4">
-            <button type="button" role="switch" aria-checked={semFundo} onClick={() => { const novo = !semFundo; setSemFundo(novo); if (novo && estilo === "logo") setEstilo("sem-fundo"); if (!novo && estilo === "sem-fundo") setEstilo("logo"); }} disabled={salvando} className="flex w-full items-center justify-between gap-3 text-left">
+            <div className="flex items-center justify-between text-[14px] font-medium">
+              <label htmlFor="logo-tamanho">2. Tamanho do logo</label>
+              <span className="tabular-nums text-text-tertiary">{escala}%</span>
+            </div>
+            <input id="logo-tamanho" type="range" min={limitesEscala(estilo)[0]} max={limitesEscala(estilo)[1]} step={5} value={escala} onChange={(e) => setEscala(Number(e.target.value))} disabled={salvando} className="mt-1 h-8 w-full accent-[#14161A]" />
+            <p className="text-[12.5px] text-text-tertiary">Arraste para a direita para aumentar o logo, para a esquerda para diminuir.</p>
+          </div>
+        )}
+
+        {base && (
+          <div className="mt-3 rounded-2xl border border-divider p-4">
+            <button type="button" role="switch" aria-checked={semFundo} onClick={() => { setSemFundo((v) => !v); setAutoLigou(false); }} disabled={salvando} className="flex w-full items-center justify-between gap-3 text-left">
               <span>
-                <span className="block text-[14px] font-medium">Fundo transparente</span>
-                <span className="block text-[12.5px] text-text-tertiary">Tira o fundo liso do logo</span>
+                <span className="block text-[14px] font-medium">3. Remover o fundo da imagem</span>
+                <span className="block text-[12.5px] text-text-tertiary">Apaga a cor lisa em volta do desenho, como o branco. A prévia acima mostra o resultado.</span>
               </span>
               <span className={`flex h-7 w-12 shrink-0 items-center rounded-full p-0.5 transition-colors ${semFundo ? "bg-on-background" : "bg-divider"}`}>
                 <span className={`h-6 w-6 rounded-full bg-white shadow transition-transform ${semFundo ? "translate-x-5" : ""}`} />
               </span>
             </button>
+            {semFundo && autoLigou && <p className="mt-2 rounded-xl bg-surface-soft px-3 py-2 text-[12.5px] text-text-secondary">Ligado automaticamente, porque esse estilo precisa do logo sem fundo.</p>}
             {semFundo && (
               <div className="mt-4">
-                <div className="flex items-center justify-between text-[12px] text-text-tertiary">
-                  <span>Mais fiel</span>
-                  <span>Tira mais</span>
+                <div className="flex items-center justify-between text-[13px] font-medium">
+                  <label htmlFor="logo-limpeza">Quanto fundo remover</label>
                 </div>
-                <input type="range" min={5} max={70} value={tolerancia} onChange={(e) => setTolerancia(Number(e.target.value))} aria-label="Intensidade do recorte" className="mt-1 w-full accent-[#111318]" />
-                <p className="mt-1 text-[12px] text-text-tertiary">Se sobrar fundo, aumente. Se comer o desenho, diminua.</p>
+                <input id="logo-limpeza" type="range" min={5} max={70} value={tolerancia} onChange={(e) => setTolerancia(Number(e.target.value))} className="mt-1 w-full accent-[#111318]" />
+                <div className="flex justify-between text-[12px] text-text-tertiary"><span>Menos</span><span>Mais</span></div>
+                <p className="mt-1 text-[12px] text-text-tertiary">Sobrou fundo em volta? Vá para Mais. Começou a apagar o desenho? Volte para Menos.</p>
                 {urlRetoque && (
                   <div className="mt-4 border-t border-divider pt-4">
                     <p className="text-[13px] font-medium">Retocar</p>
