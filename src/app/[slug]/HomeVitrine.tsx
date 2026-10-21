@@ -339,18 +339,21 @@ export function HomeVitrine({
 
       {mostrar.length > 0 && (
         <section className="mt-9 w-full" aria-label={tituloItens}>
+          <div className="mb-5 flex w-full min-w-0 flex-col items-center empty:hidden">{destaque}</div>
           <div className="flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <h2 className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
-              {podeEditar && onTitulo && (
-                <button type="button" onClick={() => setEditandoTitulo(true)} aria-label="Editar o título desta seção" className="flex h-7 w-7 shrink-0 items-center justify-center lapis-edita text-[14px] text-on-background/60">✎</button>
-              )}
-              {podeEditar && onEscolherItens && (
-                <button type="button" onClick={() => setEscolhendo(true)} className="ml-1 min-h-[32px] rounded-full border border-divider bg-white px-3 text-[12px] font-medium text-on-background active:scale-[0.97]">
-                  {personalizado ? "Trocar destaques" : "Escolher destaques"}
-                </button>
-              )}
-            </div>
+            {podeEditar && onEscolherItens ? (
+              <button type="button" onClick={() => setEscolhendo(true)} aria-label={`${tituloItens}: escolher e ordenar os destaques da Home`} className="flex min-h-[40px] min-w-0 items-center gap-2 rounded-full text-left active:opacity-70">
+                <h2 className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
+                <span className="shrink-0 text-[14px] text-on-background/60" aria-hidden>✎</span>
+              </button>
+            ) : (
+              <div className="flex min-w-0 items-center gap-1.5">
+                <h2 className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
+                {podeEditar && onTitulo && (
+                  <button type="button" onClick={() => setEditandoTitulo(true)} aria-label="Editar o título desta seção" className="flex h-7 w-7 shrink-0 items-center justify-center lapis-edita text-[14px] text-on-background/60">✎</button>
+                )}
+              </div>
+            )}
             <div className="flex items-center gap-1">
               {podeEditar && onFormato && !onEscolherItens && (
                 <span className="text-[12px] text-text-tertiary">{FORMATOS.find((f) => f.v === formato)?.titulo}</span>
@@ -360,7 +363,6 @@ export function HomeVitrine({
               )}
             </div>
           </div>
-          <div className="mt-3 flex w-full min-w-0 flex-col items-center empty:hidden">{destaque}</div>
           {formato === "vitrine" ? (
             <ul className="relative mt-3 grid grid-flow-dense grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
               {mostrarNaOrdem.map((i) => {
@@ -429,6 +431,18 @@ export function HomeVitrine({
               <span className="text-[17px] font-medium">Destaques da Home</span>
               <button type="button" onClick={() => { setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Pronto</button>
             </div>
+            {onTitulo && (
+              <label className="mt-3 block shrink-0">
+                <span className="text-[12px] font-medium text-text-tertiary">Nome da seção</span>
+                <input
+                  defaultValue={tituloItens === "Destaque" ? "" : tituloItens}
+                  placeholder="Destaque"
+                  maxLength={40}
+                  onBlur={(e) => { const v = e.target.value.trim(); if (v !== (tituloItens === "Destaque" ? "" : tituloItens)) onTitulo(v); }}
+                  className="mt-1 w-full rounded-2xl border border-divider px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+                />
+              </label>
+            )}
             <p className="mt-1 shrink-0 text-[13px] text-text-secondary">
               {personalizado
                 ? `Você escolheu ${escolhidos.length} de ${MAXIMO}. Toque num item para tirar ou para colocar outro.`
