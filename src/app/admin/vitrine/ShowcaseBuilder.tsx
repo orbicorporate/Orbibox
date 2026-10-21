@@ -12,6 +12,7 @@ import { PassoLinha } from "@/components/ui/GuiaPassos";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { NovoItemPassos } from "./NovoItemPassos";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { HelperText } from "@/components/ui/HelperText";
 import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
@@ -176,6 +177,8 @@ export function ShowcaseBuilder({
   const [paletteTab, setPaletteTab] = useState<string>(brandColors.length > 0 ? "Marca" : "Padrão");
   const [arranging, setArranging] = useState(false);
   const [creating, setCreating] = useState(false);
+  // Item novo cadastrado em passos (uma pergunta por vez). null = nenhum aberto.
+  const [guiadoId, setGuiadoId] = useState<string | null>(null);
   const [improving, setImproving] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [showInspire, setShowInspire] = useState(false);
@@ -593,7 +596,7 @@ export function ShowcaseBuilder({
     setAvisoTroca(avisoDoEnvio(r, "catálogo"));
   }
 
-  async function createItem(brandLabel: string | null = null) {
+  async function createItem(brandLabel: string | null = null, guiado = true) {
     setCreating(true);
     snapshot();
     // Nasce no topo, position mais baixo que tudo que já existe, não no fim da lista.
@@ -606,6 +609,7 @@ export function ShowcaseBuilder({
     setCreating(false);
     if (!error && data) {
       setItems((p) => [...p, data as Item]);
+      if (guiado) { setGuiadoId(data.id); return; }
       setEditingId(data.id);
       setTimeout(() => {
         document.getElementById(`item-${data.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -827,6 +831,33 @@ export function ShowcaseBuilder({
         </div>
       )}
 
+      {guiadoId && (() => {
+        const it = items.find((i) => i.id === guiadoId);
+        if (!it) return null;
+        return (
+          <NovoItemPassos
+            item={it}
+            businessId={businessId}
+            ratio={COVER_RATIO_BY_SIZE[sizeOf(it.layout_size)]}
+            categorias={categories}
+            salvar={(campos) => save(it.id, campos as Partial<Item>)}
+            alterar={(campos) => patch(it.id, campos as Partial<Item>)}
+            onNovaCategoria={(nome) => { if (!allCategoryNamesRef().includes(nome)) saveCategories([...categories, nome]); }}
+            onMelhorar={() => improveWithOrbi(it)}
+            melhorando={improving === it.id}
+            onVerTudo={() => { setGuiadoId(null); setEditingId(it.id); }}
+            onCancelar={() => {
+              // Sem nome digitado, o rascunho vazio sai sozinho, como no editor completo.
+              setGuiadoId(null);
+              const intocado = it.title === "Novo item" && !it.image_url && !it.description?.trim() && it.price == null;
+              if (!intocado) return;
+              setItems((p) => p.filter((i) => i.id !== it.id));
+              supabase.from("content_items").delete().eq("id", it.id).then(() => {});
+            }}
+            onConcluir={(publicar) => { if (publicar) void save(it.id, { status: "published" }); setGuiadoId(null); }}
+          />
+        );
+      })()}
       {avisoTroca && <p role="status" className="mb-2 text-[13px] text-text-secondary">{avisoTroca}</p>}
       {trazendo && (
         <TrazerItens
@@ -1622,7 +1653,7 @@ function ItemCard({
           // rodapé branco separado. O card inteiro (tratado pelo container pai) continua clicável pra editar.
           <div
             className="flex h-full w-full flex-col items-center justify-center gap-2 px-6 text-center"
-            style={{ backgroundColor: c.bg }}
+            style={{ backgroundColor: c.bg, backgroundImage: c.degrade }}
           >
             <span className="font-[family-name:var(--font-open-sans)] font-bold leading-snug" style={{ color: c.fg, fontSize: titleFontSize(item.title, sizeOf(item.layout_size)) }}>
               {item.title}
@@ -1900,7 +1931,7 @@ function ItemCard({
                       <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { box_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.box_color.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: bc.hex }} />
                     ))
                   : Object.entries(PALETTE_GROUPS.find((g) => g.name === paletteTab)?.colors ?? {}).map(([key, cc]) => (
-                      <button key={key} onClick={() => save(item.id, { box_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.box_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
+                      <button key={key} onClick={() => save(item.id, { box_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.box_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg, backgroundImage: cc.degrade }} />
                     ))}
                 <MoreColorsButton onClick={() => setAllColorsFor("box")} />
               </div>
@@ -2384,7 +2415,7 @@ function AllColorsSheet({
             <p className="text-[12px] uppercase tracking-wide text-text-tertiary">{g.name}</p>
             <div className="mt-2 flex flex-wrap gap-2.5">
               {Object.entries(g.colors).map(([key, cc]) => (
-                <button key={key} onClick={() => pick(key)} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full ${ring(cur === key.toLowerCase())}`} style={{ backgroundColor: cc.bg }} />
+                <button key={key} onClick={() => pick(key)} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full ${ring(cur === key.toLowerCase())}`} style={{ backgroundColor: cc.bg, backgroundImage: cc.degrade }} />
               ))}
             </div>
           </div>

@@ -4,7 +4,7 @@
 export type VoucherColor = "cherry" | "black" | "navy" | "green" | "purple" | "pink" | "orange" | "gold" | "teal" | "wine" | "chocolate" | "royal";
 
 export const VOUCHER_THEMES: Record<VoucherColor, { label: string; from: string; via: string; to: string; ctaText: string; glow: string }> = {
-  cherry: { label: "Vermelho", from: "#A80F2B", via: "#CC1739", to: "#E4264C", ctaText: "#C4143A", glow: "rgba(204,23,57,0.45)" },
+  cherry: { label: "Cereja", from: "#A80F2B", via: "#CC1739", to: "#E4264C", ctaText: "#C4143A", glow: "rgba(204,23,57,0.45)" },
   black: { label: "Preto", from: "#0B0D12", via: "#1A1E27", to: "#2B3140", ctaText: "#111318", glow: "rgba(17,19,24,0.45)" },
   navy: { label: "Azul escuro", from: "#081A45", via: "#102B68", to: "#1A3D8C", ctaText: "#102B68", glow: "rgba(16,43,104,0.45)" },
   green: { label: "Verde", from: "#0B4A2E", via: "#136B42", to: "#1C8A57", ctaText: "#136B42", glow: "rgba(19,107,66,0.45)" },

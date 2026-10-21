@@ -39,7 +39,7 @@ export function galleryRatioOf(gallery_ratio: string | null | undefined, layout_
   return capa === "paisagem" ? "paisagem" : "quadrado";
 }
 
-type Swatch = { bg: string; fg: string; label: string };
+type Swatch = { bg: string; fg: string; label: string; /** Degradê opcional por cima da cor sólida (que serve de reserva). */ degrade?: string };
 
 // Paletas do editor de box, em grupos. "Padrão" é a original (neutros + Orbi).
 // As quatro novas são curadoria fixa; "Marca" (fora daqui, ver colorOf) é
@@ -104,6 +104,14 @@ export const PALETTE_GROUPS: { name: string; colors: Record<string, Swatch> }[] 
       "prim-verde": { bg: "#188A3A", fg: "#FFFFFF", label: "Verde" },
       "prim-laranja": { bg: "#EA6A0A", fg: "#FFFFFF", label: "Laranja" },
       "prim-roxo": { bg: "#6D28D9", fg: "#FFFFFF", label: "Roxo" },
+    },
+  },
+  {
+    // Degradês de destaque, para uma página ou item que precisa chamar atenção (campanha, Natal).
+    name: "Cereja",
+    colors: {
+      "cereja-degrade": { bg: "#CC1739", fg: "#FFFFFF", label: "Cereja", degrade: "linear-gradient(135deg, #A80F2B 0%, #CC1739 55%, #E4264C 100%)" },
+      "cereja-noite": { bg: "#7F1D36", fg: "#FFE9EE", label: "Cereja escuro", degrade: "linear-gradient(135deg, #3D0A18 0%, #7F1D36 60%, #A80F2B 100%)" },
     },
   },
   {

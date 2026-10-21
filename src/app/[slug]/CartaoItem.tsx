@@ -130,7 +130,7 @@ function CartaoBase({
             // título longo em card pequeno não estourar nem ficar apertado.
             <div
               className="flex h-full w-full flex-col justify-between gap-3 p-4 text-left"
-              style={{ backgroundColor: c.bg, backgroundImage: "radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,0.16), transparent 62%)" }}
+              style={{ backgroundColor: c.bg, backgroundImage: c.degrade ? `radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,0.16), transparent 62%), ${c.degrade}` : "radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,0.16), transparent 62%)" }}
             >
               {/* Em cima: a categoria, bem discreta (na vitrine o título da seção já diz isso). */}
               <span
