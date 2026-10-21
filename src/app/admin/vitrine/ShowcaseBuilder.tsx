@@ -830,7 +830,7 @@ export function ShowcaseBuilder({
       {avisoTroca && <p role="status" className="mb-2 text-[13px] text-text-secondary">{avisoTroca}</p>}
       {trazendo && (
         <TrazerItens
-          titulo="Trazer do cardápio"
+          titulo="Copiar do cardápio"
           ajuda="Escolha o que vira item do catálogo. É uma cópia: mudar depois num lado não muda o outro. Vai só a foto do card."
           itens={trazendo.pratos.map((p) => ({ key: p.nome, nome: p.nome, foto: p.foto, preco: p.preco, categoria: p.categoria }))}
           carregando={trazendo.carregando}
@@ -860,7 +860,7 @@ export function ShowcaseBuilder({
             <div className="absolute left-0 top-full z-30 mt-2 w-60 overflow-hidden rounded-2xl border border-divider bg-surface-white py-1.5 shadow-[0_12px_32px_rgba(17,19,24,0.14)]">
               <button onClick={() => { setMenuAberto(false); setShowImport(true); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">✦ Importar do site</button>
               {temCardapio && (
-                <button onClick={() => { setMenuAberto(false); void abrirTrazerDoCardapio(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Trazer do cardápio</button>
+                <button onClick={() => { setMenuAberto(false); void abrirTrazerDoCardapio(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Copiar itens do cardápio</button>
               )}
               <button onClick={() => { setMenuAberto(false); createCategory(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Nova categoria</button>
               <button disabled={arranging || items.length === 0} onClick={() => { setMenuAberto(false); autoArrange(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">
@@ -2260,8 +2260,9 @@ function EnviarAoCardapio({ businessId, item }: { businessId: string; item: Item
   return (
     <div>
       <button type="button" onClick={enviar} disabled={estado === "enviando"} className="block w-full rounded-full border border-divider py-3 text-center text-[13px] font-medium disabled:opacity-60">
-        {estado === "enviando" ? "Enviando…" : "Enviar para o cardápio"}
+        {estado === "enviando" ? "Copiando…" : "Copiar para o cardápio"}
       </button>
+      <p className="mt-1.5 text-center text-[12px] leading-snug text-text-tertiary">Faz uma cópia no cardápio. Depois, mudar um lado não muda o outro.</p>
       {aviso && <p role="status" className="mt-1.5 text-center text-[12.5px] text-text-secondary">{aviso}</p>}
     </div>
   );

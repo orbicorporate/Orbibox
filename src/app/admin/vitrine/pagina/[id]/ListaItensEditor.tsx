@@ -459,7 +459,7 @@ export function ListaItensEditor({ businessId, lista, temWhatsapp, onChange }: {
       <button type="button" onClick={() => onChange(listaVazia())} className="mt-7 flex w-full items-center gap-3.5 rounded-[26px] bg-on-background p-4 text-left text-white shadow-[0_8px_22px_rgba(17,19,24,0.22)] active:scale-[0.99]">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[22px] font-light leading-none text-on-background" aria-hidden>+</span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[16px] font-semibold">Quer listar itens nesta página?</span>
+          <span className="block text-[16px] font-semibold">Quer uma lista nesta página?</span>
           <span className="mt-0.5 block text-[12.5px] leading-snug text-white/70">Comece aqui.</span>
         </span>
       </button>

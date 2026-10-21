@@ -128,9 +128,9 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
       <div className="mt-4">
         <button type="button" onClick={abrirTrazer} className="flex min-h-[56px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white pl-3 pr-5 text-left text-[15px] font-semibold active:scale-[0.99]">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[15px]" aria-hidden>↓</span>
-          Trazer do catálogo
+          Copiar itens do catálogo
         </button>
-        <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Já cadastrou itens na vitrine? Puxe daqui com foto, preço e categoria. Você marca quais quer e confere depois.</p>
+        <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Já cadastrou itens no catálogo? Copie para cá com foto, preço e categoria. É uma cópia: mudar um lado não muda o outro.</p>
         {aviso && <p role="status" className="mt-1.5 px-4 text-[12.5px] font-medium text-text-secondary">{aviso}</p>}
       </div>
 
@@ -253,7 +253,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
 
       {trazendo && (
         <TrazerItens
-          titulo="Trazer do catálogo"
+          titulo="Copiar do catálogo"
           ajuda="Escolha o que vira prato. É uma cópia: mudar depois num lado não muda o outro. Vai só a foto do card."
           itens={trazendo.itens.map((i) => ({ key: i.id, nome: i.titulo, foto: i.foto, preco: i.preco, categoria: i.categoria }))}
           carregando={trazendo.carregando}
