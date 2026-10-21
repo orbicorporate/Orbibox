@@ -124,9 +124,13 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
 
       {children}
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button type="button" onClick={abrirTrazer} className="min-h-[44px] rounded-full bg-surface-soft px-5 text-[13.5px] font-medium text-on-background active:scale-[0.98]">Trazer do catálogo</button>
-        {aviso && <p role="status" className="text-[12.5px] text-text-secondary">{aviso}</p>}
+      <div className="mt-4">
+        <button type="button" onClick={abrirTrazer} className="flex min-h-[56px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white pl-3 pr-5 text-left text-[15px] font-semibold active:scale-[0.99]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[15px]" aria-hidden>↓</span>
+          Trazer do catálogo
+        </button>
+        <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Já cadastrou itens na vitrine? Puxe daqui com foto, preço e categoria. Você marca quais quer e confere depois.</p>
+        {aviso && <p role="status" className="mt-1.5 px-4 text-[12.5px] font-medium text-text-secondary">{aviso}</p>}
       </div>
 
       {secoes.length > 1 && (
