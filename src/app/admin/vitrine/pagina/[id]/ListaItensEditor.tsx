@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
 import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
+import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 import { MAX_FOTOS, MAX_LISTA, fotosDoItem, listaVazia, novoIdLista, precoDoItem, reduzirFoto, type Lista, type ListaDestino, type ListaItem } from "@/lib/lista";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background";
@@ -184,11 +185,30 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
 
 type Proposto = { id: string; nome: string; preco: number | null; descricao: string };
 
+function Passo({ n, titulo, sub, children }: { n: number; titulo: string; sub?: string; children: React.ReactNode }) {
+  return (
+    <section className="mt-3 rounded-[26px] border border-divider bg-surface-white p-4 shadow-[0_4px_14px_rgba(17,19,24,0.05)]" aria-label={titulo}>
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-background text-[12px] font-semibold text-white" aria-hidden>{n}</span>
+        <div className="min-w-0">
+          <p className="text-[15.5px] font-semibold leading-tight">{titulo}</p>
+          {sub && <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">{sub}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: string; lista: Lista; temWhatsapp: boolean; onChange: (l: Lista | null) => void }) {
+  const supabase = useRef(createClient()).current;
+  const arquivos = useRef<HTMLInputElement>(null);
   const [titulo, setTitulo] = useState(lista.titulo);
   const [edicao, setEdicao] = useState<{ item: ListaItem; novo: boolean } | null>(null);
   const [colar, setColar] = useState(false);
   const [texto, setTexto] = useState("");
+  const [anexos, setAnexos] = useState<{ nome: string; blob: Blob }[]>([]);
+  const [lendoArquivo, setLendoArquivo] = useState(false);
   const [lendo, setLendo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [propostos, setPropostos] = useState<Proposto[] | null>(null);
@@ -217,11 +237,49 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
     onChange(null);
   }
 
+  /** PDF vira uma imagem por página; foto entra como está. A Orbi lê tudo como foto. */
+  async function anexar(files: FileList | null) {
+    if (arquivos.current) arquivos.current.value = "";
+    if (!files || files.length === 0) return;
+    setErro(null);
+    setLendoArquivo(true);
+    const novos: { nome: string; blob: Blob }[] = [];
+    for (const f of Array.from(files)) {
+      if (anexos.length + novos.length >= MAX_PAGINAS_LEITURA) break;
+      if (f.type === "application/pdf") {
+        try {
+          const { imagens, paginas } = await pdfParaImagens(f);
+          imagens.forEach((blob, n) => { if (anexos.length + novos.length < MAX_PAGINAS_LEITURA) novos.push({ nome: `${f.name} (página ${n + 1})`, blob }); });
+          if (paginas > MAX_PAGINAS_LEITURA) setErro(`Li as ${MAX_PAGINAS_LEITURA} primeiras páginas do PDF. Depois importe o resto.`);
+        } catch {
+          setErro("Não consegui abrir esse PDF. Tente uma foto ou cole o texto.");
+        }
+      } else if (f.type.startsWith("image/")) {
+        novos.push({ nome: f.name, blob: f });
+      } else {
+        setErro("Envie PDF, foto (JPG ou PNG) ou cole o texto.");
+      }
+    }
+    setAnexos((p) => [...p, ...novos]);
+    setLendoArquivo(false);
+  }
+
   async function ler() {
     setErro(null);
     setLendo(true);
+    const caminhos: string[] = [];
     try {
-      const res = await fetch("/api/importar-cardapio", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessId, texto, modo: "lista" }) });
+      const urls: string[] = [];
+      for (const a of anexos) {
+        const tipo = a.blob.type || "image/jpeg";
+        const ext = tipo === "image/png" ? "png" : tipo === "image/webp" ? "webp" : "jpg";
+        const path = `${businessId}/lista-leitura-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+        const { error } = await supabase.storage.from("box-images").upload(path, a.blob, { cacheControl: "3600", upsert: false, contentType: tipo });
+        if (error) { setErro("Não consegui enviar o arquivo. Tente de novo."); return; }
+        caminhos.push(path);
+        urls.push(supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl);
+      }
+      const res = await fetch("/api/importar-cardapio", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessId, texto, imagens: urls, modo: "lista" }) });
       const json = await res.json();
       if (!res.ok) return setErro(json.error ?? "A Orbi não conseguiu ler a lista agora.");
       const todos = (json.categorias as { itens: { titulo: string; descricao: string; preco: number | null }[] }[]).flatMap((c) => c.itens);
@@ -229,6 +287,8 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
     } catch {
       setErro("Sem conexão. Tente de novo.");
     } finally {
+      // As páginas só serviam para a leitura: não deixa arquivo esquecido no armazenamento.
+      if (caminhos.length > 0) void supabase.storage.from("box-images").remove(caminhos);
       setLendo(false);
     }
   }
@@ -238,105 +298,142 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
     if (novos.length > 0) onChange({ ...lista, itens: [...lista.itens, ...novos] });
     setPropostos(null);
     setTexto("");
+    setAnexos([]);
     setColar(false);
   }
 
+  const podeLer = !lendo && !lendoArquivo && (texto.trim().length > 0 || anexos.length > 0);
+
   return (
-    <div className="mt-8 rounded-[26px] border border-divider bg-surface-white p-4 shadow-[0_6px_18px_rgba(17,19,24,0.06)]">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[16px] font-semibold">Lista de itens</p>
-        <button type="button" onClick={removerLista} className="min-h-[36px] rounded-full px-2 text-[12.5px] font-medium text-text-tertiary">Remover lista</button>
+    <div className="mt-8">
+      <div className="px-1">
+        <label htmlFor="lista-titulo" className="text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Título da lista</label>
+        <input id="lista-titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} onBlur={() => titulo !== lista.titulo && onChange({ ...lista, titulo: titulo.trim() })} maxLength={50} placeholder="Ex: Blusas, Nossos pratos" className={`${campo} mt-1.5`} />
       </div>
 
-      <input value={titulo} onChange={(e) => setTitulo(e.target.value)} onBlur={() => titulo !== lista.titulo && onChange({ ...lista, titulo: titulo.trim() })} maxLength={50} placeholder="Título da lista (ex: Blusas)" aria-label="Título da lista" className={`${campo} mt-2`} />
-
-      <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Botão ao tocar num item</p>
-      <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Destino do botão">
-        {DESTINOS.map((d) => (
-          <button key={d.id} type="button" role="radio" aria-checked={lista.destino === d.id} onClick={() => lista.destino !== d.id && onChange({ ...lista, destino: d.id })} className={`min-h-[44px] rounded-full px-4 text-[13.5px] font-medium ${lista.destino === d.id ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{d.rotulo}</button>
-        ))}
-      </div>
-      <p className="mt-2 text-[12.5px] leading-snug text-text-tertiary">{destino.ajuda}</p>
-      {lista.destino === "whatsapp" && !temWhatsapp && <p className="mt-1 text-[12.5px] leading-snug text-[#9A4F06]">Cadastre o WhatsApp do negócio para esse botão aparecer.</p>}
-
-      <button type="button" role="switch" aria-checked={lista.orbi !== false} onClick={() => onChange({ ...lista, orbi: lista.orbi === false })} className="mt-3 flex min-h-[48px] w-full items-center justify-between rounded-2xl bg-surface-soft px-4 text-left text-[14px]">
-        <span>
-          <span className="block font-medium">Perguntar à Orbi</span>
-          <span className="block text-[12px] text-text-tertiary">Botão discreto embaixo do principal, pra tirar dúvidas do item</span>
-        </span>
-        <span className={`h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ${lista.orbi !== false ? "orbi-gradient" : "bg-divider"}`}>
-          <span className={`block h-5 w-5 rounded-full bg-surface-white shadow transition-transform ${lista.orbi !== false ? "translate-x-5" : ""}`} />
-        </span>
-      </button>
-
-      <ul className="mt-4 grid grid-cols-3 gap-2.5">
-        {lista.itens.map((i) => (
-          <li key={i.id}>
-            <button type="button" onClick={() => setEdicao({ item: i, novo: false })} className="block w-full text-left active:scale-[0.97]" aria-label={`Editar ${i.nome || "item sem nome"}`}>
-              <span className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary">
-                {i.foto ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={i.foto} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <IconeCamera />
-                )}
-                {fotosDoItem(i).length > 1 && <span className="absolute bottom-1 right-1 rounded-full bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white">{fotosDoItem(i).length} fotos</span>}
-                {i.esgotado && <span className="absolute left-1 top-1 rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] text-text-secondary">Esgotado</span>}
-              </span>
-              <span className="mt-1 block truncate text-[12.5px] font-medium">{i.nome || "Sem nome"}</span>
-              <span className="block truncate text-[11.5px] text-text-tertiary">{precoDoItem(i.preco) ?? "Sem preço"}</span>
-            </button>
-          </li>
-        ))}
-        {!cheia && (
-          <li>
-            <button type="button" onClick={novoItem} className="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-on-background/25 text-[12.5px] text-text-secondary active:scale-[0.97]">
-              <span className="text-[22px] leading-none" aria-hidden>+</span>
-              Item
-            </button>
-          </li>
+      <Passo n={1} titulo="Itens" sub={lista.itens.length === 0 ? "Comece colando ou enviando a lista, é o jeito mais rápido." : `${lista.itens.length} ${lista.itens.length === 1 ? "item" : "itens"}. Toque num item para pôr foto e detalhes.`}>
+        {!colar && (
+          <button type="button" onClick={() => setColar(true)} disabled={cheia} className="orbi-gradient mt-3.5 flex min-h-[64px] w-full items-center gap-3 rounded-[22px] p-3.5 text-left text-on-background disabled:opacity-40 active:scale-[0.99]">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 text-[18px]" aria-hidden>✨</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14.5px] font-semibold">Colar texto, PDF ou foto</span>
+              <span className="block text-[12.5px] leading-snug opacity-75">A Orbi separa nome e preço, você confere antes de entrar.</span>
+            </span>
+          </button>
         )}
-      </ul>
-      {cheia && <p className="mt-2 text-[12.5px] text-text-tertiary">Limite de {MAX_LISTA} itens por lista. Para mais, crie outra página própria.</p>}
 
-      {!colar && (
-        <button type="button" onClick={() => setColar(true)} disabled={cheia} className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.08] disabled:opacity-40">
-          <span aria-hidden>✨</span> Colar lista e a Orbi monta
-        </button>
-      )}
-
-      {colar && propostos === null && (
-        <div className="mt-4 rounded-[20px] bg-surface-white p-3.5 ring-1 ring-black/[0.06]">
-          <p className="text-[13.5px] font-medium">Cole os itens do jeito que estiverem</p>
-          <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">Nome, preço e detalhes. A Orbi separa e você confere antes de entrar. As fotos você coloca depois, item por item.</p>
-          <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={6} placeholder={"Ex:\nBlusa canelada preta, P ao G, R$ 59,90\nBlusa linho off white R$ 89"} className={`${campo} mt-2.5 resize-y text-[14px] leading-relaxed`} />
-          {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
-          <div className="mt-3 flex gap-2">
-            <button type="button" onClick={() => { setColar(false); setErro(null); }} className="min-h-[46px] flex-1 rounded-full bg-surface-soft text-[14px] font-medium">Cancelar</button>
-            <button type="button" onClick={ler} disabled={lendo || !texto.trim()} className="min-h-[46px] flex-[2] rounded-full bg-on-background text-[14px] font-semibold text-white disabled:opacity-40">{lendo ? "A Orbi está lendo…" : "Orbi, monta a lista"}</button>
+        {colar && propostos === null && (
+          <div className="mt-3.5 rounded-[20px] bg-surface-soft p-3.5">
+            <input ref={arquivos} type="file" accept="application/pdf,image/*" multiple className="hidden" onChange={(e) => void anexar(e.target.files)} />
+            <button type="button" onClick={() => arquivos.current?.click()} disabled={lendoArquivo || lendo} className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[14px] font-semibold text-white disabled:opacity-50 active:scale-[0.99]">
+              {lendoArquivo ? "Abrindo o arquivo…" : anexos.length > 0 ? "Adicionar outro PDF ou foto" : "Enviar PDF ou foto"}
+            </button>
+            {anexos.length > 0 && (
+              <ul className="mt-2 flex flex-col gap-1">
+                {anexos.map((a, n) => (
+                  <li key={a.nome + n} className="flex items-center justify-between gap-2 rounded-xl bg-surface-white px-3 py-1.5 text-[12.5px]">
+                    <span className="min-w-0 truncate">{a.nome}</span>
+                    <button type="button" onClick={() => setAnexos((p) => p.filter((_, k) => k !== n))} aria-label={`Tirar ${a.nome}`} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[11px]">✕</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-1.5 text-center text-[12px] text-text-tertiary">Até {MAX_PAGINAS_LEITURA} fotos ou páginas de PDF.</p>
+            <p className="mt-3 text-center text-[12px] font-medium uppercase tracking-wide text-text-tertiary">ou cole o texto</p>
+            <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={5} placeholder={"Ex:\nBlusa canelada preta, P ao G, R$ 59,90\nBlusa linho off white R$ 89"} className={`${campo} mt-2 resize-y text-[14px] leading-relaxed`} />
+            {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
+            <div className="mt-3 flex gap-2">
+              <button type="button" onClick={() => { setColar(false); setErro(null); setAnexos([]); }} className="min-h-[46px] flex-1 rounded-full bg-surface-white text-[14px] font-medium ring-1 ring-black/[0.08]">Cancelar</button>
+              <button type="button" onClick={ler} disabled={!podeLer} className="min-h-[46px] flex-[2] rounded-full bg-on-background text-[14px] font-semibold text-white disabled:opacity-40">{lendo ? "A Orbi está lendo…" : "Orbi, monta a lista"}</button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {colar && propostos !== null && (
-        <div className="mt-4 rounded-[20px] bg-surface-white p-3.5 ring-1 ring-black/[0.06]">
-          <p className="text-[13.5px] font-medium">A Orbi encontrou {propostos.length} {propostos.length === 1 ? "item" : "itens"}</p>
-          <p className="mt-0.5 text-[12.5px] text-text-tertiary">Ajuste o nome e o preço ou tire o que não quiser.</p>
-          <ul className="mt-2.5 flex flex-col gap-1.5">
-            {propostos.map((p) => (
-              <li key={p.id} className="flex items-center gap-2 rounded-xl border border-divider p-2">
-                <input value={p.nome} onChange={(e) => setPropostos((l) => (l ?? []).map((x) => (x.id === p.id ? { ...x, nome: e.target.value } : x)))} aria-label="Nome do item" className="min-w-0 flex-1 bg-transparent text-[14px] outline-none" />
-                <input value={p.preco == null ? "" : String(p.preco).replace(".", ",")} onChange={(e) => { const v = e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""); setPropostos((l) => (l ?? []).map((x) => (x.id === p.id ? { ...x, preco: v === "" ? null : Number(v) || 0 } : x))); }} inputMode="decimal" placeholder="Preço" aria-label={`Preço de ${p.nome}`} className="w-[64px] rounded-lg border border-divider px-2 py-1 text-right text-[13.5px] outline-none focus:border-on-background" />
-                <button type="button" onClick={() => setPropostos((l) => (l ?? []).filter((x) => x.id !== p.id))} aria-label="Tirar item" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[12px]">✕</button>
+        {colar && propostos !== null && (
+          <div className="mt-3.5 rounded-[20px] bg-surface-soft p-3.5">
+            <p className="text-[13.5px] font-medium">A Orbi encontrou {propostos.length} {propostos.length === 1 ? "item" : "itens"}</p>
+            <p className="mt-0.5 text-[12.5px] text-text-tertiary">Ajuste o nome e o preço ou tire o que não quiser.</p>
+            <ul className="mt-2.5 flex flex-col gap-1.5">
+              {propostos.map((p) => (
+                <li key={p.id} className="flex items-center gap-2 rounded-xl border border-divider bg-surface-white p-2">
+                  <input value={p.nome} onChange={(e) => setPropostos((l) => (l ?? []).map((x) => (x.id === p.id ? { ...x, nome: e.target.value } : x)))} aria-label="Nome do item" className="min-w-0 flex-1 bg-transparent text-[14px] outline-none" />
+                  <input value={p.preco == null ? "" : String(p.preco).replace(".", ",")} onChange={(e) => { const v = e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""); setPropostos((l) => (l ?? []).map((x) => (x.id === p.id ? { ...x, preco: v === "" ? null : Number(v) || 0 } : x))); }} inputMode="decimal" placeholder="Preço" aria-label={`Preço de ${p.nome}`} className="w-[64px] rounded-lg border border-divider px-2 py-1 text-right text-[13.5px] outline-none focus:border-on-background" />
+                  <button type="button" onClick={() => setPropostos((l) => (l ?? []).filter((x) => x.id !== p.id))} aria-label="Tirar item" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[12px]">✕</button>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-3 flex gap-2">
+              <button type="button" onClick={() => setPropostos(null)} className="min-h-[46px] flex-1 rounded-full bg-surface-white text-[14px] font-medium ring-1 ring-black/[0.08]">Voltar</button>
+              <button type="button" onClick={adicionarPropostos} disabled={propostos.length === 0} className="min-h-[46px] flex-[2] rounded-full bg-on-background text-[14px] font-semibold text-white disabled:opacity-40">Adicionar {propostos.length} {propostos.length === 1 ? "item" : "itens"}</button>
+            </div>
+          </div>
+        )}
+
+        {lista.itens.length > 0 && (
+          <ul className="mt-4 grid grid-cols-3 gap-2.5">
+            {lista.itens.map((i) => (
+              <li key={i.id}>
+                <button type="button" onClick={() => setEdicao({ item: i, novo: false })} className="block w-full text-left active:scale-[0.97]" aria-label={`Editar ${i.nome || "item sem nome"}`}>
+                  <span className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary">
+                    {i.foto ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={i.foto} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <IconeCamera />
+                    )}
+                    {fotosDoItem(i).length > 1 && <span className="absolute bottom-1 right-1 rounded-full bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white">{fotosDoItem(i).length} fotos</span>}
+                    {i.esgotado && <span className="absolute left-1 top-1 rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] text-text-secondary">Esgotado</span>}
+                  </span>
+                  <span className="mt-1 block truncate text-[12.5px] font-medium">{i.nome || "Sem nome"}</span>
+                  <span className="block truncate text-[11.5px] text-text-tertiary">{precoDoItem(i.preco) ?? "Sem preço"}</span>
+                </button>
               </li>
             ))}
           </ul>
-          <div className="mt-3 flex gap-2">
-            <button type="button" onClick={() => setPropostos(null)} className="min-h-[46px] flex-1 rounded-full bg-surface-soft text-[14px] font-medium">Voltar</button>
-            <button type="button" onClick={adicionarPropostos} disabled={propostos.length === 0} className="min-h-[46px] flex-[2] rounded-full bg-on-background text-[14px] font-semibold text-white disabled:opacity-40">Adicionar {propostos.length} {propostos.length === 1 ? "item" : "itens"}</button>
+        )}
+        {!cheia ? (
+          <button type="button" onClick={novoItem} className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full border border-dashed border-on-background/30 text-[13.5px] font-medium text-text-secondary active:scale-[0.99]">
+            <span className="text-[18px] leading-none" aria-hidden>+</span> Adicionar um item
+          </button>
+        ) : (
+          <p className="mt-2 text-[12.5px] text-text-tertiary">Limite de {MAX_LISTA} itens por lista. Para mais, crie outra página própria.</p>
+        )}
+      </Passo>
+
+      <details className="group mt-3 rounded-[26px] border border-divider bg-surface-white shadow-[0_4px_14px_rgba(17,19,24,0.05)]">
+        <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-2.5 px-4 py-3">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[12px] font-semibold text-text-secondary" aria-hidden>2</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15.5px] font-semibold leading-tight">Ao tocar num item</span>
+            <span className="block truncate text-[12.5px] text-text-tertiary">{destino.rotulo}{lista.orbi !== false ? ", Orbi ligada" : ""}</span>
+          </span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+        </summary>
+        <div className="px-4 pb-4">
+          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Botão do item</p>
+          <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Destino do botão">
+            {DESTINOS.map((d) => (
+              <button key={d.id} type="button" role="radio" aria-checked={lista.destino === d.id} onClick={() => lista.destino !== d.id && onChange({ ...lista, destino: d.id })} className={`min-h-[44px] rounded-full px-4 text-[13.5px] font-medium ${lista.destino === d.id ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{d.rotulo}</button>
+            ))}
           </div>
+          <p className="mt-2 text-[12.5px] leading-snug text-text-tertiary">{destino.ajuda}</p>
+          {lista.destino === "whatsapp" && !temWhatsapp && <p className="mt-1 text-[12.5px] leading-snug text-[#9A4F06]">Cadastre o WhatsApp do negócio para esse botão aparecer.</p>}
+
+          <button type="button" role="switch" aria-checked={lista.orbi !== false} onClick={() => onChange({ ...lista, orbi: lista.orbi === false })} className="mt-3 flex min-h-[56px] w-full items-center justify-between rounded-2xl border border-divider bg-surface-white px-4 text-left text-[14px]">
+            <span>
+              <span className="block font-medium">Perguntar à Orbi</span>
+              <span className="block text-[12px] text-text-tertiary">Botão discreto embaixo do principal, pra tirar dúvidas do item</span>
+            </span>
+            <span className={`ml-3 h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ${lista.orbi !== false ? "orbi-gradient" : "bg-divider"}`}>
+              <span className={`block h-5 w-5 rounded-full bg-surface-white shadow transition-transform ${lista.orbi !== false ? "translate-x-5" : ""}`} />
+            </span>
+          </button>
         </div>
-      )}
+      </details>
+
+      <div className="mt-5 flex justify-center">
+        <button type="button" onClick={removerLista} className="min-h-[44px] rounded-full px-4 text-[13px] font-medium text-red-600 active:opacity-70">Remover lista</button>
+      </div>
 
       {edicao && (
         <FolhaItem
