@@ -100,12 +100,22 @@ export function BoxDestaque({
     const antes = ultimo.current;
     let achados: Destaque[] = [];
     if (k === "produto") {
-      // Rascunhos não aparecem em antes.itens (só publicados): por isso só vale o mais novo,
-      // criado agora há pouco, pra não fixar rascunho antigo esquecido.
+      // O produto nasce como rascunho e rascunho não aparece na Home. Pega o mais novo (criado agora há pouco),
+      // descarta se ficou vazio e publica se o dono preencheu pelo menos o nome.
       const desde = new Date(new Date().getTime() - 30 * 60 * 1000).toISOString();
-      const { data } = await supabase.from("content_items").select("id").eq("business_id", businessId).gte("created_at", desde).order("created_at", { ascending: false }).limit(1);
+      const { data } = await supabase.from("content_items").select("id, title, status, image_url, gallery_urls, description, price").eq("business_id", businessId).gte("created_at", desde).order("created_at", { ascending: false }).limit(1);
       const conhecidos = new Set(antes.itens.map((i) => i.id));
-      achados = (data ?? []).filter((r) => !conhecidos.has(r.id)).map((r) => ({ t: "item" as const, id: r.id }));
+      const novo = (data ?? []).find((r) => !conhecidos.has(r.id));
+      if (novo) {
+        const comFoto = !!novo.image_url || (Array.isArray(novo.gallery_urls) && novo.gallery_urls.length > 0);
+        const vazio = novo.status === "draft" && novo.title === "Novo item" && !comFoto && !novo.description?.trim() && novo.price == null;
+        if (vazio) {
+          await supabase.from("content_items").delete().eq("id", novo.id).eq("status", "draft");
+        } else {
+          if (novo.status !== "published") await supabase.from("content_items").update({ status: "published" }).eq("id", novo.id);
+          achados = [{ t: "item" as const, id: novo.id }];
+        }
+      }
     } else if (k === "voucher") {
       const { data } = await supabase.from("vouchers").select("id").eq("business_id", businessId).eq("is_active", true).order("created_at", { ascending: false }).limit(5);
       const conhecidos = new Set(antes.vouchers.map((v) => v.id));

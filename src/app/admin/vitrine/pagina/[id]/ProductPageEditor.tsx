@@ -42,6 +42,7 @@ type Item = {
   highlights: string[] | null;
   orbi_hook: string | null;
   lista?: unknown;
+  status?: string;
 };
 
 const EYEBROW_LABEL: Record<string, string> = { product: "Produtos", service: "Serviços" };
@@ -105,6 +106,16 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   });
   const [formato, setFormato] = useState<GalleryRatio>(galleryRatioOf(item.gallery_ratio, item.layout_size));
   const [estado, setEstado] = useState<"salvo" | "salvando" | "erro">("salvo");
+  // Página nova nasce como rascunho: ninguém vê, nem na Home. Aqui o dono publica com um toque.
+  const [publicada, setPublicada] = useState(item.status === "published");
+  const [publicando, setPublicando] = useState(false);
+  async function publicar(valor: boolean) {
+    setPublicando(true);
+    const { error } = await supabase.from("content_items").update({ status: valor ? "published" : "draft" }).eq("id", item.id);
+    if (!error) setPublicada(valor);
+    setPublicando(false);
+    if (!error) router.refresh();
+  }
   // Capa do card (a foto que aparece na Home e no catálogo). Sem capa própria, vale a primeira foto da galeria.
   const [capa, setCapa] = useState<string | null>(item.image_url);
   async function definirCapa(src: string | null) {
@@ -262,7 +273,16 @@ export function ProductPageEditor({ business, item }: { business: Business; item
       </div>
 
       <main className="mx-auto max-w-[440px] pb-16">
-        <p className="px-6 pt-4 text-center text-[12.5px] text-text-tertiary">Toque em qualquer parte tracejada pra editar.</p>
+        <div className={`mx-4 mt-4 flex items-center gap-3 rounded-[22px] border p-3.5 ${publicada ? "border-divider bg-surface-white" : "border-[#F2C078] bg-[#FFF6E8]"}`}>
+          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${publicada ? "bg-[#1DB8A4]" : "bg-[#E8890C]"}`} aria-hidden />
+          <p className="min-w-0 flex-1 text-[13px] leading-snug">
+            {publicada ? <><span className="font-medium">Publicada.</span> <span className="text-text-secondary">Já aparece na sua página.</span></> : <><span className="font-medium">Rascunho.</span> <span className="text-text-secondary">Ninguém vê esta página, nem na Home, até você publicar.</span></>}
+          </p>
+          <button type="button" onClick={() => void publicar(!publicada)} disabled={publicando} className={`min-h-[40px] shrink-0 rounded-full px-4 text-[13px] font-semibold disabled:opacity-50 ${publicada ? "bg-surface-soft text-text-secondary" : "bg-on-background text-white"}`}>
+            {publicando ? "…" : publicada ? "Tirar do ar" : "Publicar"}
+          </button>
+        </div>
+        <p className="px-6 pt-3 text-center text-[12.5px] text-text-tertiary">Toque em qualquer parte tracejada pra editar.</p>
 
         {/* Fotos e vídeos */}
         <div className="px-4 pt-3">

@@ -200,13 +200,7 @@ export function HomeVitrine({
       await supabase.from("content_items").delete().eq("id", novo.id).eq("status", "draft");
       return;
     }
-    if (novo.status !== "published") {
-      if (!comFoto && (novo.box_color ?? "neutro") === "neutro") {
-        setAvisoNovo(`"${novo.title}" ficou como rascunho. Ponha uma foto nele e publique no catálogo para entrar nos destaques.`);
-        return;
-      }
-      await supabase.from("content_items").update({ status: "published" }).eq("id", novo.id);
-    }
+    if (novo.status !== "published") await supabase.from("content_items").update({ status: "published" }).eq("id", novo.id);
     const atuais = naSelecao.map((e) => e.id);
     if (atuais.length >= MAXIMO) {
       setAvisoNovo(`"${novo.title}" foi criado, mas já são ${MAXIMO} destaques. Tire um e marque o novo.`);
