@@ -897,7 +897,7 @@ export function VisitorExperience({
           catálogo, sobre) centralizar empurrava tudo pra baixo e sobrava
           um vazio enorme no topo. */}
       <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 lg:max-w-[960px] ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
-        {intent === null && !showOwnerControls && <div ref={setSlotTopo} className={`absolute top-4 z-20 ${isOwner ? "left-4" : "right-4"}`} />}
+        {intent === null && <div ref={setSlotTopo} className={`absolute top-4 z-20 ${isOwner ? "left-4" : "right-4"}`} />}
         {intent === null && !showOwnerControls && (
           <SeletorModo
             modo={modo}

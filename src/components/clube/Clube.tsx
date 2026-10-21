@@ -85,7 +85,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   const temNota = resumo.avaliacoes > 0 && resumo.nota != null;
   const vazio = resumo.fas === 0 && resumo.avaliacoes === 0 && resumo.curtidas === 0;
 
-  const cluster = !isOwner ? (
+  const cluster = !isOwner || resumo.fas > 0 ? (
     <div className="flex items-center gap-2">
       {resumo.fas > 0 && (
         <button
@@ -102,7 +102,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           <span className="tabular-nums">{resumo.fas}</span>
         </button>
       )}
-      <button
+      {!isOwner && <button
         type="button"
         onClick={(e) => (eu.ehFa ? setAberta({ tipo: "fas", origem: rect(e.currentTarget) }) : alternarFa(e.currentTarget))}
         aria-pressed={eu.ehFa}
@@ -110,7 +110,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       >
         {eu.ehFa && <span className="text-[#F2556B]"><IcCoracao cheio /></span>}
         {eu.ehFa ? "Fã" : "Virar fã"}
-      </button>
+      </button>}
     </div>
   ) : null;
 
@@ -145,7 +145,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
         </div>
       )}
 
-      {(temNota || (isOwner && resumo.fas > 0)) && (
+      {(temNota || resumo.avaliacoes > 0) && (
         <div className="flex flex-wrap items-center justify-center gap-2">
           {temNota && (
             <button type="button" className="cl-pill" style={{ background: "var(--cl-orange)" }} onClick={(e) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) })}>
@@ -157,17 +157,6 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
             <button type="button" className="cl-pill" style={{ background: "var(--cl-pink)" }} onClick={(e) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) })}>
               <span className="cl-pill-ic"><IcBalao /></span>
               <span><span className="cl-pill-num">{resumo.avaliacoes}</span><span className="cl-pill-lab">{resumo.avaliacoes === 1 ? "Avaliação" : "Avaliações"}</span></span>
-              <IcChev />
-            </button>
-          )}
-          {isOwner && resumo.fas > 0 && (
-            <button type="button" className="cl-pill" style={{ background: "var(--cl-teal)" }} onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget) })}>
-              <span className="flex pl-1">
-                {resumo.recentes.slice(0, 3).map((f, i) => (
-                  <Rosto key={f.id} url={f.foto} nome={f.nome} size={34} className={i ? "-ml-3 ring-2 ring-white/70" : "ring-2 ring-white/70"} />
-                ))}
-              </span>
-              <span><span className="cl-pill-num">{resumo.fas}</span><span className="cl-pill-lab">{resumo.fas === 1 ? "Fã" : "Fãs"}</span></span>
               <IcChev />
             </button>
           )}
