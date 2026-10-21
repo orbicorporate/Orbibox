@@ -6,7 +6,8 @@ import { BoxesManager } from "./BoxesManager";
 import { HomeModePicker } from "./HomeModePicker";
 import { parseLogoGallery } from "@/lib/logoGallery";
 
-export default async function BoxesPage() {
+export default async function BoxesPage({ searchParams }: { searchParams: Promise<{ novo?: string }> }) {
+  const { novo } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
@@ -43,6 +44,7 @@ export default async function BoxesPage() {
       <p className="mt-1 text-[14px] text-text-secondary">Ligue os que fazem sentido e escolha a ordem.</p>
       <HomeModePicker businessId={business!.id} inicial={business!.home_mode ?? null} />
       <BoxesManager
+        abrirNovo={novo === "1"}
         businessId={business!.id}
         businessName={business!.name}
         initialBoxes={boxes ?? []}

@@ -143,6 +143,7 @@ function contrastFg(hex: string): string {
 }
 
 export function BoxesManager({
+  abrirNovo = false,
   businessId,
   businessName,
   initialBoxes,
@@ -160,6 +161,7 @@ export function BoxesManager({
   giftEnabled,
   hasAiChat,
 }: {
+  abrirNovo?: boolean;
   businessId: string;
   businessName: string;
   initialBoxes: Box[];
@@ -236,7 +238,7 @@ export function BoxesManager({
     // só na montagem: depois disso quem abre é o toque da pessoa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(abrirNovo);
   const [draft, setDraft] = useState<BoxConfig>({ label: "", subtitle: "", icon: "◆", action: "link", url: "" });
   const [draftLabel, setDraftLabel] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
@@ -899,7 +901,7 @@ export function BoxesManager({
       </div>
 
       {creating ? (
-        <div className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4">
+        <div id="novo-botao" className="rounded-[22px] border border-dashed border-divider bg-surface-white p-4">
           <p className="text-[14px] font-medium">Novo botão personalizado</p>
           <input
             value={draftLabel}

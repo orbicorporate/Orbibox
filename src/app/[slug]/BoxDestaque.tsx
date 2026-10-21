@@ -294,7 +294,7 @@ export function BoxDestaque({
                   { k: "voucher", href: "/admin/vouchers?novo=1", rotulo: "Criar voucher", titulo: "Voucher", sub: "Desconto ou brinde para o cliente resgatar." },
                   { k: "gift", href: "/admin/gift", rotulo: "Criar gift card", titulo: "Gift card", sub: "Vale-presente que o cliente compra ou ganha." },
                   { k: "produto", href: "/admin/vitrine?novo=1", rotulo: "Criar produto", titulo: "Produto", sub: "Um item novo no catálogo." },
-                  { k: "botao", href: "/admin/boxes", rotulo: "Criar botão", titulo: "Botão", sub: "WhatsApp, link, endereço, cardápio e outros." },
+                  { k: "botao", href: "/admin/boxes?novo=1#novo-botao", rotulo: "Criar botão", titulo: "Botão", sub: "WhatsApp, link, endereço, cardápio e outros." },
                 ].map((n) => (
                   <AbrirEditor key={n.href} href={n.href} rotulo={n.rotulo} aoFechar={() => { setVista("existente"); if (n.k === "voucher" || n.k === "produto" || n.k === "botao") void fixarOQueFoiCriado(n.k); }} className={`flex min-h-[68px] w-full items-center gap-3 rounded-[22px] p-3 text-left transition-transform active:scale-[0.98] border-2 border-divider bg-surface-white`}>
                     <TileNovo k={n.k as keyof typeof CORES_NOVO} />

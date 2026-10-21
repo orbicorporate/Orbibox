@@ -6,11 +6,12 @@ import { ShowcaseBuilder } from "./ShowcaseBuilder";
 import { capaDoItem } from "@/lib/showcase";
 import { GuiaBotao } from "@/components/guia/GuiaOrbi";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 type BrandColor = { hex: string; role?: string };
 
-export default async function VitrinePage({ searchParams }: { searchParams: Promise<{ novo?: string; abrir?: string }> }) {
-  const { novo, abrir } = await searchParams;
+export default async function VitrinePage({ searchParams }: { searchParams: Promise<{ novo?: string; abrir?: string; embed?: string }> }) {
+  const { novo, abrir, embed } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
@@ -19,6 +20,18 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
     .select("id, slug, name, brand_colors, vitrine_categories, vitrine_cover_urls, contact_whatsapp, catalog_title, catalog_subtitle, vitrine_intro_seen, vitrine_lead_top, contact_site, website_url")
     .eq("id", businessId!)
     .single();
+  // "Novo item": cria o rascunho e leva direto para a página de cadastro dele (fotos, título, preço),
+  // em vez de cair no topo do catálogo com um card aberto no meio da lista.
+  if (novo === "1") {
+    const { data: topo } = await supabase.from("content_items").select("position").eq("business_id", business!.id).order("position", { ascending: true }).limit(1);
+    const posicao = (topo?.[0]?.position ?? 0) - 1;
+    const { data: criado } = await supabase
+      .from("content_items")
+      .insert({ business_id: business!.id, type: "product", title: "Novo item", status: "draft", position: posicao })
+      .select("id")
+      .single();
+    if (criado) redirect(`/admin/vitrine/pagina/${criado.id}${embed ? `?embed=${encodeURIComponent(embed)}` : ""}`);
+  }
   const { data: items } = await supabase
     .from("content_items")
     .select("*")
@@ -54,7 +67,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
         </Link>
       )}
       <ShowcaseBuilder
-        abrirNovo={novo === "1"}
+        abrirNovo={false}
         abrirCapa={abrir === "capa" || abrir === "ajustes" || abrir === "novidades"}
         items={(items ?? []).map((i) => ({ ...i, image_url: capaDoItem(i.image_url, i.gallery_urls) }))}
         slug={business!.slug}
