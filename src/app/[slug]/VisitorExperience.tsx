@@ -45,7 +45,7 @@ import { BoxDestaque, lerDestaques, type Destaque, type BotaoDestaque } from "./
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
 import { SobreEditorSheet, type SobreParte } from "./SobreEditorSheet";
-import { conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
 import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
@@ -638,12 +638,20 @@ export function VisitorExperience({
     return Array.isArray(v) ? v : null;
   })();
   async function guardarItensHome(ids: string[] | null) {
-    if (!boxItensHome) return;
-    const cfg: CustomConfig = { ...((boxItensHome.config ?? {}) as CustomConfig) };
+    if (!boxItensHome) { avisarErroSalvar(); return; }
+    const anterior = (boxItensHome.config ?? {}) as CustomConfig;
+    const cfg: CustomConfig = { ...anterior };
     if (ids && ids.length > 0) cfg.itensHome = ids;
     else delete cfg.itensHome;
     setBoxList((prev) => prev.map((b) => (b.id === boxItensHome.id ? { ...b, config: cfg } : b)));
-    conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", boxItensHome.id));
+    const res = await supabase.from("smart_boxes").update({ config: cfg }).eq("id", boxItensHome.id).select("id");
+    // Atualização que não alterou nenhuma linha (permissão) também é falha: desfaz na tela e avisa.
+    if (res.error || (res.data?.length ?? 0) === 0) {
+      setBoxList((prev) => prev.map((b) => (b.id === boxItensHome.id ? { ...b, config: anterior } : b)));
+      avisarErroSalvar();
+      return;
+    }
+    conferirSalvo(res);
   }
   const escolherFormato = (f: FormatoItens) => guardarNaVitrine({ formatoItens: f });
   async function estiloBolinhas(keys: string[], estilo: "cor" | "linha") {

@@ -1593,6 +1593,7 @@ function ItemCard({
   promptFn: (options: { title: string; placeholder?: string }) => Promise<string | null>;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
+  const [menuDestaque, setMenuDestaque] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [allColorsFor, setAllColorsFor] = useState<"box" | "footer" | null>(null);
   const [scheduleOpen, setScheduleOpen] = useState(!!(item.starts_at || item.ends_at));
@@ -1766,14 +1767,29 @@ function ItemCard({
             </button>
           )}
           {item.status === "published" && onDestacar && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onDestacar(); }}
-              aria-pressed={emDestaque}
-              title={emDestaque ? "Toque para tirar da Home" : "Mostrar este item no topo da Home"}
-              className={`inline-flex min-h-[32px] items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium shadow backdrop-blur ${emDestaque ? "bg-on-background/85 text-white" : "bg-surface-white/95 text-on-background"}`}
-            >
-              {emDestaque ? "★ Em destaque na Home" : "☆ Destacar na Home"}
-            </button>
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setMenuDestaque((v) => !v); }}
+                aria-label={emDestaque ? "Em destaque na Home" : "Destacar na Home"}
+                aria-expanded={menuDestaque}
+                title={emDestaque ? "Em destaque na Home" : "Destacar na Home"}
+                className={`flex h-9 w-9 items-center justify-center rounded-full shadow backdrop-blur ${emDestaque ? "bg-on-background/85 text-[#F5C451]" : "bg-surface-white/95 text-text-secondary"}`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill={emDestaque ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden>
+                  <path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" />
+                </svg>
+              </button>
+              {menuDestaque && (
+                <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-11 z-20 w-[210px] rounded-2xl bg-surface-white p-3 text-on-background shadow-[0_8px_28px_rgba(17,19,24,0.22)]">
+                  <p className="text-[13px] font-medium">{emDestaque ? "Em destaque na Home" : "Destacar na Home?"}</p>
+                  <p className="mt-0.5 text-[12px] leading-snug text-text-secondary">{emDestaque ? "Este item aparece no topo da Home." : "O item aparece no topo da Home."}</p>
+                  <div className="mt-2.5 flex gap-2">
+                    <button onClick={() => { onDestacar(); setMenuDestaque(false); }} className="min-h-[36px] flex-1 rounded-full bg-on-background px-3 text-[12.5px] font-medium text-white">{emDestaque ? "Tirar" : "Destacar"}</button>
+                    <button onClick={() => setMenuDestaque(false)} className="min-h-[36px] rounded-full bg-surface-soft px-3 text-[12.5px] font-medium">Fechar</button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
           {item.image_is_placeholder && !broken && (
             <span className="rounded-full bg-on-background/80 px-3 py-1 text-[11px] font-medium text-white backdrop-blur">
