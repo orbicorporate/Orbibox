@@ -163,6 +163,9 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
           {destino === "link" && (
             <input value={link} onChange={(e) => setLink(e.target.value)} inputMode="url" placeholder="Link do item (ex: loja.com/blusa)" aria-label="Link do item" className={campo} />
           )}
+          {fotos.length === 0 && !(destino === "link" && link.trim()) && (
+            <p className="px-1 text-[12.5px] leading-snug text-text-tertiary">Sem foto ou link, o item aparece só como uma linha, sem abrir detalhes. Para abrir uma janela com mais informações, adicione uma foto{destino === "link" ? " ou o link" : ""}.</p>
+          )}
           <button type="button" role="switch" aria-checked={esgotado} onClick={() => setEsgotado((v) => !v)} className="flex min-h-[48px] items-center justify-between rounded-2xl bg-surface-white px-4 text-[14.5px] ring-1 ring-black/[0.06]">
             Esgotado
             <span className={`relative h-7 w-12 rounded-full transition-colors ${esgotado ? "bg-on-background" : "bg-divider"}`}>

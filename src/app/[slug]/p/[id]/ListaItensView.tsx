@@ -40,17 +40,20 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
       <ul className={className}>
         {lista_.map((i, idx) => {
           const preco = precoDoItem(i.preco);
+          // Só abre (e mostra a setinha) quando há o que ver: foto ou link. Sem isso é uma linha simples.
+          const abre = fotosDoItem(i).length > 0 || !!urlSegura(i.link);
+          const Envoltorio = abre ? "button" : "div";
           return (
             <li key={i.id} className={idx > 0 ? "border-t border-divider" : ""}>
-              <button type="button" onClick={() => abrir(i)} className="flex min-h-[52px] w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-soft">
+              <Envoltorio {...(abre ? { type: "button" as const, onClick: () => abrir(i) } : {})} className={`flex min-h-[52px] w-full items-center gap-3 px-4 py-3 text-left ${abre ? "active:bg-surface-soft" : ""}`}>
                 <span className="min-w-0 flex-1">
                   <span className="line-clamp-2 block break-words text-[15px] font-medium leading-snug">{i.nome}</span>
                   {i.descricao?.trim() && <span className="mt-0.5 line-clamp-2 block break-words text-[13px] leading-snug text-text-secondary">{i.descricao}</span>}
                   {i.esgotado && <span className="mt-0.5 block text-[12px] text-text-tertiary">Esgotado</span>}
                 </span>
                 {preco && <span className="shrink-0 text-[14px] text-text-secondary">{preco}</span>}
-                <span className="shrink-0 text-text-tertiary" aria-hidden>›</span>
-              </button>
+                {abre && <span className="shrink-0 text-text-tertiary" aria-hidden>›</span>}
+              </Envoltorio>
             </li>
           );
         })}

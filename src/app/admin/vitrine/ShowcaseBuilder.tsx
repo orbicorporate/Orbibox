@@ -93,6 +93,8 @@ export function ShowcaseBuilder({
   abrirCapa = false,
   temCardapio = false,
   destaquesHomeIniciais = [],
+  homeBoxId = null,
+  homeBoxConfig = {},
 }: {
   items: Item[];
   slug: string;
@@ -116,6 +118,8 @@ export function ShowcaseBuilder({
   /** O negócio tem Cardápio ativo: libera passar itens entre os dois. */
   temCardapio?: boolean;
   destaquesHomeIniciais?: { t: "voucher" | "item" | "botao"; id: string }[];
+  homeBoxId?: string | null;
+  homeBoxConfig?: Record<string, unknown>;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -125,21 +129,54 @@ export function ShowcaseBuilder({
   const [trazendo, setTrazendo] = useState<{ carregando: boolean; pratos: { nome: string; descricao: string; preco: number | null; foto: string | null; categoria: string }[] } | null>(null);
   const [avisoTroca, setAvisoTroca] = useState<string | null>(null);
   const [leadTop, setLeadTop] = useState(initialLeadTop);
-  // Destaques da Home (carrossel). Guarda a lista inteira para preservar vouchers e botões.
-  const [destaquesHome, setDestaquesHome] = useState(destaquesHomeIniciais);
-  async function alternarDestaque(itemId: string) {
-    const ja = destaquesHome.some((d) => d.t === "item" && d.id === itemId);
-    const anterior = destaquesHome;
-    const proximo = ja ? destaquesHome.filter((d) => !(d.t === "item" && d.id === itemId)) : [...destaquesHome, { t: "item" as const, id: itemId }];
-    setDestaquesHome(proximo);
-    const res = await supabase.from("businesses").update({ home_destaques: proximo }).eq("id", businessId);
-    conferirSalvo(res);
-    if (res.error) setDestaquesHome(anterior);
-  }
   async function toggleLeadTop() {
     const next = !leadTop;
     setLeadTop(next);
     conferirSalvo(await supabase.from("businesses").update({ vitrine_lead_top: next }).eq("id", businessId));
+  }
+  // Destaques da Home (carrossel). Guarda a lista inteira para preservar vouchers e botões.
+  const [destaquesHome, setDestaquesHome] = useState(destaquesHomeIniciais);
+  // O item aparece na Home de dois jeitos: no carrossel de destaques ou na grade "Itens da Home".
+  // A coroa considera os dois, e Tirar remove dos dois.
+  const [configHome, setConfigHome] = useState(homeBoxConfig);
+  const selecaoGrade = (() => {
+    const salva = Array.isArray(configHome.itensHome) ? (configHome.itensHome as string[]) : [];
+    if (salva.length > 0) return salva;
+    const pub = items.filter((i) => i.status === "published").sort((a, b) => a.position - b.position);
+    const capas = pub.filter((i) => !i.brand_label?.trim());
+    return (capas.length > 0 ? capas : pub).slice(0, 6).map((i) => i.id);
+  })();
+  const itemEmDestaque = (id: string) => destaquesHome.some((d) => d.t === "item" && d.id === id) || selecaoGrade.includes(id);
+  async function alternarDestaque(itemId: string) {
+    if (!itemEmDestaque(itemId)) {
+      const anterior = destaquesHome;
+      const proximo = [...destaquesHome, { t: "item" as const, id: itemId }];
+      setDestaquesHome(proximo);
+      const res = await supabase.from("businesses").update({ home_destaques: proximo }).eq("id", businessId);
+      conferirSalvo(res);
+      if (res.error) setDestaquesHome(anterior);
+      return;
+    }
+    // Tirar: sai do carrossel e da grade.
+    if (destaquesHome.some((d) => d.t === "item" && d.id === itemId)) {
+      const anterior = destaquesHome;
+      const proximo = destaquesHome.filter((d) => !(d.t === "item" && d.id === itemId));
+      setDestaquesHome(proximo);
+      const res = await supabase.from("businesses").update({ home_destaques: proximo }).eq("id", businessId);
+      conferirSalvo(res);
+      if (res.error) { setDestaquesHome(anterior); return; }
+    }
+    if (selecaoGrade.includes(itemId) && homeBoxId) {
+      let nova = selecaoGrade.filter((id) => id !== itemId);
+      // Home sem nenhum item voltaria ao automático e o item reapareceria: completa com os primeiros do Catálogo.
+      if (nova.length === 0) nova = items.filter((i) => i.status === "published" && i.id !== itemId).sort((a, b) => a.position - b.position).slice(0, 6).map((i) => i.id);
+      const anteriorCfg = configHome;
+      const cfg = { ...configHome, itensHome: nova };
+      setConfigHome(cfg);
+      const res = await supabase.from("smart_boxes").update({ config: cfg }).eq("id", homeBoxId).select("id");
+      if (res.error || (res.data?.length ?? 0) === 0) { setConfigHome(anteriorCfg); conferirSalvo({ error: res.error ?? true }); return; }
+      conferirSalvo(res);
+    }
   }
 
   // Âncora de rolagem: ao salvar algo que muda o layout (trocar categoria
@@ -1150,7 +1187,7 @@ export function ShowcaseBuilder({
                   editing={editingId === item.id}
                   onToggleEdit={() => setEditingId(editingId === item.id ? null : item.id)}
                   onTogglePublish={() => togglePublish(item)}
-                  emDestaque={destaquesHome.some((d) => d.t === "item" && d.id === item.id)}
+                  emDestaque={itemEmDestaque(item.id)}
                   onDestacar={() => void alternarDestaque(item.id)}
                   patch={patch}
                   save={save}
@@ -1773,21 +1810,24 @@ function ItemCard({
                 aria-label={emDestaque ? "Em destaque na Home" : "Destacar na Home"}
                 aria-expanded={menuDestaque}
                 title={emDestaque ? "Em destaque na Home" : "Destacar na Home"}
-                className={`flex h-9 w-9 items-center justify-center rounded-full shadow backdrop-blur ${emDestaque ? "bg-on-background/85 text-[#F5C451]" : "bg-surface-white/95 text-text-secondary"}`}
+                className={`flex h-9 w-9 items-center justify-center rounded-full shadow ${emDestaque ? "bg-[#FFF3D1] text-[#C98A0B]" : "bg-white text-text-secondary"}`}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill={emDestaque ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden>
                   <path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" />
                 </svg>
               </button>
-              {menuDestaque && (
-                <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-11 z-20 w-[210px] rounded-2xl bg-surface-white p-3 text-on-background shadow-[0_8px_28px_rgba(17,19,24,0.22)]">
-                  <p className="text-[13px] font-medium">{emDestaque ? "Em destaque na Home" : "Destacar na Home?"}</p>
-                  <p className="mt-0.5 text-[12px] leading-snug text-text-secondary">{emDestaque ? "Este item aparece no topo da Home." : "O item aparece no topo da Home."}</p>
-                  <div className="mt-2.5 flex gap-2">
-                    <button onClick={() => { onDestacar(); setMenuDestaque(false); }} className="min-h-[36px] flex-1 rounded-full bg-on-background px-3 text-[12.5px] font-medium text-white">{emDestaque ? "Tirar" : "Destacar"}</button>
-                    <button onClick={() => setMenuDestaque(false)} className="min-h-[36px] rounded-full bg-surface-soft px-3 text-[12.5px] font-medium">Fechar</button>
+              {menuDestaque && createPortal(
+                <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/35 px-6" onClick={(e) => { e.stopPropagation(); setMenuDestaque(false); }} role="dialog" aria-modal="true" aria-label="Destaque na Home">
+                  <div onClick={(e) => e.stopPropagation()} className="w-full max-w-[300px] rounded-3xl bg-white p-5 text-on-background shadow-[0_12px_40px_rgba(17,19,24,0.3)]">
+                    <p className="text-[16px] font-medium">{emDestaque ? "Em destaque na Home" : "Destacar na Home?"}</p>
+                    <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">{emDestaque ? "Este item aparece na Home. Quer tirar?" : "O item aparece no topo da Home."}</p>
+                    <div className="mt-4 flex gap-2">
+                      <button onClick={() => { onDestacar(); setMenuDestaque(false); }} className="min-h-[44px] flex-1 rounded-full bg-on-background px-4 text-[14px] font-medium text-white">{emDestaque ? "Tirar da Home" : "Destacar"}</button>
+                      <button onClick={() => setMenuDestaque(false)} className="min-h-[44px] rounded-full bg-[#EFEDE8] px-4 text-[14px] font-medium">Fechar</button>
+                    </div>
                   </div>
-                </div>
+                </div>,
+                document.body,
               )}
             </div>
           )}

@@ -47,6 +47,10 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
   const { data: caixas } = await supabase.from("smart_boxes").select("config").eq("business_id", business!.id).eq("box_type", "custom");
   const temCardapio = (caixas ?? []).some((b) => (b.config as { action?: string } | null)?.action === "cardapio");
 
+  // Mesma regra da Home: a vitrine ativa guarda a escolha dos itens; sem ela, vale o box de entrada (hero).
+  const { data: boxesHome } = await supabase.from("smart_boxes").select("id, box_type, is_active, position, config").eq("business_id", business!.id).in("box_type", ["product", "hero", "custom"]).order("position", { ascending: true });
+  const boxDaHome = (boxesHome ?? []).find((b) => b.is_active && (b.box_type === "product" || (b.box_type === "custom" && ["vitrine", "comprar"].includes(String((b.config as { action?: string } | null)?.action ?? ""))))) ?? (boxesHome ?? []).find((b) => b.box_type === "hero") ?? null;
+  const homeBoxConfig = (boxDaHome?.config && typeof boxDaHome.config === "object" && !Array.isArray(boxDaHome.config) ? boxDaHome.config : {}) as Record<string, unknown>;
   const destaquesHome = (Array.isArray(business!.home_destaques) ? (business!.home_destaques as unknown[]) : [])
     .filter((d): d is { t: "voucher" | "item" | "botao"; id: string } => !!d && typeof d === "object" && typeof (d as { id?: unknown }).id === "string" && ["voucher", "item", "botao"].includes((d as { t?: string }).t ?? ""));
 
@@ -88,6 +92,8 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
         inspirePhotos={inspirePhotos}
         temCardapio={temCardapio}
         destaquesHomeIniciais={destaquesHome}
+        homeBoxId={boxDaHome?.id ?? null}
+        homeBoxConfig={homeBoxConfig}
       />
       <PreviewAoVivo slug={business!.slug} tab="vitrine" />
     </div>
