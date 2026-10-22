@@ -2,6 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 
 export type NovoBox = {
   nome: string;
@@ -21,6 +22,9 @@ type Preset = {
   pedeNome?: boolean;
 };
 
+/** Botão que já existe, mas está desligado (ativar), ou que se configura em tela própria (ir). */
+export type ExtraBox = { id: string; titulo: string; texto: string; tipo: "ativar" | "ir"; href?: string };
+
 /**
  * Folha "Adicionar botão", aberta direto da Home. Cria o botão já com os
  * padrões certos; depois o dono ajusta cor, ícone e formato pelo lápis do card.
@@ -31,6 +35,8 @@ export function AdicionarBox({
   whatsappInicial,
   enderecoInicial,
   temVouchers,
+  extras,
+  onAtivar,
   onCriar,
 }: {
   aberto: boolean;
@@ -38,6 +44,8 @@ export function AdicionarBox({
   whatsappInicial: string;
   enderecoInicial: string;
   temVouchers: boolean;
+  extras: ExtraBox[];
+  onAtivar: (id: string) => Promise<boolean>;
   onCriar: (b: NovoBox) => Promise<boolean>;
 }) {
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
@@ -48,11 +56,11 @@ export function AdicionarBox({
   const [salvando, setSalvando] = useState(false);
 
   const presets: Preset[] = [
-    { id: "zap", titulo: "WhatsApp", texto: "Abre a conversa direto, com mensagem pronta.", nome: "Fale no WhatsApp", icon: "__wadisc__", action: "whatsapp", subtitle: "Atendimento rápido", campo: { rotulo: "Número com DDD", dica: "11 99999-9999", inicial: whatsappInicial } },
-    { id: "link", titulo: "Instagram, rede social ou site", texto: "Cole o link e a Orbi reconhece a rede.", nome: "", icon: "◆", action: "link", pedeNome: true, campo: { rotulo: "Link", dica: "instagram.com/seunegocio", inicial: "" } },
-    { id: "end", titulo: "Endereço", texto: "Sai pronto com Waze e Google Maps.", nome: "Como chegar", icon: "__pin__", action: "endereco", subtitle: "Veja no mapa", campo: { rotulo: "Endereço", dica: "Rua, número, cidade", inicial: enderecoInicial } },
-    { id: "av", titulo: "Avaliação no Google", texto: "O cliente toca e já dá as estrelas.", nome: "Avalie no Google", icon: "__google__", action: "avaliar", subtitle: "Deixe sua nota, leva 10 segundos", campo: { rotulo: "Link da sua avaliação no Google", dica: "g.page/r/...", inicial: "" } },
-    ...(temVouchers ? [{ id: "vou", titulo: "Vouchers", texto: "Ofertas com código único e captura de contato.", nome: "Vouchers", icon: "__ticket__", action: "cupom" as const, subtitle: "Resgate agora e aproveite" }] : []),
+    { id: "zap", titulo: "WhatsApp", texto: "Conversa direta", nome: "Fale no WhatsApp", icon: "__wadisc__", action: "whatsapp", subtitle: "Atendimento rápido", campo: { rotulo: "Número com DDD", dica: "11 99999-9999", inicial: whatsappInicial } },
+    { id: "link", titulo: "Instagram ou site", texto: "Cole o link", nome: "", icon: "◆", action: "link", pedeNome: true, campo: { rotulo: "Link", dica: "instagram.com/seunegocio", inicial: "" } },
+    { id: "end", titulo: "Endereço", texto: "Waze e Maps", nome: "Como chegar", icon: "__pin__", action: "endereco", subtitle: "Veja no mapa", campo: { rotulo: "Endereço", dica: "Rua, número, cidade", inicial: enderecoInicial } },
+    { id: "av", titulo: "Avaliação no Google", texto: "Pede as estrelas", nome: "Avalie no Google", icon: "__google__", action: "avaliar", subtitle: "Deixe sua nota, leva 10 segundos", campo: { rotulo: "Link da sua avaliação no Google", dica: "g.page/r/...", inicial: "" } },
+    ...(temVouchers ? [{ id: "vou", titulo: "Vouchers", texto: "Ofertas com código", nome: "Vouchers", icon: "__ticket__", action: "cupom" as const, subtitle: "Resgate agora e aproveite" }] : []),
   ];
 
   function fechar() {
@@ -67,6 +75,15 @@ export function AdicionarBox({
     setNome(p.nome);
     setValor(p.campo?.inicial ?? "");
     setErro(null);
+  }
+
+  async function ativar(id: string) {
+    setSalvando(true);
+    setErro(null);
+    const ok = await onAtivar(id);
+    setSalvando(false);
+    if (ok) fechar();
+    else setErro("Não foi possível ligar. Tente de novo.");
   }
 
   async function adicionar() {
@@ -96,19 +113,37 @@ export function AdicionarBox({
           <button type="button" onClick={fechar} className="min-h-[40px] rounded-full bg-surface-soft px-5 text-[14px]">Fechar</button>
         </div>
         {!escolhido ? (
-          <ul className="mt-4 flex flex-col gap-2">
-            {presets.map((p) => (
-              <li key={p.id}>
-                <button type="button" onClick={() => escolher(p)} className="flex w-full items-center justify-between gap-3 rounded-2xl border border-divider p-3.5 text-left active:bg-surface-soft">
-                  <span className="min-w-0">
-                    <span className="block text-[14.5px] font-medium">{p.titulo}</span>
-                    <span className="mt-0.5 block text-[13px] text-text-secondary">{p.texto}</span>
-                  </span>
-                  <span aria-hidden className="text-[18px] text-text-tertiary">＋</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="mt-4 grid grid-cols-2 gap-2">
+              {extras.map((x) => {
+                const cls = "flex min-h-[78px] w-full flex-col justify-center rounded-2xl border border-divider p-3.5 text-left active:bg-surface-soft disabled:opacity-50";
+                const conteudo = (
+                  <>
+                    <span className="block text-[14.5px] font-semibold leading-tight">{x.titulo}</span>
+                    <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{x.texto}</span>
+                  </>
+                );
+                return (
+                  <li key={x.id}>
+                    {x.tipo === "ir" && x.href ? (
+                      <Link href={x.href} onClick={fechar} className={cls}>{conteudo}</Link>
+                    ) : (
+                      <button type="button" disabled={salvando} onClick={() => void ativar(x.id)} className={cls}>{conteudo}</button>
+                    )}
+                  </li>
+                );
+              })}
+              {presets.map((p) => (
+                <li key={p.id}>
+                  <button type="button" onClick={() => escolher(p)} className="flex min-h-[78px] w-full flex-col justify-center rounded-2xl border border-divider p-3.5 text-left active:bg-surface-soft">
+                    <span className="block text-[14.5px] font-semibold leading-tight">{p.titulo}</span>
+                    <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{p.texto}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {erro && <p role="alert" className="mt-3 text-[13px] text-red-600">{erro}</p>}
+          </>
         ) : (
           <form
             onSubmit={(e) => {

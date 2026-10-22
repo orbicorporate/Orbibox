@@ -29,12 +29,18 @@ export function VerComoFicou({ slug }: { slug: string }) {
 
   const voucher = caminho.match(/^\/admin\/vouchers\/([0-9a-f-]{36})/)?.[1];
   const rotulo = voucher ? "Ver este voucher na página" : "Ver como ficou";
-  const edita = voucher || /^\/admin\/(vouchers|vitrine|cardapio|delivery|gift|rede)(\/|$)/.test(caminho);
+  const edita = voucher || /^\/admin\/(vouchers|vitrine|cardapio|delivery|materiais|gift|rede)(\/|$)/.test(caminho);
   if (!edita) return null;
+  // Cada editor abre a tela que a pessoa está mexendo, não a Home.
+  const destino = voucher ? `?v=${voucher}`
+    : /^\/admin\/cardapio(\/|$)/.test(caminho) ? "?cardapio=1"
+    : /^\/admin\/delivery(\/|$)/.test(caminho) ? "?delivery=1"
+    : /^\/admin\/materiais(\/|$)/.test(caminho) ? "?materiais=1"
+    : "";
 
   return (
     <a
-      href={voucher ? `/${slug}?v=${voucher}` : `/${slug}`}
+      href={`/${slug}${destino}`}
       target="_blank"
       rel="noopener"
       className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium shadow-[0_1px_6px_rgba(17,19,24,0.1)] ring-1 ring-black/[0.05] backdrop-blur transition-all duration-300 ${destaque ? "bg-on-background text-white" : "bg-surface-white/80 text-text-secondary"}`}

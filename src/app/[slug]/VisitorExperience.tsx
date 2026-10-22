@@ -40,7 +40,7 @@ import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { OrbitHome } from "./OrbitHome";
 import { CartaoItem } from "./CartaoItem";
-import { AdicionarBox, type NovoBox } from "./AdicionarBox";
+import { AdicionarBox, type ExtraBox, type NovoBox } from "./AdicionarBox";
 import { BoxDestaque, lerDestaques, type Destaque, type BotaoDestaque } from "./BoxDestaque";
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
@@ -285,6 +285,9 @@ export function VisitorExperience({
     if (searchParams.get("v") && hasVouchers) chooseIntent("cupom");
     // ?delivery=1: vindo de um item de lista com destino Delivery, abre os apps direto.
     else if (searchParams.get("delivery") === "1") chooseIntent("delivery");
+    // ?cardapio=1 e ?materiais=1: o "Ver como ficou" do painel abre direto naquela tela.
+    else if (searchParams.get("cardapio") === "1") chooseIntent("cardapio");
+    else if (searchParams.get("materiais") === "1") chooseIntent("materiais");
     else if (chat === "1" && hasAiChat) chooseIntent("duvida", msg || undefined);
     else if (tab === "conhecer") chooseIntent("conhecer");
     else if (tab === "vitrine") { const cat = searchParams.get("cat"); if (cat) setCategoriaInicial(cat); chooseIntent("comprar"); }
@@ -596,6 +599,34 @@ export function VisitorExperience({
     setBoxList((prev) => [...prev, data as BoxRow]);
     return true;
   }
+  // Botões que já existem mas estão desligados (ou que se montam em tela própria):
+  // aparecem na folha "Adicionar botão" para ligar com um toque.
+  const extrasAdicionar: ExtraBox[] = (() => {
+    const out: ExtraBox[] = [];
+    const acaoDe = (b: BoxRow) => (b.box_type === "custom" ? ((b.config ?? {}) as CustomConfig).action : undefined);
+    const por = (acao: string) => boxList.filter((b) => acaoDe(b) === acao);
+    const grupo = (acao: string, id: string, titulo: string, texto: string, href: string, pronto: (b: BoxRow) => boolean = () => true) => {
+      const todos = por(acao);
+      if (todos.some((b) => b.is_active)) return;
+      const desligado = todos.find((b) => !b.is_active && pronto(b));
+      if (desligado) out.push({ id: desligado.id, titulo, texto, tipo: "ativar" });
+      else out.push({ id, titulo, texto, tipo: "ir", href });
+    };
+    grupo("cardapio", "cardapio-novo", "Cardápio", "Pratos e preços", "/admin/cardapio");
+    grupo("delivery", "delivery-novo", "Delivery", "iFood, Rappi e mais", "/admin/delivery", (b) => appsAtivos(((b.config ?? {}) as CustomConfig).apps).length > 0);
+    grupo("materiais", "materiais-novo", "Materiais", "PDFs e guias", "/admin/materiais");
+    const presentear = boxList.find((b) => b.box_type === "campaign");
+    if (presentear && !presentear.is_active) out.push({ id: presentear.id, titulo: "Presentear", texto: "Vale-presente", tipo: "ativar" });
+    const cupom = por("cupom");
+    if (hasVouchers && cupom.length > 0 && !cupom.some((b) => b.is_active)) out.push({ id: cupom[0].id, titulo: "Vouchers", texto: "Ofertas com código", tipo: "ativar" });
+    return out;
+  })();
+  async function ativarBox(id: string): Promise<boolean> {
+    const { error } = await supabase.from("smart_boxes").update({ is_active: true }).eq("id", id);
+    if (error) return false;
+    setBoxList((prev) => prev.map((b) => (b.id === id ? { ...b, is_active: true } : b)));
+    return true;
+  }
   // Ordem dos itens em destaque, mexida direto na Home (segurar e arrastar).
   // Grava na lista de destaques do dono, nunca na ordem do Catálogo. Se a Home
   // estava no automático, a ordem arrastada passa a ser a escolha do dono.
@@ -864,7 +895,9 @@ export function VisitorExperience({
           onFechar={() => setAdicionando(false)}
           whatsappInicial={business.contact_whatsapp ?? ""}
           enderecoInicial={business.address ?? ""}
-          temVouchers={hasVouchers}
+          temVouchers={hasVouchers && !boxList.some((b) => b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "cupom")}
+          extras={extrasAdicionar}
+          onAtivar={ativarBox}
           onCriar={criarBox}
         />
       )}
