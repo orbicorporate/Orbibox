@@ -866,8 +866,9 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
       className={`relative flex h-[60px] w-[60px] items-center justify-center rounded-full transition-transform active:scale-95 ${linha ? "border-[1.5px] border-on-background/70 bg-transparent text-on-background" : "text-white"}`}
     >
       {b.logo ? (
+        // Com uma cor escolhida, o logo fica um pouco menor para a cor aparecer em volta.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={b.logo} alt="" style={linha ? { filter: "grayscale(1) contrast(1.15)" } : undefined} className={`h-full w-full rounded-full object-cover ${linha ? "p-[3px]" : ""}`} />
+        <img src={b.logo} alt="" style={linha ? { filter: "grayscale(1) contrast(1.15)" } : undefined} className={`h-full w-full rounded-full object-cover ${linha ? "p-[3px]" : b.cor ? "p-[9px]" : ""}`} />
       ) : (
         <Icone tipo={b.tipo} rede={b.rede} linha={linha} />
       )}
