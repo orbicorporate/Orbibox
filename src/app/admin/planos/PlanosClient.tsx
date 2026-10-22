@@ -43,7 +43,7 @@ const FEATURES: Record<string, { label: string; highlight?: boolean; nota?: stri
 
 const TAGLINE: Record<string, string> = {
   titanio: "Pra começar com presença profissional",
-  niobio: "Pra vender no automático com IA",
+  niobio: "Com inteligência artificial própria e muito mais",
 };
 
 function Check({ highlight }: { highlight?: boolean }) {
