@@ -651,6 +651,8 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   /** Nota e texto que este fã deu a cada marca (id da marca → avaliação). */
   const [notasFa, setNotasFa] = useState<Record<string, { nota: number; comentario: string | null }>>({});
   const [notaMarca, setNotaMarca] = useState<{ marca: MarcaDoFa; nota: number } | null>(null);
+  /** Avaliações de uma marca da lista do fã: a do dono do perfil vem primeiro e a nota média fica fixa no topo. */
+  const [avMarca, setAvMarca] = useState<{ marca: MarcaDoFa; lista: Avaliacao[] | null; resumo: Resumo | null } | null>(null);
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
   const [contatos, setContatos] = useState<ContatoWhats[] | null>(null);
   const [verContatos, setVerContatos] = useState(false);
@@ -703,7 +705,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   }, [businessId, isOwner]);
 
   async function abrirFa(f: FaLite) {
-    setFa(f); setMarcas(null); setNotasFa({});
+    setFa(f); setMarcas(null); setNotasFa({}); setAvMarca(null);
     const ms = await getMarcasDoFa(f.id);
     setMarcas(ms);
     // As avaliações são públicas: pega a de cada marca e fica com a deste fã.
@@ -712,6 +714,15 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
       return r ? ([m.id, { nota: r.nota, comentario: r.comentario }] as const) : null;
     }));
     setNotasFa(Object.fromEntries(pares.filter((x) => x !== null)));
+  }
+
+  async function abrirAvaliacoesMarca(m: MarcaDoFa) {
+    if (!fa) return;
+    const donoId = fa.id;
+    setAvMarca({ marca: m, lista: null, resumo: null });
+    const [todas, resumoM] = await Promise.all([getAvaliacoes(m.id), getResumo(m.id)]);
+    const ordenada = [...todas.filter((a) => a.customer_id === donoId), ...todas.filter((a) => a.customer_id !== donoId)];
+    setAvMarca((v) => (v && v.marca.id === m.id ? { marca: m, lista: ordenada, resumo: resumoM } : v));
   }
 
   const itens: ItemOrbita[] = useMemo(() => {
@@ -957,39 +968,41 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                     <p className="rounded-[24px] bg-surface-soft px-4 py-4 text-[14px] leading-snug text-text-secondary">{fa.nome || "Esse fã"} prefere não mostrar de quais outras marcas é fã.</p>
                   ) : (
                     <ul className="flex flex-col gap-2">
-                      {marcas.map((m) => (
-                        <li key={m.id} className="flex min-h-[64px] items-center gap-1 rounded-[32px] bg-surface-white py-2 pl-2 pr-2 ring-1 ring-divider">
-                          <a href={`/${m.slug}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-full transition-transform active:scale-[0.98]">
-                            <span className="grid h-12 w-12 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
-                              {m.logo_url ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={m.logo_url} alt="" className="h-full w-full object-contain p-1.5" />
-                              ) : <span className="text-[16px] font-extrabold">{m.name.charAt(0).toUpperCase()}</span>}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[15.5px] font-bold tracking-[-0.01em]">{m.name}</span>
-                              <span className="block text-[12.5px] text-text-tertiary">{m.slug === slug ? "Você está aqui" : "Abrir o Orbibox desta marca"}</span>
-                              {!(eu.userId && eu.userId === fa.id) && notasFa[m.id] && (
-                                <span className="mt-1 flex items-center gap-0.5" aria-label={`Nota ${notasFa[m.id].nota} de 5`}>
-                                  {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= notasFa[m.id].nota} tam={13} />)}
-                                </span>
-                              )}
-                            </span>
-                          </a>
-                          {eu.userId && eu.userId === fa.id ? (
-                            <span className="flex flex-none" role="radiogroup" aria-label={`Sua nota para ${m.name}`}>
-                              {[1, 2, 3, 4, 5].map((n) => (
-                                <button key={n} type="button" role="radio" aria-checked={notasFa[m.id]?.nota === n} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"} para ${m.name}`}
-                                  onClick={() => setNotaMarca({ marca: m, nota: n })} className="grid h-11 w-[26px] place-items-center active:scale-90">
-                                  <Estrela cheia={n <= (notasFa[m.id]?.nota ?? 0)} tam={17} />
-                                </button>
-                              ))}
-                            </span>
-                          ) : (
-                            <a href={`/${m.slug}`} aria-hidden tabIndex={-1} className="grid h-11 w-8 flex-none place-items-center text-text-tertiary"><IcChev /></a>
-                          )}
-                        </li>
-                      ))}
+                      {marcas.map((m) => {
+                        const minha = !!eu.userId && eu.userId === fa.id;
+                        const nt = notasFa[m.id];
+                        return (
+                          <li key={m.id} className="rounded-[28px] bg-surface-white p-2 ring-1 ring-divider">
+                            <button type="button" onClick={() => void abrirAvaliacoesMarca(m)} aria-label={`Ver avaliações de ${m.name}`} className="flex w-full items-center gap-3 rounded-full text-left transition-transform active:scale-[0.99]">
+                              <span className="grid h-12 w-12 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
+                                {m.logo_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={m.logo_url} alt="" className="h-full w-full object-contain p-1.5" />
+                                ) : <span className="text-[16px] font-extrabold">{m.name.charAt(0).toUpperCase()}</span>}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-[15.5px] font-bold tracking-[-0.01em]">{m.name}</span>
+                                <span className="block text-[12.5px] text-text-tertiary">{m.slug === slug ? "Você está aqui" : "Ver avaliações"}</span>
+                              </span>
+                              <span aria-hidden className="grid h-10 w-8 flex-none place-items-center text-text-tertiary"><IcChev /></span>
+                            </button>
+                            {minha ? (
+                              <div className="mt-0.5 flex items-center pl-[60px]" role="radiogroup" aria-label={`Sua nota para ${m.name}`}>
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                  <button key={n} type="button" role="radio" aria-checked={nt?.nota === n} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"} para ${m.name}`}
+                                    onClick={() => setNotaMarca({ marca: m, nota: n })} className="grid h-9 w-8 place-items-center active:scale-90">
+                                    <Estrela cheia={n <= (nt?.nota ?? 0)} tam={20} />
+                                  </button>
+                                ))}
+                              </div>
+                            ) : nt ? (
+                              <span className="mt-0.5 flex items-center gap-0.5 pb-1 pl-[60px]" aria-label={`Nota ${nt.nota} de 5`}>
+                                {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= nt.nota} tam={15} />)}
+                              </span>
+                            ) : null}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>
@@ -1008,6 +1021,49 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                 if (notaMarca.marca.id === businessId) void aoMudar();
               }} />
           )}
+
+          {/* Avaliações de uma marca da lista do fã: a do dono do perfil primeiro, nota média fixa no topo */}
+          <div className={`cl-camada ${avMarca ? "on" : ""}`} aria-hidden={!avMarca}>
+            {avMarca && (
+              <>
+                <Cabecalho titulo={avMarca.marca.name} sub="Avaliações" fechar={() => setAvMarca(null)} rotuloFechar="Voltar" />
+                <div className="mx-4 mb-2 flex items-center gap-4 rounded-[28px] bg-surface-white px-5 py-3 ring-1 ring-divider">
+                  <span className="font-[family-name:var(--font-manrope)] text-[44px] font-extrabold leading-none tracking-[-0.04em] tabular-nums" style={{ background: "var(--cl-orange)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+                    {avMarca.resumo?.nota != null ? fmtNota(avMarca.resumo.nota) : "-"}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="flex gap-0.5">{[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= Math.round(avMarca.resumo?.nota ?? 0)} />)}</span>
+                    <span className="mt-1 block text-[12.5px] text-text-tertiary">{avMarca.resumo ? `${avMarca.resumo.avaliacoes} ${avMarca.resumo.avaliacoes === 1 ? "avaliação" : "avaliações"}` : "Carregando..."}</span>
+                  </span>
+                </div>
+                <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-1">
+                  {avMarca.lista === null && <p className="py-6 text-center text-[14px] text-text-tertiary">Carregando...</p>}
+                  {avMarca.lista?.length === 0 && <p className="py-6 text-center text-[14px] text-text-secondary">Ainda não há avaliações desta marca.</p>}
+                  {avMarca.lista?.map((r, k) => (
+                    <div key={r.id}>
+                      {k === 0 && fa && r.customer_id === fa.id && <p className="mb-1.5 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Avaliação de {fa.nome || "esse fã"}</p>}
+                      {k > 0 && k === 1 && avMarca.lista![0].customer_id === fa?.id && <p className="mb-1.5 mt-2 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outras avaliações</p>}
+                      <article className={`cl-rev ${r.nota === 4 ? "escuro" : ""}`} style={{ background: GRAD_NOTA[r.nota] }}>
+                        <Rosto url={r.foto_url} nome={r.nome} size={48} className="ring-2 ring-white/60" />
+                        <div className="min-w-0 text-[15px] font-bold leading-tight">
+                          <span className="block truncate">{r.nome || "Cliente"}</span>
+                          <small className="mt-0.5 block text-[11.5px] font-semibold opacity-85">{new Date(r.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</small>
+                        </div>
+                        <div className="font-[family-name:var(--font-manrope)] text-[30px] font-extrabold tabular-nums tracking-[-0.03em]">{r.nota}</div>
+                        {r.comentario ? <p className="col-span-full mt-1 text-[14px] leading-snug">{r.comentario}</p> : null}
+                        {r.resposta_dono ? (
+                          <div className="cl-resp"><b className="mb-0.5 block text-[11.5px] uppercase tracking-wide opacity-80">Resposta da marca</b>{r.resposta_dono}</div>
+                        ) : null}
+                      </article>
+                    </div>
+                  ))}
+                  {avMarca.marca.slug !== slug && (
+                    <a href={`/${avMarca.marca.slug}`} className="mx-auto mt-2 inline-flex min-h-[44px] items-center rounded-full bg-surface-soft px-6 text-[14px] font-semibold active:scale-95">Abrir {avMarca.marca.name}</a>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Contatos de WhatsApp (só o dono) */}
           <div className={`cl-camada ${verContatos ? "on" : ""}`} aria-hidden={!verContatos}>
