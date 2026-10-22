@@ -6,6 +6,7 @@ import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropMod
 import { FotoProntaPicker } from "./FotoProntaPicker";
 import { MinhaGaleriaPicker } from "./MinhaGaleriaPicker";
 import { GeradorImagemSheet } from "./GeradorImagemSheet";
+import { AjusteFoto } from "./AjusteFoto";
 import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { AbrirChatGPT } from "@/components/ui/AbrirChatGPT";
@@ -65,6 +66,9 @@ export function ImageUpload({
   // Gerador de imagem em formato de conversa (texto + referências).
   const [showGerador, setShowGerador] = useState(false);
   const [iaIndisponivel, setIaIndisponivel] = useState(false);
+  // Edição da foto que já está na capa: pela Orbi (IA) ou ajuste rápido de luz.
+  const [editandoComIA, setEditandoComIA] = useState(false);
+  const [ajustando, setAjustando] = useState(false);
 
   async function abrirPrompt() {
     const abrir = !showPrompt;
@@ -199,6 +203,19 @@ export function ImageUpload({
 
         {value && <p className="text-[11.5px] text-text-tertiary">Medida ideal: {medida}</p>}
 
+        {value && (
+          <div className="grid grid-cols-2 gap-2">
+            {!iaIndisponivel && (
+              <button type="button" onClick={() => { setEditandoComIA(true); setShowGerador(true); }} className="flex min-h-[46px] items-center justify-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 text-[13px] font-medium">
+                <span className="text-[14px] leading-none">✦</span> Editar com a Orbi
+              </button>
+            )}
+            <button type="button" onClick={() => setAjustando(true)} className={`flex min-h-[46px] items-center justify-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 text-[13px] font-medium ${iaIndisponivel ? "col-span-2" : ""}`}>
+              Ajustar luz
+            </button>
+          </div>
+        )}
+
         {fileInput}
         {error && <p className="text-[12px] text-red-600">{error}</p>}
 
@@ -320,12 +337,24 @@ export function ImageUpload({
             assunto={promptSubject || ""}
             formato={lockedRatio ?? "quadrado"}
             aspect={aspect}
-            onIndisponivel={() => setIaIndisponivel(true)}
-            onFechar={() => setShowGerador(false)}
+            onIndisponivel={() => { setIaIndisponivel(true); setEditandoComIA(false); }}
+            onFechar={() => { setShowGerador(false); setEditandoComIA(false); }}
+            edicao={editandoComIA}
+            refInicialUrl={editandoComIA && value ? value : undefined}
+            sugestoes={editandoComIA ? ["Clarear a foto e deixar mais nítida. Mantenha o produto exatamente igual.", "Fundo mais limpo e iluminação de estúdio. Mantenha o produto igual.", "Cores mais vivas e apetitosas. Mantenha o produto igual."] : undefined}
             onUsar={(file) => {
               setShowGerador(false);
+              setEditandoComIA(false);
               setPendingFile(file);
             }}
+          />
+        )}
+
+        {ajustando && value && (
+          <AjusteFoto
+            url={value}
+            onFechar={() => setAjustando(false)}
+            onAplicar={(file) => { setAjustando(false); setPendingFile(file); }}
           />
         )}
 

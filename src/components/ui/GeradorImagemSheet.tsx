@@ -23,6 +23,9 @@ export function GeradorImagemSheet({
   onUsar,
   onIndisponivel,
   onFechar,
+  refInicialUrl,
+  sugestoes,
+  edicao = false,
 }: {
   businessId: string;
   assunto: string;
@@ -31,6 +34,11 @@ export function GeradorImagemSheet({
   onUsar: (arquivo: File) => void;
   onIndisponivel: () => void;
   onFechar: () => void;
+  /** Foto que já nasce anexada como referência (editar uma foto que já existe). */
+  refInicialUrl?: string;
+  /** Pedidos prontos que preenchem o campo de texto com um toque. */
+  sugestoes?: string[];
+  edicao?: boolean;
 }) {
   const [texto, setTexto] = useState("");
   const [refs, setRefs] = useState<Ref[]>([]);
@@ -73,6 +81,14 @@ export function GeradorImagemSheet({
       setErro("Não consegui abrir essa foto da galeria.");
     }
   }
+
+  const refCarregada = useRef(false);
+  useEffect(() => {
+    if (!refInicialUrl || refCarregada.current) return;
+    refCarregada.current = true;
+    void refDaGaleria(refInicialUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refInicialUrl]);
 
   function tirarRef(id: string) {
     setRefs((r) => {
@@ -140,7 +156,7 @@ export function GeradorImagemSheet({
       <div className="relative flex max-h-[92dvh] w-full max-w-[560px] flex-col overflow-hidden rounded-t-3xl bg-surface-white shadow-2xl sm:rounded-3xl">
         <div className="flex items-center gap-3 border-b border-divider px-5 py-3.5">
           <OrbiSimbolo size={30} />
-          <p className="min-w-0 flex-1 truncate text-[15px] font-semibold text-on-background">Criar imagem com a Orbi</p>
+          <p className="min-w-0 flex-1 truncate text-[15px] font-semibold text-on-background">{edicao ? "Editar a foto com a Orbi" : "Criar imagem com a Orbi"}</p>
           <button type="button" onClick={onFechar} disabled={gerando} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px] text-text-secondary disabled:opacity-50">✕</button>
         </div>
 
@@ -160,7 +176,14 @@ export function GeradorImagemSheet({
           ) : (
             <>
               <div>
-                <label htmlFor="gerador-prompt" className="text-[13px] font-medium text-on-background">O que você quer ver na imagem?</label>
+                <label htmlFor="gerador-prompt" className="text-[13px] font-medium text-on-background">{edicao ? "O que você quer mudar na foto?" : "O que você quer ver na imagem?"}</label>
+                {sugestoes && sugestoes.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {sugestoes.map((t) => (
+                      <button key={t} type="button" disabled={gerando} onClick={() => { setTexto(t); window.setTimeout(() => campo.current?.focus(), 30); }} className="min-h-[38px] rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium text-text-secondary disabled:opacity-50">{t.split(".")[0]}</button>
+                    ))}
+                  </div>
+                )}
                 <textarea
                   id="gerador-prompt"
                   ref={campo}
@@ -207,13 +230,13 @@ export function GeradorImagemSheet({
               disabled={gerando || texto.trim().length < 3}
               className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[14.5px] font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
             >
-              {gerando ? (<><OrbiMiniVerde size={16} />Criando… pode levar até 1 minuto</>) : "Criar imagem"}
+              {gerando ? (<><OrbiMiniVerde size={16} />{edicao ? "Editando… pode levar até 1 minuto" : "Criando… pode levar até 1 minuto"}</>) : edicao ? "Editar foto" : "Criar imagem"}
             </button>
           </div>
         )}
       </div>
 
-      {galeria && <MinhaGaleriaPicker businessId={businessId} onFechar={() => setGaleria(false)} onEscolher={(url) => void refDaGaleria(url)} />}
+      {galeria && <MinhaGaleriaPicker camada="z-[140]" businessId={businessId} onFechar={() => setGaleria(false)} onEscolher={(url) => void refDaGaleria(url)} />}
     </div>,
     document.body,
   );

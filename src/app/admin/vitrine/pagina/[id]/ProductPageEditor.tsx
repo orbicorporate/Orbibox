@@ -13,6 +13,8 @@ import { ImageCropModal, RATIOS, RATIO_PIXELS } from "@/components/ui/ImageCropM
 import { PromptParaIA } from "@/components/ui/LinhaExpansivel";
 import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
+import { GeradorImagemSheet } from "@/components/ui/GeradorImagemSheet";
+import { AjusteFoto } from "@/components/ui/AjusteFoto";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 
@@ -138,6 +140,10 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const [sugerindo, setSugerindo] = useState(false);
   const [fotosProntas, setFotosProntas] = useState(false);
   const [marca, setMarca] = useState<MarcaPrompt | null>(null);
+  // Orbi cria ou edita foto dentro do app. "substituir" guarda qual foto a edição troca.
+  const [gerador, setGerador] = useState<{ edicao: boolean; url?: string } | null>(null);
+  const [ajuste, setAjuste] = useState<string | null>(null);
+  const [substituir, setSubstituir] = useState<string | null>(null);
 
   // Cores e tom da marca pro prompt, buscados só quando a pessoa abre ele.
   async function abrirIA() {
@@ -186,6 +192,22 @@ export function ProductPageEditor({ business, item }: { business: Business; item
     setEnviando(false);
     if (error) return setErroFoto("Não consegui enviar a foto. Tente de novo.");
     const url = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
+    // Edição de uma foto que já existe: a nova entra no lugar da antiga.
+    if (substituir) {
+      const antiga = substituir;
+      setSubstituir(null);
+      if (midias.includes(antiga)) {
+        salvarMidias(midias.map((u) => (u === antiga ? url : u)));
+        if (capa === antiga) void definirCapa(url);
+      } else if (capa === antiga) {
+        void definirCapa(url);
+      } else {
+        const nova = [...midias, url];
+        salvarMidias(nova);
+        irPara(nova.length - 1);
+      }
+      return;
+    }
     const nova = [...midias, url];
     salvarMidias(nova);
     irPara(nova.length - 1);
@@ -251,6 +273,8 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const slides = midias.length > 0 ? midias : capa ? [capa] : [];
   const soCapa = midias.length === 0 && !!capa;
   const capaAtual = capa || midias.find((u) => !isVideoUrl(u) && !youtubeId(u) && !instagramReelId(u)) || null;
+  const alvoBruto = midias.length > 0 ? midias[Math.min(ativo, midias.length - 1)] : capaAtual;
+  const alvoEdicao = alvoBruto && !isVideoUrl(alvoBruto) && !youtubeId(alvoBruto) && !instagramReelId(alvoBruto) ? alvoBruto : null;
   const preco = formatPrice(item);
 
   if (!montado) return null;
@@ -447,6 +471,26 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             </div>
           )}
 
+          {alvoEdicao && (
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setGerador({ edicao: true, url: alvoEdicao })}
+                className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 text-[13px] font-medium"
+              >
+                <span className="text-[14px] leading-none">✦</span> Editar com a Orbi
+              </button>
+              <button
+                type="button"
+                onClick={() => setAjuste(alvoEdicao)}
+                className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 text-[13px] font-medium"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden><circle cx="12" cy="12" r="4" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4" /></svg>
+                Ajustar luz
+              </button>
+            </div>
+          )}
+
           {/* Adicionar fotos: sempre à vista, logo abaixo do carrossel. */}
           {midias.length < MAX_MIDIAS && (
             <div className="mt-4 flex flex-col gap-2">
@@ -494,7 +538,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
                   Vídeo
                 </button>
                 <button
-                  onClick={abrirIA}
+                  onClick={() => setGerador({ edicao: false })}
                   className={`flex flex-col items-center gap-1 rounded-2xl border bg-surface-white py-3 text-[12.5px] font-medium ${painel === "ia" ? "border-on-background" : "border-divider"}`}
                 >
                   <span className="text-[14px] leading-none">✦</span>
@@ -656,12 +700,35 @@ export function ProductPageEditor({ business, item }: { business: Business; item
         />
       )}
 
+      {gerador && (
+        <GeradorImagemSheet
+          businessId={business.id}
+          assunto={titulo.trim() || "meu produto"}
+          formato={formato}
+          aspect={RATIOS[formato].value}
+          edicao={gerador.edicao}
+          refInicialUrl={gerador.url}
+          sugestoes={gerador.edicao ? ["Clarear a foto e deixar mais nítida. Mantenha o produto exatamente igual.", "Fundo mais limpo e iluminação de estúdio. Mantenha o produto igual.", "Cores mais vivas e apetitosas. Mantenha o produto igual."] : undefined}
+          onIndisponivel={() => { setGerador(null); void abrirIA(); }}
+          onFechar={() => setGerador(null)}
+          onUsar={(f) => { if (gerador.edicao && gerador.url) setSubstituir(gerador.url); setGerador(null); escolherFoto(f); }}
+        />
+      )}
+
+      {ajuste && (
+        <AjusteFoto
+          url={ajuste}
+          onFechar={() => setAjuste(null)}
+          onAplicar={(f) => { setSubstituir(ajuste); setAjuste(null); escolherFoto(f); }}
+        />
+      )}
+
       {arquivo && (
         <ImageCropModal
           file={arquivo}
           lockedRatio={formato}
           lockedReason="Todas as fotos da página seguem o mesmo formato."
-          onCancel={() => setArquivo(null)}
+          onCancel={() => { setArquivo(null); setSubstituir(null); }}
           onConfirm={(blob) => enviarFoto(blob)}
         />
       )}

@@ -318,7 +318,7 @@ export function FotoVisualizador({
   const chipE = (ativo: boolean) => `shrink-0 min-h-[36px] rounded-full px-3.5 text-[13px] font-medium ${ativo ? "bg-white text-black" : "bg-white/12 text-white/80"}`;
 
   return createPortal(
-    <div className="gv-entra fixed inset-0 z-[90] flex flex-col bg-neutral-950 text-white" role="dialog" aria-modal="true" aria-label="Foto da galeria">
+    <div className="gv-entra fixed inset-0 z-[150] flex flex-col bg-neutral-950 text-white" role="dialog" aria-modal="true" aria-label="Foto da galeria">
       <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <button type="button" onClick={onFechar} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/12" aria-label="Fechar foto">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>

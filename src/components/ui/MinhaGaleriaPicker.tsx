@@ -18,11 +18,14 @@ export function MinhaGaleriaPicker({
   atual,
   onEscolher,
   onFechar,
+  camada = "z-[80]",
 }: {
   businessId: string;
   atual?: string | null;
   onEscolher: (url: string) => void;
   onFechar: () => void;
+  /** Classe de z-index, para abrir por cima de outra folha (ex.: dentro do gerador de imagem). */
+  camada?: string;
 }) {
   const supabase = useMemo(() => clienteBanco(), []);
   const [itens, setItens] = useState<Item[] | null>(null);
@@ -114,7 +117,7 @@ export function MinhaGaleriaPicker({
   const chip = (ativo: boolean) => `shrink-0 min-h-[36px] rounded-full px-3.5 text-[13px] font-medium ${ativo ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`;
 
   return createPortal(
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 sm:items-center" onClick={onFechar}>
+    <div className={`fixed inset-0 ${camada} flex items-end justify-center bg-black/50 sm:items-center`} onClick={onFechar}>
       <div className="flex max-h-[88vh] w-full max-w-lg flex-col rounded-t-[28px] bg-surface-white sm:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
         <div className="flex shrink-0 items-start justify-between gap-2 px-5 pt-5">
           <div>
