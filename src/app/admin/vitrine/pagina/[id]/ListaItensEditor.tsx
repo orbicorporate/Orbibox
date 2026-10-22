@@ -211,7 +211,7 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
   const [edicao, setEdicao] = useState<{ item: ListaItem; novo: boolean } | null>(null);
   const [colar, setColar] = useState(false);
   const [texto, setTexto] = useState("");
-  const [anexos, setAnexos] = useState<{ nome: string; blob: Blob }[]>([]);
+  const [anexos, setAnexos] = useState<{ nome: string; blob: Blob; original: File; pdf: boolean }[]>([]);
   const [lendoArquivo, setLendoArquivo] = useState(false);
   const [lendo, setLendo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -243,29 +243,38 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
 
   /** PDF vira uma imagem por página; foto entra como está. A Orbi lê tudo como foto. */
   async function anexar(files: FileList | null) {
+    // Copia a lista ANTES de limpar o campo: a FileList é "viva" e esvazia junto com ele.
+    const escolhidos = files ? Array.from(files) : [];
     if (arquivos.current) arquivos.current.value = "";
-    if (!files || files.length === 0) return;
+    if (escolhidos.length === 0) return;
     setErro(null);
     setLendoArquivo(true);
-    const novos: { nome: string; blob: Blob }[] = [];
-    for (const f of Array.from(files)) {
+    const novos: { nome: string; blob: Blob; original: File; pdf: boolean }[] = [];
+    for (const f of escolhidos) {
       if (anexos.length + novos.length >= MAX_PAGINAS_LEITURA) break;
       if (f.type === "application/pdf") {
         try {
           const { imagens, paginas } = await pdfParaImagens(f);
-          imagens.forEach((blob, n) => { if (anexos.length + novos.length < MAX_PAGINAS_LEITURA) novos.push({ nome: `${f.name} (página ${n + 1})`, blob }); });
+          imagens.forEach((blob, n) => { if (anexos.length + novos.length < MAX_PAGINAS_LEITURA) novos.push({ nome: `${f.name} (página ${n + 1})`, blob, original: f, pdf: true }); });
           if (paginas > MAX_PAGINAS_LEITURA) setErro(`Li as ${MAX_PAGINAS_LEITURA} primeiras páginas do PDF. Depois importe o resto.`);
         } catch {
           setErro("Não consegui abrir esse PDF. Tente uma foto ou cole o texto.");
         }
       } else if (f.type.startsWith("image/")) {
-        novos.push({ nome: f.name, blob: f });
+        novos.push({ nome: f.name, blob: f, original: f, pdf: false });
       } else {
         setErro("Envie PDF, foto (JPG ou PNG) ou cole o texto.");
       }
     }
     setAnexos((p) => [...p, ...novos]);
     setLendoArquivo(false);
+  }
+
+  /** Abre o arquivo que a pessoa enviou, numa aba nova, para conferir antes da Orbi ler. */
+  function abrirAnexo(arquivo: File) {
+    const url = URL.createObjectURL(arquivo);
+    window.open(url, "_blank", "noopener");
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   }
 
   async function ler() {
@@ -336,7 +345,8 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
               <ul className="mt-2 flex flex-col gap-1">
                 {anexos.map((a, n) => (
                   <li key={a.nome + n} className="flex items-center justify-between gap-2 rounded-xl bg-surface-white px-3 py-1.5 text-[12.5px]">
-                    <span className="min-w-0 truncate">{a.nome}</span>
+                    <span className="min-w-0 flex-1 truncate">{a.nome}</span>
+                    <button type="button" onClick={() => abrirAnexo(a.original)} className="shrink-0 rounded-full bg-surface-soft px-3 py-1 text-[12px] font-medium">{a.pdf ? "Abrir PDF" : "Abrir imagem"}</button>
                     <button type="button" onClick={() => setAnexos((p) => p.filter((_, k) => k !== n))} aria-label={`Tirar ${a.nome}`} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[11px]">✕</button>
                   </li>
                 ))}
