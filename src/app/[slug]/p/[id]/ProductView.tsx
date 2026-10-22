@@ -132,18 +132,23 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
           ←
         </button>
         <div className="flex items-center gap-2">
-          <BotaoCompartilhar alvo={{ url: `/${business.slug}/p/${item.id}`, titulo: item.title, rotulo: business.name, marca: business.name, imagem: images[0] ?? null, logo: business.logo_url ?? null, texto: `Olha isso de ${business.name}:` }} className="grid h-9 w-9 place-items-center rounded-full bg-surface-soft text-on-background transition-transform active:scale-90" tam={18} />
           {!isOwner && <CurtirItem businessId={business.id} alvo="item" id={item.id} titulo={item.title} className="!static !bg-surface-soft !shadow-none" />}
+          <BotaoCompartilhar
+            alvo={{ url: `/${business.slug}/p/${item.id}`, titulo: item.title, rotulo: business.name, marca: business.name, imagem: images[0] ?? null, logo: business.logo_url ?? null, texto: `Olha isso de ${business.name}:` }}
+            className="grid h-9 w-9 place-items-center rounded-full text-white transition-transform active:scale-90"
+            style={{ background: "linear-gradient(135deg,#E04A4F 0%,#C4282D 48%,#8A1D22 100%)", boxShadow: "0 8px 20px -8px rgba(138,29,34,0.55)" }}
+            tam={18}
+          />
+          {isOwner && (
+            <AbrirEditor
+              href={`/admin/vitrine/pagina/${item.id}`}
+              rotulo="Editar esta página"
+              className="flex shrink-0 items-center gap-1.5 rounded-full bg-on-background px-3.5 py-2 text-[13px] font-medium text-white shadow-lg"
+            >
+              <span aria-hidden>✎</span> Editar
+            </AbrirEditor>
+          )}
         </div>
-        {isOwner && (
-          <AbrirEditor
-            href={`/admin/vitrine/pagina/${item.id}`}
-            rotulo="Editar esta página"
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-on-background px-3.5 py-2 text-[13px] font-medium text-white shadow-lg"
-          >
-            <span aria-hidden>✎</span> Editar
-          </AbrirEditor>
-        )}
       </div>
 
       {/* Carrossel estilo post: quadrado, cantos arredondados, com respiro nas laterais.

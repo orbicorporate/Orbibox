@@ -34,14 +34,15 @@ function urlCompleta(u: string) {
 export function IconeCompartilhar({ tam = 20 }: { tam?: number }) {
   return (
     <svg width={tam} height={tam} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M12 3.5v11" />
-      <path d="M8 7.2l4-3.7 4 3.7" />
-      <path d="M8.5 10.5H7a2 2 0 0 0-2 2V18a2.5 2.5 0 0 0 2.5 2.5h9A2.5 2.5 0 0 0 19 18v-5.5a2 2 0 0 0-2-2h-1.5" />
+      <circle cx="18" cy="5.5" r="2.6" />
+      <circle cx="6" cy="12" r="2.6" />
+      <circle cx="18" cy="18.5" r="2.6" />
+      <path d="M8.3 10.7l7.4-3.9M8.3 13.3l7.4 3.9" />
     </svg>
   );
 }
 
-export function BotaoCompartilhar({ alvo, className, tam = 20, children }: { alvo: AlvoCompartilhar; className?: string; tam?: number; children?: React.ReactNode }) {
+export function BotaoCompartilhar({ alvo, className, tam = 20, style, children }: { alvo: AlvoCompartilhar; className?: string; tam?: number; style?: React.CSSProperties; children?: React.ReactNode }) {
   const [aberto, setAberto] = useState(false);
   return (
     <>
@@ -50,6 +51,7 @@ export function BotaoCompartilhar({ alvo, className, tam = 20, children }: { alv
         aria-label={`Compartilhar ${alvo.titulo}`}
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setAberto(true); }}
         className={className ?? "grid h-10 w-10 place-items-center rounded-full bg-surface-soft text-on-background transition-transform active:scale-90"}
+        style={style}
       >
         <IconeCompartilhar tam={tam} />
         {children}
