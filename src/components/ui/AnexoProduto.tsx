@@ -59,7 +59,7 @@ export function AnexoProduto({ anexo }: { anexo: Anexo }) {
           </div>
           <button type="button" aria-label="Fechar" onClick={() => setAberta(false)} className="flex min-h-0 flex-1 cursor-default items-center justify-center px-3 pb-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={anexo.url} alt={titulo} className="max-h-full max-w-full rounded-2xl object-contain" />
+            <img src={anexo.url} alt={titulo} className="max-h-full max-w-full object-contain" />
           </button>
         </div>,
         document.body,
