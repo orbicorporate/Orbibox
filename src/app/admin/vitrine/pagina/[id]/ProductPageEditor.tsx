@@ -255,6 +255,37 @@ export function ProductPageEditor({ business, item }: { business: Business; item
     });
   }
 
+  // Texto "Fale mais" escrito pela Orbi (até 6 linhas). Guarda o anterior para desfazer.
+  const [gerandoTexto, setGerandoTexto] = useState(false);
+  const [erroTexto, setErroTexto] = useState<string | null>(null);
+  const [descAnterior, setDescAnterior] = useState<string | null>(null);
+  async function gerarTexto() {
+    setGerandoTexto(true);
+    setErroTexto(null);
+    try {
+      const res = await fetch("/api/gerar-descricao-item", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentItemId: item.id, atual: descricao }),
+      });
+      const json = (await res.json()) as { texto?: string; error?: string };
+      if (!res.ok || !json.texto) return setErroTexto(json.error ?? "A Orbi não conseguiu escrever agora. Tente de novo.");
+      setDescAnterior(descricao);
+      setDescricao(json.texto);
+      await salvar({ description: json.texto });
+    } catch {
+      setErroTexto("A Orbi não conseguiu escrever agora. Tente de novo.");
+    } finally {
+      setGerandoTexto(false);
+    }
+  }
+  function desfazerTexto() {
+    if (descAnterior === null) return;
+    setDescricao(descAnterior);
+    void salvar({ description: descAnterior.trim() || null });
+    setDescAnterior(null);
+  }
+
   async function sugerir() {
     setSugerindo(true);
     try {
@@ -615,7 +646,17 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             </p>
           )}
 
-          <p className="mt-5 text-[13px] font-semibold text-text-secondary">Fale mais</p>
+          <div className="mt-5 flex items-center justify-between gap-2">
+            <p className="text-[13px] font-semibold text-text-secondary">Fale mais</p>
+            <button
+              type="button"
+              onClick={gerarTexto}
+              disabled={gerandoTexto}
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium active:scale-[0.97] ${gerandoTexto ? "bg-surface-soft text-text-secondary" : "orbi-gradient text-on-background"}`}
+            >
+              {gerandoTexto ? <OrbiWorking label="Escrevendo…" variant="inline" /> : descricao.trim() ? "✦ Melhorar com a Orbi" : "✦ Gerar com a Orbi"}
+            </button>
+          </div>
           <textarea
             value={descricao}
             ref={crescer}
@@ -626,6 +667,10 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             maxLength={1500}
             className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] leading-relaxed outline-none focus:border-on-background"
           />
+          {erroTexto && <p role="alert" className="mt-1.5 px-1 text-[13px] text-red-600">{erroTexto}</p>}
+          {descAnterior !== null && !gerandoTexto && (
+            <button type="button" onClick={desfazerTexto} className="mt-1.5 min-h-[36px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Voltar ao texto anterior</button>
+          )}
 
           <AnexoEditor businessId={business.id} anexo={anexo} onChange={salvarAnexo} />
 
