@@ -287,7 +287,7 @@ export function VisitorExperience({
     else if (searchParams.get("delivery") === "1") chooseIntent("delivery");
     else if (chat === "1" && hasAiChat) chooseIntent("duvida", msg || undefined);
     else if (tab === "conhecer") chooseIntent("conhecer");
-    else if (tab === "vitrine") chooseIntent("comprar");
+    else if (tab === "vitrine") { const cat = searchParams.get("cat"); if (cat) setCategoriaInicial(cat); chooseIntent("comprar"); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 

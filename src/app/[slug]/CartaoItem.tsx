@@ -76,6 +76,8 @@ function CartaoBase({
     // "nenhum" = card só de vitrine, não clicável.
     const destino = item.link_kind === "nenhum"
       ? null
+      : item.link_kind === "categoria-interna"
+        ? item.target_url
       : item.link_kind === "categoria"
         ? item.target_url
         : item.target_url && item.link_kind === "externo"
@@ -225,7 +227,7 @@ function CartaoBase({
       <Link
         key={item.id}
         href={destino}
-        onClick={() => trackClick({ businessId, kind: "produto", contentItemId: item.id, sessionId, targetUrl: destino })}
+        onClick={() => { if (item.link_kind !== "categoria-interna") trackClick({ businessId, kind: "produto", contentItemId: item.id, sessionId, targetUrl: destino }); }}
         className={classe}
         style={cardStyle}
       >

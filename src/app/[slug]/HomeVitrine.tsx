@@ -217,7 +217,25 @@ export function HomeVitrine({
   const [enderecoAberto, setEnderecoAberto] = useState<string | null>(null);
   // Item sem foto também entra: o cartão vira um letreiro com o nome.
   const comFoto = itens;
-  const escolhidos = (itensEscolhidos ?? []).map((id) => comFoto.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i).slice(0, MAXIMO);
+  // Categorias do Catálogo viram cartões escolhíveis (id "cat:Nome"); tocar abre a categoria.
+  const categoriasCartao: ItemVitrine[] = (() => {
+    const vistas = new Map<string, ItemVitrine>();
+    for (const i of [...itens].sort((a, b) => a.position - b.position)) {
+      const nome = i.brand_label?.trim();
+      if (!nome) continue;
+      const atual = vistas.get(nome);
+      if (atual) { if (!atual.image_url && i.image_url) { atual.image_url = i.image_url; atual.box_style = "foto"; } continue; }
+      vistas.set(nome, {
+        id: `cat:${nome}`, title: nome, description: null, price: null, price_type: null, price_max: null,
+        image_url: i.image_url, brand_label: null, type: "product", position: i.position, layout_size: "medio",
+        box_color: "neutro", footer_color: null, box_style: i.image_url ? "foto" : "cor", title_placement: "sobre",
+        target_url: `/${slug}?tab=vitrine&cat=${encodeURIComponent(nome)}`, link_kind: "categoria-interna",
+      });
+    }
+    return [...vistas.values()];
+  })();
+  const todosEscolhiveis = [...comFoto, ...categoriasCartao];
+  const escolhidos = (itensEscolhidos ?? []).map((id) => todosEscolhiveis.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i).slice(0, MAXIMO);
   const personalizado = escolhidos.length > 0;
   // Sem escolha do dono, a Home mostra as capas da vitrine: os itens sem categoria (Rodízio, Buffet, Drinks...).
   // Os pratos de um cardápio importado, que têm categoria, ficam de fora. Sem nenhuma capa, vale a ordem do catálogo.
@@ -406,7 +424,7 @@ export function HomeVitrine({
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative transition-transform duration-150 ${largo ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                     <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
-                    {podeEditar && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
+                    {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                   </li>
                 );
               })}
@@ -416,7 +434,7 @@ export function HomeVitrine({
               {mostrarNaOrdem.map((i) => (
                 <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                   <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
-                    {podeEditar && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
+                    {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                 </li>
               ))}
             </ul>
@@ -427,7 +445,7 @@ export function HomeVitrine({
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative transition-transform duration-150 ${grande ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                     <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
-                    {podeEditar && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
+                    {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                   </li>
                 );
               })}
@@ -504,9 +522,10 @@ export function HomeVitrine({
             <ul className="mt-3 min-h-0 flex-1 overflow-y-auto">
               {(() => {
                 const termo = busca.trim().toLowerCase();
-                const filtrados = itens.filter((i) => i.title.toLowerCase().includes(termo));
+                const filtrados = todosEscolhiveis.filter((i) => i.title.toLowerCase().includes(termo));
                 const marcados = naSelecao.map((e) => filtrados.find((i) => i.id === e.id)).filter((i): i is ItemVitrine => !!i);
-                const outros = filtrados.filter((i) => !naSelecao.some((e) => e.id === i.id));
+                const outros = filtrados.filter((i) => !i.id.startsWith("cat:") && !naSelecao.some((e) => e.id === i.id));
+                const outrasCategorias = filtrados.filter((i) => i.id.startsWith("cat:") && !naSelecao.some((e) => e.id === i.id));
                 const linha = (i: ItemVitrine) => {
                   const ordem = naSelecao.findIndex((e) => e.id === i.id);
                   const marcado = ordem >= 0;
@@ -532,7 +551,7 @@ export function HomeVitrine({
                         )}
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[14.5px] font-medium">{i.title}</span>
-                          {i.brand_label?.trim() && <span className="block truncate text-[12px] text-text-tertiary">{i.brand_label.trim()}</span>}
+                          {i.id.startsWith("cat:") ? <span className="block truncate text-[12px] text-text-tertiary">Categoria do Catálogo</span> : i.brand_label?.trim() && <span className="block truncate text-[12px] text-text-tertiary">{i.brand_label.trim()}</span>}
                         </span>
                         <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-medium ${marcado ? "bg-on-background text-white" : "border border-divider text-transparent"}`}>
                           {marcado ? ordem + 1 : ""}
@@ -547,6 +566,8 @@ export function HomeVitrine({
                     {marcados.map(linha)}
                     {marcados.length > 0 && outros.length > 0 && <li className="px-1 pb-1 pt-4 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros itens</li>}
                     {outros.map(linha)}
+                    {outrasCategorias.length > 0 && <li className="px-1 pb-1 pt-4 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Categorias do Catálogo</li>}
+                    {outrasCategorias.map(linha)}
                   </>
                 );
               })()}
