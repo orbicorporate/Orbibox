@@ -208,21 +208,31 @@ export function BoxDestaque({
   };
 
   const cartaoBotao = (b: BotaoDestaque, largo: boolean) => {
-    // O botão de ação usa a cor escolhida para este botão (preto quando não há escolha).
-    const corAcao = /^#[0-9a-f]{6}$/i.test(b.cor) ? b.cor : "#111318";
+    // Com uma cor escolhida para o botão, o cartão inteiro fica nessa cor; sem escolha, fica branco.
+    const fundo = /^#[0-9a-f]{6}$/i.test(b.cor) && b.cor.toLowerCase() !== "#111318" ? b.cor : null;
+    const fg = fundo ? textoSobre(fundo) : null;
+    const claro = fg === "#FFFFFF";
     return (
-    <div className={`flex items-center gap-3 rounded-full border border-divider bg-surface-white p-2 pr-4 text-left shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`}>
+    <div
+      className={`flex items-center gap-3 rounded-full p-2 pr-4 text-left ${fundo ? "" : "border border-divider bg-surface-white shadow-[0_4px_14px_rgba(17,19,24,0.06)]"} ${largura(largo)}`}
+      style={fundo ? { backgroundColor: fundo, color: fg ?? undefined, boxShadow: `0 8px 20px -8px ${fundo}99` } : undefined}
+    >
       {b.logo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={b.logo} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
       ) : (
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-[22px] text-white" style={{ background: b.cor }} aria-hidden><IconeBotao icone={b.icone} size={24} /></span>
+        <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-[22px] ${fundo ? "" : "text-white"}`} style={fundo ? { backgroundColor: claro ? "rgba(255,255,255,0.22)" : "rgba(0,0,0,0.08)" } : { background: b.cor }} aria-hidden><IconeBotao icone={b.icone} size={24} /></span>
       )}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.titulo}</span>
-        {b.sub && <span className="mt-0.5 block truncate text-[12px] text-text-secondary">{b.sub}</span>}
+        {b.sub && <span className={`mt-0.5 block truncate text-[12px] ${fundo ? "opacity-80" : "text-text-secondary"}`}>{b.sub}</span>}
       </span>
-      <button type="button" onClick={b.onClick} style={{ backgroundColor: corAcao, color: textoSobre(corAcao) }} className="shrink-0 rounded-full px-4 py-2 text-[12.5px] font-semibold">
+      <button
+        type="button"
+        onClick={b.onClick}
+        style={fundo && fg ? { backgroundColor: fg, color: fundo } : undefined}
+        className={`shrink-0 rounded-full px-4 py-2 text-[12.5px] font-semibold ${fundo ? "" : "bg-on-background text-white"}`}
+      >
         {b.acao}
       </button>
     </div>
