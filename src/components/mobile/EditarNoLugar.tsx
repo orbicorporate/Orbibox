@@ -69,6 +69,20 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
   const concluirRef = useRef(concluir);
   useEffect(() => { concluirRef.current = concluir; });
 
+  // Cada salvamento dentro do editor atualiza a página de trás na hora (com uma pequena espera
+  // para juntar vários toques seguidos), então cor, ícone e texto aparecem sem fechar o painel.
+  const router = useRouter();
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout> | null = null;
+    const ouvir = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin || (e.data as { orbibox?: string } | null)?.orbibox !== "salvou") return;
+      if (t) clearTimeout(t);
+      t = setTimeout(() => router.refresh(), 700);
+    };
+    window.addEventListener("message", ouvir);
+    return () => { window.removeEventListener("message", ouvir); if (t) clearTimeout(t); };
+  }, [router]);
+
   useEffect(() => {
     const anterior = document.body.style.overflow;
     document.body.style.overflow = "hidden";

@@ -27,6 +27,10 @@ export function aoSalvar(fn: () => void) {
 }
 export function avisarSalvo() {
   ouvintesSalvo.forEach((fn) => fn());
+  // Editor aberto por cima da página (iframe): avisa a página de trás para ela se atualizar na hora.
+  try {
+    if (typeof window !== "undefined" && window.parent !== window) window.parent.postMessage({ orbibox: "salvou" }, window.location.origin);
+  } catch { /* sem pai acessível */ }
 }
 
 // Ajuda pra chamadas do Supabase: avisa se veio erro e devolve true se deu certo.

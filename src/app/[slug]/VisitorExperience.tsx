@@ -177,6 +177,12 @@ export function VisitorExperience({
   // na Home (sem precisar ir pro painel), e isso atualiza tanto a tela na
   // hora quanto o banco.
   const [boxList, setBoxList] = useState<BoxRow[]>(boxes);
+  // Quando a página atualiza (o dono salvou algo no editor por cima), os botões novos substituem a cópia local.
+  const [boxesAnteriores, setBoxesAnteriores] = useState<BoxRow[]>(boxes);
+  if (boxes !== boxesAnteriores) {
+    setBoxesAnteriores(boxes);
+    setBoxList(boxes);
+  }
   const [editingBoxId, setEditingBoxId] = useState<string | null>(null);
   // Box com a paletinha de cor aberta na tela inicial.
   const [colorPickerBox, setColorPickerBox] = useState<string | null>(null);
