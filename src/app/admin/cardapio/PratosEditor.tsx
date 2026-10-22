@@ -8,6 +8,7 @@ import { TrazerItens } from "@/components/ui/TrazerItens";
 import { avisoDoEnvio, enviarAoCatalogo, itensDoCatalogo, mesclarNoCardapio, type ItemDoCatalogo } from "@/lib/cardapioSync";
 import { estiloFoto, nomeArquivoUnico, novoId, type CardapioItem, type CardapioSecao } from "@/lib/cardapio";
 import CampoPreco from "@/components/ui/CampoPreco";
+import { AjusteAntesDeEnviar } from "@/components/ui/AjusteAntesDeEnviar";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
 
@@ -20,6 +21,7 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
   const inputFoto = useRef<HTMLInputElement>(null);
   const alvo = useRef<{ s: string; i: string } | null>(null);
   const [subindo, setSubindo] = useState<string | null>(null);
+  const [paraAjustar, setParaAjustar] = useState<File | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   // Passagem de itens entre Cardápio e Catálogo.
   const [aviso, setAviso] = useState<string | null>(null);
@@ -120,7 +122,8 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
 
   return (
     <div className="mt-3">
-      <input ref={inputFoto} type="file" accept="image/*" className="hidden" onChange={(e) => enviarFoto(e.target.files?.[0])} />
+      <input ref={inputFoto} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; if (f.type.startsWith("image/")) { if (inputFoto.current) inputFoto.current.value = ""; setParaAjustar(f); } else void enviarFoto(f); }} />
+      {paraAjustar && <AjusteAntesDeEnviar arquivo={paraAjustar} onCancelar={() => setParaAjustar(null)} onEnviar={(g) => { setParaAjustar(null); void enviarFoto(g); }} />}
       {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
 
       {children}

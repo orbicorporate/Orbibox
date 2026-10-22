@@ -11,7 +11,6 @@ import {
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type Resumo,
 } from "@/lib/clube";
 import { OrbiAvatar, lerEsfera, lerLogoEscala } from "@/components/orbi/OrbiAvatar";
-import { AjusteFoto } from "@/components/ui/AjusteFoto";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
@@ -28,6 +27,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   const [resumo, setResumo] = useState<Resumo | null>(null);
   const [eu, setEu] = useState<Eu | null>(null);
   const [aberta, setAberta] = useState<Aberta>(null);
+  const [contatoAberto, setContatoAberto] = useState(false);
   const [pedido, setPedido] = useState<PedidoFa | null>(null);
 
   const recarregar = useCallback(async () => {
@@ -201,17 +201,17 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           aoFechar={() => setAberta(null)}
           aoMudar={recarregar}
           pedirLogin={(el) => pedirLogin("fa", el)}
-          confirmarWhats={() => setAberta({ tipo: "contato", origem: null })}
+          confirmarWhats={() => setContatoAberto(true)}
         />
       )}
-      {aberta?.tipo === "contato" && eu?.userId && (
+      {(aberta?.tipo === "contato" || contatoAberto) && eu?.userId && (
         <ContatoFolha
           businessId={businessId}
           userId={eu.userId}
           nome={nome}
           inicial={eu.contatoWhatsapp ?? eu.telefone}
-          aoFechar={() => setAberta(null)}
-          aoConcluir={async () => { setAberta(null); await recarregar(); }}
+          aoFechar={() => { setContatoAberto(false); if (aberta?.tipo === "contato") setAberta(null); }}
+          aoConcluir={async () => { setContatoAberto(false); if (aberta?.tipo === "contato") setAberta(null); await recarregar(); }}
         />
       )}
       {aberta?.tipo === "entrar" && (
@@ -599,6 +599,28 @@ const NIVEIS = [
 const CAP_ANEL = [6, 9, 12];
 const TAM = [46, 40, 36];
 
+/** Linha de ajuste com chave liga/desliga (um toque em qualquer parte da linha). */
+function LinhaAjuste({ titulo, detalhe, ligado, ocupado, aoAlternar, separador = false }: { titulo: string; detalhe: string; ligado: boolean; ocupado: boolean; aoAlternar: () => void; separador?: boolean }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={ligado}
+      disabled={ocupado}
+      onClick={aoAlternar}
+      className={`flex min-h-[68px] w-full items-center gap-3.5 px-4 py-3 text-left active:bg-surface-soft disabled:opacity-60 ${separador ? "border-t border-divider" : ""}`}
+    >
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-semibold leading-tight text-on-background">{titulo}</span>
+        <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{detalhe}</span>
+      </span>
+      <span aria-hidden className={`relative h-[28px] w-[46px] shrink-0 rounded-full transition-colors ${ligado ? "bg-[#111318]" : "bg-[#D9D7D1]"}`}>
+        <span className={`absolute top-[3px] h-[22px] w-[22px] rounded-full bg-white shadow transition-all ${ligado ? "left-[21px]" : "left-[3px]"}`} />
+      </span>
+    </button>
+  );
+}
+
 function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isOwner, resumo, aoFechar, aoMudar, pedirLogin, confirmarWhats }: {
   origem: DOMRect | null; businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar: string | null; eu: Eu; isOwner: boolean; resumo: Resumo;
   aoFechar: () => void; aoMudar: () => Promise<Eu>; pedirLogin: (el: DOMRect) => void; confirmarWhats: () => void;
@@ -613,16 +635,39 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   const [enviandoFoto, setEnviandoFoto] = useState(false);
   // Foto de perfil: primeiro recorta (redondo), depois ajusta luz, contraste, cor etc.
   const [fotoParaCortar, setFotoParaCortar] = useState<File | null>(null);
-  const [fotoParaAjustar, setFotoParaAjustar] = useState<{ arquivo: File; url: string } | null>(null);
+  const [salvandoAjuste, setSalvandoAjuste] = useState<"whats" | "marcas" | null>(null);
+  const [avisoAjuste, setAvisoAjuste] = useState<string | null>(null);
 
   async function enviarMinhaFoto(arq: File) {
     if (!eu.userId) return;
-    setFotoParaAjustar(null);
     setEnviandoFoto(true);
     try { await enviarFotoPerfil(eu.userId, arq); } catch { /* mantém a foto atual */ }
     setEnviandoFoto(false);
     await aoMudar();
     getFas(businessId).then(setFas);
+  }
+
+  async function alternarWhats() {
+    if (!eu.userId || salvandoAjuste) return;
+    const ligar = !eu.aceiteWhatsapp;
+    if (ligar && !eu.telefoneVerificado && !eu.contatoWhatsapp) return confirmarWhats();
+    setSalvandoAjuste("whats");
+    setAvisoAjuste(null);
+    await aceitarWhatsapp(businessId, eu.userId, ligar);
+    const novo = await aoMudar();
+    setSalvandoAjuste(null);
+    if (novo.aceiteWhatsapp !== ligar) setAvisoAjuste("Não consegui salvar essa escolha agora. Tente de novo.");
+  }
+
+  async function alternarMarcas() {
+    if (!eu.userId || salvandoAjuste) return;
+    const ligar = !eu.mostrarMarcas;
+    setSalvandoAjuste("marcas");
+    setAvisoAjuste(null);
+    await atualizarPerfil(eu.userId, { mostrar_marcas: ligar });
+    const novo = await aoMudar();
+    setSalvandoAjuste(null);
+    if (novo.mostrarMarcas !== ligar) setAvisoAjuste("Não consegui salvar essa escolha agora. Tente de novo.");
   }
 
   useEffect(() => {
@@ -774,54 +819,49 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                 >
                   {eu.ehFa ? "Você é fã" : "Virar fã"}
                 </button>
-                {eu.logado && eu.ehFa && (
-                  <label className="flex min-h-[44px] items-center gap-3 text-[14px] text-text-secondary">
-                    <input
-                      type="checkbox"
-                      className="h-5 w-5 accent-[#14161A]"
-                      checked={eu.aceiteWhatsapp}
-                      onChange={async (e) => {
-                        if (!eu.userId) return;
-                        if (e.target.checked && !eu.telefoneVerificado && !eu.contatoWhatsapp) return confirmarWhats();
-                        await aceitarWhatsapp(businessId, eu.userId, e.target.checked);
-                        await aoMudar();
-                      }}
-                    />
-                    Receber novidades no WhatsApp
-                  </label>
-                )}
-                {eu.logado && eu.ehFa && (
-                  <label className="flex min-h-[44px] items-center gap-3 text-[14px] text-text-secondary">
-                    <input
-                      type="checkbox"
-                      className="h-5 w-5 accent-[#14161A]"
-                      checked={eu.mostrarMarcas}
-                      onChange={async (e) => {
-                        if (!eu.userId) return;
-                        await atualizarPerfil(eu.userId, { mostrar_marcas: e.target.checked });
-                        await aoMudar();
-                      }}
-                    />
-                    Mostrar de quais marcas sou fã
-                  </label>
-                )}
                 {eu.logado && eu.userId && (
-                  <label className="flex min-h-[44px] cursor-pointer items-center gap-2.5 text-[14px] text-text-secondary">
-                    <Rosto url={eu.foto} nome={eu.nome} size={30} />
-                    <span className="underline underline-offset-4">{enviandoFoto ? "Enviando..." : eu.foto ? "Trocar minha foto" : "Colocar minha foto"}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={(e) => {
-                        const arq = e.target.files?.[0];
-                        e.target.value = "";
-                        if (!arq || !eu.userId) return;
-                        setFotoParaCortar(arq);
-                      }}
-                    />
-                  </label>
+                  <div className="mt-2 w-full max-w-[360px] overflow-hidden rounded-[24px] bg-white ring-1 ring-divider">
+                    {eu.ehFa && (
+                      <>
+                        <LinhaAjuste
+                          titulo="Novidades no WhatsApp"
+                          detalhe={`Receba promoções e avisos de ${nome}.`}
+                          ligado={eu.aceiteWhatsapp}
+                          ocupado={salvandoAjuste === "whats"}
+                          aoAlternar={alternarWhats}
+                        />
+                        <LinhaAjuste
+                          titulo="Mostrar minhas marcas"
+                          detalhe="Outros fãs veem de quais marcas você é fã."
+                          ligado={eu.mostrarMarcas}
+                          ocupado={salvandoAjuste === "marcas"}
+                          aoAlternar={alternarMarcas}
+                          separador
+                        />
+                      </>
+                    )}
+                    <label className={`flex min-h-[68px] cursor-pointer items-center gap-3.5 px-4 py-3 ${eu.ehFa ? "border-t border-divider" : ""}`}>
+                      <Rosto url={eu.foto} nome={eu.nome} size={40} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[15px] font-semibold leading-tight text-on-background">Minha foto</span>
+                        <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{enviandoFoto ? "Enviando…" : "Aparece ao lado do seu nome no Clube."}</span>
+                      </span>
+                      <span className="flex min-h-[36px] shrink-0 items-center rounded-full bg-surface-soft px-4 text-[13px] font-semibold text-on-background">{eu.foto ? "Trocar" : "Adicionar"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const arq = e.target.files?.[0];
+                          e.target.value = "";
+                          if (!arq || !eu.userId) return;
+                          setFotoParaCortar(arq);
+                        }}
+                      />
+                    </label>
+                  </div>
                 )}
+                {avisoAjuste && <p role="alert" className="max-w-[340px] text-center text-[13px] text-[#C2362E]">{avisoAjuste}</p>}
                 {fotoParaCortar && createPortal(
                   <ImageCropModal
                     file={fotoParaCortar}
@@ -831,26 +871,15 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                     camada="z-[160]"
                     onCancel={() => setFotoParaCortar(null)}
                     onConfirm={(blob) => {
-                      const arquivo = new File([blob], "minha-foto.jpg", { type: blob.type || "image/jpeg" });
+                      const arquivo = new File([blob], blob.type === "image/webp" ? "minha-foto.webp" : "minha-foto.jpg", { type: blob.type || "image/jpeg" });
                       setFotoParaCortar(null);
-                      setFotoParaAjustar({ arquivo, url: URL.createObjectURL(arquivo) });
+                      void enviarMinhaFoto(arquivo);
                     }}
                   />,
                   document.body,
                 )}
-                {fotoParaAjustar && createPortal(
-                  <AjusteFoto
-                    url={fotoParaAjustar.url}
-                    camada="z-[170]"
-                    redonda
-                    onFechar={() => { URL.revokeObjectURL(fotoParaAjustar.url); setFotoParaAjustar(null); }}
-                    onPular={() => enviarMinhaFoto(fotoParaAjustar.arquivo)}
-                    onAplicar={(ajustada) => enviarMinhaFoto(ajustada)}
-                  />,
-                  document.body,
-                )}
                 {eu.logado && (
-                  <button type="button" onClick={async () => { await sairDoClube(); window.location.reload(); }} className="min-h-[44px] text-[12.5px] text-text-tertiary underline underline-offset-4">
+                  <button type="button" onClick={async () => { await sairDoClube(); window.location.reload(); }} className="mt-1 min-h-[44px] text-[13px] text-text-tertiary underline underline-offset-4">
                     Sair da minha conta de fã
                   </button>
                 )}

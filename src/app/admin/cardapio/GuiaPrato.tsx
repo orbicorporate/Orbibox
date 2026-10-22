@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { novoId, type CardapioItem } from "@/lib/cardapio";
+import { AjusteAntesDeEnviar } from "@/components/ui/AjusteAntesDeEnviar";
 
 const SUGESTOES = ["Entradas", "Pratos principais", "Bebidas", "Sobremesas"];
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background";
@@ -36,6 +37,7 @@ export function GuiaPrato({ businessId, categorias, onSalvar, onFechar }: { busi
   const [comDescricao, setComDescricao] = useState(false);
   const [foto, setFoto] = useState<string | null>(null);
   const [subindo, setSubindo] = useState(false);
+  const [paraAjustar, setParaAjustar] = useState<File | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [ultimo, setUltimo] = useState("");
 
@@ -71,7 +73,8 @@ export function GuiaPrato({ businessId, categorias, onSalvar, onFechar }: { busi
 
   return (
     <div className="mt-4 rounded-[24px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
-      <input ref={inputFoto} type="file" accept="image/*" className="hidden" onChange={(e) => enviarFoto(e.target.files?.[0])} />
+      <input ref={inputFoto} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; if (f.type.startsWith("image/")) { if (inputFoto.current) inputFoto.current.value = ""; setParaAjustar(f); } else void enviarFoto(f); }} />
+      {paraAjustar && <AjusteAntesDeEnviar arquivo={paraAjustar} onCancelar={() => setParaAjustar(null)} onEnviar={(g) => { setParaAjustar(null); void enviarFoto(g); }} />}
 
       {passo === 1 && (
         <>

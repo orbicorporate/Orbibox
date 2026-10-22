@@ -203,7 +203,10 @@ export async function salvarContatoWhatsapp(businessId: string, userId: string, 
     { business_id: businessId, customer_id: userId, contato_whatsapp: telefone, aceite_whatsapp: true },
     { onConflict: "business_id,customer_id" },
   );
-  return error ? "Não consegui salvar seu número agora. Tente de novo." : null;
+  if (error) return "Não consegui salvar seu número agora. Tente de novo.";
+  // Confere se o aceite realmente ficou ligado (o banco pode recusar sem avisar).
+  const { data } = await clubeDb().from("fans").select("aceite_whatsapp").eq("business_id", businessId).eq("customer_id", userId).maybeSingle();
+  return data?.aceite_whatsapp ? null : "Guardei seu número, mas não consegui ativar o recebimento de novidades. Tente de novo em instantes.";
 }
 
 /** Leve: só diz se quem está logado já é fã desta marca. */

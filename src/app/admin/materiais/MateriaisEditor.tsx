@@ -6,6 +6,7 @@ import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { createClient } from "@/lib/supabase/client";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import type { Json } from "@/lib/supabase/types";
+import { AjusteAntesDeEnviar } from "@/components/ui/AjusteAntesDeEnviar";
 import { CORES_BOTAO, lerCorBotoes, pesoLegivel, textoSobre } from "@/lib/cardapio";
 import { MAX_MATERIAIS, lerMateriais, nomeUnico, novoIdMaterial, tipoDoArquivo, type Material } from "@/lib/materiais";
 
@@ -30,6 +31,7 @@ export function MateriaisEditor({ businessId, boxId: boxInicial, config, ativo: 
   const [ativo, setAtivo] = useState(ativoInicial);
   const [criando, setCriando] = useState(false);
   const [subindo, setSubindo] = useState<string | null>(null);
+  const [paraAjustar, setParaAjustar] = useState<{ arquivo: File; tipo: "capa" | "botao" } | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [linkDe, setLinkDe] = useState<string | null>(null);
   const [link, setLink] = useState("");
@@ -189,8 +191,9 @@ export function MateriaisEditor({ businessId, boxId: boxInicial, config, ativo: 
       <p className="mt-1 text-[14px] leading-snug text-text-secondary">Guias, cursos, planilhas e documentos para o cliente baixar. Você escolhe o que é livre e o que pede contato antes.</p>
 
       <input ref={inputArquivo} type="file" accept="application/pdf" className="hidden" onChange={(e) => enviarArquivo(e.target.files?.[0])} />
-      <input ref={inputCapa} type="file" accept="image/*" className="hidden" onChange={(e) => enviarCapa(e.target.files?.[0])} />
-      <input ref={inputBotao} type="file" accept="image/*" className="hidden" onChange={(e) => enviarImagemBotao(e.target.files?.[0])} />
+      <input ref={inputCapa} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; if (inputCapa.current) inputCapa.current.value = ""; setParaAjustar({ arquivo: f, tipo: "capa" }); }} />
+      <input ref={inputBotao} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; if (inputBotao.current) inputBotao.current.value = ""; setParaAjustar({ arquivo: f, tipo: "botao" }); }} />
+      {paraAjustar && <AjusteAntesDeEnviar arquivo={paraAjustar.arquivo} onCancelar={() => setParaAjustar(null)} onEnviar={(g) => { const t = paraAjustar.tipo; setParaAjustar(null); void (t === "capa" ? enviarCapa(g) : enviarImagemBotao(g)); }} />}
 
       {!boxId ? (
         <div className="mt-5 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]">

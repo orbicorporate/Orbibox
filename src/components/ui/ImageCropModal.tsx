@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { ZERO, exportarAjustada, temAjustes, type Ajustes } from "@/lib/foto-edicao";
+import { PainelAjustes } from "./PainelAjustes";
 
 export type Ratio = "quadrado" | "retrato" | "paisagem" | "banner";
 export const RATIOS: Record<Ratio, { value: number; label: string }> = {
@@ -52,6 +54,11 @@ export function ImageCropModal({
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ startX: number; startY: number; origin: { x: number; y: number } } | null>(null);
+  // Segunda etapa (opcional): ajustar luz, cor etc. na foto já recortada.
+  const [cortada, setCortada] = useState<{ blob: Blob; url: string } | null>(null);
+  const [ajustes, setAjustes] = useState<Ajustes>(ZERO);
+  const [salvando, setSalvando] = useState(false);
+  const [erroAjuste, setErroAjuste] = useState<string | null>(null);
 
   // Uma URL de objeto por arquivo, sem efeito, sem setState fora de handler.
   const imgUrl = useMemo(() => URL.createObjectURL(file), [file]);
@@ -102,8 +109,9 @@ export function ImageCropModal({
     dragRef.current = null;
   }
 
-  async function confirm() {
-    if (!natural || !imgUrl) return;
+  /** Recorta o que está dentro da moldura e devolve a foto pronta. */
+  async function recortar(): Promise<Blob | null> {
+    if (!natural || !imgUrl) return null;
     const img = new Image();
     img.src = imgUrl;
     await img.decode();
@@ -122,7 +130,7 @@ export function ImageCropModal({
     canvas.width = outW;
     canvas.height = outH;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return null;
     // Suaviza o redimensionamento (melhor qualidade ao reduzir).
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
@@ -130,21 +138,64 @@ export function ImageCropModal({
 
     // WebP é ~30% mais leve que JPEG na mesma qualidade. Se o navegador não
     // suportar exportar WebP (raro), cai pra JPEG automaticamente.
-    const done = (blob: Blob | null) => { if (blob) onConfirm(blob, ratio); };
-    canvas.toBlob(
-      (webp) => {
-        if (webp && webp.type === "image/webp") done(webp);
-        else canvas.toBlob(done, "image/jpeg", 0.9);
-      },
-      "image/webp",
-      0.85
-    );
+    const webp = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/webp", 0.85));
+    if (webp && webp.type === "image/webp") return webp;
+    return new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/jpeg", 0.9));
+  }
+
+  async function confirm() {
+    const blob = await recortar();
+    if (blob) onConfirm(blob, ratio);
+  }
+
+  async function irParaAjuste() {
+    const blob = await recortar();
+    if (!blob) return;
+    setAjustes(ZERO);
+    setErroAjuste(null);
+    setCortada({ blob, url: URL.createObjectURL(blob) });
+  }
+
+  function voltarParaRecorte() {
+    if (cortada) URL.revokeObjectURL(cortada.url);
+    setCortada(null);
+  }
+
+  async function concluirAjuste() {
+    if (!cortada) return;
+    if (!temAjustes(ajustes)) return onConfirm(cortada.blob, ratio);
+    setSalvando(true);
+    setErroAjuste(null);
+    try {
+      const final = await exportarAjustada(cortada.url, ajustes, { max: 2000, tipo: cortada.blob.type });
+      onConfirm(final, ratio);
+    } catch {
+      setErroAjuste("Não consegui salvar a foto. Tente de novo.");
+    }
+    setSalvando(false);
   }
 
   return (
     <div className={`fixed inset-0 ${camada} flex flex-col items-center justify-center bg-black/70 px-6`}>
-      <div className="w-full max-w-[380px] rounded-[24px] bg-surface-white p-5">
-        <p className="text-center text-[14px] font-medium">Ajustar foto</p>
+      {cortada ? (
+        <div className="max-h-[94dvh] w-full max-w-[420px] overflow-y-auto rounded-[24px] bg-white p-5">
+          <p className="text-center text-[14px] font-medium">Luz e cor</p>
+          <div className="mt-3">
+            <PainelAjustes url={cortada.url} ajustes={ajustes} onAjustes={setAjustes} redonda={redonda && ratio === "quadrado"} />
+          </div>
+          {erroAjuste && <p role="alert" className="mt-3 text-center text-[12.5px] text-red-600">{erroAjuste}</p>}
+          <div className="mt-5 flex gap-2">
+            <button type="button" onClick={voltarParaRecorte} disabled={salvando} className="flex-1 rounded-full bg-surface-soft py-3 text-[13px] font-medium">
+              Voltar
+            </button>
+            <button type="button" onClick={concluirAjuste} disabled={salvando} className="flex-1 rounded-full bg-button-primary py-3 text-[13px] font-medium text-white disabled:opacity-60">
+              {salvando ? "Salvando…" : "Usar foto"}
+            </button>
+          </div>
+        </div>
+      ) : (
+      <div className="max-h-[94dvh] w-full max-w-[380px] overflow-y-auto rounded-[24px] bg-surface-white p-5">
+        <p className="text-center text-[14px] font-medium">Enquadrar foto</p>
 
         <div className="mt-4 flex justify-center gap-2">
           {lockedRatio ? (
@@ -220,7 +271,11 @@ export function ImageCropModal({
             Usar foto
           </button>
         </div>
+        <button type="button" onClick={irParaAjuste} className="mt-2 min-h-[44px] w-full rounded-full text-[13px] font-medium text-text-secondary underline underline-offset-4">
+          Ajustar luz e cor
+        </button>
       </div>
+      )}
     </div>
   );
 }
