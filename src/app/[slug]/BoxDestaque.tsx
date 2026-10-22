@@ -12,6 +12,7 @@ import Link from "next/link";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 import { formatPrice } from "@/lib/showcase";
+import { textoSobre } from "@/lib/cardapio";
 import type { ItemCartao } from "./CartaoItem";
 
 export type Destaque = { t: "voucher" | "item" | "botao"; id: string };
@@ -206,7 +207,10 @@ export function BoxDestaque({
     );
   };
 
-  const cartaoBotao = (b: BotaoDestaque, largo: boolean) => (
+  const cartaoBotao = (b: BotaoDestaque, largo: boolean) => {
+    // O botão de ação usa a cor escolhida para este botão (preto quando não há escolha).
+    const corAcao = /^#[0-9a-f]{6}$/i.test(b.cor) ? b.cor : "#111318";
+    return (
     <div className={`flex items-center gap-3 rounded-full border border-divider bg-surface-white p-2 pr-4 text-left shadow-[0_4px_14px_rgba(17,19,24,0.06)] ${largura(largo)}`}>
       {b.logo ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -218,11 +222,12 @@ export function BoxDestaque({
         <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.titulo}</span>
         {b.sub && <span className="mt-0.5 block truncate text-[12px] text-text-secondary">{b.sub}</span>}
       </span>
-      <button type="button" onClick={b.onClick} className="shrink-0 rounded-full bg-on-background px-4 py-2 text-[12.5px] font-semibold text-white">
+      <button type="button" onClick={b.onClick} style={{ backgroundColor: corAcao, color: textoSobre(corAcao) }} className="shrink-0 rounded-full px-4 py-2 text-[12.5px] font-semibold">
         {b.acao}
       </button>
     </div>
-  );
+    );
+  };
 
   const cartaoItem = (i: ItemCartao, largo: boolean) => {
     const destino = i.link_kind === "nenhum" ? null : i.link_kind === "categoria" ? i.target_url : i.target_url && i.link_kind === "externo" ? i.target_url : `/${slug}/p/${i.id}`;
