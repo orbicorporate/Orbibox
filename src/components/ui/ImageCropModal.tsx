@@ -34,10 +34,16 @@ export function ImageCropModal({
   lockedReason,
   onConfirm,
   onCancel,
+  camada = "z-50",
+  redonda = false,
 }: {
   file: File;
   lockedRatio?: Ratio | null;
   lockedReason?: string;
+  /** Classe de z-index, para abrir por cima de telas que já ficam acima do padrão. */
+  camada?: string;
+  /** Mostra a moldura redonda (foto de perfil). */
+  redonda?: boolean;
   onConfirm: (blob: Blob, ratio: Ratio) => void;
   onCancel: () => void;
 }) {
@@ -136,7 +142,7 @@ export function ImageCropModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 px-6">
+    <div className={`fixed inset-0 ${camada} flex flex-col items-center justify-center bg-black/70 px-6`}>
       <div className="w-full max-w-[380px] rounded-[24px] bg-surface-white p-5">
         <p className="text-center text-[14px] font-medium">Ajustar foto</p>
 
@@ -164,7 +170,7 @@ export function ImageCropModal({
         )}
 
         <div
-          className="relative mx-auto mt-4 touch-none overflow-hidden rounded-2xl bg-surface-soft"
+          className={`relative mx-auto mt-4 touch-none overflow-hidden bg-surface-soft ${redonda && ratio === "quadrado" ? "rounded-full" : "rounded-2xl"}`}
           style={{ width: FRAME_W, height: frameH }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}

@@ -50,7 +50,17 @@ function desenhar(img: HTMLImageElement, max: number): HTMLCanvasElement {
  * Ajuste rápido da foto: clarear, contraste e cor. Roda no próprio aparelho,
  * sem custo e sem esperar a IA. Devolve a foto nova como arquivo.
  */
-export function AjusteFoto({ url, onAplicar, onFechar }: { url: string; onAplicar: (arquivo: File) => void; onFechar: () => void }) {
+export function AjusteFoto({
+  url, onAplicar, onFechar, onPular, camada = "z-[130]", redonda = false,
+}: {
+  url: string;
+  onAplicar: (arquivo: File) => void;
+  onFechar: () => void;
+  /** Se vier, mostra "Usar sem ajustar" (seguir com a foto como está). */
+  onPular?: () => void;
+  camada?: string;
+  redonda?: boolean;
+}) {
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [a, setA] = useState<Ajustes>(ZERO);
@@ -124,7 +134,7 @@ export function AjusteFoto({ url, onAplicar, onFechar }: { url: string; onAplica
   );
 
   return createPortal(
-    <div className="fixed inset-0 z-[130] flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Ajustar a foto">
+    <div className={`fixed inset-0 ${camada} flex items-end justify-center sm:items-center sm:p-6`} role="dialog" aria-modal="true" aria-label="Ajustar a foto">
       <button aria-label="Fechar" onClick={onFechar} className="absolute inset-0 bg-black/45" />
       <div className="relative flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
         <div className="flex items-center justify-between border-b border-divider px-5 py-3.5">
@@ -133,7 +143,7 @@ export function AjusteFoto({ url, onAplicar, onFechar }: { url: string; onAplica
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4">
           <div className="flex justify-center rounded-2xl bg-[#EFEDE8] p-2">
-            {img ? <canvas ref={tela} className="max-h-[300px] w-auto max-w-full rounded-xl" /> : <p className="py-16 text-[13px] text-text-secondary">{erro ?? "Abrindo a foto…"}</p>}
+            {img ? <canvas ref={tela} className={`max-h-[300px] w-auto max-w-full ${redonda ? "rounded-full" : "rounded-xl"}`} /> : <p className="py-16 text-[13px] text-text-secondary">{erro ?? "Abrindo a foto…"}</p>}
           </div>
           {img && (
             <div className="flex flex-col gap-3.5">
@@ -153,8 +163,13 @@ export function AjusteFoto({ url, onAplicar, onFechar }: { url: string; onAplica
         </div>
         <div className="border-t border-divider px-5 py-3.5">
           <button type="button" onClick={confirmar} disabled={!img || !mudou || aplicando} className="min-h-[50px] w-full rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">
-            {aplicando ? "Aplicando…" : "Aplicar na foto"}
+            {aplicando ? "Aplicando…" : onPular ? "Usar esta foto" : "Aplicar na foto"}
           </button>
+          {onPular && (
+            <button type="button" onClick={onPular} disabled={aplicando} className="mt-2 min-h-[44px] w-full rounded-full text-[13.5px] font-medium text-text-secondary">
+              Usar sem ajustar
+            </button>
+          )}
         </div>
       </div>
     </div>,

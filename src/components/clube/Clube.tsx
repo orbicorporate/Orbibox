@@ -11,6 +11,8 @@ import {
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type Resumo,
 } from "@/lib/clube";
 import { OrbiAvatar, lerEsfera, lerLogoEscala } from "@/components/orbi/OrbiAvatar";
+import { AjusteFoto } from "@/components/ui/AjusteFoto";
+import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
 type Aberta = { tipo: "avaliacoes" | "fas" | "entrar" | "contato"; origem: DOMRect | null } | null;
@@ -609,6 +611,19 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   const [verContatos, setVerContatos] = useState(false);
   const [afins, setAfins] = useState<MarcaAfim[]>([]);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
+  // Foto de perfil: primeiro recorta (redondo), depois ajusta luz, contraste, cor etc.
+  const [fotoParaCortar, setFotoParaCortar] = useState<File | null>(null);
+  const [fotoParaAjustar, setFotoParaAjustar] = useState<{ arquivo: File; url: string } | null>(null);
+
+  async function enviarMinhaFoto(arq: File) {
+    if (!eu.userId) return;
+    setFotoParaAjustar(null);
+    setEnviandoFoto(true);
+    try { await enviarFotoPerfil(eu.userId, arq); } catch { /* mantém a foto atual */ }
+    setEnviandoFoto(false);
+    await aoMudar();
+    getFas(businessId).then(setFas);
+  }
 
   useEffect(() => {
     let vivo = true;
@@ -798,18 +813,41 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                       type="file"
                       accept="image/*"
                       className="sr-only"
-                      onChange={async (e) => {
+                      onChange={(e) => {
                         const arq = e.target.files?.[0];
                         e.target.value = "";
                         if (!arq || !eu.userId) return;
-                        setEnviandoFoto(true);
-                        try { await enviarFotoPerfil(eu.userId, arq); } catch { /* mantém a foto atual */ }
-                        setEnviandoFoto(false);
-                        await aoMudar();
-                        getFas(businessId).then(setFas);
+                        setFotoParaCortar(arq);
                       }}
                     />
                   </label>
+                )}
+                {fotoParaCortar && createPortal(
+                  <ImageCropModal
+                    file={fotoParaCortar}
+                    lockedRatio="quadrado"
+                    lockedReason="Sua foto aparece redonda. Arraste e aproxime para enquadrar."
+                    redonda
+                    camada="z-[160]"
+                    onCancel={() => setFotoParaCortar(null)}
+                    onConfirm={(blob) => {
+                      const arquivo = new File([blob], "minha-foto.jpg", { type: blob.type || "image/jpeg" });
+                      setFotoParaCortar(null);
+                      setFotoParaAjustar({ arquivo, url: URL.createObjectURL(arquivo) });
+                    }}
+                  />,
+                  document.body,
+                )}
+                {fotoParaAjustar && createPortal(
+                  <AjusteFoto
+                    url={fotoParaAjustar.url}
+                    camada="z-[170]"
+                    redonda
+                    onFechar={() => { URL.revokeObjectURL(fotoParaAjustar.url); setFotoParaAjustar(null); }}
+                    onPular={() => enviarMinhaFoto(fotoParaAjustar.arquivo)}
+                    onAplicar={(ajustada) => enviarMinhaFoto(ajustada)}
+                  />,
+                  document.body,
                 )}
                 {eu.logado && (
                   <button type="button" onClick={async () => { await sairDoClube(); window.location.reload(); }} className="min-h-[44px] text-[12.5px] text-text-tertiary underline underline-offset-4">
