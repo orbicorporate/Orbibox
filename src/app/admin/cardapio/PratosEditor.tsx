@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useImperativeHandle, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AjustarFoto } from "./AjustarFoto";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
@@ -16,7 +16,9 @@ const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py
  * Editor dos pratos do cardápio: categorias com pratos. Só o nome é obrigatório,
  * descrição e foto são opcionais. Sem foto, o cliente vê o prato só com texto.
  */
-export function PratosEditor({ businessId, secoes, onChange, children }: { businessId: string; secoes: CardapioSecao[]; onChange: (s: CardapioSecao[]) => void; children?: React.ReactNode }) {
+export type PratosEditorAcoes = { trazer: () => void };
+
+export function PratosEditor({ businessId, secoes, onChange, barra, ref, children }: { businessId: string; secoes: CardapioSecao[]; onChange: (s: CardapioSecao[]) => void; /** Botões do topo (+ Prato e Ferramentas). Sem ela, a barra não aparece. */ barra?: { onNovo: () => void; onFerramentas: () => void }; ref?: React.Ref<PratosEditorAcoes>; children?: React.ReactNode }) {
   const supabase = useRef(createClient()).current;
   const inputFoto = useRef<HTMLInputElement>(null);
   const alvo = useRef<{ s: string; i: string } | null>(null);
@@ -69,6 +71,8 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
     const jaTem = new Set(secoes.flatMap((s) => s.itens.map((i) => i.nome.trim().toLowerCase())));
     setTrazendo({ carregando: false, itens: todos.filter((i) => !jaTem.has(i.titulo.trim().toLowerCase())) });
   }
+  // Permite que a folha Ferramentas peça "Copiar do Catálogo".
+  useImperativeHandle(ref, () => ({ trazer: () => { void abrirTrazer(); } }));
   function trazer(chaves: string[]) {
     const escolhidos = (trazendo?.itens ?? []).filter((i) => chaves.includes(i.id));
     const m = mesclarNoCardapio(secoes, escolhidos);
@@ -126,16 +130,15 @@ export function PratosEditor({ businessId, secoes, onChange, children }: { busin
       {paraAjustar && <AjusteAntesDeEnviar arquivo={paraAjustar} onCancelar={() => setParaAjustar(null)} onEnviar={(g) => { setParaAjustar(null); void enviarFoto(g); }} />}
       {erro && <p role="alert" className="mt-2 text-[13px] text-red-600">{erro}</p>}
 
-      {children}
+      {barra && (
+        <div className="flex gap-2">
+          <button type="button" onClick={barra.onNovo} className="min-h-[48px] flex-1 rounded-full bg-on-background px-5 text-[14.5px] font-semibold text-white active:scale-[0.98]">+ Prato</button>
+          <button type="button" onClick={barra.onFerramentas} className="min-h-[48px] flex-1 rounded-full border border-divider bg-surface-white px-5 text-[14.5px] font-medium active:scale-[0.98]">Ferramentas</button>
+        </div>
+      )}
+      {aviso && <p role="status" className="mt-2 px-1 text-[13px] font-medium text-text-secondary">{aviso}</p>}
 
-      <div className="mt-4">
-        <button type="button" onClick={abrirTrazer} className="flex min-h-[56px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white pl-3 pr-5 text-left text-[15px] font-semibold active:scale-[0.99]">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[15px]" aria-hidden>↓</span>
-          Copiar itens do catálogo
-        </button>
-        <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Já cadastrou itens no catálogo? Copie para cá com foto, preço e categoria. É uma cópia: mudar um lado não muda o outro.</p>
-        {aviso && <p role="status" className="mt-1.5 px-4 text-[12.5px] font-medium text-text-secondary">{aviso}</p>}
-      </div>
+      {children}
 
       {secoes.length > 1 && (
         <div className="mt-3 flex items-center justify-between gap-2">

@@ -112,8 +112,8 @@ export function RefazerFotos({ businessId, secoes, pdfs, onChange }: { businessI
   const ocupado = fase === "lendo" || fase === "fotos";
   return (
     <div className="mt-4 rounded-[22px] bg-surface-soft p-4">
-      <p className="text-[14.5px] font-semibold">Refazer as fotos pelo PDF</p>
-      <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">A Orbi lê o PDF de novo e troca a foto de cada prato pelo recorte da foto no PDF. Nome, preço e descrição não mudam.</p>
+      <p className="text-[14.5px] font-semibold">Refazer fotos pelo PDF</p>
+      <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">A Orbi troca a foto de cada prato pela do PDF. Nome e preço não mudam.</p>
       <ModoFotos valor={modo} onChange={setModo} disabled={ocupado} semOpcaoSem />
       {modo === "recortar" && <CorFundoFotos valor={cor} onChange={(c) => { setCor(c); guardarCorFundo(c); }} disabled={ocupado} />}
       {erro && <p role="alert" className="mt-1 text-[13px] text-red-600">{erro}</p>}
@@ -121,7 +121,7 @@ export function RefazerFotos({ businessId, secoes, pdfs, onChange }: { businessI
         {fase === "lendo" ? <><OrbiMiniVerde size={20} />A Orbi está lendo o PDF…</> : fase === "fotos" ? <><OrbiMiniVerde size={20} progresso={feitas.total ? feitas.n / feitas.total : 0} />Refazendo {feitas.n} de {feitas.total}…</> : "Refazer fotos"}
       </button>
       {fase === "fotos" && feitas.total > 0 && <OrbiPontos n={feitas.n} total={feitas.total} className="mx-auto mt-3" />}
-      {modo === "recortar" && <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">Na primeira vez baixa o recorte de fundo (uns 40 MB) e leva alguns segundos por foto. Pode deixar aberto.</p>}
+      {modo === "recortar" && <p className="mt-1.5 text-[12px] leading-snug text-text-tertiary">Na primeira vez baixa 40 MB e leva alguns segundos por foto.</p>}
     </div>
   );
 }

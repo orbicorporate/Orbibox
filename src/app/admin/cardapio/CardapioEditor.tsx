@@ -7,7 +7,8 @@ import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ImportarCardapio } from "./ImportarCardapio";
 import { RefazerFotos } from "./RefazerFotos";
 import { PdfCardapio } from "./PdfCardapio";
-import { PratosEditor } from "./PratosEditor";
+import { PratosEditor, type PratosEditorAcoes } from "./PratosEditor";
+import { FerramentasCardapio } from "./FerramentasCardapio";
 import { GuiaPrato } from "./GuiaPrato";
 import { DeliveryEditor } from "../delivery/DeliveryEditor";
 import type { DeliveryApp } from "@/lib/delivery";
@@ -27,6 +28,9 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
   const [sub, setSub] = useState((config.subtitle as string) || "Veja os pratos e preços");
   const [ativo, setAtivo] = useState(ativoInicial);
   const [guia, setGuia] = useState(false);
+  const [ferramentas, setFerramentas] = useState(false);
+  const [chaveColar, setChaveColar] = useState(0);
+  const refPratos = useRef<PratosEditorAcoes>(null);
   const [lerPdf, setLerPdf] = useState<{ url: string; nome: string; chave: number } | null>(null);
   const [aba, setAba] = useState<"pdf" | "pratos">(() => (totalItens(lerSecoes(config)) > 0 ? "pratos" : "pdf"));
   const [criando, setCriando] = useState(false);
@@ -124,18 +128,18 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
   const nPdfs = pdfs.length;
   const clienteVe =
     nPratos > 0 && nPdfs > 0
-      ? "O cliente vê os pratos e os botões para abrir os PDFs."
+      ? "O cliente vê os pratos e os botões dos PDFs."
       : nPratos > 0
         ? "O cliente vê os pratos por categoria."
         : nPdfs > 0
-          ? nPdfs === 1 ? "O cliente vê só o botão para abrir o PDF." : "O cliente vê um botão para cada PDF."
-          : "Ainda não há nada para o cliente ver. Comece enviando um PDF ou montando os pratos.";
+          ? nPdfs === 1 ? "O cliente vê o botão do PDF." : "O cliente vê um botão por PDF."
+          : "Comece enviando um PDF ou montando os pratos.";
 
   return (
     <div className="flex flex-col pb-40">
       <Link href="/admin/boxes" className="mt-12 text-[14px] text-text-tertiary hover:underline">← Botões da home</Link>
       <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.02em]">Cardápio e delivery</h1>
-      <p className="mt-1 text-[14px] leading-snug text-text-secondary">Mostre seu cardápio e ligue os apps onde o cliente pede. Tudo nesta tela.</p>
+      <p className="mt-1 text-[14px] leading-snug text-text-secondary">Cardápio e apps de pedido, tudo aqui.</p>
 
       {!boxId ? (
         <div className="mt-5 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
@@ -149,7 +153,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
         <>
           <section className="mt-6" aria-label="Seu cardápio">
             <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Seu cardápio</h2>
-            <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Envie um PDF, monte a lista de pratos, ou use os dois.</p>
+            <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">PDF, pratos ou os dois.</p>
 
             <div role="tablist" aria-label="Como mostrar o cardápio" className="mt-3 flex rounded-full bg-surface-soft p-1">
               {([["pdf", "PDF", nPdfs], ["pratos", "Itens", nPratos]] as const).map(([id, rotulo, n]) => (
@@ -171,23 +175,31 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
               {aba === "pdf" ? (
                 <PdfCardapio businessId={businessId} pdfs={pdfs} onChange={trocarPdfs} onMontar={montarDoPdf} />
               ) : (
-                <PratosEditor businessId={businessId} secoes={secoes} onChange={mudarSecoes}>
-                  {!guia && <RefazerFotos businessId={businessId} secoes={secoes} pdfs={pdfs} onChange={mudarSecoes} />}
+                <PratosEditor ref={refPratos} businessId={businessId} secoes={secoes} onChange={mudarSecoes} barra={nPratos > 0 ? { onNovo: () => setGuia(true), onFerramentas: () => setFerramentas(true) } : undefined}>
                   {guia ? (
                     <GuiaPrato businessId={businessId} categorias={secoes.map((x) => x.nome)} onSalvar={adicionarPrato} onFechar={() => setGuia(false)} />
                   ) : (
-                    <ImportarCardapio businessId={businessId} doPdf={lerPdf} onConsumido={() => setLerPdf(null)} compacto={nPratos > 0} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={() => setGuia(true)} />
+                    <ImportarCardapio businessId={businessId} doPdf={lerPdf} onConsumido={() => setLerPdf(null)} compacto={nPratos > 0} abrirChave={chaveColar} onAdicionar={(novas) => mudarSecoes([...secoes, ...novas])} onManual={() => setGuia(true)} />
                   )}
                 </PratosEditor>
               )}
             </div>
 
             <p className="mt-3 rounded-2xl bg-surface-soft px-4 py-3 text-[13px] leading-snug text-text-secondary">{clienteVe}</p>
+            <FerramentasCardapio
+              aberto={ferramentas}
+              aoFechar={() => setFerramentas(false)}
+              linhas={[
+                { id: "colar", titulo: "Colar mais pratos", texto: "Cole o texto e a Orbi organiza", aoTocar: () => { setFerramentas(false); setAba("pratos"); setChaveColar((c) => c + 1); } },
+                { id: "trazer", titulo: "Copiar do Catálogo", texto: "Traz foto, preço e categoria", aoTocar: () => { setFerramentas(false); setAba("pratos"); refPratos.current?.trazer(); } },
+              ]}
+              refazer={pdfs.length > 0 && nPratos > 0 ? <RefazerFotos businessId={businessId} secoes={secoes} pdfs={pdfs} onChange={mudarSecoes} /> : null}
+            />
           </section>
 
           <section className="mt-8" aria-label="Delivery">
             <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Pedir por delivery</h2>
-            <p className="mb-3 mt-0.5 text-[13px] leading-snug text-text-secondary">Opcional. Aparece no cardápio como botão para pedir.</p>
+            <p className="mb-3 mt-0.5 text-[13px] leading-snug text-text-secondary">Opcional. Vira um botão de pedir.</p>
             <DeliveryEditor embutido businessId={businessId} boxId={delivery.boxId} config={delivery.config} apps={delivery.apps} ativo={delivery.ativo} totalBoxes={totalBoxes} />
           </section>
 

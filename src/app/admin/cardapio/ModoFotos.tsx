@@ -3,9 +3,9 @@
 export type ModoFoto = "recortar" | "original" | "sem";
 
 const OPCOES: { id: ModoFoto; rotulo: string; texto: string }[] = [
-  { id: "recortar", rotulo: "Recortar", texto: "A Orbi separa só o prato, tira o fundo e põe a cor escolhida. Ideal para fotos de produto soltas." },
-  { id: "original", rotulo: "Original", texto: "Só enquadra o prato, sem mexer no fundo. Ideal para fotos já prontas, no ambiente." },
-  { id: "sem", rotulo: "Sem fotos", texto: "Entram só nome, descrição e preço." },
+  { id: "recortar", rotulo: "Recortar", texto: "Tira o fundo e põe a cor escolhida." },
+  { id: "original", rotulo: "Original", texto: "Só enquadra o prato, sem mexer no fundo." },
+  { id: "sem", rotulo: "Sem fotos", texto: "Só nome, descrição e preço." },
 ];
 
 /** Como tratar as fotos dos pratos do cardápio: controle segmentado com uma linha de explicação. */
@@ -35,7 +35,7 @@ export default function ModoFotos({ valor, onChange, disabled, semOpcaoSem = fal
           </button>
         ))}
       </div>
-      <p key={valor} className="modo-desc mt-2.5 min-h-[44px] text-[12.5px] leading-snug text-text-secondary">{opcoes[indice].texto}</p>
+      <p key={valor} className="modo-desc mt-2.5 min-h-[20px] text-[12.5px] leading-snug text-text-secondary">{opcoes[indice].texto}</p>
     </div>
   );
 }

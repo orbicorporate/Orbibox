@@ -23,10 +23,15 @@ type Secao = { nome: string; itens: ItemProposto[] };
  * Orbi monta os pratos por categoria. Antes de entrar no cardápio tudo passa por
  * uma revisão (marcar, trocar nome e preço), porque a leitura de foto pode errar.
  */
-export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto = false, doPdf = null, onConsumido }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void; onManual: () => void; /** Já há pratos: mostra só atalhos pequenos. */ compacto?: boolean; /** PDF já enviado que a Orbi deve ler agora. */ doPdf?: { url: string; nome: string; chave: number } | null; onConsumido?: () => void }) {
+export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto = false, abrirChave = 0, doPdf = null, onConsumido }: { businessId: string; onAdicionar: (novas: CardapioSecao[]) => void; onManual: () => void; /** Já há pratos: não mostra atalhos (eles ficam na barra e em Ferramentas). */ compacto?: boolean; /** Muda quando a folha Ferramentas pede para abrir a importação. */ abrirChave?: number; /** PDF já enviado que a Orbi deve ler agora. */ doPdf?: { url: string; nome: string; chave: number } | null; onConsumido?: () => void }) {
   const supabase = useRef(createClient()).current;
   const inputFoto = useRef<HTMLInputElement>(null);
   const [aberto, setAberto] = useState(false);
+  const [chaveVista, setChaveVista] = useState(abrirChave);
+  if (abrirChave !== chaveVista) {
+    setChaveVista(abrirChave);
+    setAberto(true);
+  }
   const [texto, setTexto] = useState("");
   const [fotos, setFotos] = useState<{ nome: string; url: string }[]>([]);
   const [enviando, setEnviando] = useState(false);
@@ -201,14 +206,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
   const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background";
 
   if (!aberto && feito === null) {
-    if (compacto) {
-      return (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => setAberto(true)} className="min-h-[44px] rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white active:scale-[0.98]">Colar mais pratos</button>
-          <button type="button" onClick={onManual} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-5 text-[13.5px] font-medium active:scale-[0.98]">+ Categoria ou prato</button>
-        </div>
-      );
-    }
+    if (compacto) return null;
     return (
       <div className="mt-3 flex flex-col gap-4">
         <div>
@@ -216,14 +214,14 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-[15px]" aria-hidden>✦</span>
             Colar o texto e a Orbi monta
           </button>
-          <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Mais rápido. Cole o cardápio do jeito que estiver, ou envie foto ou PDF, e a Orbi separa por categoria. Você revisa antes de entrar.</p>
+          <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Cole o texto, foto ou PDF. A Orbi separa por categoria e você revisa.</p>
         </div>
         <div>
           <button type="button" onClick={onManual} className="flex min-h-[56px] w-full items-center gap-3 rounded-full border border-divider bg-surface-white pl-3 pr-5 text-left text-[15px] font-semibold active:scale-[0.99]">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px]" aria-hidden>+</span>
             Adicionar um por um
           </button>
-          <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Crie a categoria e depois cada prato, com nome e preço. Foto e descrição são opcionais.</p>
+          <p className="mt-1.5 px-4 text-[12.5px] leading-snug text-text-tertiary">Categoria, nome e preço. O resto é opcional.</p>
         </div>
       </div>
     );
@@ -253,7 +251,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
         </div>
       ) : secoes === null ? (
         <>
-          <p className="mt-1 text-[13px] leading-snug text-text-secondary">Cole o cardápio do jeito que estiver (pode ser bagunçado) ou envie foto ou PDF. A Orbi separa por categoria, com nome, descrição e preço, e você revisa antes de entrar. Nada disso mexe no seu Catálogo.</p>
+          <p className="mt-1 text-[13px] leading-snug text-text-secondary">Cole o texto, ou envie foto ou PDF. A Orbi separa por categoria e você revisa antes de entrar.</p>
           <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={7} placeholder={"Ex:\nLANCHES\nX-Burger  pão, carne, queijo  R$ 22,00\nX-Salada  R$ 25,00\n\nBEBIDAS\nCoca-Cola lata  R$ 6"} className={`${campo} mt-3 resize-y text-[14px] leading-relaxed`} />
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -270,7 +268,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
           </div>
           <ModoFotos valor={modo} onChange={setModo} />
           {modo === "recortar" && <CorFundoFotos valor={corFundo} onChange={(c) => { setCorFundo(c); guardarCorFundo(c); }} />}
-          <p className="mt-1.5 text-[12px] text-text-tertiary">Até 8 fotos ou páginas de PDF. Quanto mais nítido, melhor a leitura.</p>
+          <p className="mt-1.5 text-[12px] text-text-tertiary">Até 8 fotos ou páginas.</p>
 
           {erro && <p role="alert" className="mt-3 text-[13px] text-red-600">{erro}</p>}
           <button type="button" onClick={() => ler()} disabled={lendo || enviando || (!texto.trim() && fotos.length === 0)} className="mt-4 min-h-[48px] w-full rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">
@@ -279,7 +277,7 @@ export function ImportarCardapio({ businessId, onAdicionar, onManual, compacto =
         </>
       ) : (
         <>
-          <p className="mt-1 text-[13px] leading-snug text-text-secondary">A Orbi encontrou {secoes.reduce((n, s) => n + s.itens.length, 0)} pratos{secoes.some((x) => x.itens.some((i) => i.fotoPreview)) ? " e recortou as fotos que estavam no cardápio. Toque na foto para tirar a que não ficou boa" : ""}. Confira, ajuste nome e preço e desmarque o que não quiser.</p>
+          <p className="mt-1 text-[13px] leading-snug text-text-secondary">A Orbi achou {secoes.reduce((n, s) => n + s.itens.length, 0)} pratos{secoes.some((x) => x.itens.some((i) => i.fotoPreview)) ? ". Toque na foto para tirar a que não ficou boa" : ""}. Confira nome e preço e desmarque o que não quiser.</p>
           {semFundoAviso && <p role="status" className="mt-2 rounded-2xl bg-surface-soft px-3.5 py-2.5 text-[12.5px] leading-snug text-text-secondary">Não consegui tirar o fundo de algumas fotos (a internet pode estar lenta). Elas ficaram só com o recorte. Depois, em cada prato, toque na foto e use Tirar fundo.</p>}
           <div className="mt-3 flex flex-col gap-4">
             {secoes.map((s, si) => (
