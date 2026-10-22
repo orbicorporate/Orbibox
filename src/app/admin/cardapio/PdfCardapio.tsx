@@ -173,39 +173,34 @@ export function PdfCardapio({ businessId, pdfs, onChange, onMontar }: { business
   return (
     <div className="mt-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
       <p className="text-[14.5px] font-medium">{pdfs.length === 0 ? "Envie seu cardápio em PDF" : pdfs.length === 1 ? "Seu PDF" : "Seus PDFs"}</p>
-      <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">
-        O cliente vê estes PDFs quando abre o Cardápio na sua página, não na tela inicial. Dê um nome a cada um, como Cardápio, Bebidas ou Sobremesas. Para ter um botão de PDF na tela inicial, use PDFs da marca, no menu de configurações. Até {MAX_PDFS} arquivos de {LIMITE_MB} MB.
-      </p>
+      <p className="mt-0.5 text-[12.5px] leading-snug text-text-tertiary">Aparece quando o cliente abre o Cardápio. Até {MAX_PDFS} arquivos de {LIMITE_MB} MB.</p>
 
       {pdfs.length > 0 && (
         <ul className="mt-3 flex flex-col gap-2.5">
           {pdfs.map((p) => (
             <li key={p.id} className="rounded-2xl bg-surface-soft p-3">
-              <label className="block text-[11.5px] font-medium uppercase tracking-wide text-text-tertiary" htmlFor={`pdf-${p.id}`}>Nome do botão</label>
               <input
                 id={`pdf-${p.id}`}
+                aria-label="Nome do botão"
                 defaultValue={p.nome}
                 maxLength={40}
-                placeholder="Ex.: Bebidas"
+                placeholder="Nome do botão (ex.: Bebidas)"
                 onBlur={(e) => renomear(p.id, e.target.value)}
-                className="mt-1 w-full rounded-xl border border-divider bg-surface-white px-3.5 py-2.5 text-[14px] outline-none focus:border-on-background"
+                className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14.5px] font-medium outline-none focus:border-on-background"
               />
-              {p.bytes != null && (
-                <p className={`mt-2 text-[12.5px] leading-snug ${p.bytes > 5 * 1024 * 1024 ? "text-[#9A4F06]" : "text-text-tertiary"}`}>
-                  {pesoLegivel(p.bytes)}
-                  {p.bytes > 5 * 1024 * 1024 ? ". Acima de 5 MB demora para abrir no celular do cliente." : ""}
-                </p>
+              {p.bytes != null && p.bytes > 5 * 1024 * 1024 && (
+                <p className="mt-2 px-1 text-[12.5px] leading-snug text-[#9A4F06]">{pesoLegivel(p.bytes)}. Acima de 5 MB demora para abrir no celular.</p>
               )}
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                {onMontar && <button type="button" onClick={() => onMontar(p)} className="min-h-[44px] rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white active:scale-[0.98]"><span aria-hidden>✦ </span>Monte os itens</button>}
                 {p.bytes != null && p.bytes > 5 * 1024 * 1024 && (
                   <button type="button" onClick={() => reduzirExistente(p)} disabled={reduzindoId !== null || enviando} className="min-h-[44px] rounded-full border border-[#C2650A]/40 bg-[#FDEEDF] px-4 text-[13.5px] font-semibold text-[#9A4F06] disabled:opacity-60">
-                    {reduzindoId === p.id ? "Reduzindo…" : "Reduzir este PDF"}
+                    {reduzindoId === p.id ? "Reduzindo…" : "Reduzir"}
                   </button>
                 )}
-                <a href={p.url} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.06]">Ver o PDF ↗</a>
-                <button type="button" onClick={() => abrirEscolha(p.id)} disabled={enviando || otimizando} className="min-h-[44px] rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium disabled:opacity-60">Trocar arquivo</button>
-                <button type="button" onClick={() => remover(p)} className={`min-h-[44px] rounded-full border px-4 text-[13.5px] font-medium ${querRemover === p.id ? "border-red-300 bg-red-50 text-red-700" : "border-divider bg-surface-white text-text-secondary"}`}>{querRemover === p.id ? "Toque de novo para apagar o arquivo" : "Remover"}</button>
-                {onMontar && <button type="button" onClick={() => onMontar(p)} className="min-h-[44px] rounded-full bg-on-background px-4 text-[13.5px] font-semibold text-white active:scale-[0.98]"><span aria-hidden>✦ </span>Monte os itens</button>}
+                <a href={p.url} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.06]">Ver ↗</a>
+                <button type="button" onClick={() => abrirEscolha(p.id)} disabled={enviando || otimizando} className="min-h-[44px] rounded-full bg-surface-white px-4 text-[13.5px] font-medium ring-1 ring-black/[0.06] disabled:opacity-60">Trocar</button>
+                <button type="button" onClick={() => remover(p)} className={`min-h-[44px] rounded-full px-4 text-[13.5px] font-medium ${querRemover === p.id ? "bg-red-50 text-red-700 ring-1 ring-red-300" : "text-text-secondary"}`}>{querRemover === p.id ? "Toque de novo para apagar" : "Remover"}</button>
               </div>
             </li>
           ))}
