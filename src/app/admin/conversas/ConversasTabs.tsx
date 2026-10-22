@@ -8,13 +8,13 @@ import { PorEtiqueta } from "./Etiquetas";
 
 type AbaKey = "conversas" | "etiquetas" | "automaticas" | "minhas";
 
-// Cada aba com ícone, cor e uma frase que explica o que é. As quatro
-// pílulas iguais não diziam que eram filtros nem o que faziam.
+// Nomes curtos: cada aba é um filtro da mesma base de contatos. A explicação de cada uma
+// fica na própria tela (uma linha), não em um parágrafo debaixo das abas.
 const ABAS: { key: AbaKey; label: string; desc: string }[] = [
   { key: "conversas", label: "Conversas", desc: "" },
-  { key: "etiquetas", label: "Por etiqueta", desc: "Seus contatos agrupados por interesse, de quem veio do link e de quem você importou." },
-  { key: "automaticas", label: "Listas da Orbi", desc: "Listas que a Orbi monta sozinha: quem esquentou, sumiu, ou pegou voucher e não usou." },
-  { key: "minhas", label: "Listas suas", desc: "Contatos que você traz de fora do Orbibox, com lembrete de recompra." },
+  { key: "automaticas", label: "Da Orbi", desc: "" },
+  { key: "etiquetas", label: "Grupos", desc: "" },
+  { key: "minhas", label: "Importados", desc: "" },
 ];
 
 /**
@@ -57,11 +57,10 @@ export function ConversasTabs(props: ComponentProps<typeof ConversasList>) {
         <div className="mt-4 rounded-[24px] border border-dashed border-divider bg-surface-white p-5">
           <p className="text-[15px] font-semibold">Ainda sem conversas pelo link</p>
           <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-            Sem problema, Conversas funciona mesmo assim. Em &quot;Listas suas&quot; você importa os clientes que já
-            tem e a Orbi escreve mensagens pra eles também.
+            Em &quot;Importados&quot; você traz os clientes que já tem e a Orbi escreve as mensagens para eles.
           </p>
           <button type="button" onClick={() => setAba("minhas")} className="mt-3 cursor-pointer rounded-full bg-on-background px-4 py-2.5 text-[13.5px] font-semibold text-white">
-            Ir pra Listas suas
+            Importar clientes
           </button>
         </div>
       )}

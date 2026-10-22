@@ -36,10 +36,9 @@ export function SugestoesTag({ businessId, onCreated }: { businessId: string; on
   }
 
   return (
-    <div className="rounded-[20px] bg-surface-soft p-4">
-      <p className="text-[12.5px] font-semibold">Sugestões pra começar</p>
-      <p className="mt-0.5 text-[12px] text-text-tertiary">Toque pra criar. Depois é só editar do seu jeito.</p>
-      <div className="mt-2.5 flex flex-wrap gap-2">
+    <div>
+      <p className="text-[13px] font-semibold text-text-secondary">Comece por um grupo</p>
+      <div className="mt-2 flex flex-wrap gap-2">
         {SUGESTOES_TAG.map((s) => (
           <button
             key={s.name}
@@ -93,15 +92,15 @@ export function NovaTag({ businessId, onCreated }: { businessId: string; onCreat
 
   if (!aberto) {
     return (
-      <button type="button" onClick={() => setAberto(true)} className="cursor-pointer rounded-full border border-dashed border-divider px-3 py-1.5 text-[12.5px] font-medium text-text-secondary">
-        + Nova etiqueta
+      <button type="button" onClick={() => setAberto(true)} className="cursor-pointer self-start rounded-full bg-on-background px-4 py-2 text-[13px] font-semibold text-white">
+        + Novo grupo
       </button>
     );
   }
 
   return (
     <div className="w-full rounded-[20px] border border-divider bg-surface-white p-4">
-      <input value={nome} onChange={(e) => setNome(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") salvar(); }} placeholder="Nome da etiqueta, ex: Cliente antigo" autoFocus className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
+      <input value={nome} onChange={(e) => setNome(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") salvar(); }} placeholder="Nome do grupo, ex: Cliente antigo" autoFocus className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
       <div className="mt-3 flex flex-wrap gap-2">
         {CORES.map((c) => (
           <button key={c} type="button" onClick={() => setCor(c)} className={`h-7 w-7 rounded-full transition-transform ${cor === c ? "scale-110 ring-2 ring-offset-2 ring-on-background" : ""}`} style={{ backgroundColor: c }} />
@@ -160,7 +159,7 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
     return n ? base.replace(/\{nome\}/g, n) : base.replace(/\{nome\},?\s*/g, "Oi, ").replace(/^Oi, Oi/, "Oi");
   }
 
-  if (tags === null) return <p className="mt-5 text-[13px] text-text-tertiary">Carregando etiquetas…</p>;
+  if (tags === null) return <p className="mt-5 text-[13px] text-text-tertiary">Carregando grupos…</p>;
 
   if (abertaId && detalhe) {
     return (
@@ -206,14 +205,7 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
 
   return (
     <div className="mt-5 flex flex-col gap-3">
-      <div className="rounded-[20px] bg-surface-soft p-4">
-        <p className="text-[13.5px] font-semibold">O que você conta pra Orbi</p>
-        <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">
-          Etiquetas descrevem seus contatos: cliente antigo, comprou tal coisa, interessado num assunto. A Orbi usa
-          isso pra escrever certo, principalmente pra quem veio de fora e ela não conhece. Toque numa etiqueta pra ver
-          e falar com o grupo; toque no lápis pra editar.
-        </p>
-      </div>
+      <p className="text-[13px] leading-snug text-text-tertiary">Junte pessoas em grupos e fale com todas de uma vez.</p>
 
       {tags.length === 0 ? (
         <SugestoesTag businessId={businessId} onCreated={() => recarregar()} />
@@ -231,7 +223,7 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
                 <span className="block text-[15px] font-semibold leading-tight">{t.name}</span>
                 <span className="mt-0.5 block text-[12px] text-text-tertiary">
                   {(t.total ?? 0) === 0
-                    ? "Ninguém marcado ainda"
+                    ? "Ninguém ainda"
                     : <>{t.total} {(t.total ?? 0) === 1 ? "pessoa" : "pessoas"}{(t.do_orbibox ?? 0) > 0 && (t.externos ?? 0) > 0 ? ` · ${t.do_orbibox} do link, ${t.externos} da sua lista` : ""}</>}
                 </span>
               </span>
@@ -240,7 +232,7 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
             <button
               type="button"
               onClick={() => setEditando(t)}
-              aria-label="Editar etiqueta"
+              aria-label="Editar grupo"
               className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-tertiary hover:bg-surface-soft"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
@@ -290,7 +282,7 @@ function EditarTag({ tag, onClose, onSaved }: { tag: Tag; onClose: () => void; o
     <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-on-background/50 backdrop-blur-sm" onClick={() => !salvando && onClose()}>
       <div className="mx-auto w-full max-w-[440px] rounded-t-[28px] bg-background-main px-5 pb-8 pt-4" onClick={(e) => e.stopPropagation()}>
         <span className="mx-auto mb-4 block h-1.5 w-12 rounded-full bg-divider" />
-        <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold tracking-[-0.01em]">Editar etiqueta</p>
+        <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold tracking-[-0.01em]">Editar grupo</p>
 
         <input value={nome} onChange={(e) => setNome(e.target.value)} className="mt-4 w-full rounded-full border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
         <div className="mt-3 flex flex-wrap gap-2">
