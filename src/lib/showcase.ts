@@ -229,6 +229,12 @@ function brl(v: number) {
 
 /** Formata o preço de um item conforme o tipo escolhido, mesma regra usada
  * na Vitrine, na grade pública e na página do item, pra nunca ficar diferente. */
+/** Texto do card: só as primeiras palavras, para o box não mostrar a descrição inteira. A página do item mostra tudo. */
+export function resumoCard(texto: string | null | undefined, palavras = 4): string {
+  const p = (texto ?? "").trim().split(/\s+/).filter(Boolean);
+  return p.length <= palavras ? p.join(" ") : `${p.slice(0, palavras).join(" ").replace(/[.,;:!?]+$/, "")}…`;
+}
+
 export function formatPrice(item: { price: number | null; price_type?: string | null; price_max?: number | null }): string | null {
   const tipo = (item.price_type as PriceType) || "exato";
   // "Sob consulta" não depende de valor, mostra o rótulo direto.

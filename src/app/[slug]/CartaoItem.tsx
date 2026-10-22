@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { trackClick } from "@/lib/track";
-import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, sizeOf, titleFontSize, type BoxSize } from "@/lib/showcase";
+import { COVER_RATIO_BY_SIZE, colorOf, formatPrice, resumoCard, sizeOf, titleFontSize, type BoxSize } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { CurtirItem } from "@/components/clube/CurtirItem";
 
@@ -119,7 +119,7 @@ function CartaoBase({
                     {item.title}
                   </p>
                   {item.description?.trim() && (
-                    <p className="mt-1.5 line-clamp-1 text-[13px] leading-snug text-white/85">{item.description}</p>
+                    <p className="mt-1.5 line-clamp-1 text-[13px] leading-snug text-white/85">{resumoCard(item.description)}</p>
                   )}
                   {priceLabel && <p className="mt-1.5 text-[14px] font-medium text-white/90">{priceLabel}</p>}
                 </div>
@@ -190,7 +190,7 @@ function CartaoBase({
             <div className="min-w-0 flex-1">
               <p className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight" style={fc ? { color: fc.fg } : undefined}>{item.title}</p>
               {item.description?.trim() && (
-                <p className={`mt-0.5 line-clamp-1 text-[13px] leading-snug ${fc ? "" : "text-text-tertiary"}`} style={fc ? { color: fc.fg, opacity: 0.7 } : undefined}>{item.description}</p>
+                <p className={`mt-0.5 line-clamp-1 text-[13px] leading-snug ${fc ? "" : "text-text-tertiary"}`} style={fc ? { color: fc.fg, opacity: 0.7 } : undefined}>{resumoCard(item.description)}</p>
               )}
               {priceLabel && (
                 <p className={`mt-0.5 font-[family-name:var(--font-manrope)] text-[15px] font-medium ${fc ? "" : "text-text-secondary"}`} style={fc ? { color: fc.fg, opacity: 0.85 } : undefined}>{priceLabel}</p>

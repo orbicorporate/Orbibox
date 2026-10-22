@@ -15,7 +15,7 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { NovoItemPassos } from "./NovoItemPassos";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { HelperText } from "@/components/ui/HelperText";
-import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
+import { PALETTE_GROUPS, SIZE_LABEL, colorOf, sizeOf, titleFontSize, COVER_RATIO_BY_SIZE, formatPrice, resumoCard, PRICE_TYPE_LABEL, isVideoUrl, type BoxSize, type PriceType } from "@/lib/showcase";
 import { isoToDatetimeLocal, datetimeLocalToIso } from "@/lib/utils";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { RATIOS } from "@/components/ui/ImageCropModal";
@@ -1702,7 +1702,7 @@ function ItemCard({
                 {item.title}
               </span>
               {item.description?.trim() && (
-                <span className="mt-1.5 line-clamp-1 text-[13px] leading-snug text-white/85">{item.description}</span>
+                <span className="mt-1.5 line-clamp-1 text-[13px] leading-snug text-white/85">{resumoCard(item.description)}</span>
               )}
               {priceLabel && <span className="mt-1.5 block text-[14px] font-medium text-white/90">{priceLabel}</span>}
             </div>
@@ -1880,7 +1880,7 @@ function ItemCard({
                   )}
                 </div>
                 {item.description?.trim() && (
-                  <p className={`mt-1 line-clamp-1 text-[12px] leading-snug ${fc ? "" : "text-text-tertiary"}`} style={fc ? { color: fc.fg, opacity: 0.7 } : undefined}>{item.description}</p>
+                  <p className={`mt-1 line-clamp-1 text-[12px] leading-snug ${fc ? "" : "text-text-tertiary"}`} style={fc ? { color: fc.fg, opacity: 0.7 } : undefined}>{resumoCard(item.description)}</p>
                 )}
               </div>
               {priceLabel && (
