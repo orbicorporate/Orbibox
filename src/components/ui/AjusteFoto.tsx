@@ -6,8 +6,8 @@ import { createPortal } from "react-dom";
 const PREVIA_MAX = 720;
 const FINAL_MAX = 2000;
 
-type Ajustes = { luz: number; contraste: number; cor: number };
-const ZERO: Ajustes = { luz: 0, contraste: 0, cor: 0 };
+type Ajustes = { luz: number; contraste: number; cor: number; sombras: number; realces: number };
+const ZERO: Ajustes = { luz: 0, contraste: 0, cor: 0, sombras: 0, realces: 0 };
 
 /** Aplica luz, contraste e cor direto nos pixels (não depende de ctx.filter, que falha em alguns celulares). */
 function aplicar(dados: ImageData, a: Ajustes) {
@@ -15,10 +15,15 @@ function aplicar(dados: ImageData, a: Ajustes) {
   const luz = a.luz * 2.55;
   const c = 1 + a.contraste / 100;
   const s = 1 + a.cor / 100;
+  const sombras = a.sombras * 1.6;
+  const realces = a.realces * 1.6;
   for (let i = 0; i < d.length; i += 4) {
-    let r = d[i] + luz;
-    let g = d[i + 1] + luz;
-    let b = d[i + 2] + luz;
+    // Sombras mexem mais nos tons escuros e Realces nos claros (curva suave por luminosidade).
+    const l = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
+    const tom = sombras * (1 - l) * (1 - l) + realces * l * l;
+    let r = d[i] + luz + tom;
+    let g = d[i + 1] + luz + tom;
+    let b = d[i + 2] + luz + tom;
     r = (r - 128) * c + 128;
     g = (g - 128) * c + 128;
     b = (b - 128) * c + 128;
@@ -110,7 +115,7 @@ export function AjusteFoto({ url, onAplicar, onFechar }: { url: string; onAplica
     }, 30);
   }
 
-  const mudou = a.luz !== 0 || a.contraste !== 0 || a.cor !== 0;
+  const mudou = a.luz !== 0 || a.contraste !== 0 || a.cor !== 0 || a.sombras !== 0 || a.realces !== 0;
   const controle = (rotulo: string, chave: keyof Ajustes) => (
     <label className="block">
       <span className="flex items-center justify-between text-[13px] font-medium"><span>{rotulo}</span><span className="text-text-tertiary">{a[chave] > 0 ? `+${a[chave]}` : a[chave]}</span></span>
@@ -133,13 +138,15 @@ export function AjusteFoto({ url, onAplicar, onFechar }: { url: string; onAplica
           {img && (
             <div className="flex flex-col gap-3.5">
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={() => setA({ luz: 22, contraste: 8, cor: 6 })} className="min-h-[40px] rounded-full bg-[#EFEDE8] px-4 text-[13px] font-medium">Clarear</button>
-                <button type="button" onClick={() => setA({ luz: 6, contraste: 22, cor: 18 })} className="min-h-[40px] rounded-full bg-[#EFEDE8] px-4 text-[13px] font-medium">Mais vivo</button>
+                <button type="button" onClick={() => setA({ ...ZERO, luz: 18, contraste: 8, cor: 6, sombras: 25 })} className="min-h-[40px] rounded-full bg-[#EFEDE8] px-4 text-[13px] font-medium">Clarear</button>
+                <button type="button" onClick={() => setA({ ...ZERO, luz: 4, contraste: 25, cor: 18, sombras: -12, realces: 10 })} className="min-h-[40px] rounded-full bg-[#EFEDE8] px-4 text-[13px] font-medium">Mais vivo</button>
                 <button type="button" onClick={() => setA(ZERO)} disabled={!mudou} className="min-h-[40px] rounded-full px-3 text-[13px] text-text-tertiary disabled:opacity-40">Desfazer</button>
               </div>
               {controle("Luz", "luz")}
               {controle("Contraste", "contraste")}
               {controle("Cor", "cor")}
+              {controle("Sombras", "sombras")}
+              {controle("Realces", "realces")}
             </div>
           )}
           {erro && img && <p role="alert" className="text-[12.5px] text-red-600">{erro}</p>}
