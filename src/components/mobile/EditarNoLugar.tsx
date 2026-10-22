@@ -30,19 +30,28 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
       const d = quadro.current?.contentDocument;
       if (d && /could not be found/i.test(d.body?.innerText ?? "") && tentativa === 0) { setCarregou(false); setTentativa(1); return; }
     } catch { /* outro domínio */ }
-    window.setTimeout(() => {
-      try {
-        const doc = quadro.current?.contentDocument;
-        const main = doc?.querySelector("main");
-        if (!doc || !main) return setSemConteudo(true);
-        // Conta só o que está na tela de verdade (innerText de elemento escondido ainda devolve texto).
-        const texto = () => Array.from(main.children).filter((c) => !c.classList.contains("embed-save") && (c as HTMLElement).getBoundingClientRect().height > 8).reduce((n, c) => n + ((c as HTMLElement).innerText?.trim().length ?? 0), 0);
-        if (texto() >= 3) return;
-        // A parte pedida sumiu: mostra a tela toda do editor.
-        doc.querySelectorAll("[data-embed-oculto]").forEach((el) => el.removeAttribute("data-embed-oculto"));
-        window.setTimeout(() => { if (texto() < 3) setSemConteudo(true); }, 400);
-      } catch { /* outro domínio: não dá pra conferir */ }
-    }, 4500);
+    // Confere em três momentos. Antes, uma única conferência aos 4,5s dava alarme falso quando a
+    // tela ainda estava carregando ou tinha os blocos fora do <main>. Agora basta aparecer qualquer
+    // conteúdo visível (texto, campo ou imagem) para o aviso nunca aparecer, ou sumir sozinho.
+    const visivel = (el: Element) => (el as HTMLElement).getBoundingClientRect().height > 8;
+    const temConteudo = (doc: Document) => {
+      const texto = (doc.body?.innerText ?? "").replace(/\s+/g, " ").trim().length;
+      if (texto >= 20) return true;
+      return Array.from(doc.querySelectorAll("input, textarea, img, video")).some(visivel);
+    };
+    [2500, 6000, 10000].forEach((atraso, i, todos) => {
+      window.setTimeout(() => {
+        try {
+          const doc = quadro.current?.contentDocument;
+          if (!doc) return;
+          if (temConteudo(doc)) return setSemConteudo(false);
+          if (i < todos.length - 1) return;
+          // A parte pedida sumiu: mostra a tela toda do editor e confere uma última vez.
+          doc.querySelectorAll("[data-embed-oculto]").forEach((el) => el.removeAttribute("data-embed-oculto"));
+          window.setTimeout(() => { try { if (!temConteudo(doc)) setSemConteudo(true); } catch { /* outro domínio */ } }, 600);
+        } catch { /* outro domínio: não dá pra conferir, então não avisa nada */ }
+      }, atraso);
+    });
   }
 
   // Tudo no editor salva ao sair do campo. Concluir tira o foco do campo aberto,
