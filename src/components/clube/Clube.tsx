@@ -628,14 +628,14 @@ function LinhaAjuste({ titulo, detalhe, ligado, ocupado, aoAlternar, separador =
       aria-checked={ligado}
       disabled={ocupado}
       onClick={aoAlternar}
-      className={`flex min-h-[68px] w-full items-center gap-3.5 px-4 py-3 text-left active:bg-surface-soft disabled:opacity-60 ${separador ? "border-t border-divider" : ""}`}
+      className={`flex min-h-[56px] w-full items-center gap-3 px-4 py-2.5 text-left active:bg-surface-soft disabled:opacity-60 ${separador ? "border-t border-divider" : ""}`}
     >
       <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-semibold leading-tight text-on-background">{titulo}</span>
-        <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{detalhe}</span>
+        <span className="block truncate text-[14.5px] font-semibold leading-tight text-on-background">{titulo}</span>
+        <span className="mt-0.5 block truncate text-[12px] leading-snug text-text-secondary">{detalhe}</span>
       </span>
-      <span aria-hidden className={`relative h-[28px] w-[46px] shrink-0 rounded-full transition-colors ${ligado ? "bg-[#111318]" : "bg-[#D9D7D1]"}`}>
-        <span className={`absolute top-[3px] h-[22px] w-[22px] rounded-full bg-white shadow transition-all ${ligado ? "left-[21px]" : "left-[3px]"}`} />
+      <span aria-hidden className={`relative h-[24px] w-[40px] shrink-0 rounded-full transition-colors ${ligado ? "bg-[#111318]" : "bg-[#D9D7D1]"}`}>
+        <span className={`absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white shadow transition-all ${ligado ? "left-[19px]" : "left-[3px]"}`} />
       </span>
     </button>
   );
@@ -855,14 +855,14 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                       <>
                         <LinhaAjuste
                           titulo="Novidades no WhatsApp"
-                          detalhe={`Receba promoções e avisos de ${nome}.`}
+                          detalhe={`Promoções e avisos de ${nome}`}
                           ligado={eu.aceiteWhatsapp}
                           ocupado={salvandoAjuste === "whats"}
                           aoAlternar={alternarWhats}
                         />
                         <LinhaAjuste
                           titulo="Mostrar minhas marcas"
-                          detalhe="Outros fãs veem de quais marcas você é fã."
+                          detalhe="Outros fãs veem suas marcas"
                           ligado={eu.mostrarMarcas}
                           ocupado={salvandoAjuste === "marcas"}
                           aoAlternar={alternarMarcas}
@@ -870,13 +870,13 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                         />
                       </>
                     )}
-                    <label className={`flex min-h-[68px] cursor-pointer items-center gap-3.5 px-4 py-3 ${eu.ehFa ? "border-t border-divider" : ""}`}>
-                      <Rosto url={eu.foto} nome={eu.nome} size={40} />
+                    <label className={`flex min-h-[56px] cursor-pointer items-center gap-3 px-4 py-2.5 ${eu.ehFa ? "border-t border-divider" : ""}`}>
+                      <Rosto url={eu.foto} nome={eu.nome} size={36} />
                       <span className="min-w-0 flex-1">
-                        <span className="block text-[15px] font-semibold leading-tight text-on-background">Minha foto</span>
-                        <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{enviandoFoto ? "Enviando…" : "Aparece ao lado do seu nome no Clube."}</span>
+                        <span className="block truncate text-[14.5px] font-semibold leading-tight text-on-background">Minha foto</span>
+                        <span className="mt-0.5 block truncate text-[12px] leading-snug text-text-secondary">{enviandoFoto ? "Enviando…" : "Aparece ao lado do seu nome"}</span>
                       </span>
-                      <span className="flex min-h-[36px] shrink-0 items-center rounded-full bg-surface-soft px-4 text-[13px] font-semibold text-on-background">{eu.foto ? "Trocar" : "Adicionar"}</span>
+                      <span className="flex min-h-[32px] shrink-0 items-center rounded-full bg-surface-soft px-3.5 text-[12.5px] font-semibold text-on-background">{eu.foto ? "Trocar" : "Adicionar"}</span>
                       <input
                         type="file"
                         accept="image/*"
