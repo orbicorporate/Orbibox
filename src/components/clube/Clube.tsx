@@ -29,6 +29,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   const [aberta, setAberta] = useState<Aberta>(null);
   const [contatoAberto, setContatoAberto] = useState(false);
   const [pedido, setPedido] = useState<PedidoFa | null>(null);
+  const [notaHome, setNotaHome] = useState<number | null>(null);
 
   const recarregar = useCallback(async () => {
     const [r, e] = await Promise.all([getResumo(businessId), getEu(businessId)]);
@@ -140,6 +141,25 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   return (
     <div className="mt-5 flex w-full min-w-0 flex-col items-center gap-3">
       {cluster && (slotTopo ? createPortal(cluster, slotTopo) : <div className="flex flex-wrap items-center justify-center gap-2">{cluster}</div>)}
+
+      {!isOwner && (
+        <div className="nr-home flex items-center gap-1.5" aria-label={eu.minhaAvaliacao ? `Sua nota: ${eu.minhaAvaliacao.nota} de 5. Toque para mudar` : "Dê sua nota"}>
+          <span className="text-[12px] text-text-tertiary">{eu.minhaAvaliacao ? "Sua nota" : "Dê sua nota"}</span>
+          <span className="flex" role="radiogroup" aria-label="Nota">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button key={n} type="button" role="radio" aria-checked={eu.minhaAvaliacao?.nota === n} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
+                onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin("avaliar", null); }}
+                className="grid h-8 w-7 place-items-center active:scale-90">
+                <Estrela cheia={n <= (eu.minhaAvaliacao?.nota ?? 0)} tam={15} />
+              </button>
+            ))}
+          </span>
+        </div>
+      )}
+      {notaHome != null && eu.userId && (
+        <NotaRapida businessId={businessId} userId={eu.userId} marca={nome} inicial={notaHome} comentarioInicial={eu.minhaAvaliacao?.comentario}
+          aoFechar={() => setNotaHome(null)} aoSalvar={() => { void recarregar(); }} />
+      )}
 
       {pedido && !isOwner && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setPedido(null)}>
@@ -628,6 +648,9 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   const [fas, setFas] = useState<FaLite[] | null>(null);
   const [fa, setFa] = useState<FaLite | null>(null);
   const [marcas, setMarcas] = useState<MarcaDoFa[] | null>(null);
+  /** Nota e texto que este fã deu a cada marca (id da marca → avaliação). */
+  const [notasFa, setNotasFa] = useState<Record<string, { nota: number; comentario: string | null }>>({});
+  const [notaMarca, setNotaMarca] = useState<{ marca: MarcaDoFa; nota: number } | null>(null);
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
   const [contatos, setContatos] = useState<ContatoWhats[] | null>(null);
   const [verContatos, setVerContatos] = useState(false);
@@ -680,8 +703,15 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   }, [businessId, isOwner]);
 
   async function abrirFa(f: FaLite) {
-    setFa(f); setMarcas(null);
-    setMarcas(await getMarcasDoFa(f.id));
+    setFa(f); setMarcas(null); setNotasFa({});
+    const ms = await getMarcasDoFa(f.id);
+    setMarcas(ms);
+    // As avaliações são públicas: pega a de cada marca e fica com a deste fã.
+    const pares = await Promise.all(ms.map(async (m) => {
+      const r = (await getAvaliacoes(m.id)).find((a) => a.customer_id === f.id);
+      return r ? ([m.id, { nota: r.nota, comentario: r.comentario }] as const) : null;
+    }));
+    setNotasFa(Object.fromEntries(pares.filter((x) => x !== null)));
   }
 
   const itens: ItemOrbita[] = useMemo(() => {
@@ -928,8 +958,8 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                   ) : (
                     <ul className="flex flex-col gap-2">
                       {marcas.map((m) => (
-                        <li key={m.id}>
-                          <a href={`/${m.slug}`} className="flex min-h-[64px] items-center gap-3 rounded-full bg-surface-white py-2 pl-2 pr-4 ring-1 ring-divider transition-transform active:scale-[0.98]">
+                        <li key={m.id} className="flex min-h-[64px] items-center gap-1 rounded-[32px] bg-surface-white py-2 pl-2 pr-2 ring-1 ring-divider">
+                          <a href={`/${m.slug}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-full transition-transform active:scale-[0.98]">
                             <span className="grid h-12 w-12 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
                               {m.logo_url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
@@ -939,9 +969,25 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                             <span className="min-w-0 flex-1">
                               <span className="block truncate text-[15.5px] font-bold tracking-[-0.01em]">{m.name}</span>
                               <span className="block text-[12.5px] text-text-tertiary">{m.slug === slug ? "Você está aqui" : "Abrir o Orbibox desta marca"}</span>
+                              {!(eu.userId && eu.userId === fa.id) && notasFa[m.id] && (
+                                <span className="mt-1 flex items-center gap-0.5" aria-label={`Nota ${notasFa[m.id].nota} de 5`}>
+                                  {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= notasFa[m.id].nota} tam={13} />)}
+                                </span>
+                              )}
                             </span>
-                            <span className="text-text-tertiary"><IcChev /></span>
                           </a>
+                          {eu.userId && eu.userId === fa.id ? (
+                            <span className="flex flex-none" role="radiogroup" aria-label={`Sua nota para ${m.name}`}>
+                              {[1, 2, 3, 4, 5].map((n) => (
+                                <button key={n} type="button" role="radio" aria-checked={notasFa[m.id]?.nota === n} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"} para ${m.name}`}
+                                  onClick={() => setNotaMarca({ marca: m, nota: n })} className="grid h-11 w-[26px] place-items-center active:scale-90">
+                                  <Estrela cheia={n <= (notasFa[m.id]?.nota ?? 0)} tam={17} />
+                                </button>
+                              ))}
+                            </span>
+                          ) : (
+                            <a href={`/${m.slug}`} aria-hidden tabIndex={-1} className="grid h-11 w-8 flex-none place-items-center text-text-tertiary"><IcChev /></a>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -953,6 +999,15 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
               </>
             )}
           </div>
+
+          {notaMarca && eu.userId && (
+            <NotaRapida businessId={notaMarca.marca.id} userId={eu.userId} marca={notaMarca.marca.name} inicial={notaMarca.nota} comentarioInicial={notasFa[notaMarca.marca.id]?.comentario}
+              aoFechar={() => setNotaMarca(null)}
+              aoSalvar={(nota, comentario) => {
+                setNotasFa((v) => ({ ...v, [notaMarca.marca.id]: { nota, comentario: comentario || null } }));
+                if (notaMarca.marca.id === businessId) void aoMudar();
+              }} />
+          )}
 
           {/* Contatos de WhatsApp (só o dono) */}
           <div className={`cl-camada ${verContatos ? "on" : ""}`} aria-hidden={!verContatos}>
@@ -1091,6 +1146,75 @@ function ContatoFolha({ businessId, userId, nome, inicial, aoFechar, aoConcluir 
             Seu WhatsApp nunca aparece para outros clientes. Só a marca vê, e você pode parar de receber quando quiser.
           </p>
         </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+/* =====================================================================
+   Nota rápida: toca numa estrela e abre um box pequeno com as estrelas
+   e um texto curto opcional. Serve na Home e na lista de marcas do fã.
+   ===================================================================== */
+export function NotaRapida({ businessId, userId, marca, inicial, comentarioInicial, aoFechar, aoSalvar }: {
+  businessId: string; userId: string; marca: string; inicial: number; comentarioInicial?: string | null; aoFechar: () => void; aoSalvar: (nota: number, comentario: string) => void;
+}) {
+  const [nota, setNota] = useState(inicial);
+  const [texto, setTexto] = useState(comentarioInicial ?? "");
+  const [escrever, setEscrever] = useState(!!comentarioInicial);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [saindo, setSaindo] = useState(false);
+  const reduzido = useReduzido();
+
+  const fechar = useCallback(() => {
+    if (reduzido) return aoFechar();
+    setSaindo(true);
+    window.setTimeout(aoFechar, 220);
+  }, [aoFechar, reduzido]);
+
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") fechar(); };
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [fechar]);
+
+  async function salvar() {
+    if (nota < 1) return;
+    setEnviando(true); setErro(null);
+    const ok = await enviarAvaliacao(businessId, userId, { nota, comentario: texto, completo: false, foto: true });
+    setEnviando(false);
+    if (!ok) return setErro("Não consegui salvar agora. Se a marca já respondeu sua avaliação, ela não pode mais ser mudada.");
+    aoSalvar(nota, texto.trim());
+    fechar();
+  }
+
+  return createPortal(
+    <div className={`nr-fundo ${saindo ? "sai" : ""}`} onClick={fechar}>
+      <div role="dialog" aria-modal="true" aria-label={`Sua nota para ${marca}`} onClick={(e) => e.stopPropagation()} className={`nr-box ${saindo ? "sai" : ""}`}>
+        <p className="text-center text-[13px] text-text-tertiary">Sua nota para</p>
+        <p className="mt-0.5 truncate text-center text-[17px] font-medium text-on-background">{marca}</p>
+        <div className="mt-3 flex justify-center gap-1" role="radiogroup" aria-label="Nota">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button key={n} type="button" role="radio" aria-checked={nota === n} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`} onClick={() => setNota(n)} className="nr-estrela grid h-12 w-12 place-items-center rounded-full">
+              <span className={n <= nota ? "nr-on" : ""} style={{ ["--d" as string]: `${(n - 1) * 30}ms` }}><Estrela cheia={n <= nota} tam={32} /></span>
+            </button>
+          ))}
+        </div>
+        {escrever ? (
+          <>
+            <label htmlFor="nr-texto" className="sr-only">Comentário curto</label>
+            <textarea id="nr-texto" autoFocus rows={2} maxLength={160} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Conte em poucas palavras (opcional)" className="nr-texto mt-3 w-full resize-none rounded-2xl border border-divider bg-background-main px-4 py-3 text-[16px] outline-none focus:border-on-background" />
+            <p className="mt-1 text-right text-[11.5px] tabular-nums text-text-tertiary">{texto.length}/160</p>
+          </>
+        ) : (
+          <button type="button" onClick={() => setEscrever(true)} className="mx-auto mt-2 flex min-h-[44px] items-center px-3 text-[14px] text-text-secondary underline decoration-divider underline-offset-4">Escrever um comentário curto</button>
+        )}
+        {erro && <p role="alert" className="mt-1 text-center text-[13px] text-[#B42318]">{erro}</p>}
+        <button type="button" onClick={salvar} disabled={enviando || nota < 1} className="mt-3 min-h-[50px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white transition-transform disabled:opacity-50 active:scale-[0.98]">
+          {enviando ? "Salvando..." : "Salvar nota"}
+        </button>
+        <button type="button" onClick={fechar} className="mt-1 min-h-[44px] w-full rounded-full text-[14px] text-text-secondary">Agora não</button>
       </div>
     </div>,
     document.body,
