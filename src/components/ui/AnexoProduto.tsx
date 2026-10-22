@@ -34,7 +34,7 @@ export function AnexoProduto({ anexo }: { anexo: Anexo }) {
 
   const cartao = (
     <>
-      <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${anexo.tipo === "pdf" ? "text-white" : "bg-surface-soft text-on-background"}`} style={anexo.tipo === "pdf" ? { background: "linear-gradient(135deg,#E04A4F 0%,#C4282D 48%,#8A1D22 100%)", boxShadow: "0 8px 20px -8px rgba(138,29,34,0.55)" } : undefined}><Icone tipo={anexo.tipo} /></span>
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-white" style={{ background: "linear-gradient(135deg,#E04A4F 0%,#C4282D 48%,#8A1D22 100%)", boxShadow: "0 8px 20px -8px rgba(138,29,34,0.55)" }}><Icone tipo={anexo.tipo} /></span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[14.5px] font-semibold leading-tight">{titulo}</span>
         <span className="mt-0.5 block truncate text-[12px] text-text-secondary">{sub}</span>
