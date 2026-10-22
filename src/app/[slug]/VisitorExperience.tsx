@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BotaoVirarFa, ClubeBloco } from "@/components/clube/Clube";
 import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
+import { AberturaOrbita } from "./AberturaOrbita";
 import { CurtirItem } from "@/components/clube/CurtirItem";
 import { souFa } from "@/lib/clube";
 import { Card } from "@/components/ui/Card";
@@ -1011,9 +1012,29 @@ export function VisitorExperience({
           <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} slotTopo={slotTopo} />
         )}
 
+        {!isOwner && modoPadrao === "grade" && (
+          <AberturaOrbita
+            slug={business.slug}
+            planetas={todasOpcoes.filter((o) => !o.rede && o.icon !== "__none__").map((o) => ({ key: o.key, icon: o.icon, boxLogo: o.boxLogo, color: o.color, cupom: o.cupom }))}
+            cores={orbiColors ?? null}
+            logoUrl={logoAtual}
+            logo={
+              heroAvatar === "particle" || heroAvatar === "sphere" ? (
+                <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
+              ) : logoAtual && lerSemFundo(heroAvatar) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoAtual} alt="" className="object-contain drop-shadow-[0_6px_14px_rgba(17,19,24,0.18)]" style={{ width: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100, height: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100 }} />
+              ) : logoAtual ? (
+                <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} esfera={lerEsfera(heroAvatar)?.tom} escala={escalaDoAvatar(heroAvatar)} />
+              ) : (
+                <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
+              )
+            }
+          />
+        )}
         {intent === null && modo === "grade" && (
-          <div className="flex w-full min-w-0 flex-col items-center text-center">
-            <div className="relative mb-8">
+          <div data-abertura-grade className="flex w-full min-w-0 flex-col items-center text-center">
+            <div data-abertura-logo className="relative mb-8">
               {heroAvatar === "particle" || heroAvatar === "sphere" ? (
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               ) : logoAtual && lerSemFundo(heroAvatar) ? (

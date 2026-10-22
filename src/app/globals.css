@@ -1446,3 +1446,22 @@ html[data-embed] .embed-oculta { display: none !important; }
 @keyframes cp-op { from { opacity: 0; transform: translateY(10px) scale(.92); } to { opacity: 1; transform: none; } }
 @media (min-width: 640px) { .cp-fundo { align-items: center; } }
 @media (prefers-reduced-motion: reduce) { .cp-fundo, .cp-fundo.sai, .cp-box, .cp-box.sai, .cp-op { animation: none; } }
+
+/* Abertura: a órbita aparece e se acomoda na grade (AberturaOrbita.tsx) */
+.abertura { position: fixed; inset: 0; z-index: 120; background: var(--color-background-main, #F6F5F1); display: flex; align-items: center; justify-content: center;
+  /* Trava de segurança: se o JS não assumir, some sozinha. */
+  animation: ab-some .4s ease-out 3s forwards; }
+html[data-sem-abertura] .abertura { display: none; }
+.abertura-palco { position: relative; width: 0; height: 0; margin-top: -8vh; color: color-mix(in srgb, var(--color-on-background, #14161A) 28%, transparent); }
+.abertura-anel { position: absolute; left: 50%; top: 50%; translate: -50% -50%; opacity: 0; animation: ab-anel .5s cubic-bezier(.23, 1, .32, 1) both; }
+.abertura-logo { position: absolute; left: 0; top: 0; translate: -50% -50%; z-index: 2; transform: scale(1.25); opacity: 0; animation: ab-logo .38s cubic-bezier(.23, 1, .32, 1) both; }
+.abertura-planeta { opacity: 0; animation: ab-in .26s ease-out both; }
+.abertura-planeta:nth-child(2) { animation-delay: 80ms; } .abertura-planeta:nth-child(3) { animation-delay: 125ms; }
+.abertura-planeta:nth-child(4) { animation-delay: 170ms; } .abertura-planeta:nth-child(5) { animation-delay: 215ms; }
+.abertura-planeta:nth-child(6) { animation-delay: 260ms; } .abertura-planeta:nth-child(7) { animation-delay: 305ms; }
+.abertura-planeta:nth-child(8) { animation-delay: 350ms; } .abertura-planeta:nth-child(9) { animation-delay: 395ms; }
+@keyframes ab-anel { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+@keyframes ab-logo { from { opacity: 0; transform: scale(1.12); } to { opacity: 1; transform: scale(1.25); } }
+@keyframes ab-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ab-some { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .abertura { display: none; } }
