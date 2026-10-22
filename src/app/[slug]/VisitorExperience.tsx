@@ -1,5 +1,6 @@
 "use client";
 
+import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
 import { DeliveryFlow } from "./DeliveryFlow";
 import { CardapioFlow } from "./CardapioFlow";
 import { MateriaisFlow } from "./MateriaisFlow";
@@ -1776,6 +1777,8 @@ export function VisitorExperience({
           <VoucherFlow business={business} sessionId={sessionId} orbiColors={orbiColors} formato={todasOpcoes.find((o) => o.cupom)?.voucherFormato ?? "horizontal"} focoId={searchParams.get("v")} onBack={voltarAoInicio} />
         )}
       </div>
+
+      {!isOwner && intent === null && <CrieSeuOrbibox de={business.slug} />}
 
       {/* Orbi flutuante, sempre à mão, exceto quando o chat já está aberto ou
           o dono está visualizando a própria página. Só pra quem tem chat. */}

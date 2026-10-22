@@ -13,6 +13,7 @@ import { COVER_RATIO_BY_SIZE, galleryRatioOf, formatPrice, sizeOf, youtubeId, in
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { lerLista } from "@/lib/lista";
 import { lerAnexo } from "@/lib/anexo";
+import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
 import { AnexoProduto } from "@/components/ui/AnexoProduto";
 import { ListaItensView } from "./ListaItensView";
 
@@ -362,6 +363,7 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
           <span aria-hidden>⊞</span> Ver catálogo completo
         </Link>
       </div>
+      {!isOwner && <CrieSeuOrbibox de={business.slug} />}
     </main>
   );
 }

@@ -1465,3 +1465,21 @@ html[data-sem-abertura] .abertura { display: none; }
 @keyframes ab-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ab-some { to { opacity: 0; visibility: hidden; } }
 @media (prefers-reduced-motion: reduce) { .abertura { display: none; } }
+
+/* Faixa "Crie seu próprio Orbibox": fica parada e, de tempos em tempos, dá uma vibradinha alegre. */
+@keyframes orbi-vibra {
+  0%, 82%, 100% { transform: translateY(0) rotate(0) scale(1); }
+  86% { transform: translateY(-3px) rotate(-2.2deg) scale(1.04); }
+  90% { transform: translateY(0) rotate(2.2deg) scale(1.04); }
+  94% { transform: translateY(-2px) rotate(-1.4deg) scale(1.03); }
+  97% { transform: translateY(0) rotate(1deg) scale(1.01); }
+}
+@keyframes orbi-brilho {
+  0%, 100% { transform: scale(1) rotate(0); opacity: 1; }
+  50% { transform: scale(1.25) rotate(18deg); opacity: .85; }
+}
+.crie-orbibox { animation: orbi-vibra 4.6s ease-in-out 1.5s infinite; }
+.crie-orbibox-brilho { display: inline-block; animation: orbi-brilho 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .crie-orbibox, .crie-orbibox-brilho { animation: none; }
+}
