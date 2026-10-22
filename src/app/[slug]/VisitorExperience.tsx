@@ -14,6 +14,7 @@ import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BotaoVirarFa, ClubeBloco } from "@/components/clube/Clube";
+import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import { CurtirItem } from "@/components/clube/CurtirItem";
 import { souFa } from "@/lib/clube";
 import { Card } from "@/components/ui/Card";
@@ -74,6 +75,8 @@ type Business = {
   vitrine_cover_urls: string[];
   hero_question: string | null;
   logo_url: string | null;
+  share_image_url?: string | null;
+  vitrine_cover_url?: string | null;
   hero_avatar: string | null;
   hero_gradient: unknown;
   catalog_title: string | null;
@@ -958,6 +961,14 @@ export function VisitorExperience({
           um vazio enorme no topo. */}
       <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 lg:max-w-[960px] ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
         {intent === null && <div ref={setSlotTopo} className={`absolute top-4 z-20 ${isOwner ? "left-4" : "right-4"}`} />}
+        {intent === null && !isOwner && (
+          <div className="absolute left-4 top-4 z-20">
+            <BotaoCompartilhar
+              alvo={{ url: `/${business.slug}`, titulo: business.name, marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, texto: `Conhece ${business.name}? Dá uma olhada:` }}
+              className="grid h-10 w-10 place-items-center rounded-full bg-surface-white/80 text-on-background shadow-[0_2px_10px_rgba(17,19,24,0.08)] ring-1 ring-black/[0.04] backdrop-blur-md transition-transform active:scale-90"
+            />
+          </div>
+        )}
         {intent === null && !showOwnerControls && (
           <SeletorModo
             modo={modo}
@@ -1716,6 +1727,7 @@ export function VisitorExperience({
                 } else chooseIntent("delivery");
               } : undefined}
               onBack={voltarAoInicio}
+              compartilhar={{ url: `/${business.slug}?cardapio=1`, titulo: cfgCardapio.label || "Cardápio", rotulo: "Cardápio", marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, cor: lerCorBotoes(cfgCardapio), texto: `Olha o cardápio de ${business.name}:` }}
             />
           );
         })()}
@@ -1742,6 +1754,10 @@ export function VisitorExperience({
       )}
     </main>
   );
+}
+
+function capaDaMarca(b: Business): string | null {
+  return b.share_image_url || b.vitrine_cover_url || b.vitrine_cover_urls?.[0] || null;
 }
 
 type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null; color: string | null; show_discount?: boolean | null; apenas_fas?: boolean | null };
@@ -2007,6 +2023,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                       <span className="absolute left-2 top-2 rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
                     )}
                     <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} className="absolute bottom-2 right-2 z-10" />
+                    <BotaoCompartilhar alvo={{ url: `/${business.slug}?v=${v.id}`, titulo: v.title, rotulo: "Voucher", marca: business.name, imagem: v.image_url ?? capaDaMarca(business), logo: business.logo_url, cor: voucherTheme(v.color).via, texto: `Peguei este voucher de ${business.name}, pega o seu:` }} tam={17} className="absolute bottom-2 left-2 z-10 grid h-9 w-9 place-items-center rounded-full bg-black/35 text-white backdrop-blur-md transition-transform active:scale-90" />
                   </div>
                   <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
                     <p className="line-clamp-2 text-[15px] font-semibold leading-snug">{v.title}</p>
@@ -2046,6 +2063,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                     <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
                   )}
                   <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} className="absolute bottom-3 right-3 z-10" />
+                  <BotaoCompartilhar alvo={{ url: `/${business.slug}?v=${v.id}`, titulo: v.title, rotulo: "Voucher", marca: business.name, imagem: v.image_url ?? capaDaMarca(business), logo: business.logo_url, cor: voucherTheme(v.color).via, texto: `Peguei este voucher de ${business.name}, pega o seu:` }} tam={18} className="absolute bottom-3 left-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/35 text-white backdrop-blur-md transition-transform active:scale-90" />
                 </div>
                 <div className="px-2 pb-1 pt-3.5">
                   <p className="text-[18px] font-semibold leading-snug">{v.title}</p>

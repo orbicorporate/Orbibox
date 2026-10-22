@@ -5,6 +5,7 @@ import { estiloFoto, pesoLegivel, precoCardapio, textoSobre, type CardapioPdf, t
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 import { estiloCategoria, IconeCategoria } from "./categoriaCardapio";
+import { BotaoCompartilhar, type AlvoCompartilhar } from "@/components/compartilhar/Compartilhar";
 
 
 /** Degradê cereja dos botões de PDF. */
@@ -30,6 +31,7 @@ export function CardapioFlow({
   donoVendo = false,
   onPedir,
   onBack,
+  compartilhar,
 }: {
   business: { id: string; name: string };
   secoes: CardapioSecao[];
@@ -46,6 +48,8 @@ export function CardapioFlow({
   donoVendo?: boolean;
   onPedir?: () => void;
   onBack: () => void;
+  /** Link do cardápio para compartilhar (WhatsApp com capinha, stories...). */
+  compartilhar?: AlvoCompartilhar;
 }) {
   const [ativa, setAtiva] = useState<string | null>(null);
   const [layout, setLayout] = useState<LayoutItens>(layoutInicial);
@@ -68,11 +72,14 @@ export function CardapioFlow({
     <div className={`w-full ${onPedir ? "pb-24" : ""}`}>
       <div className="mb-3 flex items-center justify-between">
         <button onClick={onBack} className="text-[14px] text-text-tertiary hover:underline">← voltar</button>
+        <div className="flex items-center gap-2">
+        {compartilhar && <BotaoCompartilhar alvo={compartilhar} />}
         {donoVendo && preenchidas.length > 0 && (
           <AbrirEditor href="/admin/cardapio" rotulo="Editar cardápio" className="flex items-center gap-1.5 rounded-full bg-on-background px-3.5 py-2 text-[13px] font-medium text-white shadow-lg">
             <span aria-hidden>✎</span> Editar
           </AbrirEditor>
         )}
+        </div>
       </div>
       <h2 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.01em]">{titulo}</h2>
       <p className="mt-1 text-[14px] text-text-secondary">{subtitulo}</p>

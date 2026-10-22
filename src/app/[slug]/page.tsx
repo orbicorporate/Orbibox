@@ -19,10 +19,10 @@ export async function generateMetadata({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ v?: string }>;
+  searchParams: Promise<{ v?: string; cardapio?: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const { v: voucherId } = await searchParams;
+  const { v: voucherId, cardapio } = await searchParams;
   const supabase = await createClient();
   const { data: b } = await supabase
     .from("businesses")
@@ -68,6 +68,19 @@ export async function generateMetadata({
     : fonteDescricao;
   // Título do preview do link, o convite vem antes do nome, não só o nome cru.
   const tituloPreview = `Visite nosso Orbibox - ${b.name}`;
+
+  // Link do cardápio (?cardapio=1): mesma capa, título e frase do cardápio.
+  if (cardapio === "1") {
+    const titulo = `Cardápio · ${b.name}`;
+    const desc = "Veja os pratos e preços.";
+    return {
+      title: titulo,
+      description: desc,
+      manifest: `/${slug}/manifest.webmanifest`,
+      openGraph: { title: titulo, description: desc, type: "website", images: [{ url: capa }] },
+      twitter: { card: "summary_large_image", title: titulo, description: desc, images: [capa] },
+    };
+  }
 
   return {
     title: b.name,

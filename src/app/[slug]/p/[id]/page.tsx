@@ -3,6 +3,32 @@ import { ehDonoOuAdmin } from "@/lib/business";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProductView } from "./ProductView";
+import type { Metadata } from "next";
+
+/** Capinha do link do item no WhatsApp: a foto do item, o nome e a marca. */
+export async function generateMetadata({ params }: { params: Promise<{ slug: string; id: string }> }): Promise<Metadata> {
+  const { slug, id } = await params;
+  const supabase = await createClient();
+  const { data: b } = await supabase.from("businesses").select("id, name, logo_url").eq("slug", slug).maybeSingle();
+  if (!b) return { title: "Orbibox" };
+  const { data: i } = await supabase
+    .from("content_items")
+    .select("title, description, image_url, gallery_urls, status")
+    .eq("id", id)
+    .eq("business_id", b.id)
+    .maybeSingle();
+  if (!i || i.status !== "published") return { title: b.name };
+  const capa = i.image_url || (Array.isArray(i.gallery_urls) && i.gallery_urls[0]) || b.logo_url || `/${slug}/opengraph-image`;
+  const titulo = `${i.title} · ${b.name}`;
+  const bruta = (i.description ?? "").replace(/\s+/g, " ").trim() || `Veja em ${b.name}.`;
+  const desc = bruta.length > 90 ? `${bruta.slice(0, 90).replace(/\s+\S*$/, "")}…` : bruta;
+  return {
+    title: titulo,
+    description: desc,
+    openGraph: { title: titulo, description: desc, type: "website", images: [{ url: capa }] },
+    twitter: { card: "summary_large_image", title: titulo, description: desc, images: [capa] },
+  };
+}
 
 export default async function ProductPage({
   params,
@@ -14,7 +40,7 @@ export default async function ProductPage({
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug, contact_whatsapp, contact_phone, contact_email")
+    .select("id, name, slug, contact_whatsapp, contact_phone, contact_email, logo_url")
     .eq("slug", slug)
     .maybeSingle();
   if (!business) notFound();

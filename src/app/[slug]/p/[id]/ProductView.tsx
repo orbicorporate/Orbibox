@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import Link from "next/link";
 import { CurtirItem } from "@/components/clube/CurtirItem";
 import { PedirFaFolha } from "@/components/clube/Clube";
@@ -20,6 +21,7 @@ type Business = {
   contact_whatsapp: string | null;
   contact_phone: string | null;
   contact_email: string | null;
+  logo_url?: string | null;
 };
 
 type Item = {
@@ -129,7 +131,10 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
         >
           ←
         </button>
-        {!isOwner && <CurtirItem businessId={business.id} alvo="item" id={item.id} titulo={item.title} className="!static !bg-surface-soft !shadow-none" />}
+        <div className="flex items-center gap-2">
+          <BotaoCompartilhar alvo={{ url: `/${business.slug}/p/${item.id}`, titulo: item.title, rotulo: business.name, marca: business.name, imagem: images[0] ?? null, logo: business.logo_url ?? null, texto: `Olha isso de ${business.name}:` }} className="grid h-9 w-9 place-items-center rounded-full bg-surface-soft text-on-background transition-transform active:scale-90" tam={18} />
+          {!isOwner && <CurtirItem businessId={business.id} alvo="item" id={item.id} titulo={item.title} className="!static !bg-surface-soft !shadow-none" />}
+        </div>
         {isOwner && (
           <AbrirEditor
             href={`/admin/vitrine/pagina/${item.id}`}

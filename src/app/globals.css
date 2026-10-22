@@ -1436,3 +1436,13 @@ html[data-embed] .embed-oculta { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .nr-fundo, .nr-fundo.sai, .nr-box, .nr-box.sai, .nr-on { animation: none; }
 }
+
+/* Compartilhar (visitante) */
+.cp-fundo { position: fixed; inset: 0; z-index: 95; display: flex; align-items: flex-end; justify-content: center; padding: 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); background: rgba(17, 19, 24, 0.36); animation: nr-fade .24s ease-out both; }
+.cp-fundo.sai { animation: nr-fade .2s ease-in reverse both; }
+.cp-box { width: 100%; max-width: 420px; border-radius: 32px; background: var(--color-surface-white, #fff); padding: 10px 18px 14px; box-shadow: 0 24px 60px -20px rgba(17, 19, 24, 0.35); animation: nr-sobe .42s cubic-bezier(.32, .72, 0, 1) both; }
+.cp-box.sai { animation: nr-desce .22s cubic-bezier(.4, 0, 1, 1) both; }
+.cp-op { animation: cp-op .36s cubic-bezier(.23, 1, .32, 1) both; animation-delay: calc(var(--i, 0) * 35ms + 120ms); }
+@keyframes cp-op { from { opacity: 0; transform: translateY(10px) scale(.92); } to { opacity: 1; transform: none; } }
+@media (min-width: 640px) { .cp-fundo { align-items: center; } }
+@media (prefers-reduced-motion: reduce) { .cp-fundo, .cp-fundo.sai, .cp-box, .cp-box.sai, .cp-op { animation: none; } }
