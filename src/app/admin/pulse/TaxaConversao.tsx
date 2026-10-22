@@ -4,74 +4,45 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 
-// Contexto do número: o que significa e PASSOS concretos do que fazer, cada
-// um apontando pra onde fazer no app. Faixas realistas pra link-in-bio.
+// Contexto do número: poucos passos curtos, cada um direto ao ponto.
+// Faixas realistas pra link-in-bio.
 function contexto(taxa: number, visitas: number) {
   if (visitas < 10) {
     return {
       cor: "#9AA0AA",
-      grad: "linear-gradient(135deg, #C7CCD4, #9AA0AA)",
       titulo: "Ainda são poucas visitas",
-      resumo: "Com pouca gente entrando, esse número ainda não é confiável. Primeiro, traga visitas:",
-      passos: [
-        ["Stories do Instagram", "Compartilhe seu link nos stories, com uma chamada."],
-        ["Link na bio", "Coloque o link do Orbibox na bio do seu perfil."],
-        ["Grupos de WhatsApp", "Mande o link nos grupos que você participa."],
-      ] as [string, string][],
+      passos: ["Compartilhe nos stories", "Coloque o link na bio", "Mande nos grupos de WhatsApp"],
       link: null as { label: string; href: string } | null,
     };
   }
   if (taxa >= 60) {
     return {
       cor: "#3BC471",
-      grad: "linear-gradient(135deg, #86E6A8, #3BC471)",
       titulo: "Excelente. Sua página convence.",
-      resumo: "A maioria de quem entra faz alguma ação. Pra manter esse nível:",
-      passos: [
-        ["Catálogo em dia", "Mantenha produtos e preços sempre atualizados."],
-        ["Contatos certos", "Confira de vez em quando se o WhatsApp e os contatos estão corretos."],
-      ] as [string, string][],
+      passos: ["Mantenha o Catálogo em dia", "Confira se o WhatsApp está certo"],
       link: { label: "Revisar Catálogo", href: "/admin/vitrine" },
     };
   }
   if (taxa >= 35) {
     return {
       cor: "#43BA71",
-      grad: "linear-gradient(135deg, #9DEAB6, #43BA71)",
       titulo: "Está num bom caminho.",
-      resumo: "Boa parte age ao entrar. Pra subir mais, faça isto:",
-      passos: [
-        ["Destaque o que importa", "Em Botões, coloque WhatsApp ou Catálogo na primeira posição."],
-        ["Convide para a ação", "Use um nome claro, como \"Falar agora no WhatsApp\"."],
-        ["Simplifique a escolha", "Desligue os botões que você não usa, pra evitar distrações."],
-      ] as [string, string][],
+      passos: ["WhatsApp ou Catálogo em primeiro", "Nomes claros nos botões", "Desligue botões sem uso"],
       link: { label: "Organizar Botões", href: "/admin/boxes" },
     };
   }
   if (taxa >= 15) {
     return {
       cor: "#E0912F",
-      grad: "linear-gradient(135deg, #F5C97E, #E0912F)",
       titulo: "Dá pra melhorar.",
-      resumo: "Muita gente entra e sai sem tocar em nada. Deixe a primeira tela mais direta:",
-      passos: [
-        ["Teste os 3 segundos", "Abra sua página: dá pra entender o que fazer num relance?"],
-        ["Um botão principal", "Deixe uma ação no topo (ex: WhatsApp) com nome claro."],
-        ["Menos botões", "Menos opções na tela deixam a decisão mais fácil."],
-      ] as [string, string][],
+      passos: ["Uma ação clara no topo", "Menos botões na tela", "Dá pra entender em 3 segundos?"],
       link: { label: "Ajustar Botões", href: "/admin/boxes" },
     };
   }
   return {
     cor: "#E24B6B",
-    grad: "linear-gradient(135deg, #F5A3B5, #E24B6B)",
     titulo: "Vale ajustar a página.",
-    resumo: "Quase ninguém age ao entrar. Provavelmente falta um caminho claro. Comece por aqui:",
-    passos: [
-      ["Uma ação no topo", "Deixe um botão de ação em primeiro (WhatsApp ou Catálogo)."],
-      ["Catálogo com conteúdo", "Preencha com pelo menos alguns produtos ou serviços."],
-      ["Primeira tela limpa", "Deixe só uma ação óbvia, sem poluição."],
-    ] as [string, string][],
+    passos: ["Uma ação no topo", "Alguns itens no Catálogo", "Primeira tela limpa"],
     link: { label: "Revisar minha página", href: "/admin/boxes" },
   };
 }
@@ -183,15 +154,11 @@ export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiCol
         </div>
 
         <div className="border-t border-divider px-5 py-4">
-          <p className="text-[13.5px] leading-relaxed text-text-secondary">{ctx.resumo}</p>
-          <ol className="mt-3 flex flex-col gap-2.5">
-            {ctx.passos.map(([titulo, texto], i) => (
-              <li key={i} className="flex items-start gap-3 rounded-[18px] border border-divider bg-surface-white p-4">
+          <ol className="flex flex-col gap-2">
+            {ctx.passos.map((texto, i) => (
+              <li key={i} className="flex items-center gap-3 rounded-full border border-divider bg-surface-white py-2.5 pl-3 pr-4">
                 <span className="orbi-gradient flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-on-background">{i + 1}</span>
-                <div className="min-w-0">
-                  <p className="text-[14.5px] font-semibold leading-tight text-on-background">{titulo}</p>
-                  <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">{texto}</p>
-                </div>
+                <p className="text-[14.5px] font-medium leading-tight text-on-background">{texto}</p>
               </li>
             ))}
           </ol>
@@ -204,7 +171,7 @@ export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiCol
 
           {extra && (
             <div className="orbi-card-light relative mt-3 overflow-hidden rounded-[18px] p-4">
-              <p className="relative text-[11px] font-semibold uppercase tracking-wide text-text-secondary">✦ Ideia da Orbi pro seu negócio</p>
+              <p className="relative text-[11px] font-semibold uppercase tracking-wide text-text-secondary">✦ Ideia da Orbi</p>
               <p className="relative mt-1.5 text-[14.5px] font-semibold leading-tight">{extra.titulo}</p>
               <p className="relative mt-0.5 text-[13px] leading-snug text-text-secondary">{extra.texto}</p>
             </div>
@@ -219,13 +186,13 @@ export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiCol
             >
               {gerando ? (
                 <><span className="h-4 w-4 overflow-hidden rounded-full"><OrbiParticleSphere size={16} colors={orbiColors ?? undefined} className="rounded-full" /></span> Pensando…</>
-              ) : extra ? "✦ Gerar outra ideia" : "✦ Gerar ideia pro meu negócio"}
+              ) : extra ? "✦ Outra ideia" : "✦ Gerar uma ideia"}
             </button>
           )}
 
           {visitas >= 10 && (
             <p className="mt-3 text-[12px] text-text-tertiary">
-              Baseado em {totalCliques} {totalCliques === 1 ? "ação" : "ações"} em {visitas} {visitas === 1 ? "visita" : "visitas"} no período.
+              {totalCliques} {totalCliques === 1 ? "ação" : "ações"} em {visitas} {visitas === 1 ? "visita" : "visitas"}
             </p>
           )}
 
