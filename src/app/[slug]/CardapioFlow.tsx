@@ -6,6 +6,13 @@ import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { trackClick } from "@/lib/track";
 import { estiloCategoria, IconeCategoria } from "./categoriaCardapio";
 
+
+/** Degradê cereja dos botões de PDF. */
+const CEREJA = "linear-gradient(135deg,#E04A4F 0%,#C4282D 48%,#8A1D22 100%)";
+const SOMBRA_CEREJA = "0 8px 20px -8px rgba(138,29,34,0.55)";
+/** Brilho bege claro atrás dos cartões, igual em todas as categorias. */
+const BEGE = "#C9A878";
+
 /**
  * Cardápio da loja: os pratos cadastrados no cardápio (separado do Catálogo),
  * por categoria. Com foto mostra a foto ao lado; sem foto mostra só nome,
@@ -76,9 +83,9 @@ export function CardapioFlow({
             <ul className="mt-2 grid grid-cols-1 gap-2">
               {pdfs.map((p) => (
                 <li key={p.id}>
-                  <a href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="flex h-full min-h-[56px] items-center gap-3 rounded-[18px] bg-white/70 px-3 py-2 ring-1 ring-black/[0.04] transition-transform active:scale-[0.98]">
-                    <span className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-xl text-[9.5px] font-bold leading-none tracking-wide" style={corBotoes ? { backgroundColor: `${corBotoes}1A`, color: `color-mix(in srgb, ${corBotoes} 75%, black)` } : { backgroundColor: "#FDECEC", color: "#B42318" }}>
-                      <span className="text-[11px]">PDF</span>
+                  <a href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="cardapio-vidro flex h-full min-h-[56px] items-center gap-3 rounded-full py-2 pl-2 pr-5 transition-transform active:scale-[0.98]">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white" style={{ background: CEREJA, boxShadow: SOMBRA_CEREJA }}>
+                      <span className="text-[11px] font-medium leading-none tracking-[0.06em]">PDF</span>
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[14.5px] font-medium leading-snug">{p.nome?.trim() || "Baixar cardápio"}</span>
@@ -92,7 +99,7 @@ export function CardapioFlow({
             // Vários PDFs: bolinhas de destaque, como as da home, com o nome embaixo.
             <ul className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-4 pb-1">
               {pdfs.map((p) => {
-                const cor = corBotoes ?? "#C0392B";
+                
                 return (
                   <li key={p.id} className="flex w-[84px] flex-col items-center">
                     <a
@@ -102,10 +109,10 @@ export function CardapioFlow({
                       download
                       aria-label={`Baixar ${p.nome.trim() || "PDF"}${p.bytes ? `, ${pesoLegivel(p.bytes)}` : ""}`}
                       onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })}
-                      style={{ background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0) 48%), ${cor}`, boxShadow: `inset 0 -7px 12px -5px rgba(0,0,0,0.22), inset 0 1.5px 2px rgba(255,255,255,0.28), 0 6px 16px -6px ${cor}99`, color: textoSobre(cor) }}
+                      style={{ background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 48%), ${CEREJA}`, boxShadow: `inset 0 -7px 12px -5px rgba(0,0,0,0.22), inset 0 1.5px 2px rgba(255,255,255,0.28), ${SOMBRA_CEREJA}`, color: "#fff" }}
                       className="flex h-[64px] w-[64px] flex-col items-center justify-center rounded-full transition-transform active:scale-95"
                     >
-                      <span className="text-[14px] font-bold leading-none tracking-[0.08em]">PDF</span>
+                      <span className="text-[14px] font-medium leading-none tracking-[0.08em]">PDF</span>
                     </a>
                     <span className="mt-1.5 line-clamp-2 w-full break-words text-center text-[12px] font-medium leading-tight">{p.nome.trim() || "PDF"}</span>
                     {p.bytes ? <span className="mt-0.5 text-[10.5px] leading-none text-text-tertiary">{pesoLegivel(p.bytes)}</span> : null}
@@ -144,7 +151,7 @@ export function CardapioFlow({
             <p className="text-[15px] font-medium">{unico ? "Nosso cardápio completo está em PDF." : "Nossos cardápios estão em PDF."}</p>
             <div className="mt-4 flex flex-col gap-2.5">
               {pdfs.map((p) => (
-                <a key={p.id} href={p.url} target="_blank" rel="noopener" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} style={estiloBotao} className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]">
+                <a key={p.id} href={p.url} target="_blank" rel="noopener" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} style={{ background: CEREJA, boxShadow: SOMBRA_CEREJA }} className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full text-[15px] font-medium text-white transition-transform active:scale-[0.98]">
                   {unico ? "Abrir cardápio em PDF" : `Abrir ${p.nome.trim() || "PDF"}`}
                 </a>
               ))}
@@ -185,7 +192,7 @@ export function CardapioFlow({
             <span
               aria-hidden
               className="pointer-events-none absolute -inset-x-8 -inset-y-6 -z-10"
-              style={{ background: [`radial-gradient(ellipse 40% 11% at 28% 14%, ${cor}38, transparent 100%)`, `radial-gradient(ellipse 40% 11% at 74% 38%, ${est.cor}30, transparent 100%)`, `radial-gradient(ellipse 40% 11% at 26% 62%, ${cor}30, transparent 100%)`, `radial-gradient(ellipse 40% 11% at 72% 86%, ${est.cor}38, transparent 100%)`].join(", ") }}
+              style={{ background: [`radial-gradient(ellipse 40% 11% at 28% 14%, ${BEGE}38, transparent 100%)`, `radial-gradient(ellipse 40% 11% at 74% 38%, ${BEGE}30, transparent 100%)`, `radial-gradient(ellipse 40% 11% at 26% 62%, ${BEGE}30, transparent 100%)`, `radial-gradient(ellipse 40% 11% at 72% 86%, ${BEGE}38, transparent 100%)`].join(", ") }}
             />
             {s.nome.trim() && (
               <div className="flex items-center gap-3">
