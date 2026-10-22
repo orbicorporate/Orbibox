@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { carregarCurtidas } from "@/lib/clube-curtidas";
 import type { PedidoFa } from "./CurtirItem";
 import {
-  aceitarWhatsapp, atualizarPerfil, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, entrarComNumero,
+  aceitarWhatsapp, atualizarPerfil, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, entrarComEmail, entrarComNumero,
   enviarFotoPerfil, entrarComGoogle, getAfinidade, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
   sairDoClube, salvarContatoWhatsapp, virarFa,
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type Resumo,
@@ -192,6 +192,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
 
       {isOwner && vazio && <p className="max-w-[300px] text-center text-[13px] text-text-tertiary">Quando seus clientes virarem fãs e avaliarem, os números aparecem aqui.</p>}
       {isOwner && resumo.fas === 0 && resumo.avaliacoes > 0 ? null : null}
+      {!isOwner && eu.logado && eu.anonimo && <AvisoValidarPerfil slug={slug} />}
       {!isOwner && <LinguaContato nome={nome} slug={slug} ocupado={aberta !== null || pedido !== null} eu={eu} onQuero={querContato} />}
 
       {aberta?.tipo === "avaliacoes" && (
@@ -347,6 +348,9 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
   const [nomeTxt, setNomeTxt] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const [comEmail, setComEmail] = useState(false);
+  const [emailTxt, setEmailTxt] = useState("");
+  const [emailEnviado, setEmailEnviado] = useState(false);
   const reduzido = useReduzido();
   const telefone = normalizarTelefone(tel);
 
@@ -360,6 +364,13 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
     setOcupado(true);
     setErro(await entrarComGoogle(slug));
     setOcupado(false);
+  }
+  async function porEmail() {
+    setOcupado(true); setErro(null);
+    const e = await entrarComEmail(slug, emailTxt);
+    setOcupado(false);
+    if (e) return setErro(e);
+    setEmailEnviado(true);
   }
   // Só nome e WhatsApp, sem código: já vira fã e fica reconhecido neste aparelho em todos os Orbiboxes.
   async function entrar() {
@@ -405,12 +416,27 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
             <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" /><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z" /><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 010-9.4l-7.9-6.1a24 24 0 000 21.6l7.9-6.1z" /><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z" /></svg>
             Continuar com Google
           </button>
-          <p className="text-center text-[12.5px] text-text-tertiary">ou deixe seu WhatsApp</p>
-          <label className="sr-only" htmlFor="clube-nome">Seu nome</label>
-          <input id="clube-nome" className={campo} autoComplete="name" placeholder="Seu nome" value={nomeTxt} onChange={(e) => setNomeTxt(e.target.value)} />
-          <label className="sr-only" htmlFor="clube-tel">Seu WhatsApp com DDD</label>
-          <input id="clube-tel" className={campo} inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={tel} onChange={(e) => setTel(e.target.value)} />
-          <button type="button" onClick={entrar} disabled={ocupado} className={botao}>{ocupado ? "Entrando..." : "Entrar"}</button>
+          {emailEnviado ? (
+            <p className="rounded-2xl bg-surface-soft px-4 py-3 text-center text-[14px] leading-snug text-text-secondary">Enviamos um link para {emailTxt.trim()}. Abra o e-mail neste aparelho para concluir.</p>
+          ) : comEmail ? (
+            <>
+              <p className="text-center text-[12.5px] text-text-tertiary">ou entre com seu e-mail</p>
+              <label className="sr-only" htmlFor="clube-email">Seu e-mail</label>
+              <input id="clube-email" type="email" className={campo} inputMode="email" autoComplete="email" placeholder="voce@email.com" value={emailTxt} onChange={(e) => setEmailTxt(e.target.value)} />
+              <button type="button" onClick={porEmail} disabled={ocupado} className={botao}>{ocupado ? "Enviando..." : "Enviar link"}</button>
+              <button type="button" onClick={() => { setComEmail(false); setErro(null); }} className="min-h-[40px] text-[14px] font-medium text-text-secondary">Usar WhatsApp</button>
+            </>
+          ) : (
+            <>
+              <p className="text-center text-[12.5px] text-text-tertiary">ou deixe seu WhatsApp</p>
+              <label className="sr-only" htmlFor="clube-nome">Seu nome</label>
+              <input id="clube-nome" className={campo} autoComplete="name" placeholder="Seu nome" value={nomeTxt} onChange={(e) => setNomeTxt(e.target.value)} />
+              <label className="sr-only" htmlFor="clube-tel">Seu WhatsApp com DDD</label>
+              <input id="clube-tel" className={campo} inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={tel} onChange={(e) => setTel(e.target.value)} />
+              <button type="button" onClick={entrar} disabled={ocupado} className={botao}>{ocupado ? "Entrando..." : "Entrar"}</button>
+              <button type="button" onClick={() => { setComEmail(true); setErro(null); }} className="min-h-[40px] text-[14px] font-medium text-text-secondary">Entrar com e-mail</button>
+            </>
+          )}
           {erro && <p role="alert" className="text-center text-[13.5px] text-[#C2362E]">{erro}</p>}
           <p className="text-center text-[12px] leading-snug text-text-tertiary">
             Ao entrar, você aceita receber novidades da marca no WhatsApp. Seu número nunca aparece para outros clientes e você pode desligar quando quiser.
@@ -1050,6 +1076,61 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   );
 }
 
+
+const AVISO_CHAVE = (slug: string) => `clube-validar-${slug}`;
+
+/**
+ * Aviso pequeno no canto para quem entrou só com o número: validar o perfil com Google ou e-mail
+ * protege a conta (fãs, foto e avaliações) e permite entrar de outro aparelho. Pode dispensar;
+ * volta só depois de 3 dias.
+ */
+function AvisoValidarPerfil({ slug }: { slug: string }) {
+  const [visivel, setVisivel] = useState(false);
+  const [emailAberto, setEmailAberto] = useState(false);
+  const [email, setEmail] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+
+  useEffect(() => {
+    try {
+      const t = Number(localStorage.getItem(AVISO_CHAVE(slug)) ?? 0);
+      if (t && Date.now() - t < 3 * 86400000) return;
+    } catch { /* sem armazenamento: mostra */ }
+    const id = setTimeout(() => setVisivel(true), 4000);
+    return () => clearTimeout(id);
+  }, [slug]);
+
+  if (!visivel) return null;
+  const dispensar = () => { try { localStorage.setItem(AVISO_CHAVE(slug), String(Date.now())); } catch { /* ignora */ } setVisivel(false); };
+  async function porGoogle() { setOcupado(true); setMsg(await entrarComGoogle(slug)); setOcupado(false); }
+  async function porEmail() {
+    setOcupado(true);
+    const e = await entrarComEmail(slug, email);
+    setOcupado(false);
+    setMsg(e ?? `Enviamos um link para ${email.trim()}. Abra neste aparelho para validar.`);
+  }
+  const mini = "min-h-[36px] rounded-full px-3.5 text-[12.5px] font-semibold active:scale-95 disabled:opacity-50";
+  return (
+    <div role="status" className="fixed bottom-4 left-4 z-[45] w-[min(280px,calc(100vw-96px))] rounded-[22px] bg-white p-3 pr-9 text-left shadow-[0_8px_28px_rgba(17,19,24,0.18)] ring-1 ring-divider">
+      <button type="button" onClick={dispensar} aria-label="Dispensar aviso" className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full text-text-tertiary active:scale-90">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+      <p className="text-[13px] font-semibold leading-tight text-on-background">Valide seu perfil</p>
+      <p className="mt-0.5 text-[12px] leading-snug text-text-secondary">Com Google ou e-mail, sua conta fica protegida e você entra de outro aparelho.</p>
+      {msg ? <p className="mt-2 text-[12px] leading-snug text-text-secondary">{msg}</p> : emailAberto ? (
+        <div className="mt-2 flex gap-1.5">
+          <input type="email" aria-label="Seu e-mail" inputMode="email" autoComplete="email" placeholder="voce@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="min-h-[36px] min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-3 text-[14px] outline-none focus:border-on-background" />
+          <button type="button" onClick={porEmail} disabled={ocupado} className={`${mini} bg-button-primary text-white`}>Enviar</button>
+        </div>
+      ) : (
+        <div className="mt-2 flex gap-1.5">
+          <button type="button" onClick={porGoogle} disabled={ocupado} className={`${mini} bg-button-primary text-white`}>Google</button>
+          <button type="button" onClick={() => setEmailAberto(true)} className={`${mini} bg-surface-soft text-on-background`}>E-mail</button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const LINGUA_CHAVE = (slug: string) => `clube-lingua-${slug}`;
 

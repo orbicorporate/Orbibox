@@ -47,6 +47,8 @@ export type Eu = {
   /** Número que o fã digitou para receber novidades (sem confirmação por código). */
   contatoWhatsapp: string | null;
   curtiu: boolean;
+  /** Entrou só com o número neste aparelho: perfil ainda não validado por Google ou e-mail. */
+  anonimo: boolean;
   podeAvaliar: boolean;
   minhaAvaliacao: { id: string; nota: number; comentario: string | null; resposta_dono: string | null } | null;
 };
@@ -82,7 +84,7 @@ export async function getContatos(businessId: string): Promise<ContatoWhats[]> {
 
 const EU_ANON: Eu = {
   logado: false, userId: null, nome: null, foto: null, telefone: null, telefoneVerificado: false, mostrarMarcas: false,
-  ehFa: false, aceiteWhatsapp: false, contatoWhatsapp: null, curtiu: false, podeAvaliar: false, minhaAvaliacao: null,
+  ehFa: false, aceiteWhatsapp: false, contatoWhatsapp: null, curtiu: false, anonimo: false, podeAvaliar: false, minhaAvaliacao: null,
 };
 
 /** Garante a linha do cliente (nome e foto vêm do Google) e devolve o estado dele nesta marca. */
@@ -110,6 +112,7 @@ export async function getEu(businessId: string): Promise<Eu> {
     aceiteWhatsapp: !!fan.data?.aceite_whatsapp,
     contatoWhatsapp: (fan.data?.contato_whatsapp as string | null | undefined) ?? null,
     curtiu: !!like.data,
+    anonimo: user.is_anonymous === true,
     podeAvaliar: pode.data === true,
     minhaAvaliacao: rev.data ?? null,
   };
@@ -170,11 +173,32 @@ export async function pedirRevisao(reviewId: string) {
 /* ---------- Entrar ---------- */
 export async function entrarComGoogle(slug: string): Promise<string | null> {
   const next = `/${slug}?clube=1`;
-  const { error } = await clubeDb().auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
-  });
-  return error ? "O login com Google ainda não está ativo. Tente por WhatsApp." : null;
+  const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+  const db = clubeDb();
+  const { data: { user } } = await db.auth.getUser();
+  // Quem entrou só com o número: liga o Google ao mesmo perfil, sem perder fãs, fotos e avaliações.
+  if (user?.is_anonymous) {
+    const lig = await db.auth.linkIdentity({ provider: "google", options: { redirectTo } });
+    if (!lig.error) return null;
+    // Se não deu para ligar (ex.: esse Google já tem conta), entra com ele normalmente.
+  }
+  const { error } = await db.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
+  return error ? "O login com Google ainda não está ativo. Tente com o e-mail." : null;
+}
+/**
+ * E-mail: quem entrou só com o número tem o e-mail ligado ao mesmo perfil (a pessoa confirma pelo link
+ * que recebe); quem ainda não entrou recebe um link para entrar. Devolve a mensagem de erro, ou null.
+ */
+export async function entrarComEmail(slug: string, email: string): Promise<string | null> {
+  const limpo = email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(limpo)) return "Confira o e-mail digitado.";
+  const db = clubeDb();
+  const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/${slug}?clube=1`)}`;
+  const { data: { user } } = await db.auth.getUser();
+  const r = user?.is_anonymous
+    ? await db.auth.updateUser({ email: limpo }, { emailRedirectTo })
+    : await db.auth.signInWithOtp({ email: limpo, options: { emailRedirectTo } });
+  return r.error ? "Não consegui enviar o e-mail agora. Confira o endereço e tente de novo." : null;
 }
 /** Só dígitos, com 55 na frente se vier sem DDI. */
 export function normalizarTelefone(txt: string): string {
