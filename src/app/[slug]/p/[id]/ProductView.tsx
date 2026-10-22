@@ -12,6 +12,8 @@ import { NudgeLead } from "@/components/mobile/NudgeLead";
 import { COVER_RATIO_BY_SIZE, galleryRatioOf, formatPrice, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { lerLista } from "@/lib/lista";
+import { lerAnexo } from "@/lib/anexo";
+import { AnexoProduto } from "@/components/ui/AnexoProduto";
 import { ListaItensView } from "./ListaItensView";
 
 type Business = {
@@ -42,6 +44,7 @@ type Item = {
   highlights: string[] | null;
   orbi_hook: string | null;
   lista?: unknown;
+  images?: unknown;
 };
 
 // Rótulo da categoria lá em cima da capa, só aparece quando o tipo do item
@@ -254,6 +257,11 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
               )}
             </>
           );
+        })()}
+
+        {(() => {
+          const anexo = lerAnexo(item.images);
+          return anexo ? <AnexoProduto anexo={anexo} /> : null;
         })()}
 
         {(() => {

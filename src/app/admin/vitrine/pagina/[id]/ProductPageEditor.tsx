@@ -6,6 +6,8 @@ import { useRef, useState, useSyncExternalStore } from "react";
 import type { Json } from "@/lib/supabase/types";
 import { lerLista, type Lista } from "@/lib/lista";
 import { ListaItensEditor } from "./ListaItensEditor";
+import { AnexoEditor } from "./AnexoEditor";
+import { lerAnexo, type Anexo } from "@/lib/anexo";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { galleryRatioOf, formatPrice, isVideoUrl, youtubeId, instagramReelId, type GalleryRatio } from "@/lib/showcase";
@@ -44,6 +46,7 @@ type Item = {
   highlights: string[] | null;
   orbi_hook: string | null;
   lista?: unknown;
+  images?: unknown;
   status?: string;
 };
 
@@ -61,6 +64,7 @@ type Campos = Partial<{
   gallery_urls: string[];
   gallery_ratio: string | null;
   lista: Json | null;
+  images: Json;
 }>;
 
 function novoCaminho(businessId: string, ext: string) {
@@ -99,6 +103,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const [descricao, setDescricao] = useState(item.description ?? "");
   const [rotulo, setRotulo] = useState(item.brand_label ?? "");
   const [lista, setLista] = useState<Lista | null>(() => lerLista(item.lista));
+  const [anexo, setAnexo] = useState<Anexo | null>(() => lerAnexo(item.images));
   const [pergunta, setPergunta] = useState(item.orbi_hook ?? "");
   const [midias, setMidias] = useState<string[]>(item.gallery_urls ?? []);
   const arrastoFotos = useArrastarOrdem(midias, true, (nova) => {
@@ -169,6 +174,11 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   function salvarLista(l: Lista | null) {
     setLista(l);
     salvar({ lista: l as unknown as Json });
+  }
+
+  function salvarAnexo(a: Anexo | null) {
+    setAnexo(a);
+    salvar({ images: (a ? { anexo: a } : []) as unknown as Json });
   }
 
   function salvarMidias(lista: string[]) {
@@ -616,6 +626,8 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             maxLength={1500}
             className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] leading-relaxed outline-none focus:border-on-background"
           />
+
+          <AnexoEditor businessId={business.id} anexo={anexo} onChange={salvarAnexo} />
 
           <ListaItensEditor businessId={business.id} lista={lista} temWhatsapp={!!business.contact_whatsapp} onChange={salvarLista} />
 
