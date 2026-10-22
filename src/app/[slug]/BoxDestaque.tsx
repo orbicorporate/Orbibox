@@ -428,6 +428,7 @@ export function BoxDestaque({
             </div>
 
             <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Produtos</p>
+            <p className="mt-1 text-[12px] leading-snug text-text-tertiary">Só itens publicados aparecem aqui. Se o seu item não está na lista, ele deve estar em rascunho: publique no Catálogo.</p>
             <div className="mt-2 flex flex-col gap-2">
               {itens.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum produto no catálogo ainda.</p>}
               {itens.slice(0, 60).map((i) => (

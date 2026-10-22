@@ -490,6 +490,7 @@ export function HomeVitrine({
               placeholder="Buscar item"
               className="mt-3 w-full shrink-0 rounded-full border border-divider px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
             />
+            <p className="mt-2 shrink-0 text-[12px] leading-snug text-text-tertiary">Só itens publicados aparecem aqui. Se o seu item não está na lista, ele deve estar em rascunho: publique no Catálogo.</p>
             <AbrirEditor
               href="/admin/vitrine?novo=1"
               rotulo="Criar item"
