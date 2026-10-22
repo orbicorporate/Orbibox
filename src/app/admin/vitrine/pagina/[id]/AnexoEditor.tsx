@@ -49,10 +49,14 @@ export function AnexoEditor({ businessId, anexo, onChange }: { businessId: strin
           type="button"
           onClick={() => input.current?.click()}
           disabled={enviando}
-          className="mt-1.5 flex min-h-[64px] w-full flex-col items-start justify-center rounded-2xl border border-dashed border-on-background/20 bg-surface-soft px-4 py-3 text-left active:scale-[0.99] disabled:opacity-60"
+          className="mt-1.5 flex min-h-[72px] w-full items-center gap-3 rounded-full border border-divider bg-white p-2 pr-4 text-left shadow-[0_6px_18px_rgba(17,19,24,0.08)] active:scale-[0.99] disabled:opacity-60"
         >
-          <span className="text-[14.5px] font-semibold">{enviando ? "Enviando…" : "Anexar PDF ou imagem"}</span>
-          <span className="mt-0.5 text-[12.5px] text-text-secondary">Vira um botão na página. Ao tocar, o arquivo abre.</span>
+          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full text-[13px] font-bold tracking-wide text-white" style={{ background: "linear-gradient(135deg,#E04A4F 0%,#C4282D 48%,#8A1D22 100%)", boxShadow: "0 8px 20px -8px rgba(138,29,34,0.55)" }}>PDF</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold leading-tight">{enviando ? "Enviando…" : "Anexar PDF ou imagem"}</span>
+            <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">Vira um botão na página</span>
+          </span>
+          <span className="shrink-0 rounded-full bg-on-background px-4 py-2 text-[12.5px] font-semibold text-white">Anexar</span>
         </button>
       ) : (
         <div className="mt-1.5 rounded-2xl border border-divider bg-surface-white p-3">
