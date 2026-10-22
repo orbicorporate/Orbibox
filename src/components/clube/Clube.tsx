@@ -12,7 +12,7 @@ import {
 } from "@/lib/clube";
 import { OrbiAvatar, lerEsfera, lerLogoEscala } from "@/components/orbi/OrbiAvatar";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
-import { Cabecalho, Estrela, Folha, IcBalao, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
+import { Cabecalho, Estrela, Folha, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
 type Aberta = { tipo: "avaliacoes" | "fas" | "entrar" | "contato"; origem: DOMRect | null } | null;
 
@@ -90,31 +90,48 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   const temNota = resumo.avaliacoes > 0 && resumo.nota != null;
   const vazio = resumo.fas === 0 && resumo.avaliacoes === 0 && resumo.curtidas === 0;
 
-  // Um só elemento, sem fundo: rostos, contagem e coração. Toca e abre o painel dos fãs, para todo mundo.
-  const cluster = !isOwner || resumo.fas > 0 ? (
-    <button
-      type="button"
-      onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget) })}
-      aria-label={isOwner ? `${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}, abrir radar` : eu.ehFa ? `Você é fã. ${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}, abrir painel` : "Virar fã, abrir painel"}
-      className="flex min-h-[40px] items-center gap-2 text-[13.5px] font-semibold text-on-background transition active:scale-[0.96] [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]"
-    >
-      {resumo.fas > 0 && (
-        <>
-          <span className="flex">
-            {resumo.recentes.slice(0, 3).map((f, i) => (
-              <Rosto key={f.id} url={f.foto} nome={f.nome} size={26} className={i ? "-ml-2 ring-2 ring-white" : "ring-2 ring-white"} />
-            ))}
-          </span>
-          <span className="tabular-nums">{resumo.fas}</span>
-        </>
+  // Faixa discreta lá em cima, sem fundo: rostos e contagem de fãs, coração, e a nota (estrela colorida) com o balão de avaliações.
+  const abrirAvaliacoes = (e: React.MouseEvent<HTMLElement>) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) });
+  const cluster = !isOwner || resumo.fas > 0 || resumo.avaliacoes > 0 ? (
+    <div className="flex min-h-[40px] items-center gap-3.5 text-[13.5px] font-semibold text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]">
+      {(!isOwner || resumo.fas > 0) && (
+        <button
+          type="button"
+          onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget) })}
+          aria-label={isOwner ? `${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}, abrir radar` : eu.ehFa ? `Você é fã. ${resumo.fas} ${resumo.fas === 1 ? "fã" : "fãs"}, abrir painel` : "Virar fã, abrir painel"}
+          className="flex min-h-[40px] items-center gap-2 transition active:scale-[0.96]"
+        >
+          {resumo.fas > 0 && (
+            <>
+              <span className="flex">
+                {resumo.recentes.slice(0, 3).map((f, i) => (
+                  <Rosto key={f.id} url={f.foto} nome={f.nome} size={26} className={i ? "-ml-2 ring-2 ring-white" : "ring-2 ring-white"} />
+                ))}
+              </span>
+              <span className="tabular-nums">{resumo.fas}</span>
+            </>
+          )}
+          {!isOwner && (
+            <>
+              <span className={eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}><IcCoracao cheio={eu.ehFa} tamanho={27} /></span>
+              <span>{eu.ehFa ? "Sou fã" : "Virar fã"}</span>
+            </>
+          )}
+        </button>
       )}
-      {!isOwner && (
-        <>
-          <span className={eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}><IcCoracao cheio={eu.ehFa} tamanho={27} /></span>
-          <span>{eu.ehFa ? "Sou fã" : "Virar fã"}</span>
-        </>
+      {temNota && (
+        <button type="button" onClick={abrirAvaliacoes} aria-label={`Nota geral ${fmtNota(resumo.nota!)}. Ver avaliações`} className="flex min-h-[40px] items-center gap-1 tabular-nums transition active:scale-[0.96]">
+          <Estrela cheia tam={16} />
+          <span>{fmtNota(resumo.nota!)}</span>
+        </button>
       )}
-    </button>
+      {resumo.avaliacoes > 0 && (
+        <button type="button" onClick={abrirAvaliacoes} aria-label={`${resumo.avaliacoes} ${resumo.avaliacoes === 1 ? "avaliação" : "avaliações"}. Ver avaliações`} className="flex min-h-[40px] items-center gap-1 tabular-nums text-on-background/75 transition active:scale-[0.96]">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H10l-4.5 3.5V17H4a1 1 0 01-1-1V6a1 1 0 011-1z" /></svg>
+          <span>{resumo.avaliacoes}</span>
+        </button>
+      )}
+    </div>
   ) : null;
 
   /** Convite da língua e do painel: pede só o número, sem código. Quem não entrou passa antes pelo login. */
@@ -142,15 +159,15 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     <div className="mt-5 flex w-full min-w-0 flex-col items-center gap-3">
       {cluster && (slotTopo ? createPortal(cluster, slotTopo) : <div className="flex flex-wrap items-center justify-center gap-2">{cluster}</div>)}
 
-      {!isOwner && (
-        <div className="nr-home flex items-center gap-1.5" aria-label={eu.minhaAvaliacao ? `Sua nota: ${eu.minhaAvaliacao.nota} de 5. Toque para mudar` : "Dê sua nota"}>
-          <span className="text-[12px] text-text-tertiary">{eu.minhaAvaliacao ? "Sua nota" : "Dê sua nota"}</span>
+      {!isOwner && !eu.minhaAvaliacao && (
+        <div className="nr-home flex items-center gap-1.5" aria-label="Dê sua nota">
+          <span className="text-[12px] text-text-tertiary">Dê sua nota</span>
           <span className="flex" role="radiogroup" aria-label="Nota">
             {[1, 2, 3, 4, 5].map((n) => (
-              <button key={n} type="button" role="radio" aria-checked={eu.minhaAvaliacao?.nota === n} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
+              <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
                 onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin("avaliar", null); }}
                 className="grid h-8 w-7 place-items-center active:scale-90">
-                <Estrela cheia={n <= (eu.minhaAvaliacao?.nota ?? 0)} tam={15} />
+                <Estrela cheia={false} tam={15} />
               </button>
             ))}
           </span>
@@ -170,24 +187,6 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
             <button type="button" onClick={confirmarPedido} className="mt-5 min-h-[48px] w-full rounded-full bg-button-primary text-[15px] font-semibold text-white active:scale-[0.98]">Virar fã e curtir</button>
             <button type="button" onClick={() => setPedido(null)} className="mt-2 min-h-[44px] w-full rounded-full text-[14px] font-medium text-text-secondary">Agora não</button>
           </div>
-        </div>
-      )}
-
-      {(temNota || resumo.avaliacoes > 0) && (
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {temNota && (
-            <button type="button" className="cl-pill" style={{ background: "var(--cl-orange)" }} onClick={(e) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) })}>
-              <span className="cl-pill-ic"><Estrela cheia tam={22} cor="#fff" /></span>
-              <span><span className="cl-pill-num">{fmtNota(resumo.nota!)}</span><span className="cl-pill-lab">Nota geral</span></span>
-            </button>
-          )}
-          {resumo.avaliacoes > 0 && (
-            <button type="button" className="cl-pill" style={{ background: "var(--cl-pink)" }} onClick={(e) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) })}>
-              <span className="cl-pill-ic"><IcBalao /></span>
-              <span><span className="cl-pill-num">{resumo.avaliacoes}</span><span className="cl-pill-lab">{resumo.avaliacoes === 1 ? "Avaliação" : "Avaliações"}</span></span>
-              <IcChev />
-            </button>
-          )}
         </div>
       )}
 
