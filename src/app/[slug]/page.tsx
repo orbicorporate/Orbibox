@@ -1,4 +1,5 @@
 import { voucherTheme } from "@/lib/voucherThemes";
+import { ehDonoOuAdmin } from "@/lib/business";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
@@ -108,7 +109,7 @@ export default async function VisitorPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const isOwner = !!user && user.id === business.owner_id;
+  const isOwner = await ehDonoOuAdmin(user?.id, business.id);
 
   // As quatro dependem só do business, vão juntas em vez de em fila.
   const [contentRes, boxesRes, agentRes, hasAiChat, hasVouchers, giftRes] = await Promise.all([

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentBusinessId } from "@/lib/business";
+import { getCurrentBusinessId, ehDonoOuAdmin } from "@/lib/business";
 import { ProductPageEditor } from "./ProductPageEditor";
 
 /** Edição da página própria do produto, direto nela: toca e edita. */
@@ -14,7 +14,7 @@ export default async function EditarPaginaProduto({ params }: { params: Promise<
     .select("id, name, slug, contact_whatsapp, contact_phone, contact_email, owner_id")
     .eq("id", businessId!)
     .maybeSingle();
-  if (!business || business.owner_id !== user!.id) notFound();
+  if (!business || !(await ehDonoOuAdmin(user!.id, business.id))) notFound();
 
   const { data: item } = await supabase
     .from("content_items")

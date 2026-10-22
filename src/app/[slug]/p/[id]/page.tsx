@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ehDonoOuAdmin } from "@/lib/business";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProductView } from "./ProductView";
@@ -27,8 +28,7 @@ export default async function ProductPage({
   if (!item) notFound();
 
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: dono } = await supabase.from("businesses").select("owner_id").eq("id", business.id).maybeSingle();
-  const isOwner = !!user && dono?.owner_id === user.id;
+  const isOwner = await ehDonoOuAdmin(user?.id, business.id);
 
   // Rascunho só o dono vê. Antes o botão Ver de um item em rascunho abria um 404 até para ele.
   const rascunho = item.status !== "published";

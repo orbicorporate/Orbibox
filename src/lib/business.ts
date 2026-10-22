@@ -69,3 +69,13 @@ export async function podeCriarOutroNegocio(userId: string): Promise<boolean> {
   const { count } = await supabase.from("businesses").select("id", { count: "exact", head: true }).eq("owner_id", userId);
   return (count ?? 0) < acesso.maxBusinesses;
 }
+
+/** Dono do negócio ou administrador convidado (business_admins), como a equipe que cuida da conta de um cliente. */
+export async function ehDonoOuAdmin(userId: string | null | undefined, businessId: string): Promise<boolean> {
+  if (!userId) return false;
+  const supabase = await createClient();
+  const { data: dono } = await supabase.from("businesses").select("id").eq("id", businessId).eq("owner_id", userId).maybeSingle();
+  if (dono) return true;
+  const { data: admin } = await supabase.from("business_admins").select("business_id").eq("business_id", businessId).eq("user_id", userId).maybeSingle();
+  return !!admin;
+}
