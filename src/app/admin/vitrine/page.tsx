@@ -17,7 +17,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
   const businessId = await getCurrentBusinessId(user!.id);
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, slug, name, brand_colors, vitrine_categories, vitrine_cover_urls, contact_whatsapp, catalog_title, catalog_subtitle, vitrine_intro_seen, vitrine_lead_top, contact_site, website_url")
+    .select("id, slug, name, brand_colors, vitrine_categories, vitrine_cover_urls, contact_whatsapp, catalog_title, catalog_subtitle, vitrine_intro_seen, vitrine_lead_top, contact_site, website_url, home_destaques")
     .eq("id", businessId!)
     .single();
   // "Novo item": cria o rascunho e leva direto para a página de cadastro dele (fotos, título, preço),
@@ -46,6 +46,9 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
 
   const { data: caixas } = await supabase.from("smart_boxes").select("config").eq("business_id", business!.id).eq("box_type", "custom");
   const temCardapio = (caixas ?? []).some((b) => (b.config as { action?: string } | null)?.action === "cardapio");
+
+  const destaquesHome = (Array.isArray(business!.home_destaques) ? (business!.home_destaques as unknown[]) : [])
+    .filter((d): d is { t: "voucher" | "item" | "botao"; id: string } => !!d && typeof d === "object" && typeof (d as { id?: unknown }).id === "string" && ["voucher", "item", "botao"].includes((d as { t?: string }).t ?? ""));
 
   const semFoto = (items ?? []).filter((i) => !i.image_url && !(Array.isArray(i.gallery_urls) && i.gallery_urls.length > 0)).length;
 
@@ -84,6 +87,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
         siteSalvo={business!.contact_site || business!.website_url || null}
         inspirePhotos={inspirePhotos}
         temCardapio={temCardapio}
+        destaquesHomeIniciais={destaquesHome}
       />
       <PreviewAoVivo slug={business!.slug} tab="vitrine" />
     </div>

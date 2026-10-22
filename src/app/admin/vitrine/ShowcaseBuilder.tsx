@@ -92,6 +92,7 @@ export function ShowcaseBuilder({
   abrirNovo = false,
   abrirCapa = false,
   temCardapio = false,
+  destaquesHomeIniciais = [],
 }: {
   items: Item[];
   slug: string;
@@ -114,6 +115,7 @@ export function ShowcaseBuilder({
   abrirNovo?: boolean;
   /** O negócio tem Cardápio ativo: libera passar itens entre os dois. */
   temCardapio?: boolean;
+  destaquesHomeIniciais?: { t: "voucher" | "item" | "botao"; id: string }[];
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -123,6 +125,17 @@ export function ShowcaseBuilder({
   const [trazendo, setTrazendo] = useState<{ carregando: boolean; pratos: { nome: string; descricao: string; preco: number | null; foto: string | null; categoria: string }[] } | null>(null);
   const [avisoTroca, setAvisoTroca] = useState<string | null>(null);
   const [leadTop, setLeadTop] = useState(initialLeadTop);
+  // Destaques da Home (carrossel). Guarda a lista inteira para preservar vouchers e botões.
+  const [destaquesHome, setDestaquesHome] = useState(destaquesHomeIniciais);
+  async function alternarDestaque(itemId: string) {
+    const ja = destaquesHome.some((d) => d.t === "item" && d.id === itemId);
+    const anterior = destaquesHome;
+    const proximo = ja ? destaquesHome.filter((d) => !(d.t === "item" && d.id === itemId)) : [...destaquesHome, { t: "item" as const, id: itemId }];
+    setDestaquesHome(proximo);
+    const res = await supabase.from("businesses").update({ home_destaques: proximo }).eq("id", businessId);
+    conferirSalvo(res);
+    if (res.error) setDestaquesHome(anterior);
+  }
   async function toggleLeadTop() {
     const next = !leadTop;
     setLeadTop(next);
@@ -1117,6 +1130,8 @@ export function ShowcaseBuilder({
                   editing={editingId === item.id}
                   onToggleEdit={() => setEditingId(editingId === item.id ? null : item.id)}
                   onTogglePublish={() => togglePublish(item)}
+                  emDestaque={destaquesHome.some((d) => d.t === "item" && d.id === item.id)}
+                  onDestacar={() => void alternarDestaque(item.id)}
                   patch={patch}
                   save={save}
                   move={move}
@@ -1505,6 +1520,8 @@ function ItemCard({
   editing,
   onToggleEdit,
   onTogglePublish,
+  emDestaque = false,
+  onDestacar,
   patch,
   save,
   move,
@@ -1532,6 +1549,8 @@ function ItemCard({
   editing: boolean;
   onToggleEdit: () => void;
   onTogglePublish: () => void;
+  emDestaque?: boolean;
+  onDestacar?: () => void;
   patch: (id: string, fields: Partial<Item>) => void;
   save: (id: string, fields: Partial<Item>) => Promise<void>;
   move: (item: Item, dir: -1 | 1) => void;
@@ -1724,6 +1743,16 @@ function ItemCard({
             >
               <span className={`h-1.5 w-1.5 rounded-full ${item.status === "published" ? "bg-orbi-gradient-start" : "bg-text-tertiary"}`} />
               {item.status === "published" ? "Ativo" : "Rascunho"}
+            </button>
+          )}
+          {item.status === "published" && onDestacar && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDestacar(); }}
+              aria-pressed={emDestaque}
+              title={emDestaque ? "Toque para tirar da Home" : "Mostrar este item no topo da Home"}
+              className={`inline-flex min-h-[32px] items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium shadow backdrop-blur ${emDestaque ? "bg-on-background/85 text-white" : "bg-surface-white/95 text-on-background"}`}
+            >
+              {emDestaque ? "★ Em destaque na Home" : "☆ Destacar na Home"}
             </button>
           )}
           {item.image_is_placeholder && !broken && (
