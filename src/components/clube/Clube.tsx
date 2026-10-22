@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { carregarCurtidas } from "@/lib/clube-curtidas";
 import type { PedidoFa } from "./CurtirItem";
 import {
-  aceitarWhatsapp, atualizarPerfil, confirmarCodigo, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, enviarCodigoWhatsapp,
+  aceitarWhatsapp, atualizarPerfil, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, entrarComNumero,
   enviarFotoPerfil, entrarComGoogle, getAfinidade, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
   sairDoClube, salvarContatoWhatsapp, virarFa,
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type Resumo,
@@ -343,13 +343,10 @@ export function BotaoVirarFa({ businessId, slug, aoVirarFa, className, children 
    Entrar: Google ou código por WhatsApp
    ===================================================================== */
 function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string; businessId: string; aoFechar: () => void; aoConcluir: () => void }) {
-  const [passo, setPasso] = useState<"inicio" | "codigo" | "nome">("inicio");
   const [tel, setTel] = useState("");
-  const [cod, setCod] = useState("");
   const [nomeTxt, setNomeTxt] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  const [eu, setEu] = useState<Eu | null>(null);
   const reduzido = useReduzido();
   const telefone = normalizarTelefone(tel);
 
@@ -364,29 +361,14 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
     setErro(await entrarComGoogle(slug));
     setOcupado(false);
   }
-  async function enviar() {
+  // Só nome e WhatsApp, sem código: já vira fã e fica reconhecido neste aparelho em todos os Orbiboxes.
+  async function entrar() {
+    if (!nomeTxt.trim()) return setErro("Diga como quer ser chamado.");
     if (tel.replace(/\D/g, "").length < 10) return setErro("Digite o número com DDD.");
     setOcupado(true); setErro(null);
-    const e = await enviarCodigoWhatsapp(telefone);
+    const e = await entrarComNumero(businessId, nomeTxt, telefone);
     setOcupado(false);
     if (e) return setErro(e);
-    setPasso("codigo");
-  }
-  async function confirmar() {
-    setOcupado(true); setErro(null);
-    const e = await confirmarCodigo(telefone, cod);
-    if (e) { setOcupado(false); return setErro(e); }
-    const eu2 = await getEu(businessId);
-    setOcupado(false);
-    setEu(eu2);
-    if (!eu2.nome) return setPasso("nome");
-    aoConcluir();
-  }
-  async function salvarNome() {
-    if (!nomeTxt.trim() || !eu?.userId) return;
-    setOcupado(true);
-    await atualizarPerfil(eu.userId, { nome: nomeTxt.trim() });
-    setOcupado(false);
     aoConcluir();
   }
 
@@ -407,10 +389,10 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">
-              {passo === "nome" ? "Como quer ser chamado?" : "Entrar no clube"}
+              Entrar no clube
             </h2>
             <p className="mt-1 text-[14px] text-text-secondary">
-              {passo === "nome" ? "Esse nome aparece nas suas avaliações e na lista de fãs." : "Vire fã, ganhe vantagens exclusivas e avalie com rosto e nome."}
+              Vire fã, ganhe vantagens exclusivas e avalie com rosto e nome.
             </p>
           </div>
           <button type="button" onClick={aoFechar} aria-label="Fechar" className="cl-x active:scale-95">
@@ -419,41 +401,19 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
-          {passo === "inicio" && (
-            <>
-              {(
-                <>
-                  <button type="button" onClick={google} disabled={ocupado} className="flex min-h-[48px] w-full items-center justify-center gap-3 rounded-full bg-surface-white text-[15px] font-semibold ring-1 ring-divider active:scale-[0.98] disabled:opacity-50">
-                    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" /><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z" /><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 010-9.4l-7.9-6.1a24 24 0 000 21.6l7.9-6.1z" /><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z" /></svg>
-                    Continuar com Google
-                  </button>
-                  <p className="text-center text-[12.5px] text-text-tertiary">ou receba um código por WhatsApp</p>
-                </>
-              )}
-              <label className="sr-only" htmlFor="clube-tel">Seu WhatsApp com DDD</label>
-              <input id="clube-tel" className={campo} inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={tel} onChange={(e) => setTel(e.target.value)} />
-              <button type="button" onClick={enviar} disabled={ocupado} className={botao}>{ocupado ? "Enviando..." : "Enviar código"}</button>
-            </>
-          )}
-          {passo === "codigo" && (
-            <>
-              <p className="text-[14px] text-text-secondary">Enviamos um código para {telefone}.</p>
-              <label className="sr-only" htmlFor="clube-cod">Código de 6 dígitos</label>
-              <input id="clube-cod" className={`${campo} text-center tracking-[0.3em]`} inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000" value={cod} onChange={(e) => setCod(e.target.value)} />
-              <button type="button" onClick={confirmar} disabled={ocupado || cod.trim().length < 6} className={botao}>{ocupado ? "Confirmando..." : "Confirmar"}</button>
-              <button type="button" onClick={() => { setPasso("inicio"); setCod(""); }} className="min-h-[44px] text-[14px] font-medium text-text-secondary">Trocar o número</button>
-            </>
-          )}
-          {passo === "nome" && (
-            <>
-              <label className="sr-only" htmlFor="clube-nome">Seu nome</label>
-              <input id="clube-nome" className={campo} autoComplete="name" placeholder="Seu nome" value={nomeTxt} onChange={(e) => setNomeTxt(e.target.value)} />
-              <button type="button" onClick={salvarNome} disabled={ocupado || !nomeTxt.trim()} className={botao}>Salvar e continuar</button>
-            </>
-          )}
+          <button type="button" onClick={google} disabled={ocupado} className="flex min-h-[48px] w-full items-center justify-center gap-3 rounded-full bg-surface-white text-[15px] font-semibold ring-1 ring-divider active:scale-[0.98] disabled:opacity-50">
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" /><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z" /><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 010-9.4l-7.9-6.1a24 24 0 000 21.6l7.9-6.1z" /><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z" /></svg>
+            Continuar com Google
+          </button>
+          <p className="text-center text-[12.5px] text-text-tertiary">ou deixe seu WhatsApp</p>
+          <label className="sr-only" htmlFor="clube-nome">Seu nome</label>
+          <input id="clube-nome" className={campo} autoComplete="name" placeholder="Seu nome" value={nomeTxt} onChange={(e) => setNomeTxt(e.target.value)} />
+          <label className="sr-only" htmlFor="clube-tel">Seu WhatsApp com DDD</label>
+          <input id="clube-tel" className={campo} inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={tel} onChange={(e) => setTel(e.target.value)} />
+          <button type="button" onClick={entrar} disabled={ocupado} className={botao}>{ocupado ? "Entrando..." : "Entrar"}</button>
           {erro && <p role="alert" className="text-center text-[13.5px] text-[#C2362E]">{erro}</p>}
           <p className="text-center text-[12px] leading-snug text-text-tertiary">
-            Seu WhatsApp nunca aparece para outros clientes. Só a marca vê, e só se você aceitar receber novidades.
+            Ao entrar, você aceita receber novidades da marca no WhatsApp. Seu número nunca aparece para outros clientes e você pode desligar quando quiser.
           </p>
         </div>
       </div>

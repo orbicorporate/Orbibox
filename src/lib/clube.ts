@@ -127,7 +127,7 @@ async function garantirCliente(user: User) {
   });
 }
 
-export async function atualizarPerfil(userId: string, campos: { nome?: string | null; mostrar_marcas?: boolean }) {
+export async function atualizarPerfil(userId: string, campos: { nome?: string | null; mostrar_marcas?: boolean; telefone?: string | null }) {
   await clubeDb().from("customers").update(campos).eq("id", userId);
 }
 
@@ -189,6 +189,25 @@ export async function enviarCodigoWhatsapp(telefone: string): Promise<string | n
 export async function confirmarCodigo(telefone: string, codigo: string): Promise<string | null> {
   const { error } = await clubeDb().auth.verifyOtp({ phone: telefone, token: codigo.trim(), type: "sms" });
   return error ? "Código incorreto ou vencido." : null;
+}
+/**
+ * Entrar só com nome e WhatsApp, sem código: cria uma sessão neste aparelho (login anônimo do Supabase),
+ * guarda nome e número no perfil (número ainda não confirmado), já torna a pessoa fã da marca e registra
+ * que aceitou receber novidades. Como todos os Orbiboxes usam o mesmo endereço, este aparelho fica
+ * reconhecido em todos eles. Para outro aparelho, ou para avaliar com foto, vale entrar com Google.
+ */
+export async function entrarComNumero(businessId: string, nome: string, telefone: string): Promise<string | null> {
+  const db = clubeDb();
+  let { data: { user } } = await db.auth.getUser();
+  if (!user) {
+    const r = await db.auth.signInAnonymously();
+    if (r.error || !r.data.user) return "Não consegui concluir agora. Tente de novo ou entre com Google.";
+    user = r.data.user;
+  }
+  await garantirCliente(user);
+  await db.from("customers").update({ nome: nome.trim() || null, telefone }).eq("id", user.id);
+  await virarFa(businessId, user.id);
+  return salvarContatoWhatsapp(businessId, user.id, telefone);
 }
 export async function sairDoClube() {
   await clubeDb().auth.signOut();
