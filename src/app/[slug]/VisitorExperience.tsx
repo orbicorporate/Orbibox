@@ -128,6 +128,9 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
+/** Seletor "órbita | grade" escondido por enquanto. Para voltar a mostrar, troque para true. */
+const MOSTRAR_SELETOR_MODO = false;
+
 type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string };
 
 // Cada Smart Box vira um caminho na tela inicial.
@@ -911,7 +914,7 @@ export function VisitorExperience({
           onCriar={criarBox}
         />
       )}
-      {isOwner && intent === null && !previewMode && (
+      {MOSTRAR_SELETOR_MODO && isOwner && intent === null && !previewMode && (
         <div className="fixed left-4 top-[62px] z-20">
           <SeletorModo
             compacto
@@ -976,7 +979,7 @@ export function VisitorExperience({
             />
           </div>
         )}
-        {intent === null && !showOwnerControls && (
+        {MOSTRAR_SELETOR_MODO && intent === null && !showOwnerControls && (
           <SeletorModo
             modo={modo}
             onTrocar={(m) => guardarModoHome(business.slug, m)}
