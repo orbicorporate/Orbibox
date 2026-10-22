@@ -2,19 +2,17 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { ModoHome } from "@/lib/modoHome";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 
 /**
- * Escolha do dono: como a tela inicial abre para quem chega. O visitante
- * continua podendo trocar entre os dois, isto só define o padrão.
+ * Escolha do dono: o estilo da tela inicial para quem chega.
  */
 /** Além dos dois modos, a grade tem o estilo Vitrine (guardado como "vitrine"). */
-type ModoEscolha = ModoHome | "vitrine";
+type ModoEscolha = "grade" | "vitrine";
 
 export function HomeModePicker({ businessId, inicial }: { businessId: string; inicial: string | null }) {
   const supabase = createClient();
-  const [modo, setModo] = useState<ModoEscolha>(inicial === "orbita" ? "orbita" : inicial === "vitrine" ? "vitrine" : "grade");
+  const [modo, setModo] = useState<ModoEscolha>(inicial === "vitrine" ? "vitrine" : "grade");
   const [salvo, setSalvo] = useState(false);
   const [aberto, setAberto] = useState(false);
 
@@ -32,22 +30,6 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
   }
 
   const opcoes: { v: ModoEscolha; titulo: string; curto: string; texto: string; desenho: React.ReactNode }[] = [
-    {
-      v: "orbita",
-      titulo: "Modo Órbita",
-      curto: "Botões girando", texto: "Seus botões giram em volta do seu logo, um de cada vez.",
-      desenho: (
-        <svg viewBox="0 0 120 64" className="h-16 w-full" aria-hidden>
-          <ellipse cx="60" cy="34" rx="46" ry="14" fill="none" stroke="currentColor" strokeOpacity=".25" strokeDasharray="1.5 4" />
-          <circle cx="60" cy="32" r="9" fill="currentColor" fillOpacity=".85" />
-          <circle cx="20" cy="36" r="5" fill="currentColor" fillOpacity=".35" />
-          <circle cx="100" cy="30" r="5" fill="currentColor" fillOpacity=".35" />
-          <circle cx="60" cy="48" r="7" fill="currentColor" fillOpacity=".6" />
-          <circle cx="42" cy="22" r="3.5" fill="currentColor" fillOpacity=".2" />
-          <circle cx="80" cy="21" r="3.5" fill="currentColor" fillOpacity=".2" />
-        </svg>
-      ),
-    },
     {
       v: "grade",
       titulo: "Grade clássica",
@@ -94,7 +76,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
 
       {aberto && (
         <div className="acao-entra px-4 pb-4">
-          <div role="radiogroup" aria-label="Modo padrão da tela inicial" className="grid grid-cols-3 gap-2">
+          <div role="radiogroup" aria-label="Modo padrão da tela inicial" className="grid grid-cols-2 gap-2">
             {opcoes.map((o) => (
               <button
                 key={o.v}
@@ -110,7 +92,7 @@ export function HomeModePicker({ businessId, inicial }: { businessId: string; in
               </button>
             ))}
           </div>
-          <p className="mt-3 text-[12.5px] leading-snug text-text-secondary">{atual.texto} O visitante pode trocar pelo seletor no topo.</p>
+          <p className="mt-3 text-[12.5px] leading-snug text-text-secondary">{atual.texto}</p>
           {salvo && <p className="mt-1.5 text-[12px] text-text-tertiary">Salvo. Já vale para quem abrir sua página.</p>}
         </div>
       )}

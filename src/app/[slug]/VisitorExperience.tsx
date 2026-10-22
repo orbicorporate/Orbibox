@@ -16,7 +16,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BotaoVirarFa, ClubeBloco } from "@/components/clube/Clube";
 import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
-import { AberturaOrbita } from "./AberturaOrbita";
 import { CurtirItem } from "@/components/clube/CurtirItem";
 import { souFa } from "@/lib/clube";
 import { Card } from "@/components/ui/Card";
@@ -30,7 +29,7 @@ import { NudgeLead } from "@/components/mobile/NudgeLead";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiAvatar, escalaDoAvatar, lerEsfera, lerSemFundo } from "@/components/orbi/OrbiAvatar";
-import { COVER_RATIO_BY_SIZE, formatPrice, groupByCategory, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
+import { formatPrice, groupByCategory, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
 import { heroBackground } from "@/lib/heroStyle";
 import { desligarRastreio, trackClick, whatsappLink } from "@/lib/track";
@@ -41,7 +40,6 @@ import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
-import { OrbitHome } from "./OrbitHome";
 import { CartaoItem } from "./CartaoItem";
 import { AdicionarBox, type ExtraBox, type NovoBox } from "./AdicionarBox";
 import { BoxDestaque, lerDestaques, type Destaque, type BotaoDestaque } from "./BoxDestaque";
@@ -53,8 +51,6 @@ import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
 import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
 import { NOBRES, coresDaMarca } from "@/lib/paletasNobres";
-import { guardarModoHome, guardarModoVitrine, useModoHomeDoVisitante, useModoVitrine, type ModoHome } from "@/lib/modoHome";
-import { VitrineCoverflow, type CoverflowItem } from "./VitrineCoverflow";
 import { descontoLongo, descontoGrande } from "@/lib/voucherDesconto";
 
 type Business = {
@@ -129,8 +125,6 @@ type ContentItem = {
 
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
-/** Seletor "órbita | grade" escondido por enquanto. Para voltar a mostrar, troque para true. */
-const MOSTRAR_SELETOR_MODO = false;
 
 type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string };
 
@@ -220,23 +214,12 @@ export function VisitorExperience({
   const [logoAtual, setLogoAtual] = useState<string | null>(business.logo_url);
   const [editandoLogo, setEditandoLogo] = useState(false);
   const [heroAvatar, setHeroAvatar] = useState<string | null>(business.hero_avatar);
-  // Modo Órbita x Modo Grade. O dono define o padrão da página; o visitante
-  // pode trocar e a escolha dele vale só no aparelho dele.
-  const [modoPadrao, setModoPadrao] = useState<ModoHome>(business.home_mode === "orbita" ? "orbita" : "grade");
-  const escolhaVisitante = useModoHomeDoVisitante(business.slug);
-  const modo: ModoHome = escolhaVisitante ?? modoPadrao;
   // Estilo da Home em grade: "classica" (cards) ou "vitrine" (bolinhas + fotos).
   // Fica guardado em home_mode ("vitrine"); ?estilo=vitrine|classica na URL
   // força um dos dois só pra testar, sem salvar nada.
   const estiloUrl = searchParams.get("estilo");
-  const [vitrineSalva, setVitrineSalva] = useState(business.home_mode === "vitrine");
+  const vitrineSalva = business.home_mode === "vitrine";
   const estiloVitrine = estiloUrl === "vitrine" ? true : estiloUrl === "classica" ? false : vitrineSalva;
-  async function tornarPadrao(novo: ModoHome) {
-    const valor = novo === "grade" && vitrineSalva ? "vitrine" : novo;
-    setModoPadrao(novo);
-    setVitrineSalva(valor === "vitrine");
-    conferirSalvo(await supabase.from("businesses").update({ home_mode: valor }).eq("id", business.id));
-  }
 
   useEffect(() => {
     // Dono ou prévia do painel: não abre sessão nem registra cliques.
@@ -649,17 +632,6 @@ export function VisitorExperience({
     const resto = (itensHomeSalvos ?? []).filter((id) => !ids.includes(id));
     await guardarItensHome([...ids, ...resto]);
   }
-  // A cor da esfera do meio na Órbita fica guardada no box de entrada (hero).
-  const heroBox = boxList.find((b) => b.box_type === "hero");
-  const esferaCor = ((heroBox?.config ?? {}) as CustomConfig).esferaCor ?? null;
-  async function escolherEsfera(cor: string | null) {
-    if (!heroBox) return;
-    const base = { ...((heroBox.config ?? {}) as CustomConfig) };
-    if (cor) base.esferaCor = cor;
-    else delete base.esferaCor;
-    setBoxList((prev) => prev.map((b) => (b.id === heroBox.id ? { ...b, config: base } : b)));
-    conferirSalvo(await supabase.from("smart_boxes").update({ config: base }).eq("id", heroBox.id));
-  }
   const [categoriaInicial, setCategoriaInicial] = useState<string | null>(null);
   // O formato dos itens fica guardado no box da vitrine (o mesmo do botão principal).
   const boxFormato = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
@@ -915,17 +887,6 @@ export function VisitorExperience({
           onCriar={criarBox}
         />
       )}
-      {MOSTRAR_SELETOR_MODO && isOwner && intent === null && !previewMode && (
-        <div className="fixed left-4 top-[62px] z-20">
-          <SeletorModo
-            compacto
-            modo={modo}
-            onTrocar={(m) => guardarModoHome(business.slug, m)}
-            padrao={modoPadrao}
-            onTornarPadrao={() => tornarPadrao(modo)}
-          />
-        </div>
-      )}
       {isOwner && intent === null && !previewMode && (
         <div className="fixed right-4 top-4 z-20 flex items-center gap-2">
           <Link
@@ -980,71 +941,9 @@ export function VisitorExperience({
             />
           </div>
         )}
-        {MOSTRAR_SELETOR_MODO && intent === null && !showOwnerControls && (
-          <SeletorModo
-            modo={modo}
-            onTrocar={(m) => guardarModoHome(business.slug, m)}
-            padrao={null}
-            onTornarPadrao={() => tornarPadrao(modo)}
-          />
-        )}
-
-        {intent === null && modo === "orbita" && (
-          <OrbitHome
-            itens={todasOpcoes.filter((o) => !o.rede)}
-            redes={redes.map((o) => ({ key: o.key, t: o.t, rede: o.rede as Rede, onClick: o.onClick }))}
-            nome={business.name}
-            descricao={frase}
-            pergunta={textoApagado(business.hero_question) ? null : business.hero_question}
-            semPergunta={textos.pergunta === ""}
-            logoUrl={logoAtual}
-            logoSolto={lerSemFundo(heroAvatar)?.escala ?? null}
-            logoEscala={escalaDoAvatar(heroAvatar)}
-            cores={orbiColors ?? heroGradient}
-            agentName={agentName}
-            onPerguntar={hasAiChat ? () => chooseIntent("duvida") : undefined}
-            esferaCor={esferaCor}
-            onEsfera={showOwnerControls && heroBox ? escolherEsfera : undefined}
-          />
-        )}
-        {intent === null && modo === "orbita" && whatsAtalho && (
-          <a
-            href={whatsAtalho}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", sessionId })}
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-[14px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(37,211,102,0.7)]"
-          >
-            Falar no WhatsApp
-          </a>
-        )}
-        {intent === null && modo === "orbita" && (
-          <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} slotTopo={slotTopo} />
-        )}
-
-        {!isOwner && modoPadrao === "grade" && (
-          <AberturaOrbita
-            slug={business.slug}
-            planetas={todasOpcoes.filter((o) => !o.rede && o.icon !== "__none__").map((o) => ({ key: o.key, icon: o.icon, boxLogo: o.boxLogo, color: o.color, cupom: o.cupom }))}
-            cores={orbiColors ?? null}
-            logoUrl={logoAtual}
-            logo={
-              heroAvatar === "particle" || heroAvatar === "sphere" ? (
-                <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
-              ) : logoAtual && lerSemFundo(heroAvatar) ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoAtual} alt="" className="object-contain drop-shadow-[0_6px_14px_rgba(17,19,24,0.18)]" style={{ width: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100, height: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100 }} />
-              ) : logoAtual ? (
-                <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} esfera={lerEsfera(heroAvatar)?.tom} escala={escalaDoAvatar(heroAvatar)} />
-              ) : (
-                <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
-              )
-            }
-          />
-        )}
-        {intent === null && modo === "grade" && (
-          <div data-abertura-grade className="flex w-full min-w-0 flex-col items-center text-center">
-            <div data-abertura-logo className="relative mb-8">
+        {intent === null && (
+          <div className="flex w-full min-w-0 flex-col items-center text-center">
+            <div className="relative mb-8">
               {heroAvatar === "particle" || heroAvatar === "sphere" ? (
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               ) : logoAtual && lerSemFundo(heroAvatar) ? (
@@ -3052,56 +2951,8 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
   const [active, setActive] = useState<string | null>(categoriaInicial && nomeadas.some((s) => s.name === categoriaInicial) ? categoriaInicial : null);
 
   const visible = active ? sections.filter((s) => s.name === active) : sections;
-  const router = useRouter();
-  const modo = useModoVitrine(business.slug);
-
-  // Para onde cada produto leva. Mesma regra dos cards da grade.
-  const destinoDe = (item: ContentItem) => {
-    const destino = item.link_kind === "nenhum"
-      ? null
-      : item.link_kind === "categoria"
-        ? item.target_url
-        : item.target_url && item.link_kind === "externo"
-          ? item.target_url
-          : `/${business.slug}/p/${item.id}`;
-    const isExterno = item.link_kind === "categoria" || item.link_kind === "externo";
-    const kind: "categoria" | "produto" | "link" = item.link_kind === "categoria" ? "categoria" : item.link_kind === "produto" ? "produto" : "link";
-    return { destino, isExterno, kind };
-  };
-
-  // Modo Órbita da vitrine: os produtos da categoria escolhida viram uma
-  // galeria 3D (coverflow), cada card na proporção da foto.
-  const PROPORCAO = { quadrado: 1, retrato: 4 / 5, paisagem: 16 / 9, banner: 1920 / 830 } as const;
-  const clicaveis = visible.flatMap((sec) => sec.items).filter((item) => !!destinoDe(item).destino);
-  const galeria: CoverflowItem[] = clicaveis.map((item) => {
-    const { destino, isExterno, kind } = destinoDe(item);
-    const size = sizeOf(item.layout_size);
-    return {
-      key: item.id,
-      titulo: item.title,
-      descricao: item.description?.trim() || "",
-      imagem: item.image_url || null,
-      preco: formatPrice(item) || null,
-      ratio: PROPORCAO[COVER_RATIO_BY_SIZE[size]],
-      destaque: size === "destaque",
-      temPagina: !isExterno && (item.link_kind ?? "produto") === "produto",
-      onClick: () => {
-        if (!destino) return;
-        trackClick({ businessId: business.id, kind: isExterno ? kind : "produto", contentItemId: item.id, sessionId, targetUrl: destino });
-        if (isExterno) window.open(destino, "_blank", "noopener,noreferrer");
-        else router.push(destino);
-      },
-    };
-  });
-  const emOrbita = modo === "orbita" && galeria.length >= 2;
-
   return (
     <>
-      {clicaveis.length >= 2 && (
-        <div className="relative z-[80] mt-5 flex justify-center">
-          <SeletorModo modo={modo} onTrocar={(m) => guardarModoVitrine(business.slug, m)} padrao={null} onTornarPadrao={() => {}} />
-        </div>
-      )}
       {sections.length > 1 && nomeadas.length > 0 && (
         <div className="mt-5 flex gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
@@ -3122,12 +2973,6 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
         </div>
       )}
 
-      {emOrbita ? (
-        <div className="mt-4">
-          <VitrineCoverflow key={active ?? "_tudo"} itens={galeria} />
-          <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} onOrbi={onOrbi} orbiColors={orbiColors} /></div>
-        </div>
-      ) : (
       <div className="mt-6 flex flex-col gap-8">
         {visible.map((sec, si) => (
           <div key={sec.name || "_sem"}>
@@ -3163,68 +3008,15 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
           </div>
         ))}
       </div>
-      )}
       <BarraContato business={business} sessionId={sessionId} onOrbi={onOrbi} />
     </>
   );
 }
 
-/** Troca clara entre os dois jeitos de ver a tela inicial. Pro dono (fora do
- * modo visitante) mostra também qual é o padrão da página e deixa tornar o
- * modo atual o padrão com um toque. */
 /** Renderiza fora do card (no body), pra painéis fixos não herdarem corte/transform do pai. */
 function Portal({ children }: { children: React.ReactNode }) {
   const pronto = useSyncExternalStore(() => () => {}, () => true, () => false);
   return pronto ? createPortal(children, document.body) : null;
-}
-
-function SeletorModo({
-  modo,
-  onTrocar,
-  padrao,
-  onTornarPadrao,
-  compacto = false,
-}: {
-  modo: ModoHome;
-  onTrocar: (m: ModoHome) => void;
-  padrao: ModoHome | null;
-  onTornarPadrao: () => void;
-  compacto?: boolean;
-}) {
-  const opcoes: { v: ModoHome; rotulo: string }[] = [
-    { v: "orbita", rotulo: "órbita" },
-    { v: "grade", rotulo: "grade" },
-  ];
-  const texto = (
-    <div role="radiogroup" aria-label="Como ver esta página" className="flex items-center gap-4 text-[14px]">
-      {opcoes.map((o) => (
-        <button
-          key={o.v}
-          type="button"
-          role="radio"
-          aria-checked={modo === o.v}
-          onClick={() => onTrocar(o.v)}
-          className={`min-h-[36px] transition-colors ${modo === o.v ? "font-medium text-on-background underline underline-offset-[6px]" : "text-text-tertiary"}`}
-        >
-          {o.rotulo}
-          {padrao === o.v && <span className="ml-1 text-[10px] text-text-tertiary" title="Padrão da sua página" aria-label="padrão">●</span>}
-        </button>
-      ))}
-    </div>
-  );
-  if (compacto) {
-    return (
-      <div className="flex flex-col items-start">
-        {texto}
-        {padrao && padrao !== modo && (
-          <button type="button" onClick={onTornarPadrao} className="text-[11.5px] text-text-secondary underline underline-offset-2">
-            tornar {modo === "orbita" ? "órbita" : "grade"} o padrão
-          </button>
-        )}
-      </div>
-    );
-  }
-  return <div className="mb-6 flex justify-center">{texto}</div>;
 }
 
 /** Quebra o texto do "Sobre" em parágrafos. Respeita as quebras que o dono
