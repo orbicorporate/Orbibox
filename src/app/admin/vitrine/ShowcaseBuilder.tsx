@@ -581,6 +581,7 @@ export function ShowcaseBuilder({
   // subir foto). Se a pessoa fechar sem mexer em nada, o rascunho vazio é
   // apagado sozinho, pra não acumular "Novo item" esquecido na lista.
   const editandoAntes = useRef<string | null>(null);
+  const [novosIds, setNovosIds] = useState<string[]>([]);
   useEffect(() => {
     const anterior = editandoAntes.current;
     editandoAntes.current = editingId;
@@ -588,10 +589,19 @@ export function ShowcaseBuilder({
     const it = items.find((i) => i.id === anterior);
     const intocado =
       it && it.status === "draft" && it.title === "Novo item" && !it.image_url && !it.description?.trim() && it.price == null && (it.box_color ?? "neutro") === "neutro";
-    if (!intocado) return;
+    if (!intocado) {
+      // Item criado agora e preenchido: nasce Ativo. Ninguém precisa descobrir o rascunho.
+      if (it && it.status === "draft" && novosIds.includes(anterior)) {
+        setNovosIds((p) => p.filter((x) => x !== anterior));
+        setItems((p) => p.map((i) => (i.id === anterior ? { ...i, status: "published" } : i)));
+        supabase.from("content_items").update({ status: "published" }).eq("id", anterior).then(() => {});
+        setAvisoTroca(`"${it.title}" já está ativo no Catálogo`);
+      }
+      return;
+    }
     setItems((p) => p.filter((i) => i.id !== anterior));
     supabase.from("content_items").delete().eq("id", anterior).then(() => {});
-  }, [editingId, items, supabase]);
+  }, [editingId, items, supabase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function abrirTrazerDoCardapio() {
     setAvisoTroca(null);
@@ -622,6 +632,7 @@ export function ShowcaseBuilder({
     setCreating(false);
     if (!error && data) {
       setItems((p) => [...p, data as Item]);
+      setNovosIds((p) => [...p, data.id]);
       if (guiado) { setGuiadoId(data.id); return; }
       setEditingId(data.id);
       setTimeout(() => {
@@ -860,14 +871,23 @@ export function ShowcaseBuilder({
             melhorando={improving === it.id}
             onVerTudo={() => { setGuiadoId(null); setEditingId(it.id); }}
             onCancelar={() => {
-              // Sem nome digitado, o rascunho vazio sai sozinho, como no editor completo.
               setGuiadoId(null);
               const intocado = it.title === "Novo item" && !it.image_url && !it.description?.trim() && it.price == null;
-              if (!intocado) return;
+              if (!intocado) {
+                // Já tem conteúdo: fica Ativo, não escondido em rascunho.
+                setNovosIds((p) => p.filter((x) => x !== it.id));
+                if (it.status === "draft") { void save(it.id, { status: "published" }); setAvisoTroca(`"${it.title}" já está ativo no Catálogo`); }
+                return;
+              }
               setItems((p) => p.filter((i) => i.id !== it.id));
               supabase.from("content_items").delete().eq("id", it.id).then(() => {});
             }}
-            onConcluir={(publicar) => { if (publicar) void save(it.id, { status: "published" }); setGuiadoId(null); }}
+            onConcluir={(publicar) => {
+              setNovosIds((p) => p.filter((x) => x !== it.id));
+              if (publicar) { void save(it.id, { status: "published" }); setAvisoTroca(`"${it.title}" está ativo no Catálogo`); }
+              else setAvisoTroca(`"${it.title}" ficou como rascunho. Toque em Rascunho no card para ativar.`);
+              setGuiadoId(null);
+            }}
           />
         );
       })()}
