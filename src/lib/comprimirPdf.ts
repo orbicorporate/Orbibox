@@ -47,3 +47,19 @@ export async function comprimirPdf(arquivo: File, alvoBytes: number): Promise<Fi
   }
   return null;
 }
+
+/** PDF acima disso é reduzido sozinho antes de enviar. */
+export const PDF_AUTO_BYTES = 4.5 * 1024 * 1024;
+
+/**
+ * Regra única para todo upload de PDF: se estiver pesado, reduz no navegador.
+ * Se não der para reduzir, devolve o original (quem chama confere o limite).
+ */
+export async function otimizarPdf(arquivo: File): Promise<{ arquivo: File; reduziu: boolean }> {
+  if (arquivo.size <= PDF_AUTO_BYTES) return { arquivo, reduziu: false };
+  try {
+    const menor = await comprimirPdf(arquivo, PDF_AUTO_BYTES);
+    if (menor && menor.size < arquivo.size) return { arquivo: menor, reduziu: true };
+  } catch { /* segue com o original */ }
+  return { arquivo, reduziu: false };
+}

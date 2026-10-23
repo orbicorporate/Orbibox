@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { nomeArquivoUnico, pesoLegivel } from "@/lib/cardapio";
+import { otimizarPdf } from "@/lib/comprimirPdf";
 import { LIMITE_IMAGEM, LIMITE_PDF, TIPOS_ANEXO, tituloPadraoAnexo, type Anexo } from "@/lib/anexo";
 
 /**
@@ -14,13 +15,23 @@ export function AnexoEditor({ businessId, anexo, onChange }: { businessId: strin
   const input = useRef<HTMLInputElement>(null);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [titulo, setTitulo] = useState(anexo?.titulo ?? "");
 
-  async function enviar(f: File) {
+  async function enviar(entrada: File) {
+    let f = entrada;
     setErro(null);
+    setAviso(null);
     const pdf = f.type === "application/pdf";
     const imagem = ["image/png", "image/jpeg", "image/webp", "image/gif"].includes(f.type);
     if (!pdf && !imagem) return setErro("Escolha um PDF ou uma imagem (PNG, JPEG ou WebP).");
+    if (pdf) {
+      setEnviando(true);
+      const r = await otimizarPdf(f);
+      if (r.reduziu) setAviso(`A Orbi reduziu o PDF de ${pesoLegivel(f.size)} para ${pesoLegivel(r.arquivo.size)}.`);
+      f = r.arquivo;
+      setEnviando(false);
+    }
     if (pdf && f.size > LIMITE_PDF) return setErro(`PDF muito grande (${pesoLegivel(f.size)}). O limite é 10 MB.`);
     if (imagem && f.size > LIMITE_IMAGEM) return setErro(`Imagem muito grande (${pesoLegivel(f.size)}). O limite é 20 MB.`);
     setEnviando(true);
@@ -76,6 +87,7 @@ export function AnexoEditor({ businessId, anexo, onChange }: { businessId: strin
           </div>
         </div>
       )}
+      {aviso && !erro && <p className="mt-1.5 px-1 text-[13px] text-text-secondary">{aviso}</p>}
       {erro && <p role="alert" className="mt-1.5 px-1 text-[13px] text-red-600">{erro}</p>}
     </div>
   );

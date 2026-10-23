@@ -6,6 +6,7 @@ import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { createClient } from "@/lib/supabase/client";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import type { Json } from "@/lib/supabase/types";
+import { otimizarPdf } from "@/lib/comprimirPdf";
 import { AjusteAntesDeEnviar } from "@/components/ui/AjusteAntesDeEnviar";
 import { CORES_BOTAO, lerCorBotoes, pesoLegivel, textoSobre } from "@/lib/cardapio";
 import { MAX_MATERIAIS, lerMateriais, nomeUnico, novoIdMaterial, tipoDoArquivo, type Material } from "@/lib/materiais";
@@ -105,12 +106,16 @@ export function MateriaisEditor({ businessId, boxId: boxInicial, config, ativo: 
     await supabase.storage.from("cardapios-pdf").remove([decodeURIComponent(url.slice(i + marca.length))]);
   }
 
-  async function enviarArquivo(f: File | undefined) {
+  async function enviarArquivo(entrada: File | undefined) {
     const id = alvo.current;
     if (inputArquivo.current) inputArquivo.current.value = "";
-    if (!f || !id) return;
+    if (!entrada || !id) return;
+    let f = entrada;
     setErro(null);
     if (f.type !== "application/pdf") return setErro("Aqui só entra PDF. Para planilha, documento ou arquivo zip, cole o link do arquivo.");
+    setSubindo(id);
+    f = (await otimizarPdf(f)).arquivo;
+    setSubindo(null);
     if (f.size > LIMITE_MB * 1024 * 1024) return setErro(`Esse PDF tem ${pesoLegivel(f.size)} e o limite é ${LIMITE_MB} MB. Cole o link do arquivo ou envie uma versão menor.`);
     setSubindo(id);
     const path = `${businessId}/${nomeUnico("material", "pdf")}`;
