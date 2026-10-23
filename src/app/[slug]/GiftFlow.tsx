@@ -127,31 +127,33 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
 
       {!criado ? (
         <>
-          <p className="mt-6 text-[13px] font-semibold">Valor <span className="font-normal text-text-tertiary">· mínimo R$ {minimoReais}</span></p>
+          <p className="mt-6 text-[13px] font-semibold">Valor</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {sugeridos.map((v) => (
               <button
                 key={v}
                 type="button"
                 onClick={() => { setValor(v); setCustomValor(""); }}
-                className={`rounded-full px-4 py-2 text-[14px] font-semibold ${!customValor && valor === v ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
+                className={`min-h-[44px] rounded-full px-5 text-[15px] font-semibold transition-colors active:scale-[0.97] ${!customValor && valor === v ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}
               >
                 R$ {v}
               </button>
             ))}
-            {cfg.allow_custom_value && (
-              <div className="flex items-center gap-1.5 rounded-full bg-surface-soft px-3 py-1.5">
-                <span className="text-[13px] text-text-tertiary">R$</span>
-                <input
-                  value={customValor}
-                  onChange={(e) => setCustomValor(e.target.value.replace(/[^\d,]/g, ""))}
-                  placeholder={`mín. ${minimoReais}`}
-                  inputMode="numeric"
-                  className="w-16 bg-transparent text-[14px] font-semibold outline-none"
-                />
-              </div>
-            )}
           </div>
+          {cfg.allow_custom_value && (
+            <label className={`mt-3 flex min-h-[52px] items-center gap-2 rounded-full border bg-surface-white px-5 transition-colors focus-within:border-on-background ${customValor ? "border-on-background" : "border-divider"}`}>
+              <span className="text-[15px] font-medium text-text-tertiary">R$</span>
+              <input
+                value={customValor}
+                onChange={(e) => setCustomValor(e.target.value.replace(/[^\d,]/g, ""))}
+                placeholder="Outro valor"
+                inputMode="decimal"
+                aria-label="Outro valor"
+                className="min-w-0 flex-1 bg-transparent text-[16px] font-semibold outline-none placeholder:font-normal placeholder:text-text-tertiary"
+              />
+            </label>
+          )}
+          <p className="mt-1.5 px-2 text-[12px] text-text-tertiary">Valor mínimo: R$ {minimoReais}</p>
 
           <div className="mt-5 flex flex-col gap-2.5">
             <input value={paraQuem} onChange={(e) => setParaQuem(e.target.value)} placeholder="Pra quem é o presente? (opcional)" className="w-full rounded-full border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
