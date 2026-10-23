@@ -19,7 +19,7 @@ import { HomeOptionCardPreview } from "@/components/orbi/HomeOptionCard";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
 import { SecaoRecolhivel } from "@/components/ui/SecaoRecolhivel";
 import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
-import { addToLogoGallery } from "@/lib/logoGallery";
+import { addToLogoGallery, salvarLogoGallery } from "@/lib/logoGallery";
 import { DateTimeField } from "./DateTimeField";
 import { IconeBotao } from "@/app/[slug]/IconeBotao";
 
@@ -744,6 +744,7 @@ export function BoxesManager({
                   logoUrl={logoUrl}
                   logoGallery={logoGallery}
                   onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))}
+                  onGalleryChange={async (next) => { if (await salvarLogoGallery(supabase, businessId, next)) setLogoGallery(next); }}
                   businessId={businessId}
                   orbiColors={orbiColors}
                 />
@@ -909,7 +910,8 @@ export function BoxesManager({
             placeholder="Nome do botão (ex: Fale no WhatsApp)"
             className="mt-3 w-full rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
           />
-          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} logoGallery={logoGallery} onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))} businessId={businessId} orbiColors={orbiColors} />
+          <BoxEditor initial={draft} isCustom brandColors={brandColors} onSave={(cfg) => setDraft((d) => ({ ...d, ...cfg }))} liveOnly logoUrl={logoUrl} logoGallery={logoGallery} onNewLogo={async (url) => setLogoGallery(await addToLogoGallery(supabase, businessId, logoGallery, url))}
+                  onGalleryChange={async (next) => { if (await salvarLogoGallery(supabase, businessId, next)) setLogoGallery(next); }} businessId={businessId} orbiColors={orbiColors} />
           {createError && <p className="mt-2 text-[12px] text-red-600">{createError}</p>}
           <div className="mt-3 flex gap-2">
             <button onClick={createCustom} className="rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">Criar</button>
@@ -1047,6 +1049,7 @@ function BoxEditor({
   logoUrl,
   logoGallery,
   onNewLogo,
+  onGalleryChange,
   businessId,
   orbiColors,
 }: {
@@ -1061,6 +1064,7 @@ function BoxEditor({
   logoUrl?: string | null;
   logoGallery?: string[];
   onNewLogo?: (url: string) => void;
+  onGalleryChange?: (next: string[]) => void;
   businessId: string;
   orbiColors?: string[] | null;
 }) {
@@ -1069,6 +1073,8 @@ function BoxEditor({
   const [showAllIcons, setShowAllIcons] = useState(false);
   const [iconesAbertos, setIconesAbertos] = useState(false);
   const [novoIconeAberto, setNovoIconeAberto] = useState(false);
+  const [editandoLogos, setEditandoLogos] = useState(false);
+  const [trocandoLogo, setTrocandoLogo] = useState<string | null>(null);
   const color = cfg.color || "#111318";
   const animated = isAnimatedIcon(cfg.icon);
   // Ações que vêm prontas do atalho de criação e não se troca por outra:
@@ -1297,17 +1303,39 @@ function BoxEditor({
                 const gallery = Array.from(new Set([...(logoUrl ? [logoUrl] : []), ...(logoGallery ?? [])]));
                 return (
                   <div className="flex flex-col gap-2">
-                    <Sub>Logo ou ícone da marca</Sub>
+                    <div className="flex items-center justify-between gap-2">
+                      <Sub>Logo ou ícone da marca</Sub>
+                      {gallery.length > 0 && onGalleryChange && (
+                        <button type="button" onClick={() => { setEditandoLogos((v) => !v); setTrocandoLogo(null); }} className="min-h-[32px] rounded-full px-3 text-[12.5px] font-medium text-text-secondary active:opacity-60">
+                          {editandoLogos ? "Pronto" : "Editar"}
+                        </button>
+                      )}
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {gallery.map((url) => (
-                        <button
-                          key={url}
-                          onClick={() => { update({ icon: "__logo__", logo_url: url }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__", logo_url: url }); }}
-                          className={`h-11 w-11 overflow-hidden rounded-full border-2 ${cfg.icon === "__logo__" && (cfg.logo_url ?? logoUrl) === url ? "border-on-background" : "border-transparent"}`}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={url} alt="" className="h-full w-full object-cover" />
-                        </button>
+                        <div key={url} className="relative">
+                          <button
+                            onClick={() => {
+                              if (editandoLogos) { setTrocandoLogo(trocandoLogo === url ? null : url); setNovoIconeAberto(false); return; }
+                              update({ icon: "__logo__", logo_url: url }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__", logo_url: url });
+                            }}
+                            aria-label={editandoLogos ? "Trocar a imagem deste logo" : "Usar este logo"}
+                            className={`h-11 w-11 overflow-hidden rounded-full border-2 ${trocandoLogo === url ? "border-on-background" : cfg.icon === "__logo__" && (cfg.logo_url ?? logoUrl) === url && !editandoLogos ? "border-on-background" : "border-transparent"}`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt="" className="h-full w-full object-cover" />
+                          </button>
+                          {editandoLogos && onGalleryChange && url !== logoUrl && (
+                            <button
+                              type="button"
+                              aria-label="Excluir este logo da lista"
+                              onClick={() => { if (window.confirm("Excluir este logo da lista? Os botões que já usam ele continuam como estão.")) { setTrocandoLogo(null); onGalleryChange((logoGallery ?? []).filter((u) => u !== url)); } }}
+                              className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[12px] leading-none text-white shadow-sm active:scale-90"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
                       ))}
                       <button
                         type="button"
@@ -1321,6 +1349,24 @@ function BoxEditor({
                     </div>
                     {gallery.length === 0 && !novoIconeAberto && (
                       <p className="text-[12px] text-text-secondary">Cadastre o logo ou os ícones da sua marca pra usar nos botões.</p>
+                    )}
+                    {editandoLogos && trocandoLogo && onGalleryChange && (
+                      <div className="rounded-2xl border border-divider p-3">
+                        <p className="mb-2 text-[12px] text-text-secondary">Envie a nova imagem para trocar este logo na lista.</p>
+                        <ImageUpload
+                          value={null}
+                          businessId={businessId}
+                          lockedRatio="quadrado"
+                          promptKind="avatar"
+                          onChange={(novaUrl) => {
+                            if (!novaUrl || !trocandoLogo) return;
+                            const antiga = trocandoLogo;
+                            onGalleryChange((logoGallery ?? []).map((u) => (u === antiga ? novaUrl : u)));
+                            if (cfg.logo_url === antiga) { update({ icon: "__logo__", logo_url: novaUrl }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__", logo_url: novaUrl }); }
+                            setTrocandoLogo(null);
+                          }}
+                        />
+                      </div>
                     )}
                     {novoIconeAberto && (
                       <div className="rounded-2xl border border-divider p-3">

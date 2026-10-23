@@ -23,3 +23,14 @@ export async function addToLogoGallery(
 export function parseLogoGallery(raw: unknown): string[] {
   return Array.isArray(raw) ? raw.filter((u): u is string => typeof u === "string" && u.length > 0) : [];
 }
+
+/** Grava a galeria inteira (usado para excluir ou trocar um logo da lista). */
+export async function salvarLogoGallery(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: SupabaseClient<any>,
+  businessId: string,
+  next: string[]
+): Promise<boolean> {
+  const { error } = await supabase.from("businesses").update({ logo_gallery: next }).eq("id", businessId);
+  return !error;
+}
