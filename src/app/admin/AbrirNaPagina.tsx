@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
  */
 export function AbrirNaPagina() {
   const router = useRouter();
+  // Plano B para quando o painel abre por navegação interna (o script acima só roda na primeira carga).
   useEffect(() => {
     try {
       const standalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;

@@ -1,4 +1,5 @@
 import { lerPlanoGratis, restaurarPlanoGratis } from "@/lib/planoGratis";
+import { SCRIPT_ABRIR_ANTES_DO_PAINT } from "./scriptAbrir";
 import { Suspense } from "react";
 import { pareceGastronomico } from "@/lib/gastronomia";
 import { redirect } from "next/navigation";
@@ -130,6 +131,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="sistema-vidro mx-auto flex min-h-screen w-full max-w-[440px] flex-col lg:max-w-none lg:pl-[232px]">
+      <script dangerouslySetInnerHTML={{ __html: SCRIPT_ABRIR_ANTES_DO_PAINT }} />
       <div className="prisma-campo" aria-hidden><i /><i /><i /><i /><i /></div>
       <EmbedMarker />
       <div className="admin-chrome contents">
