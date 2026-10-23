@@ -133,8 +133,10 @@ export function BoxDestaque({
       style={fundo ? { backgroundColor: fundo, color: fg ?? undefined, boxShadow: `0 8px 20px -8px ${fundo}99` } : undefined}
     >
       {b.logo ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={b.logo} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-black/5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={b.logo} alt="" className="h-full w-full object-contain p-[6px]" />
+        </span>
       ) : (
         <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-[22px] ${fundo ? "" : "text-white"}`} style={fundo ? { backgroundColor: claro ? "rgba(255,255,255,0.22)" : "rgba(0,0,0,0.08)" } : { background: b.cor }} aria-hidden><IconeBotao icone={b.icone} size={24} /></span>
       )}

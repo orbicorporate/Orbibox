@@ -820,7 +820,8 @@ export function VisitorExperience({
         titulo: o.t,
         sub: o.d || (o.atalho === "whatsapp" ? "Falar agora" : ""),
         icone: o.icon === "__orb__" ? "✦" : o.icon,
-        logo: o.boxLogo ?? null,
+        // A logo só vale quando o ícone escolhido é a logo; senão a troca de ícone nunca aparecia aqui.
+        logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual || null) : null,
         cor: o.atalho === "whatsapp" ? "#25D366" : (o.bolinhaCor || o.color || "#111318"),
         acao: o.atalho === "whatsapp" ? "Falar" : o.atalho === "endereco" ? "Ver" : "Abrir",
         onClick: o.onClick,
