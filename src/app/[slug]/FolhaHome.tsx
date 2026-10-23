@@ -62,6 +62,7 @@ export function FolhaHome({
   itens,
   vouchersDestaque,
   criarEm,
+  avisos,
   whatsappInicial,
   enderecoInicial,
   onMudar,
@@ -76,6 +77,8 @@ export function FolhaHome({
   itens: LinhaHome[];
   vouchersDestaque: string[];
   criarEm: CriarEm[];
+  /** Coisas ligadas que mesmo assim não aparecem para o visitante, com o motivo. */
+  avisos: { id: string; titulo: string; texto: string; href: string }[];
   whatsappInicial: string;
   enderecoInicial: string;
   onMudar: (l: LinhaHome, pos: Posicao) => void;
@@ -89,6 +92,7 @@ export function FolhaHome({
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [vouchers, setVouchers] = useState<LinhaHome[]>([]);
   const [recarga, setRecarga] = useState(0);
+  const [rascunhos, setRascunhos] = useState<LinhaHome[]>([]);
   const [vista, setVista] = useState<"lista" | "novo" | "form" | "pdf">("lista");
   const [onde, setOnde] = useState<"bolinha" | "destaque">(posicaoInicial);
   const [exemplo, setExemplo] = useState<"bolinha" | "destaque">(posicaoInicial);
@@ -115,7 +119,16 @@ export function FolhaHome({
         .eq("business_id", businessId)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
+      const { data: rasc } = await supabase
+        .from("content_items")
+        .select("id, title, image_url, description, price")
+        .eq("business_id", businessId)
+        .eq("status", "draft")
+        .order("created_at", { ascending: false })
+        .limit(30);
       if (!vivo) return;
+      // Rascunho em branco (criado e abandonado) não vale a pena mostrar.
+      setRascunhos((rasc ?? []).filter((r) => !(r.title === "Novo item" && !r.image_url && !((r.description as string | null) ?? "").trim() && r.price == null)).map((r) => ({ id: r.id as string, tipo: "item" as const, titulo: (r.title as string) || "Sem nome", sub: "Rascunho, não aparece na página", foto: (r.image_url as string | null) ?? null, pos: "escondido" as Posicao })));
       setVouchers((data ?? []).map((v) => ({ id: v.id as string, tipo: "voucher" as const, titulo: v.title as string, sub: v.discount_type === "gift" ? "Brinde" : ((v.description as string | null) ?? "Voucher"), foto: (v.image_url as string | null) ?? null, pos: "bolinha" as Posicao })));
     })();
     return () => {
@@ -150,6 +163,14 @@ export function FolhaHome({
       setEscolhido(null);
       setVista("lista");
     } else setErro("Não foi possível adicionar. Tente de novo.");
+  }
+
+  async function publicar(id: string) {
+    const { error } = await supabase.from("content_items").update({ status: "published" }).eq("id", id);
+    if (!error) {
+      setRascunhos((r) => r.filter((x) => x.id !== id));
+      router.refresh();
+    }
   }
 
   async function criarPdf() {
@@ -209,6 +230,21 @@ export function FolhaHome({
             <Exemplo ativo={exemplo} onEscolher={setExemplo} />
             <button type="button" onClick={() => { setOnde(posicaoInicial); setVista("novo"); }} className="mt-3 min-h-[44px] w-full rounded-full bg-surface-soft text-[14px] font-medium active:scale-[0.98]">+ Criar algo novo</button>
 
+            {avisos.length > 0 && (
+              <div className="mt-4 flex flex-col gap-2">
+                {avisos.map((a) => (
+                  <AbrirEditor key={a.id} href={a.href} rotulo={a.titulo} aoFechar={() => router.refresh()} className="flex items-start gap-3 rounded-2xl bg-amber-50 p-3 text-left active:scale-[0.99]">
+                    <span aria-hidden className="mt-0.5 text-[16px]">⚠</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[14px] font-semibold">{a.titulo} não está aparecendo</span>
+                      <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{a.texto}</span>
+                    </span>
+                    <span aria-hidden className="text-[18px] text-text-tertiary">›</span>
+                  </AbrirEditor>
+                ))}
+              </div>
+            )}
+
             <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Botões</p>
             <div className="mt-2 flex flex-col gap-2">
               {botoes.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum botão ainda. Toque em Criar algo novo.</p>}
@@ -233,6 +269,29 @@ export function FolhaHome({
                 <Linha key={l.id} l={l} onMudar={mudar} soDestaque />
               ))}
             </div>
+            {rascunhos.length > 0 && (
+              <>
+                <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Rascunhos</p>
+                <p className="mt-1 text-[12px] leading-snug text-text-tertiary">Estes produtos ainda não estão publicados, por isso ninguém vê. Toque em Publicar para colocar na página.</p>
+                <div className="mt-2 flex flex-col gap-2">
+                  {rascunhos.map((l) => (
+                    <div key={l.id} className="flex items-center gap-3 rounded-2xl border border-divider p-2.5">
+                      {l.foto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={l.foto} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+                      ) : (
+                        <span className="h-11 w-11 shrink-0 rounded-xl bg-surface-soft" />
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[14.5px] font-medium">{l.titulo}</span>
+                        <span className="block truncate text-[12px] text-text-tertiary">{l.sub}</span>
+                      </span>
+                      <button type="button" onClick={() => void publicar(l.id)} className="min-h-[36px] shrink-0 rounded-full bg-on-background px-4 text-[13px] font-medium text-white active:scale-95">Publicar</button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
 
@@ -361,6 +420,9 @@ function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHom
           </button>
         )}
       </div>
+      {!soDestaque && l.pos === "escondido" && (
+        <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-[12.5px] leading-snug text-text-secondary">Desligado: não aparece na página. Escolha Bolinha ou Destaque para ligar.</p>
+      )}
       {!soDestaque && (
         <div role="radiogroup" aria-label={`Onde mostrar ${l.titulo}`} className={`mt-2 grid gap-1 rounded-full bg-surface-soft p-1 ${l.semEscondido ? "grid-cols-2" : "grid-cols-3"}`}>
           {POSICOES.filter((p) => !(l.semEscondido && p.v === "escondido")).map((p) => (

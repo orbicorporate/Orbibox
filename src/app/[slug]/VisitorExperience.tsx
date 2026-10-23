@@ -806,6 +806,14 @@ export function VisitorExperience({
       });
     return [...ativos, ...desligados];
   })();
+  // Coisas ligadas que mesmo assim ficam fora da página, com o que falta para aparecer.
+  const avisosFolha: { id: string; titulo: string; texto: string; href: string }[] = hasAiChat ? [] : boxList.filter((b) => b.is_active).flatMap((b) => {
+    const cfg = (b.config ?? {}) as CustomConfig;
+    if (b.box_type === "custom" && cfg.action === "delivery" && appsAtivos(cfg.apps).length === 0) return [{ id: b.id, titulo: "Delivery", texto: "Está ligado, mas sem nenhum app cadastrado. Cadastre iFood, Rappi ou WhatsApp para aparecer.", href: "/admin/delivery" }];
+    if (b.box_type === "custom" && cfg.action === "cupom" && !hasVouchers) return [{ id: b.id, titulo: "Vouchers", texto: "Está ligado, mas não há voucher ativo. Crie um voucher para o botão aparecer.", href: "/admin/vouchers?novo=1" }];
+    if (((b.box_type === "custom" && cfg.action === "gift") || b.box_type === "campaign") && !giftEnabled) return [{ id: b.id, titulo: "Presentear", texto: "Está ligado, mas o Gift card está desativado ou falta o WhatsApp do negócio. Ative o Gift card para aparecer.", href: "/admin/gift" }];
+    return [];
+  });
   const linhasItens: LinhaHome[] = contentHome.map((i) => ({ id: i.id, tipo: "item", titulo: i.title, sub: i.brand_label ?? "", foto: i.image_url, pos: destaquesHome.some((d) => d.t === "item" && d.id === i.id) ? "destaque" : "bolinha" }));
 
   const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
@@ -915,6 +923,7 @@ export function VisitorExperience({
           itens={linhasItens}
           vouchersDestaque={destaquesHome.filter((d) => d.t === "voucher").map((d) => d.id)}
           criarEm={criarEm}
+          avisos={avisosFolha}
           whatsappInicial={business.contact_whatsapp ?? ""}
           enderecoInicial={business.address ?? ""}
           onMudar={(l, pos) => void mudarLinha(l, pos)}
