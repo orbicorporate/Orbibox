@@ -29,6 +29,8 @@ export function CardapioFlow({
   corBotoes = null,
   layoutInicial = "lista",
   donoVendo = false,
+  donoPodeDefinir = false,
+  onPadrao,
   onPedir,
   onBack,
   compartilhar,
@@ -46,6 +48,9 @@ export function CardapioFlow({
   layoutInicial?: LayoutItens;
   /** O dono olhando a própria página: mostra orientação em vez do aviso do cliente. */
   donoVendo?: boolean;
+  /** É o dono (mesmo vendo como visitante): a escolha lista/cards vira o padrão do cardápio. */
+  donoPodeDefinir?: boolean;
+  onPadrao?: (l: LayoutItens) => void;
   onPedir?: () => void;
   onBack: () => void;
   /** Link do cardápio para compartilhar (WhatsApp com capinha, stories...). */
@@ -182,12 +187,15 @@ export function CardapioFlow({
         <div className="mt-5 flex justify-end">
           <div role="radiogroup" aria-label="Como ver os pratos" className="flex rounded-full bg-black/[0.05] p-1">
             {([["lista", "Ver em lista", "M4 6h16M4 12h16M4 18h16"], ["cards", "Ver em cards grandes", "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"]] as const).map(([v, r, d]) => (
-              <button key={v} type="button" role="radio" aria-checked={layout === v} aria-label={r} onClick={() => setLayout(v)} className={`flex h-10 w-11 items-center justify-center rounded-full transition-colors ${layout === v ? "bg-white text-on-background shadow-[0_1px_3px_rgba(0,0,0,0.12)]" : "text-text-tertiary"}`}>
+              <button key={v} type="button" role="radio" aria-checked={layout === v} aria-label={r} onClick={() => { setLayout(v); if (donoPodeDefinir) onPadrao?.(v); }} className={`flex h-10 w-11 items-center justify-center rounded-full transition-colors ${layout === v ? "bg-white text-on-background shadow-[0_1px_3px_rgba(0,0,0,0.12)]" : "text-text-tertiary"}`}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={d} /></svg>
               </button>
             ))}
           </div>
         </div>
+      )}
+      {preenchidas.length > 0 && donoPodeDefinir && (
+        <p className="mt-2 text-right text-[12px] leading-snug text-text-tertiary">Só você vê este aviso: o modo que você tocar aqui vira o padrão que seus clientes veem ao abrir o cardápio.</p>
       )}
 
       {visiveis.map((s) => {

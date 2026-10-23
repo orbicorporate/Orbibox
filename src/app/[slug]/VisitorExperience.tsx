@@ -1701,6 +1701,14 @@ export function VisitorExperience({
               corBotoes={lerCorBotoes(cfgCardapio)}
               layoutInicial={lerLayoutItens(cfgCardapio)}
               donoVendo={showOwnerControls}
+              donoPodeDefinir={isOwner && !previewTravado}
+              onPadrao={async (l) => {
+                const box = boxList.find((b) => b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "cardapio");
+                if (!box) return;
+                const novo = { ...((box.config ?? {}) as Record<string, unknown>), layoutItens: l };
+                setBoxList((prev) => prev.map((b) => (b.id === box.id ? { ...b, config: novo as BoxRow["config"] } : b)));
+                conferirSalvo(await supabase.from("smart_boxes").update({ config: novo as never }).eq("id", box.id));
+              }}
               onPedir={apps.length > 0 ? () => {
                 if (apps.length === 1) {
                   const link = linkDoApp(apps[0]);
