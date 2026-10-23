@@ -20,7 +20,7 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
     document.body.style.overflow = "hidden";
     const tecla = (e: KeyboardEvent) => { if (e.key === "Escape") setAberto(null); };
     window.addEventListener("keydown", tecla);
-    fechar.current?.focus();
+    fechar.current?.focus({ preventScroll: true });
     return () => {
       document.body.style.overflow = antes;
       window.removeEventListener("keydown", tecla);
