@@ -1464,3 +1464,8 @@ html[data-embed] .embed-oculta { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .crie-orbibox, .crie-orbibox-brilho { animation: none; }
 }
+
+/* Chat da Orbi: sobe de baixo ao abrir, em vez de trocar a tela de repente. */
+@keyframes orbi-sobe { from { transform: translateY(16%); opacity: 0; } to { transform: none; opacity: 1; } }
+.orbi-sobe { animation: orbi-sobe .42s cubic-bezier(.32, .72, 0, 1) both; }
+@media (prefers-reduced-motion: reduce) { .orbi-sobe { animation: none; } }

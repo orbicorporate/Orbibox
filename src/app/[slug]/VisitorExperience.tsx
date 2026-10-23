@@ -207,6 +207,8 @@ export function VisitorExperience({
   // chat real já preenchida, pronta pra mandar, em vez de perder o que a
   // pessoa escreveu.
   const [orbiPrefill, setOrbiPrefill] = useState<string | undefined>(undefined);
+  // Pergunta digitada no campo da Home: a Orbi já responde ao abrir, sem pedir pra enviar de novo.
+  const [orbiEnviarAuto, setOrbiEnviarAuto] = useState(false);
   // Box de endereço expande direto na Home (sem navegar pra outra tela) , 
   // guarda qual box está expandido agora (ou null se nenhum).
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
@@ -397,9 +399,10 @@ export function VisitorExperience({
     }
   }
 
-  async function chooseIntent(value: Intent, prefill?: string) {
+  async function chooseIntent(value: Intent, prefill?: string, enviarAuto = false) {
     if (value === "duvida" && !hasAiChat) return;
     setOrbiPrefill(prefill);
+    setOrbiEnviarAuto(enviarAuto);
     setIntent(value);
     if (!empilhou.current) {
       window.history.pushState({ orbiTela: value }, "");
@@ -1047,7 +1050,7 @@ export function VisitorExperience({
                 ctaRotulo={ctaVitrine.rotulo}
                 ctaTipo={ctaVitrine.tipo}
                 orbiAvatar={<OrbiParticleSphere size={34} colors={orbiColors ?? undefined} className="rounded-full" />}
-                onPerguntar={(q) => chooseIntent("duvida", q || undefined)}
+                onPerguntar={(q) => chooseIntent("duvida", q || undefined, !!q)}
                 opcoesCta={opcoesCta}
                 onCtaTipo={boxFormato ? (t) => guardarNaVitrine({ botaoPrincipal: t }) : undefined}
                 onCta={ctaVitrine.onClick}
@@ -1616,7 +1619,7 @@ export function VisitorExperience({
         )}
 
         {intent === "duvida" && (
-          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} initialInput={orbiPrefill} onBack={voltarAoInicio} />
+          <OrbiChat businessId={business.id} slug={business.slug} sessionId={sessionId} agentName={agentName} orbiColors={orbiColors} heroGradient={heroGradient} content={content} whatsapp={business.contact_whatsapp} address={business.address ?? null} suggestedQuestions={suggestedQuestions} initialInput={orbiPrefill} enviarAoAbrir={orbiEnviarAuto} onBack={voltarAoInicio} />
         )}
 
         {intent === "materiais" && (() => {
@@ -2400,6 +2403,7 @@ function OrbiChat({
   address,
   suggestedQuestions,
   initialInput,
+  enviarAoAbrir = false,
   onBack,
 }: {
   businessId: string;
@@ -2413,6 +2417,7 @@ function OrbiChat({
   address: string | null;
   suggestedQuestions: string[];
   initialInput?: string;
+  enviarAoAbrir?: boolean;
   onBack: () => void;
 }) {
   const supabase = createClient();
@@ -2616,6 +2621,15 @@ function OrbiChat({
     }
   }
 
+  // Pergunta vinda do campo da Home: responde assim que a conversa estiver pronta.
+  const enviouAuto = useRef(false);
+  useEffect(() => {
+    if (!enviarAoAbrir || enviouAuto.current || !conversationId || !initialInput?.trim()) return;
+    enviouAuto.current = true;
+    void sendText(initialInput);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]);
+
   const started = messages.length > 0;
   const falasDoVisitante = messages.filter((m) => m.role === "visitor").length;
   const ultimoAgente = messages.map((m) => m.role).lastIndexOf("agent");
@@ -2634,7 +2648,7 @@ function OrbiChat({
   }, [messages.length, sending, justDone, started]);
 
   return (
-    <div className="fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main lg:max-w-[760px]">
+    <div className="orbi-sobe fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main lg:max-w-[760px]">
       {/* Nada de cor no topo aqui também, mesmo motivo da tela inicial. */}
 
       {/* Mesmo halo da tela inicial, pra não ficar um fundo parado/liso aqui , 
@@ -2762,7 +2776,7 @@ function OrbiChat({
 
       <form
         onSubmit={(e) => { e.preventDefault(); sendText(input); }}
-        className="absolute inset-x-6 bottom-8 z-10 flex items-center gap-2 rounded-full bg-surface-white p-2 pl-4 shadow-[0_8px_30px_rgba(17,19,24,0.12)]"
+        className="absolute inset-x-5 bottom-8 z-10 flex min-h-[64px] items-center gap-2.5 rounded-full bg-surface-white p-2 pl-5 shadow-[0_8px_30px_rgba(17,19,24,0.12)]"
       >
         <span className="relative flex h-2.5 w-2.5 shrink-0">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orbi-gradient-start opacity-75" />
@@ -2772,13 +2786,14 @@ function OrbiChat({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={typedPlaceholder}
-          className="flex-1 bg-transparent text-[14px] outline-none"
+          enterKeyHint="send"
+          className="min-w-0 flex-1 bg-transparent text-[16px] outline-none"
         />
         <button
           type="submit"
           disabled={sending || !input.trim()}
           aria-label="Enviar mensagem"
-          className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${input.trim() && !sending ? "orbi-gradient" : "bg-surface-soft"}`}
+          className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-colors ${input.trim() && !sending ? "orbi-gradient" : "bg-surface-soft"}`}
         >
           {sending ? (
             <OrbiParticleSphere size={36} colors={orbiColors ?? undefined} className="rounded-full" />
