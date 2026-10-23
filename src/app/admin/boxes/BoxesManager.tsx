@@ -797,10 +797,10 @@ export function BoxesManager({
               )}
 
               {box.box_type === "content" && editing && (
-                <div className="mt-4 flex flex-col gap-4 border-t border-divider pt-4">
-                  <div>
-                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Importar do site</p>
-                    <p className="mt-1 text-[12px] text-text-secondary">
+                <div className="mt-4 flex flex-col gap-3.5 border-t border-divider pt-4">
+                  <div className="rounded-[22px] bg-surface-soft p-4">
+                    <p className="text-[15px] font-semibold text-on-background">Importar do site</p>
+                    <p className="mt-0.5 text-[12.5px] leading-snug text-text-secondary">
                       Cola o link do seu site e a Orbi lê e monta sozinha o texto &quot;Sobre nós&quot; e os diferenciais abaixo.
                     </p>
                     <div className="mt-2 flex gap-2">
@@ -808,7 +808,7 @@ export function BoxesManager({
                         value={aboutImportUrl}
                         onChange={(e) => setAboutImportUrl(e.target.value)}
                         placeholder="https://seusite.com.br"
-                        className="min-w-0 flex-1 rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
+                        className="min-w-0 flex-1 rounded-2xl border border-black/[0.1] bg-surface-white px-4 py-2.5 text-[13px] outline-none focus:border-on-background"
                       />
                       <button
                         onClick={() => importAbout(aboutImportUrl)}
@@ -823,24 +823,24 @@ export function BoxesManager({
                     )}
                   </div>
 
-                  <div>
-                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Sobre nós</p>
-                    <p className="mt-1 text-[12px] text-text-secondary">O texto que aparece na tela “Conhecer”, abaixo das fotos.</p>
+                  <div className="rounded-[22px] bg-surface-soft p-4">
+                    <p className="text-[15px] font-semibold text-on-background">Sobre nós</p>
+                    <p className="mt-0.5 text-[12.5px] leading-snug text-text-secondary">O texto que aparece na tela “Conhecer”, abaixo das fotos.</p>
                     <textarea
                       value={aboutBusiness}
                       onChange={(e) => setAboutBusiness(e.target.value)}
                       onBlur={(e) => saveAboutBusiness(e.target.value)}
                       rows={3}
                       placeholder="Quem vocês são, o que fazem, há quanto tempo..."
-                      className="mt-2 w-full resize-none rounded-2xl border border-divider px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                      className="mt-2 w-full resize-none rounded-2xl border border-black/[0.1] bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
                     />
                   </div>
-                  <div id="sobre-diferenciais" className="scroll-mt-24 rounded-2xl">
-                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Diferenciais</p>
-                    <p className="mt-1 text-[12px] text-text-secondary">Cartões curtos com o que vocês têm de melhor.</p>
+                  <div id="sobre-diferenciais" className="scroll-mt-24 rounded-[22px] bg-surface-soft p-4">
+                    <p className="text-[15px] font-semibold text-on-background">Diferenciais</p>
+                    <p className="mt-0.5 text-[12.5px] leading-snug text-text-secondary">Cartões curtos com o que vocês têm de melhor.</p>
                     <div className="mt-2 flex flex-col gap-2.5">
                       {cards.map((c, i) => (
-                        <div key={i} className="rounded-2xl border border-divider p-3">
+                        <div key={i} className="rounded-2xl bg-surface-white p-3 shadow-[0_1px_3px_rgba(17,19,24,0.08)] ring-1 ring-black/[0.06]">
                           <details className="group">
                             <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-3">
                               <span className="flex h-10 w-10 items-center justify-center rounded-full border border-divider bg-surface-soft text-[16px]">{c.icon || DIFF_ICONS[0]}</span>
@@ -865,28 +865,28 @@ export function BoxesManager({
                             defaultValue={c.title}
                             onBlur={(e) => saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, title: e.target.value } : x)))}
                             placeholder="Título (ex: Experiência sênior)"
-                            className="mt-2 w-full rounded-full border border-divider px-4 py-2 text-[13px] font-medium outline-none focus:border-on-background"
+                            className="mt-2 w-full rounded-full border border-black/[0.1] bg-surface-soft/50 px-4 py-2 text-[13px] font-medium outline-none focus:border-on-background"
                           />
                           <textarea
                             defaultValue={c.description ?? ""}
                             onBlur={(e) => saveDifferentialsCards(cards.map((x, xi) => (xi === i ? { ...x, description: e.target.value } : x)))}
                             rows={2}
                             placeholder="Uma frase explicando esse diferencial"
-                            className="mt-1.5 w-full resize-none rounded-2xl border border-divider px-3 py-2 text-[13px] outline-none focus:border-on-background"
+                            className="mt-1.5 w-full resize-none rounded-2xl border border-black/[0.1] bg-surface-soft/50 px-3 py-2 text-[13px] outline-none focus:border-on-background"
                           />
                         </div>
                       ))}
                       <button
                         onClick={() => saveDifferentialsCards([...cards, { icon: DIFF_ICONS[0], title: "", description: "" }])}
-                        className="rounded-full border border-dashed border-divider py-2.5 text-[13px] text-text-tertiary"
+                        className="rounded-full border border-dashed border-text-tertiary/50 bg-surface-white py-2.5 text-[13px] font-medium text-text-secondary"
                       >
                         + Adicionar diferencial
                       </button>
                     </div>
                   </div>
-                  <div id="sobre-fotos" className="scroll-mt-24 rounded-2xl">
-                    <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Fotos</p>
-                    <p className="mt-1 text-[12px] text-text-secondary">Aparecem no topo da página Sobre. Toque no + para adicionar.</p>
+                  <div id="sobre-fotos" className="scroll-mt-24 rounded-[22px] bg-surface-soft p-4">
+                    <p className="text-[15px] font-semibold text-on-background">Fotos</p>
+                    <p className="mt-0.5 text-[12.5px] leading-snug text-text-secondary">Aparecem no topo da página Sobre. Toque no + para adicionar.</p>
                     <div className="mt-2">
                       <GalleryUpload
                         value={storyPhotos}
