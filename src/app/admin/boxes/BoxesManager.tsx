@@ -679,7 +679,7 @@ export function BoxesManager({
                           defaultValue={label}
                           onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), label: e.target.value.trim() || suggestedName })}
                           placeholder={suggestedName}
-                          className="mt-1 w-full rounded-full border border-transparent bg-surface-soft px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+                          className="mt-1 w-full rounded-full border border-[#CFCDC5] bg-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
                         />
                       </label>
                       <label className="block">
@@ -688,7 +688,7 @@ export function BoxesManager({
                           defaultValue={cfg?.subtitle ?? ""}
                           onBlur={(e) => saveConfig(box, { ...(cfg ?? {}), subtitle: e.target.value })}
                           placeholder="Uma frase curta embaixo do nome"
-                          className="mt-1 w-full rounded-full border border-transparent bg-surface-soft px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+                          className="mt-1 w-full rounded-full border border-[#CFCDC5] bg-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
                         />
                       </label>
                     </>
@@ -704,7 +704,7 @@ export function BoxesManager({
 
 
               {editing && !isHero && (
-                <div className="mt-3 rounded-3xl bg-surface-soft p-4">
+                <div className="mt-3 rounded-3xl bg-[#ECEAE3] p-4">
               <details className="group mb-3">
                 <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[12.5px] font-medium text-text-tertiary">
                   O que este botão faz
@@ -1023,7 +1023,7 @@ export function BoxesManager({
 /** Bloco do editor de box: título e, opcionalmente, uma linha de apoio. */
 function Secao({ titulo, dica, children }: { titulo: string; dica?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-3xl bg-surface-soft p-4 [&_button.border-divider]:bg-surface-white [&_input]:bg-surface-white [&_select]:bg-surface-white [&_textarea]:bg-surface-white">
+    <section className="rounded-3xl bg-[#ECEAE3] p-4 [&_button.border-divider]:border-[#CFCDC5] [&_button.border-divider]:bg-white [&_input]:border-[#CFCDC5] [&_input]:bg-white [&_select]:border-[#CFCDC5] [&_select]:bg-white [&_textarea]:border-[#CFCDC5] [&_textarea]:bg-white">
       <h4 className="text-[15px] font-semibold text-on-background">{titulo}</h4>
       {dica && <p className="mt-0.5 text-[12px] text-text-tertiary">{dica}</p>}
       <div className="mt-3 flex flex-col gap-3">{children}</div>
