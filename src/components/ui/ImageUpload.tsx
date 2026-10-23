@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropModal";
@@ -60,6 +61,7 @@ export function ImageUpload({
   const [copied, setCopied] = useState(false);
   const [showFotos, setShowFotos] = useState(false);
   const [showGaleria, setShowGaleria] = useState(false);
+  const [escolhendoOrigem, setEscolhendoOrigem] = useState(false);
   // Dados da marca pro prompt da capa ficar com a cara dela (cores, tom).
   const [marca, setMarca] = useState<Marca | null>(null);
 
@@ -388,7 +390,7 @@ export function ImageUpload({
         <div className="flex flex-1 flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => inputRef.current?.click()}
+            onClick={() => setEscolhendoOrigem(true)}
             disabled={uploading}
             className={`rounded-full px-4 py-2.5 text-[13px] font-medium ${uploading ? "bg-surface-white text-on-background ring-1 ring-black/10" : "bg-button-primary text-white disabled:opacity-50"}`}
           >
@@ -454,6 +456,38 @@ export function ImageUpload({
             {copied ? "✓ Copiado" : "Copiar prompt"}
           </button>
         </div>
+      )}
+
+      {escolhendoOrigem && createPortal(
+        <div className="fixed inset-0 z-[85] flex items-end justify-center bg-black/40" onClick={() => setEscolhendoOrigem(false)}>
+          <div className="folha-sobe w-full max-w-[440px] rounded-t-[28px] bg-background-main p-5 pb-8" onClick={(e) => e.stopPropagation()}>
+            <p className="text-center font-[family-name:var(--font-manrope)] text-[17px] font-medium">De onde vem a foto?</p>
+            <div className="mt-4 flex flex-col gap-2.5">
+              <button type="button" onClick={() => { setEscolhendoOrigem(false); setShowGaleria(true); }} className="flex min-h-[56px] items-center justify-between rounded-2xl bg-on-background px-5 text-left text-[15px] font-medium text-white active:scale-[0.99]">
+                <span>Minha galeria<span className="block text-[12.5px] font-normal text-white/70">Fotos que você já enviou</span></span>
+                <span aria-hidden>→</span>
+              </button>
+              <button type="button" onClick={() => { setEscolhendoOrigem(false); inputRef.current?.click(); }} className="flex min-h-[56px] items-center justify-between rounded-2xl bg-surface-white px-5 text-left text-[15px] font-medium ring-1 ring-black/[0.08] active:scale-[0.99]">
+                <span>Enviar do celular<span className="block text-[12.5px] font-normal text-text-tertiary">Câmera ou rolo de fotos</span></span>
+                <span aria-hidden>↑</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {showGaleria && (
+        <MinhaGaleriaPicker
+          businessId={businessId}
+          atual={value}
+          camada="z-[90]"
+          onFechar={() => setShowGaleria(false)}
+          onEscolher={(url) => {
+            setShowGaleria(false);
+            onChange(url);
+          }}
+        />
       )}
 
       {pendingFile && (
