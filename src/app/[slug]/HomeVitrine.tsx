@@ -761,6 +761,15 @@ function ListaBolinhas({
                     className="min-h-[40px] min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 text-[14px] outline-none focus:border-on-background"
                   />
                 )}
+                {b.editarHref && (
+                  <AbrirEditor
+                    href={b.editarHref}
+                    rotulo="Trocar a foto da bolinha"
+                    className="flex min-h-[40px] shrink-0 items-center rounded-full bg-surface-soft px-3.5 text-[13px] font-medium active:scale-[0.97]"
+                  >
+                    Trocar ícone
+                  </AbrirEditor>
+                )}
                 {onEsconder && (
                   <button
                     type="button"

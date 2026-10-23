@@ -52,7 +52,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
   const boxDaHome = (boxesHome ?? []).find((b) => b.is_active && (b.box_type === "product" || (b.box_type === "custom" && ["vitrine", "comprar"].includes(String((b.config as { action?: string } | null)?.action ?? ""))))) ?? (boxesHome ?? []).find((b) => b.box_type === "hero") ?? null;
   const homeBoxConfig = (boxDaHome?.config && typeof boxDaHome.config === "object" && !Array.isArray(boxDaHome.config) ? boxDaHome.config : {}) as Record<string, unknown>;
   const destaquesHome = (Array.isArray(business!.home_destaques) ? (business!.home_destaques as unknown[]) : [])
-    .filter((d): d is { t: "voucher" | "item" | "botao"; id: string } => !!d && typeof d === "object" && typeof (d as { id?: unknown }).id === "string" && ["voucher", "item", "botao"].includes((d as { t?: string }).t ?? ""));
+    .filter((d): d is { t: "voucher" | "item" | "botao" | "item_bolinha"; id: string; p?: number } => !!d && typeof d === "object" && typeof (d as { id?: unknown }).id === "string" && ["voucher", "item", "botao", "item_bolinha"].includes((d as { t?: string }).t ?? ""));
 
   const semFoto = (items ?? []).filter((i) => !i.image_url && !(Array.isArray(i.gallery_urls) && i.gallery_urls.length > 0)).length;
 

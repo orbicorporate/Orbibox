@@ -117,7 +117,7 @@ export function ShowcaseBuilder({
   abrirNovo?: boolean;
   /** O negócio tem Cardápio ativo: libera passar itens entre os dois. */
   temCardapio?: boolean;
-  destaquesHomeIniciais?: { t: "voucher" | "item" | "botao"; id: string }[];
+  destaquesHomeIniciais?: { t: "voucher" | "item" | "botao" | "item_bolinha"; id: string; p?: number }[];
   homeBoxId?: string | null;
   homeBoxConfig?: Record<string, unknown>;
 }) {
