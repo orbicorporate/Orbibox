@@ -170,9 +170,9 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
           <p className="text-center text-[15px] font-semibold">Seu gift está reservado 🎁</p>
           <ol className="mt-4 flex flex-col gap-3">
             {[
-              ["Libere pelo WhatsApp", "Abre uma conversa com a loja já com o código do gift."],
-              ["A loja combina o pagamento", "Pix, cartão ou como vocês preferirem."],
-              ["Envie o presente", "Com o pagamento confirmado, abra o seu gift e mande pra quem vai receber."],
+              ["Libere pelo WhatsApp", "Abre uma conversa com o negócio já com o código do gift."],
+              ["Combine o pagamento", "Pix, cartão ou como vocês preferirem. O negócio confirma e te avisa com o link."],
+              ["Envie o presente", "Com o pagamento confirmado, mande o link para quem vai receber. Na hora de usar, é só mostrar a tela ao garçom."],
             ].map(([t, d], i) => (
               <li key={t} className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-background text-[12px] font-semibold text-white">{i + 1}</span>

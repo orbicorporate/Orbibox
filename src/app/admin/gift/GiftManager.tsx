@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoGiftLiberado } from "./AvisoGiftLiberado";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -10,7 +11,7 @@ import { GIFT_THEMES, type GiftTheme } from "@/lib/giftThemes";
 import type { Database } from "@/lib/supabase/types";
 
 type Settings = Database["public"]["Tables"]["gift_settings"]["Row"];
-type Gift = { id: string; code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; created_at: string; used_at?: string | null };
+type Gift = { id: string; code: string; buyer_whatsapp?: string | null; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; created_at: string; used_at?: string | null };
 
 function brl(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -31,6 +32,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
   const [minValue, setMinValue] = useState(String((initialSettings?.min_value_cents ?? 2000) / 100));
   const [gifts, setGifts] = useState(initialGifts);
   const [saved, setSaved] = useState(false);
+  const [aviso, setAviso] = useState<{ gift: Gift; negocio: string } | null>(null);
 
   async function salvar(patch: Partial<Settings>) {
     setSaved(false);
@@ -60,12 +62,21 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
     const res = await supabase.from("gift_cards").update({ status, ...(status === "paid" ? { paid_at: new Date().toISOString() } : {}) }).eq("id", id);
     if (!conferirSalvo(res)) return;
     setGifts((prev) => prev.map((g) => g.id === id ? { ...g, status } : g));
+    if (status === "paid") void abrirAviso(id);
+  }
+
+  async function abrirAviso(id: string) {
+    const g = gifts.find((x) => x.id === id);
+    if (!g) return;
+    const { data: neg } = await supabase.from("businesses").select("name").eq("id", businessId).maybeSingle();
+    setAviso({ gift: g, negocio: neg?.name ?? "o negócio" });
   }
 
   const pendentes = gifts.filter((g) => g.status === "pending");
 
   return (
     <div className="mt-5 flex flex-col gap-4">
+      {aviso && <AvisoGiftLiberado gift={aviso.gift} negocio={aviso.negocio} aoFechar={() => setAviso(null)} />}
       {(enabled || gifts.length > 0) && (
         <ValidarGift businessId={businessId} onUsado={(id, usedAt) => setGifts((prev) => prev.map((g) => (g.id === id ? { ...g, status: "used", used_at: usedAt } : g)))} />
       )}
@@ -148,6 +159,9 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
                           {g.to_name ? `Para ${g.to_name}` : "Sem destinatário"}{g.from_name ? ` · de ${g.from_name}` : ""} · {g.code}{g.status === "used" && g.used_at ? ` · usado ${new Date(g.used_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}` : ""}
                         </p>
                       </div>
+                      {g.status === "paid" && (
+                        <button onClick={() => void abrirAviso(g.id)} className="shrink-0 rounded-full bg-surface-soft px-3.5 py-2 text-[12.5px] font-medium text-text-secondary">Avisar</button>
+                      )}
                       {g.status === "pending" && (
                         <div className="flex shrink-0 gap-1.5">
                           <button onClick={() => mudarStatus(g.id, "paid")} className="rounded-full bg-[#1F9E4C] px-3.5 py-2 text-[12.5px] font-semibold text-white">Liberar</button>

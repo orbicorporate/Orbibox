@@ -6,8 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 import { ResponderPergunta } from "./agent/ResponderPergunta";
 import { CampanhaDataSheet } from "./CampanhaDataSheet";
+import { AvisoGiftLiberado } from "./gift/AvisoGiftLiberado";
 
-type Gift = { id: string; value_cents: number; from_name: string | null; to_name: string | null };
+type Gift = { id: string; code?: string; buyer_whatsapp?: string | null; value_cents: number; from_name: string | null; to_name: string | null };
 type Pergunta = { id: string; pergunta: string; vezes: number };
 type Data = { id: string; nome: string; dias: number; clima: string };
 type VoucherBaixo = { id: string; title: string; restam: number; quantity_total: number };
@@ -71,6 +72,7 @@ export function ProximaAcao({
   const [folha, setFolha] = useState<Data | null>(null);
   const [concluida, setConcluida] = useState<string | null>(null);
   const [ensinou, setEnsinou] = useState<string | null>(null);
+  const [avisoGift, setAvisoGift] = useState<{ gift: Gift & { code: string }; negocio: string } | null>(null);
 
   const acoes = useMemo(() => {
     let adiadas: Record<string, number> = {};
@@ -106,7 +108,14 @@ export function ProximaAcao({
     setOcupado(true);
     const { error } = await supabase.from("gift_cards").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", g.id).eq("status", "pending");
     setOcupado(false);
-    if (!error) concluir(chave, "Gift liberado. A arte já está pronta pra quem vai ganhar.");
+    if (error) return;
+    const { data: neg } = await supabase.from("businesses").select("name").eq("id", businessId).maybeSingle();
+    if (g.code) {
+      setAvisoGift({ gift: { ...g, code: g.code }, negocio: neg?.name ?? "o negócio" });
+      setFeitas((s) => new Set(s).add(chave));
+    } else {
+      concluir(chave, "Gift liberado. Agora avise quem comprou, com o link e o código.");
+    }
   }
 
   async function repor(v: VoucherBaixo, chave: string) {
@@ -116,7 +125,7 @@ export function ProximaAcao({
     if (!error) concluir(chave, `Mais 20 unidades de "${v.title}" no ar.`);
   }
 
-  if (!atual && !concluida) return null;
+  if (!atual && !concluida && !avisoGift) return null;
 
   const total = acoes.length;
 
@@ -131,7 +140,11 @@ export function ProximaAcao({
           )}
         </div>
 
-        {concluida ? (
+        {avisoGift ? (
+          <div className="acao-entra mt-3">
+            <AvisoGiftLiberado gift={avisoGift.gift} negocio={avisoGift.negocio} aoFechar={() => setAvisoGift(null)} />
+          </div>
+        ) : concluida ? (
           <div key="ok" className="acao-entra mt-3 flex items-start gap-3" aria-live="polite">
             <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1F9E4C]">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>

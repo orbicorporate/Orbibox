@@ -39,9 +39,14 @@ export function GiftReveal({ gift, voltar }: { voltar?: string | null; gift: { c
         </p>
       ) : liberado ? (
         <>
-          <p className="mt-5 text-center text-[14px] leading-relaxed text-text-secondary">
-            Envie esta tela pra quem você quer presentear. É só mostrar no atendimento de {gift.business_name}.
-          </p>
+          <Passos
+            titulo="Como usar este presente"
+            passos={[
+              `Toque em Compartilhar e envie este link para ${gift.to_name || "quem vai ganhar"}.`,
+              `${gift.to_name || "Quem ganhou"} abre o link e mostra a tela, com o código ${gift.code}, ao garçom ou ao atendimento de ${gift.business_name}.`,
+              `${gift.business_name} confere o código e dá baixa no valor.`,
+            ]}
+          />
           <BotaoCompartilhar
             alvo={{ url: `/gift/${gift.code}`, titulo: "Gift card", rotulo: "Gift card", marca: gift.business_name, imagem: gift.art_url, texto: `${gift.from_name ? gift.from_name + " te enviou" : "Você ganhou"} um presente de ${gift.business_name}:` }}
             className="mx-auto mt-5 flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-button-primary px-7 text-[15px] font-medium text-white transition-transform active:scale-95"
@@ -51,9 +56,14 @@ export function GiftReveal({ gift, voltar }: { voltar?: string | null; gift: { c
         </>
       ) : (
         <>
-          <p className="mt-5 text-center text-[14px] leading-relaxed text-text-secondary">
-            Assim que {gift.business_name} confirmar o pagamento, libera o botão de compartilhar pra você enviar pra pessoa.
-          </p>
+          <Passos
+            titulo="Como funciona"
+            passos={[
+              `Combine o pagamento com ${gift.business_name} pelo WhatsApp.`,
+              `Quando ${gift.business_name} confirmar, o botão de compartilhar é liberado aqui.`,
+              `Você envia o link para ${gift.to_name || "quem vai ganhar"}, que mostra a tela ao garçom na hora de usar.`,
+            ]}
+          />
           <button type="button" disabled className="mx-auto mt-5 flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-surface-soft px-7 text-[15px] font-medium text-text-tertiary opacity-70">
             <IconeCompartilhar tam={18} />
             <span>Compartilhar</span>
@@ -61,5 +71,21 @@ export function GiftReveal({ gift, voltar }: { voltar?: string | null; gift: { c
         </>
       )}
     </main>
+  );
+}
+
+function Passos({ titulo, passos }: { titulo: string; passos: string[] }) {
+  return (
+    <div className="mt-5 rounded-[22px] bg-surface-white p-4 ring-1 ring-divider">
+      <p className="text-[14px] font-medium text-on-background">{titulo}</p>
+      <ol className="mt-2.5 space-y-2.5">
+        {passos.map((p, i) => (
+          <li key={i} className="flex items-start gap-3 text-[13.5px] leading-snug text-text-secondary">
+            <span className="mt-px grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-soft text-[12px] font-medium text-on-background">{i + 1}</span>
+            <span>{p}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
