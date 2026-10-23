@@ -1479,3 +1479,15 @@ html[data-embed] .embed-oculta { display: none !important; }
 }
 .coracao-pulsa { display: inline-flex; animation: coracao-pulsa 1.8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .coracao-pulsa { animation: none; } }
+
+@keyframes presente-treme {
+  0%, 55%, 100% { transform: rotate(0deg); }
+  60% { transform: rotate(-9deg); }
+  66% { transform: rotate(9deg); }
+  72% { transform: rotate(-7deg); }
+  78% { transform: rotate(7deg); }
+  84% { transform: rotate(-3deg); }
+  90% { transform: rotate(2deg); }
+}
+.presente-treme { transform-origin: 50% 80%; animation: presente-treme 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .presente-treme { animation: none; } }

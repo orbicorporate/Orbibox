@@ -856,6 +856,19 @@ function ListaBolinhas({
 function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; onClick: () => void }) {
   const c = corDe(b);
   const linha = b.estilo === "linha";
+  // Presente: só o desenho, sem círculo de fundo, balançando de leve de tempos em tempos.
+  if (b.tipo === "presente" && !b.logo) {
+    return (
+      <button type="button" onClick={onClick} aria-label={b.rotulo} className="relative flex h-[60px] w-[60px] items-center justify-center text-on-background active:scale-95">
+        <svg width="46" height="46" viewBox="0 0 24 24" className="presente-treme" aria-hidden>
+          <rect x="2" y="8.5" width="20" height="4" rx="1.6" fill="currentColor" />
+          <path d="M4 14h6.6v7H6a2 2 0 0 1-2-2z" fill="currentColor" />
+          <path d="M13.4 14H20v5a2 2 0 0 1-2 2h-4.6z" fill="currentColor" />
+          <path d="M12 8.5C10 8.5 7.6 8 7.6 6c0-1.3 1-2.2 2.1-2.2C11 3.8 12 6.3 12 8.5zM12 8.5c2 0 4.4-.5 4.4-2.5 0-1.3-1-2.2-2.1-2.2C13 3.8 12 6.3 12 8.5z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+      </button>
+    );
+  }
   return (
     <button
       type="button"
