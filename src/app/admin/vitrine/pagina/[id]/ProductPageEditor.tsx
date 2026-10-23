@@ -17,6 +17,7 @@ import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
 import { GeradorImagemSheet } from "@/components/ui/GeradorImagemSheet";
 import { AjusteFoto } from "@/components/ui/AjusteFoto";
+import { PALETTE_GROUPS } from "@/lib/showcase";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
 import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 
@@ -48,6 +49,8 @@ type Item = {
   lista?: unknown;
   images?: unknown;
   status?: string;
+  footer_color?: string | null;
+  title_placement?: string | null;
 };
 
 const EYEBROW_LABEL: Record<string, string> = { product: "Produtos", service: "Serviços" };
@@ -56,6 +59,7 @@ const MAX_MIDIAS = 6;
 const noop = () => () => {};
 
 type Campos = Partial<{
+  footer_color: string | null;
   title: string;
   description: string | null;
   brand_label: string | null;
@@ -100,6 +104,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const montado = useSyncExternalStore(noop, () => true, () => false);
 
   const [titulo, setTitulo] = useState(item.title);
+  const [faixa, setFaixa] = useState<string | null>(item.footer_color ?? null);
   const [descricao, setDescricao] = useState(item.description ?? "");
   const [rotulo, setRotulo] = useState(item.brand_label ?? "");
   const [lista, setLista] = useState<Lista | null>(() => lerLista(item.lista));
@@ -644,6 +649,25 @@ export function ProductPageEditor({ business, item }: { business: Business; item
               {preco}
               <span className="ml-2 align-middle text-[11.5px] font-normal text-text-tertiary">o preço se edita no card</span>
             </p>
+          )}
+
+          {item.image_url && (
+            <div className="mt-5 rounded-3xl bg-surface-soft p-4">
+              <p className="text-[13px] font-semibold text-text-secondary">Cor da faixa do card</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">
+                {item.title_placement === "sobre" ? "Hoje o nome fica sobre a foto, então não há faixa. A cor vale quando o nome fica embaixo da foto." : "É a faixa embaixo da foto, onde ficam o nome e o preço."}
+              </p>
+              <div className="no-scrollbar mt-3 flex gap-2.5 overflow-x-auto pb-1">
+                <button type="button" onClick={() => { setFaixa(null); salvar({ footer_color: null }); }} aria-label="Branco" title="Branco" className={`h-10 w-10 shrink-0 rounded-full bg-white ${!faixa ? "ring-2 ring-on-background ring-offset-2" : "border border-divider"}`} />
+                {PALETTE_GROUPS.flatMap((g) => Object.entries(g.colors)).map(([chave, cc]) => (
+                  <button key={chave} type="button" onClick={() => { setFaixa(chave); salvar({ footer_color: chave }); }} aria-label={cc.label} title={cc.label} className={`h-10 w-10 shrink-0 rounded-full ${faixa === chave ? "ring-2 ring-on-background ring-offset-2" : "border border-divider"}`} style={{ backgroundColor: cc.bg }} />
+                ))}
+                <label className="relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-dashed border-text-tertiary text-[18px] text-text-secondary" title="Outra cor">
+                  +
+                  <input type="color" value={/^#[0-9a-f]{6}$/i.test(faixa ?? "") ? faixa! : "#888888"} onChange={(e) => setFaixa(e.target.value)} onBlur={(e) => salvar({ footer_color: e.target.value })} aria-label="Outra cor" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                </label>
+              </div>
+            </div>
           )}
 
           <div className="mt-5 flex items-center justify-between gap-2">
