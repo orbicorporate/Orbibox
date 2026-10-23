@@ -7,7 +7,7 @@ import type { Json } from "@/lib/supabase/types";
 import { lerLista, type Lista } from "@/lib/lista";
 import { ListaItensEditor } from "./ListaItensEditor";
 import { AnexoEditor } from "./AnexoEditor";
-import { lerAnexo, type Anexo } from "@/lib/anexo";
+import { anexosParaSalvar, lerAnexos, type Anexo } from "@/lib/anexo";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { galleryRatioOf, formatPrice, isVideoUrl, youtubeId, instagramReelId, type GalleryRatio } from "@/lib/showcase";
@@ -108,7 +108,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
   const [descricao, setDescricao] = useState(item.description ?? "");
   const [rotulo, setRotulo] = useState(item.brand_label ?? "");
   const [lista, setLista] = useState<Lista | null>(() => lerLista(item.lista));
-  const [anexo, setAnexo] = useState<Anexo | null>(() => lerAnexo(item.images));
+  const [anexos, setAnexos] = useState<Anexo[]>(() => lerAnexos(item.images));
   const [pergunta, setPergunta] = useState(item.orbi_hook ?? "");
   const [midias, setMidias] = useState<string[]>(item.gallery_urls ?? []);
   const arrastoFotos = useArrastarOrdem(midias, true, (nova) => {
@@ -181,9 +181,9 @@ export function ProductPageEditor({ business, item }: { business: Business; item
     salvar({ lista: l as unknown as Json });
   }
 
-  function salvarAnexo(a: Anexo | null) {
-    setAnexo(a);
-    salvar({ images: (a ? { anexo: a } : []) as unknown as Json });
+  function salvarAnexos(a: Anexo[]) {
+    setAnexos(a);
+    salvar({ images: anexosParaSalvar(a) as unknown as Json });
   }
 
   function salvarMidias(lista: string[]) {
@@ -625,7 +625,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             <button type="button" onClick={desfazerTexto} className="mt-1.5 min-h-[36px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Voltar ao texto anterior</button>
           )}
 
-          <AnexoEditor businessId={business.id} anexo={anexo} onChange={salvarAnexo} />
+          <AnexoEditor businessId={business.id} anexos={anexos} onChange={salvarAnexos} />
 
           <ListaItensEditor businessId={business.id} lista={lista} temWhatsapp={!!business.contact_whatsapp} onChange={salvarLista} />
 

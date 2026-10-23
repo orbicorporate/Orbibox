@@ -12,7 +12,7 @@ import { NudgeLead } from "@/components/mobile/NudgeLead";
 import { COVER_RATIO_BY_SIZE, galleryRatioOf, formatPrice, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { lerLista } from "@/lib/lista";
-import { lerAnexo } from "@/lib/anexo";
+import { lerAnexos } from "@/lib/anexo";
 import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
 import { AnexoProduto } from "@/components/ui/AnexoProduto";
 import { ListaItensView } from "./ListaItensView";
@@ -261,8 +261,8 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
         })()}
 
         {(() => {
-          const anexo = lerAnexo(item.images);
-          return anexo ? <AnexoProduto anexo={anexo} /> : null;
+          const anexos = lerAnexos(item.images);
+          return anexos.length > 0 ? <>{anexos.map((a, i) => <AnexoProduto key={`${a.url}-${i}`} anexo={a} />)}</> : null;
         })()}
 
         {(() => {
