@@ -1067,6 +1067,7 @@ function BoxEditor({
   const [cfg, setCfg] = useState<BoxConfig>(initial);
   const [colorModalOpen, setColorModalOpen] = useState(false);
   const [showAllIcons, setShowAllIcons] = useState(false);
+  const [iconesAbertos, setIconesAbertos] = useState(false);
   const [novoIconeAberto, setNovoIconeAberto] = useState(false);
   const color = cfg.color || "#111318";
   const animated = isAnimatedIcon(cfg.icon);
@@ -1095,7 +1096,24 @@ function BoxEditor({
     else if (cfg.color === "transparent") next.color = "#111318";
     setCfg(next);
     onSave(next);
+    setIconesAbertos(false);
   }
+
+  // Prévia do ícone escolhido, pra linha "Ícone" mostrar o que está valendo.
+  const previaIcone = (() => {
+    const ic = cfg.icon ?? "";
+    if (ic === "__orb__") return <OrbiParticleSphere size={32} colors={orbiColors ?? undefined} />;
+    if (ic === "__orbcheck__") return <OrbiParticleSphere size={32} variant="check" colors={orbiColors ?? undefined} />;
+    if (ic === "__orbwa__" || ic === "__wadisc__") return <OrbiContactDisc size={32} />;
+    if (ic === "__google__") return <OrbiGoogleIcon size={32} />;
+    if (ic === "__pin__") return <OrbiMapPin size={22} />;
+    if (EMOJI_STICKERS[ic]) return EMOJI_STICKERS[ic](30);
+    if (ic === "__logo__" && (cfg.logo_url ?? logoUrl)) {
+      // eslint-disable-next-line @next/next/no-img-element
+      return <img src={(cfg.logo_url ?? logoUrl) as string} alt="" className="h-full w-full object-cover" />;
+    }
+    return <span className="text-[16px]">{ic && !ic.startsWith("__") ? ic : "＋"}</span>;
+  })();
 
   return (
     <div className="mt-4 flex flex-col gap-5">
@@ -1210,177 +1228,173 @@ function BoxEditor({
         </Secao>
       )}
 
-      <Secao titulo="Visual" dica="Como o botão aparece na tela inicial.">
-      <Sub>Formato</Sub>
-      <div className="flex flex-wrap gap-2">
-        {([
-          { v: "auto", t: "Automático" },
-          { v: "medio", t: "Metade (lado a lado)" },
-          { v: "largo", t: "Linha toda" },
-        ] as const).map(({ v, t }) => (
+      <Secao titulo="Visual">
+        <div className="flex flex-col gap-2">
+          {!animated && (
+            <button
+              type="button"
+              onClick={() => setColorModalOpen(true)}
+              className="flex min-h-[52px] w-full items-center justify-between rounded-full border border-divider px-4"
+            >
+              <span className="text-[14px] font-medium">Cor</span>
+              <span className="swatch-metal h-8 w-8 rounded-full" style={{ "--swatch-color": color } as CSSProperties} />
+            </button>
+          )}
           <button
-            key={v}
-            onClick={() => { update({ layout: v }); if (!liveOnly) onSave({ ...cfg, layout: v }); }}
-            className={`rounded-full px-3.5 py-2 text-[13px] font-medium ${(cfg.layout ?? "auto") === v ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}
+            type="button"
+            onClick={() => setIconesAbertos((v) => !v)}
+            aria-expanded={iconesAbertos}
+            className="flex min-h-[52px] w-full items-center justify-between rounded-full border border-divider px-4"
           >
-            {t}
+            <span className="text-[14px] font-medium">Ícone</span>
+            <span className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-surface-soft">{previaIcone}</span>
+              <span className="text-[12px] text-text-tertiary">{iconesAbertos ? "Fechar" : "Trocar"}</span>
+            </span>
           </button>
-        ))}
-      </div>
-      <details className="group">
-        <summary className="cursor-pointer list-none text-[12px] text-text-tertiary">
-          Como funciona o formato? <span className="inline-block transition-transform group-open:rotate-180">▾</span>
-        </summary>
-        <p className="mt-1.5 text-[12px] leading-relaxed text-text-tertiary">
-          No automático, a Orbi decide o melhor formato pra não deixar espaço vazio na tela. Em &quot;Metade&quot;, se não houver outro botão pra formar par ao lado, ele vira linha toda de qualquer forma, pra nunca sobrar espaço.
-        </p>
-      </details>
-
-      {/* Ícone animado roda sempre com fundo transparente (regra do app) , 
-          então nem mostramos seletor de cor, só a prévia real do ícone. */}
-      {animated ? (
-        <div className="flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full">
-            {cfg.icon === "__orb__" ? (
-              <OrbiParticleSphere size={36} colors={orbiColors ?? undefined} />
-            ) : cfg.icon === "__orbcheck__" ? (
-              <OrbiParticleSphere size={36} variant="check" colors={orbiColors ?? undefined} />
-            ) : cfg.icon === "__orbwa__" || cfg.icon === "__wadisc__" ? (
-              <OrbiContactDisc size={36} />
-            ) : cfg.icon === "__google__" ? (
-              <OrbiGoogleIcon size={36} />
-            ) : cfg.icon === "__pin__" ? (
-              <OrbiMapPin size={26} />
-            ) : EMOJI_STICKERS[cfg.icon ?? ""] ? (
-              EMOJI_STICKERS[cfg.icon ?? ""](32)
-            ) : null}
-          </span>
-          <span className="text-[13px] leading-relaxed text-text-secondary">Esse ícone já vem com cor e movimento próprios, por isso não dá pra escolher um fundo atrás dele, ele aparece sozinho.</span>
+          {animated && <p className="px-2 text-[12px] leading-snug text-text-tertiary">Esse ícone já tem cor e movimento próprios, por isso não há fundo para escolher.</p>}
         </div>
-      ) : (
-        <>
-          <Sub>Cor</Sub>
-          <button
-            onClick={() => setColorModalOpen(true)}
-            className="flex items-center gap-2.5 self-start rounded-full border border-divider py-1.5 pl-1.5 pr-4"
-          >
-            <span className="swatch-metal h-8 w-8 rounded-full" style={{ "--swatch-color": color } as CSSProperties} />
-            <span className="text-[13px] font-medium">Escolher cor</span>
-          </button>
-        </>
-      )}
 
-      <Sub>Ícone</Sub>
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => pickIcon("__wadisc__")}
-          className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 ${cfg.icon === "__wadisc__" || cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
-        >
-          <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiContactDisc size={32} /></span>
-          <span className="text-[13px] font-medium">Contato</span>
-        </button>
-        <button
-          onClick={() => pickIcon("__google__")}
-          className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 ${cfg.icon === "__google__" ? "border-on-background" : "border-divider"}`}
-        >
-          <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiGoogleIcon size={32} /></span>
-          <span className="text-[13px] font-medium">Google</span>
-        </button>
-        <button
-          onClick={() => pickIcon("__pin__")}
-          className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 ${cfg.icon === "__pin__" ? "border-on-background" : "border-divider"}`}
-        >
-          <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={22} /></span>
-          <span className="text-[13px] font-medium">Localização</span>
-        </button>
-      </div>
-
-        <Sub>Animados</Sub>
-      <div className="flex flex-wrap gap-2">
-        {Object.entries(EMOJI_STICKERS).map(([key, render]) => (
-          <button
-            key={key}
-            onClick={() => pickIcon(key)}
-            aria-label={key.replace(/__/g, "")}
-            className={`flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 ${cfg.icon === key ? "border-on-background" : "border-transparent"}`}
-          >
-            {render(38)}
-          </button>
-        ))}
-      </div>
-
-      {(() => {
-        const gallery = Array.from(new Set([...(logoUrl ? [logoUrl] : []), ...(logoGallery ?? [])]));
-        return (
-          <div className="flex flex-col gap-2">
-            <Sub>Logo ou ícone da marca</Sub>
-            <div className="flex flex-wrap gap-2">
-              {gallery.map((url) => (
+        {iconesAbertos && (
+          <div className="acao-entra flex flex-col gap-3 rounded-2xl border border-divider p-3">
+      <Sub>Básicos</Sub>
+              <div className="flex flex-wrap gap-2">
                 <button
-                  key={url}
-                  onClick={() => { update({ icon: "__logo__", logo_url: url }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__", logo_url: url }); }}
-                  className={`h-11 w-11 overflow-hidden rounded-full border-2 ${cfg.icon === "__logo__" && (cfg.logo_url ?? logoUrl) === url ? "border-on-background" : "border-transparent"}`}
+                  onClick={() => pickIcon("__wadisc__")}
+                  className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 ${cfg.icon === "__wadisc__" || cfg.icon === "__orbwa__" ? "border-on-background" : "border-divider"}`}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt="" className="h-full w-full object-cover" />
+                  <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiContactDisc size={32} /></span>
+                  <span className="text-[13px] font-medium">Contato</span>
+                </button>
+                <button
+                  onClick={() => pickIcon("__google__")}
+                  className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 ${cfg.icon === "__google__" ? "border-on-background" : "border-divider"}`}
+                >
+                  <span className="h-8 w-8 overflow-hidden rounded-full"><OrbiGoogleIcon size={32} /></span>
+                  <span className="text-[13px] font-medium">Google</span>
+                </button>
+                <button
+                  onClick={() => pickIcon("__pin__")}
+                  className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 ${cfg.icon === "__pin__" ? "border-on-background" : "border-divider"}`}
+                >
+                  <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full"><OrbiMapPin size={22} /></span>
+                  <span className="text-[13px] font-medium">Localização</span>
+                </button>
+              </div>
+                <Sub>Animados</Sub>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(EMOJI_STICKERS).map(([key, render]) => (
+                  <button
+                    key={key}
+                    onClick={() => pickIcon(key)}
+                    aria-label={key.replace(/__/g, "")}
+                    className={`flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 ${cfg.icon === key ? "border-on-background" : "border-transparent"}`}
+                  >
+                    {render(38)}
+                  </button>
+                ))}
+              </div>
+        
+              {(() => {
+                const gallery = Array.from(new Set([...(logoUrl ? [logoUrl] : []), ...(logoGallery ?? [])]));
+                return (
+                  <div className="flex flex-col gap-2">
+                    <Sub>Logo ou ícone da marca</Sub>
+                    <div className="flex flex-wrap gap-2">
+                      {gallery.map((url) => (
+                        <button
+                          key={url}
+                          onClick={() => { update({ icon: "__logo__", logo_url: url }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__", logo_url: url }); }}
+                          className={`h-11 w-11 overflow-hidden rounded-full border-2 ${cfg.icon === "__logo__" && (cfg.logo_url ?? logoUrl) === url ? "border-on-background" : "border-transparent"}`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt="" className="h-full w-full object-cover" />
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setNovoIconeAberto((v) => !v)}
+                        aria-expanded={novoIconeAberto}
+                        aria-label="Cadastrar ícone da marca ou logo"
+                        className={`flex h-11 w-11 items-center justify-center rounded-full border-2 border-dashed text-[20px] ${novoIconeAberto ? "border-on-background text-on-background" : "border-divider text-text-tertiary"}`}
+                      >
+                        +
+                      </button>
+                    </div>
+                    {gallery.length === 0 && !novoIconeAberto && (
+                      <p className="text-[12px] text-text-secondary">Cadastre o logo ou os ícones da sua marca pra usar nos botões.</p>
+                    )}
+                    {novoIconeAberto && (
+                      <div className="rounded-2xl border border-divider p-3">
+                        <p className="mb-2 text-[12px] text-text-secondary">Envie um ícone da marca ou o logo. Ele fica salvo aqui e aparece pra escolher em todos os botões.</p>
+                        <ImageUpload
+                          value={null}
+                          businessId={businessId}
+                          lockedRatio="quadrado"
+                          promptKind="avatar"
+                          onChange={(url) => {
+                            if (!url) return;
+                            const next = { ...cfg, logo_url: url, icon: "__logo__" };
+                            setCfg(next);
+                            onSave(next);
+                            onNewLogo?.(url);
+                            setNovoIconeAberto(false);
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+        
+                <Sub>Emojis</Sub>
+              <div className="flex flex-wrap gap-1.5">
+                {(showAllIcons ? ICON_CHOICES : ICON_CHOICES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (
+                  <button
+                    key={ic}
+                    onClick={() => pickIcon(ic)}
+                    className={`flex h-9 w-9 items-center justify-center rounded-full border text-[14px] ${cfg.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}
+                  >
+                    {ic}
+                  </button>
+                ))}
+                {!showAllIcons && ICON_CHOICES.length > ICON_LIBRARY_PREVIEW_COUNT && (
+                  <button
+                    onClick={() => setShowAllIcons(true)}
+                    className="flex h-9 items-center justify-center rounded-full border border-dashed border-divider px-3 text-[12px] font-medium text-text-secondary"
+                  >
+                    Ver mais
+                  </button>
+                )}
+              </div>
+          </div>
+        )}
+
+        <details className="group rounded-2xl bg-surface-soft">
+          <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between px-4 text-[13.5px] font-medium">
+            <span>Tamanho do botão</span>
+            <span className="text-[12px] font-normal text-text-tertiary">{(cfg.layout ?? "auto") === "auto" ? "Automático" : cfg.layout === "medio" ? "Metade" : "Linha toda"}</span>
+          </summary>
+          <div className="px-4 pb-4">
+            <div className="flex flex-wrap gap-2">
+              {([
+                { v: "auto", t: "Automático" },
+                { v: "medio", t: "Metade" },
+                { v: "largo", t: "Linha toda" },
+              ] as const).map(({ v, t }) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => { update({ layout: v }); if (!liveOnly) onSave({ ...cfg, layout: v }); }}
+                  className={`rounded-full px-3.5 py-2 text-[13px] font-medium ${(cfg.layout ?? "auto") === v ? "bg-button-primary text-white" : "bg-surface-white text-text-secondary"}`}
+                >
+                  {t}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => setNovoIconeAberto((v) => !v)}
-                aria-expanded={novoIconeAberto}
-                aria-label="Cadastrar ícone da marca ou logo"
-                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 border-dashed text-[20px] ${novoIconeAberto ? "border-on-background text-on-background" : "border-divider text-text-tertiary"}`}
-              >
-                +
-              </button>
             </div>
-            {gallery.length === 0 && !novoIconeAberto && (
-              <p className="text-[12px] text-text-secondary">Cadastre o logo ou os ícones da sua marca pra usar nos botões.</p>
-            )}
-            {novoIconeAberto && (
-              <div className="rounded-2xl border border-divider p-3">
-                <p className="mb-2 text-[12px] text-text-secondary">Envie um ícone da marca ou o logo. Ele fica salvo aqui e aparece pra escolher em todos os botões.</p>
-                <ImageUpload
-                  value={null}
-                  businessId={businessId}
-                  lockedRatio="quadrado"
-                  promptKind="avatar"
-                  onChange={(url) => {
-                    if (!url) return;
-                    const next = { ...cfg, logo_url: url, icon: "__logo__" };
-                    setCfg(next);
-                    onSave(next);
-                    onNewLogo?.(url);
-                    setNovoIconeAberto(false);
-                  }}
-                />
-              </div>
-            )}
+            <p className="mt-2 text-[12px] leading-relaxed text-text-tertiary">No automático, a Orbi escolhe o melhor tamanho para não sobrar espaço vazio.</p>
           </div>
-        );
-      })()}
-
-        <Sub>Emojis</Sub>
-      <div className="flex flex-wrap gap-1.5">
-        {(showAllIcons ? ICON_CHOICES : ICON_CHOICES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (
-          <button
-            key={ic}
-            onClick={() => pickIcon(ic)}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border text-[14px] ${cfg.icon === ic ? "border-on-background bg-surface-soft" : "border-divider"}`}
-          >
-            {ic}
-          </button>
-        ))}
-        {!showAllIcons && ICON_CHOICES.length > ICON_LIBRARY_PREVIEW_COUNT && (
-          <button
-            onClick={() => setShowAllIcons(true)}
-            className="flex h-9 items-center justify-center rounded-full border border-dashed border-divider px-3 text-[12px] font-medium text-text-secondary"
-          >
-            Ver mais
-          </button>
-        )}
-      </div>
+        </details>
       </Secao>
 
       {onDelete && (
