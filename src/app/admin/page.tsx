@@ -124,6 +124,7 @@ export default async function HojePage() {
       progressoPct={progress.pct}
       pelaMetade={pelaMetade ? { businessId: b.id, semItens: (totalItens ?? 0) === 0, semBotoes: activeBoxes === 0, site: b.website_url ?? b.contact_site ?? null, instagram: b.instagram_handle ?? null } : null}
       perguntaRede={b.owner_id === user!.id && acesso.hasAiChat}
+      gratis={acesso.isFree}
       mostrarConvite={!acesso.subscription || acesso.subscription.status === "trialing"}
       passoFaltando={insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
       pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))}

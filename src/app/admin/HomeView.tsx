@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { UpgradeGratis } from "./UpgradeGratis";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
 import { QRCodeButton } from "@/components/ui/QRCodeButton";
 import { WelcomeBackBanner } from "./WelcomeBackBanner";
@@ -65,6 +66,7 @@ export type HomeViewProps = {
   progressoPct: number;
   pelaMetade: { businessId: string; semItens: boolean; semBotoes: boolean; site: string | null; instagram: string | null } | null;
   mostrarConvite: boolean;
+  gratis?: boolean;
   /** Dono com a Orbi (plano ou teste): vê a pergunta sobre rede de negócios até dispensar. */
   perguntaRede?: boolean;
   pendencias: { title: string; href: string }[];
@@ -73,7 +75,7 @@ export type HomeViewProps = {
 };
 
 /** A home do painel, só apresentação: os dados vêm prontos de page.tsx. */
-export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, pelaMetade, mostrarConvite, perguntaRede, pendencias, passoFaltando }: HomeViewProps) {
+export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, pelaMetade, mostrarConvite, gratis, perguntaRede, pendencias, passoFaltando }: HomeViewProps) {
   const cartao = "flex min-h-[92px] flex-col justify-between gap-3 rounded-[22px] bg-surface-white p-4 text-left ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]";
 
   return (
@@ -90,6 +92,8 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
           <QRCodeButton url={shareUrl} businessName={b.name} className="inline-flex min-h-[44px] items-center rounded-full border border-divider px-4 text-[14px] text-text-secondary">QR Code</QRCodeButton>
         </div>
       </div>
+
+      {gratis && <div className="-mx-4"><UpgradeGratis nome={b.name} /></div>}
 
       {teste && (teste.dias <= 2 ? (
         <Link href="/admin/planos" className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#FFF4E5] px-4 py-2.5 text-[13.5px] text-[#7A4A0B] ring-1 ring-[#F5DDB8]">
