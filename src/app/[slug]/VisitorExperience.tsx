@@ -201,7 +201,7 @@ export function VisitorExperience({
   // além de esconder os controles de edição, esconde o "voltar a editar",
   // porque quem controla a saída é o modal que abriu a prévia.
   const previewTravado = searchParams.get("preview") === "1";
-  const [previewMode, setPreviewMode] = useState(previewTravado);
+  const [previewMode, setPreviewMode] = useState(previewTravado || isOwner);
   const showOwnerControls = isOwner && !previewMode;
   // Pergunta digitada na tela cheia da CuradoriaOrbi, passa pro campo do
   // chat real já preenchida, pronta pra mandar, em vez de perder o que a
@@ -923,18 +923,26 @@ export function VisitorExperience({
         ) : null;
       })()}
       {isOwner && intent === null && previewMode && !previewTravado && (
-        <button
-          onClick={() => setPreviewMode(false)}
-          className="fixed right-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur"
-        >
-          ✎ Voltar a editar
-        </button>
+        <div className="fixed right-4 top-4 z-20 flex items-center gap-2">
+          <Link
+            href="/admin"
+            className="flex items-center gap-1.5 rounded-full bg-surface-white/90 px-3.5 py-2 text-[13px] font-medium text-text-secondary shadow-lg backdrop-blur"
+          >
+            Meu painel
+          </Link>
+          <button
+            onClick={() => setPreviewMode(false)}
+            className="flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur"
+          >
+            ✎ Editar
+          </button>
+        </div>
       )}
 
       {/* Centralizado só na tela inicial. Nas telas de conteúdo (vouchers,
           catálogo, sobre) centralizar empurrava tudo pra baixo e sobrava
           um vazio enorme no topo. */}
-      <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 lg:max-w-[960px] ${intent === null ? "justify-center py-16" : "justify-start py-8"}`}>
+      <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 lg:max-w-[960px] ${intent === null ? "justify-center pb-16 pt-28" : "justify-start py-8"}`}>
         {intent === null && <div ref={setSlotTopo} className={`absolute top-4 z-20 ${isOwner ? "left-4" : "right-4"}`} />}
         {intent === null && !isOwner && (
           <div className="absolute left-4 top-4 z-20">
