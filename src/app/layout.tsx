@@ -11,7 +11,7 @@ const geistSans = Geist({
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
   fallback: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
 });
 
