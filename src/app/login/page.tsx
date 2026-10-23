@@ -61,7 +61,7 @@ export default function LoginPage() {
           <OrbiOrb size={96} />
         </div>
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">
-          Entrar no Orbibox
+          Entrar no <span className="font-bold">Orbi</span><span className="font-light">box</span>
         </h1>
         <p className="mt-1 text-[15px] text-text-secondary">
           Acesse o painel do seu negócio.
