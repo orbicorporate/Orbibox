@@ -41,7 +41,7 @@ import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { CartaoItem } from "./CartaoItem";
-import { AdicionarBox, type ExtraBox, type NovoBox } from "./AdicionarBox";
+import { FolhaHome, type LinhaHome, type NovoBox, type Posicao, type CriarEm } from "./FolhaHome";
 import { BoxDestaque, lerDestaques, type Destaque, type BotaoDestaque } from "./BoxDestaque";
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
@@ -562,6 +562,8 @@ export function VisitorExperience({
     // Segue a ordem dos Smart Boxes, então reordenar aqui reordena lá também.
     const out: BolinhaVitrine[] = [];
     for (const o of todasOpcoes) {
+      // Quem foi para o destaque sai da fileira de bolinhas: cada coisa fica em um lugar só.
+      if (destaquesHome.some((d) => d.t === "botao" && d.id === o.key)) continue;
       const estilo = o.bolinha === "linha" ? "linha" : "cor";
       const base = { key: o.key, estilo, editavel: true, cor: o.bolinhaCor, logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual) : null } as const;
       if (o.atalho === "whatsapp") out.push({ ...base, rotulo: "WhatsApp", tipo: "whatsapp", onClick: o.onClick });
@@ -587,8 +589,10 @@ export function VisitorExperience({
     }
     return out;
   })();
-  const [adicionando, setAdicionando] = useState(false);
-  async function criarBox(novo: NovoBox): Promise<boolean> {
+  // Folha única "O que aparece na sua página". O "+" de cima abre já pensando em
+  // Bolinha, o de baixo em Destaque; é a mesma folha nos dois.
+  const [folha, setFolha] = useState<"bolinha" | "destaque" | null>(null);
+  async function criarBoxNaPosicao(novo: NovoBox, pos: "bolinha" | "destaque"): Promise<boolean> {
     const posicao = boxList.reduce((m, b) => Math.max(m, b.position), -1) + 1;
     const { data, error } = await supabase
       .from("smart_boxes")
@@ -597,36 +601,34 @@ export function VisitorExperience({
       .single();
     if (error || !data) return false;
     setBoxList((prev) => [...prev, data as BoxRow]);
+    if (pos === "destaque") await salvarDestaques([...destaquesHome, { t: "botao", id: (data as BoxRow).id }]);
     return true;
   }
-  // Botões que já existem mas estão desligados (ou que se montam em tela própria):
-  // aparecem na folha "Adicionar botão" para ligar com um toque.
-  const extrasAdicionar: ExtraBox[] = (() => {
-    const out: ExtraBox[] = [];
+  async function mudarLinha(l: LinhaHome, pos: Posicao) {
+    const sem = destaquesHome.filter((d) => !(d.t === l.tipo && d.id === l.id));
+    const proxima = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : sem;
+    if (l.tipo === "botao") {
+      const real = boxList.find((b) => b.id === l.id);
+      const ativo = pos !== "escondido";
+      if (real && real.is_active !== ativo) {
+        setBoxList((prev) => prev.map((b) => (b.id === l.id ? { ...b, is_active: ativo } : b)));
+        conferirSalvo(await supabase.from("smart_boxes").update({ is_active: ativo }).eq("id", l.id));
+      }
+    }
+    if (proxima.length !== destaquesHome.length || pos === "destaque") await salvarDestaques(proxima);
+  }
+  // O que ainda não existe e se monta em tela própria (Cardápio, Delivery, Materiais).
+  const criarEm: CriarEm[] = (() => {
+    const out: CriarEm[] = [];
     const acaoDe = (b: BoxRow) => (b.box_type === "custom" ? ((b.config ?? {}) as CustomConfig).action : undefined);
-    const por = (acao: string) => boxList.filter((b) => acaoDe(b) === acao);
-    const grupo = (acao: string, id: string, titulo: string, texto: string, href: string, pronto: (b: BoxRow) => boolean = () => true) => {
-      const todos = por(acao);
-      if (todos.some((b) => b.is_active)) return;
-      const desligado = todos.find((b) => !b.is_active && pronto(b));
-      if (desligado) out.push({ id: desligado.id, titulo, texto, tipo: "ativar" });
-      else out.push({ id, titulo, texto, tipo: "ir", href });
+    const grupo = (acao: string, id: string, titulo: string, texto: string, href: string) => {
+      if (!boxList.some((b) => acaoDe(b) === acao)) out.push({ id, titulo, texto, href });
     };
     grupo("cardapio", "cardapio-novo", "Cardápio", "Pratos e preços", "/admin/cardapio");
-    grupo("delivery", "delivery-novo", "Delivery", "iFood, Rappi e mais", "/admin/delivery", (b) => appsAtivos(((b.config ?? {}) as CustomConfig).apps).length > 0);
+    grupo("delivery", "delivery-novo", "Delivery", "iFood, Rappi e mais", "/admin/delivery");
     grupo("materiais", "materiais-novo", "Materiais", "PDFs e guias", "/admin/materiais");
-    const presentear = boxList.find((b) => b.box_type === "campaign");
-    if (presentear && !presentear.is_active) out.push({ id: presentear.id, titulo: "Presentear", texto: "Vale-presente", tipo: "ativar" });
-    const cupom = por("cupom");
-    if (hasVouchers && cupom.length > 0 && !cupom.some((b) => b.is_active)) out.push({ id: cupom[0].id, titulo: "Vouchers", texto: "Ofertas com código", tipo: "ativar" });
     return out;
   })();
-  async function ativarBox(id: string): Promise<boolean> {
-    const { error } = await supabase.from("smart_boxes").update({ is_active: true }).eq("id", id);
-    if (error) return false;
-    setBoxList((prev) => prev.map((b) => (b.id === id ? { ...b, is_active: true } : b)));
-    return true;
-  }
   // Ordem dos itens em destaque, mexida direto na Home (segurar e arrastar).
   // Grava na lista de destaques do dono, nunca na ordem do Catálogo. Se a Home
   // estava no automático, a ordem arrastada passa a ser a escolha do dono.
@@ -756,6 +758,7 @@ export function VisitorExperience({
         ? { tipo: "whatsapp", rotulo: "Falar no WhatsApp", onClick: zapBolinha?.onClick ?? (() => {}) }
         : { tipo: "vitrine", rotulo: vitOpcao?.t || "Ver catálogo", onClick: () => chooseIntent("comprar") };
   const extrasVitrine = todasOpcoes
+    .filter((o) => !destaquesHome.some((d) => d.t === "botao" && d.id === o.key))
     .filter((o) => !o.rede && !o.atalho && !o.cupom && o.acao !== "vitrine" && o.acao !== "comprar" && o.acao !== "presentear" && o.acao !== "gift" && o.acao !== "conhecer" && o.acao !== "cardapio" && o.acao !== "materiais")
     .filter((o) => !(ctaVitrine.tipo === "orbi" && (o.ai || o.acao === "zara" || o.acao === "duvida")))
     .map((o) => ({ key: o.key, rotulo: o.t, onClick: o.onClick }));
@@ -779,6 +782,31 @@ export function VisitorExperience({
     }
     return lista;
   })();
+
+  // Linhas da folha "O que aparece na sua página".
+  const linhasBotoes: LinhaHome[] = (() => {
+    const noDestaque = (id: string) => destaquesHome.some((d) => d.t === "botao" && d.id === id);
+    const ativos: LinhaHome[] = botoesDestaque.map((b) => ({ id: b.key, tipo: "botao", titulo: b.titulo, sub: b.sub, foto: b.logo, icone: b.icone, cor: b.cor, pos: noDestaque(b.key) ? "destaque" : "bolinha", semEscondido: !boxList.some((x) => x.id === b.key) }));
+    const jaTem = new Set(ativos.map((a) => a.id));
+    const desligados: LinhaHome[] = boxList
+      .filter((b) => !b.is_active && !jaTem.has(b.id) && b.box_type !== "agent")
+      .filter((b) => {
+        if (b.box_type !== "custom") return true;
+        const cfg = (b.config ?? {}) as CustomConfig;
+        if (cfg.action === "zara") return false;
+        if (cfg.action === "cupom" && !hasVouchers) return false;
+        if (cfg.action === "gift" && !giftEnabled) return false;
+        if (cfg.action === "delivery" && appsAtivos(cfg.apps).length === 0) return false;
+        return true;
+      })
+      .map((b) => {
+        const cfg = (b.config ?? {}) as CustomConfig;
+        const base = BOX_TO_OPTION[b.box_type];
+        return { id: b.id, tipo: "botao" as const, titulo: cfg.label || b.title || base?.t || "Botão", sub: "Desligado", foto: null, icone: cfg.icon || base?.icon || "◆", cor: "#111318", pos: "escondido" as Posicao };
+      });
+    return [...ativos, ...desligados];
+  })();
+  const linhasItens: LinhaHome[] = contentHome.map((i) => ({ id: i.id, tipo: "item", titulo: i.title, sub: i.brand_label ?? "", foto: i.image_url, pos: destaquesHome.some((d) => d.t === "item" && d.id === i.id) ? "destaque" : "bolinha" }));
 
   const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
     ? (business.hero_gradient as string[])
@@ -878,16 +906,20 @@ export function VisitorExperience({
           </div>
         );
       })()}
-      {isOwner && (
-        <AdicionarBox
-          aberto={adicionando}
-          onFechar={() => setAdicionando(false)}
+      {isOwner && folha && (
+        <FolhaHome
+          posicaoInicial={folha}
+          onFechar={() => setFolha(null)}
+          businessId={business.id}
+          botoes={linhasBotoes}
+          itens={linhasItens}
+          vouchersDestaque={destaquesHome.filter((d) => d.t === "voucher").map((d) => d.id)}
+          criarEm={criarEm}
           whatsappInicial={business.contact_whatsapp ?? ""}
           enderecoInicial={business.address ?? ""}
-          temVouchers={hasVouchers && !boxList.some((b) => b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "cupom")}
-          extras={extrasAdicionar}
-          onAtivar={ativarBox}
-          onCriar={criarBox}
+          onMudar={(l, pos) => void mudarLinha(l, pos)}
+          onCriarBox={criarBoxNaPosicao}
+          onPdfPronto={(id, pos) => { if (pos === "destaque") void salvarDestaques([...destaquesHome, { t: "botao", id }]); }}
         />
       )}
       {isOwner && intent === null && !previewMode && (
@@ -1076,6 +1108,7 @@ export function VisitorExperience({
                     botoes={botoesDestaque}
                     podeEditar={showOwnerControls}
                     onSalvar={salvarDestaques}
+                    onAbrirFolha={() => setFolha("destaque")}
                     onVoucher={(id) => router.push(`/${business.slug}?v=${id}`)}
                   />
                 }
@@ -1096,7 +1129,7 @@ export function VisitorExperience({
                 onRenomear={renomearBolinha}
                 onEsconder={esconderBolinha}
                 onSelo={definirSelo}
-                onAdicionar={() => setAdicionando(true)}
+                onAdicionar={() => setFolha("bolinha")}
               />
             )}
             {!estiloVitrine && (
@@ -1412,7 +1445,7 @@ export function VisitorExperience({
             </div>
 
             {showOwnerControls && (
-              <button type="button" onClick={() => setAdicionando(true)} className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-dashed border-on-background/30 text-[14.5px] font-medium text-text-secondary active:bg-surface-soft">
+              <button type="button" onClick={() => setFolha("bolinha")} className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-dashed border-on-background/30 text-[14.5px] font-medium text-text-secondary active:bg-surface-soft">
                 <span aria-hidden className="text-[18px] leading-none">＋</span> Adicionar botão
               </button>
             )}
