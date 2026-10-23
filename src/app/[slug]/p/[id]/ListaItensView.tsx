@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { trackClick, whatsappLink } from "@/lib/track";
 import { fotosDoItem, precoDoItem, urlSegura, type Lista, type ListaItem } from "@/lib/lista";
 
@@ -114,7 +115,7 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
       </div>
       )}
 
-      {aberto_ && (
+      {aberto_ && createPortal(
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={aberto_.nome}>
           <button type="button" aria-label="Fechar" onClick={() => setAberto(null)} className="veu-entra absolute inset-0 bg-black/40" />
           <div className="folha-sobe absolute inset-0 mx-auto h-full w-full max-w-[440px] overflow-y-auto overscroll-contain bg-background-main px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
@@ -168,7 +169,8 @@ export function ListaItensView({ lista, businessId, slug, paginaId, paginaTitulo
               </a>
             )}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </section>
   );
