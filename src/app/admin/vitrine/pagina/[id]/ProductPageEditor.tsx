@@ -7,6 +7,7 @@ import type { Json } from "@/lib/supabase/types";
 import { lerLista, type Lista } from "@/lib/lista";
 import { ListaItensEditor } from "./ListaItensEditor";
 import { AnexoEditor } from "./AnexoEditor";
+import { IconeBolinha } from "./IconeBolinha";
 import { anexosParaSalvar, lerAnexos, type Anexo } from "@/lib/anexo";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
@@ -98,7 +99,7 @@ function promptFoto(titulo: string, descricao: string, ratio: GalleryRatio, nego
   return linhas.filter((l, i, arr) => l !== "" || (i > 0 && arr[i - 1] !== "")).join("\n").trim();
 }
 
-export function ProductPageEditor({ business, item }: { business: Business; item: Item }) {
+export function ProductPageEditor({ business, item, bolinha }: { business: Business; item: Item; bolinha?: { logo: string | null; logoMarca: string | null } | null }) {
   const router = useRouter();
   const supabase = createClient();
   const montado = useSyncExternalStore(noop, () => true, () => false);
@@ -624,6 +625,8 @@ export function ProductPageEditor({ business, item }: { business: Business; item
           {descAnterior !== null && !gerandoTexto && (
             <button type="button" onClick={desfazerTexto} className="mt-1.5 min-h-[36px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Voltar ao texto anterior</button>
           )}
+
+          {bolinha && <IconeBolinha businessId={business.id} itemId={item.id} fotoItem={capa} logoMarca={bolinha.logoMarca} inicial={bolinha.logo} />}
 
           <AnexoEditor businessId={business.id} anexos={anexos} onChange={salvarAnexos} />
 
