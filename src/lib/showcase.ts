@@ -254,41 +254,36 @@ export function formatPrice(item: { price: number | null; price_type?: string | 
   }
 }
 
-/** Biblioteca de ícones do app: a base é geométrica e minimalista, mesmo
- * estilo simples que combina com qualquer paleta, mas também tem emojis
- * coloridos (chat, dinheiro, e agora presente/voucher/expressões), pros
- * casos em que cor e expressividade ajudam mais que combinar com a cor do
- * box.
+/** Biblioteca de ícones do app. Poucas formas simples (que combinam com qualquer
+ * paleta) e muitos emojis coloridos por assunto, todos bem diferentes entre si.
+ * Ícones já salvos em boxes antigos seguem funcionando mesmo se não estiverem aqui.
  * "\uFE0E" força a versão em texto (preto e branco) de símbolos que alguns
- * sistemas tentam renderizar como emoji colorido (telefone, aviso, etc.). */
+ * sistemas tentam renderizar como emoji colorido. */
 export const ICON_LIBRARY = [
-  // Formas
-  "◆", "◇", "◈", "○", "●", "◎", "□", "■", "▢", "▣",
-  "△", "▲", "▽", "▼", "◫", "◧", "◨", "◩", "◪", "⬡",
-  "⬢", "⬣", "◐", "◑",
-  // Destaque / novidade
-  "✦", "✧", "★", "☆", "✳\uFE0E", "✴\uFE0E", "✷", "✸", "✱", "❋",
-  // Ação / navegação
-  "⌘", "⏱\uFE0E", "⚙\uFE0E", "⚡\uFE0E", "➜", "→", "✓", "✔", "⊕", "⌖",
-  // Contato / comunicação
-  "☎\uFE0E", "✉\uFE0E", "✆\uFE0E", "@", "✎\uFE0E", "❝", "❞", "„", "‟", "»", "⚑", "⚐",
-  // Chat / conversa / balões de mensagem
-  "💬", "🗨\uFE0E", "🗯\uFE0E",
-  // Dinheiro
-  "$", "¤",
-  // Pessoas
-  "👤\uFE0E", "⚉",
-  // Endereço / localização
-  "✛", "⊚",
+  // Mais usados (aparecem antes de "Ver mais")
+  "🍴", "🍽\uFE0F", "☕", "🍕", "🍔", "🍰", "🥂", "🍷",
+  "🛍\uFE0F", "👗", "💇", "💅", "🎁", "🎟\uFE0F", "💰", "🏷\uFE0F",
+  "📍", "📞", "💬", "📅", "📷", "⭐", "🔥", "🚀",
+  // Comida e bebida
+  "🍺", "🥗", "🍣", "🥩", "🍦", "🥖", "🍫", "🍹", "🍳", "🌮", "🍇", "🥑",
+  // Beleza e saúde
+  "✂\uFE0F", "💄", "🧴", "🪞", "💆", "🩺", "💊", "🦷", "🧘", "❤\uFE0F",
+  // Esporte e lazer
+  "🏋\uFE0F", "⚽", "🚴", "🏊", "🎾", "🎵", "🎮", "🎬", "🎤", "🎨",
+  // Casa, obra e serviços
+  "🏠", "🔧", "🧰", "🔑", "🛠\uFE0F", "💡", "🧹", "🪴",
+  // Veículos e entrega
+  "🚗", "🚚", "🛵", "✈\uFE0F", "📦",
+  // Moda e compras
+  "👕", "👟", "👜", "💍", "💎", "🕶\uFE0F", "🧸", "🎈",
+  // Natureza e animais
+  "🐶", "🐱", "🌿", "🌸", "☀\uFE0F", "🌊", "🍀", "🦋",
+  // Negócio e contato
+  "🏆", "🎉", "📣", "📋", "✉\uFE0F", "🕐", "🌐", "📱", "💳", "🤝", "🎓", "📚",
   // Expressões
-  "☺\uFE0E", "☻\uFE0E",
-  // Atenção
-  "⚠\uFE0E", "‼",
-  // Comercial / promoção, coloridos: presente, voucher, dinheiro, desconto,
-  // aprovação e oportunidade, pros boxes de Presentear, Vouchers etc.
-  "🎁", "🎟\uFE0F", "💰", "🏷\uFE0F", "✅", "🚀", "💯",
-  // Expressões, coloridas
-  "😊", "😄", "🥳",
+  "😊", "😍", "🥳", "👍", "🙏", "👋",
+  // Formas e símbolos simples
+  "◆", "●", "★", "✦", "→", "✓", "⚡\uFE0E", "@", "$", "‼",
 ];
 
 /** Primeiros ícones mostrados antes de tocar em "Ver mais", os mais comuns. */
