@@ -48,7 +48,7 @@ async function upsertFromSubscription(subscription: Stripe.Subscription, ownerId
   const planId = planIdFromPriceId(subscription);
   const item = subscription.items.data[0];
 
-  await supabase
+  const { error } = await supabase
     .from("subscriptions")
     .upsert(
       {
@@ -69,6 +69,8 @@ async function upsertFromSubscription(subscription: Stripe.Subscription, ownerId
       },
       { onConflict: "owner_id" }
     );
+  // Sem isso, uma falha ao gravar passava em silencio e o Stripe achava que deu certo.
+  if (error) throw new Error(`Nao consegui gravar a assinatura: ${error.message} (${error.code ?? "sem codigo"})`);
 
   // A indicação agora é creditada no invoice.paid (primeira fatura paga de
   // verdade, plano mensal ou anual), não mais aqui.
