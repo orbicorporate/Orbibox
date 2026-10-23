@@ -1,5 +1,6 @@
 "use client";
 
+import { origemPublica } from "@/lib/appUrl";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -430,7 +431,7 @@ export default function OnboardingPage() {
     setPronto({
       nome: name,
       slug,
-      link: `${window.location.origin}/${slug}`,
+      link: `${origemPublica()}/${slug}`,
       orbColors: cores,
       objetivo: obj,
       conversao: conv,

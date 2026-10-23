@@ -1,5 +1,6 @@
 "use client";
 
+import { origemPublica } from "@/lib/appUrl";
 import { useState } from "react";
 import { FolhaCompartilhar, type AlvoCompartilhar } from "@/components/compartilhar/Compartilhar";
 
@@ -11,7 +12,7 @@ export function PedirAvaliacaoCard({ nome, slug, shareUrl, imagem, logo }: { nom
   const [alvo, setAlvo] = useState<AlvoCompartilhar | null>(null);
   function abrir() {
     let origem = "";
-    try { origem = new URL(shareUrl).origin; } catch { origem = window.location.origin; }
+    try { origem = new URL(shareUrl).origin; } catch { origem = origemPublica(); }
     setAlvo({
       url: `${origem}/${slug}?clube=avaliar`,
       titulo: "Avaliação",

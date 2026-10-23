@@ -1,5 +1,6 @@
 "use client";
 
+import { origemPublica } from "@/lib/appUrl";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -71,7 +72,7 @@ export function EmbaixadoresManager({ embaixadores: iniciais, bonusLinks: bonusI
   const [bonusKind, setBonusKind] = useState<"days_30" | "days_90" | "lifetime">("days_30");
   const [bonusMax, setBonusMax] = useState("");
 
-  const base = typeof window !== "undefined" ? window.location.origin : "";
+  const base = typeof window !== "undefined" ? origemPublica() : "";
 
   async function copiar(texto: string, id: string) {
     try {

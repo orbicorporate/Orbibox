@@ -1,5 +1,6 @@
 "use client";
 
+import { origemPublica } from "@/lib/appUrl";
 import { useState } from "react";
 import Link from "next/link";
 import { OrbiWorking } from "@/components/orbi/OrbiWorking";
@@ -109,7 +110,7 @@ export function PulseMarketing({ businessId, slug, shareReady = true, sobreFeito
     }
   }
 
-  const linkPublico = typeof window !== "undefined" ? `${window.location.origin}/${slug}` : `/${slug}`;
+  const linkPublico = typeof window !== "undefined" ? `${origemPublica()}/${slug}` : `/${slug}`;
 
   return (
     <div className="mt-10">

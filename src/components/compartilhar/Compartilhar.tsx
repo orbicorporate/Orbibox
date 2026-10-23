@@ -1,5 +1,6 @@
 "use client";
 
+import { origemPublica } from "@/lib/appUrl";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -27,8 +28,15 @@ export type AlvoCompartilhar = {
 };
 
 function urlCompleta(u: string) {
-  if (/^https?:\/\//.test(u)) return u;
-  return `${window.location.origin}${u.startsWith("/") ? "" : "/"}${u}`;
+  if (/^https?:\/\//.test(u)) {
+    // Link antigo no endereço da Vercel vira o endereço oficial.
+    try {
+      const x = new URL(u);
+      if (x.hostname.endsWith(".vercel.app")) return `${origemPublica()}${x.pathname}${x.search}${x.hash}`;
+    } catch {}
+    return u;
+  }
+  return `${origemPublica()}${u.startsWith("/") ? "" : "/"}${u}`;
 }
 
 export function IconeCompartilhar({ tam = 20 }: { tam?: number }) {

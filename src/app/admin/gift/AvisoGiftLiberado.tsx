@@ -1,10 +1,11 @@
 "use client";
 
+import { origemPublica } from "@/lib/appUrl";
 import { linkWhatsAviso, type GiftParaAviso } from "@/lib/giftAviso";
 
 /** Depois de liberar: o próximo passo é avisar quem comprou, com link e código. */
 export function AvisoGiftLiberado({ gift, negocio, aoFechar }: { gift: GiftParaAviso; negocio: string; aoFechar: () => void }) {
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const origin = typeof window !== "undefined" ? origemPublica() : "";
   const href = linkWhatsAviso(gift, negocio, origin);
   const quem = gift.from_name || "quem comprou";
   return (
