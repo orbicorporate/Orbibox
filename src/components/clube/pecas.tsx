@@ -170,7 +170,7 @@ export function Orbita({ itens, aneis, centro }: { itens: ItemOrbita[]; aneis: {
   return (
     <div ref={host} className="cl-orbita">
       {aneis.map((a, k) => (
-        <span key={k} className="cl-disco" style={{ width: `${a.r * 200 + 11}%`, height: `${a.r * 200 + 11}%`, opacity: 1 - k * 0.12, ...(a.cor ? { background: `${a.cor}14`, boxShadow: `inset 0 0 0 1px ${a.cor}26` } : null) }} />
+        <span key={k} className="cl-disco" style={{ width: `${a.r * 200 + 11}%`, height: `${a.r * 200 + 11}%`, opacity: 1 - k * 0.12, ...(a.cor ? { background: `${a.cor}09`, boxShadow: `inset 0 0 0 1px ${a.cor}15` } : null) }} />
       ))}
       <div className="cl-centro">{centro}</div>
       {itens.map((it, i) => (

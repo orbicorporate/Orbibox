@@ -605,23 +605,21 @@ const CAP_ANEL = [6, 9, 12];
 const TAM = [46, 40, 36];
 
 /** Linha de ajuste com chave liga/desliga (um toque em qualquer parte da linha). */
-function LinhaAjuste({ titulo, detalhe, ligado, ocupado, aoAlternar, separador = false }: { titulo: string; detalhe: string; ligado: boolean; ocupado: boolean; aoAlternar: () => void; separador?: boolean }) {
+function LinhaAjuste({ titulo, ligado, ocupado, aoAlternar }: { titulo: string; detalhe?: string; ligado: boolean; ocupado: boolean; aoAlternar: () => void; separador?: boolean }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={ligado}
+      aria-label={titulo}
       disabled={ocupado}
       onClick={aoAlternar}
-      className={`flex min-h-[56px] w-full items-center gap-3 px-4 py-2.5 text-left active:bg-surface-soft disabled:opacity-60 ${separador ? "border-t border-divider" : ""}`}
+      className="flex min-h-[92px] flex-1 flex-col items-center justify-center gap-2.5 px-2 py-3 text-center active:bg-surface-soft disabled:opacity-60"
     >
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-[14.5px] font-semibold leading-tight text-on-background">{titulo}</span>
-        <span className="mt-0.5 block truncate text-[12px] leading-snug text-text-secondary">{detalhe}</span>
-      </span>
-      <span aria-hidden className={`relative h-[24px] w-[40px] shrink-0 rounded-full transition-colors ${ligado ? "bg-[#111318]" : "bg-[#D9D7D1]"}`}>
+      <span aria-hidden className={`relative h-[24px] w-[40px] shrink-0 rounded-full transition-colors ${ligado ? "bg-[#111318]" : "bg-[#E4E2DC]"}`}>
         <span className={`absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white shadow transition-all ${ligado ? "left-[19px]" : "left-[3px]"}`} />
       </span>
+      <span className="block text-[13px] font-medium leading-tight text-on-background">{titulo}</span>
     </button>
   );
 }
@@ -846,33 +844,28 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                   {eu.ehFa ? "Você é fã" : "Virar fã"}
                 </button>
                 {eu.logado && eu.userId && (
-                  <div className="mt-2 w-full max-w-[360px] overflow-hidden rounded-[24px] bg-white ring-1 ring-divider">
+                  <div className="mt-2 flex w-full max-w-[360px] items-stretch divide-x divide-divider overflow-hidden rounded-[24px] bg-white ring-1 ring-divider">
                     {eu.ehFa && (
                       <>
                         <LinhaAjuste
-                          titulo="Novidades no WhatsApp"
+                          titulo="WhatsApp"
                           detalhe={`Promoções e avisos de ${nome}`}
                           ligado={eu.aceiteWhatsapp}
                           ocupado={salvandoAjuste === "whats"}
                           aoAlternar={alternarWhats}
                         />
                         <LinhaAjuste
-                          titulo="Mostrar minhas marcas"
+                          titulo="Minhas marcas"
                           detalhe="Outros fãs veem suas marcas"
                           ligado={eu.mostrarMarcas}
                           ocupado={salvandoAjuste === "marcas"}
                           aoAlternar={alternarMarcas}
-                          separador
                         />
                       </>
                     )}
-                    <label className={`flex min-h-[56px] cursor-pointer items-center gap-3 px-4 py-2.5 ${eu.ehFa ? "border-t border-divider" : ""}`}>
-                      <Rosto url={eu.foto} nome={eu.nome} size={36} />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[14.5px] font-semibold leading-tight text-on-background">Minha foto</span>
-                        <span className="mt-0.5 block truncate text-[12px] leading-snug text-text-secondary">{enviandoFoto ? "Enviando…" : "Aparece ao lado do seu nome"}</span>
-                      </span>
-                      <span className="flex min-h-[32px] shrink-0 items-center rounded-full bg-surface-soft px-3.5 text-[12.5px] font-semibold text-on-background">{eu.foto ? "Trocar" : "Adicionar"}</span>
+                    <label className="flex min-h-[92px] flex-1 cursor-pointer flex-col items-center justify-center gap-2.5 px-2 py-3 text-center active:bg-surface-soft">
+                      <Rosto url={eu.foto} nome={eu.nome} size={28} />
+                      <span className="block text-[13px] font-medium leading-tight text-on-background">{enviandoFoto ? "Enviando…" : "Minha foto"}</span>
                       <input
                         type="file"
                         accept="image/*"
