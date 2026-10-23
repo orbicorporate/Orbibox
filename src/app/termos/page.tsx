@@ -9,7 +9,7 @@ export default function TermosPage() {
       <p>Ao usar o Orbibox, você concorda com estes termos. Se não concordar, não use o serviço.</p>
 
       <Secao titulo="O que é o Orbibox">
-        <p>Uma plataforma para negócios criarem uma página inteligente com a Orbi, vitrine de produtos, voucher e um clube de fãs.</p>
+        <p>Uma plataforma para negócios criarem uma página inteligente com a Orbi, vitrine de produtos, voucher e um radar de fãs.</p>
       </Secao>
 
       <Secao titulo="Sua conta">

@@ -69,7 +69,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     (async () => {
       const e = await recarregar();
       if (!vivo || !e.logado) return;
-      // Ver as marcas dos outros fãs faz parte do Clube: fica sempre ligado.
+      // Ver as marcas dos outros fãs faz parte do Radar de fãs: fica sempre ligado.
       if (e.userId && !e.mostrarMarcas) void atualizarPerfil(e.userId, { mostrar_marcas: true });
       let p: string | null = null;
       try { p = sessionStorage.getItem(chave(slug)); sessionStorage.removeItem(chave(slug)); } catch { /* ignora */ }
@@ -397,7 +397,7 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Entrar no clube"
+        aria-label="Entrar no radar de fãs"
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-[440px] rounded-t-[32px] bg-background-main px-5 pb-[max(24px,env(safe-area-inset-bottom))] pt-5 shadow-[0_-12px_40px_rgba(0,0,0,0.2)]"
         style={reduzido ? undefined : { animation: "cl-sobe .42s cubic-bezier(.22,1,.36,1) both" }}
@@ -405,7 +405,7 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">
-              Entrar no clube
+              Entrar no radar de fãs
             </h2>
             <p className="mt-1 text-[14px] text-text-secondary">
               Vire fã, ganhe vantagens exclusivas e avalie com rosto e nome.
@@ -739,7 +739,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
         <>
           <div className="cl-entra flex items-start justify-between gap-3 px-5 pb-3 pt-[max(18px,env(safe-area-inset-top))]" style={{ ["--i" as string]: 0 }}>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[11.5px] uppercase tracking-[0.16em] text-text-tertiary">{resumo.fas === 0 ? "Seja o primeiro fã" : `Clube de ${nome}`}</p>
+              <p className="truncate text-[11.5px] uppercase tracking-[0.16em] text-text-tertiary">{resumo.fas === 0 ? "Seja o primeiro fã" : `Radar de fãs de ${nome}`}</p>
               <div className="mt-2 flex items-center gap-4">
                 <h2 className="flex items-baseline gap-2 font-[family-name:var(--font-manrope)] font-light tracking-[-0.03em] text-on-background">
                   <span className="text-[60px] leading-[0.9] tabular-nums">{resumo.fas}</span>
@@ -846,7 +846,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                   {eu.ehFa ? "Você é fã" : "Virar fã"}
                 </button>}
                 <BotaoCompartilhar
-                  alvo={{ url: `/${slug}`, titulo: nome, rotulo: "Clube", marca: nome, imagem: logoUrl, logo: logoUrl, texto: `Conhece ${nome}? Dá uma olhada:` }}
+                  alvo={{ url: `/${slug}`, titulo: nome, rotulo: "Radar de fãs", marca: nome, imagem: logoUrl, logo: logoUrl, texto: `Conhece ${nome}? Dá uma olhada:` }}
                   className="flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 text-[14px] font-normal text-text-secondary active:scale-[0.98]"
                 >
                   <span>Convidar um amigo</span>
@@ -911,7 +911,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
           <div className={`cl-camada ${fa ? "on" : ""}`} aria-hidden={!fa}>
             {fa && (
               <>
-                <Cabecalho titulo="Perfil do fã" sub={`Clube de ${nome}`} fechar={() => setFa(null)} rotuloFechar="Voltar aos fãs" />
+                <Cabecalho titulo="Perfil do fã" sub={`Radar de fãs de ${nome}`} fechar={() => setFa(null)} rotuloFechar="Voltar aos fãs" />
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-2">
                   <div className="flex flex-col items-center px-1 pb-2 pt-4 text-center">
                     <Rosto url={fa.foto_url} nome={fa.nome} size={96} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
