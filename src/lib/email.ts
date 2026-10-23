@@ -1,8 +1,6 @@
 const RESEND_API_URL = "https://api.resend.com/emails";
 
-// Enquanto não há domínio próprio verificado no Resend, o remetente de teste
-// só consegue entregar pro e-mail da conta dona do Resend. Trocar aqui assim
-// que o domínio (ex: cobranca@orbibox.app) estiver verificado lá.
+// Remetente com o domínio orbibox.app verificado no Resend.
 const FROM = "Orbibox <avisos@orbibox.app>";
 
 export async function sendEmail({
