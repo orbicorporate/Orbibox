@@ -8,6 +8,7 @@ import { caixaBloqueadaNoGratis } from "@/lib/planoGratis";
 import { filterLive } from "@/lib/scheduling";
 import { capaDoItem } from "@/lib/showcase";
 import { VisitorExperience } from "./VisitorExperience";
+import { APP_URL } from "@/lib/appUrl";
 
 /**
  * Preview do link (Open Graph), o que aparece quando alguém cola o link do
@@ -100,6 +101,7 @@ export async function generateMetadata({
   return {
     title: b.name,
     description: descricao,
+    alternates: { canonical: `/${slug}` },
     manifest: `/${slug}/manifest.webmanifest`,
     openGraph: {
       title: tituloPreview,
@@ -177,8 +179,23 @@ export default async function VisitorPage({
     ? (agentConfig.orbi_colors as string[])
     : null;
 
+  // Dados estruturados para buscadores e IAs: só o que a página pública já mostra.
+  const ld: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: business.name,
+    url: `${APP_URL}/${business.slug}`,
+  };
+  if (business.about_business) ld.description = String(business.about_business).slice(0, 300);
+  if (business.logo_url) ld.image = business.logo_url;
+  if (business.address) ld.address = { "@type": "PostalAddress", streetAddress: business.address };
+  if (business.contact_phone) ld.telephone = business.contact_phone;
+  if (business.instagram_handle) ld.sameAs = [`https://instagram.com/${String(business.instagram_handle).replace(/^@/, "")}`];
+  const ldJson = JSON.stringify(ld).replace(/</g, "\\u003c");
+
   return (
     <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson }} />
     <VisitorExperience
       business={business}
       content={content}
