@@ -119,7 +119,7 @@ export function Cabecalho({ titulo, sub, fechar, rotuloFechar = "Fechar" }: { ti
   return (
     <div className="cl-entra flex items-center justify-between gap-3 px-5 pb-2 pt-[max(18px,env(safe-area-inset-top))]" style={{ ["--i" as string]: 0 }}>
       <div className="min-w-0">
-        <h2 className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em] text-on-background">{titulo}</h2>
+        <h2 className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-normal tracking-[-0.02em] text-on-background">{titulo}</h2>
         {sub ? <p className="truncate text-[13px] text-text-tertiary">{sub}</p> : null}
       </div>
       <button type="button" onClick={fechar} aria-label={rotuloFechar} className="cl-x text-on-background active:scale-95">

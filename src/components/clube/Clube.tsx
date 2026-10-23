@@ -911,36 +911,36 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
           <div className={`cl-camada ${fa ? "on" : ""}`} aria-hidden={!fa}>
             {fa && (
               <>
-                <Cabecalho titulo={fa.nome || "Fã"} sub={marcas ? (marcas.length ? `Fã de ${marcas.length} ${marcas.length === 1 ? "marca" : "marcas"}` : "Perfil de fã") : "Carregando..."} fechar={() => setFa(null)} rotuloFechar="Voltar aos fãs" />
+                <Cabecalho titulo="Perfil do fã" sub={`Clube de ${nome}`} fechar={() => setFa(null)} rotuloFechar="Voltar aos fãs" />
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-2">
-                  <div className="flex items-center gap-4 px-1 py-2">
-                    <Rosto url={fa.foto_url} nome={fa.nome} size={72} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
-                    <div className="min-w-0">
-                      <p className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">{fa.nome || "Fã"}</p>
-                      <p className="text-[13.5px] text-text-secondary">Fã de {nome}</p>
-                      {fa.nivel != null && (
-                        <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold" style={{ background: `${NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor}1F`, color: NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor }}>
-                          <span className="h-2 w-2 rounded-full" style={{ background: NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor }} aria-hidden />
-                          {["Acabou de chegar", "Curtiu a marca", "Já comprou", "Já avaliou"][Math.min(3, Math.max(0, fa.nivel))]}
-                        </span>
-                      )}
-                    </div>
+                  <div className="flex flex-col items-center px-1 pb-2 pt-4 text-center">
+                    <Rosto url={fa.foto_url} nome={fa.nome} size={96} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
+                    <p className="mt-3 max-w-full truncate font-[family-name:var(--font-manrope)] text-[24px] font-normal tracking-[-0.02em]">{fa.nome || "Fã"}</p>
+                    <p className="mt-0.5 text-[13.5px] text-text-secondary">
+                      Fã de {nome}{marcas && marcas.length > 1 ? ` e de mais ${marcas.length - 1} ${marcas.length - 1 === 1 ? "marca" : "marcas"}` : ""}
+                    </p>
+                    {fa.nivel != null && (
+                      <span className="mt-2.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12.5px] font-normal" style={{ background: `${NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor}1F`, color: NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor }}>
+                        <span className="h-2 w-2 rounded-full" style={{ background: NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor }} aria-hidden />
+                        {["Acabou de chegar", "Curtiu a marca", "Já comprou", "Já avaliou"][Math.min(3, Math.max(0, fa.nivel))]}
+                      </span>
+                    )}
                   </div>
 
                   {avaliacaoDoFa && (
-                    <div className="mt-3 rounded-[28px] bg-surface-white p-4 ring-1 ring-divider">
-                      <p className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Avaliação de {nome}</p>
-                      <div className="mt-1.5 flex items-center gap-0.5" aria-label={`Nota ${avaliacaoDoFa.nota} de 5`}>
-                        {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= avaliacaoDoFa.nota} tam={18} />)}
+                    <div className="mt-4 rounded-[28px] bg-surface-white p-5 ring-1 ring-divider">
+                      <p className="text-[11.5px] uppercase tracking-[0.14em] text-text-tertiary">Avaliação de {nome}</p>
+                      <div className="mt-2 flex items-center gap-1" aria-label={`Nota ${avaliacaoDoFa.nota} de 5`}>
+                        {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= avaliacaoDoFa.nota} tam={20} />)}
                       </div>
-                      {avaliacaoDoFa.comentario ? <p className="mt-2 text-[14.5px] leading-snug text-on-background">{avaliacaoDoFa.comentario}</p> : null}
+                      {avaliacaoDoFa.comentario ? <p className="mt-3 text-[15px] leading-relaxed text-on-background">{avaliacaoDoFa.comentario}</p> : null}
                       {avaliacaoDoFa.resposta_dono ? (
-                        <p className="mt-2 rounded-2xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary"><b className="font-semibold text-on-background">Resposta da marca:</b> {avaliacaoDoFa.resposta_dono}</p>
+                        <p className="mt-2 rounded-2xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary"><span className="text-on-background">Resposta da marca:</span> {avaliacaoDoFa.resposta_dono}</p>
                       ) : null}
                     </div>
                   )}
 
-                  <p className="mb-2 mt-5 px-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Marcas que {fa.nome ? `o ${fa.nome}` : "esse fã"} é fã</p>
+                  <p className="mb-2.5 mt-6 px-1 text-[11.5px] uppercase tracking-[0.14em] text-text-tertiary">Marcas que {fa.nome ? `o ${fa.nome}` : "esse fã"} é fã</p>
                   {marcas === null ? (
                     <p className="px-1 text-[14px] text-text-tertiary">Carregando...</p>
                   ) : marcas.length === 0 ? (
@@ -957,13 +957,18 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                                 {m.logo_url ? (
                                   // eslint-disable-next-line @next/next/no-img-element
                                   <img src={m.logo_url} alt="" className="h-full w-full object-contain p-1.5" />
-                                ) : <span className="text-[16px] font-extrabold">{m.name.charAt(0).toUpperCase()}</span>}
+                                ) : <span className="text-[16px] font-normal">{m.name.charAt(0).toUpperCase()}</span>}
                               </span>
                               <span className="min-w-0 flex-1">
-                                <span className="block truncate text-[15.5px] font-bold tracking-[-0.01em]">{m.name}</span>
+                                <span className="block truncate text-[15.5px] font-normal">{m.name}</span>
                                 <span className="block text-[12.5px] text-text-tertiary">{m.slug === slug ? "Você está aqui" : "Ver avaliações"}</span>
                               </span>
-                              <span aria-hidden className="grid h-10 w-8 flex-none place-items-center text-text-tertiary"><IcChev /></span>
+                              {!minha && nt ? (
+                                <span className="flex flex-none items-center gap-0.5" aria-label={`Nota ${nt.nota} de 5`}>
+                                  {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= nt.nota} tam={13} />)}
+                                </span>
+                              ) : null}
+                              <span aria-hidden className="grid h-10 w-6 flex-none place-items-center text-text-tertiary"><IcChev /></span>
                             </button>
                             {minha ? (
                               <div className="mt-0.5 flex items-center pl-[60px]" role="radiogroup" aria-label={`Sua nota para ${m.name}`}>
@@ -974,10 +979,6 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                                   </button>
                                 ))}
                               </div>
-                            ) : nt ? (
-                              <span className="mt-0.5 flex items-center gap-0.5 pb-1 pl-[60px]" aria-label={`Nota ${nt.nota} de 5`}>
-                                {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= nt.nota} tam={15} />)}
-                              </span>
                             ) : null}
                           </li>
                         );
@@ -986,7 +987,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                   )}
                 </div>
                 <div className="flex justify-center px-5 pb-[max(22px,env(safe-area-inset-bottom))] pt-2">
-                  <button type="button" onClick={() => setFa(null)} className="min-h-[48px] rounded-full bg-surface-soft px-7 text-[15px] font-semibold active:scale-95">Voltar aos fãs</button>
+                  <button type="button" onClick={() => setFa(null)} className="min-h-[48px] rounded-full bg-surface-soft px-7 text-[15px] font-normal active:scale-95">Voltar aos fãs</button>
                 </div>
               </>
             )}
