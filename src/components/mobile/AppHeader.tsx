@@ -17,13 +17,13 @@ const ICONES = {
   gift: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="9" width="16" height="11" rx="1.5" /><path d="M3 9h18" /><path d="M12 9v11" /><path d="M12 9c-1.5-3.5-5-4-5-1.5C7 9 12 9 12 9Zm0 0c1.5-3.5 5-4 5-1.5C17 9 12 9 12 9Z" /></svg>,
   imagens: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><circle cx="9" cy="10" r="1.7" /><path d="M20.5 16l-4.5-4.5L8 19.5" /></svg>,
   delivery: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8h12l-1 11H7L6 8Z" /><path d="M9 8V7a3 3 0 0 1 6 0v1" /></svg>,
+  pdf: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5a1.5 1.5 0 0 1 1-1.5Z" /><path d="M14 3.5V8h4" /><path d="M9 12.5h6M9 15.5h6" /></svg>,
   cardapio: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 3v8a2 2 0 0 0 2 2v8M7 3v5M11 3v5M9 3v5" /><path d="M16 21V3c-2 1.5-3 4-3 7 0 2 1 3 3 3" /></svg>,
 };
 const MENU_ITEMS = [
   { href: "/admin/config", label: "Sua marca", desc: "Logo, cores e contatos", icon: ICONES.marca, marca: true },
   { href: "/admin/imagens", label: "Banco de imagens", desc: "Fotos da marca, por categoria", icon: ICONES.imagens, marca: false },
   { href: "/admin/cardapio", label: "Cardápio e delivery", desc: "Pratos com foto e apps de pedido", icon: ICONES.cardapio, marca: false },
-  { href: "/admin/pdfs", label: "PDFs da marca", desc: "Cardápio de Natal, tabelas, catálogos", icon: ICONES.cardapio, marca: false },
   { href: "/admin/agent", label: "Sua IA", desc: "Tom de voz e o que sabe", icon: ICONES.ia, marca: false },
 ] as const;
 
@@ -268,6 +268,18 @@ export function AppHeader({
                   <span>
                     <span className="block text-[15px] font-semibold leading-tight">Gift Cards</span>
                     <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">Vale-presentes</span>
+                  </span>
+                </Link>
+
+                <Link
+                  href="/admin/pdfs"
+                  onClick={() => setMenuOpen(false)}
+                  className="col-span-2 flex min-h-[100px] flex-col justify-between rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97]"
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-on-background">{ICONES.pdf}</span>
+                  <span>
+                    <span className="block text-[15px] font-semibold leading-tight">PDFs da marca</span>
+                    <span className="mt-1 block text-[12.5px] leading-snug text-text-tertiary">Tabelas de preço, catálogos, materiais</span>
                   </span>
                 </Link>
               </div>
