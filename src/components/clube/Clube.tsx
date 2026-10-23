@@ -915,6 +915,22 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-2">
                   <div className="flex flex-col items-center px-1 pb-2 pt-4 text-center">
                     <Rosto url={fa.foto_url} nome={fa.nome} size={96} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
+                    {!!eu.userId && eu.userId === fa.id && (
+                      <label className="mt-3 inline-flex min-h-[40px] cursor-pointer items-center rounded-full bg-surface-soft px-5 text-[14px] text-on-background active:scale-95">
+                        {enviandoFoto ? "Enviando…" : "Trocar foto de perfil"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={(e) => {
+                            const arq = e.target.files?.[0];
+                            e.target.value = "";
+                            if (!arq) return;
+                            setFotoParaCortar(arq);
+                          }}
+                        />
+                      </label>
+                    )}
                     <p className="mt-3 max-w-full truncate font-[family-name:var(--font-manrope)] text-[24px] font-normal tracking-[-0.02em]">{fa.nome || "Fã"}</p>
                     <p className="mt-0.5 text-[13.5px] text-text-secondary">
                       Fã de {nome}{marcas && marcas.length > 1 ? ` e de mais ${marcas.length - 1} ${marcas.length - 1 === 1 ? "marca" : "marcas"}` : ""}
@@ -929,18 +945,21 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
 
                   {avaliacaoDoFa && (
                     <div className="mt-4 rounded-[28px] bg-surface-white p-5 ring-1 ring-divider">
-                      <p className="text-[11.5px] uppercase tracking-[0.14em] text-text-tertiary">Avaliação de {nome}</p>
-                      <div className="mt-2 flex items-center gap-1" aria-label={`Nota ${avaliacaoDoFa.nota} de 5`}>
-                        {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= avaliacaoDoFa.nota} tam={20} />)}
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="min-w-0 truncate text-[13px] text-text-secondary">Avaliação de {nome}</p>
+                        <span className="flex-none text-[22px] font-normal leading-none tracking-[-0.02em] tabular-nums">{avaliacaoDoFa.nota}<span className="text-[14px] text-text-tertiary">/5</span></span>
                       </div>
-                      {avaliacaoDoFa.comentario ? <p className="mt-3 text-[15px] leading-relaxed text-on-background">{avaliacaoDoFa.comentario}</p> : null}
+                      <div className="mt-2 flex items-center gap-1.5" aria-label={`Nota ${avaliacaoDoFa.nota} de 5`}>
+                        {[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= avaliacaoDoFa.nota} tam={24} />)}
+                      </div>
+                      {avaliacaoDoFa.comentario ? <p className="mt-4 border-t border-divider pt-4 text-[16px] leading-relaxed text-on-background">{avaliacaoDoFa.comentario}</p> : null}
                       {avaliacaoDoFa.resposta_dono ? (
-                        <p className="mt-2 rounded-2xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary"><span className="text-on-background">Resposta da marca:</span> {avaliacaoDoFa.resposta_dono}</p>
+                        <p className="mt-3 rounded-2xl bg-surface-soft px-4 py-3 text-[14px] leading-snug text-text-secondary"><span className="text-on-background">Resposta da marca:</span> {avaliacaoDoFa.resposta_dono}</p>
                       ) : null}
                     </div>
                   )}
 
-                  <p className="mb-2.5 mt-6 px-1 text-[11.5px] uppercase tracking-[0.14em] text-text-tertiary">Marcas que {fa.nome ? `o ${fa.nome}` : "esse fã"} é fã</p>
+                  <p className="mb-3 mt-8 border-t border-divider px-1 pt-6 text-[13px] text-text-secondary">Marcas que {fa.nome ? `o ${fa.nome}` : "esse fã"} é fã</p>
                   {marcas === null ? (
                     <p className="px-1 text-[14px] text-text-tertiary">Carregando...</p>
                   ) : marcas.length === 0 ? (
@@ -951,17 +970,17 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                         const minha = !!eu.userId && eu.userId === fa.id;
                         const nt = notasFa[m.id];
                         return (
-                          <li key={m.id} className="rounded-[28px] bg-surface-white p-2 ring-1 ring-divider">
+                          <li key={m.id} className="rounded-[28px] bg-surface-white p-2.5 ring-1 ring-divider">
                             <button type="button" onClick={() => void abrirAvaliacoesMarca(m)} aria-label={`Ver avaliações de ${m.name}`} className="flex w-full items-center gap-3 rounded-full text-left transition-transform active:scale-[0.99]">
-                              <span className="grid h-12 w-12 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
+                              <span className="grid h-14 w-14 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
                                 {m.logo_url ? (
                                   // eslint-disable-next-line @next/next/no-img-element
                                   <img src={m.logo_url} alt="" className="h-full w-full object-contain p-1.5" />
                                 ) : <span className="text-[16px] font-normal">{m.name.charAt(0).toUpperCase()}</span>}
                               </span>
                               <span className="min-w-0 flex-1">
-                                <span className="block truncate text-[15.5px] font-normal">{m.name}</span>
-                                <span className="block text-[12.5px] text-text-tertiary">{m.slug === slug ? "Você está aqui" : "Ver avaliações"}</span>
+                                <span className="block truncate text-[16.5px] font-normal">{m.name}</span>
+                                <span className="mt-0.5 block text-[13.5px] text-text-secondary">{m.slug === slug ? "Você está aqui" : "Ver avaliações"}</span>
                               </span>
                               {!minha && nt ? (
                                 <span className="flex flex-none items-center gap-0.5" aria-label={`Nota ${nt.nota} de 5`}>
@@ -971,7 +990,8 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                               <span aria-hidden className="grid h-10 w-6 flex-none place-items-center text-text-tertiary"><IcChev /></span>
                             </button>
                             {minha ? (
-                              <div className="mt-0.5 flex items-center pl-[60px]" role="radiogroup" aria-label={`Sua nota para ${m.name}`}>
+                              <div className="mx-2 mt-1.5 flex items-center gap-2 border-t border-divider pt-1.5" role="radiogroup" aria-label={`Sua nota para ${m.name}`}>
+                                <span className="mr-auto text-[13.5px] text-text-secondary">Sua nota</span>
                                 {[1, 2, 3, 4, 5].map((n) => (
                                   <button key={n} type="button" role="radio" aria-checked={nt?.nota === n} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"} para ${m.name}`}
                                     onClick={() => setNotaMarca({ marca: m, nota: n })} className="grid h-9 w-8 place-items-center active:scale-90">
