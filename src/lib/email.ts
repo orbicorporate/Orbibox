@@ -15,7 +15,7 @@ export async function sendEmail({
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.error("RESEND_API_KEY não configurada, e-mail não enviado:", subject, "para", to);
-    return;
+    return { ok: false, detail: "RESEND_API_KEY não configurada" };
   }
 
   const res = await fetch(RESEND_API_URL, {
@@ -30,5 +30,7 @@ export async function sendEmail({
   if (!res.ok) {
     const body = await res.text();
     console.error("Falha ao enviar e-mail via Resend:", res.status, body);
+    return { ok: false, detail: `${res.status} ${body}` };
   }
+  return { ok: true, detail: "" };
 }
