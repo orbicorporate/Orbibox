@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { GiftArt } from "@/components/mobile/GiftArt";
 
@@ -25,6 +26,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
   whatsapp: string | null;
   onBack: () => void;
 }) {
+  const pathname = usePathname() || "/";
   const [cfg, setCfg] = useState<Config | null>(null);
   const [valor, setValor] = useState<number>(100);
   const [customValor, setCustomValor] = useState("");
@@ -186,7 +188,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
               Liberar gift pelo WhatsApp
             </button>
           )}
-          <a href={`/gift/${criado.code}`} target="_blank" rel="noreferrer" className="mt-3 block rounded-full border border-divider bg-surface-white py-3 text-center text-[14px] font-medium">
+          <a href={`/gift/${criado.code}?de=${encodeURIComponent(pathname)}`} className="mt-3 block rounded-full border border-divider bg-surface-white py-3 text-center text-[14px] font-medium">
             Abrir meu gift (código {criado.code})
           </a>
           <p className="mt-3 text-center text-[12px] text-text-tertiary">Guarde esse código. Ele também fica no link acima.</p>

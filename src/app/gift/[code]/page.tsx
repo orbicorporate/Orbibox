@@ -3,8 +3,10 @@ import { GiftReveal } from "./GiftReveal";
 
 export const dynamic = "force-dynamic";
 
-export default async function GiftPublicPage({ params }: { params: Promise<{ code: string }> }) {
+export default async function GiftPublicPage({ params, searchParams }: { params: Promise<{ code: string }>; searchParams: Promise<{ de?: string }> }) {
   const { code } = await params;
+  const { de } = await searchParams;
+  const voltar = de && de.startsWith("/") && !de.startsWith("//") && !de.includes("\\") ? de : null;
   const supabase = await createClient();
   const { data } = await supabase.rpc("get_gift_card", { p_code: code });
 
@@ -22,5 +24,5 @@ export default async function GiftPublicPage({ params }: { params: Promise<{ cod
     );
   }
 
-  return <GiftReveal gift={gift} />;
+  return <GiftReveal gift={gift} voltar={voltar} />;
 }
