@@ -738,23 +738,23 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
       {(fechar) => (
         <>
           <div className="cl-entra flex items-start justify-between gap-3 px-5 pb-3 pt-[max(18px,env(safe-area-inset-top))]" style={{ ["--i" as string]: 0 }}>
-            <div className="min-w-0">
-              <div className="flex items-center gap-3">
-                <h2 className="flex items-baseline gap-2 font-[family-name:var(--font-manrope)] font-extrabold tracking-[-0.03em] text-on-background">
-                  <span className="text-[44px] leading-none tabular-nums">{resumo.fas}</span>
-                  <span className="text-[20px]">{resumo.fas === 1 ? "fã" : "fãs"}</span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[11.5px] uppercase tracking-[0.16em] text-text-tertiary">{resumo.fas === 0 ? "Seja o primeiro fã" : `Clube de ${nome}`}</p>
+              <div className="mt-2 flex items-center gap-4">
+                <h2 className="flex items-baseline gap-2 font-[family-name:var(--font-manrope)] font-light tracking-[-0.03em] text-on-background">
+                  <span className="text-[60px] leading-[0.9] tabular-nums">{resumo.fas}</span>
+                  <span className="text-[18px] font-normal tracking-normal text-text-secondary">{resumo.fas === 1 ? "fã" : "fãs"}</span>
                 </h2>
                 {resumo.recentes.length > 0 && (
-                  <div className="flex pl-1" aria-hidden>
+                  <div className="flex" aria-hidden>
                     {resumo.recentes.slice(0, 4).map((r, i) => (
                       <span key={r.id} className="-ml-2.5 rounded-full ring-2 ring-[var(--background-main,#fff)] first:ml-0" style={{ zIndex: 4 - i }}>
-                        <Rosto url={r.foto} nome={r.nome} size={30} />
+                        <Rosto url={r.foto} nome={r.nome} size={34} />
                       </span>
                     ))}
                   </div>
                 )}
               </div>
-              <p className="mt-1.5 truncate text-[13.5px] text-text-secondary">{resumo.fas === 0 ? "Seja o primeiro fã" : `Clube de ${nome}`}</p>
             </div>
             <button type="button" onClick={fechar} aria-label="Fechar" className="-mr-1 grid h-11 w-11 flex-none place-items-center rounded-full text-on-background active:scale-95">
               <IcX />
