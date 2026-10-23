@@ -44,6 +44,7 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
   const [erro, setErro] = useState<string | null>(null);
   const [galeria, setGaleria] = useState(false);
   const [prontas, setProntas] = useState(false);
+  const [escolhendo, setEscolhendo] = useState(false);
   const [recorte, setRecorte] = useState<File | null>(null);
 
   // Toda foto passa pelo recorte: o dono arrasta e aproxima dentro da forma do item (retrato).
@@ -115,7 +116,7 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
         <input ref={input} type="file" accept="image/*" className="hidden" onChange={(e) => enviar(e.target.files?.[0])} />
 
         <div className="mt-4 flex items-center gap-3">
-          <button type="button" onClick={() => input.current?.click()} disabled={subindo} aria-label={foto ? "Trocar foto" : "Adicionar foto"} className="flex h-[100px] w-20 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-surface-soft text-text-tertiary active:scale-[0.98]">
+          <button type="button" onClick={() => setEscolhendo(true)} disabled={subindo} aria-label={foto ? "Trocar foto" : "Adicionar foto"} className="flex h-[100px] w-20 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-surface-soft text-text-tertiary active:scale-[0.98]">
             {foto ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={foto} alt="" className="h-full w-full object-cover" />
@@ -147,7 +148,7 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
               </button>
             ))}
             {!cheiaFotos && (
-              <button type="button" onClick={() => input.current?.click()} disabled={subindo} aria-label="Adicionar outra foto" className="flex h-[60px] w-12 shrink-0 items-center justify-center rounded-xl border border-dashed border-text-tertiary/50 text-text-secondary active:scale-[0.96]">
+              <button type="button" onClick={() => setEscolhendo(true)} disabled={subindo} aria-label="Adicionar outra foto" className="flex h-[60px] w-12 shrink-0 items-center justify-center rounded-xl border border-dashed border-text-tertiary/50 text-text-secondary active:scale-[0.96]">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg>
               </button>
             )}
@@ -180,6 +181,27 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
           <button type="button" onClick={salvar} disabled={!nome.trim() || subindo} className="min-h-[48px] flex-1 rounded-full bg-on-background text-[14.5px] font-semibold text-white disabled:opacity-40">{novo ? "Adicionar item" : "Salvar"}</button>
         </div>
       </div>
+      {escolhendo && (
+        <div className="fixed inset-0 z-[75] flex items-end justify-center bg-black/40" onClick={() => setEscolhendo(false)}>
+          <div className="folha-sobe w-full max-w-[440px] rounded-t-[28px] bg-background-main p-5 pb-8" onClick={(e) => e.stopPropagation()}>
+            <p className="text-center font-[family-name:var(--font-manrope)] text-[17px] font-medium">De onde vem a foto?</p>
+            <div className="mt-4 flex flex-col gap-2.5">
+              <button type="button" onClick={() => { setEscolhendo(false); setGaleria(true); }} className="flex min-h-[56px] items-center justify-between rounded-2xl bg-on-background px-5 text-left text-[15px] font-medium text-white active:scale-[0.99]">
+                <span>Minha galeria<span className="block text-[12.5px] font-normal text-white/70">Fotos que você já enviou</span></span>
+                <span aria-hidden>→</span>
+              </button>
+              <button type="button" onClick={() => { setEscolhendo(false); input.current?.click(); }} className="flex min-h-[56px] items-center justify-between rounded-2xl bg-surface-white px-5 text-left text-[15px] font-medium ring-1 ring-black/[0.08] active:scale-[0.99]">
+                <span>Enviar do celular<span className="block text-[12.5px] font-normal text-text-tertiary">Câmera ou rolo de fotos</span></span>
+                <span aria-hidden>↑</span>
+              </button>
+              <button type="button" onClick={() => { setEscolhendo(false); setProntas(true); }} className="flex min-h-[48px] items-center justify-between rounded-2xl px-5 text-left text-[14px] text-text-secondary active:scale-[0.99]">
+                <span>Buscar na web</span>
+                <span aria-hidden>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {recorte && <ImageCropModal file={recorte} lockedRatio="retrato" lockedReason="A foto do item aparece no formato retrato. Arraste e aproxime para enquadrar." onCancel={() => setRecorte(null)} onConfirm={(blob) => subirRecortada(blob)} />}
       {galeria && <MinhaGaleriaPicker businessId={businessId} atual={foto} onFechar={() => setGaleria(false)} onEscolher={(url) => { setGaleria(false); ajustarAtual(url, false); }} />}
       {prontas && <FotoProntaPicker businessId={businessId} assunto={nome} formato="retrato" onFechar={() => setProntas(false)} onEscolher={(f) => { setProntas(false); enviar(f); }} />}

@@ -44,6 +44,7 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
     (ordem) => onChange(secoes.map((s) => ({ ...s, itens: ordem.map((id) => s.itens.find((i) => i.id === id)).filter((i): i is CardapioItem => !!i) }))),
     "pratos",
   );
+  const [escolhaFoto, setEscolhaFoto] = useState<{ s: string; i: string } | null>(null);
   function mudarItem(sid: string, iid: string, patch: Partial<CardapioItem>) {
     onChange(secoes.map((s) => (s.id !== sid ? s : { ...s, itens: s.itens.map((i) => (i.id === iid ? { ...i, ...patch } : i)) })));
   }
@@ -190,7 +191,7 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
                 return (
                   <li key={i.id} {...arrastar.alvo(i.id, s.id)} className={`rounded-2xl border border-divider transition-transform duration-150 ${arrastar.arrastando === i.id ? "relative z-10 scale-[1.02] bg-surface-white opacity-95 shadow-[0_10px_22px_rgba(17,19,24,0.22)]" : ""}`}>
                     <div {...arrastar.alca(i.id, s.id)} className="flex items-center gap-3 p-2.5">
-                      <button type="button" onClick={() => { if (i.foto) { setAberto(i.id); setAjustando(i.id); } else { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); } }} disabled={subindo === i.id} aria-label={i.foto ? "Ajustar foto do prato" : "Adicionar foto do prato"} className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary active:scale-[0.96]">
+                      <button type="button" onClick={() => { if (i.foto) { setAberto(i.id); setAjustando(i.id); } else { setEscolhaFoto({ s: s.id, i: i.id }); } }} disabled={subindo === i.id} aria-label={i.foto ? "Ajustar foto do prato" : "Adicionar foto do prato"} className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary active:scale-[0.96]">
                         {i.foto ? (
                           <>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -276,6 +277,23 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
         />
       )}
 
+      {escolhaFoto && (
+        <div className="fixed inset-0 z-[75] flex items-end justify-center bg-black/40" onClick={() => setEscolhaFoto(null)}>
+          <div className="folha-sobe w-full max-w-[440px] rounded-t-[28px] bg-background-main p-5 pb-8" onClick={(e) => e.stopPropagation()}>
+            <p className="text-center font-[family-name:var(--font-manrope)] text-[17px] font-medium">De onde vem a foto?</p>
+            <div className="mt-4 flex flex-col gap-2.5">
+              <button type="button" onClick={() => { setGaleriaPara(escolhaFoto); setEscolhaFoto(null); }} className="flex min-h-[56px] items-center justify-between rounded-2xl bg-on-background px-5 text-left text-[15px] font-medium text-white active:scale-[0.99]">
+                <span>Minha galeria<span className="block text-[12.5px] font-normal text-white/70">Fotos que você já enviou</span></span>
+                <span aria-hidden>→</span>
+              </button>
+              <button type="button" onClick={() => { alvo.current = escolhaFoto; setEscolhaFoto(null); inputFoto.current?.click(); }} className="flex min-h-[56px] items-center justify-between rounded-2xl bg-surface-white px-5 text-left text-[15px] font-medium ring-1 ring-black/[0.08] active:scale-[0.99]">
+                <span>Enviar do celular<span className="block text-[12.5px] font-normal text-text-tertiary">Câmera ou rolo de fotos</span></span>
+                <span aria-hidden>↑</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {galeriaPara && (
         <MinhaGaleriaPicker
           businessId={businessId}
