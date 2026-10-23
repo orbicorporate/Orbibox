@@ -35,7 +35,9 @@ export async function updateSession(request: NextRequest) {
   // Sem login: áreas privadas voltam pro login.
   if (!user && (isAdmin || isOnboarding)) {
     const url = request.nextUrl.clone();
+    const volta = `${request.nextUrl.pathname}${request.nextUrl.search}`;
     url.pathname = "/login";
+    url.search = isAdmin ? `?next=${encodeURIComponent(volta)}` : "";
     return NextResponse.redirect(url);
   }
 
@@ -65,6 +67,9 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url);
       }
       const url = request.nextUrl.clone();
+      const next = request.nextUrl.searchParams.get("next");
+      const nextOk = isAuthPage && next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\");
+      if (nextOk) return NextResponse.redirect(new URL(next, request.url));
       url.pathname = isAuthPage ? "/abrir" : "/admin";
       return NextResponse.redirect(url);
     }

@@ -2,7 +2,7 @@
 
 import { AvisoGiftLiberado } from "./AvisoGiftLiberado";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GiftArt } from "@/components/mobile/GiftArt";
@@ -32,6 +32,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
   const [minValue, setMinValue] = useState(String((initialSettings?.min_value_cents ?? 2000) / 100));
   const [gifts, setGifts] = useState(initialGifts);
   const [saved, setSaved] = useState(false);
+  const [liberarCodigo, setLiberarCodigo] = useState<string | null>(null);
   const [aviso, setAviso] = useState<{ gift: Gift; negocio: string } | null>(null);
 
   async function salvar(patch: Partial<Settings>) {
@@ -73,9 +74,27 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
   }
 
   const pendentes = gifts.filter((g) => g.status === "pending");
+  // Link que vem no WhatsApp do cliente: /admin/gift?liberar=CODIGO abre já pedindo a liberação.
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get("liberar");
+    if (c) queueMicrotask(() => setLiberarCodigo(c));
+  }, []);
+  const paraLiberar = liberarCodigo ? gifts.find((g) => g.code === liberarCodigo && g.status === "pending") : undefined;
 
   return (
     <div className="mt-5 flex flex-col gap-4">
+      {paraLiberar && (
+        <div className="rounded-[22px] bg-surface-white p-4 ring-1 ring-divider">
+          <p className="text-[15.5px] font-medium leading-snug">
+            {paraLiberar.from_name || "Um cliente"} montou um gift de {brl(paraLiberar.value_cents)}{paraLiberar.to_name ? ` pra ${paraLiberar.to_name}` : ""}.
+          </p>
+          <p className="mt-1 text-[13px] leading-snug text-text-secondary">Código {paraLiberar.code}. Recebeu o pagamento? Libere e já avise quem comprou.</p>
+          <div className="mt-3 flex gap-2">
+            <button onClick={() => { void mudarStatus(paraLiberar.id, "paid"); setLiberarCodigo(null); }} className="min-h-[42px] flex-1 rounded-full bg-[#1F9E4C] text-[14px] font-medium text-white active:scale-[.98]">Liberar gift</button>
+            <button onClick={() => setLiberarCodigo(null)} className="min-h-[42px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>
+          </div>
+        </div>
+      )}
       {aviso && <AvisoGiftLiberado gift={aviso.gift} negocio={aviso.negocio} aoFechar={() => setAviso(null)} />}
       {(enabled || gifts.length > 0) && (
         <ValidarGift businessId={businessId} onUsado={(id, usedAt) => setGifts((prev) => prev.map((g) => (g.id === id ? { ...g, status: "used", used_at: usedAt } : g)))} />

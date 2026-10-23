@@ -48,7 +48,8 @@ export default function LoginPage() {
       setError(erroDeAuth(error.message));
       return;
     }
-    router.push("/abrir");
+    const next = new URLSearchParams(window.location.search).get("next");
+    router.push(next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/abrir");
     router.refresh();
   }
 

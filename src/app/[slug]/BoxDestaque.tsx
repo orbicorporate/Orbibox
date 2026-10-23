@@ -13,6 +13,8 @@ import { textoSobre } from "@/lib/cardapio";
 import type { ItemCartao } from "./CartaoItem";
 
 export type Destaque = { t: "voucher" | "item" | "botao"; id: string };
+/** O que fica salvo em home_destaques: os destaques e os itens que viraram bolinha. */
+export type DestaqueSalvo = Destaque | { t: "item_bolinha"; id: string };
 
 /** Qualquer botão que o dono criou (WhatsApp, link, cardápio, endereço...), pronto para virar destaque. */
 export type BotaoDestaque = { key: string; titulo: string; sub: string; icone: string; logo: string | null; cor: string; acao: string; onClick: () => void };
@@ -32,9 +34,9 @@ type V = {
 };
 
 /** Lê o que está salvo em businesses.home_destaques, ignorando lixo. */
-export function lerDestaques(raw: unknown): Destaque[] {
+export function lerDestaques(raw: unknown): DestaqueSalvo[] {
   if (!Array.isArray(raw)) return [];
-  return raw.filter((d): d is Destaque => !!d && typeof d === "object" && ((d as Destaque).t === "voucher" || (d as Destaque).t === "item" || (d as Destaque).t === "botao") && typeof (d as Destaque).id === "string");
+  return raw.filter((d): d is DestaqueSalvo => !!d && typeof d === "object" && ((d as DestaqueSalvo).t === "voucher" || (d as DestaqueSalvo).t === "item" || (d as DestaqueSalvo).t === "botao" || (d as DestaqueSalvo).t === "item_bolinha") && typeof (d as DestaqueSalvo).id === "string");
 }
 
 /**

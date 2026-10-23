@@ -266,7 +266,7 @@ export function FolhaHome({
             <div className="mt-2 flex flex-col gap-2">
               {itens.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum produto no catálogo ainda.</p>}
               {itens.slice(0, 60).map((l) => (
-                <Linha key={l.id} l={l} onMudar={mudar} soDestaque />
+                <Linha key={l.id} l={l} onMudar={mudar} />
               ))}
             </div>
             {rascunhos.length > 0 && (
@@ -420,14 +420,14 @@ function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHom
           </button>
         )}
       </div>
-      {!soDestaque && l.pos === "escondido" && (
+      {!soDestaque && l.tipo !== "item" && l.pos === "escondido" && (
         <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-[12.5px] leading-snug text-text-secondary">Desligado: não aparece na página. Escolha Bolinha ou Destaque para ligar.</p>
       )}
       {!soDestaque && (
         <div role="radiogroup" aria-label={`Onde mostrar ${l.titulo}`} className={`mt-2 grid gap-1 rounded-full bg-surface-soft p-1 ${l.semEscondido ? "grid-cols-2" : "grid-cols-3"}`}>
           {POSICOES.filter((p) => !(l.semEscondido && p.v === "escondido")).map((p) => (
             <button key={p.v} type="button" role="radio" aria-checked={l.pos === p.v} onClick={() => l.pos !== p.v && onMudar(l, p.v)} className={`min-h-[34px] rounded-full text-[13px] font-medium ${l.pos === p.v ? "bg-on-background text-white" : "text-text-secondary"}`}>
-              {p.r}
+              {l.tipo === "item" && p.v === "escondido" ? "Só no catálogo" : p.r}
             </button>
           ))}
         </div>

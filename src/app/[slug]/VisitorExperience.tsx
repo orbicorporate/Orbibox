@@ -42,7 +42,7 @@ import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { CartaoItem } from "./CartaoItem";
 import { FolhaHome, type LinhaHome, type NovoBox, type Posicao, type CriarEm } from "./FolhaHome";
-import { BoxDestaque, lerDestaques, type Destaque, type BotaoDestaque } from "./BoxDestaque";
+import { BoxDestaque, lerDestaques, type Destaque, type DestaqueSalvo, type BotaoDestaque } from "./BoxDestaque";
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
 import { SobreEditorSheet, type SobreParte } from "./SobreEditorSheet";
@@ -529,8 +529,8 @@ export function VisitorExperience({
     conferirSalvo(await supabase.from("businesses").update({ catalog_title: valor.trim() || null }).eq("id", business.id));
   }
   // Box destaque da tela inicial: vouchers e produtos que o dono fixa no topo.
-  const [destaquesHome, setDestaquesHome] = useState<Destaque[]>(() => lerDestaques(business.home_destaques));
-  async function salvarDestaques(lista: Destaque[]) {
+  const [destaquesHome, setDestaquesHome] = useState<DestaqueSalvo[]>(() => lerDestaques(business.home_destaques));
+  async function salvarDestaques(lista: DestaqueSalvo[]) {
     setDestaquesHome(lista);
     conferirSalvo(await supabase.from("businesses").update({ home_destaques: lista }).eq("id", business.id));
   }
@@ -580,6 +580,13 @@ export function VisitorExperience({
     if (!out.some((b) => b.tipo === "whatsapp") && whatsAtalho) {
       out.unshift({ key: "zap", estilo: "cor", editavel: false, rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
     }
+    // Itens que o dono escolheu mostrar como bolinha (com a foto do item).
+    for (const d of destaquesHome) {
+      if (d.t !== "item_bolinha") continue;
+      const it = content.find((x) => x.id === d.id);
+      if (!it) continue;
+      out.push({ key: `item-${it.id}`, estilo: "cor", editavel: false, rotulo: it.title, tipo: "catalogo", logo: it.image_url, onClick: () => router.push(`/${business.slug}/p/${it.id}`) });
+    }
     // O catálogo também é uma bolinha: quem tem itens chega nele direto, sem link de texto.
     const temBoxCatalogo = boxList.some((b) => b.box_type === "product" || (b.box_type === "custom" && (b.config as CustomConfig | null)?.action === "vitrine"));
     if (content.length > 0 && !temBoxCatalogo) {
@@ -605,8 +612,8 @@ export function VisitorExperience({
     return true;
   }
   async function mudarLinha(l: LinhaHome, pos: Posicao) {
-    const sem = destaquesHome.filter((d) => !(d.t === l.tipo && d.id === l.id));
-    const proxima = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : sem;
+    const sem = destaquesHome.filter((d) => !(d.id === l.id && (d.t === l.tipo || (l.tipo === "item" && d.t === "item_bolinha"))));
+    const proxima: DestaqueSalvo[] = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : l.tipo === "item" && pos === "bolinha" ? [...sem, { t: "item_bolinha", id: l.id }] : sem;
     if (l.tipo === "botao") {
       const real = boxList.find((b) => b.id === l.id);
       const ativo = pos !== "escondido";
@@ -615,7 +622,7 @@ export function VisitorExperience({
         conferirSalvo(await supabase.from("smart_boxes").update({ is_active: ativo }).eq("id", l.id));
       }
     }
-    if (proxima.length !== destaquesHome.length || pos === "destaque") await salvarDestaques(proxima);
+    if (JSON.stringify(proxima) !== JSON.stringify(destaquesHome)) await salvarDestaques(proxima);
   }
   // O que ainda não existe e se monta em tela própria (Cardápio, Delivery, Materiais).
   const criarEm: CriarEm[] = (() => {
@@ -814,7 +821,7 @@ export function VisitorExperience({
     if (((b.box_type === "custom" && cfg.action === "gift") || b.box_type === "campaign") && !giftEnabled) return [{ id: b.id, titulo: "Presentear", texto: "Está ligado, mas o Gift card está desativado ou falta o WhatsApp do negócio. Ative o Gift card para aparecer.", href: "/admin/gift" }];
     return [];
   });
-  const linhasItens: LinhaHome[] = contentHome.map((i) => ({ id: i.id, tipo: "item", titulo: i.title, sub: i.brand_label ?? "", foto: i.image_url, pos: destaquesHome.some((d) => d.t === "item" && d.id === i.id) ? "destaque" : "bolinha" }));
+  const linhasItens: LinhaHome[] = contentHome.map((i) => ({ id: i.id, tipo: "item", titulo: i.title, sub: i.brand_label ?? "", foto: i.image_url, semEscondido: false, pos: destaquesHome.some((d) => d.t === "item" && d.id === i.id) ? "destaque" : destaquesHome.some((d) => d.t === "item_bolinha" && d.id === i.id) ? "bolinha" : "escondido" }));
 
   const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
     ? (business.hero_gradient as string[])
@@ -1110,7 +1117,7 @@ export function VisitorExperience({
                 opcoesCta={opcoesCta}
                 onCtaTipo={boxFormato ? (t) => guardarNaVitrine({ botaoPrincipal: t }) : undefined}
                 onCta={ctaVitrine.onClick}
-                itens={contentHome.filter((i) => !destaquesHome.some((d) => d.t === "item" && d.id === i.id))}
+                itens={contentHome.filter((i) => !destaquesHome.some((d) => (d.t === "item" || d.t === "item_bolinha") && d.id === i.id))}
                 onReordenarItens={reordenarItens}
                 tituloItens={tituloSecao.trim() || "Destaque"}
                 onTitulo={salvarTituloSecao}
@@ -1119,11 +1126,11 @@ export function VisitorExperience({
                     businessId={business.id}
                     slug={business.slug}
                     sessionId={sessionId}
-                    destaques={destaquesHome}
+                    destaques={destaquesHome.filter((d): d is Destaque => d.t !== "item_bolinha")}
                     itens={contentHome}
                     botoes={botoesDestaque}
                     podeEditar={showOwnerControls}
-                    onSalvar={salvarDestaques}
+                    onSalvar={(l) => salvarDestaques([...l, ...destaquesHome.filter((d) => d.t === "item_bolinha")])}
                     onAbrirFolha={() => setFolha("destaque")}
                     onVoucher={(id) => router.push(`/${business.slug}?v=${id}`)}
                   />

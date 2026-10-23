@@ -81,7 +81,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
 
   function liberarPorWhatsapp() {
     if (!criado || !whatsapp) return;
-    const texto = `Oi! Quero presentear alguém com um gift card de ${businessName}.\n\nValor: ${(valorCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}\n${paraQuem ? `Para: ${paraQuem}\n` : ""}${deQuem ? `De: ${deQuem}\n` : ""}Código: ${criado.code}\n\nComo faço pra pagar e liberar?`;
+    const texto = `Oi! Quero presentear alguém com um gift card de ${businessName}.\n\nValor: ${(valorCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}\n${paraQuem ? `Para: ${paraQuem}\n` : ""}${deQuem ? `De: ${deQuem}\n` : ""}Código: ${criado.code}\n\nComo faço pra pagar?\n\nPara quem atende liberar com um toque: ${window.location.origin}/admin/gift?liberar=${criado.code}`;
     window.open(`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`, "_blank");
   }
 
