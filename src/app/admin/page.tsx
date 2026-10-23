@@ -8,6 +8,7 @@ import { proximaData } from "@/lib/datasComemorativas";
 import { getAccessInfo } from "@/lib/plans";
 import { calcularOportunidade, calcularSemana } from "@/lib/copiloto";
 import { HomeView } from "./HomeView";
+import { AbrirNaPagina } from "./AbrirNaPagina";
 
 // Saudação pela hora de Brasília, onde está quem usa o painel.
 function saudacaoDoMomento(): string {
@@ -96,6 +97,8 @@ export default async function HojePage() {
   ];
 
   return (
+    <>
+    <AbrirNaPagina />
     <HomeView
       saudacao={saudacaoDoMomento()}
       primeiroNome={primeiroNome}
@@ -123,5 +126,6 @@ export default async function HojePage() {
       passoFaltando={insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
       pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))}
     />
+    </>
   );
 }

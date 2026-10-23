@@ -120,27 +120,18 @@ export function OrbiHeartIcon({ size = 36, className = "" }: IconProps) {
   );
 }
 
-/** Presente: caixa com fita, mesma paleta roxa da ferramenta de gift. */
+/** Presente: desenho cheio, sem círculo de fundo, na cor do texto ao redor, balançando de leve de tempos em tempos. */
 export function OrbiGiftIcon({ size = 36, className = "" }: IconProps) {
   return (
     <span className={className}>
-      {wrap(
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-          <rect x="4" y="10.5" width="16" height="9.5" rx="1.3" fill="url(#orbiGiftGrad)" />
-          <rect x="3" y="7.3" width="18" height="4" rx="1.2" fill="#7A22B0" />
-          <rect x="10.7" y="7.3" width="2.6" height="12.7" fill="#FFD65C" />
-          <path d="M9.3 7.3c-1.6 0-3-1.15-3-2.65C6.3 3.1 7.4 2 8.7 2c1.7 0 2.7 1.7 3.3 3.1l.3.6-.3.6c-.6 1.4-1.6 3-3.3 3z" fill="#B0309E" />
-          <path d="M14.7 7.3c1.6 0 3-1.15 3-2.65C17.7 3.1 16.6 2 15.3 2c-1.7 0-2.7 1.7-3.3 3.1l-.3.6.3.6c.6 1.4 1.6 3 3.3 3z" fill="#B0309E" />
-          <defs>
-            <linearGradient id="orbiGiftGrad" x1="4" y1="10.5" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#C495F0" />
-              <stop offset="1" stopColor="#6D28D9" />
-            </linearGradient>
-          </defs>
-        </svg>,
-        size,
-        "orbi-sticker-bounce"
-      )}
+      <span className="relative inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }} aria-hidden>
+        <svg width={size} height={size} viewBox="0 0 24 24" className="presente-treme" fill="none">
+          <rect x="2" y="8.5" width="20" height="4" rx="1.6" fill="currentColor" />
+          <path d="M4 14h6.6v7H6a2 2 0 0 1-2-2z" fill="currentColor" />
+          <path d="M13.4 14H20v5a2 2 0 0 1-2 2h-4.6z" fill="currentColor" />
+          <path d="M12 8.5C10 8.5 7.6 8 7.6 6c0-1.3 1-2.2 2.1-2.2C11 3.8 12 6.3 12 8.5zM12 8.5c2 0 4.4-.5 4.4-2.5 0-1.3-1-2.2-2.1-2.2C13 3.8 12 6.3 12 8.5z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+      </span>
     </span>
   );
 }
