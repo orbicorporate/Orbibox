@@ -458,7 +458,8 @@ export function ProductPageEditor({ business, item }: { business: Business; item
           {/* Ordem das fotos: miniaturas numeradas; toque numa pra escolher e
               use os botões pra mudar a posição. A 1ª é a que abre a página. */}
           {midias.length > 1 && (
-            <div className="mt-5">
+            <div className="mt-6 border-t border-divider pt-5">
+              <p className="mb-3 text-[12px] uppercase tracking-[0.14em] text-text-tertiary">Ordem das fotos</p>
               <div className="no-scrollbar flex gap-2 overflow-x-auto pb-0.5">
                 {arrastoFotos.ordem.map((src) => {
                   const i = midias.indexOf(src);
@@ -499,7 +500,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
           )}
 
           {alvoEdicao && midias.length <= 1 && (
-            <div className="mt-3 flex flex-wrap items-center gap-x-1 text-[13px] text-text-secondary">
+            <div className="mt-5 flex flex-wrap items-center gap-x-1 border-t border-divider pt-3 text-[13px] text-text-secondary">
               <button type="button" onClick={() => setGerador({ edicao: true, url: alvoEdicao })} className="min-h-[40px] px-2">✦ Editar com a Orbi</button>
               <button type="button" onClick={() => setAjuste(alvoEdicao)} className="min-h-[40px] px-2">Ajustar luz</button>
             </div>
@@ -507,8 +508,8 @@ export function ProductPageEditor({ business, item }: { business: Business; item
 
           {/* Adicionar fotos: sempre à vista, logo abaixo do carrossel. */}
           {midias.length < MAX_MIDIAS && (
-            <div className="mt-4">
-              <p className="mb-2 text-[12px] uppercase tracking-[0.14em] text-text-tertiary">Adicionar</p>
+            <div className="mt-6 border-t border-divider pt-5">
+              <p className="mb-3 text-[12px] uppercase tracking-[0.14em] text-text-tertiary">Adicionar fotos e vídeos</p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={() => setFotosProntas(true)} className="orbi-gradient rounded-full p-[1.5px] transition-transform active:scale-[0.98]">
                   <span className="flex min-h-[37px] items-center gap-1.5 rounded-full bg-surface-white px-4 text-[13px] text-on-background">✦ Foto pronta</span>
@@ -560,8 +561,9 @@ export function ProductPageEditor({ business, item }: { business: Business; item
           />
         </div>
 
-        <div className="px-5 pt-6">
-          <p className="text-[13px] font-semibold text-text-secondary">Título</p>
+        <div className="mt-8 border-t-8 border-surface-soft px-5 pt-6">
+          <p className="mb-4 text-[12px] uppercase tracking-[0.14em] text-text-tertiary">Informações do item</p>
+          <p className="text-[13px] text-text-secondary">Título</p>
           <textarea
             value={titulo}
             ref={crescer}
@@ -579,8 +581,8 @@ export function ProductPageEditor({ business, item }: { business: Business; item
           )}
 
           {item.image_url && (
-            <div className="mt-5 rounded-3xl bg-surface-soft p-4">
-              <p className="text-[13px] font-semibold text-text-secondary">Cor da faixa do card</p>
+            <div className="mt-6 rounded-3xl bg-surface-soft p-4">
+              <p className="text-[13px] text-text-secondary">Cor da faixa do card</p>
               <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">
                 {item.title_placement === "sobre" ? "Hoje o nome fica sobre a foto, então não há faixa. A cor vale quando o nome fica embaixo da foto." : "É a faixa embaixo da foto, onde ficam o nome e o preço."}
               </p>
@@ -597,8 +599,8 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             </div>
           )}
 
-          <div className="mt-5 flex items-center justify-between gap-2">
-            <p className="text-[13px] font-semibold text-text-secondary">Fale mais</p>
+          <div className="mt-6 flex items-center justify-between gap-2 border-t border-divider pt-5">
+            <p className="text-[13px] text-text-secondary">Fale mais</p>
             <button
               type="button"
               onClick={gerarTexto}
@@ -629,7 +631,7 @@ export function ProductPageEditor({ business, item }: { business: Business; item
 
           <details className="mt-6">
             <summary className="inline-flex min-h-[40px] cursor-pointer list-none items-center rounded-full bg-surface-soft px-4 text-[13.5px] font-medium text-text-secondary">Mais opções</summary>
-          <p className="mt-3 text-[13px] font-semibold text-text-secondary">Categoria <span className="font-normal text-text-tertiary">(opcional)</span></p>
+          <p className="mt-6 border-t border-divider pt-5 text-[13px] text-text-secondary">Categoria <span className="font-normal text-text-tertiary">(opcional)</span></p>
           <input
             value={rotulo}
             onChange={(e) => setRotulo(e.target.value)}
