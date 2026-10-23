@@ -120,6 +120,7 @@ export default async function HojePage() {
       }}
       marcos={{ visitas: visitsRes.count ?? 0, acoes: actionsRes.count ?? 0, conversas: realConvs, resgates: resgatesRes.count ?? 0 }}
       numeros={numeros}
+      avaliacao={{ imagem: b.share_image_url || b.vitrine_cover_url || null, logo: b.logo_url ?? null }}
       orbiColors={orbiColors}
       progressoPct={progress.pct}
       pelaMetade={pelaMetade ? { businessId: b.id, semItens: (totalItens ?? 0) === 0, semBotoes: activeBoxes === 0, site: b.website_url ?? b.contact_site ?? null, instagram: b.instagram_handle ?? null } : null}

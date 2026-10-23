@@ -6,6 +6,7 @@ import { WelcomeBackBanner } from "./WelcomeBackBanner";
 import { ProximaAcao } from "./ProximaAcao";
 import { Marcos } from "./Marcos";
 import { ConviteCard } from "./ConviteCard";
+import { PedirAvaliacaoCard } from "./PedirAvaliacaoCard";
 import { OportunidadeCard } from "./OportunidadeCard";
 import { LinhaExpansivel } from "./LinhaExpansivel";
 import { PerguntaOrbi } from "./PerguntaOrbi";
@@ -70,12 +71,14 @@ export type HomeViewProps = {
   /** Dono com a Orbi (plano ou teste): vê a pergunta sobre rede de negócios até dispensar. */
   perguntaRede?: boolean;
   pendencias: { title: string; href: string }[];
+  /** Capa e logo para a arte do pedido de avaliação. */
+  avaliacao?: { imagem: string | null; logo: string | null };
   /** Próxima pendência de cadastro, em linha fina embaixo do card principal quando ele está ocupado por uma oportunidade. */
   passoFaltando: { title: string; description: string; ctaLabel: string; href: string } | null;
 };
 
 /** A home do painel, só apresentação: os dados vêm prontos de page.tsx. */
-export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, pelaMetade, mostrarConvite, gratis, perguntaRede, pendencias, passoFaltando }: HomeViewProps) {
+export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, pelaMetade, mostrarConvite, gratis, perguntaRede, pendencias, avaliacao, passoFaltando }: HomeViewProps) {
   const cartao = "flex min-h-[92px] flex-col justify-between gap-3 rounded-[22px] bg-surface-white p-4 text-left ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]";
 
   return (
@@ -161,6 +164,8 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
       )}
 
       <Marcos businessId={b.id} contagem={marcos} />
+
+      <PedirAvaliacaoCard nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={avaliacao?.imagem ?? null} logo={avaliacao?.logo ?? null} />
 
       {/* Próximas ações por intenção: as ferramentas continuam no menu */}
       <section className="mt-8">
