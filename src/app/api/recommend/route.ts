@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { limitar } from "@/lib/apiGuard";
 import { askClaude } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
+  const lento = limitar(req, "recommend", 20);
+  if (lento) return lento;
   try {
     const { businessId, sessionId } = await req.json();
     if (!businessId) return NextResponse.json({ error: "businessId obrigatório." }, { status: 400 });

@@ -67,12 +67,12 @@ export default async function FunilPage() {
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-[20px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
           <p className="text-[12px] text-text-tertiary">Tempo até a página no ar</p>
-          <p className="mt-1 font-[family-name:var(--font-manrope)] text-[26px] font-semibold">{med === null ? "–" : med < 1 ? "< 1 min" : `${Math.round(med)} min`}</p>
+          <p className="mt-1 font-[family-name:var(--font-manrope)] text-[26px] font-semibold">{med === null ? "-" : med < 1 ? "< 1 min" : `${Math.round(med)} min`}</p>
           <p className="text-[12px] text-text-tertiary">mediana de {tempos.length} cadastros</p>
         </div>
         <div className="rounded-[20px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
           <p className="text-[12px] text-text-tertiary">Compartilharam no 1º dia</p>
-          <p className="mt-1 font-[family-name:var(--font-manrope)] text-[26px] font-semibold">{criaram ? `${Math.round((compartilharam / criaram) * 100)}%` : "–"}</p>
+          <p className="mt-1 font-[family-name:var(--font-manrope)] text-[26px] font-semibold">{criaram ? `${Math.round((compartilharam / criaram) * 100)}%` : "-"}</p>
           <p className="text-[12px] text-text-tertiary">{compartilharam} de {criaram} que criaram</p>
         </div>
       </div>

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { safeFetch } from "@/lib/safeFetch";
+import { exigirLogin } from "@/lib/apiGuard";
 import { askClaude } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,6 +14,8 @@ import { createClient } from "@/lib/supabase/server";
  * melhorada.
  */
 export async function POST(req: NextRequest) {
+  const negado = await exigirLogin();
+  if (negado) return negado;
   try {
     const { contentItemId } = await req.json();
     if (!contentItemId) {
@@ -44,7 +48,7 @@ export async function POST(req: NextRequest) {
     const fotoUrl = item.image_url || item.gallery_urls?.[0] || null;
     if (fotoUrl && /^https?:\/\//.test(fotoUrl)) {
       try {
-        const r = await fetch(fotoUrl, { signal: AbortSignal.timeout(8000) });
+        const r = await safeFetch(fotoUrl, { signal: AbortSignal.timeout(8000) });
         const mt = (r.headers.get("content-type") ?? "").split(";")[0];
         if (r.ok && /^image\/(jpeg|png|webp|gif)$/.test(mt)) {
           const buf = Buffer.from(await r.arrayBuffer());

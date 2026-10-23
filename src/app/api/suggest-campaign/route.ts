@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { exigirLogin } from "@/lib/apiGuard";
 import { askClaude } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 
@@ -9,6 +10,8 @@ const BEST_HOURS: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+  const negado = await exigirLogin();
+  if (negado) return negado;
   try {
     const { businessId, channel, title } = await req.json();
     if (!businessId || !channel || !title) {

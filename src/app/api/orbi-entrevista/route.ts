@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { exigirLogin } from "@/lib/apiGuard";
 import { createClient } from "@/lib/supabase/server";
 import { AI_MODEL, ANTHROPIC_API_URL } from "@/lib/aiModel";
 
@@ -19,6 +20,8 @@ async function chamarIA(system: string, userText: string, maxTokens: number, key
 }
 
 export async function POST(req: NextRequest) {
+  const negado = await exigirLogin();
+  if (negado) return negado;
   try {
     const { businessId, historico, acao } = await req.json() as { businessId: string; historico: Turno[]; acao: "proxima" | "finalizar" };
     if (!businessId) return NextResponse.json({ error: "faltam dados" }, { status: 400 });

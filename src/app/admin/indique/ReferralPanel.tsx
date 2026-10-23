@@ -160,15 +160,15 @@ export function ReferralPanel({ code, amigos, mesesGuardados, statusPlano }: { c
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <button onClick={whatsapp} className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-[#25D366] text-[12.5px] font-semibold text-white">
+          <button onClick={whatsapp} className="flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-[#25D366] text-[12.5px] font-semibold text-white">
             <IconeWhats />
             WhatsApp
           </button>
-          <button onClick={stories} className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl text-[12.5px] font-semibold text-white" style={{ background: "linear-gradient(135deg,#F58529,#DD2A7B 50%,#8134AF)" }}>
+          <button onClick={stories} className="flex min-h-[52px] items-center justify-center gap-2 rounded-full text-[12.5px] font-semibold text-white" style={{ background: "linear-gradient(135deg,#F58529,#DD2A7B 50%,#8134AF)" }}>
             <IconeInsta />
             Stories
           </button>
-          <button onClick={mais} className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-surface-soft text-[12.5px] font-semibold text-on-background">
+          <button onClick={mais} className="flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-surface-soft text-[12.5px] font-semibold text-on-background">
             <IconeMais />
             Mais
           </button>

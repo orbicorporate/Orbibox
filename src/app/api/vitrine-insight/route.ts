@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { exigirLogin } from "@/lib/apiGuard";
 import { askClaude } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 
@@ -9,6 +10,8 @@ import { createClient } from "@/lib/supabase/server";
  * quando o dono pede "gerar novo insight" de novo.
  */
 export async function POST(req: NextRequest) {
+  const negado = await exigirLogin();
+  if (negado) return negado;
   try {
     const { businessId } = await req.json();
     if (!businessId) return NextResponse.json({ error: "businessId é obrigatório." }, { status: 400 });

@@ -17,7 +17,7 @@ export function BackButton() {
 
   return (
     <button
-      onClick={() => router.back()}
+      onClick={() => { if (typeof window !== "undefined" && window.history.length > 1) router.back(); else router.push("/admin"); }}
       aria-label="Voltar"
       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px]"
     >

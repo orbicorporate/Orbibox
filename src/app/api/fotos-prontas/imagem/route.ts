@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { safeFetch } from "@/lib/safeFetch";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Endereço inválido." }, { status: 400 });
   }
   try {
-    const r = await fetch(url, { headers: { "User-Agent": "Orbibox/1.0" }, signal: AbortSignal.timeout(12000) });
+    const r = await safeFetch(url, { headers: { "User-Agent": "Orbibox/1.0" }, signal: AbortSignal.timeout(12000) });
     const tipo = r.headers.get("content-type") ?? "";
     if (!r.ok || !tipo.startsWith("image/")) return NextResponse.json({ error: "Não consegui abrir essa foto." }, { status: 422 });
     const buf = await r.arrayBuffer();

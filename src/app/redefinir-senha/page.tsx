@@ -52,7 +52,7 @@ export default function RedefinirSenhaPage() {
     }
     setSucesso(true);
     setTimeout(() => {
-      router.push("/admin");
+      router.push("/abrir");
       router.refresh();
     }, 1200);
   }
@@ -72,10 +72,13 @@ export default function RedefinirSenhaPage() {
             <Link href="/esqueci-senha" className="mt-6 block text-center text-[14px] text-on-background underline">
               Pedir novo link
             </Link>
+            <Link href="/login" className="mt-3 block text-center text-[14px] text-text-secondary underline">
+              Voltar ao login
+            </Link>
           </>
         ) : sucesso ? (
           <p className="mt-1.5 text-[15px] leading-relaxed text-text-secondary">
-            Senha atualizada! Te levando pro painel…
+            Senha atualizada! Te levando pro seu Orbibox…
           </p>
         ) : (
           <>

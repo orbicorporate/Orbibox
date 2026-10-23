@@ -940,7 +940,8 @@ export function VisitorExperience({
         <div className="fixed right-4 top-4 z-20 flex items-center gap-2">
           <Link
             href="/admin"
-            className="flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur"
+            onClick={() => { try { sessionStorage.setItem("orbibox_abriu", "1"); } catch { /* sem armazenamento */ } }}
+                        className="flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur"
           >
             ← Meu painel
           </Link>
@@ -968,11 +969,12 @@ export function VisitorExperience({
           </Link>
         ) : null;
       })()}
-      {isOwner && intent === null && previewMode && !previewTravado && (
+      {isOwner && previewMode && !previewTravado && (
         <div className="fixed right-4 top-4 z-20 flex items-center gap-2">
           <Link
             href="/admin"
-            className="flex items-center gap-1.5 rounded-full bg-surface-white/90 px-3.5 py-2 text-[13px] font-medium text-text-secondary shadow-lg backdrop-blur"
+            onClick={() => { try { sessionStorage.setItem("orbibox_abriu", "1"); } catch { /* sem armazenamento */ } }}
+                        className="flex items-center gap-1.5 rounded-full bg-surface-white/90 px-3.5 py-2 text-[13px] font-medium text-text-secondary shadow-lg backdrop-blur"
           >
             Painel
           </Link>

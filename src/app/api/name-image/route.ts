@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { safeFetch } from "@/lib/safeFetch";
+import { exigirLogin } from "@/lib/apiGuard";
 
 export const runtime = "nodejs";
 
@@ -27,6 +29,8 @@ const CONTEXTO: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+  const negado = await exigirLogin();
+  if (negado) return negado;
   try {
     const { imageBase64, imageUrl, mediaType, theme } = await req.json();
 
@@ -40,7 +44,7 @@ export async function POST(req: NextRequest) {
     let base64 = imageBase64 as string | undefined;
     let mt = mediaType as string | undefined;
     if (!base64 && imageUrl) {
-      const imgRes = await fetch(imageUrl);
+      const imgRes = await safeFetch(imageUrl);
       if (!imgRes.ok) {
         return NextResponse.json({ error: "Não foi possível baixar a imagem." }, { status: 400 });
       }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { limitar } from "@/lib/apiGuard";
 import { askClaude } from "@/lib/anthropic";
 import { AI_MODEL_RAPIDO } from "@/lib/aiModel";
 import { createClient } from "@/lib/supabase/server";
@@ -17,6 +18,8 @@ const rotuloPagamento = (id: string) => PAGAMENTO_LABEL[id] ?? id;
 const rotuloAtendimento = (id: string) => ATENDIMENTO_LABEL[id] ?? id;
 
 export async function POST(req: NextRequest) {
+  const lento = limitar(req, "orbi-chat", 30);
+  if (lento) return lento;
   try {
     const { businessId, conversationId, message, history, trialMode, temContato } = await req.json();
 

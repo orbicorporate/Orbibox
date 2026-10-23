@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { safeFetch } from "@/lib/safeFetch";
 import { extrairProposta, instagramHandle, lerMelhorFonte, type Extracted, type SiteType } from "@/lib/siteImport";
 import { createClient } from "@/lib/supabase/server";
 
@@ -104,9 +105,9 @@ export async function POST(req: NextRequest) {
     // Fotos do Instagram vêm de links que expiram em poucos dias: copia pro
     // nosso armazenamento antes de salvar, senão a vitrine perde as fotos.
     async function rehospedar(src: string): Promise<string | null> {
-      if (!/(cdninstagram\.com|fbcdn\.net)/i.test(src)) return src;
+      if (!/^https?:\/\/[^/]*(cdninstagram\.com|fbcdn\.net)(\/|$)/i.test(src)) return src;
       try {
-        const r = await fetch(src, { signal: AbortSignal.timeout(8000) });
+        const r = await safeFetch(src, { signal: AbortSignal.timeout(8000) });
         if (!r.ok) return null;
         const blob = await r.blob();
         const tipo = blob.type || "image/jpeg";

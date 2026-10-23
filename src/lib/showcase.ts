@@ -248,7 +248,7 @@ export function formatPrice(item: { price: number | null; price_type?: string | 
     case "media":
       return `Média de ${brl(item.price)}`;
     case "faixa":
-      return item.price_max != null ? `${brl(item.price)} – ${brl(item.price_max)}` : brl(item.price);
+      return item.price_max != null ? `${brl(item.price)} a ${brl(item.price_max)}` : brl(item.price);
     default:
       return brl(item.price);
   }

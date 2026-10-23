@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { slugify } from "@/lib/utils";
+import { SLUGS_RESERVADOS } from "@/lib/slugsReservados";
 import { coresDaOrbi } from "@/lib/orbiCores";
 import { colorOf } from "@/lib/showcase";
 import { segmentoPorId } from "@/lib/segmentos";
@@ -235,7 +236,8 @@ export default function OnboardingPage() {
     const conv: ConversaoId = conversao && conversao !== "orbi" ? conversao : result.conversao ?? (seg?.servico ? "whatsapp" : "comprar");
     const convInfo = conversaoPorId(conv)!;
 
-    const base = slugify(name) || "orbibox";
+    const base0 = slugify(name) || "meu-negocio";
+    const base = SLUGS_RESERVADOS.has(base0) ? `${base0}-1` : base0;
     const { data: taken } = await supabase.from("businesses").select("slug").like("slug", `${base}%`);
     const used = new Set((taken ?? []).map((t) => t.slug));
     let slug = base;

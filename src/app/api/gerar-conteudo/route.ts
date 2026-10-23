@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { exigirLogin } from "@/lib/apiGuard";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -42,6 +43,8 @@ const FORMATO: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+  const negado = await exigirLogin();
+  if (negado) return negado;
   try {
     const { businessId, productTitle, tipo, tema, objetivo, acao } = await req.json();
     if (!businessId) return NextResponse.json({ error: "faltam dados" }, { status: 400 });

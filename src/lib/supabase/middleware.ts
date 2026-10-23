@@ -68,6 +68,14 @@ export async function updateSession(request: NextRequest) {
       url.pathname = isAuthPage ? "/abrir" : "/admin";
       return NextResponse.redirect(url);
     }
+    // Só administra o negócio de outra pessoa: também não precisa de onboarding.
+    const { data: membro } = await supabase.from("business_admins").select("id").eq("user_id", user.id).limit(1).maybeSingle();
+    if (membro) {
+      const url = request.nextUrl.clone();
+      url.pathname = isAuthPage ? "/abrir" : "/admin";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
     // Logado sem negócio e numa tela de auth → segue pro onboarding.
     if (isAuthPage) {
       const url = request.nextUrl.clone();

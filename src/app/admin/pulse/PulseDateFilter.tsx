@@ -86,7 +86,7 @@ export function PulseDateFilter() {
     if (!rangeStart) return;
     const fim = rangeEnd ?? rangeStart;
     const label = rangeEnd && rangeEnd.getTime() !== rangeStart.getTime()
-      ? `${fmt(rangeStart)} – ${fmt(fim)}`
+      ? `${fmt(rangeStart)} a ${fmt(fim)}`
       : fmt(rangeStart);
     applyRange(rangeStart, fim, label);
   }

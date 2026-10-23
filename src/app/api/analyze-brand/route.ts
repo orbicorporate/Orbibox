@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { safeFetch } from "@/lib/safeFetch";
+import { exigirLogin } from "@/lib/apiGuard";
 
 export const maxDuration = 60;
 import { askClaude } from "@/lib/anthropic";
@@ -17,7 +19,7 @@ const PALETTES = [
 async function fetchSiteText(url: string): Promise<string | null> {
   try {
     const normalized = url.startsWith("http") ? url : `https://${url}`;
-    const res = await fetch(normalized, { signal: AbortSignal.timeout(6000) });
+    const res = await safeFetch(normalized, { signal: AbortSignal.timeout(6000) });
     if (!res.ok) return null;
     const html = await res.text();
     const text = html
@@ -33,6 +35,8 @@ async function fetchSiteText(url: string): Promise<string | null> {
 }
 
 export async function POST(req: NextRequest) {
+  const negado = await exigirLogin();
+  if (negado) return negado;
   try {
     const { name, instagram, website, descricao } = await req.json();
 

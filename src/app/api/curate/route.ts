@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { limitar } from "@/lib/apiGuard";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -24,6 +25,8 @@ async function callClaude(system: string, userText: string, maxTokens: number) {
 }
 
 export async function POST(req: NextRequest) {
+  const lento = limitar(req, "curate", 20);
+  if (lento) return lento;
   try {
     const { businessId, mode, question } = await req.json();
     if (!businessId) return NextResponse.json({ error: "businessId" }, { status: 400 });
