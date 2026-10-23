@@ -1,3 +1,4 @@
+import { APP_URL } from "@/lib/appUrl";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { calcularResumoSemanal } from "@/lib/resumoSemanal";
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
   }
   const supabase = createServiceClient();
-  const base = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : new URL(req.url).origin;
+  const base = APP_URL;
   const { data: negocios } = await supabase.from("businesses").select("id, name, owner_id").eq("resumo_semanal", true).eq("onboarding_status", "ready").limit(2000);
 
   let enviados = 0;

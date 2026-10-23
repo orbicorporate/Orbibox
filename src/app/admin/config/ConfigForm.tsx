@@ -359,7 +359,7 @@ export function ConfigForm({
             <p className="mt-0.5 line-clamp-2 text-[12.5px] leading-snug text-text-secondary">
               {b.share_description?.trim() || "Adicione uma descrição pra aparecer aqui."}
             </p>
-            <p className="mt-1 text-[11px] text-text-tertiary">orbibox-one.vercel.app</p>
+            <p className="mt-1 text-[11px] text-text-tertiary">orbibox.app</p>
           </div>
         </div>
 

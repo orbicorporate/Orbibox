@@ -1,3 +1,4 @@
+import { APP_URL } from "@/lib/appUrl";
 import type { Metadata, Viewport } from "next";
 import { Geist, Manrope, Open_Sans } from "next/font/google";
 import "./globals.css";
@@ -23,6 +24,7 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(APP_URL),
   title: "Orbibox, A web que se adapta a quem entra",
   description:
     "One link. Infinite experiences. Soft Intelligence para transformar seu catálogo em uma experiência adaptativa.",

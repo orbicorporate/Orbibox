@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import { APP_HOST } from "@/lib/appUrl";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
@@ -75,7 +75,7 @@ export default async function HojePage() {
     .slice(0, 2);
 
   // Link público sempre pelo domínio de produção (URLs de deploy são protegidas).
-  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL || (await headers()).get("host") || "orbibox-orbi-app.vercel.app";
+  const host = APP_HOST;
   const proto = host.includes("localhost") ? "http" : "https";
   const shareUrl = `${proto}://${host}/${b.slug}`;
   const temCapa = !!b.share_image_url || !!b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls.length > 0) || !!b.logo_url;

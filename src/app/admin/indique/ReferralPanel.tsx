@@ -52,7 +52,7 @@ function IconeMais() {
 export function ReferralPanel({ code, amigos, mesesGuardados, statusPlano }: { code: string; amigos: Amigo[]; mesesGuardados: number; statusPlano: string | null }) {
   const [copiado, setCopiado] = useState<string | null>(null);
   const [modelo, setModelo] = useState(0);
-  const base = useSyncExternalStore(() => () => {}, () => window.location.origin, () => "https://orbibox-one.vercel.app");
+  const base = useSyncExternalStore(() => () => {}, () => window.location.origin, () => "https://orbibox.app");
   const link = `${base}/r/${code}`;
 
   const meses = amigos.filter((a) => a.estado === "assinou").length;

@@ -1,3 +1,4 @@
+import { APP_HOST } from "@/lib/appUrl";
 import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
 import { createClient } from "@/lib/supabase/server";
 import { BeneficiosVoucher } from "./BeneficiosVoucher";
@@ -10,7 +11,6 @@ import { VoucherFormato } from "./VoucherFormato";
 import { VoucherExplainer } from "./VoucherExplainer";
 import { RedeemCodeCard } from "./RedeemCodeCard";
 import Link from "next/link";
-import { headers } from "next/headers";
 
 type BoxConfigShape = { action?: string };
 
@@ -26,7 +26,7 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
   const canSave = !!access?.hasVouchers;
 
   // Link público pelo domínio de produção, como na Home do painel.
-  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL || (await headers()).get("host") || "orbibox-orbi-app.vercel.app";
+  const host = APP_HOST;
   const linkBase = `${host.includes("localhost") ? "http" : "https"}://${host}`;
 
   const { data: business } = await supabase

@@ -1,3 +1,4 @@
+import { APP_URL } from "@/lib/appUrl";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
@@ -96,7 +97,7 @@ async function notifyPaymentFailed(ownerId: string) {
 
   const { subject, html } = paymentFailedEmail({
     businessName: business?.name ?? "seu negócio",
-    manageUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://orbibox-orbi-app.vercel.app"}/admin/planos`,
+    manageUrl: `${APP_URL}/admin/planos`,
   });
 
   await sendEmail({ to: profile.email, subject, html });
