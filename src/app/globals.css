@@ -1439,7 +1439,7 @@ html[data-embed] .embed-oculta { display: none !important; }
 }
 
 /* Compartilhar (visitante) */
-.cp-fundo { position: fixed; inset: 0; z-index: 95; display: flex; align-items: flex-end; justify-content: center; padding: 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); background: rgba(17, 19, 24, 0.36); animation: nr-fade .24s ease-out both; }
+.cp-fundo { position: fixed; inset: 0; z-index: 135; display: flex; align-items: flex-end; justify-content: center; padding: 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); background: rgba(17, 19, 24, 0.36); animation: nr-fade .24s ease-out both; }
 .cp-fundo.sai { animation: nr-fade .2s ease-in reverse both; }
 .cp-box { width: 100%; max-width: 420px; border-radius: 32px; background: var(--color-surface-white, #fff); padding: 10px 18px 14px; box-shadow: 0 24px 60px -20px rgba(17, 19, 24, 0.35); animation: nr-sobe .42s cubic-bezier(.32, .72, 0, 1) both; }
 .cp-box.sai { animation: nr-desce .22s cubic-bezier(.4, 0, 1, 1) both; }
