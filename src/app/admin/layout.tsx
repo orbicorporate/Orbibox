@@ -1,3 +1,4 @@
+import { lerPlanoGratis, restaurarPlanoGratis } from "@/lib/planoGratis";
 import { Suspense } from "react";
 import { pareceGastronomico } from "@/lib/gastronomia";
 import { redirect } from "next/navigation";
@@ -116,6 +117,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // ela precisa pra o teste (nome, cores, produtos, endereço).
   const { getAccessInfoForBusiness } = await import("@/lib/plans");
   const adminAccess = await getAccessInfoForBusiness(business.id);
+  // Voltou a ter plano pago: liga de novo o que o plano grátis tinha desativado.
+  if (adminAccess.isActive && business.owner_id === user.id) {
+    const { data: pg } = await supabase.from("businesses").select("plano_gratis" as never).eq("id", business.id).maybeSingle();
+    const plano = lerPlanoGratis((pg as { plano_gratis?: unknown } | null)?.plano_gratis);
+    if (plano) await restaurarPlanoGratis(supabase, business.id, plano);
+  }
   const { data: adminAgentCfg } = await supabase.from("agent_configs").select("agent_name, orbi_colors").eq("business_id", business.id).maybeSingle();
   const adminOrbiColors = Array.isArray(adminAgentCfg?.orbi_colors) && adminAgentCfg.orbi_colors.length >= 2 ? (adminAgentCfg.orbi_colors as string[]) : null;
   const { data: adminBiz } = await supabase.from("businesses").select("address").eq("id", business.id).maybeSingle();

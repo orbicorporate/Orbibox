@@ -1,3 +1,5 @@
+import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
+import { getAccessInfoForBusiness } from "@/lib/plans";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
@@ -7,7 +9,10 @@ export default async function ConversasPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
-  const [{ data: business }, { data: agentConfig }] = await Promise.all([
+
+  if (businessId && (await getAccessInfoForBusiness(businessId)).isFree) {
+    return <BloqueioGratis recurso="Conversas" descricao="Todas as conversas e contatos que chegam pela sua página, organizados por quem está mais perto de comprar." itens={["Histórico de conversas e contatos","Etiquetas, listas e próxima ação","Mensagens prontas escritas pela Orbi"]} />;
+  }  const [{ data: business }, { data: agentConfig }] = await Promise.all([
     supabase.from("businesses").select("id").eq("id", businessId!).single(),
     supabase.from("agent_configs").select("orbi_colors").eq("business_id", businessId!).maybeSingle(),
   ]);

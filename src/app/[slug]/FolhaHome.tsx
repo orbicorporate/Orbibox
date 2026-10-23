@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -69,6 +70,8 @@ export function FolhaHome({
   onCriarBox,
   onPdfPronto,
   onGiftFechado,
+  gratis,
+  avisoGratis,
 }: {
   posicaoInicial: "bolinha" | "destaque";
   onFechar: () => void;
@@ -86,6 +89,9 @@ export function FolhaHome({
   onPdfPronto: (id: string, pos: "bolinha" | "destaque") => void;
   /** Fechou a tela do Gift card: liga o botão Presentear onde a pessoa escolheu. */
   onGiftFechado: (pos: "bolinha" | "destaque") => void;
+  /** Plano grátis: sem voucher, gift e PDF, e com limite de bolinhas e boxes. */
+  gratis?: boolean;
+  avisoGratis?: string | null;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
@@ -225,6 +231,13 @@ export function FolhaHome({
           <button type="button" onClick={onFechar} className="min-h-[40px] shrink-0 rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
         </div>
 
+        {gratis && (
+          <div className={`mt-3 rounded-2xl px-4 py-3 text-[14px] leading-snug ${avisoGratis ? "bg-amber-50 text-on-background" : "bg-surface-soft text-text-secondary"}`}>
+            {avisoGratis ?? "Plano grátis: até 3 bolinhas e 4 boxes. Assine para liberar tudo."}{" "}
+            <Link href="/admin/planos" className="underline underline-offset-2">Ver planos</Link>
+          </div>
+        )}
+
         {vista === "lista" && (
           <>
             <Exemplo ativo={exemplo} onEscolher={setExemplo} />
@@ -253,6 +266,8 @@ export function FolhaHome({
               ))}
             </div>
 
+            {!gratis && (
+              <>
             <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Vouchers no ar</p>
             <div className="mt-2 flex flex-col gap-2">
               {vouchers.length === 0 && <p className="text-[14.5px] text-text-secondary">Nenhum voucher ativo agora.</p>}
@@ -260,6 +275,9 @@ export function FolhaHome({
                 <Linha key={l.id} l={{ ...l, pos: vouchersDestaque.includes(l.id) ? "destaque" : "bolinha" }} onMudar={mudar} soDestaque />
               ))}
             </div>
+
+              </>
+            )}
 
             <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Produtos</p>
             <p className="mt-1.5 text-[14px] leading-snug text-text-secondary">Só itens publicados aparecem aqui. Se o seu item não está na lista, ele deve estar em rascunho: publique no Catálogo.</p>
@@ -315,17 +333,17 @@ export function FolhaHome({
                 <span aria-hidden className="text-[20px] text-text-tertiary">›</span>
               </button>
             ))}
-            <button type="button" onClick={() => { setErro(null); setVista("pdf"); }} className={cardLink}>
+            {!gratis && (            <button type="button" onClick={() => { setErro(null); setVista("pdf"); }} className={cardLink}>
               <span className="min-w-0 flex-1">
                 <span className="block text-[14.5px] font-semibold leading-tight">PDF</span>
                 <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">Cardápio de Natal, catálogo, tabela de preços.</span>
               </span>
               <span aria-hidden className="text-[20px] text-text-tertiary">›</span>
-            </button>
+            </button>)}
 
             <p className="mt-3 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Em tela própria</p>
             <p className="text-[12px] leading-snug text-text-tertiary">Ao terminar, volte aqui e escolha onde o item aparece.</p>
-            {criarEm.map((x) => (
+            {criarEm.filter((x) => !gratis || x.id !== "materiais-novo").map((x) => (
               <AbrirEditor key={x.id} href={x.href} rotulo={x.titulo} aoFechar={() => setRecarga((n) => n + 1)} className={cardLink}>
                 <span className="min-w-0 flex-1 text-left">
                   <span className="block text-[14.5px] font-semibold leading-tight">{x.titulo}</span>
@@ -338,7 +356,7 @@ export function FolhaHome({
               { href: "/admin/vouchers?novo=1", titulo: "Voucher", texto: "Desconto ou brinde para o cliente resgatar." },
               { href: "/admin/gift", titulo: "Gift card", texto: "Vale-presente que o cliente compra ou ganha." },
               { href: "/admin/vitrine?novo=1", titulo: "Produto", texto: "Um item novo no catálogo." },
-            ].map((n) => (
+            ].filter((n) => !gratis || n.titulo === "Produto").map((n) => (
               <AbrirEditor key={n.href} href={n.href} rotulo={n.titulo} aoFechar={() => { setRecarga((c) => c + 1); setVista("lista"); if (n.href === "/admin/gift") onGiftFechado(onde); }} className={cardLink}>
                 <span className="min-w-0 flex-1 text-left">
                   <span className="block text-[14.5px] font-semibold leading-tight">{n.titulo}</span>

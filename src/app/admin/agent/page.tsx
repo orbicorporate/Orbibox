@@ -1,3 +1,4 @@
+import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAccessInfoForBusiness } from "@/lib/plans";
@@ -10,7 +11,10 @@ export default async function AgentPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
-  const access = businessId ? await getAccessInfoForBusiness(businessId) : null;
+
+  if (businessId && (await getAccessInfoForBusiness(businessId)).isFree) {
+    return <BloqueioGratis recurso="Sua IA" descricao="A Orbi atende seus clientes 24 horas e captura contatos enquanto você cuida do negócio." itens={["Responde dúvidas e recomenda produtos","Guarda o contato de quem conversou","Aprende o tom de voz da sua marca"]} />;
+  }  const access = businessId ? await getAccessInfoForBusiness(businessId) : null;
 
   if (!access?.hasAiChat) {
     // Titânio: em vez de bloquear, deixa experimentar a Orbi (2 grátis) pra

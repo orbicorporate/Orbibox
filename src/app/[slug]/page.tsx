@@ -3,7 +3,8 @@ import { ehDonoOuAdmin } from "@/lib/business";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { getOwnerHasAiChat, getOwnerHasVouchers } from "@/lib/plans";
+import { getOwnerHasAiChat, getOwnerHasVouchers, getOwnerIsFree } from "@/lib/plans";
+import { caixaBloqueadaNoGratis } from "@/lib/planoGratis";
 import { filterLive } from "@/lib/scheduling";
 import { capaDoItem } from "@/lib/showcase";
 import { VisitorExperience } from "./VisitorExperience";
@@ -125,7 +126,7 @@ export default async function VisitorPage({
   const isOwner = await ehDonoOuAdmin(user?.id, business.id);
 
   // As quatro dependem só do business, vão juntas em vez de em fila.
-  const [contentRes, boxesRes, agentRes, hasAiChat, hasVouchers, giftRes] = await Promise.all([
+  const [contentRes, boxesRes, agentRes, hasAiChat, hasVouchers, giftRes, donoGratis] = await Promise.all([
     supabase
       .from("content_items")
       .select("id, title, description, price, price_type, price_max, image_url, gallery_urls, brand_label, type, position, layout_size, box_color, footer_color, box_style, title_placement, target_url, link_kind, starts_at, ends_at")
@@ -141,11 +142,12 @@ export default async function VisitorPage({
     getOwnerHasAiChat(business.owner_id),
     getOwnerHasVouchers(business.owner_id),
     supabase.from("gift_settings").select("enabled").eq("business_id", business.id).maybeSingle(),
+    getOwnerIsFree(business.owner_id),
   ]);
   // Fora da janela de data agendada = como se não existisse pro visitante,
   // mesmo estando "publicado"/"ativo", assim não precisa lembrar de
   // desligar manualmente uma promoção que já venceu.
-  const giftEnabled = !!giftRes.data?.enabled;
+  const giftEnabled = !!giftRes.data?.enabled && !donoGratis;
   // O botão de Vouchers da tela inicial usa a cor do voucher mais novo no ar,
   // então trocar a cor do voucher já troca o botão.
   const { data: primeiroVoucher } = hasVouchers
@@ -154,13 +156,15 @@ export default async function VisitorPage({
   const corVoucher = primeiroVoucher?.color ? voucherTheme(primeiroVoucher.color).via : null;
   // Sem foto de capa, vale a primeira foto da página do item (o dono costuma colocar só lá).
   const content = filterLive(contentRes.data ?? []).map(({ gallery_urls, ...i }) => ({ ...i, image_url: capaDoItem(i.image_url, gallery_urls) }));
-  const boxes = filterLive(boxesRes.data ?? []);
+  // Plano grátis: vouchers, gift, IA e PDFs não aparecem para o visitante.
+  const boxes = filterLive(boxesRes.data ?? []).filter((b) => !donoGratis || !caixaBloqueadaNoGratis(b));
   const agentConfig = agentRes.data;
   const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length >= 2
     ? (agentConfig.orbi_colors as string[])
     : null;
 
   return (
+    <>
     <VisitorExperience
       business={business}
       content={content}
@@ -173,6 +177,13 @@ export default async function VisitorPage({
       hasVouchers={hasVouchers}
       corVoucher={corVoucher}
       giftEnabled={giftEnabled}
+      gratis={donoGratis}
     />
+    {donoGratis && (
+      <a href={`/?de=${encodeURIComponent(business.slug)}`} className="mx-auto mb-6 mt-2 flex w-fit items-center gap-2 rounded-full border border-divider bg-white px-4 py-2 text-[13px] text-text-secondary">
+        Feito com <span className="text-on-background">Orbibox</span>
+      </a>
+    )}
+    </>
   );
 }

@@ -1,3 +1,5 @@
+import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
+import { getAccessInfoForBusiness } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { MateriaisEditor } from "./MateriaisEditor";
@@ -8,7 +10,10 @@ export default async function MateriaisPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
-  const [{ data: boxes }, { count: totalBoxes }] = await Promise.all([
+
+  if (businessId && (await getAccessInfoForBusiness(businessId)).isFree) {
+    return <BloqueioGratis recurso="Materiais" descricao="Tabelas de preço, catálogos e outros PDFs para seus clientes baixarem." itens={["Até vários arquivos em um só botão","Opção de pedir o contato antes de baixar"]} />;
+  }  const [{ data: boxes }, { count: totalBoxes }] = await Promise.all([
     supabase.from("smart_boxes").select("id, config, is_active").eq("business_id", businessId!).eq("box_type", "custom"),
     supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", businessId!),
   ]);

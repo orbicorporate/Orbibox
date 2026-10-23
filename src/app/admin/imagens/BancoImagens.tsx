@@ -12,7 +12,9 @@ import {
 
 type Filtro = "todas" | "sem" | string;
 
-export function BancoImagens({ businessId, limite }: { businessId: string; limite: number }) {
+const SEM_OCULTAS: string[] = [];
+
+export function BancoImagens({ businessId, limite, ocultas = SEM_OCULTAS }: { businessId: string; limite: number; ocultas?: string[] }) {
   const supabase = useMemo(() => clienteBanco(), []);
   const { confirm, prompt, alert, DialogRenderer } = useDialogs();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,8 +52,9 @@ export function BancoImagens({ businessId, limite }: { businessId: string; limit
       supabase.from("image_library").select(COLUNAS_IMAGEM).eq("business_id", businessId).order("created_at", { ascending: false }).limit(2000),
     ]);
     setCategorias((cats as Categoria[]) ?? []);
-    setImagens(((imgs as Omit<ImagemBanco, "url">[]) ?? []).map((i) => ({ ...i, url: urlDaImagem(supabase, i.path) })));
-  }, [supabase, businessId]);
+    const escondidas = new Set(ocultas);
+    setImagens(((imgs as Omit<ImagemBanco, "url">[]) ?? []).filter((i) => !escondidas.has(i.id)).map((i) => ({ ...i, url: urlDaImagem(supabase, i.path) })));
+  }, [supabase, businessId, ocultas]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

@@ -62,6 +62,7 @@ export default async function BoxesPage({ searchParams }: { searchParams: Promis
         hasVouchers={access?.hasVouchers ?? false}
         giftEnabled={!!giftCfg?.enabled}
         hasAiChat={access?.hasAiChat ?? false}
+        gratis={access?.isFree ?? false}
       />
       <PreviewAoVivo slug={business!.slug} />
     </div>

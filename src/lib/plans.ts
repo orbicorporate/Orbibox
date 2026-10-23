@@ -27,8 +27,7 @@ export interface AccessInfo {
   isFree: boolean;
 }
 
-/** O que o plano grátis mantém no ar. O resto o dono desativa na tela "Escolha o que fica". */
-export const LIMITES_GRATIS = { bolinhas: 3, boxes: 4, fotos: 7 } as const;
+export { LIMITES_GRATIS } from "@/lib/planoGratis";
 
 // Sem assinatura = trata como Titânio bloqueado (sem chat, 1 negócio) até o
 // onboarding de cobrança rodar. Evita null-checks espalhados pelo app.

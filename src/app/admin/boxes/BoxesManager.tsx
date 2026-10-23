@@ -1,5 +1,6 @@
 "use client";
 
+import { LIMITES_GRATIS, caixaBloqueadaNoGratis } from "@/lib/planoGratis";
 import { avisarErroSalvar, conferirSalvo, excluirComDesfazer } from "@/components/ui/AvisoSalvar";
 import { IconeRede, nomeDaRede, redeDoLink } from "@/lib/redesSociais";
 import Link from "next/link";
@@ -160,6 +161,7 @@ export function BoxesManager({
   hasVouchers,
   giftEnabled,
   hasAiChat,
+  gratis = false,
 }: {
   abrirNovo?: boolean;
   businessId: string;
@@ -179,6 +181,8 @@ export function BoxesManager({
   hasVouchers: boolean;
   giftEnabled: boolean;
   hasAiChat: boolean;
+  /** Plano grátis: até 7 botões ligados (3 bolinhas e 4 boxes), sem vouchers, gift, IA e PDF. */
+  gratis?: boolean;
 }) {
   const supabase = createClient();
   // "Presentear" é um só. Boxes de gift criados pelo atalho antigo repetem
@@ -243,8 +247,16 @@ export function BoxesManager({
   const [draftLabel, setDraftLabel] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Plano grátis: no máximo 3 bolinhas + 4 boxes ligados, e nada de recurso pago.
+  const ligadosGratis = boxes.filter((b) => b.is_active && b.box_type !== "hero").length;
+  const maxLigadosGratis = LIMITES_GRATIS.bolinhas + LIMITES_GRATIS.boxes;
+
   async function toggleActive(box: Box) {
     if (META[box.box_type]?.fixo) return;
+    if (gratis && !box.is_active) {
+      if (caixaBloqueadaNoGratis(box)) { avisarErroSalvar("Esse botão não está no plano grátis. Assine para ligar."); return; }
+      if (ligadosGratis >= maxLigadosGratis) { avisarErroSalvar(`No grátis são até ${maxLigadosGratis} botões ligados. Desligue um ou assine.`); return; }
+    }
     const c = (box.config ?? {}) as BoxConfig;
     if (!box.is_active && box.box_type === "custom" && (c.action === "link" || c.action === "avaliar") && !c.url?.trim()) {
       avisarErroSalvar("Esse botão ainda não tem link. Abra, cole o link e depois ligue.");
@@ -356,6 +368,14 @@ export function BoxesManager({
     }
     if ((draft.action === "link" || draft.action === "avaliar") && !draft.url?.trim()) {
       setCreateError(draft.action === "avaliar" ? "Cole o link da sua avaliação no Google antes de criar." : "Cole o link pra onde o botão leva antes de criar.");
+      return;
+    }
+    if (gratis && ligadosGratis >= maxLigadosGratis) {
+      setCreateError(`No grátis são até ${maxLigadosGratis} botões ligados. Desligue um ou assine.`);
+      return;
+    }
+    if (gratis && caixaBloqueadaNoGratis({ box_type: "custom", config: draft })) {
+      setCreateError("Esse tipo de botão não está no plano grátis.");
       return;
     }
     setCreateError(null);

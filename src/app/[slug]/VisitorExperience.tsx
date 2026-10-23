@@ -48,6 +48,7 @@ import { LogoEditor } from "./LogoEditor";
 import { SobreEditorSheet, type SobreParte } from "./SobreEditorSheet";
 import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
+import { LIMITES_GRATIS } from "@/lib/planoGratis";
 import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
 import { NOBRES, coresDaMarca } from "@/lib/paletasNobres";
@@ -147,6 +148,7 @@ export function VisitorExperience({
   hasVouchers,
   corVoucher = null,
   giftEnabled: giftLigado = false,
+  gratis = false,
   suggestedQuestions = [],
 }: {
   business: Business;
@@ -160,6 +162,8 @@ export function VisitorExperience({
   /** Cor do voucher mais novo no ar: o botão de Vouchers da Home segue essa cor. */
   corVoucher?: string | null;
   giftEnabled?: boolean;
+  /** Dono no plano grátis: limites de bolinhas e boxes e sem recursos pagos. */
+  gratis?: boolean;
   suggestedQuestions?: string[];
 }) {
   const supabase = createClient();
@@ -608,6 +612,7 @@ export function VisitorExperience({
   // Bolinha, o de baixo em Destaque; é a mesma folha nos dois.
   const [folha, setFolha] = useState<"bolinha" | "destaque" | null>(null);
   async function criarBoxNaPosicao(novo: NovoBox, pos: "bolinha" | "destaque"): Promise<boolean> {
+    if (passouDoLimiteGratis(pos)) return false;
     const posicao = boxList.reduce((m, b) => Math.max(m, b.position), -1) + 1;
     const { data, error } = await supabase
       .from("smart_boxes")
@@ -619,7 +624,19 @@ export function VisitorExperience({
     if (pos === "destaque") await salvarDestaques([...destaquesHome, { t: "botao", id: (data as BoxRow).id }]);
     return true;
   }
+  // Plano grátis: até 3 bolinhas e 4 boxes. Quem passa disso vê o aviso e a troca não acontece.
+  const [avisoGratis, setAvisoGratis] = useState<string | null>(null);
+  function passouDoLimiteGratis(destino: Posicao): boolean {
+    if (!gratis) return false;
+    const nBol = bolinhasVitrine.filter((b) => b.editavel).length;
+    const nDest = destaquesHome.filter((d) => d.t === "botao" || d.t === "item").length;
+    if (destino === "bolinha" && nBol >= LIMITES_GRATIS.bolinhas) { setAvisoGratis(`No grátis são até ${LIMITES_GRATIS.bolinhas} bolinhas. Tire uma para colocar outra, ou assine.`); return true; }
+    if (destino === "destaque" && nDest >= LIMITES_GRATIS.boxes) { setAvisoGratis(`No grátis são até ${LIMITES_GRATIS.boxes} boxes. Tire um para colocar outro, ou assine.`); return true; }
+    setAvisoGratis(null);
+    return false;
+  }
   async function mudarLinha(l: LinhaHome, pos: Posicao) {
+    if (pos !== "escondido" && l.pos !== pos && passouDoLimiteGratis(pos)) return;
     const sem = destaquesHome.filter((d) => !(d.id === l.id && (d.t === l.tipo || (l.tipo === "item" && d.t === "item_bolinha"))));
     const proxima: DestaqueSalvo[] = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : l.tipo === "item" && pos === "bolinha" ? [...sem, { t: "item_bolinha", id: l.id, p: Math.max(0, ...boxList.map((b) => b.position), ...destaquesHome.map((d) => (d.t === "item_bolinha" && typeof d.p === "number" ? d.p : 0))) + 1 }] : sem;
     if (l.tipo === "botao") {
@@ -957,6 +974,8 @@ export function VisitorExperience({
           whatsappInicial={business.contact_whatsapp ?? ""}
           enderecoInicial={business.address ?? ""}
           onMudar={(l, pos) => void mudarLinha(l, pos)}
+          gratis={gratis}
+          avisoGratis={avisoGratis}
           onCriarBox={criarBoxNaPosicao}
           onGiftFechado={(pos) => {
             // O gift card é criado em tela própria e não liga o botão sozinho: liga o Presentear aqui.

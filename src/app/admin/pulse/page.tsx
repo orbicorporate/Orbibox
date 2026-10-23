@@ -1,3 +1,4 @@
+import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
@@ -24,7 +25,10 @@ export default async function PulsePage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
-  const { data: business } = await supabase
+
+  if (businessId && (await getAccessInfoForBusiness(businessId)).isFree) {
+    return <BloqueioGratis recurso="Números" descricao="Veja quantas pessoas abrem a sua página, de onde vêm e o que clicam." itens={["Visitas, cliques e origem do público","Resumo da semana por e-mail","Recomendações da Orbi com base nos números"]} />;
+  }  const { data: business } = await supabase
     .from("businesses")
     .select("id, slug, resumo_semanal, share_image_url, share_description, vitrine_cover_url, vitrine_cover_urls, logo_url, about_business, differentials")
     .eq("id", businessId!)

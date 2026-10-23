@@ -1,5 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+/** O que o plano grátis mantém no ar. O resto o dono desativa na tela "Escolha o que fica". */
+export const LIMITES_GRATIS = { bolinhas: 3, boxes: 4, fotos: 7 } as const;
+
 /**
  * Estado do plano grátis, guardado em businesses.plano_gratis (jsonb).
  * Nada é apagado: o que o dono desativa fica listado aqui e volta quando ele assina.
@@ -20,7 +23,10 @@ export function lerPlanoGratis(raw: unknown): PlanoGratis | null {
 /** Caixas que o plano grátis nunca mantém (vouchers, gift, IA, PDFs), vistas pelo tipo e pela ação. */
 export function caixaBloqueadaNoGratis(b: { box_type: string; config?: unknown }): boolean {
   if (b.box_type === "campaign" || b.box_type === "agent") return true;
-  const acao = (b.config as { action?: string } | null)?.action;
+  const cfg = b.config as { action?: string; url?: string } | null;
+  const acao = cfg?.action;
+  // Botão de link que abre um PDF guardado no Orbibox.
+  if (acao === "link" && typeof cfg?.url === "string" && cfg.url.includes("/object/public/cardapios-pdf/")) return true;
   return acao === "cupom" || acao === "gift" || acao === "materiais" || acao === "zara";
 }
 

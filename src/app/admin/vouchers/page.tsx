@@ -1,3 +1,4 @@
+import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
 import { createClient } from "@/lib/supabase/server";
 import { BeneficiosVoucher } from "./BeneficiosVoucher";
 import { getAccessInfoForBusiness } from "@/lib/plans";
@@ -18,7 +19,10 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
-  const access = businessId ? await getAccessInfoForBusiness(businessId) : null;
+
+  if (businessId && (await getAccessInfoForBusiness(businessId)).isFree) {
+    return <BloqueioGratis recurso="Vouchers" descricao="Ofertas que seus clientes resgatam e que trazem gente nova para o seu negócio." itens={["Crie ofertas com código e validade","Compartilhe no WhatsApp e nos Stories","Acompanhe quantos resgataram"]} />;
+  }  const access = businessId ? await getAccessInfoForBusiness(businessId) : null;
   const canSave = !!access?.hasVouchers;
 
   // Link público pelo domínio de produção, como na Home do painel.

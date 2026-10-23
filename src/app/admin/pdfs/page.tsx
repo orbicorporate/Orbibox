@@ -1,3 +1,5 @@
+import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
+import { getAccessInfoForBusiness } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { lerPdfs } from "@/lib/cardapio";
@@ -11,7 +13,10 @@ export default async function PdfsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
-  const { data: boxes } = await supabase
+
+  if (businessId && (await getAccessInfoForBusiness(businessId)).isFree) {
+    return <BloqueioGratis recurso="PDFs da marca" descricao="Cardápio de Natal, tabela de preços e catálogos em PDF, direto na sua página." itens={["Botão que abre o PDF na Home","Reduz o arquivo sozinho para abrir rápido","Troque o arquivo sempre que precisar"]} />;
+  }  const { data: boxes } = await supabase
     .from("smart_boxes")
     .select("id, title, config, is_active")
     .eq("business_id", businessId!)

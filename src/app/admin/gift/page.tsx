@@ -1,3 +1,5 @@
+import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
+import { getAccessInfoForBusiness } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { GiftManager } from "./GiftManager";
@@ -8,6 +10,9 @@ export default async function GiftPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
 
+  if (businessId && (await getAccessInfoForBusiness(businessId)).isFree) {
+    return <BloqueioGratis recurso="Gift Cards" descricao="Seus clientes presenteiam amigos com um vale-presente do seu negócio." itens={["Vale-presente com a sua arte","Você libera depois de combinar o pagamento","Mais clientes novos chegando por indicação"]} />;
+  }
   const [{ data: settings }, { data: gifts }] = await Promise.all([
     supabase.from("gift_settings").select("*").eq("business_id", businessId!).maybeSingle(),
     supabase.from("gift_cards").select("id, code, buyer_whatsapp, value_cents, from_name, to_name, message, status, created_at, used_at").eq("business_id", businessId!).order("created_at", { ascending: false }).limit(100),
