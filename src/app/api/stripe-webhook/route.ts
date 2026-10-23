@@ -45,6 +45,13 @@ async function upsertFromSubscription(subscription: Stripe.Subscription, ownerId
     return;
   }
 
+  // Conta de cortesia (dada pelo master) nunca e sobrescrita por uma assinatura de teste.
+  const { data: atual } = await supabase.from("subscriptions").select("status").eq("owner_id", ownerId).maybeSingle();
+  if (atual?.status === "comped") {
+    console.warn("Webhook: conta de cortesia, assinatura do Stripe ignorada", ownerId, subscription.id);
+    return;
+  }
+
   const planId = planIdFromPriceId(subscription);
   const item = subscription.items.data[0];
 
@@ -218,10 +225,12 @@ export async function POST(req: NextRequest) {
         const supabase = createServiceClient();
         const ownerId = subscription.metadata?.owner_id;
         if (ownerId) {
+          // Cortesia nao cancela por causa do Stripe.
           await supabase
             .from("subscriptions")
             .update({ status: "canceled", updated_at: new Date().toISOString() })
-            .eq("owner_id", ownerId);
+            .eq("owner_id", ownerId)
+            .neq("status", "comped");
           // Se esse indicado ainda estava na carência, a indicação não vira
           // crédito, cancelou antes dos 7 dias.
           await supabase
