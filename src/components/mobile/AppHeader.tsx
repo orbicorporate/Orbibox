@@ -232,7 +232,9 @@ export function AppHeader({
                   >
                     {item.marca && logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={logoUrl} alt="" className="h-11 w-11 rounded-full bg-white object-cover ring-1 ring-black/5" />
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-black/5">
+                        <img src={logoUrl} alt="" className="h-full w-full object-contain p-[5px]" />
+                      </span>
                     ) : (
                       <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-on-background">{item.icon}</span>
                     )}
