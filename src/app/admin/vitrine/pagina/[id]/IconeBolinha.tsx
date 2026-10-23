@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon } from "@/lib/showcase";
@@ -16,6 +17,7 @@ type Destaque = { t: string; id: string; p?: number; logo?: string | null };
  */
 export function IconeBolinha({ businessId, itemId, fotoItem, logoMarca, inicial }: { businessId: string; itemId: string; fotoItem: string | null; logoMarca: string | null; inicial: string | null }) {
   const supabase = createClient();
+  const router = useRouter();
   const [atual, setAtual] = useState<string | null>(inicial);
   const [enviar, setEnviar] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -34,7 +36,9 @@ export function IconeBolinha({ businessId, itemId, fotoItem, logoMarca, inicial 
     const nova = lista.map((d) => (d.t === "item_bolinha" && d.id === itemId ? { ...d, logo: url } : d));
     const { error } = await supabase.from("businesses").update({ home_destaques: nova as never }).eq("id", businessId);
     setSalvando(false);
-    if (error) { setAtual(anterior); setErro("Não consegui salvar. Tente de novo."); }
+    if (error) { setAtual(anterior); setErro("Não consegui salvar. Tente de novo."); return; }
+    // Limpa o cache de navegação: a Home já abre com o ícone novo.
+    router.refresh();
   }
 
   const opcoes = [
