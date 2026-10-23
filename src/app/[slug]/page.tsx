@@ -20,10 +20,10 @@ export async function generateMetadata({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ v?: string; cardapio?: string; clube?: string }>;
+  searchParams: Promise<{ v?: string; cardapio?: string; clube?: string; de?: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const { v: voucherId, cardapio, clube } = await searchParams;
+  const { v: voucherId, cardapio, clube, de } = await searchParams;
   const supabase = await createClient();
   const { data: b } = await supabase
     .from("businesses")
@@ -68,7 +68,8 @@ export async function generateMetadata({
     ? `${fonteDescricao.slice(0, 36).replace(/[\s,.;:]+\S*$/, "").replace(/[\s,.;:]+$/, "")}…`
     : fonteDescricao;
   // Título do preview do link, o convite vem antes do nome, não só o nome cru.
-  const tituloPreview = `Visite nosso Orbibox - ${b.name}`;
+  // Quando quem compartilha é o público (link com ?de=publico), o convite vem de um cliente, não da marca.
+  const tituloPreview = de === "publico" ? `Confere isso no Orbibox da ${b.name}` : `Visite nosso Orbibox - ${b.name}`;
 
   // Link de pedido de avaliação (?clube=avaliar): direto ao ponto, sem "visite".
   if (clube === "avaliar") {
