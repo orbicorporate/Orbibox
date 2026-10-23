@@ -93,7 +93,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   // Faixa discreta lá em cima, sem fundo: rostos e contagem de fãs, coração, e a nota (estrela colorida) com o balão de avaliações.
   const abrirAvaliacoes = (e: React.MouseEvent<HTMLElement>) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) });
   const cluster = !isOwner || resumo.fas > 0 || resumo.avaliacoes > 0 ? (
-    <div className="flex min-h-[40px] items-center gap-3.5 text-[13.5px] font-semibold text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]">
+    <div className="flex min-h-[40px] items-center gap-3.5 text-[13.5px] font-normal text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]">
       {(!isOwner || resumo.fas > 0) && (
         <button
           type="button"
