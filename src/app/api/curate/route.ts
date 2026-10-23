@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     // MODO 1: perguntas-chave. Se o dono definiu uma customizada, usa ela.
     if (mode === "questions") {
       const [{ data: cfg }, { data: gift }] = await Promise.all([
-        supabase.from("agent_configs").select("curation_question, curation_options").eq("business_id", businessId).maybeSingle(),
+        supabase.from("agent_configs").select("curation_question, curation_options, tone_formal_informal, tone_reserved_energetic, tone_concise_detailed").eq("business_id", businessId).maybeSingle(),
         supabase.from("gift_settings").select("enabled").eq("business_id", businessId).maybeSingle(),
       ]);
       const giftEnabled = !!gift?.enabled;
@@ -67,7 +67,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ pergunta: custom, opcoes: comGift(customOpts.slice(0, 4)) });
       }
 
-      const system = `Você é a inteligência de curadoria de uma vitrine. Olhando o catálogo de um negócio específico, crie UMA pergunta curta e envolvente pra fazer ao visitante (como "O que bateu vontade hoje?" numa sorveteria, ou "Qual seu momento?" numa loja), e de 3 a 4 respostas possíveis, curtas (1-3 palavras cada), que dividam o catálogo de formas úteis e reais pra ESSE negócio. As respostas devem refletir o que o catálogo realmente oferece, nada genérico. Português do Brasil, tom leve.
+      // O tom de voz configurado em "Sua IA" vale também para a pergunta e as respostas.
+      const fi = cfg?.tone_formal_informal ?? 50, re = cfg?.tone_reserved_energetic ?? 50, cd = cfg?.tone_concise_detailed ?? 50;
+      const tomDeVoz = `Tom de voz da marca: ${[
+        fi > 60 ? "descontraído e informal (pode usar 'você' leve, expressões do dia a dia)" : fi < 40 ? "formal e elegante (sem gírias, sem diminutivos, frases bem construídas)" : "neutro e cordial",
+        re > 60 ? "proativo e convidativo" : re < 40 ? "reservado e discreto" : "equilibrado",
+        cd > 60 ? "inspiracional, com um toque de sensação" : cd < 40 ? "direto e curto" : "claro e objetivo",
+      ].join(", ")}. Nunca use travessão.`;
+      const system = `Você é a inteligência de curadoria de uma vitrine. Olhando o catálogo de um negócio específico, crie UMA pergunta curta e envolvente pra fazer ao visitante (como "O que bateu vontade hoje?" numa sorveteria, ou "Qual seu momento?" numa loja), e de 3 a 4 respostas possíveis, curtas (1-3 palavras cada), que dividam o catálogo de formas úteis e reais pra ESSE negócio. As respostas devem refletir o que o catálogo realmente oferece, nada genérico. Português do Brasil. ${tomDeVoz}
 
 Responda APENAS um JSON válido, sem texto antes ou depois, no formato:
 {"pergunta":"...","opcoes":["...","...","..."]}`;
@@ -83,10 +90,18 @@ Responda APENAS um JSON válido, sem texto antes ou depois, no formato:
 
     // MODO 2: curar os produtos pra uma resposta escolhida.
     if (mode === "curate" && question) {
+      const { data: tcfg } = await supabase.from("agent_configs").select("tone_formal_informal, tone_reserved_energetic, tone_concise_detailed").eq("business_id", businessId).maybeSingle();
+      const tf = tcfg?.tone_formal_informal ?? 50, tr = tcfg?.tone_reserved_energetic ?? 50, tc = tcfg?.tone_concise_detailed ?? 50;
+      const tomCfg = `Tom de voz configurado pelo dono: ${[
+        tf > 60 ? "descontraído e informal" : tf < 40 ? "formal e elegante (sem gírias nem diminutivos)" : "neutro e cordial",
+        tr > 60 ? "proativo" : tr < 40 ? "reservado" : "equilibrado",
+        tc > 60 ? "inspiracional" : tc < 40 ? "direto e curto" : "claro e objetivo",
+      ].join(", ")}.`;
       // Regras fixas pra a resposta nunca sair genérica, em qualquer ramo:
       // reconhece o que a pessoa quer, prova que o negócio faz isso (com um
       // fato real do próprio contexto) e convida pra conversar agora.
       const system = `Você é a curadora inteligente da vitrine de ${biz?.name ?? "um negócio"}${biz?.brand_voice_summary ? `, com este tom de voz: ${biz.brand_voice_summary}` : ""}. O visitante escolheu: "${question}".
+${tomCfg}
 
 Escolha do catálogo os itens que MAIS combinam com isso (no máximo 4), por ordem de relevância.
 
