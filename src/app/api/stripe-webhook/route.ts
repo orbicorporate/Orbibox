@@ -64,7 +64,8 @@ async function upsertFromSubscription(subscription: Stripe.Subscription, ownerId
         current_period_end: item?.current_period_end
           ? new Date(item.current_period_end * 1000).toISOString()
           : null,
-        cancel_at_period_end: subscription.cancel_at_period_end,
+        // O portal do Stripe agenda o cancelamento com cancel_at (data), e nao so com cancel_at_period_end.
+        cancel_at_period_end: subscription.cancel_at_period_end || subscription.cancel_at != null,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "owner_id" }
