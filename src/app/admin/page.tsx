@@ -9,6 +9,7 @@ import { getAccessInfo } from "@/lib/plans";
 import { calcularOportunidade, calcularSemana } from "@/lib/copiloto";
 import { HomeView } from "./HomeView";
 import { AbrirNaPagina } from "./AbrirNaPagina";
+import { PopupDivulgacao } from "./PopupDivulgacao";
 
 // Saudação pela hora de Brasília, onde está quem usa o painel.
 function saudacaoDoMomento(): string {
@@ -99,6 +100,7 @@ export default async function HojePage() {
   return (
     <>
     <AbrirNaPagina />
+    <PopupDivulgacao businessId={b.id} nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={b.share_image_url || b.vitrine_cover_url || null} logo={b.logo_url ?? null} temVoucher={(vouchersRes.data ?? []).length > 0} />
     <HomeView
       saudacao={saudacaoDoMomento()}
       primeiroNome={primeiroNome}

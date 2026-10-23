@@ -16,6 +16,8 @@ export function AbrirNaPagina() {
       const standalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
       if (!standalone) return;
       if (sessionStorage.getItem("orbibox_abriu") === "1") return;
+      // Dono novo: o primeiro popup de divulgação aparece aqui no painel, então não leva para a página ainda.
+      if (!Object.keys(localStorage).some((k) => k.startsWith("orbibox-divulgar:"))) return;
       sessionStorage.setItem("orbibox_abriu", "1");
       router.replace("/abrir");
     } catch {

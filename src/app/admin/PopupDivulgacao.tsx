@@ -1,0 +1,145 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import Link from "next/link";
+import { FolhaCompartilhar, type AlvoCompartilhar } from "@/components/compartilhar/Compartilhar";
+
+type Dica = {
+  id: string;
+  titulo: string;
+  texto: string;
+  passos?: string[];
+  primario: string;
+  /** "whatsapp" abre o WhatsApp com a mensagem pronta, "folha" abre o compartilhar (WhatsApp e Stories), "link" leva a uma tela do painel. */
+  acao: "whatsapp" | "folha" | "link";
+  href?: string;
+  /** Para onde o compartilhamento aponta (padrão: a página do negócio). */
+  caminho?: string;
+  mensagem?: string;
+  icone: "zap" | "stories" | "voucher" | "estrela";
+};
+
+const ESPERA_MS = 20 * 3600 * 1000;
+
+function Icone({ tipo }: { tipo: Dica["icone"] }) {
+  const p = { width: 28, height: 28, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+  if (tipo === "stories") return <svg {...p}><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17" cy="7" r=".6" fill="currentColor" /></svg>;
+  if (tipo === "voucher") return <svg {...p}><path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8z" /><path d="M14 7v10" strokeDasharray="2 2" /></svg>;
+  if (tipo === "estrela") return <svg {...p}><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8L12 3.5z" /></svg>;
+  return <svg {...p}><path d="M5 19l1.3-3.8A8 8 0 1 1 9.2 18.6L5 19z" /><path d="M9.5 9.5c.4 2 2 3.6 4 4" /></svg>;
+}
+
+/**
+ * Popups de divulgação: o primeiro aparece logo que o dono abre o painel pela
+ * primeira vez (compartilhar no WhatsApp e nos Stories). Depois, no máximo um
+ * por dia, uma dica de cada vez. O que já foi feito ou adiado fica guardado no aparelho.
+ */
+export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo, temVoucher }: {
+  businessId: string; nome: string; slug: string; shareUrl: string; imagem: string | null; logo: string | null; temVoucher: boolean;
+}) {
+  const [dica, setDica] = useState<Dica | null>(null);
+  const [folha, setFolha] = useState<AlvoCompartilhar | null>(null);
+  const chave = `orbibox-divulgar:${businessId}`;
+
+  const dicas: Dica[] = [
+    {
+      id: "primeiro", titulo: "Seu Orbibox está no ar", icone: "zap",
+      texto: "Quanto antes mais gente ver, melhor o seu teste. Mande agora para quem conhece você.",
+      passos: ["Grupos de WhatsApp da família e dos amigos", "Clientes e conhecidos que já compram de você", "Depois, os Stories (próxima dica)"],
+      primario: "Compartilhar no WhatsApp", acao: "whatsapp",
+      mensagem: `Gente, olha o meu novo link: ${nome}. Dá uma olhada e me conta o que achou:`,
+    },
+    {
+      id: "stories", titulo: "Poste nos Stories", icone: "stories",
+      texto: "A gente gera a arte pronta com a sua marca. Você só escolhe o Instagram e cola o link no adesivo.",
+      primario: "Gerar arte para os Stories", acao: "folha",
+    },
+    temVoucher
+      ? { id: "voucher", titulo: "Divulgue o seu voucher", icone: "voucher", texto: "Um voucher no ar atrai quem ainda não conhece você. Mande a página para a sua lista e para os Stories.", primario: "Compartilhar a página", acao: "folha" }
+      : { id: "voucher", titulo: "Crie um voucher e divulgue", icone: "voucher", texto: "Uma oferta é o motivo mais fácil para alguém abrir o seu link. Crie em um minuto e compartilhe no WhatsApp e nos Stories.", primario: "Criar meu voucher", acao: "link", href: "/admin/vouchers?novo=1" },
+    {
+      id: "avaliacao", titulo: "Peça uma avaliação", icone: "estrela",
+      texto: "Mande o link para quem já gostou de você. A pessoa abre direto na tela de avaliar, e a nota aparece na sua página.",
+      primario: "Pedir avaliação", acao: "folha", caminho: `/${slug}?clube=avaliar`,
+      mensagem: `Como foi sua experiência em ${nome}? Conta pra gente, leva 1 minuto:`,
+    },
+  ];
+
+  useEffect(() => {
+    let estado: { feitas: string[]; ultimo: number } = { feitas: [], ultimo: 0 };
+    try { estado = JSON.parse(localStorage.getItem(chave) || "") || estado; } catch { /* primeira vez */ }
+    const proxima = dicas.find((d) => !estado.feitas.includes(d.id));
+    if (!proxima) return;
+    const primeira = estado.feitas.length === 0 && estado.ultimo === 0;
+    if (!primeira && Date.now() - estado.ultimo < ESPERA_MS) return;
+    const t = setTimeout(() => setDica(proxima), primeira ? 900 : 1500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chave]);
+
+  function guardar(feita: boolean, id: string) {
+    try {
+      const atual = JSON.parse(localStorage.getItem(chave) || "{}") as { feitas?: string[]; ultimo?: number };
+      const feitas = feita ? Array.from(new Set([...(atual.feitas ?? []), id])) : atual.feitas ?? [];
+      localStorage.setItem(chave, JSON.stringify({ feitas, ultimo: Date.now() }));
+    } catch { /* sem armazenamento */ }
+  }
+
+  function alvoDe(d: Dica): AlvoCompartilhar {
+    const url = d.caminho ? `${new URL(shareUrl).origin}${d.caminho}` : shareUrl;
+    return { url, titulo: nome, marca: nome, imagem, logo, texto: d.mensagem ?? `Conhece ${nome}? Dá uma olhada:` };
+  }
+
+  function fazer(d: Dica) {
+    guardar(true, d.id);
+    setDica(null);
+    if (d.acao === "link" && d.href) return;
+    if (d.acao === "whatsapp") {
+      const a = alvoDe(d);
+      window.open(`https://wa.me/?text=${encodeURIComponent(`${a.texto}\n${a.url}`)}`, "_blank", "noopener");
+      return;
+    }
+    if (d.acao === "folha") setFolha(alvoDe(d));
+  }
+
+  function depois(d: Dica) {
+    guardar(false, d.id);
+    setDica(null);
+  }
+
+  return (
+    <>
+      {dica && createPortal(
+        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/35 px-4 pb-[max(20px,env(safe-area-inset-bottom))] sm:items-center" role="dialog" aria-modal="true" aria-label={dica.titulo} onClick={() => depois(dica)}>
+          <div onClick={(e) => e.stopPropagation()} className="acao-entra w-full max-w-[380px] rounded-[32px] bg-surface-white p-6 text-center shadow-[0_24px_60px_rgba(17,19,24,0.3)]">
+            <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-surface-soft text-on-background"><Icone tipo={dica.icone} /></span>
+            <p className="mt-4 font-[family-name:var(--font-manrope)] text-[22px] font-normal leading-tight tracking-[-0.01em] text-on-background">{dica.titulo}</p>
+            <p className="mt-2 text-[14.5px] leading-relaxed text-text-secondary">{dica.texto}</p>
+            {dica.passos && (
+              <ul className="mt-4 space-y-2 text-left">
+                {dica.passos.map((p, i) => (
+                  <li key={p} className="flex items-center gap-3 text-[13.5px] text-text-secondary">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-soft text-[12px] text-on-background">{i + 1}</span>
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {dica.acao === "link" && dica.href ? (
+              <Link href={dica.href} onClick={() => fazer(dica)} className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-full bg-button-primary text-[15px] font-normal text-white active:scale-[0.98]">{dica.primario}</Link>
+            ) : (
+              <button type="button" onClick={() => fazer(dica)} className={`mt-6 flex min-h-[50px] w-full items-center justify-center rounded-full text-[15px] font-normal text-white active:scale-[0.98] ${dica.acao === "whatsapp" ? "bg-[#25D366]" : "bg-button-primary"}`}>{dica.primario}</button>
+            )}
+            {dica.id === "primeiro" && (
+              <button type="button" onClick={() => { guardar(true, dica.id); setDica(null); setFolha(alvoDe(dica)); }} className="mt-2 min-h-[46px] w-full rounded-full bg-surface-soft text-[14px] font-normal text-on-background active:scale-[0.98]">Ver outras opções (Stories e mais)</button>
+            )}
+            <button type="button" onClick={() => depois(dica)} className="mt-1 min-h-[44px] w-full text-[13.5px] text-text-tertiary">Agora não</button>
+          </div>
+        </div>,
+        document.body,
+      )}
+      {folha && <FolhaCompartilhar alvo={folha} aoFechar={() => setFolha(null)} />}
+    </>
+  );
+}
