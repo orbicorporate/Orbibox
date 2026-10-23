@@ -12,6 +12,7 @@ import {
 } from "@/lib/clube";
 import { OrbiAvatar, lerEsfera, lerLogoEscala } from "@/components/orbi/OrbiAvatar";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
+import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import { Cabecalho, Estrela, Folha, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
 type Aberta = { tipo: "avaliacoes" | "fas" | "entrar" | "contato"; origem: DOMRect | null } | null;
@@ -55,10 +56,12 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     if (p === "contato") setAberta({ tipo: "contato", origem: null });
   }, [businessId, recarregar]);
 
-  // Atalho da Home do dono: /slug?clube=fas abre direto a lista de fãs.
+  // Atalhos por link: /slug?clube=fas abre a lista de fãs (dono); /slug?clube=avaliar abre direto a tela de avaliação (qualquer pessoa).
   useEffect(() => {
-    if (!isOwner || typeof window === "undefined") return;
-    if (new URLSearchParams(window.location.search).get("clube") === "fas") queueMicrotask(() => setAberta({ tipo: "fas", origem: null }));
+    if (typeof window === "undefined") return;
+    const alvo = new URLSearchParams(window.location.search).get("clube");
+    if (alvo === "fas" && isOwner) queueMicrotask(() => setAberta({ tipo: "fas", origem: null }));
+    if (alvo === "avaliar" && !isOwner) queueMicrotask(() => setAberta({ tipo: "avaliacoes", origem: null }));
   }, [isOwner]);
 
   useEffect(() => {
@@ -66,6 +69,8 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     (async () => {
       const e = await recarregar();
       if (!vivo || !e.logado) return;
+      // Ver as marcas dos outros fãs faz parte do Clube: fica sempre ligado.
+      if (e.userId && !e.mostrarMarcas) void atualizarPerfil(e.userId, { mostrar_marcas: true });
       let p: string | null = null;
       try { p = sessionStorage.getItem(chave(slug)); sessionStorage.removeItem(chave(slug)); } catch { /* ignora */ }
       if (p === "fa" || p === "curtir" || p === "avaliar" || p === "contato" || p?.startsWith("item|")) await executar(p, e);
@@ -619,7 +624,7 @@ function LinhaAjuste({ titulo, ligado, ocupado, aoAlternar }: { titulo: string; 
       <span aria-hidden className={`relative h-[24px] w-[40px] shrink-0 rounded-full transition-colors ${ligado ? "bg-[#111318]" : "bg-[#E4E2DC]"}`}>
         <span className={`absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white shadow transition-all ${ligado ? "left-[19px]" : "left-[3px]"}`} />
       </span>
-      <span className="block text-[13px] font-medium leading-tight text-on-background">{titulo}</span>
+      <span className="block text-[13px] font-normal leading-tight text-on-background">{titulo}</span>
     </button>
   );
 }
@@ -665,17 +670,6 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
     const novo = await aoMudar();
     setSalvandoAjuste(null);
     if (novo.aceiteWhatsapp !== ligar) setAvisoAjuste("Não consegui salvar essa escolha agora. Tente de novo.");
-  }
-
-  async function alternarMarcas() {
-    if (!eu.userId || salvandoAjuste) return;
-    const ligar = !eu.mostrarMarcas;
-    setSalvandoAjuste("marcas");
-    setAvisoAjuste(null);
-    await atualizarPerfil(eu.userId, { mostrar_marcas: ligar });
-    const novo = await aoMudar();
-    setSalvandoAjuste(null);
-    if (novo.mostrarMarcas !== ligar) setAvisoAjuste("Não consegui salvar essa escolha agora. Tente de novo.");
   }
 
   useEffect(() => {
@@ -825,9 +819,17 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
           </div>
           <div className="cl-entra flex flex-col items-center gap-2 px-5 pb-[max(22px,env(safe-area-inset-bottom))] pt-2" style={{ ["--i" as string]: 6 }}>
             {isOwner ? (
+              <>
+              <BotaoCompartilhar
+                alvo={{ url: `/${slug}?clube=avaliar`, titulo: "Avaliação", rotulo: "Avaliação", marca: nome, imagem: logoUrl, logo: logoUrl, texto: `Como foi sua experiência em ${nome}? Conta pra gente, leva 1 minuto:` }}
+                className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-surface-soft px-6 text-[15px] font-normal text-on-background ring-1 ring-divider active:scale-[0.98]"
+              >
+                <span>Pedir avaliação</span>
+              </BotaoCompartilhar>
               <button type="button" onClick={() => setVerContatos(true)} className="min-h-[48px] rounded-full bg-button-primary px-6 text-[15px] font-semibold text-white active:scale-[0.98]">
                 Contatos no WhatsApp{contatos ? ` (${contatos.length})` : ""}
               </button>
+              </>
             ) : (
               <>
                 <button
@@ -843,6 +845,12 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                 >
                   {eu.ehFa ? "Você é fã" : "Virar fã"}
                 </button>
+                <BotaoCompartilhar
+                  alvo={{ url: `/${slug}`, titulo: nome, rotulo: "Clube", marca: nome, imagem: logoUrl, logo: logoUrl, texto: `Conhece ${nome}? Dá uma olhada:` }}
+                  className="flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 text-[14px] font-normal text-text-secondary active:scale-[0.98]"
+                >
+                  <span>Convidar um amigo</span>
+                </BotaoCompartilhar>
                 {eu.logado && eu.userId && (
                   <div className="mt-2 flex w-full max-w-[360px] items-stretch divide-x divide-divider overflow-hidden rounded-[24px] bg-white ring-1 ring-divider">
                     {eu.ehFa && (
@@ -854,18 +862,11 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                           ocupado={salvandoAjuste === "whats"}
                           aoAlternar={alternarWhats}
                         />
-                        <LinhaAjuste
-                          titulo="Minhas marcas"
-                          detalhe="Outros fãs veem suas marcas"
-                          ligado={eu.mostrarMarcas}
-                          ocupado={salvandoAjuste === "marcas"}
-                          aoAlternar={alternarMarcas}
-                        />
                       </>
                     )}
                     <label className="flex min-h-[92px] flex-1 cursor-pointer flex-col items-center justify-center gap-2.5 px-2 py-3 text-center active:bg-surface-soft">
                       <Rosto url={eu.foto} nome={eu.nome} size={28} />
-                      <span className="block text-[13px] font-medium leading-tight text-on-background">{enviandoFoto ? "Enviando…" : "Minha foto"}</span>
+                      <span className="block text-[13px] font-normal leading-tight text-on-background">{enviandoFoto ? "Enviando…" : "Minha foto"}</span>
                       <input
                         type="file"
                         accept="image/*"
