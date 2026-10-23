@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
+import { useArrastarOrdem } from "@/lib/useArrastarOrdem";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
 import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
@@ -217,6 +218,12 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
   const [erro, setErro] = useState<string | null>(null);
   const [propostos, setPropostos] = useState<Proposto[] | null>(null);
 
+  const arrastar = useArrastarOrdem(
+    lista.itens.map((x) => x.id),
+    (ordem) => onChange({ ...lista, itens: ordem.map((id) => lista.itens.find((x) => x.id === id)).filter((x): x is ListaItem => !!x) }),
+    "lista",
+  );
+  const itensOrdenados = arrastar.ordenar(lista.itens, (x) => x.id);
   const cheia = lista.itens.length >= MAX_LISTA;
   const destino = DESTINOS.find((d) => d.id === lista.destino) ?? DESTINOS[0];
 
@@ -324,7 +331,7 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
         <input id="lista-titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} onBlur={() => titulo !== lista.titulo && onChange({ ...lista, titulo: titulo.trim() })} maxLength={50} placeholder="Ex: Blusas, Nossos pratos" className={`${campo} mt-1.5`} />
       </div>
 
-      <Passo n={1} titulo="Itens" sub={lista.itens.length === 0 ? "Comece colando ou enviando a lista, é o jeito mais rápido." : `${lista.itens.length} ${lista.itens.length === 1 ? "item" : "itens"}. Toque num item para pôr foto e detalhes.`}>
+      <Passo n={1} titulo="Itens" sub={lista.itens.length === 0 ? "Comece colando ou enviando a lista, é o jeito mais rápido." : `${lista.itens.length} ${lista.itens.length === 1 ? "item" : "itens"}. Toque num item para pôr foto e detalhes. Segure e arraste para mudar a ordem.`}>
         {!colar && (
           <button type="button" onClick={() => setColar(true)} disabled={cheia} className="orbi-gradient mt-3.5 flex min-h-[64px] w-full items-center gap-3 rounded-[22px] p-3.5 text-left text-on-background disabled:opacity-40 active:scale-[0.99]">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 text-[18px]" aria-hidden>✨</span>
@@ -385,8 +392,8 @@ function ListaAtiva({ businessId, lista, temWhatsapp, onChange }: { businessId: 
 
         {lista.itens.length > 0 && (
           <ul className="mt-4 grid grid-cols-3 gap-2.5">
-            {lista.itens.map((i) => (
-              <li key={i.id}>
+            {itensOrdenados.map((i) => (
+              <li key={i.id} {...arrastar.alvo(i.id)} {...arrastar.alca(i.id)} className={`transition-transform duration-150 ${arrastar.arrastando === i.id ? "relative z-10 scale-[1.06] opacity-90 drop-shadow-[0_10px_18px_rgba(17,19,24,0.28)]" : ""}`}>
                 <button type="button" onClick={() => setEdicao({ item: i, novo: false })} className="block w-full text-left active:scale-[0.97]" aria-label={`Editar ${i.nome || "item sem nome"}`}>
                   <span className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary">
                     {i.foto ? (

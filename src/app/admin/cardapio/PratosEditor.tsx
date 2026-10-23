@@ -1,6 +1,7 @@
 "use client";
 
 import { useImperativeHandle, useRef, useState } from "react";
+import { useArrastarOrdem } from "@/lib/useArrastarOrdem";
 import { createClient } from "@/lib/supabase/client";
 import { AjustarFoto } from "./AjustarFoto";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
@@ -37,6 +38,12 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
   const [apagado, setApagado] = useState<{ s: string; idx: number; item: CardapioItem } | null>(null);
   const timerDesfazer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Segurar e arrastar um prato muda a ordem dele dentro da própria categoria.
+  const arrastar = useArrastarOrdem(
+    secoes.flatMap((s) => s.itens.map((i) => i.id)),
+    (ordem) => onChange(secoes.map((s) => ({ ...s, itens: ordem.map((id) => s.itens.find((i) => i.id === id)).filter((i): i is CardapioItem => !!i) }))),
+    "pratos",
+  );
   function mudarItem(sid: string, iid: string, patch: Partial<CardapioItem>) {
     onChange(secoes.map((s) => (s.id !== sid ? s : { ...s, itens: s.itens.map((i) => (i.id === iid ? { ...i, ...patch } : i)) })));
   }
@@ -178,11 +185,11 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
             )}
             {!recolhida && (<>
             <ul className="mt-3 flex flex-col gap-2">
-              {s.itens.map((i) => {
+              {arrastar.ordenar(s.itens, (x) => x.id).map((i) => {
                 const aberta = aberto === i.id;
                 return (
-                  <li key={i.id} className="rounded-2xl border border-divider">
-                    <div className="flex items-center gap-3 p-2.5">
+                  <li key={i.id} {...arrastar.alvo(i.id, s.id)} className={`rounded-2xl border border-divider transition-transform duration-150 ${arrastar.arrastando === i.id ? "relative z-10 scale-[1.02] bg-surface-white opacity-95 shadow-[0_10px_22px_rgba(17,19,24,0.22)]" : ""}`}>
+                    <div {...arrastar.alca(i.id, s.id)} className="flex items-center gap-3 p-2.5">
                       <button type="button" onClick={() => { if (i.foto) { setAberto(i.id); setAjustando(i.id); } else { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); } }} disabled={subindo === i.id} aria-label={i.foto ? "Ajustar foto do prato" : "Adicionar foto do prato"} className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary active:scale-[0.96]">
                         {i.foto ? (
                           <>
