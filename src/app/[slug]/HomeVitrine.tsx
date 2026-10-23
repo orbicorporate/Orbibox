@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import { COR_DA_REDE, FUNDO_DA_REDE, IconeRede, type Rede } from "@/lib/redesSociais";
 import { CartaoItem, type ItemCartao } from "./CartaoItem";
 import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { ORBI_SPHERE_COLORS, sizeOf } from "@/lib/showcase";
 
 export type BolinhaVitrine = {
@@ -29,6 +30,8 @@ export type BolinhaVitrine = {
   logo?: string | null;
   /** Quando a bolinha é um item do catálogo: para onde o lápis leva (editor do item). */
   editarHref?: string;
+  /** Foto original do item (para voltar a ela depois de trocar a imagem). */
+  fotoPadrao?: string | null;
   onClick: () => void;
 };
 
@@ -119,6 +122,8 @@ export function HomeVitrine({
   onRenomear,
   onEsconder,
   onSelo,
+  onImagemItem,
+  logoMarca,
   onAdicionar,
   formato,
   onFormato,
@@ -161,6 +166,8 @@ export function HomeVitrine({
   onEsconder?: (key: string) => void;
   /** Muda a etiqueta da bolinha de vouchers (vazio esconde). */
   onSelo?: (key: string, texto: string) => void;
+  onImagemItem?: (key: string, url: string | null) => void;
+  logoMarca?: string | null;
   /** Só o dono: abre a folha para adicionar um botão novo. */
   onAdicionar?: () => void;
   /** Só o dono: grava a ordem nova dos itens em destaque (ids na ordem final, só os visíveis). */
@@ -618,7 +625,7 @@ export function HomeVitrine({
               <span className="text-[13.5px] font-medium">Todas</span>
               <Seletor valor={null} onChange={(e) => onEstilo(bolinhas.filter((x) => x.editavel).map((x) => x.key), e)} />
             </div>
-            <ListaBolinhas bolinhas={bolinhas} onEstilo={onEstilo} onCor={onCor} onReordenar={onReordenar} onRenomear={onRenomear} onEsconder={onEsconder} onSelo={onSelo} />
+            <ListaBolinhas bolinhas={bolinhas} onEstilo={onEstilo} onCor={onCor} onReordenar={onReordenar} onRenomear={onRenomear} onEsconder={onEsconder} onSelo={onSelo} onImagemItem={onImagemItem} logoMarca={logoMarca} businessId={businessId} />
           </div>
         </>,
         document.body,
@@ -636,6 +643,9 @@ function ListaBolinhas({
   onRenomear,
   onEsconder,
   onSelo,
+  onImagemItem,
+  logoMarca,
+  businessId,
 }: {
   bolinhas: BolinhaVitrine[];
   onEstilo: (keys: string[], estilo: "cor" | "linha") => void;
@@ -644,7 +654,12 @@ function ListaBolinhas({
   onRenomear?: (key: string, nome: string) => void;
   onEsconder?: (key: string) => void;
   onSelo?: (key: string, texto: string) => void;
+  onImagemItem?: (key: string, url: string | null) => void;
+  logoMarca?: string | null;
+  businessId: string;
 }) {
+  const [trocandoImagem, setTrocandoImagem] = useState<string | null>(null);
+  const [enviarNova, setEnviarNova] = useState(false);
   const itens = useRef<(HTMLLIElement | null)[]>([]);
   const [arrasto, setArrasto] = useState<{ de: number; para: number; dy: number; altura: number } | null>(null);
   const inicio = useRef<{ y: number; centros: number[] } | null>(null);
@@ -761,14 +776,15 @@ function ListaBolinhas({
                     className="min-h-[40px] min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 text-[14px] outline-none focus:border-on-background"
                   />
                 )}
-                {b.editarHref && (
-                  <AbrirEditor
-                    href={b.editarHref}
-                    rotulo="Trocar a foto da bolinha"
+                {b.editarHref && onImagemItem && (
+                  <button
+                    type="button"
+                    aria-expanded={trocandoImagem === b.key}
+                    onClick={() => { setTrocandoImagem(trocandoImagem === b.key ? null : b.key); setEnviarNova(false); }}
                     className="flex min-h-[40px] shrink-0 items-center rounded-full bg-surface-soft px-3.5 text-[13px] font-medium active:scale-[0.97]"
                   >
                     Trocar ícone
-                  </AbrirEditor>
+                  </button>
                 )}
                 {onEsconder && (
                   <button
@@ -779,6 +795,43 @@ function ListaBolinhas({
                     {b.editarHref ? "Tirar da fileira" : "Esconder"}
                   </button>
                 )}
+              </div>
+            )}
+            {b.editarHref && onImagemItem && trocandoImagem === b.key && (
+              <div className="basis-full pl-[38px]">
+                <p className="text-[12.5px] font-medium text-text-secondary">Imagem da bolinha</p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  {[
+                    { url: null as string | null, img: b.fotoPadrao ?? null, nome: "Foto do item" },
+                    ...(logoMarca ? [{ url: logoMarca as string | null, img: logoMarca as string | null, nome: "Logo da marca" }] : []),
+                  ].map((o) => {
+                    const ativa = o.url === null ? b.logo === (b.fotoPadrao ?? null) : b.logo === o.url;
+                    return (
+                      <button key={o.nome} type="button" aria-label={o.nome} aria-pressed={ativa} onClick={() => onImagemItem(b.key, o.url)} className={`flex flex-col items-center gap-1 rounded-2xl p-1 text-[11px] text-text-secondary ${ativa ? "ring-2 ring-on-background" : "ring-1 ring-divider"}`}>
+                        <span className="h-11 w-11 overflow-hidden rounded-full bg-surface-soft">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {o.img && <img src={o.img} alt="" className="h-full w-full object-cover" />}
+                        </span>
+                        {o.nome}
+                      </button>
+                    );
+                  })}
+                  <button type="button" onClick={() => setEnviarNova((v) => !v)} aria-expanded={enviarNova} aria-label="Enviar outra imagem" className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-dashed border-divider text-[20px] text-text-tertiary active:scale-95">+</button>
+                </div>
+                {enviarNova && (
+                  <div className="mt-2 rounded-2xl border border-divider p-3">
+                    <ImageUpload
+                      value={null}
+                      businessId={businessId}
+                      lockedRatio="quadrado"
+                      promptKind="avatar"
+                      onChange={(url) => { if (!url) return; onImagemItem(b.key, url); setEnviarNova(false); }}
+                    />
+                  </div>
+                )}
+                <AbrirEditor href={b.editarHref} rotulo="Editar o item" className="mt-2 inline-flex min-h-[36px] items-center rounded-full px-1 text-[12.5px] font-medium text-text-secondary underline underline-offset-2">
+                  Editar o item
+                </AbrirEditor>
               </div>
             )}
             {b.editavel && onSelo && b.tipo === "voucher" && (

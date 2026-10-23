@@ -586,7 +586,7 @@ export function VisitorExperience({
       if (d.t !== "item_bolinha") return [];
       const it = content.find((x) => x.id === d.id);
       if (!it) return [];
-      const b: BolinhaVitrine = { key: `item-${it.id}`, estilo: "cor", editavel: true, rotulo: it.title, tipo: "catalogo", logo: it.image_url, editarHref: `/admin/vitrine/pagina/${it.id}`, onClick: () => router.push(`/${business.slug}/p/${it.id}`) };
+      const b: BolinhaVitrine = { key: `item-${it.id}`, estilo: "cor", editavel: true, rotulo: it.title, tipo: "catalogo", logo: d.logo || it.image_url, fotoPadrao: it.image_url, editarHref: `/admin/vitrine/pagina/${it.id}`, onClick: () => router.push(`/${business.slug}/p/${it.id}`) };
       return [{ b, v: typeof d.p === "number" ? d.p : 10000 + n }];
     });
     if (doItens.length > 0) {
@@ -737,6 +737,10 @@ export function VisitorExperience({
     conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", key));
   }
   // Esconde a bolinha (desliga o botão). Dá pra religar em Botões.
+  // Troca a imagem da bolinha de um item (null volta para a foto do item).
+  async function trocarImagemItem(key: string, url: string | null) {
+    await salvarDestaques(destaquesHome.map((d) => (d.t === "item_bolinha" && `item-${d.id}` === key ? { ...d, logo: url } : d)));
+  }
   async function esconderBolinha(key: string) {
     if (key.startsWith("item-")) {
       await salvarDestaques(destaquesHome.filter((d) => !(d.t === "item_bolinha" && `item-${d.id}` === key)));
@@ -1170,6 +1174,8 @@ export function VisitorExperience({
                 onReordenar={reordenarBolinhas}
                 onRenomear={renomearBolinha}
                 onEsconder={esconderBolinha}
+                onImagemItem={trocarImagemItem}
+                logoMarca={logoAtual}
                 onSelo={definirSelo}
                 onAdicionar={() => setFolha("bolinha")}
               />

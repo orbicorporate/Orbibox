@@ -14,7 +14,7 @@ import type { ItemCartao } from "./CartaoItem";
 
 export type Destaque = { t: "voucher" | "item" | "botao"; id: string };
 /** O que fica salvo em home_destaques: os destaques e os itens que viraram bolinha. */
-export type DestaqueSalvo = Destaque | { t: "item_bolinha"; id: string; p?: number };
+export type DestaqueSalvo = Destaque | { t: "item_bolinha"; id: string; p?: number; logo?: string | null };
 
 /** Qualquer botão que o dono criou (WhatsApp, link, cardápio, endereço...), pronto para virar destaque. */
 export type BotaoDestaque = { key: string; titulo: string; sub: string; icone: string; logo: string | null; cor: string; acao: string; onClick: () => void };
