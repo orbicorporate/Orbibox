@@ -8,5 +8,5 @@ export async function middleware(request: NextRequest) {
 // Só as rotas que dependem de sessão. A vitrine pública (/[slug]) não passa mais por aqui,
 // o que tira uma ida ao banco de toda visita.
 export const config = {
-  matcher: ["/admin/:path*", "/onboarding/:path*", "/login", "/signup"],
+  matcher: ["/admin/:path*", "/onboarding/:path*", "/login", "/signup", "/abrir"],
 };

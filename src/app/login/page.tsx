@@ -48,7 +48,7 @@ export default function LoginPage() {
       setError(erroDeAuth(error.message));
       return;
     }
-    router.push("/admin");
+    router.push("/abrir");
     router.refresh();
   }
 

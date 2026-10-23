@@ -2,7 +2,7 @@
   "name": "Orbibox",
   "short_name": "Orbibox",
   "description": "A web que se adapta a quem entra.",
-  "start_url": "/admin",
+  "start_url": "/abrir",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

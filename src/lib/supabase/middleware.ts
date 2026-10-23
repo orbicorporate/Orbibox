@@ -65,7 +65,7 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url);
       }
       const url = request.nextUrl.clone();
-      url.pathname = "/admin";
+      url.pathname = isAuthPage ? "/abrir" : "/admin";
       return NextResponse.redirect(url);
     }
     // Logado sem negócio e numa tela de auth → segue pro onboarding.
