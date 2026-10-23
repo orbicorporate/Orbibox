@@ -88,6 +88,11 @@ export function FolhaHome({
   const [recarga, setRecarga] = useState(0);
   const [vista, setVista] = useState<"lista" | "novo" | "form" | "pdf">("lista");
   const [onde, setOnde] = useState<"bolinha" | "destaque">(posicaoInicial);
+  const [exemplo, setExemplo] = useState<"bolinha" | "destaque">(posicaoInicial);
+  const mudar = (l: LinhaHome, pos: Posicao) => {
+    if (pos !== "escondido") setExemplo(pos);
+    onMudar(l, pos);
+  };
   const [escolhido, setEscolhido] = useState<Preset | null>(null);
   const [nome, setNome] = useState("");
   const [valor, setValor] = useState("");
@@ -198,14 +203,14 @@ export function FolhaHome({
 
         {vista === "lista" && (
           <>
-            <p className="mt-2 text-[13px] leading-snug text-text-secondary">Escolha onde cada coisa aparece. Bolinha fica na fileira de cima, Destaque fica em cartão logo abaixo. Cada item fica em um lugar só.</p>
+            <Exemplo ativo={exemplo} onEscolher={setExemplo} />
             <button type="button" onClick={() => { setOnde(posicaoInicial); setVista("novo"); }} className="mt-3 min-h-[44px] w-full rounded-full bg-surface-soft text-[14px] font-medium active:scale-[0.98]">+ Criar algo novo</button>
 
             <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Botões</p>
             <div className="mt-2 flex flex-col gap-2">
               {botoes.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum botão ainda. Toque em Criar algo novo.</p>}
               {botoes.map((l) => (
-                <Linha key={l.id} l={l} onMudar={onMudar} />
+                <Linha key={l.id} l={l} onMudar={mudar} />
               ))}
             </div>
 
@@ -213,7 +218,7 @@ export function FolhaHome({
             <div className="mt-2 flex flex-col gap-2">
               {vouchers.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum voucher ativo agora.</p>}
               {vouchers.map((l) => (
-                <Linha key={l.id} l={{ ...l, pos: vouchersDestaque.includes(l.id) ? "destaque" : "bolinha" }} onMudar={onMudar} soDestaque />
+                <Linha key={l.id} l={{ ...l, pos: vouchersDestaque.includes(l.id) ? "destaque" : "bolinha" }} onMudar={mudar} soDestaque />
               ))}
             </div>
 
@@ -222,7 +227,7 @@ export function FolhaHome({
             <div className="mt-2 flex flex-col gap-2">
               {itens.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum produto no catálogo ainda.</p>}
               {itens.slice(0, 60).map((l) => (
-                <Linha key={l.id} l={l} onMudar={onMudar} soDestaque />
+                <Linha key={l.id} l={l} onMudar={mudar} soDestaque />
               ))}
             </div>
           </>
@@ -355,6 +360,31 @@ function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHom
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// Mini página de exemplo: mostra onde cada opção aparece. Toque em uma das duas para ver.
+function Exemplo({ ativo, onEscolher }: { ativo: "bolinha" | "destaque"; onEscolher: (p: "bolinha" | "destaque") => void }) {
+  const anel = (on: boolean) => (on ? "ring-2 ring-on-background" : "ring-1 ring-divider opacity-60");
+  return (
+    <div className="mt-3 rounded-2xl bg-surface-soft p-3">
+      <div className="mx-auto flex w-full max-w-[260px] flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
+        <span className="h-7 w-7 rounded-full bg-divider" aria-hidden />
+        <button type="button" onClick={() => onEscolher("bolinha")} aria-label="Ver exemplo de bolinha" className={`flex w-full items-center justify-center gap-2 rounded-xl p-2 ${anel(ativo === "bolinha")}`}>
+          {["#25D366", "#E3A35A", "#A84B3F", "#C9B58A", "#8A5A2B"].map((c) => (
+            <span key={c} className="h-7 w-7 rounded-full" style={{ background: c }} aria-hidden />
+          ))}
+        </button>
+        <button type="button" onClick={() => onEscolher("destaque")} aria-label="Ver exemplo de destaque" className={`flex w-full items-center gap-2 rounded-full bg-[#A38B6D] p-1.5 pr-3 ${anel(ativo === "destaque")}`}>
+          <span className="h-7 w-7 shrink-0 rounded-full bg-white" aria-hidden />
+          <span className="flex-1 text-left text-[11px] font-semibold leading-none text-white">Cardápio</span>
+          <span className="rounded-full bg-white px-2 py-1 text-[9px] font-bold text-[#A38B6D]">Abrir</span>
+        </button>
+      </div>
+      <p className="mt-2 text-center text-[12.5px] leading-snug text-text-secondary">
+        {ativo === "bolinha" ? "Bolinha: um ícone redondo na fileira de cima, com o nome embaixo. Bom para atalhos rápidos." : "Destaque: um cartão largo, logo abaixo das bolinhas. Bom para o que você quer que todo mundo veja primeiro."}
+      </p>
     </div>
   );
 }
