@@ -113,7 +113,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           )}
           {!isOwner && (
             <>
-              <span className={eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}><IcCoracao cheio={eu.ehFa} tamanho={27} /></span>
+              <span className={`coracao-pulsa ${eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}`}><IcCoracao cheio={eu.ehFa} tamanho={27} /></span>
               <span>{eu.ehFa ? "Sou fã" : "Virar fã"}</span>
             </>
           )}
@@ -121,13 +121,13 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       )}
       {temNota && (
         <button type="button" onClick={abrirAvaliacoes} aria-label={`Nota geral ${fmtNota(resumo.nota!)}. Ver avaliações`} className="flex min-h-[40px] items-center gap-1 tabular-nums transition active:scale-[0.96]">
-          <Estrela cheia tam={16} />
+          <Estrela cheia tam={20} />
           <span>{fmtNota(resumo.nota!)}</span>
         </button>
       )}
       {resumo.avaliacoes > 0 && (
         <button type="button" onClick={abrirAvaliacoes} aria-label={`${resumo.avaliacoes} ${resumo.avaliacoes === 1 ? "avaliação" : "avaliações"}. Ver avaliações`} className="flex min-h-[40px] items-center gap-1 tabular-nums text-on-background/75 transition active:scale-[0.96]">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H10l-4.5 3.5V17H4a1 1 0 01-1-1V6a1 1 0 011-1z" /></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H10l-4.5 3.5V17H4a1 1 0 01-1-1V6a1 1 0 011-1z" /></svg>
           <span>{resumo.avaliacoes}</span>
         </button>
       )}

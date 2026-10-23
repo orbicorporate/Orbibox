@@ -1469,3 +1469,13 @@ html[data-embed] .embed-oculta { display: none !important; }
 @keyframes orbi-sobe { from { transform: translateY(16%); opacity: 0; } to { transform: none; opacity: 1; } }
 .orbi-sobe { animation: orbi-sobe .42s cubic-bezier(.32, .72, 0, 1) both; }
 @media (prefers-reduced-motion: reduce) { .orbi-sobe { animation: none; } }
+
+@keyframes coracao-pulsa {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.18); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.12); }
+  70% { transform: scale(1); }
+}
+.coracao-pulsa { display: inline-flex; animation: coracao-pulsa 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .coracao-pulsa { animation: none; } }
