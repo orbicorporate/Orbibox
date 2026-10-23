@@ -39,7 +39,10 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
     const supabase = createClient();
     supabase.from("gift_settings").select("enabled, art_url, art_theme, suggested_values, allow_custom_value, min_value_cents, message").eq("business_id", businessId).maybeSingle().then(({ data }) => {
       setCfg((data as Config) ?? { enabled: false, art_url: null, art_theme: "roxo", suggested_values: [50, 100, 150, 200], allow_custom_value: true, min_value_cents: 2000, message: null });
-      if (data?.suggested_values?.[1]) setValor(data.suggested_values[1]);
+      const minReais = Math.round(((data as Config | null)?.min_value_cents ?? 2000) / 100);
+      const validos = (data?.suggested_values ?? []).filter((v: number) => v >= minReais);
+      if (validos.length > 0) setValor(validos[Math.min(1, validos.length - 1)]);
+      else if (data) setValor(minReais);
     });
   }, [businessId]);
 
@@ -95,7 +98,9 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
     );
   }
 
-  const sugeridos = cfg.suggested_values ?? [50, 100, 150, 200];
+  const minimoReais = Math.round(cfg.min_value_cents / 100);
+  // Valores sugeridos abaixo do mínimo não fazem sentido: somem da lista.
+  const sugeridos = (cfg.suggested_values ?? [50, 100, 150, 200]).filter((v) => v >= minimoReais);
 
   return (
     <div className="w-full">
@@ -120,7 +125,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
 
       {!criado ? (
         <>
-          <p className="mt-6 text-[13px] font-semibold">Valor</p>
+          <p className="mt-6 text-[13px] font-semibold">Valor <span className="font-normal text-text-tertiary">· mínimo R$ {minimoReais}</span></p>
           <div className="mt-2 flex flex-wrap gap-2">
             {sugeridos.map((v) => (
               <button
@@ -138,7 +143,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
                 <input
                   value={customValor}
                   onChange={(e) => setCustomValor(e.target.value.replace(/[^\d,]/g, ""))}
-                  placeholder="outro"
+                  placeholder={`mín. ${minimoReais}`}
                   inputMode="numeric"
                   className="w-16 bg-transparent text-[14px] font-semibold outline-none"
                 />
