@@ -27,6 +27,8 @@ export type BolinhaVitrine = {
   selo?: string;
   /** Logo escolhida pelo dono pra bolinha (no lugar do ícone padrão). */
   logo?: string | null;
+  /** Quando a bolinha é um item do catálogo: para onde o lápis leva (editor do item). */
+  editarHref?: string;
   onClick: () => void;
 };
 
@@ -71,7 +73,7 @@ function Icone({ tipo, rede, linha }: { tipo: BolinhaVitrine["tipo"]; rede?: Red
 const CORES_BOLINHA = ["#111318", "#E8508A", "#3B5BDB", "#EA4335", "#F29D38", "#2FA36B", "#7B4FE0", "#0E9AA7"];
 
 /** WhatsApp e redes sociais mantêm a cor da própria marca. */
-const podeMudarCor = (b: BolinhaVitrine) => b.editavel && b.tipo !== "whatsapp" && b.tipo !== "rede";
+const podeMudarCor = (b: BolinhaVitrine) => b.editavel && !b.editarHref && b.tipo !== "whatsapp" && b.tipo !== "rede";
 
 function corDe(b: BolinhaVitrine): { fundo: string; sombra: string } {
   if (b.cor && b.tipo !== "whatsapp" && b.tipo !== "rede") return { fundo: b.cor, sombra: b.cor };
@@ -717,8 +719,8 @@ function ListaBolinhas({
               <div className="origin-left scale-[0.7]"><Bolinha b={b} aberto={false} onClick={() => {}} /></div>
               {b.editavel && (
                 <AbrirEditor
-                  href={`/admin/boxes?box=${b.key}#box-${b.key}`}
-                  rotulo="Trocar o ícone ou logo"
+                  href={b.editarHref ?? `/admin/boxes?box=${b.key}#box-${b.key}`}
+                  rotulo={b.editarHref ? "Editar a foto e o item" : "Trocar o ícone ou logo"}
                   className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border border-divider bg-surface-white text-[11px] text-text-secondary shadow-sm active:scale-90"
                 >
                   ✎
@@ -738,7 +740,7 @@ function ListaBolinhas({
                     style={{ background: "conic-gradient(#EA4335, #F29D38, #F2D338, #2FA36B, #0E9AA7, #3B5BDB, #7B4FE0, #E8508A, #EA4335)" }}
                   />
                 )}
-                <Seletor valor={b.estilo} onChange={(e) => onEstilo([b.key], e)} />
+                {!b.editarHref && <Seletor valor={b.estilo} onChange={(e) => onEstilo([b.key], e)} />}
                 <div className="flex flex-col">
                   <button type="button" aria-label={`Subir ${b.rotulo}`} disabled={i === 0} onClick={() => aplicar(i, i - 1)} className="flex h-[22px] w-7 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▲</button>
                   <button type="button" aria-label={`Descer ${b.rotulo}`} disabled={i === bolinhas.length - 1} onClick={() => aplicar(i, i + 1)} className="flex h-[22px] w-7 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▼</button>
@@ -749,7 +751,7 @@ function ListaBolinhas({
             )}
             {b.editavel && (onRenomear || onEsconder) && (
               <div className="flex basis-full items-center gap-2 pl-[38px]">
-                {onRenomear && (
+                {onRenomear && !b.editarHref && (
                   <input
                     key={`${b.key}-${b.rotulo}`}
                     defaultValue={b.rotulo}
@@ -762,10 +764,10 @@ function ListaBolinhas({
                 {onEsconder && (
                   <button
                     type="button"
-                    onClick={() => { if (window.confirm(`Esconder "${b.rotulo}" da tela inicial? Você pode religar em Botões.`)) onEsconder(b.key); }}
+                    onClick={() => { if (window.confirm(b.editarHref ? `Tirar "${b.rotulo}" das bolinhas? O item continua no catálogo.` : `Esconder "${b.rotulo}" da tela inicial? Você pode religar em Botões.`)) onEsconder(b.key); }}
                     className="min-h-[40px] shrink-0 rounded-full px-3.5 text-[13px] font-medium text-red-600 active:opacity-60"
                   >
-                    Esconder
+                    {b.editarHref ? "Tirar da fileira" : "Esconder"}
                   </button>
                 )}
               </div>

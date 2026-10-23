@@ -580,12 +580,20 @@ export function VisitorExperience({
     if (!out.some((b) => b.tipo === "whatsapp") && whatsAtalho) {
       out.unshift({ key: "zap", estilo: "cor", editavel: false, rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
     }
-    // Itens que o dono escolheu mostrar como bolinha (com a foto do item).
-    for (const d of destaquesHome) {
-      if (d.t !== "item_bolinha") continue;
+    // Itens que o dono escolheu mostrar como bolinha (com a foto do item). Entram na ordem
+    // junto dos boxes: cada um tem um número de posição (p), como os boxes têm.
+    const doItens = destaquesHome.flatMap((d, n) => {
+      if (d.t !== "item_bolinha") return [];
       const it = content.find((x) => x.id === d.id);
-      if (!it) continue;
-      out.push({ key: `item-${it.id}`, estilo: "cor", editavel: false, rotulo: it.title, tipo: "catalogo", logo: it.image_url, onClick: () => router.push(`/${business.slug}/p/${it.id}`) });
+      if (!it) return [];
+      const b: BolinhaVitrine = { key: `item-${it.id}`, estilo: "cor", editavel: true, rotulo: it.title, tipo: "catalogo", logo: it.image_url, editarHref: `/admin/vitrine/pagina/${it.id}`, onClick: () => router.push(`/${business.slug}/p/${it.id}`) };
+      return [{ b, v: typeof d.p === "number" ? d.p : 10000 + n }];
+    });
+    if (doItens.length > 0) {
+      const posDe = (k: string) => boxList.find((x) => x.id === k)?.position ?? -1;
+      const todos = [...out.map((b) => ({ b, v: posDe(b.key) })), ...doItens].sort((x, y) => x.v - y.v);
+      out.length = 0;
+      out.push(...todos.map((t) => t.b));
     }
     // O catálogo também é uma bolinha: quem tem itens chega nele direto, sem link de texto.
     const temBoxCatalogo = boxList.some((b) => b.box_type === "product" || (b.box_type === "custom" && (b.config as CustomConfig | null)?.action === "vitrine"));
@@ -613,7 +621,7 @@ export function VisitorExperience({
   }
   async function mudarLinha(l: LinhaHome, pos: Posicao) {
     const sem = destaquesHome.filter((d) => !(d.id === l.id && (d.t === l.tipo || (l.tipo === "item" && d.t === "item_bolinha"))));
-    const proxima: DestaqueSalvo[] = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : l.tipo === "item" && pos === "bolinha" ? [...sem, { t: "item_bolinha", id: l.id }] : sem;
+    const proxima: DestaqueSalvo[] = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : l.tipo === "item" && pos === "bolinha" ? [...sem, { t: "item_bolinha", id: l.id, p: Math.max(0, ...boxList.map((b) => b.position), ...destaquesHome.map((d) => (d.t === "item_bolinha" && typeof d.p === "number" ? d.p : 0))) + 1 }] : sem;
     if (l.tipo === "botao") {
       const real = boxList.find((b) => b.id === l.id);
       const ativo = pos !== "escondido";
@@ -730,6 +738,10 @@ export function VisitorExperience({
   }
   // Esconde a bolinha (desliga o botão). Dá pra religar em Botões.
   async function esconderBolinha(key: string) {
+    if (key.startsWith("item-")) {
+      await salvarDestaques(destaquesHome.filter((d) => !(d.t === "item_bolinha" && `item-${d.id}` === key)));
+      return;
+    }
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, is_active: false } : b)));
     conferirSalvo(await supabase.from("smart_boxes").update({ is_active: false }).eq("id", key));
   }
@@ -737,18 +749,25 @@ export function VisitorExperience({
   // só trocava o número de dois boxes, e dois boxes com o mesmo número (comum)
   // ficavam sem sair do lugar.
   async function reordenarBolinhas(chaves: string[]) {
-    const cheia = [...boxList].sort((a, b) => a.position - b.position);
-    const ocupadas = cheia.map((b, i) => (chaves.includes(b.id) ? i : -1)).filter((i) => i >= 0);
-    const porId = new Map(cheia.map((b) => [b.id, b]));
+    // Boxes e itens em bolinha formam uma fila só, ordenada pelo número de posição.
+    type E = { k: string; v: number; box?: BoxRow };
+    const boxes: E[] = boxList.map((b) => ({ k: b.id, v: b.position, box: b }));
+    const itens: E[] = destaquesHome.flatMap((d, n) => (d.t === "item_bolinha" ? [{ k: `item-${d.id}`, v: typeof d.p === "number" ? d.p : 10000 + n }] : []));
+    const cheia = [...boxes, ...itens].sort((a, c) => a.v - c.v);
+    const ocupadas = cheia.map((e, i) => (chaves.includes(e.k) ? i : -1)).filter((i) => i >= 0);
+    const porChave = new Map(cheia.map((e) => [e.k, e]));
     const nova = [...cheia];
     ocupadas.forEach((slot, n) => {
-      const b = porId.get(chaves[n]);
-      if (b) nova[slot] = b;
+      const e = porChave.get(chaves[n]);
+      if (e) nova[slot] = e;
     });
-    const posicoes = new Map(nova.map((b, i) => [b.id, i]));
+    const posicoes = new Map(nova.map((e, i) => [e.k, i]));
     setBoxList((prev) => prev.map((b) => ({ ...b, position: posicoes.get(b.id) ?? b.position })));
-    const mudaram = cheia.filter((b) => posicoes.get(b.id) !== b.position);
-    const res = await Promise.all(mudaram.map((b) => supabase.from("smart_boxes").update({ position: posicoes.get(b.id) }).eq("id", b.id)));
+    const mudaram = boxes.filter((e) => posicoes.get(e.k) !== e.v);
+    const novosDestaques: DestaqueSalvo[] = destaquesHome.map((d) => (d.t === "item_bolinha" ? { ...d, p: posicoes.get(`item-${d.id}`) } : d));
+    const itensMudaram = itens.some((e) => posicoes.get(e.k) !== e.v);
+    const res = await Promise.all(mudaram.map((e) => supabase.from("smart_boxes").update({ position: posicoes.get(e.k) }).eq("id", e.k)));
+    if (itensMudaram) await salvarDestaques(novosDestaques);
     conferirSalvo(res.find((r) => r.error) ?? { error: null });
   }
   // Botão principal da Home em Vitrine: Orbi (quando há IA), Vitrine ou WhatsApp.
