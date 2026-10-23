@@ -6,6 +6,7 @@ import { OrbiMapPin } from "./OrbiMapPin";
 import { OrbiLogoBadge } from "./OrbiLogoBadge";
 import { OrbiMoneyIcon, OrbiPercentIcon, OrbiArrowIcon, OrbiHeartIcon, OrbiGiftIcon, OrbiHappyIcon, OrbiDogIcon, OrbiLeafIcon, OrbiTicketIcon } from "./OrbiEmojiStickers";
 import { isAnimatedIcon, contrastFg } from "@/lib/showcase";
+import { IconeLinha, ehIconeLinha } from "@/components/ui/IconesLinha";
 
 const EMOJI_STICKERS: Record<string, (size: number) => ReactNode> = {
   __money__: (s) => <OrbiMoneyIcon size={s} />,
@@ -72,6 +73,8 @@ export function HomeIcon({
         <OrbiGoogleIcon size={48} className="rounded-full" />
       ) : icon === "__pin__" ? (
         <OrbiMapPin size={32} />
+      ) : ehIconeLinha(icon) ? (
+        <IconeLinha chave={icon} size={32} />
       ) : EMOJI_STICKERS[icon] ? (
         EMOJI_STICKERS[icon](42)
       ) : icon === "__logo__" && (boxLogo || businessLogo) ? (

@@ -24,6 +24,7 @@ import { YoutubeAdder } from "@/components/ui/YoutubeAdder";
 import { addToLogoGallery, salvarLogoGallery } from "@/lib/logoGallery";
 import { DateTimeField } from "./DateTimeField";
 import { IconeBotao } from "@/app/[slug]/IconeBotao";
+import { IconeLinha, ICONES_LINHA, ehIconeLinha } from "@/components/ui/IconesLinha";
 
 type BrandColor = { hex: string; role?: string };
 type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; url?: string; logo_url?: string; logo_ajuste?: LogoAjuste; layout?: "auto" | "largo" | "medio" };
@@ -1138,6 +1139,7 @@ function BoxEditor({
     if (ic === "__google__") return <OrbiGoogleIcon size={32} />;
     if (ic === "__pin__") return <OrbiMapPin size={22} />;
     if (EMOJI_STICKERS[ic]) return EMOJI_STICKERS[ic](30);
+    if (ehIconeLinha(ic)) return <IconeLinha chave={ic} size={22} />;
     if (ic === "__logo__" && (cfg.logo_url ?? logoUrl)) {
       // eslint-disable-next-line @next/next/no-img-element
       return <img src={(cfg.logo_url ?? logoUrl) as string} alt="" className="h-full w-full object-cover" />;
@@ -1424,6 +1426,21 @@ function BoxEditor({
                 />
               )}
         
+                <Sub>Linhas minimalistas</Sub>
+              <div className="flex flex-wrap gap-1.5">
+                {ICONES_LINHA.map((ic) => (
+                  <button
+                    key={ic.chave}
+                    type="button"
+                    onClick={() => pickIcon(ic.chave)}
+                    aria-label={ic.rotulo}
+                    title={ic.rotulo}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border text-on-background ${cfg.icon === ic.chave ? "border-on-background bg-surface-soft" : "border-divider"}`}
+                  >
+                    <IconeLinha chave={ic.chave} size={20} />
+                  </button>
+                ))}
+              </div>
                 <Sub>Emojis</Sub>
               <div className="flex flex-wrap gap-1.5">
                 {(showAllIcons ? ICON_CHOICES : ICON_CHOICES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (

@@ -49,6 +49,7 @@ import { LogoEditor } from "./LogoEditor";
 import { SobreEditorSheet, type SobreParte } from "./SobreEditorSheet";
 import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
+import { IconeLinha, ICONES_LINHA } from "@/components/ui/IconesLinha";
 import { LIMITES_GRATIS } from "@/lib/planoGratis";
 import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
@@ -951,6 +952,14 @@ export function VisitorExperience({
               <button type="button" onClick={() => { setIconeBox(null); setEditandoLogo(true); }} className="mt-3 min-h-[44px] w-full rounded-full border border-divider text-[14px]">
                 {logoAtual ? "Editar a logo da página" : "Adicionar a logo da página"}
               </button>
+              <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Linhas minimalistas</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {ICONES_LINHA.map((ic) => (
+                  <button key={ic.chave} type="button" aria-label={ic.rotulo} title={ic.rotulo} onClick={() => setBoxIcon(iconeBox, ic.chave)} className={`flex h-12 w-12 items-center justify-center rounded-full border text-on-background ${alvo.icon === ic.chave ? "border-on-background bg-surface-soft" : "border-divider"}`}>
+                    <IconeLinha chave={ic.chave} size={22} />
+                  </button>
+                ))}
+              </div>
               <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Símbolos</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {ICON_LIBRARY.filter((ic) => !isAnimatedIcon(ic)).map((ic) => (

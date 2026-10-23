@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { IconeLinha, ICONES_LINHA } from "@/components/ui/IconesLinha";
 import { ICON_LIBRARY, ICON_LIBRARY_PREVIEW_COUNT, isAnimatedIcon } from "@/lib/showcase";
 
 const ehImagem = (v: string | null) => !!v && /^(https?:|\/|data:|blob:)/.test(v);
@@ -88,7 +89,23 @@ export function IconeBolinha({ businessId, itemId, fotoItem, logoMarca, inicial 
           Enviar outra
         </button>
       </div>
-      <p className="mt-3 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Ou escolha um ícone</p>
+      <p className="mt-3 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Ícones de linha</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {ICONES_LINHA.map((ic) => (
+          <button
+            key={ic.chave}
+            type="button"
+            aria-label={ic.rotulo}
+            title={ic.rotulo}
+            aria-pressed={atual === ic.chave}
+            onClick={() => void escolher(ic.chave)}
+            className={`flex h-10 w-10 items-center justify-center rounded-full border text-on-background ${atual === ic.chave ? "border-on-background bg-surface-soft" : "border-divider"}`}
+          >
+            <IconeLinha chave={ic.chave} size={20} />
+          </button>
+        ))}
+      </div>
+      <p className="mt-3 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Ou escolha um emoji</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {(verTodos ? ICONES : ICONES.slice(0, ICON_LIBRARY_PREVIEW_COUNT)).map((ic) => (
           <button

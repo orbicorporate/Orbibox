@@ -1,6 +1,7 @@
 "use client";
 
 import { LogoBolinha, type LogoAjuste } from "@/components/ui/LogoBolinha";
+import { IconeLinha, ehIconeLinha } from "@/components/ui/IconesLinha";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
@@ -948,7 +949,9 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
       style={(linha || logoEsfera ? {} : { background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0) 48%), ${c.fundo}`, boxShadow: `inset 0 -7px 12px -5px rgba(0,0,0,0.22), inset 0 1.5px 2px rgba(255,255,255,0.28), 0 6px 16px -6px ${c.sombra}99` }) as CSSProperties}
       className={`relative flex h-[60px] w-[60px] items-center justify-center rounded-full transition-transform active:scale-95 ${linha ? "border-[1.5px] border-on-background/70 bg-transparent text-on-background" : "text-white"}`}
     >
-      {b.logo && !/^(https?:|\/|data:|blob:)/.test(b.logo) ? (
+      {b.logo && ehIconeLinha(b.logo) ? (
+        <IconeLinha chave={b.logo} size={30} />
+      ) : b.logo && !/^(https?:|\/|data:|blob:)/.test(b.logo) ? (
         // Ícone escolhido na biblioteca (emoji), em vez de imagem.
         <span aria-hidden className={`pointer-events-none select-none text-[30px] leading-none ${linha ? "grayscale" : ""}`}>{b.logo}</span>
       ) : b.logo && b.logoInteira ? (

@@ -1,3 +1,5 @@
+import { IconeLinha, ehIconeLinha } from "@/components/ui/IconesLinha";
+
 /**
  * Ícone pequeno de botão (miniatura estática). Os ícones animados do app são
  * guardados por chave ("__pin__", "__wadisc__"...), e jogar a chave como texto
@@ -41,6 +43,7 @@ const POR_CHAVE: Record<string, keyof typeof TRACOS> = {
 };
 
 export function IconeBotao({ icone, size = 20 }: { icone: string; size?: number }) {
+  if (ehIconeLinha(icone)) return <IconeLinha chave={icone} size={size} />;
   const chave = POR_CHAVE[icone] ?? (icone.startsWith("__") ? "link" : null);
   if (!chave) return <>{icone}</>;
   return (
