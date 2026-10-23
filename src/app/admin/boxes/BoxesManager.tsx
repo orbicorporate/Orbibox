@@ -1,11 +1,12 @@
 "use client";
 
+import { LogoBolinha, LOGO_DESLOC_MAX, LOGO_ZOOM_MAX, LOGO_ZOOM_MIN, limitarLogo, type LogoAjuste } from "@/components/ui/LogoBolinha";
 import { LIMITES_GRATIS, caixaBloqueadaNoGratis } from "@/lib/planoGratis";
 import { avisarErroSalvar, conferirSalvo, excluirComDesfazer } from "@/components/ui/AvisoSalvar";
 import { IconeRede, nomeDaRede, redeDoLink } from "@/lib/redesSociais";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, type CSSProperties, type ReactNode } from "react";
+import { useState, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -25,7 +26,7 @@ import { DateTimeField } from "./DateTimeField";
 import { IconeBotao } from "@/app/[slug]/IconeBotao";
 
 type BrandColor = { hex: string; role?: string };
-type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio" };
+type BoxConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; url?: string; logo_url?: string; logo_ajuste?: LogoAjuste; layout?: "auto" | "largo" | "medio" };
 type Box = { id: string; box_type: string; title: string | null; position: number; is_active: boolean; auto_arranged: boolean; config: unknown; starts_at: string | null; ends_at: string | null };
 type DifferentialCard = { icon?: string; title: string; description?: string };
 
@@ -1337,7 +1338,7 @@ function BoxEditor({
                           <button
                             onClick={() => {
                               if (editandoLogos) { setTrocandoLogo(trocandoLogo === url ? null : url); setNovoIconeAberto(false); return; }
-                              update({ icon: "__logo__", logo_url: url }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__", logo_url: url });
+                              update({ icon: "__logo__", logo_url: url, logo_ajuste: undefined }); if (!liveOnly) onSave({ ...cfg, icon: "__logo__", logo_url: url, logo_ajuste: undefined });
                             }}
                             aria-label={editandoLogos ? "Trocar a imagem deste logo" : "Usar este logo"}
                             className={`h-11 w-11 overflow-hidden rounded-full border-2 ${trocandoLogo === url ? "border-on-background" : cfg.icon === "__logo__" && (cfg.logo_url ?? logoUrl) === url && !editandoLogos ? "border-on-background" : "border-transparent"}`}
@@ -1410,6 +1411,15 @@ function BoxEditor({
                   </div>
                 );
               })()}
+
+              {cfg.icon === "__logo__" && (cfg.logo_url ?? logoUrl) && (
+                <AjusteLogo
+                  key={cfg.logo_url ?? logoUrl ?? ""}
+                  src={(cfg.logo_url ?? logoUrl) as string}
+                  inicial={cfg.logo_ajuste ?? null}
+                  onCommit={(a) => { update({ logo_ajuste: a ?? undefined }); if (!liveOnly) onSave({ ...cfg, logo_ajuste: a ?? undefined }); }}
+                />
+              )}
         
                 <Sub>Emojis</Sub>
               <div className="flex flex-wrap gap-1.5">
@@ -1591,4 +1601,71 @@ function LinhaPronta({
   if (href) return <Link href={href} className={base}>{miolo}</Link>;
   if (onClick) return <button type="button" onClick={onClick} className={base}>{miolo}</button>;
   return <div className={base}>{miolo}</div>;
+}
+
+
+/** Ajuste da logo dentro da bolinha: arraste a prévia para mover e use os controles para o tamanho. */
+function AjusteLogo({ src, inicial, onCommit }: { src: string; inicial: LogoAjuste | null; onCommit: (a: LogoAjuste | null) => void }) {
+  const [a, setA] = useState<LogoAjuste>(inicial ? limitarLogo(inicial) : { z: 1, x: 0, y: 0 });
+  const caixa = useRef<HTMLDivElement>(null);
+  const arrasto = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mexido = a.z !== 1 || a.x !== 0 || a.y !== 0;
+
+  function aplicar(prox: LogoAjuste, salvar: boolean) {
+    const l = limitarLogo(prox);
+    setA(l);
+    if (timer.current) clearTimeout(timer.current);
+    if (salvar) timer.current = setTimeout(() => onCommit(l.z === 1 && l.x === 0 && l.y === 0 ? null : l), salvar ? 350 : 0);
+  }
+  function baixo(e: React.PointerEvent) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    arrasto.current = { px: e.clientX, py: e.clientY, x: a.x, y: a.y };
+  }
+  function move(e: React.PointerEvent) {
+    const d = arrasto.current;
+    const w = caixa.current?.clientWidth;
+    if (!d || !w) return;
+    // A logo ocupa 70% da bolinha: o deslocamento é em % do tamanho dela.
+    aplicar({ z: a.z, x: d.x + ((e.clientX - d.px) / (w * 0.7)) * 100, y: d.y + ((e.clientY - d.py) / (w * 0.7)) * 100 }, false);
+  }
+  function solta() {
+    if (!arrasto.current) return;
+    arrasto.current = null;
+    aplicar(a, true);
+  }
+  const faixa = "h-8 w-full accent-[#111318]";
+  return (
+    <div className="flex flex-col gap-2.5 rounded-2xl bg-surface-white p-3 ring-1 ring-black/[0.06]">
+      <p className="text-[13px] font-medium">Tamanho e posição na bolinha</p>
+      <div className="flex items-center gap-4">
+        <div
+          ref={caixa}
+          onPointerDown={baixo}
+          onPointerMove={move}
+          onPointerUp={solta}
+          onPointerCancel={solta}
+          aria-label="Arraste para mover a logo"
+          className="relative h-[116px] w-[116px] shrink-0 cursor-grab touch-none select-none overflow-hidden rounded-full ring-1 ring-black/[0.06] active:cursor-grabbing"
+        >
+          <LogoBolinha src={src} ajuste={a} />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <label className="text-[12px] text-text-secondary">Tamanho
+            <input type="range" min={LOGO_ZOOM_MIN * 100} max={LOGO_ZOOM_MAX * 100} step={1} value={Math.round(a.z * 100)} onChange={(e) => aplicar({ ...a, z: Number(e.target.value) / 100 }, true)} aria-label="Tamanho da logo" className={faixa} />
+          </label>
+          <label className="text-[12px] text-text-secondary">Esquerda ou direita
+            <input type="range" min={-LOGO_DESLOC_MAX} max={LOGO_DESLOC_MAX} step={1} value={Math.round(a.x)} onChange={(e) => aplicar({ ...a, x: Number(e.target.value) }, true)} aria-label="Posição horizontal da logo" className={faixa} />
+          </label>
+          <label className="text-[12px] text-text-secondary">Cima ou baixo
+            <input type="range" min={-LOGO_DESLOC_MAX} max={LOGO_DESLOC_MAX} step={1} value={Math.round(a.y)} onChange={(e) => aplicar({ ...a, y: Number(e.target.value) }, true)} aria-label="Posição vertical da logo" className={faixa} />
+          </label>
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[12px] text-text-tertiary">Arraste a bolinha ou use os controles.</p>
+        {mexido && <button type="button" onClick={() => aplicar({ z: 1, x: 0, y: 0 }, true)} className="min-h-[36px] shrink-0 rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium text-text-secondary">Restaurar</button>}
+      </div>
+    </div>
+  );
 }

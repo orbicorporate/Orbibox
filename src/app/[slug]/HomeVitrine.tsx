@@ -1,5 +1,6 @@
 "use client";
 
+import { LogoBolinha, type LogoAjuste } from "@/components/ui/LogoBolinha";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
@@ -30,6 +31,8 @@ export type BolinhaVitrine = {
   logo?: string | null;
   /** A imagem é a logo da marca: aparece inteira, sem cortar nas bordas do círculo. */
   logoInteira?: boolean;
+  /** Tamanho e posição da logo dentro da bolinha, como o dono ajustou. */
+  logoAjuste?: LogoAjuste | null;
   /** Quando a bolinha é um item do catálogo: para onde o lápis leva (editor do item). */
   editarHref?: string;
   /** Foto original do item (para voltar a ela depois de trocar a imagem). */
@@ -949,14 +952,7 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
         // Ícone escolhido na biblioteca (emoji), em vez de imagem.
         <span aria-hidden className={`pointer-events-none select-none text-[30px] leading-none ${linha ? "grayscale" : ""}`}>{b.logo}</span>
       ) : b.logo && b.logoInteira ? (
-        // Logo da marca: mostra inteira (o quadrado cabe dentro do círculo), em fundo claro.
-        <span
-          className="pointer-events-none flex h-full w-full items-center justify-center overflow-hidden rounded-full"
-          style={linha ? undefined : { background: "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 52%), #ECEAE4", boxShadow: "inset 0 -7px 12px -5px rgba(0,0,0,0.20), inset 0 1.5px 2px rgba(255,255,255,0.9), 0 6px 16px -6px rgba(17,19,24,0.38)" }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={b.logo} alt="" draggable={false} style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", ...(linha ? { filter: "grayscale(1) contrast(1.15)" } : {}) }} className="h-[70%] w-[70%] object-contain" />
-        </span>
+        <LogoBolinha src={b.logo} ajuste={b.logoAjuste} linha={linha} />
       ) : b.logo ? (
         // Com uma cor escolhida, o logo fica um pouco menor para a cor aparecer em volta.
         // eslint-disable-next-line @next/next/no-img-element

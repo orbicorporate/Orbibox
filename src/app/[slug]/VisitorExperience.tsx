@@ -1,5 +1,6 @@
 "use client";
 
+import { lerLogoAjuste, type LogoAjuste } from "@/components/ui/LogoBolinha";
 import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
 import { DeliveryFlow } from "./DeliveryFlow";
 import { CardapioFlow } from "./CardapioFlow";
@@ -127,7 +128,7 @@ type ContentItem = {
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
 
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string };
+type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -299,7 +300,7 @@ export function VisitorExperience({
 
   // Só aparecem os caminhos que o dono deixou ativos em Smart Boxes , 
   // mistura os fixos com os personalizados, na ordem que o dono escolheu.
-  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; selo?: string; onClick: () => void };
+  type Option = { key: string; interno: boolean; icon: string; boxLogo?: string | null; boxLogoAjuste?: LogoAjuste | null; t: string; d: string; color?: string; ai?: boolean; stars?: boolean; cupom?: boolean; address?: string; layoutOverride?: "largo" | "medio"; rede?: Rede | null; atalho?: "whatsapp" | "site" | "endereco" | null; comoIcone?: boolean; acao?: string; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; selo?: string; onClick: () => void };
   const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
@@ -365,7 +366,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || cfg.action === "cardapio" || cfg.action === "materiais" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.action === "cupom" && corVoucher ? corVoucher : cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, itensHome: Array.isArray(cfg.itensHome) ? cfg.itensHome : undefined, botaoPrincipal: cfg.botaoPrincipal, selo: cfg.selo, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || cfg.action === "cardapio" || cfg.action === "materiais" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, boxLogoAjuste: lerLogoAjuste(cfg.logo_ajuste), t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.action === "cupom" && corVoucher ? corVoucher : cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, itensHome: Array.isArray(cfg.itensHome) ? cfg.itensHome : undefined, botaoPrincipal: cfg.botaoPrincipal, selo: cfg.selo, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
@@ -569,7 +570,7 @@ export function VisitorExperience({
       // Quem foi para o destaque sai da fileira de bolinhas: cada coisa fica em um lugar só.
       if (destaquesHome.some((d) => d.t === "botao" && d.id === o.key)) continue;
       const estilo = o.bolinha === "linha" ? "linha" : "cor";
-      const base = { key: o.key, estilo, editavel: true, cor: o.bolinhaCor, logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual) : null, logoInteira: o.icon === "__logo__" } as const;
+      const base = { key: o.key, estilo, editavel: true, cor: o.bolinhaCor, logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual) : null, logoInteira: o.icon === "__logo__", logoAjuste: o.icon === "__logo__" ? (o.boxLogoAjuste ?? null) : null } as const;
       if (o.atalho === "whatsapp") out.push({ ...base, rotulo: "WhatsApp", tipo: "whatsapp", onClick: o.onClick });
       else if (o.atalho === "endereco" && o.address) out.push({ ...base, rotulo: "Local", tipo: "endereco", endereco: o.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
       else if (o.rede) out.push({ ...base, rotulo: o.t || nomeDaRede(o.rede), tipo: "rede", rede: o.rede, onClick: o.onClick });
