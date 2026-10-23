@@ -109,29 +109,42 @@ export async function updateSession(request: NextRequest) {
   // cancelada, etc), manda pra tela de planos pra reativar. Quem nunca
   // teve assinatura (ainda não passou pelo checkout) não é bloqueado aqui;
   // fica no limite padrão de 1 negócio / sem chat até assinar.
-  if (user && isAdmin && path !== "/admin/planos") {
+  if (user && isAdmin && !path.startsWith("/admin/planos")) {
     const { data: subscription } = await supabase
       .from("subscriptions")
       .select("status, trial_ends_at, stripe_subscription_id")
       .eq("owner_id", user.id)
       .maybeSingle();
 
-    // Teste grátis sem cartão acabou: a tela de planos mostra o que o
-    // Orbibox fez no período antes de pedir a assinatura.
-    if (
+    const testeAcabou =
       subscription?.status === "trialing" &&
       !subscription.stripe_subscription_id &&
-      subscription.trial_ends_at &&
-      new Date(subscription.trial_ends_at).getTime() < Date.now()
-    ) {
+      !!subscription.trial_ends_at &&
+      new Date(subscription.trial_ends_at).getTime() < Date.now();
+    const cancelada = subscription?.status === "canceled";
+
+    // Teste acabou ou assinatura cancelada: vira plano grátis (o mínimo, sem apagar nada).
+    // A pessoa escolhe o que fica ligado uma vez; depois usa o painel normalmente.
+    if (testeAcabou || cancelada) {
+      const { data: neg, error: errNeg } = await supabase.from("businesses").select("plano_gratis").eq("owner_id", user.id).order("created_at", { ascending: true }).limit(1).maybeSingle();
+      if (!errNeg) {
+        const feito = !!(neg?.plano_gratis as { feito?: boolean } | null)?.feito;
+        if (feito) return supabaseResponse;
+        const url = request.nextUrl.clone();
+        url.pathname = "/admin/planos/gratis";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
+      // Coluna ainda não existe no banco: mantém o comportamento antigo (tela de planos).
       const url = request.nextUrl.clone();
       url.pathname = "/admin/planos";
       url.search = "";
-      url.searchParams.set("fim", "1");
+      if (testeAcabou) url.searchParams.set("fim", "1");
+      else url.searchParams.set("blocked", "1");
       return NextResponse.redirect(url);
     }
 
-    if (subscription && ["past_due", "canceled", "incomplete"].includes(subscription.status)) {
+    if (subscription && ["past_due", "incomplete"].includes(subscription.status)) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/planos";
       url.searchParams.set("blocked", "1");

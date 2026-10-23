@@ -23,7 +23,12 @@ export interface AccessInfo {
   testeAcabou: boolean;
   /** Dias inteiros que faltam no teste (0 no último dia). */
   diasRestantes: number | null;
+  /** Sem assinatura paga: teste sem cartão acabou ou assinatura cancelada. Fica no plano grátis, só o mínimo. */
+  isFree: boolean;
 }
+
+/** O que o plano grátis mantém no ar. O resto o dono desativa na tela "Escolha o que fica". */
+export const LIMITES_GRATIS = { bolinhas: 3, boxes: 4, fotos: 7 } as const;
 
 // Sem assinatura = trata como Titânio bloqueado (sem chat, 1 negócio) até o
 // onboarding de cobrança rodar. Evita null-checks espalhados pelo app.
@@ -39,6 +44,7 @@ const NO_ACCESS: AccessInfo = {
   testeSemCartao: false,
   testeAcabou: false,
   diasRestantes: null,
+  isFree: false,
 };
 
 export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
@@ -80,7 +86,16 @@ export async function getAccessInfo(ownerId: string): Promise<AccessInfo> {
     testeSemCartao,
     testeAcabou,
     diasRestantes,
+    isFree: testeAcabou || subscription.status === "canceled",
   };
+}
+
+/** A página pública pergunta se o dono está no plano grátis (selo do Orbibox, sem gift, sem PDF). */
+export async function getOwnerIsFree(ownerId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("owner_is_free" as never, { p_owner_id: ownerId } as never);
+  if (error) return false;
+  return data === true;
 }
 
 // Usado na página pública do visitante, ali quem está logado (se alguém
