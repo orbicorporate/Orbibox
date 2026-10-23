@@ -7,6 +7,7 @@ import { ProximaAcao } from "./ProximaAcao";
 import { Marcos } from "./Marcos";
 import { ConviteCard } from "./ConviteCard";
 import { PedirAvaliacaoCard } from "./PedirAvaliacaoCard";
+import { InstalarAppCard } from "./InstalarAppCard";
 import { OportunidadeCard } from "./OportunidadeCard";
 import { LinhaExpansivel } from "./LinhaExpansivel";
 import { PerguntaOrbi } from "./PerguntaOrbi";
@@ -166,6 +167,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
       <Marcos businessId={b.id} contagem={marcos} />
 
       <PedirAvaliacaoCard nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={avaliacao?.imagem ?? null} logo={avaliacao?.logo ?? null} />
+      <InstalarAppCard />
 
       {/* Próximas ações por intenção: as ferramentas continuam no menu */}
       <section className="mt-8">
