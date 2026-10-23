@@ -960,7 +960,7 @@ export function VisitorExperience({
             href="/admin"
             className="flex items-center gap-1.5 rounded-full bg-surface-white/90 px-3.5 py-2 text-[13px] font-medium text-text-secondary shadow-lg backdrop-blur"
           >
-            Meu painel
+            Painel
           </Link>
           <button
             onClick={() => setPreviewMode(false)}
