@@ -57,7 +57,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-start justify-center px-6 pb-10 pt-[10vh]">
       <div className="w-full max-w-sm text-center">
-        <div className="orbi-danca mx-auto mb-5 w-fit">
+        <div className="mx-auto mb-5 w-fit">
           <OrbiOrb size={96} />
         </div>
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">
