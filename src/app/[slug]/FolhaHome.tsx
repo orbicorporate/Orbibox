@@ -330,6 +330,8 @@ export function FolhaHome({
 }
 
 function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHome, pos: Posicao) => void; soDestaque?: boolean }) {
+  // Cada item leva ao editor certo, no mesmo painel que o lápis do cartão usa.
+  const href = l.tipo === "voucher" ? `/admin/vouchers/${l.id}` : l.tipo === "item" ? `/admin/vitrine/pagina/${l.id}` : l.id === "zap" || l.id === "catalogo" ? null : `/admin/boxes?box=${l.id}#box-${l.id}`;
   return (
     <div className="rounded-2xl border border-divider p-2.5">
       <div className="flex items-center gap-3">
@@ -345,6 +347,11 @@ function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHom
           <span className="block truncate text-[14.5px] font-medium">{l.titulo}</span>
           {l.sub && <span className="block truncate text-[12px] text-text-tertiary">{l.sub}</span>}
         </span>
+        {href && (
+          <AbrirEditor href={href} rotulo={`Editar ${l.titulo}`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[15px] text-text-secondary active:scale-95">
+            ✎
+          </AbrirEditor>
+        )}
         {soDestaque && (
           <button type="button" role="switch" aria-checked={l.pos === "destaque"} onClick={() => onMudar(l, l.pos === "destaque" ? "bolinha" : "destaque")} className={`min-h-[36px] shrink-0 rounded-full px-4 text-[13px] font-medium ${l.pos === "destaque" ? "bg-on-background text-white" : "border border-divider text-text-secondary"}`}>
             {l.pos === "destaque" ? "Em destaque" : "Destacar"}
