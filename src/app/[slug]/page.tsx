@@ -61,11 +61,11 @@ export async function generateMetadata({
   }
 
   const capa = b.share_image_url || b.vitrine_cover_url || (Array.isArray(b.vitrine_cover_urls) && b.vitrine_cover_urls[0]) || b.logo_url || `/${slug}/opengraph-image`;
-  // Curto de propósito, WhatsApp e afins cortam a descrição em poucas linhas
-  // (~3), então um texto longo só fica truncado no meio de uma palavra.
+  // Curto de propósito: o preview do WhatsApp mostra a descrição em uma linha.
   const fonteDescricao = b.share_description?.trim() || b.about_business?.trim() || `Conheça ${b.name}, produtos, serviços e contato num só link.`;
-  const descricao = fonteDescricao.length > 90
-    ? `${fonteDescricao.slice(0, 90).replace(/\s+\S*$/, "")}…`
+  // Uma linha só no WhatsApp: cabe uns 38 caracteres, então corta na última palavra inteira.
+  const descricao = fonteDescricao.length > 38
+    ? `${fonteDescricao.slice(0, 36).replace(/[\s,.;:]+\S*$/, "").replace(/[\s,.;:]+$/, "")}…`
     : fonteDescricao;
   // Título do preview do link, o convite vem antes do nome, não só o nome cru.
   const tituloPreview = `Visite nosso Orbibox - ${b.name}`;
