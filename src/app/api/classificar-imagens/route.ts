@@ -1,3 +1,4 @@
+import { ehDonoOuAdmin } from "@/lib/business";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import { createClient } from "@/lib/supabase/server";
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return NextResponse.json({ error: "sem login" }, { status: 401 });
+    if (!(await ehDonoOuAdmin(userData.user.id, businessId))) return NextResponse.json({ error: "Sem permissão." }, { status: 403 });
 
     // O RLS garante que só entram imagens de uma marca da qual a pessoa é membro.
     const { data: linhas } = await supabase

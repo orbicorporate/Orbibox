@@ -1,3 +1,4 @@
+import { ehDonoOuAdmin } from "@/lib/business";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAccessInfoForBusiness } from "@/lib/plans";
@@ -16,6 +17,7 @@ export async function POST(req: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+    if (!(await ehDonoOuAdmin(user.id, businessId))) return NextResponse.json({ error: "Sem permissão." }, { status: 403 });
 
     const access = await getAccessInfoForBusiness(businessId);
     if (access.hasAiChat) {

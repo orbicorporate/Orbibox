@@ -1,3 +1,4 @@
+import { ehDonoOuAdmin } from "@/lib/business";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ClienteBanco } from "@/lib/bancoImagens";
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
     imagens = form.getAll("imagem").filter((f): f is File => f instanceof File && f.size > 0).slice(0, 3);
   } catch { /* trata abaixo */ }
   if (!/^[0-9a-f-]{36}$/i.test(businessId)) return NextResponse.json({ error: "Negócio inválido." }, { status: 400 });
+  if (!(await ehDonoOuAdmin(userData.user.id, businessId))) return NextResponse.json({ error: "Sem permissão." }, { status: 403 });
   if (imagens.some((f) => f.size > MAX_BYTES)) return NextResponse.json({ error: "A foto de base é grande demais." }, { status: 400 });
   const tamanho = TAMANHOS[formato] ?? TAMANHOS.quadrado;
 

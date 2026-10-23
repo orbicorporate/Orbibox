@@ -2,7 +2,7 @@ import { createHmac } from "crypto";
 import type { ResumoSemanal } from "@/lib/resumoSemanal";
 
 export function assinaturaSair(businessId: string): string {
-  return createHmac("sha256", process.env.CRON_SECRET || "orbibox").update(`sair:${businessId}`).digest("hex").slice(0, 24);
+  return createHmac("sha256", process.env.CRON_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "orbibox").update(`sair:${businessId}`).digest("hex").slice(0, 24);
 }
 
 const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
