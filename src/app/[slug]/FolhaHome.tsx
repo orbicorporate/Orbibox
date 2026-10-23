@@ -67,6 +67,7 @@ export function FolhaHome({
   onMudar,
   onCriarBox,
   onPdfPronto,
+  onGiftFechado,
 }: {
   posicaoInicial: "bolinha" | "destaque";
   onFechar: () => void;
@@ -80,6 +81,8 @@ export function FolhaHome({
   onMudar: (l: LinhaHome, pos: Posicao) => void;
   onCriarBox: (b: NovoBox, pos: "bolinha" | "destaque") => Promise<boolean>;
   onPdfPronto: (id: string, pos: "bolinha" | "destaque") => void;
+  /** Fechou a tela do Gift card: liga o botão Presentear onde a pessoa escolheu. */
+  onGiftFechado: (pos: "bolinha" | "destaque") => void;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
@@ -277,7 +280,7 @@ export function FolhaHome({
               { href: "/admin/gift", titulo: "Gift card", texto: "Vale-presente que o cliente compra ou ganha." },
               { href: "/admin/vitrine?novo=1", titulo: "Produto", texto: "Um item novo no catálogo." },
             ].map((n) => (
-              <AbrirEditor key={n.href} href={n.href} rotulo={n.titulo} aoFechar={() => { setRecarga((c) => c + 1); setVista("lista"); }} className={cardLink}>
+              <AbrirEditor key={n.href} href={n.href} rotulo={n.titulo} aoFechar={() => { setRecarga((c) => c + 1); setVista("lista"); if (n.href === "/admin/gift") onGiftFechado(onde); }} className={cardLink}>
                 <span className="min-w-0 flex-1 text-left">
                   <span className="block text-[14.5px] font-semibold leading-tight">{n.titulo}</span>
                   <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">{n.texto}</span>

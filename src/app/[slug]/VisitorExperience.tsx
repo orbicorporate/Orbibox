@@ -919,6 +919,11 @@ export function VisitorExperience({
           enderecoInicial={business.address ?? ""}
           onMudar={(l, pos) => void mudarLinha(l, pos)}
           onCriarBox={criarBoxNaPosicao}
+          onGiftFechado={(pos) => {
+            // O gift card é criado em tela própria e não liga o botão sozinho: liga o Presentear aqui.
+            const presentear = boxList.find((b) => b.box_type === "campaign" && !b.is_active);
+            if (presentear) void mudarLinha({ id: presentear.id, tipo: "botao", titulo: "Presentear", sub: "", foto: null, pos: "escondido" }, pos);
+          }}
           onPdfPronto={(id, pos) => { if (pos === "destaque") void salvarDestaques([...destaquesHome, { t: "botao", id }]); }}
         />
       )}
