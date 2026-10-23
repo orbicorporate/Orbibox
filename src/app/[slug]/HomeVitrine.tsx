@@ -810,9 +810,9 @@ function ListaBolinhas({
                     const ativa = o.url === null ? b.logo === (b.fotoPadrao ?? null) : b.logo === o.url;
                     return (
                       <button key={o.nome} type="button" aria-label={o.nome} aria-pressed={ativa} onClick={() => onImagemItem(b.key, o.url)} className={`flex flex-col items-center gap-1 rounded-2xl p-1 text-[11px] text-text-secondary ${ativa ? "ring-2 ring-on-background" : "ring-1 ring-divider"}`}>
-                        <span className="h-11 w-11 overflow-hidden rounded-full bg-surface-soft">
+                        <span className={`flex h-11 w-11 items-center justify-center overflow-hidden rounded-full ${o.url && o.url === logoMarca ? "bg-[#F4F3EF]" : "bg-surface-soft"}`}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {o.img && <img src={o.img} alt="" className="h-full w-full object-cover" />}
+                          {o.img && <img src={o.img} alt="" className={o.url && o.url === logoMarca ? "h-[70%] w-[70%] object-contain" : "h-full w-full object-cover"} />}
                         </span>
                         {o.nome}
                       </button>

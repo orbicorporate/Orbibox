@@ -61,9 +61,9 @@ export function IconeBolinha({ businessId, itemId, fotoItem, logoMarca, inicial 
               onClick={() => void escolher(o.url)}
               className={`flex flex-col items-center gap-1 rounded-2xl p-1.5 text-[12px] text-text-secondary disabled:opacity-60 ${ativa ? "bg-surface-soft ring-2 ring-on-background" : ""}`}
             >
-              <span className="h-14 w-14 overflow-hidden rounded-full bg-surface-soft">
+              <span className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full ${o.url && o.url === logoMarca ? "bg-[#F4F3EF]" : "bg-surface-soft"}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {o.img && <img src={o.img} alt="" className="h-full w-full object-cover" />}
+                {o.img && <img src={o.img} alt="" className={o.url && o.url === logoMarca ? "h-[70%] w-[70%] object-contain" : "h-full w-full object-cover"} />}
               </span>
               {o.nome}
             </button>

@@ -37,7 +37,7 @@ export default async function ConvitePage({ params }: { params: Promise<{ code: 
         <div className="mx-auto flex items-center justify-center">
           {d?.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={d.logo_url} alt={d.nome} className="h-20 w-20 rounded-full bg-white object-cover shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35)] ring-4 ring-white" />
+            <img src={d.logo_url} alt={d.nome} className="h-20 w-20 rounded-full bg-white object-contain p-2 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35)] ring-4 ring-white" />
           ) : (
             <OrbiParticleSphere size={84} className="rounded-full" />
           )}

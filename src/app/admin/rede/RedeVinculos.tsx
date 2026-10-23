@@ -23,7 +23,7 @@ function textoDoErro(msg: string | undefined): string {
 function Avatar({ nome, logo }: { nome: string; logo: string | null }) {
   return logo ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={logo} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />
+    <img src={logo} alt="" className="h-11 w-11 shrink-0 rounded-full bg-[#F4F3EF] object-contain p-[7px]" />
   ) : (
     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px] font-medium text-text-secondary" aria-hidden>
       {nome.trim().charAt(0).toUpperCase()}
