@@ -48,7 +48,7 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
       texto: "Quanto antes mais gente ver, melhor o seu teste. Mande agora para quem conhece você.",
       passos: ["Grupos de WhatsApp da família e dos amigos", "Clientes e conhecidos que já compram de você", "Depois, os Stories (próxima dica)"],
       primario: "Compartilhar no WhatsApp", acao: "whatsapp",
-      mensagem: `Gente, olha o meu novo link: ${nome}. Dá uma olhada e me conta o que achou:`,
+      mensagem: "Oi, quer conhecer nosso novo Orbibox?",
     },
     {
       id: "stories", titulo: "Poste nos Stories", icone: "stories",
