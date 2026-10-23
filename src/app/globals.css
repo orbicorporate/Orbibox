@@ -1493,3 +1493,87 @@ html[data-embed] .embed-oculta { display: none !important; }
 .presente-treme { transform-origin: 50% 80%; animation: presente-treme 2.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .presente-treme { animation: none; } }
 
+
+/* ===== Landing: palco 3D e faixa de recursos ===== */
+.pc-grade { display: grid; gap: 18px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .pc-grade { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .pc-grade { grid-template-columns: repeat(3, 1fr); gap: 22px; } }
+.pc-card { transition: transform .35s cubic-bezier(.2,.8,.2,1); will-change: transform; transform-style: preserve-3d; }
+.pc-fundo { position: relative; overflow: hidden; border-radius: 32px; color: #fff; min-height: 380px; display: flex; flex-direction: column; box-shadow: 0 30px 60px -34px rgba(17,19,24,.55); }
+.pc-fundo::after { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 70% at 20% 0%, rgba(255,255,255,.22), transparent 60%); pointer-events: none; }
+.pc-cena { position: relative; flex: 1; min-height: 230px; display: flex; align-items: center; justify-content: center; perspective: 800px; }
+.pc-texto { position: relative; z-index: 1; padding: 0 24px 24px; }
+.pc-texto h3 { font-size: 19px; font-weight: 500; letter-spacing: -.01em; }
+.pc-texto p { margin-top: 6px; font-size: 14.5px; line-height: 1.5; color: rgba(255,255,255,.88); }
+
+/* vitrine: três cartões empilhados em camadas */
+.pc-vitrine { transform-style: preserve-3d; }
+.pc-prod { position: absolute; width: 138px; padding: 10px; border-radius: 20px; background: #fff; color: #111318; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 18px 30px -14px rgba(17,19,24,.45); animation: pcFlutua 5s ease-in-out infinite; }
+.pc-prod-foto { height: 70px; border-radius: 14px; }
+.pc-prod-nome { font-size: 12.5px; }
+.pc-prod-preco { align-self: flex-start; font-size: 12px; padding: 2px 9px; border-radius: 999px; background: #ECEDE9; }
+.pc-prod-0 { transform: translate3d(-84px, 14px, -40px) rotateY(18deg); animation-delay: 0s; }
+.pc-prod-1 { transform: translate3d(0, -8px, 20px); animation-delay: -1.6s; z-index: 2; }
+.pc-prod-2 { transform: translate3d(84px, 22px, -40px) rotateY(-18deg); animation-delay: -3.2s; }
+@keyframes pcFlutua { 0%,100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+
+/* conversa: balões que entram em sequência */
+.pc-chat { flex-direction: column; align-items: stretch; gap: 8px; padding: 22px 20px 6px; justify-content: center; }
+.pc-bolha { max-width: 82%; padding: 9px 13px; border-radius: 18px; font-size: 13px; line-height: 1.35; opacity: 0; animation: pcBolha 9s ease-in-out infinite; }
+.pc-bolha-cli { align-self: flex-end; background: #111318; color: #fff; border-bottom-right-radius: 6px; }
+.pc-bolha-orbi { align-self: flex-start; background: #fff; color: #111318; border-bottom-left-radius: 6px; }
+@keyframes pcBolha { 0% { opacity: 0; transform: translateY(12px) scale(.94); } 6%,84% { opacity: 1; transform: none; } 94%,100% { opacity: 0; transform: translateY(-4px); } }
+
+/* voucher: ingresso que balança em 3D com carimbo */
+.pc-ticket { position: relative; width: 190px; padding: 18px 20px; border-radius: 22px; background: #fff; color: #111318; display: flex; flex-direction: column; align-items: center; gap: 6px; box-shadow: 0 24px 40px -16px rgba(17,19,24,.5); animation: pcBalanca 6s ease-in-out infinite; transform-style: preserve-3d; }
+.pc-ticket::before, .pc-ticket::after { content: ""; position: absolute; top: 56%; width: 22px; height: 22px; border-radius: 50%; background: #D1304F; }
+.pc-ticket::before { left: -11px; } .pc-ticket::after { right: -11px; }
+.pc-ticket-topo { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #61656C; }
+.pc-ticket-valor { font-size: 34px; letter-spacing: -.03em; }
+.pc-ticket-linha { width: 100%; border-top: 2px solid #ECEDE9; margin: 6px 0 2px; }
+.pc-ticket-resta { font-size: 12.5px; padding: 3px 11px; border-radius: 999px; background: #FFE3D3; color: #A33C00; animation: pcPulsa 1.8s ease-in-out infinite; }
+.pc-carimbo { position: absolute; right: 18%; bottom: 20%; padding: 5px 12px; border: 2px solid #fff; border-radius: 12px; font-size: 15px; transform: rotate(-12deg); animation: pcCarimbo 6s ease-in infinite; }
+@keyframes pcBalanca { 0%,100% { transform: rotateY(-16deg) rotateX(4deg); } 50% { transform: rotateY(16deg) rotateX(-4deg); } }
+@keyframes pcPulsa { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes pcCarimbo { 0%,55% { opacity: 0; transform: rotate(-12deg) scale(2.2); } 65%,92% { opacity: 1; transform: rotate(-12deg) scale(1); } 100% { opacity: 0; } }
+
+/* números: barras que crescem */
+.pc-numeros { flex-direction: column; gap: 14px; }
+.pc-barras { display: flex; align-items: flex-end; gap: 10px; height: 130px; padding: 14px 18px; border-radius: 22px; background: rgba(255,255,255,.16); }
+.pc-barra { width: 22px; border-radius: 10px 10px 4px 4px; background: #fff; transform-origin: bottom; animation: pcCresce 3.6s ease-in-out infinite; }
+.pc-barra:nth-child(even) { background: #C3FAE8; }
+.pc-selo { padding: 6px 14px; border-radius: 999px; background: #fff; color: #087F5B; font-size: 13px; animation: pcFlutua 4s ease-in-out infinite; }
+@keyframes pcCresce { 0% { transform: scaleY(.08); } 35%,80% { transform: scaleY(1); } 100% { transform: scaleY(.08); } }
+
+/* app: ícone cai na tela inicial */
+.pc-fone { width: 128px; height: 196px; border-radius: 26px; background: #0B1F45; padding: 12px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 26px 40px -18px rgba(0,0,0,.55); transform: rotateY(-14deg) rotateX(6deg); animation: pcFoneGira 7s ease-in-out infinite; }
+.pc-fone-grade { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; width: 100%; padding-top: 14px; }
+.pc-fone-app { aspect-ratio: 1; border-radius: 10px; background: rgba(255,255,255,.18); }
+.pc-fone-orbibox { aspect-ratio: 1; border-radius: 10px; display: grid; place-items: center; font-size: 15px; color: #111318; background: linear-gradient(135deg,#A3E4C2,#6EC5D6); animation: pcCai 4.5s cubic-bezier(.3,1.5,.5,1) infinite; }
+.pc-fone-nome { font-size: 10px; color: rgba(255,255,255,.7); }
+@keyframes pcFoneGira { 0%,100% { transform: rotateY(-14deg) rotateX(6deg); } 50% { transform: rotateY(14deg) rotateX(2deg); } }
+@keyframes pcCai { 0%,10% { opacity: 0; transform: translateY(-70px) scale(1.7); } 40%,88% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+/* radar de fãs: varredura e pontos que piscam */
+.pc-radar-disco { position: relative; width: 190px; height: 190px; border-radius: 50%; background: rgba(255,255,255,.14); box-shadow: inset 0 0 0 2px rgba(255,255,255,.35); overflow: hidden; }
+.pc-radar-anel { position: absolute; border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.35); }
+.pc-radar-anel-1 { inset: 25%; } .pc-radar-anel-2 { inset: 8%; }
+.pc-radar-varre { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, rgba(255,255,255,.55), rgba(255,255,255,0) 28%); animation: pcGira 3.6s linear infinite; }
+.pc-radar-ponto { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 0 rgba(255,255,255,.7); animation: pcPing 3.6s ease-out infinite; }
+@keyframes pcGira { to { transform: rotate(360deg); } }
+@keyframes pcPing { 0% { transform: scale(.4); opacity: 0; } 8% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 0 0 rgba(255,255,255,.8); } 40% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 14px rgba(255,255,255,0); } 100% { opacity: .35; transform: scale(1); } }
+
+/* faixa que corre */
+.pc-faixa { position: relative; overflow: hidden; padding: 6px 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.pc-faixa-trilho { display: flex; gap: 10px; width: max-content; animation: pcCorre 38s linear infinite; }
+.pc-faixa-chip { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; background: #fff; font-size: 14px; box-shadow: 0 0 0 1px rgba(17,19,24,.06); white-space: nowrap; }
+.pc-faixa-chip i { width: 9px; height: 9px; border-radius: 50%; }
+@keyframes pcCorre { to { transform: translateX(-50%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-anim *, .pc-faixa-trilho { animation: none !important; }
+  .pc-bolha { opacity: 1; }
+  .pc-carimbo { opacity: 1; }
+  .pc-barra { transform: none; }
+  .pc-fone-orbibox { opacity: 1; }
+}
