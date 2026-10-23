@@ -24,7 +24,7 @@ export function PedirAvaliacaoCard({ nome, slug, shareUrl, imagem, logo }: { nom
   }
   return (
     <>
-      <section className="mt-8 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.05]">
+      <section id="pedir-avaliacao" className="mt-8 scroll-mt-6 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.05]">
         <div className="flex items-start gap-3.5">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-on-background">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z" /></svg>

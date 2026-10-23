@@ -264,6 +264,21 @@ export async function calcularOportunidade(
       cta: { rotulo: ctx.pendencia.ctaLabel, href: ctx.pendencia.href },
     };
   }
+  // Página pronta: sempre que a página tiver poucas avaliações, a sugestão é pedir mais.
+  // Cada avaliação leva o cliente a abrir a página e conhecer o Orbibox da marca.
+  const { count: avaliacoes } = await (supabase as unknown as SupabaseClient).from("reviews").select("id", { count: "exact", head: true }).eq("business_id", businessId);
+  const nAval = avaliacoes ?? 0;
+  if (nAval < 10) {
+    return {
+      tom: "passo",
+      selo: "Próximo passo",
+      titulo: "Que tal solicitar umas avaliações?",
+      dados: [nAval === 0 ? "Sua página ainda não tem avaliações." : `Sua página tem ${nAval} ${nAval === 1 ? "avaliação" : "avaliações"}.`, "Quem avalia abre a sua página e conhece o seu Orbibox. Cada avaliação traz confiança e mais gente."],
+      pergunta: "Pedir para seus clientes agora?",
+      cta: { rotulo: "Pedir avaliação", href: "#pedir-avaliacao" },
+      secundario: { rotulo: "Ver resultados", href: "/admin/pulse" },
+    };
+  }
   return {
     tom: "passo",
     selo: idadeDias >= 7 ? "Sua semana" : "Próximo passo",
