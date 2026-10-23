@@ -28,6 +28,8 @@ export type BolinhaVitrine = {
   selo?: string;
   /** Logo escolhida pelo dono pra bolinha (no lugar do ícone padrão). */
   logo?: string | null;
+  /** A imagem é a logo da marca: aparece inteira, sem cortar nas bordas do círculo. */
+  logoInteira?: boolean;
   /** Quando a bolinha é um item do catálogo: para onde o lápis leva (editor do item). */
   editarHref?: string;
   /** Foto original do item (para voltar a ela depois de trocar a imagem). */
@@ -945,6 +947,12 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
       {b.logo && !/^(https?:|\/|data:|blob:)/.test(b.logo) ? (
         // Ícone escolhido na biblioteca (emoji), em vez de imagem.
         <span aria-hidden className={`pointer-events-none select-none text-[30px] leading-none ${linha ? "grayscale" : ""}`}>{b.logo}</span>
+      ) : b.logo && b.logoInteira ? (
+        // Logo da marca: mostra inteira (o quadrado cabe dentro do círculo), em fundo claro.
+        <span className="pointer-events-none flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#F4F3EF]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={b.logo} alt="" draggable={false} style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", ...(linha ? { filter: "grayscale(1) contrast(1.15)" } : {}) }} className="h-[70%] w-[70%] object-contain" />
+        </span>
       ) : b.logo ? (
         // Com uma cor escolhida, o logo fica um pouco menor para a cor aparecer em volta.
         // eslint-disable-next-line @next/next/no-img-element

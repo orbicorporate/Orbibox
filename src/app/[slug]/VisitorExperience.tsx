@@ -590,7 +590,7 @@ export function VisitorExperience({
       if (d.t !== "item_bolinha") return [];
       const it = content.find((x) => x.id === d.id);
       if (!it) return [];
-      const b: BolinhaVitrine = { key: `item-${it.id}`, estilo: "cor", editavel: true, rotulo: it.title, tipo: "catalogo", logo: d.logo || it.image_url, fotoPadrao: it.image_url, editarHref: `/admin/vitrine/pagina/${it.id}`, onClick: () => router.push(`/${business.slug}/p/${it.id}`) };
+      const b: BolinhaVitrine = { key: `item-${it.id}`, estilo: "cor", editavel: true, rotulo: it.title, tipo: "catalogo", logo: d.logo || it.image_url, logoInteira: !!d.logo && d.logo === business.logo_url, fotoPadrao: it.image_url, editarHref: `/admin/vitrine/pagina/${it.id}`, onClick: () => router.push(`/${business.slug}/p/${it.id}`) };
       return [{ b, v: typeof d.p === "number" ? d.p : 10000 + n }];
     });
     if (doItens.length > 0) {
