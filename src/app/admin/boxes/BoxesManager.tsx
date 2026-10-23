@@ -294,11 +294,14 @@ export function BoxesManager({
   async function saveConfig(box: Box, cfg: BoxConfig) {
     setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, title: cfg.label ?? b.title, config: cfg } : b)));
     conferirSalvo(await supabase.from("smart_boxes").update({ title: cfg.label || box.title, config: cfg }).eq("id", box.id));
+    // A Home guarda a tela em cache ao navegar: sem isso, ao voltar pra ela o ícone/nome antigo aparecia por um tempo.
+    router.refresh();
   }
 
   async function saveSchedule(box: Box, startsAt: string | null, endsAt: string | null) {
     setBoxes((p) => p.map((b) => (b.id === box.id ? { ...b, starts_at: startsAt, ends_at: endsAt } : b)));
     conferirSalvo(await supabase.from("smart_boxes").update({ starts_at: startsAt, ends_at: endsAt }).eq("id", box.id));
+    router.refresh();
   }
 
   async function removeCustom(box: Box) {
