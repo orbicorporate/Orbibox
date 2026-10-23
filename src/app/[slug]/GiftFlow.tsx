@@ -158,7 +158,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
           <div className="mt-5 flex flex-col gap-2.5">
             <input value={paraQuem} onChange={(e) => setParaQuem(e.target.value)} placeholder="Pra quem é o presente? (opcional)" className="w-full rounded-full border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
             <input value={deQuem} onChange={(e) => setDeQuem(e.target.value)} placeholder="Seu nome (opcional)" className="w-full rounded-full border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
-            <textarea value={mensagem} onChange={(e) => setMensagem(e.target.value)} rows={2} placeholder="Mensagem (opcional)" className="w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+            <textarea value={mensagem} onChange={(e) => setMensagem(e.target.value)} rows={5} placeholder="Mensagem (opcional)" className="min-h-[132px] w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
           </div>
 
           {erro && <p className="mt-2 text-[13px] text-red-600">{erro}</p>}

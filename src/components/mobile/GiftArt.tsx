@@ -107,13 +107,13 @@ export function GiftArt({
             <defs>
               <filter id={`${clipId}-b`} x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6" /></filter>
               <linearGradient id={`${clipId}-g`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#fff" stopOpacity=".85" />
-                <stop offset=".5" stopColor="#fff" stopOpacity=".45" />
-                <stop offset="1" stopColor="#fff" stopOpacity=".75" />
+                <stop offset="0" stopColor="#fff" stopOpacity=".42" />
+                <stop offset=".5" stopColor="#fff" stopOpacity=".2" />
+                <stop offset="1" stopColor="#fff" stopOpacity=".38" />
               </linearGradient>
             </defs>
-            <path d="M97,0 C84,30 84,70 97,100" fill="none" stroke="rgba(255,255,255,.35)" strokeWidth="5" filter={`url(#${clipId}-b)`} />
-            <path d="M100,0 C87,30 87,70 100,100" fill="none" stroke={`url(#${clipId}-g)`} strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
+            <path d="M97,0 C84,30 84,70 97,100" fill="none" stroke="rgba(255,255,255,.08)" strokeWidth="3" filter={`url(#${clipId}-b)`} />
+            <path d="M100,0 C87,30 87,70 100,100" fill="none" stroke={`url(#${clipId}-g)`} strokeWidth="1" vectorEffect="non-scaling-stroke" />
           </svg>
         </>
       ) : (
