@@ -62,7 +62,7 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
       id: "avaliacao", titulo: "Peça uma avaliação", icone: "estrela",
       texto: "Mande o link para quem já gostou de você. A pessoa abre direto na tela de avaliar, e a nota aparece na sua página.",
       primario: "Pedir avaliação", acao: "folha", caminho: `/${slug}?clube=avaliar`,
-      mensagem: `Como foi sua experiência em ${nome}? Conta pra gente, leva 1 minuto:`,
+      mensagem: `Queremos uma avaliação sua no nosso Orbibox. Leva 1 minuto:`,
     },
   ];
 

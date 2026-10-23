@@ -821,7 +821,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
             {isOwner ? (
               <>
               <BotaoCompartilhar
-                alvo={{ url: `/${slug}?clube=avaliar`, titulo: "Avaliação", rotulo: "Avaliação", marca: nome, imagem: logoUrl, logo: logoUrl, texto: `Como foi sua experiência em ${nome}? Conta pra gente, leva 1 minuto:` }}
+                alvo={{ url: `/${slug}?clube=avaliar`, titulo: "Avaliação", rotulo: "Avaliação", marca: nome, imagem: logoUrl, logo: logoUrl, texto: `Queremos uma avaliação sua no nosso Orbibox. Leva 1 minuto:` }}
                 className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-surface-soft px-6 text-[15px] font-normal text-on-background ring-1 ring-divider active:scale-[0.98]"
               >
                 <span>Pedir avaliação</span>

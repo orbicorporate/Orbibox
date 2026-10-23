@@ -19,7 +19,7 @@ export function PedirAvaliacaoCard({ nome, slug, shareUrl, imagem, logo }: { nom
       marca: nome,
       imagem,
       logo,
-      texto: `Como foi sua experiência em ${nome}? Conta pra gente, leva 1 minuto:`,
+      texto: `Queremos uma avaliação sua no nosso Orbibox. Leva 1 minuto:`,
     });
   }
   return (
