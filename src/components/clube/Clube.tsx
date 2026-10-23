@@ -619,10 +619,10 @@ function LinhaAjuste({ titulo, ligado, ocupado, aoAlternar }: { titulo: string; 
       aria-label={titulo}
       disabled={ocupado}
       onClick={aoAlternar}
-      className="flex min-h-[92px] flex-1 flex-col items-center justify-center gap-2.5 px-2 py-3 text-center active:bg-surface-soft disabled:opacity-60"
+      className="flex min-h-[64px] flex-1 flex-col items-center justify-center gap-1.5 px-2 py-2 text-center active:bg-surface-soft disabled:opacity-60"
     >
-      <span aria-hidden className={`relative h-[24px] w-[40px] shrink-0 rounded-full transition-colors ${ligado ? "bg-[#111318]" : "bg-[#E4E2DC]"}`}>
-        <span className={`absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white shadow transition-all ${ligado ? "left-[19px]" : "left-[3px]"}`} />
+      <span aria-hidden className={`relative h-[20px] w-[34px] shrink-0 rounded-full transition-colors ${ligado ? "bg-[#111318]" : "bg-[#E4E2DC]"}`}>
+        <span className={`absolute top-[2.5px] h-[15px] w-[15px] rounded-full bg-white shadow transition-all ${ligado ? "left-[16.5px]" : "left-[2.5px]"}`} />
       </span>
       <span className="block text-[13px] font-normal leading-tight text-on-background">{titulo}</span>
     </button>
@@ -817,7 +817,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
             )}
             
           </div>
-          <div className="cl-entra flex flex-col items-center gap-2 px-5 pb-[max(22px,env(safe-area-inset-bottom))] pt-2" style={{ ["--i" as string]: 6 }}>
+          <div className="cl-entra relative z-10 flex flex-col items-center gap-2 px-5 pb-[max(22px,env(safe-area-inset-bottom))] pt-2" style={{ ["--i" as string]: 6 }}>
             {isOwner ? (
               <>
               <BotaoCompartilhar
@@ -832,7 +832,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
               </>
             ) : (
               <>
-                <button
+                {!eu.ehFa && <button
                   type="button"
                   onClick={async (e) => {
                     const r = e.currentTarget.getBoundingClientRect();
@@ -844,7 +844,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                   className={`min-h-[48px] rounded-full px-7 text-[15px] font-semibold active:scale-[0.98] ${eu.ehFa ? "bg-surface-soft text-on-background ring-1 ring-divider" : "bg-button-primary text-white"}`}
                 >
                   {eu.ehFa ? "Você é fã" : "Virar fã"}
-                </button>
+                </button>}
                 <BotaoCompartilhar
                   alvo={{ url: `/${slug}`, titulo: nome, rotulo: "Clube", marca: nome, imagem: logoUrl, logo: logoUrl, texto: `Conhece ${nome}? Dá uma olhada:` }}
                   className="flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 text-[14px] font-normal text-text-secondary active:scale-[0.98]"
@@ -864,8 +864,8 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                         />
                       </>
                     )}
-                    <label className="flex min-h-[92px] flex-1 cursor-pointer flex-col items-center justify-center gap-2.5 px-2 py-3 text-center active:bg-surface-soft">
-                      <Rosto url={eu.foto} nome={eu.nome} size={28} />
+                    <label className="flex min-h-[64px] flex-1 cursor-pointer flex-col items-center justify-center gap-1.5 px-2 py-2 text-center active:bg-surface-soft">
+                      <Rosto url={eu.foto} nome={eu.nome} size={22} />
                       <span className="block text-[13px] font-normal leading-tight text-on-background">{enviandoFoto ? "Enviando…" : "Minha foto"}</span>
                       <input
                         type="file"
