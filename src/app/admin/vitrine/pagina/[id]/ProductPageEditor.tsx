@@ -430,11 +430,6 @@ export function ProductPageEditor({ business, item }: { business: Business; item
             )}
           </div>
 
-          {midias.length > 0 && (
-            <p className="mt-2 text-center text-[12.5px] leading-snug text-text-tertiary">
-              {capa ? "A foto marcada como foto do card é a que aparece no card, na Home e no catálogo." : "Este item ainda não tem foto do card própria, então o card usa a primeira foto. Toque em “Usar como foto do card” numa foto pra escolher outra."}
-            </p>
-          )}
           <div className="mt-3 flex items-center justify-between gap-2">
             <div className="flex gap-1.5">
               {slides.length > 1 &&
@@ -463,12 +458,8 @@ export function ProductPageEditor({ business, item }: { business: Business; item
           {/* Ordem das fotos: miniaturas numeradas; toque numa pra escolher e
               use os botões pra mudar a posição. A 1ª é a que abre a página. */}
           {midias.length > 1 && (
-            <div className="mt-4 rounded-2xl border border-divider bg-surface-white p-3">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-[13px] font-semibold">Ordem das fotos</p>
-                <p className="text-[11.5px] text-text-tertiary">Segure e arraste. A 1ª aparece primeiro</p>
-              </div>
-              <div className="no-scrollbar mt-2.5 flex gap-2 overflow-x-auto pb-0.5">
+            <div className="mt-5">
+              <div className="no-scrollbar flex gap-2 overflow-x-auto pb-0.5">
                 {arrastoFotos.ordem.map((src) => {
                   const i = midias.indexOf(src);
                   const yt = youtubeId(src);
@@ -491,105 +482,41 @@ export function ProductPageEditor({ business, item }: { business: Business; item
                   );
                 })}
               </div>
-              <div className="mt-2.5 flex gap-1.5">
-                <button
-                  onClick={() => mover(ativo, -1)}
-                  disabled={ativo <= 0}
-                  className="flex-1 rounded-full bg-surface-soft py-2 text-[12.5px] font-medium disabled:opacity-35"
-                >
-                  ‹ Antes
-                </button>
-                <button
-                  onClick={() => mover(ativo, 1)}
-                  disabled={ativo >= midias.length - 1}
-                  className="flex-1 rounded-full bg-surface-soft py-2 text-[12.5px] font-medium disabled:opacity-35"
-                >
-                  Depois ›
-                </button>
-                <button
-                  onClick={() => paraPrimeira(ativo)}
-                  disabled={ativo <= 0}
-                  className="flex-1 rounded-full bg-on-background py-2 text-[12.5px] font-medium text-white disabled:opacity-35"
-                >
-                  Tornar 1ª
-                </button>
+              <p className="mt-2 text-[12px] text-text-tertiary">Segure e arraste para ordenar. A 1ª aparece primeiro.</p>
+              <div className="mt-1 flex flex-wrap items-center gap-x-1 text-[13px] text-text-secondary">
+                <button onClick={() => mover(ativo, -1)} disabled={ativo <= 0} className="min-h-[40px] px-2 disabled:opacity-35">‹ Antes</button>
+                <button onClick={() => mover(ativo, 1)} disabled={ativo >= midias.length - 1} className="min-h-[40px] px-2 disabled:opacity-35">Depois ›</button>
+                <button onClick={() => paraPrimeira(ativo)} disabled={ativo <= 0} className="min-h-[40px] px-2 text-on-background underline underline-offset-4 disabled:opacity-35">Tornar 1ª</button>
+                {alvoEdicao && (
+                  <>
+                    <span aria-hidden className="mx-1 h-4 w-px bg-divider" />
+                    <button type="button" onClick={() => setGerador({ edicao: true, url: alvoEdicao })} className="min-h-[40px] px-2">✦ Editar com a Orbi</button>
+                    <button type="button" onClick={() => setAjuste(alvoEdicao)} className="min-h-[40px] px-2">Ajustar luz</button>
+                  </>
+                )}
               </div>
             </div>
           )}
 
-          {alvoEdicao && (
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setGerador({ edicao: true, url: alvoEdicao })}
-                className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 text-[13px] font-medium"
-              >
-                <span className="text-[14px] leading-none">✦</span> Editar com a Orbi
-              </button>
-              <button
-                type="button"
-                onClick={() => setAjuste(alvoEdicao)}
-                className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 text-[13px] font-medium"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden><circle cx="12" cy="12" r="4" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4" /></svg>
-                Ajustar luz
-              </button>
+          {alvoEdicao && midias.length <= 1 && (
+            <div className="mt-3 flex flex-wrap items-center gap-x-1 text-[13px] text-text-secondary">
+              <button type="button" onClick={() => setGerador({ edicao: true, url: alvoEdicao })} className="min-h-[40px] px-2">✦ Editar com a Orbi</button>
+              <button type="button" onClick={() => setAjuste(alvoEdicao)} className="min-h-[40px] px-2">Ajustar luz</button>
             </div>
           )}
 
           {/* Adicionar fotos: sempre à vista, logo abaixo do carrossel. */}
           {midias.length < MAX_MIDIAS && (
-            <div className="mt-4 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => setFotosProntas(true)}
-                className="orbi-gradient w-full rounded-[20px] p-[1.5px] text-left shadow-[0_6px_22px_rgba(120,220,160,0.22)] transition-transform active:scale-[0.99]"
-              >
-                <span className="flex w-full items-center gap-3 rounded-[18.5px] bg-surface-white px-3.5 py-3">
-                  <span className="orbi-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-on-background" aria-hidden>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="4" width="18" height="16" rx="3" />
-                      <circle cx="9" cy="10" r="2" />
-                      <path d="M21 16l-5-5-8 9" />
-                    </svg>
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[14.5px] font-semibold">Buscar foto pronta</span>
-                    <span className="block text-[12px] leading-snug text-text-secondary">A Orbi entende o tema e escolhe fotos profissionais</span>
-                  </span>
-                  <span className="shrink-0 rounded-full bg-on-background px-3.5 py-2 text-[12.5px] font-semibold text-white">Buscar</span>
-                </span>
-              </button>
-              <div className="grid grid-cols-2 gap-2 min-[420px]:grid-cols-4">
-                <button
-                  onClick={() => setDaGaleria(true)}
-                  className="flex flex-col items-center gap-1 rounded-2xl border border-divider bg-surface-white py-3 text-[12.5px] font-medium"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="9" cy="9" r="1.8" /><path d="M21 15l-5-5L5 21" /></svg>
-                  Da galeria
+            <div className="mt-4">
+              <p className="mb-2 text-[12px] uppercase tracking-[0.14em] text-text-tertiary">Adicionar</p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => setFotosProntas(true)} className="orbi-gradient rounded-full p-[1.5px] transition-transform active:scale-[0.98]">
+                  <span className="flex min-h-[37px] items-center gap-1.5 rounded-full bg-surface-white px-4 text-[13px] text-on-background">✦ Foto pronta</span>
                 </button>
-                <button
-                  onClick={() => inputRef.current?.click()}
-                  disabled={enviando}
-                  className="flex flex-col items-center gap-1 rounded-2xl border border-divider bg-surface-white py-3 text-[12.5px] font-medium disabled:opacity-50"
-                >
-                  <span className="text-[17px] leading-none">+</span>
-                  {enviando ? "Enviando…" : "Enviar foto"}
-                </button>
-                <button
-                  onClick={() => setPainel(painel === "video" ? null : "video")}
-                  className={`flex flex-col items-center gap-1 rounded-2xl border bg-surface-white py-3 text-[12.5px] font-medium ${painel === "video" ? "border-on-background" : "border-divider"}`}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M8 5.5v13l11-6.5z" /></svg>
-                  Vídeo
-                </button>
-                <button
-                  onClick={() => setGerador({ edicao: false })}
-                  className={`flex flex-col items-center gap-1 rounded-2xl border bg-surface-white py-3 text-[12.5px] font-medium ${painel === "ia" ? "border-on-background" : "border-divider"}`}
-                >
-                  <span className="text-[14px] leading-none">✦</span>
-                  Criar com IA
-                </button>
+                <button type="button" onClick={() => setDaGaleria(true)} className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-soft px-4 text-[13px] text-on-background disabled:opacity-50">Da galeria</button>
+                <button type="button" onClick={() => inputRef.current?.click()} disabled={enviando} className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-soft px-4 text-[13px] text-on-background disabled:opacity-50">{enviando ? "Enviando…" : "Enviar foto"}</button>
+                <button type="button" onClick={() => setPainel(painel === "video" ? null : "video")} className={`flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-soft px-4 text-[13px] text-on-background disabled:opacity-50${painel === "video" ? " ring-1 ring-on-background" : ""}`}>Vídeo</button>
+                <button type="button" onClick={() => setGerador({ edicao: false })} className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-soft px-4 text-[13px] text-on-background disabled:opacity-50">Criar com IA</button>
               </div>
             </div>
           )}
