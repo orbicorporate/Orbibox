@@ -102,7 +102,7 @@ export function CodigoRede({ businessId }: { businessId: string }) {
         ) : (
           <>
             <p className="text-[15px] font-semibold">Código da rede</p>
-            <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Sua marca tem uma rede de negócios? Gere um código e passe para ela. Ela adiciona esta loja no painel dela.</p>
+            <p className="mt-1 text-[13px] leading-snug text-text-tertiary">Sua marca tem uma rede de negócios? Gere um código e passe para ela. Ela adiciona este negócio no painel dela.</p>
             {codigo ? (
               <div className="mt-3">
                 <div className="flex items-center justify-between gap-3 rounded-2xl border border-dashed border-on-background/30 px-4 py-3">

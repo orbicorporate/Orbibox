@@ -61,7 +61,7 @@ async function cobrarVoucherResgatado(redemptionId: string, businessId: string) 
       customer: subscription.stripe_customer_id,
       currency: "brl",
       amount: 100,
-      description: `Voucher resgatado — ${business.name}`,
+      description: `Voucher resgatado: ${business.name}`,
     });
     await service
       .from("voucher_billing_events")

@@ -81,7 +81,7 @@ const ACAO_EXPLICA: Partial<Record<NonNullable<BoxConfig["action"]>, { titulo: s
   },
   delivery: {
     titulo: "Abre seus apps de delivery",
-    texto: "O cliente escolhe o app (iFood, Rappi, 99Food e outros) e vai direto para a sua loja nele. Cada toque é contado no Pulse.",
+    texto: "O cliente escolhe o app (iFood, Rappi, 99Food e outros) e vai direto para o seu perfil nele. Cada toque é contado no Pulse.",
     href: "/admin/delivery",
     link: "Escolher apps e links →",
   },

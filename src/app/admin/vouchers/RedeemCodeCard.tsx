@@ -165,7 +165,7 @@ export function RedeemCodeCard({
 
           {achado && !result && (
             <p className="mt-3 rounded-2xl bg-surface-soft px-4 py-3 text-[13.5px] leading-relaxed">
-              Este código é do voucher <span className="font-semibold">{tituloAchado ?? "da sua loja"}</span>
+              Este código é do voucher <span className="font-semibold">{tituloAchado ?? "do seu negócio"}</span>
               {achado.visitor_name ? <>, de <span className="font-semibold">{achado.visitor_name}</span></> : null}.{" "}
               {achado.status === "redeemed" ? <span className="font-semibold text-[#B4321F]">Já foi usado.</span> : achado.status === "expired" ? <span className="font-semibold text-[#B4321F]">Expirou.</span> : <span className="font-semibold text-[#1F9E4C]">Pode confirmar.</span>}
             </p>
@@ -195,7 +195,7 @@ export function RedeemCodeCard({
           <div className="mt-4 flex items-center gap-2 border-t border-divider pt-3.5">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA0AA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" /></svg>
             <span className="text-[12.5px] text-text-tertiary">
-              {activeVoucherId ? "Só aceita código deste voucher." : "Sem escolher, o código vale para qualquer voucher ativo da sua loja."}
+              {activeVoucherId ? "Só aceita código deste voucher." : "Sem escolher, o código vale para qualquer voucher ativo do seu negócio."}
             </span>
           </div>
         </>

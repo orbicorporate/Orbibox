@@ -1046,7 +1046,7 @@ export function ShowcaseBuilder({
             <p className="text-[12px] uppercase tracking-wide text-text-tertiary">A Orbi leu seu site</p>
             <p className="mt-2 font-[family-name:var(--font-manrope)] text-[19px] font-medium">
               {proposta.siteType === "ecommerce"
-                ? "Entendi que você tem uma loja virtual"
+                ? "Entendi que você tem uma vitrine online"
                 : proposta.siteType === "links"
                 ? "Entendi que seu site é uma página de apresentação"
                 : "Entendi que você é um negócio de serviços"}
@@ -2252,7 +2252,7 @@ function ItemCard({
               <div className="mt-3 flex flex-col gap-2">
                 {([
                   { v: "produto", titulo: "Abrir a página do produto", dica: "Uma página só desse item, com capa, fotos, descrição e preço.", patch: { link_kind: "produto", target_url: null } },
-                  { v: "externo", titulo: "Levar para um link", dica: "Manda direto para seu site, loja ou WhatsApp.", patch: { link_kind: "externo", target_url: item.target_url ?? "" } },
+                  { v: "externo", titulo: "Levar para um link", dica: "Manda direto para seu site, página de vendas ou WhatsApp.", patch: { link_kind: "externo", target_url: item.target_url ?? "" } },
                   { v: "nenhum", titulo: "Só mostrar", dica: "O card fica de exposição, sem abrir nada.", patch: { link_kind: "nenhum", target_url: null } },
                 ] as const).map((o) => {
                   const sel = (item.link_kind ?? "produto") === o.v;

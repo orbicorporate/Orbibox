@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     const diasBase = restanteSemCartao != null ? Math.max(0, restanteSemCartao) : alreadyUsedTrial ? 0 : indicado ? DIAS_TESTE_INDICADO : DIAS_TESTE;
     const diasTeste = diasBase + 30 * (banco?.meses ?? 0);
 
-    const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://orbibox-orbi-app.vercel.app";
+    const origin = process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin;
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",

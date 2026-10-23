@@ -89,7 +89,7 @@ export const PAGAMENTOS = [
 ];
 
 export const ATENDIMENTOS = [
-  { id: "loja", label: "Loja física", cor: "#1F7A3D", fundo: "#DEF3E3" },
+  { id: "loja", label: "Ponto físico", cor: "#1F7A3D", fundo: "#DEF3E3" },
   { id: "delivery", label: "Delivery", cor: "#C2650A", fundo: "#FDEEDF" },
   { id: "online", label: "Online", cor: "#1D4ED8", fundo: "#E2EAFE" },
   { id: "agendamento", label: "Com agendamento", cor: "#6D28D9", fundo: "#EDE6FC" },

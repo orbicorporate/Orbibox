@@ -1,3 +1,4 @@
+import { ehDonoOuAdmin } from "@/lib/business";
 import { NextRequest, NextResponse } from "next/server";
 import { askClaude } from "@/lib/anthropic";
 import { AI_MODEL_RAPIDO } from "@/lib/aiModel";
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest) {
       .eq("id", conversationId)
       .maybeSingle();
     if (!conv) return NextResponse.json({ error: "Conversa não encontrada." }, { status: 404 });
+    // Só quem é dono ou da equipe do negócio da conversa pode pedir o resumo.
+    if (!(await ehDonoOuAdmin(user.id, conv.business_id))) return NextResponse.json({ error: "Sem permissão." }, { status: 403 });
     if (conv.summary) return NextResponse.json({ resumo: conv.summary, temperatura: conv.temperature, cached: true });
 
     const { data: msgs } = await supabase

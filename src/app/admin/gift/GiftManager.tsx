@@ -90,7 +90,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
               Escolha um degradê e, se quiser, uma foto do seu produto. Ela entra no fim do card, se misturando com o degradê.
             </p>
             <div className="mt-4">
-              <GiftArt valorCents={10000} paraQuem="Maria" deQuem="João" mensagem="Feliz aniversário!" negocio="Sua loja" codigo="GIFT-EXEMPL" artUrl={artUrl} artTheme={artTheme} bloqueado={false} />
+              <GiftArt valorCents={10000} paraQuem="Maria" deQuem="João" mensagem="Feliz aniversário!" negocio="Seu negócio" codigo="GIFT-EXEMPL" artUrl={artUrl} artTheme={artTheme} bloqueado={false} />
             </div>
             <div className="mt-3">
               <ImageUpload value={artUrl} onChange={(url) => { setArtUrl(url); salvar({ art_url: url }); }} businessId={businessId} lockedRatio="quadrado" lockedReason="No gift a foto entra quadrada, no fim do card, se misturando com o degradê." />

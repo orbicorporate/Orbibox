@@ -92,7 +92,7 @@ export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: sa
           <div className="mt-5 flex items-center justify-between gap-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.06]">
             <div className="min-w-0">
               <p className="text-[14.5px] font-medium">Botão na página</p>
-              <p className="mt-0.5 text-[12.5px] text-text-tertiary">{ligados === 0 ? "Fica escondido até você ligar um app com link." : ligados === 1 ? "Com um app só, o toque abre direto a loja." : `${ligados} apps ligados.`}</p>
+              <p className="mt-0.5 text-[12.5px] text-text-tertiary">{ligados === 0 ? "Fica escondido até você ligar um app com link." : ligados === 1 ? "Com um app só, o toque abre direto o seu perfil no app." : `${ligados} apps ligados.`}</p>
             </div>
             <button type="button" role="switch" aria-checked={ativo} onClick={alternarBotao} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${ativo ? "bg-on-background" : "bg-divider"}`}>
               <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${ativo ? "left-7" : "left-1"}`} />
@@ -154,7 +154,7 @@ export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: sa
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary transition-transform group-open:rotate-180" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
         </summary>
         <div className="px-4 pb-4">
-          <p className="text-[13px] leading-snug text-text-secondary">Os apps onde seus clientes pedem. Cada um leva direto à sua loja, e cada toque aparece no Pulse.</p>
+          <p className="text-[13px] leading-snug text-text-secondary">Os apps onde seus clientes pedem. Cada um leva direto ao seu perfil no app, e cada toque aparece no Pulse.</p>
           {corpo}
         </div>
       </details>
@@ -165,7 +165,7 @@ export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: sa
     <div className="flex flex-col pb-10">
       <Link href="/admin/boxes" className="mt-2 text-[14px] text-text-tertiary hover:underline">← Botões da home</Link>
       <h1 className="mt-3 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.02em]">Delivery</h1>
-      <p className="mt-1 text-[14px] leading-snug text-text-secondary">Um botão na sua página com os apps onde seus clientes pedem. Cada um leva direto à sua loja, e cada toque aparece no Pulse.</p>
+      <p className="mt-1 text-[14px] leading-snug text-text-secondary">Um botão na sua página com os apps onde seus clientes pedem. Cada um leva direto ao seu perfil no app, e cada toque aparece no Pulse.</p>
       {corpo}
     </div>
   );

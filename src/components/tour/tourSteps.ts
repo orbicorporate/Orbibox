@@ -19,7 +19,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "vitrine",
     page: "/admin/vitrine",
     title: "Catálogo inteligente",
-    body: "Cada produto, serviço ou categoria vira uma página própria, como uma loja automática dentro do seu Orbibox.",
+    body: "Cada produto, serviço ou categoria vira uma página própria, como uma vitrine automática dentro do seu Orbibox.",
   },
   {
     id: "boxes",

@@ -1091,7 +1091,7 @@ function CenaVouchers() {
             <QRFalso />
             <div>
               <p className="text-[12.5px] font-semibold leading-tight">Mostre esse QR</p>
-              <p className="mt-0.5 text-[11.5px] text-text-secondary">A loja escaneia e o cupom baixa do estoque.</p>
+              <p className="mt-0.5 text-[11.5px] text-text-secondary">O negócio escaneia e o cupom baixa do estoque.</p>
             </div>
           </div>
           <div className="apr-pop mt-3" style={d(6)}>
@@ -1172,7 +1172,7 @@ function CenaGift() {
               </span>
             </div>
             <p className="mt-1 text-[11.5px] leading-snug text-text-secondary">
-              {liberado ? "Pago via WhatsApp. Ana já pode usar." : "Lucas acerta o valor com a loja pelo WhatsApp."}
+              {liberado ? "Pago via WhatsApp. Ana já pode usar." : "Lucas acerta o valor com o negócio pelo WhatsApp."}
             </p>
           </div>
         </div>

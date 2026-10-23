@@ -23,6 +23,9 @@ export async function POST(req: NextRequest) {
     if (!businessId || !message) {
       return NextResponse.json({ error: "businessId e message são obrigatórios." }, { status: 400 });
     }
+    if (typeof message !== "string" || message.length > 1000 || (history != null && (!Array.isArray(history) || history.length > 30))) {
+      return NextResponse.json({ error: "Mensagem grande demais." }, { status: 400 });
+    }
 
     // Consome 1 crédito de "chat" do plano (exceto no modo teste do dono). Se
     // estourou o limite do mês, responde de forma gentil, sem parecer erro.
