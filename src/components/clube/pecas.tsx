@@ -60,7 +60,7 @@ export const IcBalao = () => (
   </svg>
 );
 export const IcCoracao = ({ cheio, tamanho = 20 }: { cheio: boolean; tamanho?: number }) => (
-  <svg width={tamanho} height={tamanho} viewBox="0 0 24 24" fill={cheio ? "#F2556B" : "none"} stroke={cheio ? "#F2556B" : "currentColor"} strokeWidth="2" strokeLinejoin="round" aria-hidden>
+  <svg width={tamanho} height={tamanho} viewBox="0 0 24 24" fill={cheio ? "#F2556B" : "none"} stroke={cheio ? "#F2556B" : "currentColor"} strokeWidth="1.4" strokeLinejoin="round" aria-hidden>
     <path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.7 3.7 4.5 7 4.5c2 0 3.5 1.1 5 3 1.5-1.9 3-3 5-3 3.3 0 5.4 3.2 4.2 6.7-1.7 4.7-9.2 9.3-9.2 9.3z" />
   </svg>
 );

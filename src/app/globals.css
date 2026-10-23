@@ -1369,7 +1369,7 @@ html[data-embed] .embed-oculta { display: none !important; }
 .cl-legenda { position: absolute; left: 0; translate: -50% 0; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9.5px; font-weight: 600; line-height: 1.2; color: var(--on-background, #14161A); opacity: .72; pointer-events: none; text-shadow: 0 0 4px var(--background-main, #fff), 0 0 4px var(--background-main, #fff); }
 .cl-centro { position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 2; }
 .cl-cora { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #14161A; background: transparent; filter: drop-shadow(0 1px 2px rgba(255,255,255,.7)) drop-shadow(0 1px 3px rgba(0,0,0,.22)); transition: transform .2s cubic-bezier(.2,.8,.3,1); }
-.cl-cora svg { width: 28px; height: 28px; }
+.cl-cora svg { width: 22px; height: 22px; }
 .cl-cora:active { transform: scale(.9); }
 .cl-cora.on { color: #F2556B; }
 .cl-cora.on svg { animation: cl-batida .5s cubic-bezier(.2,1.4,.4,1); }

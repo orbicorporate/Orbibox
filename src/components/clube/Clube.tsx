@@ -113,7 +113,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           )}
           {!isOwner && (
             <>
-              <span className={`coracao-pulsa ${eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}`}><IcCoracao cheio={eu.ehFa} tamanho={27} /></span>
+              <span className={`coracao-pulsa ${eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}`}><IcCoracao cheio={eu.ehFa} tamanho={22} /></span>
               <span>{eu.ehFa ? "Sou fã" : "Virar fã"}</span>
             </>
           )}
