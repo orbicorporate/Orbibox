@@ -1492,3 +1492,17 @@ html[data-embed] .embed-oculta { display: none !important; }
 }
 .presente-treme { transform-origin: 50% 80%; animation: presente-treme 2.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .presente-treme { animation: none; } }
+
+/* Orbi dançando: balança de lado, quica e inclina, em loop. */
+@keyframes orbiDanca {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  15% { transform: translate(-9px, -10px) rotate(-8deg) scale(1.04, 0.97); }
+  30% { transform: translate(0, 0) rotate(0deg) scale(0.97, 1.04); }
+  45% { transform: translate(9px, -10px) rotate(8deg) scale(1.04, 0.97); }
+  60% { transform: translate(0, 0) rotate(0deg) scale(0.97, 1.04); }
+  80% { transform: translate(0, -14px) rotate(0deg) scale(1.02); }
+}
+.orbi-danca { animation: orbiDanca 1.8s ease-in-out infinite; transform-origin: 50% 90%; }
+@media (prefers-reduced-motion: reduce) {
+  .orbi-danca { animation: none; }
+}

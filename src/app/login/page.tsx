@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import { OrbiOrb } from "@/components/orbi/OrbiOrb";
 import { erroDeAuth } from "@/lib/authErros";
 
 export default function LoginPage() {
@@ -54,8 +55,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6">
-      <div className="w-full max-w-sm">
+    <main className="flex min-h-screen items-start justify-center px-6 pb-10 pt-[10vh]">
+      <div className="w-full max-w-sm text-center">
+        <div className="orbi-danca mx-auto mb-5 w-fit">
+          <OrbiOrb size={96} />
+        </div>
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium tracking-[-0.01em]">
           Entrar no Orbibox
         </h1>
@@ -63,11 +67,11 @@ export default function LoginPage() {
           Acesse o painel do seu negócio.
         </p>
         {vindoDoLink && (
-          <p className="mt-6 rounded-2xl bg-surface-soft px-4 py-3 text-[13px] leading-snug text-text-secondary">
+          <p className="mt-6 rounded-2xl bg-surface-soft px-4 py-3 text-left text-[13px] leading-snug text-text-secondary">
             Esse link de confirmação já foi usado ou expirou. Seu e-mail provavelmente já está confirmado: é só entrar abaixo.
           </p>
         )}
-        <form onSubmit={handleSubmit} className={`${vindoDoLink ? "mt-5" : "mt-8"} flex flex-col gap-4`}>
+        <form onSubmit={handleSubmit} className={`${vindoDoLink ? "mt-5" : "mt-8"} flex flex-col gap-4 text-left`}>
           <input
             type="email"
             required
