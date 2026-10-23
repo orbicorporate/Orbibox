@@ -245,34 +245,34 @@ export function FolhaHome({
               </div>
             )}
 
-            <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Botões</p>
+            <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Botões</p>
             <div className="mt-2 flex flex-col gap-2">
-              {botoes.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum botão ainda. Toque em Criar algo novo.</p>}
+              {botoes.length === 0 && <p className="text-[14.5px] text-text-secondary">Nenhum botão ainda. Toque em Criar algo novo.</p>}
               {botoes.map((l) => (
                 <Linha key={l.id} l={l} onMudar={mudar} />
               ))}
             </div>
 
-            <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Vouchers no ar</p>
+            <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Vouchers no ar</p>
             <div className="mt-2 flex flex-col gap-2">
-              {vouchers.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum voucher ativo agora.</p>}
+              {vouchers.length === 0 && <p className="text-[14.5px] text-text-secondary">Nenhum voucher ativo agora.</p>}
               {vouchers.map((l) => (
                 <Linha key={l.id} l={{ ...l, pos: vouchersDestaque.includes(l.id) ? "destaque" : "bolinha" }} onMudar={mudar} soDestaque />
               ))}
             </div>
 
-            <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Produtos</p>
-            <p className="mt-1 text-[12px] leading-snug text-text-tertiary">Só itens publicados aparecem aqui. Se o seu item não está na lista, ele deve estar em rascunho: publique no Catálogo.</p>
+            <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Produtos</p>
+            <p className="mt-1.5 text-[14px] leading-snug text-text-secondary">Só itens publicados aparecem aqui. Se o seu item não está na lista, ele deve estar em rascunho: publique no Catálogo.</p>
             <div className="mt-2 flex flex-col gap-2">
-              {itens.length === 0 && <p className="text-[13px] text-text-tertiary">Nenhum produto no catálogo ainda.</p>}
+              {itens.length === 0 && <p className="text-[14.5px] text-text-secondary">Nenhum produto no catálogo ainda.</p>}
               {itens.slice(0, 60).map((l) => (
                 <Linha key={l.id} l={l} onMudar={mudar} />
               ))}
             </div>
             {rascunhos.length > 0 && (
               <>
-                <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Rascunhos</p>
-                <p className="mt-1 text-[12px] leading-snug text-text-tertiary">Estes produtos ainda não estão publicados, por isso ninguém vê. Toque em Publicar para colocar na página.</p>
+                <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Rascunhos</p>
+                <p className="mt-1.5 text-[14px] leading-snug text-text-secondary">Estes produtos ainda não estão publicados, por isso ninguém vê. Toque em Publicar para colocar na página.</p>
                 <div className="mt-2 flex flex-col gap-2">
                   {rascunhos.map((l) => (
                     <div key={l.id} className="flex items-center gap-3 rounded-2xl border border-divider p-2.5">
