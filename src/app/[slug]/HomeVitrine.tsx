@@ -942,7 +942,10 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
       style={(linha ? {} : { background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0) 48%), ${c.fundo}`, boxShadow: `inset 0 -7px 12px -5px rgba(0,0,0,0.22), inset 0 1.5px 2px rgba(255,255,255,0.28), 0 6px 16px -6px ${c.sombra}99` }) as CSSProperties}
       className={`relative flex h-[60px] w-[60px] items-center justify-center rounded-full transition-transform active:scale-95 ${linha ? "border-[1.5px] border-on-background/70 bg-transparent text-on-background" : "text-white"}`}
     >
-      {b.logo ? (
+      {b.logo && !/^(https?:|\/|data:|blob:)/.test(b.logo) ? (
+        // Ícone escolhido na biblioteca (emoji), em vez de imagem.
+        <span aria-hidden className={`pointer-events-none select-none text-[30px] leading-none ${linha ? "grayscale" : ""}`}>{b.logo}</span>
+      ) : b.logo ? (
         // Com uma cor escolhida, o logo fica um pouco menor para a cor aparecer em volta.
         // eslint-disable-next-line @next/next/no-img-element
         <img src={b.logo} alt="" draggable={false} style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", ...(linha ? { filter: "grayscale(1) contrast(1.15)" } : {}) }} className={`pointer-events-none h-full w-full rounded-full object-cover ${linha ? "p-[3px]" : b.cor ? "p-[9px]" : ""}`} />
