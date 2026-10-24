@@ -1577,3 +1577,13 @@ html[data-embed] .embed-oculta { display: none !important; }
   .pc-barra { transform: none; }
   .pc-fone-orbibox { opacity: 1; }
 }
+
+/* Botão "?" do suporte: de tempos em tempos dá uma piscada vermelha rápida
+   (um anel que cresce) pra a pessoa perceber que a ajuda está ali. */
+@keyframes suporte-piscar {
+  0%, 82%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); background-color: var(--suporte-bg, #f1f0eb); color: inherit; }
+  86% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.55); background-color: #dc2626; color: #fff; }
+  96% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); background-color: #dc2626; color: #fff; }
+}
+.suporte-piscar { animation: suporte-piscar 14s ease-in-out 4s infinite; }
+@media (prefers-reduced-motion: reduce) { .suporte-piscar { animation: none; } }

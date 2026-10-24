@@ -116,7 +116,7 @@ export function AppHeader({
       <div className="relative flex shrink-0 items-center gap-2">
         <ProgressBadge pct={progressPct} />
         {/* Ajuda e suporte, sempre à vista no topo. */}
-        <Link href="/admin/suporte" aria-label="Suporte e ajuda" title="Suporte" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[16px] font-semibold">?</Link>
+        <Link href="/admin/suporte" aria-label="Suporte e ajuda" title="Suporte" className="suporte-piscar flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[16px] font-semibold">?</Link>
         {/* Sino de notificação: junta conversa não vista com pendências do
             negócio (checklist, fotos faltando, etc), pra pessoa nunca ficar
             sem saber o que fazer, mesmo voltando depois de dias sumida. */}
