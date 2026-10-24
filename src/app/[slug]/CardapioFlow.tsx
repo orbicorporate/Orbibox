@@ -102,14 +102,12 @@ export function CardapioFlow({
             <ul className="mt-2 grid grid-cols-1 gap-2">
               {pdfs.map((p) => (
                 <li key={p.id}>
-                  <a href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="cardapio-vidro flex h-full min-h-[56px] items-center gap-3 rounded-full py-2 pl-2 pr-5 transition-transform active:scale-[0.98]">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white" style={{ background: CEREJA, boxShadow: SOMBRA_CEREJA }}>
-                      <span className="text-[11px] font-medium leading-none tracking-[0.06em]">PDF</span>
+                  <a href={p.url} target="_blank" rel="noopener" download onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })} className="cardapio-vidro flex min-h-[48px] items-center gap-3 rounded-full py-1.5 pl-1.5 pr-2 transition-transform active:scale-[0.98]">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white" style={{ background: CEREJA, boxShadow: SOMBRA_CEREJA }}>
+                      <span className="text-[9.5px] font-medium leading-none tracking-[0.06em]">PDF</span>
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[14.5px] font-medium leading-snug">{p.nome?.trim() || "Baixar cardápio"}</span>
-                      <span className="mt-0.5 block text-[12px] text-text-tertiary">PDF{p.bytes ? ` · ${pesoLegivel(p.bytes)}` : ""} · Baixar</span>
-                    </span>
+                    <span className="min-w-0 flex-1 truncate text-[14.5px] font-medium">{p.nome?.trim() || "Cardápio"}</span>
+                    <span className="shrink-0 rounded-full px-4 py-1.5 text-[13px] font-medium text-on-background ring-[0.5px] ring-black/25">Abrir</span>
                   </a>
                 </li>
               ))}
