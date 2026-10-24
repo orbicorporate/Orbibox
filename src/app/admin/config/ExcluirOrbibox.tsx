@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-/** Zona de perigo: excluir este Orbibox, confirmando com o nome. */
+/** Zona de perigo: excluir este Orbibox ou zerar e recomeçar o cadastro, confirmando com o nome. */
 export function ExcluirOrbibox({ id, nome }: { id: string; nome: string }) {
   const router = useRouter();
   const [aberto, setAberto] = useState(false);
+  const [zerar, setZerar] = useState(false);
   const [texto, setTexto] = useState("");
   const [excluindo, setExcluindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -28,34 +29,43 @@ export function ExcluirOrbibox({ id, nome }: { id: string; nome: string }) {
       return;
     }
     // Sobrou outro Orbibox: abre ele. Não sobrou: começa do zero no onboarding.
-    router.push(d.restantes > 0 ? "/admin" : "/onboarding");
+    router.push(zerar || d.restantes === 0 ? "/onboarding" : "/admin");
     router.refresh();
   }
 
   if (!aberto) {
     return (
-      <button
-        type="button"
-        onClick={() => setAberto(true)}
-        className="mt-8 self-center text-[13px] font-medium text-red-600"
-      >
-        Excluir este Orbibox
-      </button>
+      <div className="mt-8 flex flex-col items-center gap-3">
+        <button
+          type="button"
+          onClick={() => { setZerar(true); setAberto(true); }}
+          className="rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-red-600 ring-[0.5px] ring-red-300"
+        >
+          Zerar Orbibox
+        </button>
+        <button
+          type="button"
+          onClick={() => { setZerar(false); setAberto(true); }}
+          className="text-[13px] font-medium text-red-600"
+        >
+          Excluir este Orbibox
+        </button>
+      </div>
     );
   }
 
   return (
-    <div className="mt-8 rounded-[22px] border border-red-200 bg-red-50 p-4">
-      <p className="text-[15px] font-semibold text-red-700">Excluir “{nome}”?</p>
+    <div className="mt-8 rounded-[22px] bg-red-50 p-4 ring-[0.5px] ring-red-300">
+      <p className="text-[15px] font-semibold text-red-700">{zerar ? `Zerar “${nome}”?` : `Excluir “${nome}”?`}</p>
       <p className="mt-1.5 text-[13px] leading-relaxed text-red-700/90">
-        Apaga de vez a página, o link, a Orbi e tudo que ela aprendeu, o catálogo, os botões, as conversas, os contatos, os vouchers e as métricas deste Orbibox. Não dá pra desfazer. Seu plano e seus outros Orbibox continuam.
+        {zerar ? "Apaga tudo deste Orbibox e recomeça o cadastro do início, com um link novo. " : ""}Apaga de vez a página, o link, a Orbi e tudo que ela aprendeu, o catálogo, os botões, as conversas, os contatos, os vouchers e as métricas deste Orbibox. Não dá pra desfazer. Seu plano e seus outros Orbibox continuam.
       </p>
       <p className="mt-3 text-[12.5px] text-red-700">Pra confirmar, digite o nome: <span className="font-semibold">{nome}</span></p>
       <input
         value={texto}
         onChange={(e) => setTexto(e.target.value)}
         placeholder={nome}
-        className="mt-1.5 w-full rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-red-500"
+        className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 ring-[0.5px] ring-red-200 text-[14px] outline-none focus:border-red-500"
       />
       {erro && <p className="mt-2 text-[12.5px] text-red-700">{erro}</p>}
       <div className="mt-3 flex gap-2">
@@ -72,7 +82,7 @@ export function ExcluirOrbibox({ id, nome }: { id: string; nome: string }) {
           disabled={!confere || excluindo}
           className="flex-1 rounded-full bg-red-600 py-2.5 text-[13px] font-medium text-white disabled:opacity-40"
         >
-          {excluindo ? "Excluindo…" : "Excluir de vez"}
+          {excluindo ? (zerar ? "Zerando…" : "Excluindo…") : zerar ? "Zerar e recomeçar" : "Excluir de vez"}
         </button>
       </div>
     </div>
