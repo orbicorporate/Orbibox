@@ -8,6 +8,8 @@ import { DIAS_CURTOS, type Horario } from "@/lib/horario";
 export type RevisaoDados = {
   bizId: string;
   logo: string | null;
+  /** Cores da marca que a Orbi achou (hex). */
+  cores: string[];
   whatsapp: string;
   endereco: string;
   opcoes: string[];
@@ -20,7 +22,7 @@ export type RevisaoDados = {
   servico: boolean;
 };
 
-export type RevisaoResultado = { whatsapp: string; endereco: string; principal: string | null; horario: Horario | null; extras: string[] };
+export type RevisaoResultado = { cores: string[]; whatsapp: string; endereco: string; principal: string | null; horario: Horario | null; extras: string[] };
 
 const campo = "w-full rounded-full bg-surface-soft px-4 py-3 text-[15px] outline-none ring-1 ring-transparent focus:ring-on-background/30";
 
@@ -32,6 +34,7 @@ const campo = "w-full rounded-full bg-surface-soft px-4 py-3 text-[15px] outline
 export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirmar: (v: RevisaoResultado) => void }) {
   const supabase = createClient();
   const [logo, setLogo] = useState(dados.logo);
+  const [cores, setCores] = useState<string[]>(dados.cores);
   const [whatsapp, setWhatsapp] = useState(dados.whatsapp);
   const [endereco, setEndereco] = useState(dados.endereco);
   const [principal, setPrincipal] = useState(dados.principal);
@@ -99,7 +102,32 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
       <section className={card}>
         <div className="flex items-center gap-3">
-          {num(2, waOk)}
+          {num(2, cores.length > 0)}
+          <div className="min-w-0 flex-1"><p className="text-[15px] font-semibold leading-tight">Cores da marca</p><p className="text-[12.5px] text-text-tertiary">{cores.length > 0 ? "Toque numa cor para trocar" : "Escolha as cores da sua marca"}</p></div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          {cores.map((c, i) => (
+            <span key={i} className="relative">
+              <label className="block h-12 w-12 cursor-pointer rounded-full ring-1 ring-black/15" style={{ backgroundColor: c }}>
+                <input type="color" value={c} onChange={(e) => setCores((a) => a.map((x, j) => (j === i ? e.target.value : x)))} className="sr-only" aria-label={`Trocar a cor ${i + 1}`} />
+              </label>
+              {cores.length > 1 && (
+                <button type="button" onClick={() => setCores((a) => a.filter((_, j) => j !== i))} aria-label="Remover cor" className="absolute -right-1 -top-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-white text-[10px] text-text-secondary shadow ring-[0.5px] ring-black/20">✕</button>
+              )}
+            </span>
+          ))}
+          {cores.length < 5 && (
+            <label className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-surface-soft text-[20px] text-text-secondary">
+              +
+              <input type="color" defaultValue="#111318" onChange={(e) => setCores((a) => (a.length < 5 ? [...a, e.target.value] : a))} className="sr-only" aria-label="Adicionar cor" />
+            </label>
+          )}
+        </div>
+      </section>
+
+      <section className={card}>
+        <div className="flex items-center gap-3">
+          {num(3, waOk)}
           <div><p className="text-[15px] font-semibold leading-tight">WhatsApp ou telefone</p><p className="text-[12.5px] text-text-tertiary">Vira o botão de contato</p></div>
         </div>
         <input value={whatsapp} onChange={(e) => setWhatsapp(formatarWhatsapp(e.target.value))} inputMode="tel" placeholder="(11) 99999-9999" className={`${campo} mt-3`} />
@@ -107,7 +135,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
       <section className={card}>
         <div className="flex items-center gap-3">
-          {num(3, !!endereco.trim())}
+          {num(4, !!endereco.trim())}
           <div><p className="text-[15px] font-semibold leading-tight">Endereço</p><p className="text-[12.5px] text-text-tertiary">Vira a bolinha de mapa. Pule se não atende no local</p></div>
         </div>
         <input value={endereco} onChange={(e) => setEndereco(e.target.value)} placeholder="Rua, número, cidade" className={`${campo} mt-3`} />
@@ -139,7 +167,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
       {dados.opcoes.length > 0 && (
         <section className={card}>
           <div className="flex items-center gap-3">
-            {num(4, !!principal)}
+            {num(5, !!principal)}
             <div><p className="text-[15px] font-semibold leading-tight">O que vem primeiro?</p><p className="text-[12.5px] text-text-tertiary">Seu principal produto ou serviço, na frente de tudo</p></div>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -173,7 +201,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
       </section>
 
       {erro && <p className="px-1 text-[13px] text-red-600">{erro}</p>}
-      <button type="button" onClick={() => onConfirmar({ whatsapp, endereco, principal, horario: comHorario && endereco.trim() && dias.length > 0 && abre < fecha ? { dias, abre, fecha } : null, extras })} className="orbi-gradient mt-1 w-full rounded-full py-4 text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
+      <button type="button" onClick={() => onConfirmar({ cores, whatsapp, endereco, principal, horario: comHorario && endereco.trim() && dias.length > 0 && abre < fecha ? { dias, abre, fecha } : null, extras })} className="orbi-gradient mt-1 w-full rounded-full py-4 text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
         Montar minha página →
       </button>
     </div>

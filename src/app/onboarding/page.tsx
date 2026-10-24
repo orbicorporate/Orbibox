@@ -342,13 +342,21 @@ export default function OnboardingPage() {
     const waPre = (pre?.contact_whatsapp || pre?.contact_phone || whatsappDigits || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
     const conf = await new Promise<RevisaoResultado>((resolve) => {
       revisaoRef.current = resolve;
-      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, opcoes, principal: opcoes[0] ?? null, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
+      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, opcoes, principal: opcoes[0] ?? null, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
       setStep("revisar");
     });
     setMontagem({ status: "pending", itens: [], segundos: null });
     setStep("montando");
     const waConf = (() => { const d = conf.whatsapp.replace(/\D/g, ""); if (d.length < 10) return ""; return d.startsWith("55") ? d : `55${d}`; })();
     const enderecoFinal = conf.endereco.trim();
+    // Cores conferidas na revisão: só grava se a pessoa mudou alguma.
+    const coresMudaram = conf.cores.length > 0 && conf.cores.join() !== result.colors.slice(0, 5).map((c) => c.hex).join();
+    if (coresMudaram) {
+      const novas = conf.cores.map((hex, i) => ({ hex, role: result.colors[i]?.role ?? "accent" }));
+      await supabase.from("businesses").update({ brand_colors: novas }).eq("id", id);
+      const orbi = coresDaOrbi(novas);
+      if (orbi) await supabase.from("agent_configs").update({ orbi_colors: orbi }).eq("business_id", id);
+    }
     await supabase.from("businesses").update({ contact_whatsapp: waConf || null, address: enderecoFinal || null }).eq("id", id);
     const principalFinal = conf.principal;
     if (principalFinal && !catsPre.includes(principalFinal) && !seg?.categorias.includes(principalFinal)) {
