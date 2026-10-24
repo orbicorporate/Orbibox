@@ -384,8 +384,11 @@ export function HomeVitrine({
       )}
 
       {aberto?.endereco && (
-        <div className="mt-4 w-full max-w-[340px] rounded-2xl bg-surface-white p-4 text-center shadow-[0_2px_12px_rgba(17,19,24,0.08)]">
-          <p className="text-[13.5px] leading-snug text-text-secondary">{aberto.endereco}</p>
+        <div className="relative mt-4 w-full max-w-[340px] rounded-2xl bg-surface-white p-4 text-center shadow-[0_2px_12px_rgba(17,19,24,0.08)]">
+          <button type="button" onClick={() => setEnderecoAberto(null)} aria-label="Fechar mapa" className="absolute right-1.5 top-1.5 flex h-9 w-9 items-center justify-center rounded-full text-text-tertiary active:bg-surface-soft">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+          <p className="px-7 text-[13.5px] leading-snug text-text-secondary">{aberto.endereco}</p>
           <MapaEndereco endereco={aberto.endereco} className="mt-3 text-left" />
           <div className="mt-3 flex gap-2">
             <a href={`https://waze.com/ul?q=${encodeURIComponent(aberto.endereco)}&navigate=yes`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Waze</a>

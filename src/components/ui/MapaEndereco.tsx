@@ -6,7 +6,7 @@ import { useState } from "react";
 export function MapaEndereco({ endereco, className = "" }: { endereco: string; className?: string }) {
   const [grande, setGrande] = useState(false);
   return (
-    <div className={`relative overflow-hidden rounded-[14px] bg-surface-soft transition-[height] duration-300 ${grande ? "h-[min(62vh,460px)]" : "h-[170px]"} ${className}`}>
+    <div className={`relative overflow-hidden rounded-[14px] bg-surface-soft transition-[height] duration-300 ${grande ? "h-[min(42vh,300px)]" : "h-[170px]"} ${className}`}>
       <iframe
         title={`Mapa: ${endereco}`}
         src={`https://maps.google.com/maps?q=${encodeURIComponent(endereco)}&z=16&output=embed`}
