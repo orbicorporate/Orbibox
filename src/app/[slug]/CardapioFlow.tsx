@@ -58,6 +58,13 @@ export function CardapioFlow({
 }) {
   const [ativa, setAtiva] = useState<string | null>(null);
   const [layout, setLayout] = useState<LayoutItens>(layoutInicial);
+  // Aviso que só o dono vê ao tocar no modo: explica que virou o padrão.
+  const [avisoPadrao, setAvisoPadrao] = useState<LayoutItens | null>(null);
+  useEffect(() => {
+    if (!avisoPadrao) return;
+    const t = setTimeout(() => setAvisoPadrao(null), 4500);
+    return () => clearTimeout(t);
+  }, [avisoPadrao]);
   const [abertos, setAbertos] = useState<Set<string>>(() => new Set());
   const temPdf = pdfs.length > 0;
   const unico = pdfs.length === 1;
@@ -187,15 +194,21 @@ export function CardapioFlow({
         <div className="mt-5 flex justify-end">
           <div role="radiogroup" aria-label="Como ver os pratos" className="flex rounded-full bg-black/[0.05] p-1">
             {([["lista", "Ver em lista", "M4 6h16M4 12h16M4 18h16"], ["cards", "Ver em cards grandes", "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"]] as const).map(([v, r, d]) => (
-              <button key={v} type="button" role="radio" aria-checked={layout === v} aria-label={r} onClick={() => { setLayout(v); if (donoPodeDefinir) onPadrao?.(v); }} className={`flex h-10 w-11 items-center justify-center rounded-full transition-colors ${layout === v ? "bg-white text-on-background shadow-[0_1px_3px_rgba(0,0,0,0.12)]" : "text-text-tertiary"}`}>
+              <button key={v} type="button" role="radio" aria-checked={layout === v} aria-label={r} onClick={() => { setLayout(v); if (donoPodeDefinir) { onPadrao?.(v); setAvisoPadrao(v); } }} className={`flex h-10 w-11 items-center justify-center rounded-full transition-colors ${layout === v ? "bg-white text-on-background shadow-[0_1px_3px_rgba(0,0,0,0.12)]" : "text-text-tertiary"}`}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={d} /></svg>
               </button>
             ))}
           </div>
         </div>
       )}
-      {preenchidas.length > 0 && donoPodeDefinir && (
-        <p className="mt-2 text-right text-[12px] leading-snug text-text-tertiary">Só você vê este aviso: o modo que você tocar aqui vira o padrão que seus clientes veem ao abrir o cardápio.</p>
+      {avisoPadrao && donoPodeDefinir && (
+        <div role="status" className="relative ml-auto mt-2 w-full max-w-[280px] rounded-[20px] bg-white p-4 pr-10 text-left shadow-[0_14px_32px_-14px_rgba(17,19,24,0.35)] ring-1 ring-black/[0.06]">
+          <button type="button" onClick={() => setAvisoPadrao(null)} aria-label="Fechar" className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-surface-soft text-text-secondary">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+          <p className="text-[13.5px] font-semibold leading-tight">Modo padrão selecionado</p>
+          <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">Seus clientes vão abrir o cardápio {avisoPadrao === "lista" ? "em lista" : "em cards grandes"}. Só você vê este aviso.</p>
+        </div>
       )}
 
       {visiveis.map((s) => {
