@@ -1,6 +1,5 @@
 import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
 import { getAccessInfoForBusiness } from "@/lib/plans";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { ConversasTabs } from "./ConversasTabs";
@@ -74,21 +73,7 @@ export default async function ConversasPage() {
       <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[34px] font-medium tracking-[-0.02em]">
         Conversas
       </h1>
-      <p className="mt-1 text-[14px] text-text-secondary">Quem falou com a Orbi pelo seu link, com resumo e o que responder.</p>
-
-      {list.length === 0 && (
-        <div className="mt-4 rounded-[22px] border border-divider bg-surface-white p-5">
-          <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Ainda sem conversas</p>
-          <p className="mt-2 text-[13.5px] leading-relaxed text-text-secondary">
-            Assim que alguém trocar mensagem de verdade com a Orbi no seu link, a conversa aparece aqui, com a temperatura
-            do lead e a próxima ação sugerida. Se ainda não divulgou seu Orbibox, esse é o passo que traz gente pra
-            conversar.
-          </p>
-          <Link href="/admin" className="mt-4 inline-flex rounded-full bg-button-primary px-5 py-2.5 text-[13.5px] font-medium text-white">
-            Divulgar meu Orbibox →
-          </Link>
-        </div>
-      )}
+      <p className="mt-1 text-[14px] text-text-secondary">Quem falou com a Orbi pelo seu link.</p>
 
       <ConversasTabs conversations={list} businessId={business!.id} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />
     </div>

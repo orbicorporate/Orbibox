@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type ComponentProps } from "react";
 import { ConversasList } from "./ConversasList";
 import { Segmentos } from "./Segmentos";
@@ -48,20 +49,19 @@ export function ConversasTabs(props: ComponentProps<typeof ConversasList>) {
             );
           })}
         </div>
-        {ativa.desc && <p className="mt-2.5 text-[12.5px] leading-snug text-text-tertiary">{ativa.desc}</p>}
+        {ativa.desc && !semNadaAinda && <p className="mt-2.5 text-[12.5px] leading-snug text-text-tertiary">{ativa.desc}</p>}
       </div>
 
       {/* Sem nenhuma conversa ainda: aponta pro caminho que não depende
           de visitante, em vez de deixar a aba vazia. */}
       {semNadaAinda && aba === "conversas" && (
-        <div className="mt-4 rounded-[24px] border border-dashed border-divider bg-surface-white p-5">
-          <p className="text-[15px] font-semibold">Ainda sem conversas pelo link</p>
-          <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
-            Em &quot;Importados&quot; você traz os clientes que já tem e a Orbi escreve as mensagens para eles.
-          </p>
-          <button type="button" onClick={() => setAba("minhas")} className="mt-3 cursor-pointer rounded-full bg-on-background px-4 py-2.5 text-[13.5px] font-semibold text-white">
-            Importar clientes
-          </button>
+        <div className="mt-4 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
+          <p className="text-[15px] font-semibold">Ainda sem conversas</p>
+          <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">Divulgue seu link ou traga clientes que você já tem.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link href="/admin" className="inline-flex min-h-[44px] items-center rounded-full bg-on-background px-5 text-[13.5px] font-semibold text-white">Divulgar meu Orbibox</Link>
+            <button type="button" onClick={() => setAba("minhas")} className="min-h-[44px] cursor-pointer rounded-full px-5 text-[13.5px] font-medium text-text-secondary ring-[0.5px] ring-black/25">Importar clientes</button>
+          </div>
         </div>
       )}
 
