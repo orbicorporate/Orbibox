@@ -214,7 +214,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
       <PerguntaOrbi orbiColors={orbiColors} />
 
       {progressoPct < 100 && (
-        <Link href="/admin/pendencias" className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3 active:opacity-70">
+        <Link href="/admin/pendencias" className="mt-8 flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3 active:opacity-70">
           <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white">
             <span className="orbi-gradient absolute inset-y-0 left-0 rounded-full" style={{ width: `${progressoPct}%` }} />
           </span>
@@ -222,9 +222,15 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         </Link>
       )}
 
-      {perguntaRede && <PerguntaRede chave={`orbibox:pergunta-rede:${b.id}`} href="/admin/rede" className="mt-8" />}
-
-      {mostrarConvite && <ConviteCard />}
+      {(perguntaRede || mostrarConvite) && (
+        <section className="mt-8 border-t border-black/[0.08] pt-6">
+          <h2 className="text-[15px] font-medium">Para crescer</h2>
+          <div className="mt-3 flex flex-col">
+            {perguntaRede && <PerguntaRede chave={`orbibox:pergunta-rede:${b.id}`} href="/admin/rede" />}
+            {mostrarConvite && <ConviteCard />}
+          </div>
+        </section>
+      )}
 
       <WelcomeBackBanner businessName={b.name} pendencias={pendencias} />
     </div>

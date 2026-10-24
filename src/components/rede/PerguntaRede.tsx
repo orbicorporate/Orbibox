@@ -34,10 +34,8 @@ export function PerguntaRede({ chave, href, aoTenho, className = "" }: { chave: 
 
   return (
     <section className={`rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06] ${className}`} aria-label="Rede de negócios">
-      <p className="text-[15px] font-medium">Você tem mais de um negócio ou uma franquia?</p>
-      <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">
-        Cada negócio tem o seu Orbibox, e você acompanha todos num painel só: visitas, vouchers e os produtos que mais saem. Cada negócio gera um código e você adiciona.
-      </p>
+      <p className="text-[15px] font-medium">Tem mais de um negócio?</p>
+      <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">Acompanhe todos num painel só.</p>
       <div className="mt-3.5 flex flex-wrap gap-2">
         {href ? (
           <Link href={href} className="flex min-h-[44px] items-center rounded-full bg-on-background px-5 text-[14px] font-medium text-white active:scale-[0.98]">
@@ -49,7 +47,7 @@ export function PerguntaRede({ chave, href, aoTenho, className = "" }: { chave: 
           </button>
         )}
         <button type="button" onClick={dispensar} className="min-h-[44px] rounded-full border border-divider px-5 text-[14px] text-text-secondary active:scale-[0.98]">
-          Só um negócio
+          Só um
         </button>
       </div>
     </section>
