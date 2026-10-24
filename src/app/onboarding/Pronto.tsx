@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
-import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
-import { conversaoPorId, type ConversaoId, type ObjetivoId } from "@/lib/conversao";
+import type { ConversaoId, ObjetivoId } from "@/lib/conversao";
 
 export type ProntoDados = {
   nome: string;
@@ -26,11 +24,17 @@ export type ProntoDados = {
   diasTeste: number | null;
 };
 
+const PASSOS = [
+  { n: 1, t: "Categorias", d: "Monte o menu do catálogo" },
+  { n: 2, t: "Produtos e serviços", d: "Preencha cada categoria" },
+  { n: 3, t: "Página inicial", d: "Botões, contato e endereço" },
+  { n: 4, t: "Divulgar", d: "Coloque no ar" },
+];
+
 /**
- * A primeira coisa depois da criação não é o painel: é o próprio Orbibox,
- * num celular, funcionando. Embaixo, o que a Orbi já preparou de acordo
- * com o objetivo escolhido (oferta, vitrine ou conversa), e só então o
- * convite pra divulgar e pro painel.
+ * Fim do cadastro: curto e sem dúvida do que fazer agora. Diz o que a Orbi
+ * já fez e leva direto para o passo a passo, em vez de soltar a pessoa numa
+ * página vazia.
  */
 export function Pronto({
   d,
@@ -43,202 +47,57 @@ export function Pronto({
   onTentarDeNovo: () => void;
   tentando: boolean;
 }) {
-  const [carregou, setCarregou] = useState(false);
-  const conv = conversaoPorId(d.conversao);
-  const mostraOferta = !!d.voucher && (d.objetivo === "vender" || d.objetivo === "tudo" || d.conversao === "oferta");
-  const mostraConversa = !!d.demo && (d.objetivo === "atender" || d.objetivo === "tudo");
-  const mostraVitrine = !mostraOferta && !mostraConversa;
-  const linkCurto = d.link.replace(/^https?:\/\//, "");
+  const feitos = [
+    d.importados > 0 ? `${d.importados} ${d.importados === 1 ? "item trazido" : "itens trazidos"} do seu site` : null,
+    d.paleta.length > 0 ? "Cores da sua marca" : null,
+    "Orbi pronta para conversar",
+    d.voucher ? `Voucher: ${d.voucher.titulo}` : null,
+  ].filter((x): x is string => !!x);
 
   return (
-    <div className="mx-auto grid w-full max-w-[920px] items-start gap-x-14 gap-y-8 lg:grid-cols-[320px_1fr]">
-      {/* Título: no celular vem antes do aparelho; no computador, ao lado. */}
-      <div className="text-center lg:col-start-2 lg:row-start-1 lg:text-left">
-        <p className="orbi-linha-entra text-[13px] font-medium text-text-tertiary">{d.nome}</p>
-        <h1 className="orbi-linha-entra mt-1 font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-[1.1] tracking-[-0.02em]" style={{ animationDelay: "0.1s" }}>
-          Seu Orbibox está pronto <span className="orbi-gradient-text">✦</span>
-        </h1>
-        <p className="orbi-linha-entra mt-2 text-[15px] leading-relaxed text-text-secondary" style={{ animationDelay: "0.2s" }}>
-          É assim que seus clientes vão ver. Toque e explore como se fosse um deles.
+    <div className="mx-auto flex w-full max-w-[440px] flex-col items-center gap-6 text-center">
+      <div className="orbi-linha-entra flex flex-col items-center gap-3">
+        <OrbiOrb size={72} colors={d.orbColors} />
+        <div>
+          <p className="text-[13px] font-medium text-text-tertiary">{d.nome}</p>
+          <h1 className="mt-1 font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-[1.1] tracking-[-0.02em]">Seu Orbibox foi criado</h1>
+          <p className="mt-2 text-[15px] text-text-secondary">Falta pouco. Vamos montar juntos, em 4 passos.</p>
+        </div>
+      </div>
+
+      <div className="orbi-linha-entra flex flex-wrap justify-center gap-2" style={{ animationDelay: "0.15s" }}>
+        {feitos.map((f) => (
+          <span key={f} className="rounded-full bg-surface-white px-3.5 py-1.5 text-[12.5px] font-medium ring-1 ring-black/[0.06]">✓ {f}</span>
+        ))}
+      </div>
+
+      <ol className="orbi-linha-entra flex w-full flex-col gap-2 text-left" style={{ animationDelay: "0.3s" }}>
+        {PASSOS.map((p) => (
+          <li key={p.n} className="flex items-center gap-3 rounded-[20px] bg-surface-white p-3.5 ring-1 ring-black/[0.06]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-on-background text-[14px] font-semibold text-white">{p.n}</span>
+            <span className="min-w-0">
+              <span className="block text-[15px] font-semibold leading-tight">{p.t}</span>
+              <span className="block text-[12.5px] text-text-tertiary">{p.d}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      {d.fetchError && (
+        <p className="text-[13px] leading-snug text-text-secondary">
+          Não consegui ler seu site agora.{" "}
+          <button type="button" onClick={onTentarDeNovo} disabled={tentando} className="font-medium underline underline-offset-2 disabled:opacity-50">
+            {tentando ? "Lendo de novo…" : "Tentar de novo"}
+          </button>
         </p>
-      </div>
+      )}
 
-      {/* O Orbibox de verdade, num celular */}
-      <div className="orbi-linha-entra mx-auto lg:col-start-1 lg:row-span-3 lg:row-start-1" style={{ animationDelay: "0.3s" }}>
-        <div className="relative w-[300px] rounded-[46px] bg-on-background p-[9px] shadow-[0_30px_70px_-28px_rgba(17,19,24,0.55)]">
-          <div className="relative h-[600px] overflow-hidden rounded-[38px] bg-background-main">
-            {!carregou && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                <OrbiOrb size={56} colors={d.orbColors} />
-                <span className="text-[13px] text-text-tertiary">Abrindo seu Orbibox…</span>
-              </div>
-            )}
-            <iframe
-              src={`/${d.slug}?preview=1`}
-              title={`Prévia do Orbibox de ${d.nome}`}
-              onLoad={() => setCarregou(true)}
-              className={`h-full w-full border-0 transition-opacity duration-500 ${carregou ? "opacity-100" : "opacity-0"}`}
-            />
-          </div>
-        </div>
-        <div className="mt-5 flex w-[300px] flex-col gap-2">
-          <a
-            href={`/${d.slug}`}
-            className="flex items-center justify-center gap-2 rounded-full bg-on-background py-3.5 text-[15px] font-medium text-white transition-transform active:scale-[0.98]"
-          >
-            Editar minha página <span aria-hidden>→</span>
-          </a>
-          <a
-            href={`/${d.slug}?preview=1`}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center gap-2 rounded-full border border-divider bg-surface-white py-3.5 text-[15px] font-medium text-on-background transition-transform active:scale-[0.98]"
-          >
-            Ver como meus clientes verão
-          </a>
-          <p className="px-2 text-center text-[12.5px] leading-snug text-text-tertiary">
-            Para mudar qualquer texto ou foto, abra a página e toque no lápis ✎ que aparece ao lado.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-4 lg:col-start-2">
-        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-text-tertiary">O que a Orbi já preparou</p>
-
-        {mostraConversa && d.demo && <ConversaDemo nome={d.nome} demo={d.demo} cores={d.orbColors} />}
-
-        {mostraOferta && d.voucher && (
-          <div className="orbi-linha-entra rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]" style={{ animationDelay: "0.5s" }}>
-            <p className="text-[15px] font-medium">Criamos sua primeira oferta</p>
-            <p className="mt-0.5 text-[13.5px] text-text-secondary">Já está no ar na sua página. Quem resgatar deixa o contato com você.</p>
-            <div className="relative mt-4 overflow-hidden rounded-[18px] bg-[#111318] px-5 py-4 text-white">
-              <span className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-surface-white" aria-hidden />
-              <span className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-surface-white" aria-hidden />
-              <p className="text-[11px] uppercase tracking-[0.14em] text-white/55">Voucher · {d.nome}</p>
-              <p className="mt-1 font-[family-name:var(--font-manrope)] text-[22px] font-medium leading-tight tracking-[-0.01em]">{d.voucher.titulo}</p>
-              <p className="mt-2 text-[12.5px] text-white/60">{d.voucher.quantidade} unidades · resgate pelo celular</p>
-            </div>
-            <button type="button" onClick={() => onPainel("/admin/vouchers")} className="mt-3 text-[13px] font-medium text-text-secondary underline underline-offset-2">
-              Ajustar oferta
-            </button>
-          </div>
-        )}
-
-        {mostraVitrine && (
-          <div className="orbi-linha-entra rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]" style={{ animationDelay: "0.5s" }}>
-            <p className="text-[15px] font-medium">
-              {d.importados > 0
-                ? d.siteType === "ecommerce"
-                  ? `Sua vitrine ficou com ${d.importados} ${d.importados === 1 ? "categoria" : "categorias"}`
-                  : `Sua vitrine ficou com ${d.importados} ${d.importados === 1 ? "item" : "itens"}`
-                : "Sua apresentação está pronta"}
-            </p>
-            {d.resumo && <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">{d.resumo}</p>}
-            {d.pontos.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {d.pontos.map((p) => (
-                  <span key={p.title} className="rounded-full bg-surface-soft px-3 py-1.5 text-[12.5px] font-medium">
-                    {p.icon} {p.title}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {d.botaoPrincipal && conv && (
-          <div className="orbi-linha-entra flex items-start gap-3 rounded-[20px] bg-surface-soft px-4 py-3.5" style={{ animationDelay: "0.65s" }}>
-            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-on-background text-[13px] text-white" aria-hidden>1</span>
-            <p className="text-[13.5px] leading-snug text-text-secondary">
-              <span className="font-medium text-on-background">Primeiro botão: {d.botaoPrincipal}.</span> Quem abrir seu link vê primeiro o caminho pra {conv.rotulo.toLowerCase()}.
-            </p>
-          </div>
-        )}
-
-        {d.fetchError && (
-          <div className="rounded-[20px] border border-divider px-4 py-3.5">
-            <p className="text-[13.5px] leading-snug text-text-secondary">
-              Não consegui trazer os produtos do seu site agora. {d.fetchError}
-            </p>
-            <button type="button" onClick={onTentarDeNovo} disabled={tentando} className="mt-2 text-[13px] font-medium underline underline-offset-2 disabled:opacity-50">
-              {tentando ? "Lendo de novo…" : "Tentar de novo"}
-            </button>
-          </div>
-        )}
-
-        <div className="orbi-linha-entra rounded-[24px] bg-[#FFF6D6] p-5" style={{ animationDelay: "0.7s" }}>
-          <p className="text-[15px] font-medium text-[#5A4A12]">💡 Dicas para começar bem</p>
-          <ul className="mt-2.5 flex flex-col gap-2 text-[13.5px] leading-snug text-[#5A4A12]">
-            <li>WhatsApp sempre em destaque, em primeiro.</li>
-            <li>Atende no local? Coloque o endereço com mapa.</li>
-            <li>Seu produto principal na primeira posição.</li>
-            <li>Um voucher de boas-vindas converte o primeiro visitante.</li>
-          </ul>
-        </div>
-
-        {/* Divulgar: o passo que transforma página pronta em visitas. */}
-        <div className="orbi-linha-entra mt-2 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]" style={{ animationDelay: "0.8s" }}>
-          <p className="text-[15px] font-medium">Coloque no ar onde seus clientes já estão</p>
-          <p className="mt-0.5 text-[13.5px] leading-snug text-text-secondary">Na bio do Instagram, nos stories e no WhatsApp. Seu Orbibox não substitui esses canais, ele deixa cada um mais inteligente.</p>
-          <div className="mt-3.5 flex items-center gap-2 rounded-full bg-surface-soft p-1.5 pl-4">
-            <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{linkCurto}</span>
-            <ShareOrbiboxButton url={d.link} title={d.nome} className="shrink-0 rounded-full bg-on-background px-4 py-2 text-[13px] font-medium text-white">
-              Divulgar
-            </ShareOrbiboxButton>
-          </div>
-        </div>
-
-
-        <button type="button" onClick={() => onPainel()} className="orbi-gradient mt-1 w-full rounded-full py-3.5 text-[15px] font-medium text-on-background transition-transform active:scale-[0.98]">
-          Ir para o meu painel →
+      <div className="orbi-linha-entra flex w-full flex-col items-center gap-3" style={{ animationDelay: "0.45s" }}>
+        <button type="button" onClick={() => onPainel("/admin/comecar")} className="orbi-gradient w-full rounded-full py-4 text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
+          Começar o passo 1 →
         </button>
-        {d.diasTeste != null && d.diasTeste > 0 && (
-          <p className="-mt-1 text-center text-[12.5px] text-text-tertiary">
-            {d.diasTeste} dias grátis, sem cartão. Você decide depois de ver o resultado.
-          </p>
-        )}
-
-        <details className="group rounded-[20px] bg-surface-soft px-4 py-3">
-          <summary className="flex cursor-pointer list-none items-center justify-between text-[13.5px] font-medium">
-            O que a Orbi entendeu da sua marca
-            <span className="text-text-tertiary transition-transform group-open:rotate-180" aria-hidden>⌄</span>
-          </summary>
-          <div className="mt-3 flex flex-col gap-3 pb-1 text-[13.5px] leading-relaxed text-text-secondary">
-            {d.ramo && <p><span className="text-on-background">Ramo:</span> {d.ramo}</p>}
-            {d.voz && <p><span className="text-on-background">Jeito de falar:</span> {d.voz}</p>}
-            {d.paleta.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-on-background">Cores:</span>
-                {d.paleta.map((c) => (
-                  <span key={c} className="h-5 w-5 rounded-full ring-1 ring-black/10" style={{ backgroundColor: c }} />
-                ))}
-              </div>
-            )}
-            <button type="button" onClick={() => onPainel("/admin/config/marca")} className="self-start text-[13px] font-medium text-on-background underline underline-offset-2">
-              Ajustar em Sua marca
-            </button>
-          </div>
-        </details>
-      </div>
-    </div>
-  );
-}
-
-function ConversaDemo({ nome, demo, cores }: { nome: string; demo: { pergunta: string; resposta: string }; cores: string[] | null }) {
-  return (
-    <div className="rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
-      <p className="orbi-linha-entra text-[15px] font-medium" style={{ animationDelay: "0.4s" }}>Sua IA já atende assim</p>
-      <p className="orbi-linha-entra mt-0.5 text-[13.5px] text-text-secondary" style={{ animationDelay: "0.45s" }}>
-        Com o que ela leu sobre a {nome}. Nada foi digitado por você.
-      </p>
-      <div className="mt-4 flex flex-col gap-2.5">
-        <div className="orbi-linha-entra ml-10 self-end rounded-[20px] rounded-br-md bg-on-background px-4 py-2.5 text-[14px] leading-snug text-white" style={{ animationDelay: "0.9s" }}>
-          {demo.pergunta}
-        </div>
-        <div className="orbi-linha-entra flex items-end gap-2" style={{ animationDelay: "1.6s" }}>
-          <span className="shrink-0"><OrbiOrb size={28} colors={cores} /></span>
-          <div className="mr-6 rounded-[20px] rounded-bl-md bg-surface-soft px-4 py-2.5 text-[14px] leading-relaxed">{demo.resposta}</div>
-        </div>
+        <a href={`/${d.slug}?preview=1`} target="_blank" rel="noreferrer" className="text-[13px] font-medium text-text-secondary underline underline-offset-2">Ver como está agora</a>
+        {d.diasTeste != null && d.diasTeste > 0 && <p className="text-[12.5px] text-text-tertiary">{d.diasTeste} dias grátis, sem cartão.</p>}
       </div>
     </div>
   );

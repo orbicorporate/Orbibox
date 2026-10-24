@@ -71,6 +71,8 @@ export default async function HojePage() {
   // Itens publicados, para escolher um deles ao compartilhar nos Stories.
   const { data: itensStories } = await supabase.from("content_items").select("id, title, image_url").eq("business_id", b.id).eq("status", "published").order("position", { ascending: true }).limit(12);
 
+  const { count: totalPublicados } = await supabase.from("content_items").select("id", { count: "exact", head: true }).eq("business_id", b.id).eq("status", "published");
+
   const dataProxima = proximaData();
   const vouchersBaixos = (vouchersRes.data ?? [])
     .map((v) => ({ id: v.id, title: v.title, quantity_total: v.quantity_total, restam: v.quantity_total - v.quantity_claimed }))
@@ -132,6 +134,7 @@ export default async function HojePage() {
       mostrarConvite={!acesso.subscription || acesso.subscription.status === "trialing"}
       passoFaltando={insightsQueue[0] ? { title: insightsQueue[0].title, description: insightsQueue[0].description, ctaLabel: insightsQueue[0].ctaLabel, href: insightsQueue[0].href } : null}
       pendencias={insightsQueue.map((i) => ({ title: i.title, href: i.href }))}
+      passoAPasso={!(((b.vitrine_categories as string[] | null) ?? []).length > 0 && (totalPublicados ?? 0) >= 3 && activeBoxes >= 3 && !!b.contact_whatsapp)}
     />
     </>
   );

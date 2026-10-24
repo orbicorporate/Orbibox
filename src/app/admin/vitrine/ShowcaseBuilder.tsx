@@ -90,6 +90,7 @@ export function ShowcaseBuilder({
   initialLeadTop = false,
   siteSalvo = null,
   abrirNovo = false,
+  categoriaNovo = null,
   abrirCapa = false,
   temCardapio = false,
   destaquesHomeIniciais = [],
@@ -115,6 +116,8 @@ export function ShowcaseBuilder({
   abrirCapa?: boolean;
   /** Veio de um atalho "Adicionar item agora": já abre um item novo. */
   abrirNovo?: boolean;
+  /** Categoria em que o item novo já nasce (vem do passo a passo). */
+  categoriaNovo?: string | null;
   /** O negócio tem Cardápio ativo: libera passar itens entre os dois. */
   temCardapio?: boolean;
   destaquesHomeIniciais?: { t: "voucher" | "item" | "botao" | "item_bolinha"; id: string; p?: number }[];
@@ -683,7 +686,7 @@ export function ShowcaseBuilder({
     if (!abrirNovo || novoJaAberto.current) return;
     novoJaAberto.current = true;
     const t = setTimeout(() => {
-      createItem();
+      createItem(categoriaNovo);
       // Só limpa o ?novo=1 do endereço. Sem navegar: dentro do painel de edição, navegar de novo dava 404.
       const emb = new URLSearchParams(window.location.search).get("embed");
       window.history.replaceState(null, "", emb ? `/admin/vitrine?embed=${emb}` : "/admin/vitrine");

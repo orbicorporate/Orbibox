@@ -412,8 +412,24 @@ export default function OnboardingPage() {
     linhas.push({ business_id: id, box_type: "campaign", title: "Presentear", position: pos++, is_active: false });
     if (instagramUrl) linhas.push({ business_id: id, box_type: "custom", title: "Instagram", position: pos++, is_active: true, config: { label: "Instagram", subtitle: "Siga a gente", icon: "@", color: "#111318", action: "link", url: instagramUrl } });
     if (siteUrl) linhas.push({ business_id: id, box_type: "custom", title: "Nosso site", position: pos++, is_active: true, config: { label: "Nosso site", subtitle: siteUrl.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""), icon: "➜", color: "#111318", action: "link", url: siteUrl } });
-    const { error: boxesErr } = await supabase.from("smart_boxes").insert(linhas);
-    if (boxesErr) console.error("onboarding: falha ao criar botões", boxesErr);
+    // Toda linha leva config (a coluna não aceita vazio) e, se o lote falhar,
+    // cada botão é tentado sozinho, pra a Home nunca nascer sem botões.
+    const linhasOk = linhas.map((l) => ({ config: {}, ...l }));
+    const { error: boxesErr } = await supabase.from("smart_boxes").insert(linhasOk);
+    if (boxesErr) {
+      console.error("onboarding: falha ao criar botões em lote", boxesErr);
+      for (const l of linhasOk) {
+        const { error: e1 } = await supabase.from("smart_boxes").insert(l);
+        if (e1) console.error("onboarding: falha no botão", l.title, e1);
+      }
+    }
+
+    // Categorias do catálogo: as que o site já trouxe nos itens, senão as do ramo.
+    if (imp.imported > 0) {
+      const { data: rotulos } = await supabase.from("content_items").select("brand_label").eq("business_id", id);
+      const cats = Array.from(new Set((rotulos ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v))).slice(0, 8);
+      if (cats.length > 0) await supabase.from("businesses").update({ vitrine_categories: cats }).eq("id", id);
+    }
 
     await supabase.from("opportunities").insert({
       business_id: id,
@@ -463,7 +479,7 @@ export default function OnboardingPage() {
     setStep("pronto");
   }
 
-  function irPara(destino: string = "/admin") {
+  function irPara(destino: string = "/admin/comecar") {
     router.push(destino);
     router.refresh();
   }
