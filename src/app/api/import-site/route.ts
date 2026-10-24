@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
     // Só preenche contato que ainda estiver vazio, não sobrescreve o que o dono digitou.
     const { data: atual } = await supabase
       .from("businesses")
-      .select("contact_whatsapp, contact_phone, contact_email, about_business, contact_site, instagram_handle")
+      .select("contact_whatsapp, contact_phone, contact_email, about_business, contact_site, instagram_handle, address")
       .eq("id", businessId)
       .maybeSingle();
 
@@ -244,6 +244,7 @@ export async function POST(req: NextRequest) {
         contact_whatsapp: atual?.contact_whatsapp ?? proposta.contact_whatsapp ?? null,
         contact_phone: atual?.contact_phone ?? proposta.contact_phone ?? null,
         contact_email: atual?.contact_email ?? proposta.contact_email ?? null,
+        address: atual?.address?.trim() ? atual.address : proposta.address?.trim() || null,
       })
       .eq("id", businessId);
 

@@ -15,6 +15,7 @@ import { registrarFunil } from "@/lib/funil";
 import { CONVERSOES, OBJETIVOS, conversaoPorId, ordenarBotoes, type BotaoChave, type ConversaoId, type ObjetivoId } from "@/lib/conversao";
 import { AnaliseAoVivo, BrandOrb, VitrineMontando, formatarWhatsapp, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 import { Pronto, type ProntoDados } from "./Pronto";
+import { Revisar, type RevisaoDados } from "./Revisar";
 
 type Color = { hex: string; role: string };
 type BrandAnalysis = {
@@ -42,7 +43,7 @@ async function analyzeBrand(name: string, instagram: string, website: string, de
   return res.json();
 }
 
-type Step = "dados" | "objetivo" | "acao" | "analisando" | "montando" | "pronto";
+type Step = "dados" | "objetivo" | "acao" | "analisando" | "revisar" | "montando" | "pronto";
 type Escolha<T> = T | "orbi" | null;
 type Importacao = { imported: number; siteType: "ecommerce" | "institucional" | "links" | null; motivo: string | null; fetchError: string | null };
 
@@ -86,6 +87,8 @@ export default function OnboardingPage() {
 
   const [montagem, setMontagem] = useState<{ status: "pending" | "ok"; itens: ItemMontado[]; segundos: number | null }>({ status: "pending", itens: [], segundos: null });
   const [pronto, setPronto] = useState<ProntoDados | null>(null);
+  const [revisao, setRevisao] = useState<RevisaoDados | null>(null);
+  const revisaoRef = useRef<((v: { whatsapp: string; endereco: string; principal: string | null }) => void) | null>(null);
   const [bizId, setBizId] = useState<string | null>(null);
   const [tentando, setTentando] = useState(false);
 
@@ -329,6 +332,31 @@ export default function OnboardingPage() {
       await supabase.from("businesses").update({ vitrine_categories: seg.categorias }).eq("id", id);
     }
 
+    // Pausa pra a pessoa conferir o que a Orbi achou (logotipo, contato, endereço)
+    // e dizer o que vem primeiro. Só depois a Home é montada.
+    const { data: pre } = await supabase.from("businesses").select("contact_whatsapp, contact_phone, address, logo_url, vitrine_categories").eq("id", id).maybeSingle();
+    const { data: preItens } = await supabase.from("content_items").select("title, brand_label, type").eq("business_id", id).eq("status", "published").order("position", { ascending: true }).limit(30);
+    const catsPre = Array.from(new Set((preItens ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v)));
+    const opcoes = (catsPre.length > 0 ? catsPre : seg?.categorias ?? (preItens ?? []).filter((r) => r.type !== "link").map((r) => r.title)).slice(0, 8);
+    const waPre = (pre?.contact_whatsapp || pre?.contact_phone || whatsappDigits || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+    const conf = await new Promise<{ whatsapp: string; endereco: string; principal: string | null }>((resolve) => {
+      revisaoRef.current = resolve;
+      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, opcoes, principal: opcoes[0] ?? null, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta" });
+      setStep("revisar");
+    });
+    setMontagem({ status: "pending", itens: [], segundos: null });
+    setStep("montando");
+    const waConf = (() => { const d = conf.whatsapp.replace(/\D/g, ""); if (d.length < 10) return ""; return d.startsWith("55") ? d : `55${d}`; })();
+    const enderecoFinal = conf.endereco.trim();
+    await supabase.from("businesses").update({ contact_whatsapp: waConf || null, address: enderecoFinal || null }).eq("id", id);
+    const principalFinal = conf.principal;
+    if (principalFinal && !catsPre.includes(principalFinal) && !seg?.categorias.includes(principalFinal)) {
+      // O principal é um item: sobe pro topo do catálogo.
+      const { data: topo } = await supabase.from("content_items").select("id, position").eq("business_id", id).order("position", { ascending: true }).limit(1).maybeSingle();
+      const { data: alvo } = await supabase.from("content_items").select("id").eq("business_id", id).eq("title", principalFinal).limit(1).maybeSingle();
+      if (alvo) await supabase.from("content_items").update({ position: (topo?.position ?? 0) - 1 }).eq("id", alvo.id);
+    }
+
     // Negócio gastronômico: a Orbi já deixa o Cardápio criado (desligado) e avisa na fila de pendências.
     // Ele aparece no menu e é só montar e ligar.
     if (seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id)) {
@@ -364,11 +392,7 @@ export default function OnboardingPage() {
     }
 
     // WhatsApp digitado ou achado no site pela importação.
-    let waFinal = whatsappDigits;
-    if (!waFinal && imp.siteType) {
-      const { data: atualizado } = await supabase.from("businesses").select("contact_whatsapp").eq("id", id).maybeSingle();
-      waFinal = atualizado?.contact_whatsapp ?? "";
-    }
+    const waFinal = waConf;
 
     // Estrutura da tela inicial: o botão que leva à conversão escolhida vem
     // primeiro, o objetivo decide o segundo, o resto segue a ordem do ramo.
@@ -378,7 +402,7 @@ export default function OnboardingPage() {
     if (temVitrine) disponiveis.push("catalogo");
     if (conteudoAtivo) disponiveis.push("conhecer");
     if (waFinal) disponiveis.push("whatsapp");
-    if (endereco.trim()) disponiveis.push("endereco");
+    if (enderecoFinal) disponiveis.push("endereco");
     if (voucherCriado) disponiveis.push("cupom");
     const ordem = ordenarBotoes({ disponiveis, conversao: conv, objetivo: obj, servico: !!seg?.servico });
 
@@ -397,7 +421,7 @@ export default function OnboardingPage() {
         case "agent": return { business_id: id, box_type: "agent", title: NOMES.agent, position, is_active };
         case "conhecer": return { business_id: id, box_type: "content", title: NOMES.conhecer, position, is_active };
         case "whatsapp": return { business_id: id, box_type: "custom", title: waRotulo.label, position, is_active, config: { label: waRotulo.label, subtitle: waRotulo.subtitle, icon: "__wadisc__", color: "transparent", action: "whatsapp", url: "" } };
-        case "endereco": return { business_id: id, box_type: "custom", title: "Como chegar", position, is_active, config: { label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", color: "transparent", action: "endereco", url: endereco.trim() } };
+        case "endereco": return { business_id: id, box_type: "custom", title: "Como chegar", position, is_active, config: { label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", color: "transparent", action: "endereco", url: enderecoFinal } };
         case "cupom": return { business_id: id, box_type: "custom", title: NOMES.cupom, position, is_active, config: { label: NOMES.cupom, subtitle: "Resgate agora e aproveite", icon: "__ticket__", color: "transparent", action: "cupom" } };
       }
     };
@@ -433,7 +457,7 @@ export default function OnboardingPage() {
     // Categorias do catálogo: as que o site já trouxe nos itens, senão as do ramo.
     if (imp.imported > 0) {
       const { data: rotulos } = await supabase.from("content_items").select("brand_label").eq("business_id", id);
-      const cats = Array.from(new Set((rotulos ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v))).slice(0, 8);
+      const cats = Array.from(new Set((rotulos ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v))).slice(0, 8).sort((a, b) => (a === principalFinal ? -1 : b === principalFinal ? 1 : 0));
       if (cats.length > 0) await supabase.from("businesses").update({ vitrine_categories: cats }).eq("id", id);
     }
 
@@ -664,6 +688,8 @@ export default function OnboardingPage() {
         {step === "analisando" && (
           <AnaliseAoVivo nome={name} alvo={alvo} descoberta={descoberta} analise={analise} onDone={criar} />
         )}
+
+        {step === "revisar" && revisao && <Revisar dados={revisao} onConfirmar={(v) => revisaoRef.current?.(v)} />}
 
         {step === "montando" && (
           <VitrineMontando

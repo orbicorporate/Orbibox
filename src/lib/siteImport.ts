@@ -184,6 +184,7 @@ const PROPOSTA_SCHEMA = {
     contact_whatsapp: { type: ["string", "null"] },
     contact_phone: { type: ["string", "null"] },
     contact_email: { type: ["string", "null"] },
+    address: { type: ["string", "null"] },
     items: {
       type: "array",
       items: {
@@ -215,6 +216,7 @@ export type Proposta = {
   contact_whatsapp: string | null;
   contact_phone: string | null;
   contact_email: string | null;
+  address?: string | null;
   items: Extracted[];
 };
 
@@ -260,6 +262,7 @@ PASSO 3, conhecimento do negócio (alimenta a assistente de IA):
 - differentials: diferenciais reais citados, frase curta ou lista curta.
 - policies: prazos, entrega, frete, trocas, horários, pagamento, só o que estiver no conteúdo. null se não houver.
 - contact_whatsapp / contact_phone / contact_email: se aparecerem. Só dígitos no whatsapp/telefone (com DDD).
+- address: endereço físico completo (rua, número, cidade) se o negócio atende no local e ele aparecer no conteúdo. null se não houver.
 
 REGRAS GERAIS:
 - target_url deve ser um link REAL da lista de links fornecida. Nunca invente URL.
