@@ -1641,7 +1641,7 @@ function LinhaPronta({
           <span className="truncate text-[15px] font-medium">{titulo}</span>
           {nota && <span className="shrink-0 text-[11.5px] text-text-secondary">{nota}</span>}
         </span>
-        <span className="mt-0.5 line-clamp-2 block text-[12.5px] leading-snug text-text-secondary">{texto}</span>
+        {!ativo && <span className="mt-0.5 line-clamp-2 block text-[12.5px] leading-snug text-text-secondary">{texto}</span>}
       </span>
       {ativo ? (
         <span className="shrink-0 rounded-full bg-[#E4F7EA] px-2.5 py-1 text-[12px] font-medium text-[#1F7A45]">✓ Ativo</span>
@@ -1650,7 +1650,7 @@ function LinhaPronta({
       ) : null}
     </>
   );
-  const base = `flex w-full items-center gap-3 rounded-[22px] p-3.5 text-left ${destaque ? "bg-gradient-to-br from-[#F6FDE6] to-[#E4F8F3] ring-1 ring-black/[0.06]" : "bg-surface-white ring-1 ring-black/[0.06]"}`;
+  const base = `flex w-full items-center gap-3 rounded-[22px] ${ativo ? "p-2.5" : "p-3.5"} text-left ${destaque ? "bg-gradient-to-br from-[#F6FDE6] to-[#E4F8F3] ring-1 ring-black/[0.06]" : "bg-surface-white ring-1 ring-black/[0.06]"}`;
   if (href) return <Link href={href} className={base}>{miolo}</Link>;
   if (onClick) return <button type="button" onClick={onClick} className={base}>{miolo}</button>;
   return <div className={base}>{miolo}</div>;
