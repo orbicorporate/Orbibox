@@ -17,7 +17,6 @@ import { Cabecalho, Estrela, Folha, IcChev, IcCoracao, IcX, Orbita, Rosto, useRe
 
 type Aberta = { tipo: "avaliacoes" | "fas" | "entrar" | "contato"; origem: DOMRect | null } | null;
 
-const GRAD_NOTA: Record<number, string> = { 5: "var(--cl-teal)", 4: "var(--cl-lime)", 3: "var(--cl-orange)", 2: "var(--cl-pink)", 1: "var(--cl-blue)" };
 const fmtNota = (n: number) => n.toFixed(1).replace(".", ",");
 const chave = (slug: string) => `clube-pendente-${slug}`;
 
@@ -1047,16 +1046,20 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                     <div key={r.id}>
                       {k === 0 && fa && r.customer_id === fa.id && <p className="mb-1.5 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Avaliação de {fa.nome || "esse fã"}</p>}
                       {k > 0 && k === 1 && avMarca.lista![0].customer_id === fa?.id && <p className="mb-1.5 mt-2 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outras avaliações</p>}
-                      <article className={`cl-rev ${r.nota === 4 ? "escuro" : ""}`} style={{ background: GRAD_NOTA[r.nota] }}>
-                        <Rosto url={r.foto_url} nome={r.nome} size={48} className="ring-2 ring-white/60" />
-                        <div className="min-w-0 text-[15px] font-bold leading-tight">
-                          <span className="block truncate">{r.nome || "Cliente"}</span>
-                          <small className="mt-0.5 block text-[11.5px] font-semibold opacity-85">{new Date(r.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</small>
+                      <article className="rounded-[22px] bg-surface-white p-4 ring-1 ring-divider">
+                        <div className="flex items-center gap-3">
+                          <Rosto url={r.foto_url} nome={r.nome} size={38} />
+                          <div className="min-w-0 flex-1">
+                            <span className="block truncate text-[14.5px] font-medium leading-tight">{r.nome || "Cliente"}</span>
+                            <small className="mt-0.5 block text-[12px] text-text-tertiary">{new Date(r.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</small>
+                          </div>
+                          <div className="flex gap-0.5" role="img" aria-label={`${r.nota} de 5 estrelas`}>{[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= r.nota} tam={15} />)}</div>
                         </div>
-                        <div className="font-[family-name:var(--font-manrope)] text-[30px] font-extrabold tabular-nums tracking-[-0.03em]">{r.nota}</div>
-                        {r.comentario ? <p className="col-span-full mt-1 text-[14px] leading-snug">{r.comentario}</p> : null}
+                        {r.comentario ? <p className="mt-2.5 text-[14px] leading-snug text-text-secondary">{r.comentario}</p> : null}
                         {r.resposta_dono ? (
-                          <div className="cl-resp"><b className="mb-0.5 block text-[11.5px] uppercase tracking-wide opacity-80">Resposta da marca</b>{r.resposta_dono}</div>
+                          <div className="mt-2.5 rounded-2xl bg-surface-soft px-3 py-2.5 text-[13.5px] leading-snug">
+                            <span className="mb-0.5 block text-[11.5px] uppercase tracking-wide text-text-tertiary">Resposta da marca</span>{r.resposta_dono}
+                          </div>
                         ) : null}
                       </article>
                     </div>
