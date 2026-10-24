@@ -90,7 +90,7 @@ export function Comecar(p: Props) {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Vamos montar o {p.nome.trim()}</h1>
+        <h1 className="font-[family-name:var(--font-manrope)] text-[26px] font-medium tracking-[-0.02em]">Vamos montar o catálogo</h1>
         <p className="mt-1 text-[14px] text-text-secondary">{atual === -1 ? "Tudo pronto. Agora é divulgar." : `Passo ${atual + 1} de 4`}</p>
         <div className="mt-3 flex gap-1.5" aria-hidden>
           {feitos.map((f, i) => <span key={i} className={`h-1.5 flex-1 rounded-full ${f ? "bg-[#1F9E4C]" : i === atual ? "bg-on-background" : "bg-black/10"}`} />)}
