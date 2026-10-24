@@ -501,9 +501,9 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
         <>
           <Cabecalho titulo="Avaliações" sub="O que os fãs dizem" fechar={fechar} />
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-1">
-            <div className="cl-entra grid grid-cols-[auto_1fr] items-center gap-5 rounded-[28px] bg-surface-white p-5 ring-1 ring-divider" style={{ ["--i" as string]: 1 }}>
+            <div className="cl-entra grid grid-cols-[auto_1fr] items-center gap-5 rounded-[22px] bg-surface-white p-4 ring-1 ring-divider" style={{ ["--i" as string]: 1 }}>
               <div>
-                <div className="font-[family-name:var(--font-manrope)] text-[54px] font-extrabold leading-none tracking-[-0.04em] tabular-nums" style={{ background: "var(--cl-orange)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+                <div className="font-[family-name:var(--font-manrope)] text-[44px] font-medium leading-none tracking-[-0.04em] tabular-nums" style={{ color: "#17181B" }}>
                   {resumo.nota != null ? fmtNota(resumo.nota) : "-"}
                 </div>
                 <div className="mt-1.5 flex gap-0.5">{[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= Math.round(resumo.nota ?? 0)} />)}</div>
@@ -513,7 +513,7 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
                 {[5, 4, 3, 2, 1].map((n, k) => (
                   <div key={n} className="grid grid-cols-[12px_1fr_26px] items-center gap-2 text-[12px] tabular-nums text-text-tertiary">
                     <span>{n}</span>
-                    <span className="h-2 overflow-hidden rounded-full bg-surface-soft"><span className="cl-fill block" style={{ ["--w" as string]: resumo.distribuicao[n - 1] / max, ["--i" as string]: k, background: GRAD_NOTA[n] }} /></span>
+                    <span className="h-1.5 overflow-hidden rounded-full bg-surface-soft"><span className="cl-fill block" style={{ ["--w" as string]: resumo.distribuicao[n - 1] / max, ["--i" as string]: k, background: "#FF9A3C" }} /></span>
                     <span>{resumo.distribuicao[n - 1]}</span>
                   </div>
                 ))}
@@ -522,29 +522,33 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
 
             {lista === null && <p className="py-6 text-center text-[14px] text-text-tertiary">Carregando...</p>}
             {lista?.map((r, k) => (
-              <article key={r.id} className={`cl-rev cl-entra ${r.nota === 4 ? "escuro" : ""}`} style={{ background: GRAD_NOTA[r.nota], ["--i" as string]: k + 3 }}>
-                <Rosto url={r.foto_url} nome={r.nome} size={48} className="ring-2 ring-white/60" />
-                <div className="min-w-0 text-[15px] font-bold leading-tight">
-                  <span className="block truncate">{r.nome || "Cliente"}</span>
-                  <small className="mt-0.5 block text-[11.5px] font-semibold opacity-85">{new Date(r.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</small>
+              <article key={r.id} className="cl-entra rounded-[22px] bg-surface-white p-4 ring-1 ring-divider" style={{ ["--i" as string]: k + 3 }}>
+                <div className="flex items-center gap-3">
+                  <Rosto url={r.foto_url} nome={r.nome} size={38} />
+                  <div className="min-w-0 flex-1">
+                    <span className="block truncate text-[14.5px] font-medium leading-tight">{r.nome || "Cliente"}</span>
+                    <small className="mt-0.5 block text-[12px] text-text-tertiary">{new Date(r.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</small>
+                  </div>
+                  <div className="flex gap-0.5" role="img" aria-label={`${r.nota} de 5 estrelas`}>{[1, 2, 3, 4, 5].map((n) => <Estrela key={n} cheia={n <= r.nota} tam={15} />)}</div>
                 </div>
-                <div className="font-[family-name:var(--font-manrope)] text-[30px] font-extrabold tabular-nums tracking-[-0.03em]">{r.nota}</div>
-                {r.comentario ? <p className="col-span-full mt-1 text-[14px] leading-snug">{r.comentario}</p> : null}
+                {r.comentario ? <p className="mt-2.5 text-[14px] leading-snug text-text-secondary">{r.comentario}</p> : null}
                 {r.resposta_dono ? (
-                  <div className="cl-resp"><b className="mb-0.5 block text-[11.5px] uppercase tracking-wide opacity-80">Resposta da marca</b>{r.resposta_dono}</div>
+                  <div className="mt-2.5 rounded-2xl bg-surface-soft px-3 py-2.5 text-[13.5px] leading-snug">
+                    <span className="mb-0.5 block text-[11.5px] uppercase tracking-wide text-text-tertiary">Resposta da marca</span>{r.resposta_dono}
+                  </div>
                 ) : null}
                 {isOwner && respondendo !== r.id && (
-                  <div className="col-span-full mt-1.5 flex flex-wrap gap-2">
-                    {!r.resposta_dono && <button type="button" className="cl-mini" onClick={() => { setRespondendo(r.id); setTextoResp(""); }}>Responder</button>}
-                    <button type="button" className="cl-mini" disabled={revisadas.includes(r.id)} onClick={async () => { await pedirRevisao(r.id); setRevisadas((v) => [...v, r.id]); }}>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    {!r.resposta_dono && <button type="button" className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px]" onClick={() => { setRespondendo(r.id); setTextoResp(""); }}>Responder</button>}
+                    <button type="button" className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] disabled:opacity-50" disabled={revisadas.includes(r.id)} onClick={async () => { await pedirRevisao(r.id); setRevisadas((v) => [...v, r.id]); }}>
                       {revisadas.includes(r.id) ? "Revisão pedida" : "Pedir revisão"}
                     </button>
                   </div>
                 )}
                 {isOwner && respondendo === r.id && (
-                  <div className="col-span-full mt-1.5 flex gap-2">
-                    <input aria-label="Sua resposta" autoFocus maxLength={300} value={textoResp} onChange={(e) => setTextoResp(e.target.value)} placeholder="Escreva a resposta" className="min-h-[40px] min-w-0 flex-1 rounded-full bg-white/90 px-4 text-[14px] text-[#14161A] outline-none" />
-                    <button type="button" onClick={() => enviarResposta(r.id)} className="min-h-[40px] rounded-full bg-[#14161A] px-4 text-[13px] font-bold text-white">Enviar</button>
+                  <div className="mt-2.5 flex gap-2">
+                    <input aria-label="Sua resposta" autoFocus maxLength={300} value={textoResp} onChange={(e) => setTextoResp(e.target.value)} placeholder="Escreva a resposta" className="min-h-[40px] min-w-0 flex-1 rounded-full border border-divider bg-background-main px-4 text-[14px] outline-none" />
+                    <button type="button" onClick={() => enviarResposta(r.id)} className="min-h-[40px] rounded-full bg-[#14161A] px-4 text-[13px] text-white">Enviar</button>
                   </div>
                 )}
               </article>
@@ -552,8 +556,8 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
             {lista?.length === 0 && <p className="py-4 text-center text-[14px] text-text-tertiary">Ainda não há avaliações. A primeira pode ser sua.</p>}
 
             {!isOwner && (
-              <div className="cl-entra rounded-[28px] bg-surface-white p-5 ring-1 ring-divider" style={{ ["--i" as string]: 8 }}>
-                <p className="text-[15px] font-bold">{eu.minhaAvaliacao ? "Sua avaliação" : "Avaliar esta marca"}</p>
+              <div className="cl-entra rounded-[22px] bg-surface-white p-4 ring-1 ring-divider" style={{ ["--i" as string]: 8 }}>
+                <p className="text-[15px] font-medium">{eu.minhaAvaliacao ? "Sua avaliação" : "Avaliar esta marca"}</p>
                 {!eu.logado ? (
                   <>
                     <p className="mt-1 text-[13.5px] text-text-secondary">Entre com Google ou WhatsApp para deixar sua nota e seu comentário.</p>
@@ -565,18 +569,18 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
                   <>
                     <div className="mt-2 flex justify-center gap-1" role="radiogroup" aria-label="Sua nota">
                       {[1, 2, 3, 4, 5].map((n) => (
-                        <button key={n} type="button" role="radio" aria-checked={nota === n} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`} onClick={() => setNota(n)} className="grid h-11 w-11 place-items-center rounded-full active:scale-90">
-                          <Estrela cheia={n <= nota} tam={30} />
+                        <button key={n} type="button" role="radio" aria-checked={nota === n} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`} onClick={() => setNota(n)} className="grid h-10 w-10 place-items-center rounded-full active:scale-90">
+                          <Estrela cheia={n <= nota} tam={26} />
                         </button>
                       ))}
                     </div>
                     <label htmlFor="clube-coment" className="sr-only">Comentário</label>
-                    <textarea id="clube-coment" rows={3} maxLength={400} value={coment} onChange={(e) => setComent(e.target.value)} placeholder="Conte como foi (opcional)" className="mt-2 w-full resize-none rounded-2xl border border-divider bg-background-main px-4 py-3 text-[15px] outline-none focus:border-on-background" />
+                    <textarea id="clube-coment" rows={2} maxLength={400} value={coment} onChange={(e) => setComent(e.target.value)} placeholder="Conte como foi (opcional)" className="mt-2 w-full resize-none rounded-2xl border border-divider bg-background-main px-4 py-3 text-[15px] outline-none focus:border-on-background" />
                     <div className="mt-2 flex flex-col gap-1">
-                      <label className="flex min-h-[44px] items-center justify-between gap-3 text-[14px]">Aparecer com meu nome completo<input type="checkbox" checked={completo} onChange={(e) => setCompleto(e.target.checked)} className="h-5 w-5 accent-[#14161A]" /></label>
-                      <label className="flex min-h-[44px] items-center justify-between gap-3 text-[14px]">Mostrar minha foto<input type="checkbox" checked={foto} onChange={(e) => setFoto(e.target.checked)} className="h-5 w-5 accent-[#14161A]" /></label>
+                      <label className="flex min-h-[40px] items-center justify-between gap-3 text-[14px] text-text-secondary">Aparecer com meu nome completo<input type="checkbox" checked={completo} onChange={(e) => setCompleto(e.target.checked)} className="h-5 w-5 accent-[#14161A]" /></label>
+                      <label className="flex min-h-[40px] items-center justify-between gap-3 text-[14px] text-text-secondary">Mostrar minha foto<input type="checkbox" checked={foto} onChange={(e) => setFoto(e.target.checked)} className="h-5 w-5 accent-[#14161A]" /></label>
                     </div>
-                    <button type="button" onClick={enviar} disabled={enviando || nota < 1} className="mt-2 min-h-[48px] w-full rounded-full bg-button-primary text-[15px] font-semibold text-white disabled:opacity-50 active:scale-[0.98]">
+                    <button type="button" onClick={enviar} disabled={enviando || nota < 1} className="mt-2 min-h-[46px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white disabled:opacity-50 active:scale-[0.98]">
                       {enviando ? "Enviando..." : eu.minhaAvaliacao ? "Atualizar avaliação" : "Enviar avaliação"}
                     </button>
                   </>
