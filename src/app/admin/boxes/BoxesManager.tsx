@@ -474,32 +474,44 @@ export function BoxesManager({
         compacto
       >
         <div className="flex flex-col gap-4">
-          <div className="rounded-[20px] bg-surface-soft p-4">
-            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Frase de saudação (tela inicial)</p>
-            <p className="mt-1 text-[12px] text-text-secondary">A pergunta que aparece antes do nome do seu negócio, quando o visitante chega.</p>
+          <div className="rounded-[22px] bg-white p-4 shadow-[0_10px_24px_-16px_rgba(17,19,24,0.25)] ring-1 ring-black/[0.06]">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-on-background" aria-hidden>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8.5 8.5 0 0 1-12.3 7.6L3 21l1.4-5.5A8.5 8.5 0 1 1 21 12Z" /></svg>
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-semibold leading-tight">Saudação</p>
+                <p className="text-[12.5px] text-text-tertiary">Aparece antes do seu nome</p>
+              </div>
+              {!perguntaRemovida && (
+                <button
+                  type="button"
+                  onClick={() => { setHeroQuestion(" "); saveHeroQuestion(" "); }}
+                  className="shrink-0 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium text-text-secondary ring-[0.5px] ring-black/25 active:scale-95"
+                >
+                  Remover
+                </button>
+              )}
+            </div>
             <input
               value={heroQuestion}
               onChange={(e) => setHeroQuestion(e.target.value)}
               onBlur={(e) => saveHeroQuestion(e.target.value)}
-              placeholder={perguntaRemovida ? "Removida. Escreva aqui para voltar." : "O que trouxe você aqui hoje?"}
-              className="mt-2 w-full rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background"
+              placeholder={perguntaRemovida ? "Removida. Escreva para voltar." : "O que trouxe você aqui hoje?"}
+              className="mt-3 w-full rounded-full bg-surface-soft px-4 py-3 text-[14.5px] outline-none ring-1 ring-transparent focus:ring-on-background/30"
             />
-            {!perguntaRemovida && (
-              <button
-                type="button"
-                onClick={() => { setHeroQuestion(" "); saveHeroQuestion(" "); }}
-                className="mt-2 min-h-[40px] rounded-full bg-surface-white px-4 text-[13px] font-medium text-text-secondary ring-1 ring-divider active:scale-95"
-              >
-                Remover a pergunta
-              </button>
-            )}
           </div>
 
-          <div className="rounded-[20px] bg-surface-soft p-4">
-            <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Avatar da tela inicial</p>
-            <p className="mt-1 text-[12px] text-text-secondary">
-              Escolha o que aparece no topo da tela inicial: a esfera clássica da Orbi, seu logotipo, ou a esfera já com as cores que você configurou em Sua IA.
-            </p>
+          <div className="rounded-[22px] bg-white p-4 shadow-[0_10px_24px_-16px_rgba(17,19,24,0.25)] ring-1 ring-black/[0.06]">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-soft text-on-background" aria-hidden>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="9" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /></svg>
+              </span>
+              <div className="min-w-0">
+                <p className="text-[15px] font-semibold leading-tight">Avatar</p>
+                <p className="text-[12.5px] text-text-tertiary">O que aparece no topo</p>
+              </div>
+            </div>
             {(() => {
               // Qualquer logo já enviado, em Configurações ou em qualquer box , 
               // conta aqui. Se o logo "oficial" (logo_url) ainda não foi definido,
@@ -518,32 +530,29 @@ export function BoxesManager({
                   <div className="mt-3 flex gap-2">
                     <button
                       onClick={() => saveHeroAvatar("particle")}
-                      className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 ${(heroAvatar === "particle" || heroAvatar === "sphere" || (heroAvatar === "auto" && !availableLogo)) ? "border-on-background" : "border-transparent"}`}
+                      className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-soft py-3.5 ${(heroAvatar === "particle" || heroAvatar === "sphere" || (heroAvatar === "auto" && !availableLogo)) ? "border-on-background" : "border-transparent"}`}
                     >
                       <OrbiParticleSphere size={40} colors={orbiColors ?? undefined} className="rounded-full" />
-                      <span className="text-[11px] font-medium">Esfera da Orbi</span>
+                      <span className="text-[12.5px] font-medium">Esfera da Orbi</span>
                     </button>
                     <button
                       onClick={pickLogoAvatar}
                       disabled={!availableLogo}
-                      className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-white py-3 disabled:opacity-40 ${(heroAvatar.startsWith("logo") || heroAvatar.startsWith("sem-fundo") || heroAvatar.startsWith("esfera") || (heroAvatar === "auto" && !!availableLogo)) ? "border-on-background" : "border-transparent"}`}
+                      className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border-2 bg-surface-soft py-3.5 disabled:opacity-40 ${(heroAvatar.startsWith("logo") || heroAvatar.startsWith("sem-fundo") || heroAvatar.startsWith("esfera") || (heroAvatar === "auto" && !!availableLogo)) ? "border-on-background" : "border-transparent"}`}
                     >
                       {availableLogo ? <OrbiLogoBadge logoUrl={availableLogo} size={40} /> : <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-[16px]">◎</span>}
-                      <span className="text-[11px] font-medium">Logotipo</span>
+                      <span className="text-[12.5px] font-medium">Logotipo</span>
                     </button>
                   </div>
                   {/* Cor e logotipo se trocam em Sua marca, um lugar só. */}
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Link href="/admin/config/marca#cores" className="inline-block rounded-full bg-surface-soft px-3.5 py-1.5 text-[11.5px] font-semibold text-text-secondary">
-                      ✦ Configurar cor
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link href="/admin/config/marca#cores" className="inline-block rounded-full px-4 py-2 text-[12.5px] font-medium text-text-secondary ring-[0.5px] ring-black/25">
+                      Cor da esfera
                     </Link>
-                    <Link href="/admin/config/marca#logo" className="inline-block rounded-full bg-surface-soft px-3.5 py-1.5 text-[11.5px] font-semibold text-text-secondary">
+                    <Link href="/admin/config/marca#logo" className="inline-block rounded-full px-4 py-2 text-[12.5px] font-medium text-text-secondary ring-[0.5px] ring-black/25">
                       {availableLogo ? "Trocar logotipo" : "Enviar logotipo"}
                     </Link>
                   </div>
-                  {!availableLogo && (
-                    <p className="mt-2 text-[11px] text-text-tertiary">Envie um logotipo em Sua marca pra poder usar essa opção.</p>
-                  )}
                 </>
               );
             })()}
