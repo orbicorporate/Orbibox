@@ -2188,6 +2188,15 @@ function AddressCard({ address }: { address: string }) {
           <OrbiMapPin size={26} className="shrink-0" />
           <span className="text-[14px] leading-relaxed text-text-secondary">{address}</span>
         </div>
+        <div className="mt-3 h-[170px] overflow-hidden rounded-[14px] bg-surface-soft">
+          <iframe
+            title={`Mapa: ${address}`}
+            src={`https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=16&output=embed`}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="h-full w-full border-0"
+          />
+        </div>
         <div className="mt-3 flex gap-2">
           <a
             href={`https://waze.com/ul?q=${encodeURIComponent(address)}&navigate=yes`}
