@@ -1622,3 +1622,20 @@ html[data-embed] .embed-oculta { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .passo-cereja, .passo-cereja::after, .passo-cereja-seta { animation: none; }
 }
+
+/* Estrela do pedido de avaliação: balança de leve e brilha de tempos em tempos. */
+@keyframes estrelaBalanca {
+  0%, 60%, 100% { transform: rotate(0deg) scale(1); }
+  70% { transform: rotate(-14deg) scale(1.18); }
+  80% { transform: rotate(12deg) scale(1.18); }
+  90% { transform: rotate(-6deg) scale(1.08); }
+}
+@keyframes estrelaHalo {
+  0%, 60%, 100% { box-shadow: 0 0 0 0 rgba(245, 179, 1, 0); }
+  75% { box-shadow: 0 0 0 7px rgba(245, 179, 1, 0.22); }
+}
+.estrela-avaliar { animation: estrelaHalo 4.5s ease-in-out infinite; }
+.estrela-avaliar svg { animation: estrelaBalanca 4.5s ease-in-out infinite; transform-origin: 50% 55%; }
+@media (prefers-reduced-motion: reduce) {
+  .estrela-avaliar, .estrela-avaliar svg { animation: none; }
+}
