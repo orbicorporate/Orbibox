@@ -98,6 +98,16 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         </div>
       </div>
 
+      {progressoPct < 100 && (
+        <Link href="/admin/pendencias" className="mt-4 flex items-center gap-3 rounded-full bg-surface-white px-4 py-3 ring-1 ring-black/[0.06] transition-transform active:scale-[0.98]">
+          <span className="relative h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-surface-soft">
+            <span className="orbi-gradient absolute inset-y-0 left-0 rounded-full" style={{ width: `${progressoPct}%` }} />
+          </span>
+          <span className="min-w-0 flex-1 text-[14px] font-medium">{progressoPct}% completo. O que falta?</span>
+          <span aria-hidden className="text-text-tertiary">→</span>
+        </Link>
+      )}
+
       {passoAPasso && (
         <Link href="/admin/comecar" className="passo-cereja mt-4 flex items-center gap-3 rounded-[24px] p-4 text-white shadow-[0_16px_32px_-14px_rgba(196,18,47,0.7)] transition-transform active:scale-[0.98]">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-[15px] font-semibold" aria-hidden>1·2·3</span>
@@ -212,15 +222,6 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
       </section>
 
       <PerguntaOrbi orbiColors={orbiColors} />
-
-      {progressoPct < 100 && (
-        <Link href="/admin/pendencias" className="mt-8 flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3 active:opacity-70">
-          <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white">
-            <span className="orbi-gradient absolute inset-y-0 left-0 rounded-full" style={{ width: `${progressoPct}%` }} />
-          </span>
-          <span className="shrink-0 text-[12.5px] text-text-secondary">Página {progressoPct}% completa · ver o que falta</span>
-        </Link>
-      )}
 
       {(perguntaRede || mostrarConvite) && (
         <section className="mt-8 border-t border-black/[0.08] pt-6">
