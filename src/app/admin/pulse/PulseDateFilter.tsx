@@ -139,7 +139,7 @@ export function PulseDateFilter() {
       </div>
 
       {open && (
-        <div ref={popRef} className="absolute left-0 top-11 z-20 w-[300px] rounded-[24px] border border-divider bg-surface-white p-4 shadow-lg">
+        <div ref={popRef} className="absolute left-0 top-11 z-20 w-[300px] rounded-[24px] border border-divider bg-white p-4 shadow-xl ring-[0.5px] ring-black/10">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setViewMonth((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))}

@@ -983,8 +983,8 @@ body {
 @keyframes prismaDeriva2 { to { transform: translate(-12%, -8%) scale(.92); } }
 
 .sistema-vidro {
-  --vidro-a: rgba(255,255,255,.66);
-  --vidro-b: rgba(255,255,255,.34);
+  --vidro-a: rgba(255,255,255,.93);
+  --vidro-b: rgba(255,255,255,.85);
   --vidro-borda: inset 0 1px 0 rgba(255,255,255,.95), inset 0 0 0 1px rgba(255,255,255,.55);
   --vidro-sombra: 0 24px 48px -32px rgba(36,56,74,.32), 0 2px 10px -6px rgba(36,56,74,.18);
 }
@@ -994,15 +994,15 @@ body {
   --tw-inset-shadow: var(--vidro-borda);
 }
 .sistema-vidro .bg-surface-white:not([class*="shadow"]) { box-shadow: var(--vidro-borda), var(--vidro-sombra); }
-.sistema-vidro .bg-surface-soft { background-color: rgba(255,255,255,.38); }
+.sistema-vidro .bg-surface-soft { background-color: rgba(255,255,255,.72); }
 .sistema-vidro .border-divider { border-color: rgba(255,255,255,.7); }
 /* Campos de texto: um pouco mais sólidos, pra digitar com conforto. */
-.sistema-vidro :is(input, textarea, select).bg-surface-white { background-image: linear-gradient(150deg, rgba(255,255,255,.82), rgba(255,255,255,.62)); }
+.sistema-vidro :is(input, textarea, select).bg-surface-white { background-image: linear-gradient(150deg, rgba(255,255,255,.98), rgba(255,255,255,.94)); }
 /* Camadas que flutuam (folhas, modais, menus, header): vidro com desfoque de verdade. */
 .sistema-vidro :is(.fixed, .sticky) :is(.bg-surface-white, .bg-surface-white\/70, .bg-surface-white\/80, .bg-surface-white\/85, .bg-surface-white\/90, .bg-surface-white\/95),
 .sistema-vidro :is(.fixed, .sticky):is(.bg-surface-white, .bg-surface-white\/70, .bg-surface-white\/80, .bg-surface-white\/85, .bg-surface-white\/90, .bg-surface-white\/95) {
-  background-color: rgba(246,249,251,.6);
-  background-image: linear-gradient(150deg, rgba(255,255,255,.7), rgba(255,255,255,.4));
+  background-color: rgba(250,251,252,.97);
+  background-image: linear-gradient(150deg, rgba(255,255,255,.98), rgba(255,255,255,.94));
   -webkit-backdrop-filter: blur(28px) saturate(170%);
   backdrop-filter: blur(28px) saturate(170%);
 }
@@ -1010,7 +1010,7 @@ body {
 
 /* Card da Orbi no painel: vidro com borda em degradê das cores da Orbi e brilho atrás. */
 .vidro-orbi { position: relative; isolation: isolate; border-radius: 24px; overflow: hidden;
-  background: linear-gradient(150deg, rgba(255,255,255,.72), rgba(255,255,255,.36));
+  background: linear-gradient(150deg, rgba(255,255,255,.94), rgba(255,255,255,.84));
   -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%);
   box-shadow: 0 26px 50px -30px color-mix(in srgb, var(--vo1) 60%, rgba(36,56,74,.4)), 0 2px 10px -6px rgba(36,56,74,.18); }
 .vidro-orbi::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
