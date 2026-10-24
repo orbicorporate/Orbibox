@@ -973,7 +973,7 @@ export function BoxesManager({
               icone={<span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#FF7A5C] to-[#FF3B6E] text-[20px]">🎟️</span>}
               titulo="Botão de vouchers"
               nota="Atrai clientes"
-              texto="Ofertas com código único, estoque controlado e captura de contato."
+              texto="Ofertas com estoque controlado."
               acao="Criar"
               onClick={novoBoxVoucher}
             />
