@@ -572,11 +572,13 @@ export function VisitorExperience({
       if (destaquesHome.some((d) => d.t === "botao" && d.id === o.key)) continue;
       const estilo = o.bolinha === "linha" ? "linha" : "cor";
       const base = { key: o.key, estilo, editavel: true, cor: o.bolinhaCor, logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual) : null, logoInteira: o.icon === "__logo__", logoAjuste: o.icon === "__logo__" ? (o.boxLogoAjuste ?? null) : null } as const;
-      if (o.atalho === "whatsapp") out.push({ ...base, rotulo: "WhatsApp", tipo: "whatsapp", onClick: o.onClick });
-      else if (o.atalho === "endereco" && o.address) out.push({ ...base, rotulo: "Local", tipo: "endereco", endereco: o.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
+      // O nome que o dono escolheu manda. Só os nomes padrão da criação viram o rótulo curto da bolinha.
+      const nomeDono = (padroes: string[], curto: string) => (o.t && !padroes.includes(o.t.trim()) ? o.t : curto);
+      if (o.atalho === "whatsapp") out.push({ ...base, rotulo: nomeDono(["Fale no WhatsApp", "WhatsApp", "Link"], "WhatsApp"), tipo: "whatsapp", onClick: o.onClick });
+      else if (o.atalho === "endereco" && o.address) out.push({ ...base, rotulo: nomeDono(["Como chegar", "Local", "Endereço"], "Local"), tipo: "endereco", endereco: o.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
       else if (o.rede) out.push({ ...base, rotulo: o.t || nomeDaRede(o.rede), tipo: "rede", rede: o.rede, onClick: o.onClick });
       else if (o.atalho === "site") out.push({ ...base, rotulo: o.t || "Site", tipo: "site", onClick: o.onClick });
-      else if (o.cupom) out.push({ ...base, rotulo: "Vouchers", tipo: "voucher", selo: o.selo === undefined ? "oferta" : o.selo, onClick: o.onClick });
+      else if (o.cupom) out.push({ ...base, rotulo: nomeDono(["Vouchers", "Voucher"], "Vouchers"), tipo: "voucher", selo: o.selo === undefined ? "oferta" : o.selo, onClick: o.onClick });
       else if (o.acao === "presentear" || o.acao === "gift") out.push({ ...base, rotulo: o.t || "Presentear", tipo: "presente", onClick: o.onClick });
       else if (o.acao === "conhecer") out.push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
       else if (o.acao === "cardapio") out.push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
@@ -804,7 +806,7 @@ export function VisitorExperience({
     ctaTipo === "orbi"
       ? { tipo: "orbi", rotulo: `Pergunte à ${agentName?.trim() || "Orbi"}`, onClick: () => chooseIntent("duvida") }
       : ctaTipo === "whatsapp"
-        ? { tipo: "whatsapp", rotulo: "Falar no WhatsApp", onClick: zapBolinha?.onClick ?? (() => {}) }
+        ? { tipo: "whatsapp", rotulo: zapBolinha && zapBolinha.rotulo !== "WhatsApp" ? zapBolinha.rotulo : "Falar no WhatsApp", onClick: zapBolinha?.onClick ?? (() => {}) }
         : { tipo: "vitrine", rotulo: vitOpcao?.t || "Ver catálogo", onClick: () => chooseIntent("comprar") };
   const extrasVitrine = todasOpcoes
     .filter((o) => !destaquesHome.some((d) => d.t === "botao" && d.id === o.key))
