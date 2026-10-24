@@ -1058,7 +1058,17 @@ export function VisitorExperience({
           catálogo, sobre) centralizar empurrava tudo pra baixo e sobrava
           um vazio enorme no topo. */}
       <div className={`relative mx-auto flex min-h-screen max-w-[440px] flex-col items-center px-6 lg:max-w-[960px] ${intent === null ? "justify-center pb-16 pt-28" : "justify-start py-8"}`}>
-        {intent === null && <div ref={setSlotTopo} className={`absolute top-4 z-20 ${isOwner ? "left-4" : "right-4"}`} />}
+        {intent === null && (
+          <div className={`absolute top-4 z-20 flex items-center gap-2 ${isOwner ? "left-4" : "right-4"}`}>
+            <div ref={setSlotTopo} />
+            {isOwner && (
+              <BotaoCompartilhar
+                alvo={{ url: `/${business.slug}`, titulo: business.name, marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, texto: `Conhece ${business.name}? Dá uma olhada:` }}
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#C4122F] text-white shadow-[0_6px_16px_-6px_rgba(196,18,47,0.6)] transition-transform active:scale-90"
+              />
+            )}
+          </div>
+        )}
         {intent === null && !isOwner && (
           <div className="absolute left-4 top-4 z-20">
             <BotaoCompartilhar
