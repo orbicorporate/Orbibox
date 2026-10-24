@@ -573,6 +573,7 @@ export default function OnboardingPage() {
               ))}
               <Opcao ativa={objetivo === "orbi"} onClick={() => escolherObjetivo("orbi")} titulo="Não sei. Deixe a Orbi decidir" detalhe="Ela escolhe pelo que encontrou sobre você" icone="✦" cor="#DDF3EA" />
             </div>
+            <Dica>Quem tem WhatsApp, voucher e vitrine juntos costuma converter mais. Se ficar na dúvida, escolha "Fazer tudo isso".</Dica>
           </div>
         )}
 
@@ -610,6 +611,8 @@ export default function OnboardingPage() {
                 ✦ Deixe a Orbi decidir
               </button>
             </div>
+
+            <Dica>{DICA_CONVERSAO[conversao ?? ""] ?? "Dica: o WhatsApp em destaque, em primeiro, é o que mais gera contato."}</Dica>
 
             {convEscolhida?.precisa === "whatsapp" && (
               <div className="orbi-linha-entra mt-4">
@@ -674,6 +677,27 @@ const VISUAL_CONVERSAO: Record<string, { icone: string; cor: string }> = {
   oferta: { icone: "🎟️", cor: "#FFE0C7" },
   contato: { icone: "📞", cor: "#CFE8FF" },
 };
+
+const DICA_CONVERSAO: Record<string, string> = {
+  comprar: "Deixe seus produtos mais vendidos no topo do catálogo.",
+  orcamento: "Responda rápido: quem responde primeiro costuma fechar.",
+  whatsapp: "WhatsApp em destaque, sempre em primeiro. É onde o cliente decide.",
+  agendar: "Mostre o que está incluso. Menos dúvida, mais agendamento.",
+  visitar: "Endereço com mapa e horário de funcionamento à mão.",
+  conhecer: "Uma foto boa do produto principal vende mais que texto longo.",
+  oferta: "Um voucher com prazo curto cria urgência e traz o primeiro contato.",
+  contato: "Peça só o essencial. Quanto menos campos, mais contatos.",
+  orbi: "Sem certeza? A Orbi escolhe o que mais combina com o seu ramo.",
+};
+
+function Dica({ children }: { children: React.ReactNode }) {
+  return (
+    <p key={String(children)} className="orbi-linha-entra mt-4 flex items-start gap-2.5 rounded-[18px] bg-[#FFF6D6] px-3.5 py-3 text-[13px] leading-snug text-[#5A4A12]">
+      <span aria-hidden>💡</span>
+      <span>{children}</span>
+    </p>
+  );
+}
 
 /** 1, 2, 3: onde a pessoa está e quanto falta. */
 function Passos({ atual }: { atual: 1 | 2 | 3 }) {

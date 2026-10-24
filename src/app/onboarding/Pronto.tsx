@@ -166,6 +166,16 @@ export function Pronto({
           </div>
         )}
 
+        <div className="orbi-linha-entra rounded-[24px] bg-[#FFF6D6] p-5" style={{ animationDelay: "0.7s" }}>
+          <p className="text-[15px] font-medium text-[#5A4A12]">💡 Dicas para começar bem</p>
+          <ul className="mt-2.5 flex flex-col gap-2 text-[13.5px] leading-snug text-[#5A4A12]">
+            <li>WhatsApp sempre em destaque, em primeiro.</li>
+            <li>Atende no local? Coloque o endereço com mapa.</li>
+            <li>Seu produto principal na primeira posição.</li>
+            <li>Um voucher de boas-vindas converte o primeiro visitante.</li>
+          </ul>
+        </div>
+
         {/* Divulgar: o passo que transforma página pronta em visitas. */}
         <div className="orbi-linha-entra mt-2 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]" style={{ animationDelay: "0.8s" }}>
           <p className="text-[15px] font-medium">Coloque no ar onde seus clientes já estão</p>
