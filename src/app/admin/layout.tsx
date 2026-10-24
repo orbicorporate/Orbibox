@@ -175,7 +175,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <Suspense fallback={null}>
         <TourOverlay businessId={business.id} />
       </Suspense>
-      <GuiaOrbi semItens={(adminProducts ?? []).length === 0} slug={business.slug} />
+      <GuiaOrbi />
       </div>
     </div>
   );

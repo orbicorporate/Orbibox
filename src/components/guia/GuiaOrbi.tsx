@@ -37,13 +37,6 @@ const EVENTO = "orbi-guia-iniciar";
 
 type Rect = { top: number; left: number; width: number; height: number };
 
-function lerFeito(): boolean {
-  try {
-    return localStorage.getItem(CHAVE) === "feito";
-  } catch {
-    return false;
-  }
-}
 function marcarFeito() {
   try {
     localStorage.setItem(CHAVE, "feito");
@@ -68,19 +61,18 @@ export function GuiaBotao({ className = "" }: { className?: string }) {
   );
 }
 
-export function GuiaOrbi({ semItens }: { semItens: boolean; slug?: string }) {
+export function GuiaOrbi() {
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   if (!montado) return null;
-  return <GuiaInterno semItens={semItens} />;
+  return <GuiaInterno />;
 }
 
-function GuiaInterno({ semItens }: { semItens: boolean }) {
+function GuiaInterno() {
   const pathname = usePathname();
   const router = useRouter();
   // Começa sozinho só na primeira vez: negócio sem itens, no Catálogo.
-  const [i, setI] = useState<number | null>(() =>
-    semItens && !lerFeito() && typeof window !== "undefined" && window.location.pathname.startsWith("/admin/vitrine") ? 0 : null,
-  );
+  // Não abre sozinho: o passo a passo oficial é o /admin/comecar. Só pelo botão do guia.
+  const [i, setI] = useState<number | null>(null);
   const [rect, setRect] = useState<Rect | null>(null);
   const avancando = useRef(false);
 

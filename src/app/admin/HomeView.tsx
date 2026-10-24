@@ -11,7 +11,6 @@ import { InstalarAppCard } from "./InstalarAppCard";
 import { OportunidadeCard } from "./OportunidadeCard";
 import { LinhaExpansivel } from "./LinhaExpansivel";
 import { PerguntaOrbi } from "./PerguntaOrbi";
-import { CartaoTour } from "./CartaoTour";
 import { PaginaPelaMetade } from "./PaginaPelaMetade";
 import { PerguntaRede } from "@/components/rede/PerguntaRede";
 import type { Oportunidade } from "@/lib/copiloto";
@@ -129,7 +128,6 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
 
       {pelaMetade && <PaginaPelaMetade {...pelaMetade} />}
 
-      {progressoPct < 70 && !pelaMetade && <CartaoTour />}
 
       {/* Só os 4 números que importam, da semana, com a comparação */}
       <section className="mt-6">
