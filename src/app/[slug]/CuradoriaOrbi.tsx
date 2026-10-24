@@ -199,7 +199,7 @@ export function CuradoriaOrbi({
                 {/* Convite pra falar com uma pessoa agora. */}
                 {convite && whatsapp && (
                   <a
-                    href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Oi! Vim pelo site e me interessei por ${escolhida ?? "isso"}.`)}`}
+                    href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá, eu vim pelo seu Orbibox e me interessei por ${escolhida ?? "isso"}.`)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="ml-9 flex items-center justify-center gap-2 rounded-full bg-[#1F9E4C] py-2.5 text-[13.5px] font-semibold text-white"
@@ -275,7 +275,7 @@ export function CuradoriaOrbi({
                     parar ali deixava o visitante sem próximo passo. */}
                 {convite && whatsapp && (
                   <a
-                    href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Oi! Vim pelo site e me interessei por ${escolhida ?? "isso"}.`)}`}
+                    href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá, eu vim pelo seu Orbibox e me interessei por ${escolhida ?? "isso"}.`)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="mt-4 flex items-center justify-center gap-2 rounded-full bg-[#1F9E4C] py-3.5 text-[14.5px] font-semibold text-white"

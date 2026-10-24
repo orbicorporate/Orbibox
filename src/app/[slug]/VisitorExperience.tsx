@@ -334,7 +334,7 @@ export function VisitorExperience({
             // link (wa.me/... ). Se não for um link http, monta via whatsappLink.
             const raw = cfg.url?.trim() || business.contact_whatsapp || "";
             const link = raw
-              ? (/^https?:\/\//i.test(raw) ? raw : whatsappLink(raw, `Olá! Vim pelo ${business.name}.`))
+              ? (/^https?:\/\//i.test(raw) ? raw : whatsappLink(raw, "Olá, eu vim pelo seu Orbibox."))
               : null;
             if (link) { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(link, "_blank"); }
           } else if (cfg.action === "avaliar") {
@@ -561,7 +561,7 @@ export function VisitorExperience({
   // WhatsApp sempre à mão na tela inicial: se o dono tem número mas não ligou
   // um botão de WhatsApp, aparece um atalho discreto embaixo dos botões.
   const temBotaoWhats = boxList.some((b) => b.is_active && b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "whatsapp");
-  const whatsAtalho = !temBotaoWhats && business.contact_whatsapp ? whatsappLink(business.contact_whatsapp, `Olá! Vim pelo ${business.name}.`) : null;
+  const whatsAtalho = !temBotaoWhats && business.contact_whatsapp ? whatsappLink(business.contact_whatsapp, "Olá, eu vim pelo seu Orbibox.") : null;
 
   // Home em estilo Vitrine: bolinhas com nome (WhatsApp, endereço, redes, site,
   // voucher), um botão principal e o resto em pílulas discretas.
@@ -2403,7 +2403,7 @@ function StoryView({
         </button>
         {business.contact_whatsapp && (
           <a
-            href={whatsappLink(business.contact_whatsapp, `Olá! Vim pelo ${business.name}.`)}
+            href={whatsappLink(business.contact_whatsapp, "Olá, eu vim pelo seu Orbibox.")}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", sessionId })}
@@ -2991,7 +2991,7 @@ function BarraContato({ business, sessionId, onOrbi }: { business: Business; ses
       )}
       {business.contact_whatsapp && (
         <a
-          href={whatsappLink(business.contact_whatsapp, `Olá! Vim pelo ${business.name}.`)}
+          href={whatsappLink(business.contact_whatsapp, "Olá, eu vim pelo seu Orbibox.")}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", sessionId })}

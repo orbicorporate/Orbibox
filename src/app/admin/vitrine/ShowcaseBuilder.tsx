@@ -2287,7 +2287,7 @@ function ItemCard({
                   />
                   {whatsapp && (
                     <button
-                      onClick={() => save(item.id, { target_url: whatsappLink(whatsapp, `Olá! Vim pelo seu link, quero saber mais sobre "${item.title}".`) })}
+                      onClick={() => save(item.id, { target_url: whatsappLink(whatsapp, `Olá, eu vim pelo seu Orbibox e quero saber mais sobre "${item.title}".`) })}
                       className="self-start rounded-full border border-[#25D366] px-3 py-1.5 text-[13px] font-medium text-on-background"
                     >
                       ☎ Usar o WhatsApp da empresa
