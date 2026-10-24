@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShareOrbiboxButton } from "@/components/mobile/ShareOrbiboxButton";
+import { gravarFlag, useFlag } from "@/lib/useFlag";
 
 type Props = {
   nome: string;
   slug: string;
   link: string;
   categorias: string[];
-  porCategoria: { nome: string; n: number }[];
+  porCategoria: { nome: string; n: number; itens: { titulo: string; foto: string | null }[] }[];
   totalItens: number;
   semCategoria: number;
   boxes: number;
@@ -32,12 +33,22 @@ export function Comecar(p: Props) {
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
-  const feitos = [
+  // O que a Orbi montou sozinha só conta como feito depois que a pessoa confere.
+  // Assim o passo a passo não abre em "Divulgar" com tudo marcado sem ninguém ter olhado.
+  const chave = (i: number) => `comecar_ok_${i}_${p.slug}`;
+  const ok0 = useFlag(chave(0));
+  const ok1 = useFlag(chave(1));
+  const ok2 = useFlag(chave(2));
+  const pronto = [
     p.categorias.length > 0,
     p.totalItens >= 3 && p.porCategoria.some((c) => c.n > 0),
     p.boxes >= 3 && p.temWhatsapp,
-    p.visitas > 0,
   ];
+  const feitos = [pronto[0] && ok0, pronto[1] && ok1, pronto[2] && ok2, p.visitas > 0];
+  function conferido(i: number) {
+    gravarFlag(chave(i));
+    setAberto(null);
+  }
   const atual = feitos.findIndex((f) => !f);
   const aberta = aberto ?? (atual === -1 ? 3 : atual);
 
@@ -59,6 +70,7 @@ export function Comecar(p: Props) {
       const r = await fetch("/api/comecar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao, ...extra }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Não consegui agora. Tente de novo.");
+      if (acao === "salvar") gravarFlag(chave(0));
       setAberto(null);
       router.refresh();
     } catch (e) {
@@ -113,7 +125,7 @@ export function Comecar(p: Props) {
 
             {aqui && i === 0 && (
               <div className="mt-4">
-                <p className="text-[14px] text-text-secondary">Toque nas categorias que combinam com você. A Orbi organiza seus itens nelas.</p>
+                <p className="text-[14px] text-text-secondary">{p.categorias.length > 0 ? "A Orbi trouxe estas do seu site. Confira: desmarque as que não fazem sentido e adicione o que faltou." : "Toque nas categorias que combinam com você. A Orbi organiza seus itens nelas."}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {todasChips.map((c) => {
                     const on = escolhidas.includes(c);
@@ -128,7 +140,7 @@ export function Comecar(p: Props) {
                   <button type="submit" disabled={!nova.trim()} className="rounded-full bg-white px-4 py-2 text-[13px] font-medium disabled:opacity-40">Adicionar</button>
                 </form>
                 <button type="button" disabled={escolhidas.length === 0 || ocupado === "salvar"} onClick={() => void chamar("salvar", { categorias: escolhidas })} className={`${primario} mt-4 disabled:opacity-40`}>
-                  {ocupado === "salvar" ? "Organizando…" : feito ? "Salvar e organizar" : "Salvar categorias"}
+                  {ocupado === "salvar" ? "Organizando…" : p.categorias.length > 0 ? "Está certo, próximo" : "Salvar categorias"}
                 </button>
               </div>
             )}
@@ -150,14 +162,34 @@ export function Comecar(p: Props) {
                     </ol>
                     <ul className="mt-3 flex flex-col gap-2">
                       {p.porCategoria.map((c) => (
-                        <li key={c.nome} className="flex items-center gap-3 rounded-2xl bg-surface-soft py-2 pl-4 pr-2">
-                          <span className="min-w-0 flex-1"><span className="block truncate text-[14.5px] font-medium">{c.nome}</span><span className="block text-[12px] text-text-tertiary">{c.n === 0 ? "Vazia" : c.n === 1 ? "1 item" : `${c.n} itens`}</span></span>
-                          <Link href={`/admin/vitrine?novo=1&cat=${encodeURIComponent(c.nome)}`} className="rounded-full bg-white px-4 py-2 text-[13px] font-medium">+ Adicionar</Link>
+                        <li key={c.nome} className="rounded-2xl bg-surface-soft p-3">
+                          <div className="flex items-center gap-3">
+                            <span className="min-w-0 flex-1"><span className="block truncate text-[14.5px] font-medium">{c.nome}</span><span className="block text-[12px] text-text-tertiary">{c.n === 0 ? "Vazia" : c.n === 1 ? "1 item" : `${c.n} itens`}</span></span>
+                            <Link href={`/admin/vitrine?novo=1&cat=${encodeURIComponent(c.nome)}`} className="shrink-0 rounded-full bg-white px-4 py-2 text-[13px] font-medium">+ Adicionar</Link>
+                          </div>
+                          {c.itens.length > 0 && (
+                            <div className="mt-2.5 flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none]">
+                              {c.itens.map((it, k) => (
+                                <span key={k} className="w-[72px] shrink-0">
+                                  <span className="block h-[72px] w-[72px] overflow-hidden rounded-xl bg-white">
+                                    {it.foto ? (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img src={it.foto} alt="" className="h-full w-full object-cover" />
+                                    ) : (
+                                      <span className="flex h-full w-full items-center justify-center text-[11px] text-text-tertiary">Sem foto</span>
+                                    )}
+                                  </span>
+                                  <span className="mt-1 block truncate text-[11.5px] text-text-secondary">{it.titulo}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>
                     {p.semCategoria > 0 && <p className="mt-3 text-[12.5px] text-text-tertiary">{p.semCategoria} {p.semCategoria === 1 ? "item está" : "itens estão"} sem categoria. Abra o Catálogo para organizar.</p>}
-                    <Link href="/admin/vitrine" className={`${primario} mt-4`}>Abrir meu catálogo</Link>
+                    <button type="button" disabled={!pronto[1]} onClick={() => conferido(1)} className={`${primario} mt-4 disabled:opacity-40`}>{pronto[1] ? "Conferi, está certo" : "Adicione pelo menos 3 itens"}</button>
+                    <Link href="/admin/vitrine" className={`${fino} mt-2 w-full justify-center`}>Corrigir no catálogo</Link>
                   </>
                 )}
               </div>
@@ -185,7 +217,8 @@ export function Comecar(p: Props) {
                         </li>
                       ))}
                     </ul>
-                    <p className="mt-3 text-[12.5px] text-text-tertiary">Dica: WhatsApp sempre em primeiro, seu produto principal logo depois.</p>
+                    <button type="button" disabled={!pronto[2]} onClick={() => conferido(2)} className={`${primario} mt-4 disabled:opacity-40`}>{pronto[2] ? "Conferi, está certo" : "Falta o WhatsApp ou botões"}</button>
+                    <a href={`/${p.slug}`} target="_blank" rel="noreferrer" className={`${fino} mt-2 w-full justify-center`}>Ver como ficou</a>
                   </>
                 )}
               </div>

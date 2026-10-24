@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { getCurrentBusinessId } from "@/lib/business";
 import { BoxesManager } from "./BoxesManager";
-import { HomeModePicker } from "./HomeModePicker";
 import { parseLogoGallery } from "@/lib/logoGallery";
 import { PassosGuiados, type Passo } from "@/components/ui/PassosGuiados";
 
@@ -54,7 +53,6 @@ export default async function BoxesPage({ searchParams }: { searchParams: Promis
       </h1>
       <p className="mt-1 text-[14px] text-text-secondary">Ligue os que fazem sentido e escolha a ordem.</p>
       <PassosGuiados titulo="Monte sua página inicial" passos={passos} />
-      <HomeModePicker businessId={business!.id} inicial={business!.home_mode ?? null} />
       <BoxesManager
         abrirNovo={novo === "1"}
         businessId={business!.id}

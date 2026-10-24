@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentBusinessId } from "@/lib/business";
+import { ehDonoOuAdmin, getCurrentBusinessId } from "@/lib/business";
 import { askClaude } from "@/lib/anthropic";
 import { AI_MODEL_RAPIDO } from "@/lib/aiModel";
 import { SEGMENTOS } from "@/lib/segmentos";
@@ -17,13 +17,54 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Faça login." }, { status: 401 });
-  const businessId = await getCurrentBusinessId(user.id);
+  const body = (await req.json()) as { acao?: string; categorias?: string[]; businessId?: string };
+  // No cadastro o negócio acabou de nascer: ele vem no corpo, conferindo que é do dono.
+  const businessId = body.businessId && (await ehDonoOuAdmin(user.id, body.businessId)) ? body.businessId : await getCurrentBusinessId(user.id);
   if (!businessId) return NextResponse.json({ error: "Negócio não encontrado." }, { status: 404 });
 
-  const body = (await req.json()) as { acao?: string; categorias?: string[] };
   const { data: biz } = await supabase.from("businesses").select("id, name, about_business, address, contact_whatsapp, vitrine_categories").eq("id", businessId).maybeSingle();
   if (!biz) return NextResponse.json({ error: "Negócio não encontrado." }, { status: 404 });
   const { data: itens } = await supabase.from("content_items").select("id, title, brand_label, type").eq("business_id", businessId).eq("status", "published").limit(60);
+
+  // Conferência do que veio do site, antes de mostrar para a pessoa: categorias
+  // com nome de menu do site (Todos, Início, Loja...) saem, nomes estranhos são
+  // corrigidos, e o que não é produto nem serviço (frete, política, contato) fica
+  // escondido como rascunho. Nada é apagado.
+  if (body.acao === "conferir") {
+    const reais = (itens ?? []).filter((i) => i.type !== "link");
+    if (reais.length === 0) return NextResponse.json({ ok: true });
+    const cats = Array.from(new Set(reais.map((i) => i.brand_label?.trim()).filter((v): v is string => !!v)));
+    const system = `Você revisa o catálogo que foi importado do site de um pequeno negócio no Brasil, antes de o dono ver.
+1. Categorias: para cada categoria, devolva o nome corrigido (curto, 1 a 3 palavras, em português, com inicial maiúscula) ou null se não for categoria de verdade (ex.: Todos, Início, Home, Loja, Produtos, Menu, Destaques, Promoções genéricas, Sem categoria, nomes de página).
+2. Itens: liste os ids que NÃO são produto ou serviço vendido (ex.: frete, política, troca, contato, quem somos, cupom, blog, página institucional, duplicado exato).
+Na dúvida, mantenha. Responda SOMENTE em JSON: {"categorias": {"<original>": "<corrigido>" ou null}, "ocultar": ["<id>"]}`;
+    const userTxt = `Negócio: ${biz.name}. Sobre: ${(biz.about_business ?? "").slice(0, 400)}\nCategorias: ${cats.join(" | ") || "nenhuma"}\nItens:\n${reais.map((i) => `${i.id} | ${i.title} | ${i.brand_label ?? ""}`).join("\n")}`;
+    try {
+      const j = jsonDe(await askClaude({ system, messages: [{ role: "user", content: userTxt }], maxTokens: 1500, model: AI_MODEL_RAPIDO }));
+      const mapa = (j.categorias ?? {}) as Record<string, string | null>;
+      const ocultar = new Set((Array.isArray(j.ocultar) ? j.ocultar : []).map(String));
+      // Segurança: se a IA quiser esconder metade ou mais, não esconde nada.
+      const podeOcultar = ocultar.size < reais.length / 2;
+      let alterados = 0;
+      for (const it of reais) {
+        const atual = it.brand_label?.trim() ?? "";
+        const campos: { brand_label?: string | null; status?: string } = {};
+        if (atual && atual in mapa) {
+          const novo = mapa[atual];
+          const limpo = typeof novo === "string" ? novo.trim().slice(0, 30) : null;
+          if (limpo !== atual) campos.brand_label = limpo || null;
+        }
+        if (podeOcultar && ocultar.has(it.id)) campos.status = "draft";
+        if (Object.keys(campos).length > 0) {
+          await supabase.from("content_items").update(campos).eq("id", it.id);
+          alterados++;
+        }
+      }
+      return NextResponse.json({ ok: true, alterados });
+    } catch {
+      return NextResponse.json({ ok: true, alterados: 0 });
+    }
+  }
 
   if (body.acao === "sugerir") {
     const titulos = (itens ?? []).filter((i) => i.type !== "link").map((i) => i.title).slice(0, 30).join("; ");

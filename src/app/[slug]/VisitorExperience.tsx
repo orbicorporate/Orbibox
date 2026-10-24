@@ -230,8 +230,8 @@ export function VisitorExperience({
   // Fica guardado em home_mode ("vitrine"); ?estilo=vitrine|classica na URL
   // força um dos dois só pra testar, sem salvar nada.
   const estiloUrl = searchParams.get("estilo");
-  const vitrineSalva = business.home_mode === "vitrine";
-  const estiloVitrine = estiloUrl === "vitrine" ? true : estiloUrl === "classica" ? false : vitrineSalva;
+  // Vitrine é o padrão único para todos; a grade clássica só aparece forçada pela URL.
+  const estiloVitrine = estiloUrl !== "classica";
 
   useEffect(() => {
     // Dono ou prévia do painel: não abre sessão nem registra cliques.

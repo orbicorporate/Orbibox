@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 /**
  * Avatar redondo com o logotipo do negócio, no lugar da esfera da Orbi.
  * Em volta do logo, um anel de luz prismática gira devagar (sinal de que ali
@@ -31,6 +35,11 @@ const CLARAS = new Set<string>(["claro", "dourado", "champanhe", "rose", "nevoa"
 
 export function OrbiAvatar({ logoUrl, size = 96, className = "", esfera, escala = 100 }: { logoUrl: string; size?: number; className?: string; color?: string | null; esfera?: TomEsfera; escala?: number }) {
   const cor = esfera && esfera !== "claro" && esfera !== "escuro" ? ESFERAS.find((e) => e.id === esfera) : undefined;
+  // Logo largo ou alto (ex.: oval horizontal) cortado no círculo fica fora de medida:
+  // quando a imagem não é quase quadrada, entra inteira sobre um disco claro.
+  const [largo, setLargo] = useState(false);
+  const inteiro = !esfera && largo;
+  const medir = (img: HTMLImageElement) => { const { naturalWidth: w, naturalHeight: h } = img; if (w && h) setLargo(w / h > 1.2 || h / w > 1.2); };
   return (
     <div className={`orbi-av relative shrink-0 ${className}`} style={{ width: size, height: size }} aria-hidden>
       <span className="orbi-av-brilho" />
@@ -38,10 +47,17 @@ export function OrbiAvatar({ logoUrl, size = 96, className = "", esfera, escala 
       <span className="orbi-av-anel orbi-av-anel-b" />
       <div
         className={`orbi-av-miolo ${esfera ? `orbi-av-esfera orbi-av-esfera-${cor ? (CLARAS.has(cor.id) ? "claro" : "escuro") : esfera}` : ""}`}
-        style={cor ? { background: `radial-gradient(circle at 35% 25%, ${cor.de}, ${cor.ate} 74%)` } : undefined}
+        style={cor ? { background: `radial-gradient(circle at 35% 25%, ${cor.de}, ${cor.ate} 74%)` } : inteiro ? { background: "radial-gradient(circle at 35% 25%, #FFFFFF, #ECEDE9 74%)" } : undefined}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoUrl} alt="" className={`h-full w-full ${esfera ? "object-contain" : "object-cover"}`} style={escala !== 100 ? { transform: `scale(${escala / 100})` } : undefined} />
+        <img
+          src={logoUrl}
+          alt=""
+          ref={(el) => { if (el?.complete) medir(el); }}
+          onLoad={(e) => medir(e.currentTarget)}
+          className={`h-full w-full ${esfera || inteiro ? "object-contain" : "object-cover"} ${inteiro ? "p-[14%]" : ""}`}
+          style={escala !== 100 ? { transform: `scale(${escala / 100})` } : undefined}
+        />
         <span className="orbi-av-agua" />
         <span className="orbi-av-agua orbi-av-agua-b" />
         <span className="orbi-av-reflexo" />

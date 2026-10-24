@@ -333,6 +333,14 @@ export default function OnboardingPage() {
       await supabase.from("businesses").update({ vitrine_categories: seg.categorias }).eq("id", id);
     }
 
+    // A Orbi confere o que veio do site antes de mostrar: tira categorias que são menu
+    // do site, corrige nomes e esconde o que não é produto nem serviço.
+    if (imp.imported > 0) {
+      try {
+        await fetch("/api/comecar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "conferir", businessId: id }) });
+      } catch { /* segue com o que veio */ }
+    }
+
     // Pausa pra a pessoa conferir o que a Orbi achou (logotipo, contato, endereço)
     // e dizer o que vem primeiro. Só depois a Home é montada.
     const { data: pre } = await supabase.from("businesses").select("contact_whatsapp, contact_phone, address, logo_url, vitrine_categories").eq("id", id).maybeSingle();
@@ -561,7 +569,7 @@ export default function OnboardingPage() {
       impact_score: 92,
     });
 
-    await supabase.from("businesses").update({ onboarding_status: "ready" }).eq("id", id);
+    await supabase.from("businesses").update({ onboarding_status: "ready", home_mode: "vitrine" }).eq("id", id);
 
     const principal = ordem[0];
     setPronto({
