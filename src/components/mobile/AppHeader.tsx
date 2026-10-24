@@ -115,6 +115,8 @@ export function AppHeader({
       </div>
       <div className="relative flex shrink-0 items-center gap-2">
         <ProgressBadge pct={progressPct} />
+        {/* Ajuda e suporte, sempre à vista no topo. */}
+        <Link href="/admin/suporte" aria-label="Suporte e ajuda" title="Suporte" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[16px] font-semibold">?</Link>
         {/* Sino de notificação: junta conversa não vista com pendências do
             negócio (checklist, fotos faltando, etc), pra pessoa nunca ficar
             sem saber o que fazer, mesmo voltando depois de dias sumida. */}
@@ -273,6 +275,17 @@ export function AppHeader({
                   </span>
                 </Link>
 
+                <Link
+                  href="/admin/suporte"
+                  onClick={() => setMenuOpen(false)}
+                  className="col-span-2 flex min-h-[64px] items-center gap-3 rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97]"
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[18px] font-semibold">?</span>
+                  <span>
+                    <span className="block text-[15px] font-semibold leading-tight">Suporte</span>
+                    <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">WhatsApp e ajuda da Orbi</span>
+                  </span>
+                </Link>
                 <Link
                   href="/admin/pdfs"
                   onClick={() => setMenuOpen(false)}

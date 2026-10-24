@@ -118,6 +118,10 @@ export function AjudaOrbi({ aberto, onFechar, orbiColors, extra }: { aberto: boo
         </div>
 
         {extra && <div className="mt-5">{extra}</div>}
+        <Link href="/admin/suporte" onClick={onFechar} className="mt-3 flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-[14px] ring-1 ring-black/[0.05]">
+          <span>Falar com o suporte</span>
+          <span className="text-text-tertiary">›</span>
+        </Link>
       </div>
     </div>,
     document.body,
