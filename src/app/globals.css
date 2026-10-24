@@ -1041,11 +1041,11 @@ body {
 @keyframes folhaSobe { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes veuEntra { from { opacity: 0; } to { opacity: 1; } }
 @keyframes acaoEntra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.folha-sobe { animation: folhaSobe .42s cubic-bezier(.32,.72,0,1) both; }
+.folha-sobe { animation: folhaSobe .42s cubic-bezier(.32,.72,0,1) backwards; }
 .veu-entra { animation: veuEntra .2s ease-out both; }
-.acao-entra { animation: acaoEntra .24s cubic-bezier(.23,1,.32,1) both; }
+.acao-entra { animation: acaoEntra .24s cubic-bezier(.23,1,.32,1) backwards; }
 @media (prefers-reduced-motion: reduce) {
-  .folha-sobe, .acao-entra { animation: veuEntra .15s ease-out both; }
+  .folha-sobe, .acao-entra { animation: veuEntra .15s ease-out backwards; }
 }
 
 /* Landing: animações leves, todas desligadas com "reduzir movimento". */
@@ -1296,8 +1296,8 @@ html[data-embed] .embed-oculta { display: none !important; }
 
 /* Página do item: entra deslizando de leve pela direita (transform e opacity). */
 @keyframes paginaEntra { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
-.pagina-entra { animation: paginaEntra .22s cubic-bezier(.23,1,.32,1) both; }
-@media (prefers-reduced-motion: reduce) { .pagina-entra { animation: veuEntra .15s ease-out both; } }
+.pagina-entra { animation: paginaEntra .22s cubic-bezier(.23,1,.32,1) backwards; }
+@media (prefers-reduced-motion: reduce) { .pagina-entra { animation: veuEntra .15s ease-out backwards; } }
 
 /* Avatar do perfil da Home: logo em esfera, anel de luz prismática e reflexo de vidro. */
 .orbi-av { container-type: inline-size; }
@@ -1468,7 +1468,7 @@ html[data-embed] .embed-oculta { display: none !important; }
 
 /* Chat da Orbi: sobe de baixo ao abrir, em vez de trocar a tela de repente. */
 @keyframes orbi-sobe { from { transform: translateY(16%); opacity: 0; } to { transform: none; opacity: 1; } }
-.orbi-sobe { animation: orbi-sobe .42s cubic-bezier(.32, .72, 0, 1) both; }
+.orbi-sobe { animation: orbi-sobe .42s cubic-bezier(.32, .72, 0, 1) backwards; }
 @media (prefers-reduced-motion: reduce) { .orbi-sobe { animation: none; } }
 
 @keyframes coracao-pulsa {

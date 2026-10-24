@@ -127,7 +127,7 @@ export function GalleryUpload({
           return (
           <div
             key={i}
-            className={`relative overflow-hidden rounded-xl border border-dashed border-divider bg-surface-soft ${
+            className={`relative overflow-hidden rounded-2xl bg-surface-soft ring-1 ring-black/[0.05] ${
               wide ? `shrink-0 snap-start ${url ? "w-[86%]" : value.length > 0 ? "w-[34%]" : "w-full"}` : ""
             }`}
             style={
@@ -154,7 +154,7 @@ export function GalleryUpload({
                 <span className="flex h-full w-full items-center justify-center text-[10px] text-text-tertiary">…</span>
               ) : (
                 <span className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-text-tertiary">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-white text-[16px] leading-none text-on-background shadow-sm">+</span>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-white text-[18px] leading-none text-on-background shadow-sm">+</span>
                   {emptyLabel ? (
                     <span className="px-2 text-center text-[11.5px] font-medium leading-tight text-text-secondary">{emptyLabel}</span>
                   ) : lockedRatio && (
@@ -169,25 +169,31 @@ export function GalleryUpload({
             </button>
             {url && (
               <>
-                <span
+                <button
+                  type="button"
                   onClick={() => removeAt(i)}
-                  className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-[11px] text-white"
+                  aria-label="Remover foto"
+                  className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-[15px] text-white active:scale-90"
                 >
                   ×
-                </span>
-                <span className="absolute inset-x-1 bottom-1 flex justify-between">
-                  <span
+                </button>
+                <span className="absolute inset-x-1.5 bottom-1.5 flex justify-between">
+                  <button
+                    type="button"
                     onClick={() => moveTo(i, -1)}
-                    className={`flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-[10px] text-white ${i === 0 ? "invisible" : ""}`}
+                    aria-label="Mover para antes"
+                    className={`flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-[15px] text-white active:scale-90 ${i === 0 ? "invisible" : ""}`}
                   >
                     ‹
-                  </span>
-                  <span
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => moveTo(i, 1)}
-                    className={`flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-[10px] text-white ${i === value.length - 1 ? "invisible" : ""}`}
+                    aria-label="Mover para depois"
+                    className={`flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-[15px] text-white active:scale-90 ${i === value.length - 1 ? "invisible" : ""}`}
                   >
                     ›
-                  </span>
+                  </button>
                 </span>
               </>
             )}
