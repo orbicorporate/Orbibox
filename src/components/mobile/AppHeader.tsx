@@ -276,17 +276,6 @@ export function AppHeader({
                 </Link>
 
                 <Link
-                  href="/admin/suporte"
-                  onClick={() => setMenuOpen(false)}
-                  className="col-span-2 flex min-h-[64px] items-center gap-3 rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97]"
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[18px] font-semibold">?</span>
-                  <span>
-                    <span className="block text-[15px] font-semibold leading-tight">Suporte</span>
-                    <span className="mt-0.5 block text-[12.5px] leading-snug text-text-tertiary">WhatsApp e ajuda da Orbi</span>
-                  </span>
-                </Link>
-                <Link
                   href="/admin/pdfs"
                   onClick={() => setMenuOpen(false)}
                   className="col-span-2 flex min-h-[100px] flex-col justify-between rounded-[22px] bg-white p-4 text-left shadow-[0_10px_24px_-12px_rgba(17,19,24,0.28)] ring-1 ring-black/[0.07] transition-transform active:scale-[.97]"
@@ -336,6 +325,16 @@ export function AppHeader({
                   <span className="text-[#8A6A1E]/60">→</span>
                 </Link>
               )}
+
+              {/* Suporte: linha fina logo antes do Sair, fácil de achar. */}
+              <Link
+                href="/admin/suporte"
+                onClick={() => setMenuOpen(false)}
+                className="mt-2 flex min-h-[44px] items-center justify-between gap-3 rounded-full px-4 text-[14px] text-text-secondary ring-1 ring-black/[0.07] transition-transform active:scale-[.98]"
+              >
+                <span>Suporte</span>
+                <span className="font-semibold text-on-background" aria-hidden>?</span>
+              </Link>
 
               {/* Sair fica sempre visível aqui, é o lugar mais óbvio de
                   procurar (menu de configurações), pra não ficar escondido
