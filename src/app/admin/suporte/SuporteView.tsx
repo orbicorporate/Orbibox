@@ -9,6 +9,26 @@ type Msg = { role: "user" | "assistant"; content: string; href?: string | null; 
 
 const SUGESTOES = ["publicar", "novo-item", "whatsapp", "compartilhar"].map((id) => AJUDAS.find((a) => a.id === id)!).filter(Boolean);
 
+// Resposta da Orbi: linhas "1. ..." viram passos com número; o resto é texto corrido.
+function RespostaOrbi({ texto }: { texto: string }) {
+  const linhas = texto.split("\n").map((l) => l.trim()).filter(Boolean);
+  return (
+    <div className="flex flex-col gap-2.5">
+      {linhas.map((l, i) => {
+        const m = l.match(/^(\d+)[.)]\s*(.*)$/);
+        return m ? (
+          <div key={i} className="flex items-start gap-3">
+            <span className="mt-px flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-background text-[12px] font-semibold text-white">{m[1]}</span>
+            <p className="min-w-0 flex-1 text-[14.5px] leading-snug">{m[2]}</p>
+          </div>
+        ) : (
+          <p key={i} className="text-[14.5px] leading-snug">{l}</p>
+        );
+      })}
+    </div>
+  );
+}
+
 export function SuporteView({ whatsappHref, negocio, orbiColors }: { whatsappHref: string; negocio: string; orbiColors: string[] | null }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [texto, setTexto] = useState("");
@@ -64,43 +84,49 @@ export function SuporteView({ whatsappHref, negocio, orbiColors }: { whatsappHre
         <span aria-hidden>→</span>
       </a>
 
-      <div className="rounded-[24px] bg-white p-4 ring-1 ring-black/[0.06]">
-        <div className="flex items-center gap-3">
-          <OrbiParticleSphere size={40} colors={orbiColors ?? undefined} className="rounded-full" />
+      <div className="overflow-hidden rounded-[26px] bg-white ring-[0.5px] ring-black/10">
+        <div className="flex items-center gap-3 p-4">
+          <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} className="shrink-0 rounded-full" />
           <div className="min-w-0">
-            <p className="text-[15px] font-semibold leading-tight">Pergunte à Orbi</p>
-            <p className="text-[12.5px] text-text-secondary">{negocio ? `Eu te ensino conforme o ${negocio}.` : "Eu te ensino passo a passo."}</p>
+            <p className="text-[16px] font-semibold leading-tight">Pergunte à Orbi</p>
+            <p className="mt-0.5 truncate text-[12.5px] text-text-secondary">{negocio.trim() ? `Eu te ensino conforme o ${negocio.trim()}` : "Eu te ensino passo a passo"}</p>
           </div>
         </div>
 
         {msgs.length > 0 && (
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="flex flex-col gap-3 border-t border-divider bg-surface-soft/60 p-4">
             {msgs.map((m, i) => m.role === "user" ? (
-              <p key={i} className="ml-auto max-w-[85%] rounded-[18px] rounded-br-md bg-on-background px-4 py-2.5 text-[14px] text-white">{m.content}</p>
+              <p key={i} className="ml-auto max-w-[85%] rounded-[20px] rounded-br-md bg-on-background px-4 py-2.5 text-[14px] text-white">{m.content}</p>
             ) : (
-              <div key={i} className="max-w-[92%] rounded-[18px] rounded-bl-md bg-surface-soft px-4 py-3 text-[14px] leading-snug">
-                <p className="whitespace-pre-line">{m.content}</p>
-                {m.href && <Link href={m.href} className="mt-3 inline-flex rounded-full bg-button-primary px-4 py-2 text-[13px] font-medium text-white">{m.rotulo || "Abrir"} →</Link>}
+              <div key={i} className="rounded-[20px] rounded-bl-md bg-white p-4 ring-[0.5px] ring-black/10">
+                <RespostaOrbi texto={m.content} />
+                {m.href && <Link href={m.href} className="mt-4 inline-flex rounded-full bg-button-primary px-4 py-2 text-[13px] font-semibold text-white">{m.rotulo || "Abrir"} →</Link>}
               </div>
             ))}
-            {pensando && <p className="px-1 text-[13px] text-text-tertiary">Pensando…</p>}
+            {pensando && (
+              <div className="flex items-center gap-2 px-1 text-[13px] text-text-tertiary">
+                <OrbiParticleSphere size={18} colors={orbiColors ?? undefined} className="animate-pulse rounded-full" /> Pensando…
+              </div>
+            )}
             <div ref={fim} />
           </div>
         )}
-        {erro && <p className="mt-3 px-1 text-[12.5px] text-red-600">{erro}</p>}
-
-        <form onSubmit={(e) => { e.preventDefault(); void enviar(texto); }} className="mt-4 flex items-center gap-2 rounded-full bg-surface-soft p-1.5 pl-4">
-          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ex: como coloco o preço?" className="min-w-0 flex-1 bg-transparent text-[15px] outline-none" enterKeyHint="send" />
-          <button type="submit" disabled={pensando || !texto.trim()} className="rounded-full bg-on-background px-4 py-2 text-[13px] font-medium text-white disabled:opacity-40">Enviar</button>
-        </form>
+        {erro && <p className="px-4 pt-3 text-[12.5px] text-red-600">{erro}</p>}
 
         {msgs.length === 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 px-4 pb-1">
             {SUGESTOES.map((a) => (
-              <button key={a.id} type="button" onClick={() => void enviar(a.pergunta)} className="rounded-full bg-surface-soft px-3.5 py-2 text-left text-[13px]">{a.pergunta}</button>
+              <button key={a.id} type="button" onClick={() => void enviar(a.pergunta)} className="cursor-pointer rounded-2xl bg-surface-soft px-3.5 py-3 text-left text-[13px] font-medium leading-tight active:opacity-70">{a.pergunta}</button>
             ))}
           </div>
         )}
+
+        <form onSubmit={(e) => { e.preventDefault(); void enviar(texto); }} className="m-4 flex items-center gap-2 rounded-full bg-surface-soft p-1.5 pl-4">
+          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ex: como coloco o preço?" className="min-w-0 flex-1 bg-transparent text-[15px] outline-none" enterKeyHint="send" />
+          <button type="submit" disabled={pensando || !texto.trim()} aria-label="Enviar" className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-on-background text-white transition-opacity disabled:opacity-30">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </button>
+        </form>
       </div>
 
       <div>
