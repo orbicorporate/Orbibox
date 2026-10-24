@@ -1002,8 +1002,10 @@ export function BoxesManager({
           )}
 
           <p className="mt-3 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">Para adicionar</p>
+          <div className="grid grid-cols-2 gap-3">
           {hasAiChat && orbiDesativada && (
             <LinhaPronta
+            compacto
               icone={<OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="rounded-full" />}
               titulo="Botão da Orbi"
               nota="Desativada"
@@ -1014,6 +1016,7 @@ export function BoxesManager({
           )}
           {!hasAiChat && (
             <LinhaPronta
+            compacto
               icone={<OrbiParticleSphere size={44} colors={orbiColors ?? undefined} vivid className="rounded-full" />}
               titulo="Botão da Orbi"
               nota="Novidade"
@@ -1023,6 +1026,7 @@ export function BoxesManager({
             />
           )}
           <LinhaPronta
+            compacto
             icone={<OrbiContactDisc size={44} />}
             titulo="Botão de WhatsApp"
             texto="Abre a conversa direto, com sua mensagem pronta."
@@ -1030,6 +1034,7 @@ export function BoxesManager({
             onClick={novoBoxWhatsapp}
           />
           <LinhaPronta
+            compacto
             icone={<OrbiGoogleIcon size={44} />}
             titulo="Avaliação no Google"
             texto="O cliente toca e já dá as estrelas."
@@ -1037,6 +1042,7 @@ export function BoxesManager({
             onClick={novoBoxAvaliacao}
           />
           <LinhaPronta
+            compacto
             icone={<span className="text-[20px]" aria-hidden>📚</span>}
             titulo="Botão de materiais"
             texto="Guias, cursos e documentos para baixar, livres ou com contato antes."
@@ -1044,12 +1050,14 @@ export function BoxesManager({
             href="/admin/materiais"
           />
           <LinhaPronta
+            compacto
             icone={<OrbiMapPin size={30} />}
             titulo="Botão de endereço"
             texto="Sai pronto com Waze e Google Maps."
             acao="Adicionar"
             onClick={novoBoxEndereco}
           />
+          </div>
         </div>
       )}
     </div>
@@ -1596,6 +1604,7 @@ function LinhaPronta({
   acao,
   ativo,
   destaque,
+  compacto,
   href,
   onClick,
 }: {
@@ -1606,9 +1615,24 @@ function LinhaPronta({
   acao?: string;
   ativo?: boolean;
   destaque?: boolean;
+  /** Quadradinho para grade de 2 colunas: ícone, nome e ação, sem texto. */
+  compacto?: boolean;
   href?: string;
   onClick?: () => void;
 }) {
+  if (compacto) {
+    const tile = (
+      <>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-soft">{icone}</span>
+        <span className="block min-h-[2.5em] text-[14.5px] font-medium leading-tight">{titulo}</span>
+        <span className={`mt-auto inline-flex min-h-[32px] items-center rounded-full px-3.5 text-[12.5px] font-medium ${ativo ? "bg-[#E4F7EA] text-[#1F7A45]" : "border border-divider text-on-background"}`}>{ativo ? "✓ Ativo" : acao}</span>
+      </>
+    );
+    const cls = "flex h-full w-full flex-col items-start gap-2.5 rounded-[22px] bg-surface-white p-3.5 text-left ring-1 ring-black/[0.06] active:scale-[0.98]";
+    if (href) return <Link href={href} title={texto} className={cls}>{tile}</Link>;
+    if (onClick) return <button type="button" onClick={onClick} title={texto} className={cls}>{tile}</button>;
+    return <div title={texto} className={cls}>{tile}</div>;
+  }
   const miolo = (
     <>
       <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-soft">{icone}</span>
