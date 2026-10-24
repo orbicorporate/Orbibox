@@ -719,13 +719,6 @@ export function ShowcaseBuilder({
 
   async function togglePublish(item: Item) {
     const s = item.status === "published" ? "draft" : "published";
-    // Só deixa publicar se o dono escolheu uma foto ou uma cor de propósito , 
-    // "neutro" é o padrão de quem nunca mexeu, não uma escolha de verdade.
-    if (s === "published" && !item.image_url && item.box_color === "neutro") {
-      await alertDialog("Escolha uma foto ou uma cor pra esse item antes de publicar, assim ele fica com cara de coisa pensada, não em branco.");
-      setEditingId(item.id);
-      return;
-    }
     await save(item.id, { status: s });
 
     // Publicou algo novo: quem pediu pra ser avisado deveria saber. Mostra
@@ -900,7 +893,7 @@ export function ShowcaseBuilder({
             item={it}
             businessId={businessId}
             ratio={COVER_RATIO_BY_SIZE[sizeOf(it.layout_size)]}
-            categorias={categories}
+            categorias={allCategoryNames}
             salvar={(campos) => save(it.id, campos as Partial<Item>)}
             alterar={(campos) => patch(it.id, campos as Partial<Item>)}
             onNovaCategoria={(nome) => { if (!allCategoryNamesRef().includes(nome)) saveCategories([...categories, nome]); }}
@@ -1709,7 +1702,7 @@ function ItemCard({
           )}
           </>
         ) : editing ? (
-          <div className="h-full w-full" style={{ backgroundColor: broken ? "#FBEAEA" : c.bg }} />
+          <div className="h-full w-full" style={{ backgroundColor: broken ? "#FBEAEA" : item.box_color && item.box_color !== "neutro" ? c.bg : "#FFFFFF" }} />
         ) : broken ? (
           // Link da foto quebrou, item já foi pausado sozinho (useEffect acima).
           // Clique é tratado pelo container pai, então isso é só uma div visual.
@@ -1726,29 +1719,23 @@ function ItemCard({
             </span>
           </div>
         ) : (
-          // Sem foto: o próprio nome vira o conteúdo do box, centralizado, sem
-          // rodapé branco separado. O card inteiro (tratado pelo container pai) continua clicável pra editar.
+          // Sem foto: o mesmo cartão da Home, só o rodapé (nome, descrição e preço). Neutro é branco;
+          // outra cor escolhida pinta o cartão. O card inteiro (tratado pelo container pai) continua clicável pra editar.
           <div
-            className="flex h-full w-full flex-col items-center justify-center gap-2 px-6 text-center"
-            style={{ backgroundColor: c.bg, backgroundImage: c.degrade }}
+            className="flex h-full w-full flex-col justify-end gap-1 pb-4 pl-4 pr-20 pt-16 text-left"
+            style={item.box_color && item.box_color !== "neutro" ? { backgroundColor: c.bg, backgroundImage: c.degrade, color: c.fg } : undefined}
           >
-            <span className="font-[family-name:var(--font-open-sans)] font-bold leading-snug" style={{ color: c.fg, fontSize: titleFontSize(item.title, sizeOf(item.layout_size)) }}>
+            <span className="line-clamp-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">
               {item.title}
             </span>
+            {item.description?.trim() && (
+              <span className={`line-clamp-2 text-[13px] leading-snug ${item.box_color && item.box_color !== "neutro" ? "opacity-75" : "text-text-secondary"}`}>{resumoCard(item.description)}</span>
+            )}
             {priceLabel && (
-              <span className="font-[family-name:var(--font-open-sans)] text-[14px]" style={{ color: c.fg }}>
+              <span className={`mt-0.5 font-[family-name:var(--font-manrope)] text-[14px] font-medium ${item.box_color && item.box_color !== "neutro" ? "opacity-85" : "text-text-secondary"}`}>
                 {priceLabel}
               </span>
             )}
-            {/* No editor, o card sem foto convida o dono a agir, não é o
-                CTA do visitante ("Quero saber mais"), que só faz sentido na
-                página pública. */}
-            <span
-              className="mt-1 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium"
-              style={{ backgroundColor: `${c.fg}1A`, color: c.fg }}
-            >
-              ＋ Editar item
-            </span>
           </div>
         )}
 
@@ -1780,7 +1767,7 @@ function ItemCard({
 
         {/* Tag preta de editar: deixa explícito que o box é editável, sem
             depender do usuário descobrir que o card inteiro é clicável. */}
-        {hasPhoto && !editing && (
+        {(hasPhoto || !broken) && !editing && (
           <button
             onClick={(e) => { e.stopPropagation(); onToggleEdit(); }}
             className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-on-background/85 px-2.5 py-1 text-[11px] font-medium text-white shadow backdrop-blur"

@@ -11,7 +11,7 @@ export default async function EditarPaginaProduto({ params }: { params: Promise<
   const businessId = await getCurrentBusinessId(user!.id);
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, slug, contact_whatsapp, contact_phone, contact_email, owner_id, logo_url, home_destaques")
+    .select("id, name, slug, contact_whatsapp, contact_phone, contact_email, owner_id, logo_url, home_destaques, vitrine_categories")
     .eq("id", businessId!)
     .maybeSingle();
   if (!business || !(await ehDonoOuAdmin(user!.id, business.id))) notFound();
@@ -26,5 +26,11 @@ export default async function EditarPaginaProduto({ params }: { params: Promise<
 
   const guardados = (Array.isArray(business.home_destaques) ? business.home_destaques : []) as { t?: string; id?: string; logo?: string | null }[];
   const bolinha = guardados.find((d) => d?.t === "item_bolinha" && d.id === item.id);
-  return <ProductPageEditor business={business} item={item} bolinha={bolinha ? { logo: bolinha.logo ?? null, logoMarca: business.logo_url ?? null } : null} />;
+  // Categorias que já existem: as da vitrine mais as que os itens já usam.
+  const { data: rotulos } = await supabase.from("content_items").select("brand_label").eq("business_id", business.id);
+  const categorias = Array.from(new Set([
+    ...((Array.isArray(business.vitrine_categories) ? business.vitrine_categories : []) as unknown[]).filter((c): c is string => typeof c === "string" && !!c.trim()),
+    ...(rotulos ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v),
+  ]));
+  return <ProductPageEditor categorias={categorias} business={business} item={item} bolinha={bolinha ? { logo: bolinha.logo ?? null, logoMarca: business.logo_url ?? null } : null} />;
 }

@@ -51,6 +51,7 @@ type Item = {
   images?: unknown;
   status?: string;
   footer_color?: string | null;
+  box_color?: string | null;
   title_placement?: string | null;
 };
 
@@ -61,6 +62,7 @@ const noop = () => () => {};
 
 type Campos = Partial<{
   footer_color: string | null;
+  box_color: string;
   title: string;
   description: string | null;
   brand_label: string | null;
@@ -99,13 +101,15 @@ function promptFoto(titulo: string, descricao: string, ratio: GalleryRatio, nego
   return linhas.filter((l, i, arr) => l !== "" || (i > 0 && arr[i - 1] !== "")).join("\n").trim();
 }
 
-export function ProductPageEditor({ business, item, bolinha }: { business: Business; item: Item; bolinha?: { logo: string | null; logoMarca: string | null } | null }) {
+export function ProductPageEditor({ business, item, bolinha, categorias = [] }: { business: Business; item: Item; bolinha?: { logo: string | null; logoMarca: string | null } | null; categorias?: string[] }) {
   const router = useRouter();
   const supabase = createClient();
   const montado = useSyncExternalStore(noop, () => true, () => false);
 
   const [titulo, setTitulo] = useState(item.title);
   const [faixa, setFaixa] = useState<string | null>(item.footer_color ?? null);
+  // Cor do card quando o item não tem foto (neutro = branco).
+  const [corCard, setCorCard] = useState<string>(item.box_color ?? "neutro");
   const [descricao, setDescricao] = useState(item.description ?? "");
   const [rotulo, setRotulo] = useState(item.brand_label ?? "");
   const [lista, setLista] = useState<Lista | null>(() => lerLista(item.lista));
@@ -600,6 +604,23 @@ export function ProductPageEditor({ business, item, bolinha }: { business: Busin
             </div>
           )}
 
+          {!item.image_url && (
+            <div className="mt-6 rounded-3xl bg-surface-soft p-4">
+              <p className="text-[13px] text-text-secondary">Cor do card</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Sem foto, o card mostra só o nome e o preço. Branco é o padrão; escolha uma cor para dar destaque.</p>
+              <div className="no-scrollbar mt-3 flex gap-2.5 overflow-x-auto pb-1">
+                <button type="button" onClick={() => { setCorCard("neutro"); salvar({ box_color: "neutro" }); }} aria-label="Branco" title="Branco" className={`h-10 w-10 shrink-0 rounded-full bg-white ${corCard === "neutro" ? "ring-2 ring-on-background ring-offset-2" : "border border-divider"}`} />
+                {PALETTE_GROUPS.flatMap((g) => Object.entries(g.colors)).filter(([chave]) => chave !== "neutro").map(([chave, cc]) => (
+                  <button key={chave} type="button" onClick={() => { setCorCard(chave); salvar({ box_color: chave }); }} aria-label={cc.label} title={cc.label} className={`h-10 w-10 shrink-0 rounded-full ${corCard === chave ? "ring-2 ring-on-background ring-offset-2" : "border border-divider"}`} style={{ backgroundColor: cc.bg }} />
+                ))}
+                <label className="relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-dashed border-text-tertiary text-[18px] text-text-secondary" title="Outra cor">
+                  +
+                  <input type="color" value={/^#[0-9a-f]{6}$/i.test(corCard) ? corCard : "#888888"} onChange={(e) => setCorCard(e.target.value)} onBlur={(e) => salvar({ box_color: e.target.value })} aria-label="Outra cor" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                </label>
+              </div>
+            </div>
+          )}
+
           <div className="mt-6 flex items-center justify-between gap-2 border-t border-divider pt-5">
             <p className="text-[13px] text-text-secondary">Fale mais</p>
             <button
@@ -632,9 +653,19 @@ export function ProductPageEditor({ business, item, bolinha }: { business: Busin
 
           <ListaItensEditor businessId={business.id} lista={lista} temWhatsapp={!!business.contact_whatsapp} onChange={salvarLista} />
 
-          <details className="mt-6">
+          <details className="mt-6" open={categorias.length > 0}>
             <summary className="inline-flex min-h-[40px] cursor-pointer list-none items-center rounded-full bg-surface-soft px-4 text-[13.5px] font-medium text-text-secondary">Mais opções</summary>
           <p className="mt-6 border-t border-divider pt-5 text-[13px] text-text-secondary">Categoria <span className="font-normal text-text-tertiary">(opcional)</span></p>
+          {categorias.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {categorias.map((c) => (
+                <button key={c} type="button" onClick={() => { setRotulo(c); salvar({ brand_label: c }); }} className={`min-h-[36px] rounded-full px-3.5 text-[13px] font-medium ${rotulo.trim() === c ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{c}</button>
+              ))}
+              {rotulo.trim() && (
+                <button type="button" onClick={() => { setRotulo(""); salvar({ brand_label: null }); }} className="min-h-[36px] rounded-full px-3.5 text-[13px] text-text-tertiary underline underline-offset-2">Sem categoria</button>
+              )}
+            </div>
+          )}
           <input
             value={rotulo}
             onChange={(e) => setRotulo(e.target.value)}
