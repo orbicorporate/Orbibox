@@ -59,6 +59,7 @@ function CartaoBase({
   curtir?: boolean;
 }) {
     const c = colorOf(item.box_color);
+    const colorido = !!item.box_color && item.box_color !== "neutro";
     const fc = item.footer_color ? colorOf(item.footer_color) : null;
     const size: BoxSize = tamanho ?? sizeOf(item.layout_size);
     const ratio = proporcao ?? COVER_RATIO_BY_SIZE[size];
@@ -129,17 +130,21 @@ function CartaoBase({
         </div>
         ) : (
           // Sem foto: só o rodapé. Nome, descrição e preço em um cartão branco, sem o quadrado colorido.
-          <div className="flex min-h-[132px] flex-col justify-between gap-3 p-4">
+          // Neutro = branco. Qualquer outra cor escolhida em "Cor do card" pinta o cartão inteiro.
+          <div
+            className="flex min-h-[132px] flex-col justify-between gap-3 p-4"
+            style={colorido ? { backgroundColor: c.bg, backgroundImage: c.degrade ?? undefined, color: c.fg } : undefined}
+          >
             <div className={`min-w-0 ${origem === "home" && !curtir ? "pl-8" : ""}`}>
               <p className="line-clamp-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">{item.title}</p>
               {item.description?.trim() && (
-                <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-text-secondary">{resumoCard(item.description)}</p>
+                <p className={`mt-1 line-clamp-2 text-[13px] leading-snug ${colorido ? "opacity-75" : "text-text-secondary"}`}>{resumoCard(item.description)}</p>
               )}
             </div>
             <div className={`flex min-h-[28px] items-center justify-between gap-2 ${curtir ? "pr-11" : ""}`}>
-              <p className="font-[family-name:var(--font-manrope)] text-[14px] font-medium text-text-secondary">{priceLabel ?? ""}</p>
+              <p className={`font-[family-name:var(--font-manrope)] text-[14px] font-medium ${colorido ? "opacity-85" : "text-text-secondary"}`}>{priceLabel ?? ""}</p>
               {destino && !curtir && (
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-soft text-on-background" aria-hidden>
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${colorido ? "bg-white/25" : "bg-surface-soft text-on-background"}`} aria-hidden>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                     {isExterno ? (<><path d="M7 17L17 7" /><path d="M8 7h9v9" /></>) : (<><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></>)}
                   </svg>

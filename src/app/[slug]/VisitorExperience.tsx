@@ -12,6 +12,7 @@ import { appsAtivos, linkDoApp } from "@/lib/delivery";
 import Link from "next/link";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { LapisDono } from "@/components/mobile/LapisDono";
+import { ExcluirItemX } from "@/components/mobile/ExcluirItemX";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -3087,6 +3088,8 @@ function VitrineCoverBleed({ business, podeEditar = false }: { business: Busines
 }
 
 function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaInicial = null, podeEditar = false }: { podeEditar?: boolean; categoriaInicial?: string | null; content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
+  const router = useRouter();
+  const [excluidos, setExcluidos] = useState<string[]>([]);
   const sections = groupByCategory(content, business.vitrine_categories ?? []);
   // Chips e títulos só pras categorias de verdade; itens sem categoria
   // aparecem no topo, sem título.
@@ -3126,7 +3129,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                 visitante vê aqui, sem surpresa. items-start: card sem rodapé
                 não estica até a altura do vizinho. */}
             <div className="flex flex-wrap items-start gap-5">
-              {sec.items.map((item) => {
+              {sec.items.filter((it) => !excluidos.includes(it.id)).map((item) => {
                 const largura = sizeOf(item.layout_size) === "medio" ? "w-[calc(50%-10px)] lg:w-[calc(25%-15px)]" : "w-full lg:w-[calc(50%-10px)]";
                 const cartao = (
                   <CartaoItem
@@ -3143,6 +3146,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                   <div key={item.id} className={`relative ${largura}`}>
                     {cartao}
                     <LapisDono href={`/admin/vitrine/pagina/${item.id}`} rotulo={`Editar ${item.title}`} className="absolute right-2 top-2 z-10" />
+                    <ExcluirItemX id={item.id} titulo={item.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute right-12 top-2 z-10" />
                   </div>
                 ) : cartao;
               })}
