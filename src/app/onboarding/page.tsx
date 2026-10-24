@@ -16,7 +16,7 @@ import type { Json } from "@/lib/supabase/types";
 import { CONVERSOES, OBJETIVOS, conversaoPorId, ordenarBotoes, type BotaoChave, type ConversaoId, type ObjetivoId } from "@/lib/conversao";
 import { AnaliseAoVivo, BrandOrb, VitrineMontando, formatarWhatsapp, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 import { Pronto, type ProntoDados } from "./Pronto";
-import { Revisar, type Destacavel, type ModoDestaque, type RevisaoDados, type RevisaoResultado } from "./Revisar";
+import { Revisar, type CategoriaRevisao, type ItemRevisao, type RevisaoDados, type RevisaoResultado } from "./Revisar";
 
 type Color = { hex: string; role: string };
 type BrandAnalysis = {
@@ -351,23 +351,21 @@ export default function OnboardingPage() {
     const reaisPre = (preItens ?? []).filter((r) => r.type !== "link");
     const ehServico = !!seg?.servico || conv === "agendar";
     const precoTxt = (v: number | null) => (v != null && v > 0 ? `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 })}` : undefined);
-    const modo: ModoDestaque = reaisPre.length === 0 ? "sugestao" : catsPre.length >= 2 && !ehServico ? "categoria" : ehServico ? "servico" : "produto";
-    const destacaveis: Destacavel[] = modo === "sugestao"
-      ? (seg?.categorias ?? []).slice(0, 8).map((nome) => ({ id: `s-${nome}`, nome, foto: null }))
-      : modo === "categoria"
-        ? catsPre.slice(0, 12).map((c) => {
-            const daCat = reaisPre.filter((r) => r.brand_label?.trim() === c);
-            const comFoto = daCat.filter((r) => r.image_url).sort((x, y) => (y.price ?? 0) - (x.price ?? 0))[0];
-            return { id: `c-${c}`, nome: c, foto: comFoto?.image_url ?? null, sub: `${daCat.length} ${daCat.length === 1 ? "item" : "itens"}`, itemId: comFoto?.id ?? null };
-          })
-        : [...reaisPre].sort((x, y) => Number(!!y.image_url) - Number(!!x.image_url)).slice(0, 12).map((r) => ({
-            id: r.id, nome: r.title, foto: r.image_url ?? null, itemId: r.id,
-            sub: modo === "servico" && precoTxt(r.price) ? `a partir de ${precoTxt(r.price)}` : precoTxt(r.price) ?? (r.brand_label?.trim() || undefined),
-          }));
+    // Tudo o que veio do site vai para a revisão: todas as categorias (com quantos
+    // itens e a melhor foto) e todos os produtos ou serviços, com foto primeiro.
+    const categoriasRev: CategoriaRevisao[] = catsPre.map((c) => {
+      const daCat = reaisPre.filter((r) => r.brand_label?.trim() === c);
+      const comFoto = daCat.filter((r) => r.image_url).sort((x, y) => (y.price ?? 0) - (x.price ?? 0))[0];
+      return { nome: c, n: daCat.length, foto: comFoto?.image_url ?? null };
+    });
+    const itensRev: ItemRevisao[] = [...reaisPre].sort((x, y) => Number(!!y.image_url) - Number(!!x.image_url)).map((r) => ({
+      id: r.id, nome: r.title, foto: r.image_url ?? null, categoria: r.brand_label?.trim() || null,
+      sub: precoTxt(r.price) ? (ehServico ? `a partir de ${precoTxt(r.price)}` : precoTxt(r.price)) : undefined,
+    }));
     const waPre = (pre?.contact_whatsapp || pre?.contact_phone || whatsappDigits || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
     const conf = await new Promise<RevisaoResultado>((resolve) => {
       revisaoRef.current = resolve;
-      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, modo, destacaveis, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
+      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, categorias: categoriasRev, sugestoes: catsPre.length > 0 ? [] : (seg?.categorias ?? []).slice(0, 8), itens: itensRev, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
       setStep("revisar");
     });
     setMontagem({ status: "pending", itens: [], segundos: null });
@@ -383,28 +381,24 @@ export default function OnboardingPage() {
       if (orbi) await supabase.from("agent_configs").update({ orbi_colors: orbi }).eq("business_id", id);
     }
     await supabase.from("businesses").update({ contact_whatsapp: waConf || null, address: enderecoFinal || null }).eq("id", id);
-    const escolhidos = conf.escolhidos;
     const paletaFinal = (conf.cores.length ? conf.cores : result.colors.map((c) => c.hex)).filter((h) => /^#[0-9a-f]{6}$/i.test(h));
     const corUsavel = paletaFinal.length > 2 ? paletaFinal.slice(1) : paletaFinal.length ? paletaFinal : ["#111318"];
     const corDe = (i: number) => corUsavel[i % corUsavel.length];
+    const catsEscolhidas = conf.categorias;
 
-    // Produtos ou serviços escolhidos: os que a pessoa escreveu viram itens novos,
-    // já na cor da marca, e todos os escolhidos sobem para o topo do catálogo.
-    let idsDestaque: string[] = [];
-    if (modo === "produto" || modo === "servico") {
-      for (const [i, e] of escolhidos.entries()) {
-        if (e.itemId) { idsDestaque.push(e.itemId); continue; }
-        const { data: criado } = await supabase.from("content_items").insert({ business_id: id, type: "product", title: e.nome, status: "published", position: -100 + i, box_color: corDe(i) }).select("id").single();
-        if (criado) idsDestaque.push(criado.id);
-      }
+    // Destaques: os itens do site escolhidos e os que a pessoa escreveu, que viram
+    // cards novos na cor da marca (na categoria marcada). Todos sobem para o topo.
+    const idsDestaque: string[] = [];
+    for (const [i, e] of conf.itens.entries()) {
+      if (e.itemId) { idsDestaque.push(e.itemId); continue; }
+      const { data: criado } = await supabase.from("content_items").insert({ business_id: id, type: "product", title: e.nome, status: "published", position: -100 + i, box_color: corDe(i), box_style: "cor", brand_label: e.categoria }).select("id").single();
+      if (criado) idsDestaque.push(criado.id);
+    }
+    if (idsDestaque.length > 0) {
       const { data: topo } = await supabase.from("content_items").select("position").eq("business_id", id).order("position", { ascending: true }).limit(1).maybeSingle();
       const base = (topo?.position ?? 0) - idsDestaque.length - 1;
       await Promise.all(idsDestaque.map((itemId, i) => supabase.from("content_items").update({ position: base + i }).eq("id", itemId)));
-    } else {
-      // Categorias: o destaque é o melhor item com foto de cada uma.
-      idsDestaque = escolhidos.map((e) => e.itemId).filter((v): v is string => !!v);
     }
-    const catsEscolhidas = modo === "categoria" || modo === "sugestao" ? escolhidos.map((e) => e.nome) : [];
 
     // Negócio gastronômico: a Orbi já deixa o Cardápio criado (desligado) e avisa na fila de pendências.
     // Ele aparece no menu e é só montar e ligar.
@@ -482,11 +476,13 @@ export default function OnboardingPage() {
     let pos = ordem.length + 1;
     // Categorias escolhidas viram bolinhas logo depois dos botões principais:
     // com a foto do melhor item, ou na cor da marca quando não tem foto.
-    if (modo === "categoria") {
-      for (const [i, e] of escolhidos.slice(0, 4).entries()) {
+    {
+      const fotoCat = new Map(categoriasRev.map((c) => [c.nome, c.foto]));
+      for (const [i, nome] of catsEscolhidas.slice(0, 4).entries()) {
+        const foto = fotoCat.get(nome) ?? null;
         linhas.push({
-          business_id: id, box_type: "custom", title: e.nome, position: pos++, is_active: true,
-          config: { label: e.nome, subtitle: "Ver no catálogo", action: "vitrine", categoria: e.nome, color: "transparent", bolinhaCor: corDe(i), icon: e.foto ? "__logo__" : "◆", ...(e.foto ? { logo_url: e.foto, logo_ajuste: { z: 1.45, x: 0, y: 0 } } : {}) },
+          business_id: id, box_type: "custom", title: nome, position: pos++, is_active: true,
+          config: { label: nome, subtitle: "Ver no catálogo", action: "vitrine", categoria: nome, color: "transparent", bolinhaCor: corDe(i), icon: foto ? "__logo__" : "◆", ...(foto ? { logo_url: foto, logo_ajuste: { z: 1.45, x: 0, y: 0 } } : {}) },
         });
       }
     }

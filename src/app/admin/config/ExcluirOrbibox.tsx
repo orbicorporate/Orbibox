@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 /** Zona de perigo: excluir este Orbibox ou zerar e recomeçar o cadastro, confirmando com o nome. */
 export function ExcluirOrbibox({ id, nome }: { id: string; nome: string }) {
-  const router = useRouter();
   const [aberto, setAberto] = useState(false);
   const [zerar, setZerar] = useState(false);
   const [texto, setTexto] = useState("");
@@ -29,8 +27,8 @@ export function ExcluirOrbibox({ id, nome }: { id: string; nome: string }) {
       return;
     }
     // Sobrou outro Orbibox: abre ele. Não sobrou: começa do zero no onboarding.
-    router.push(zerar || d.restantes === 0 ? "/onboarding" : "/admin");
-    router.refresh();
+    // Recarrega a página inteira: assim o cadastro abre sempre com a versão mais nova do app.
+    window.location.assign(zerar || d.restantes === 0 ? "/onboarding" : "/admin");
   }
 
   if (!aberto) {

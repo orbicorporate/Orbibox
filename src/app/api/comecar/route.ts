@@ -2,12 +2,51 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ehDonoOuAdmin, getCurrentBusinessId } from "@/lib/business";
 import { askClaude } from "@/lib/anthropic";
-import { AI_MODEL_RAPIDO } from "@/lib/aiModel";
+import { AI_MODEL_RAPIDO, ANTHROPIC_API_URL } from "@/lib/aiModel";
 import { SEGMENTOS } from "@/lib/segmentos";
 
 // Passo a passo do começo: a Orbi sugere categorias do catálogo, salva as
 // escolhidas e já organiza os itens que existem, e recria os botões da Home
 // caso a página tenha nascido sem eles.
+
+export const maxDuration = 60;
+
+/**
+ * Olha as fotos que vieram do site e diz quais mostram com clareza o produto do
+ * nome. Banner, logo, arte com texto, cena genérica ou foto de outra coisa ficam
+ * de fora. Devolve os ids cuja foto NÃO serve. Em erro, não tira nenhuma.
+ */
+async function fotosQueNaoServem(itens: { id: string; title: string; image_url: string }[]): Promise<string[]> {
+  const key = process.env.ANTHROPIC_API_KEY || process.env.CHAVE_API_ANTROPICA;
+  if (!key || itens.length === 0) return [];
+  const lotes: { id: string; title: string; image_url: string }[][] = [];
+  for (let i = 0; i < itens.length; i += 8) lotes.push(itens.slice(i, i + 8));
+  const sistema = `Você confere fotos de produtos importadas do site de uma loja. Para cada imagem numerada, com o nome do produto, responda "sim" se a foto mostra com clareza aquele produto (o próprio item ou a embalagem dele, reconhecível), ou "nao" se for banner, logotipo, arte com muito texto, ícone, cena genérica, pessoas sem o produto, foto de outra coisa, ou se estiver pequena ou borrada demais. Na dúvida, "nao". Responda APENAS com JSON puro, uma lista na ordem: ["sim","nao"].`;
+  const resultados = await Promise.all(lotes.map(async (lote) => {
+    try {
+      const content: unknown[] = [];
+      lote.forEach((it, i) => {
+        content.push({ type: "text", text: `Imagem ${i + 1}: ${it.title}` });
+        content.push({ type: "image", source: { type: "url", url: it.image_url } });
+      });
+      const r = await fetch(ANTHROPIC_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({ model: AI_MODEL_RAPIDO, max_tokens: 200, system: sistema, messages: [{ role: "user", content }] }),
+        signal: AbortSignal.timeout(40000),
+      });
+      if (!r.ok) return [];
+      const d = await r.json();
+      const txt = (d.content?.find((b: { type: string }) => b.type === "text")?.text ?? "") as string;
+      const lista = JSON.parse(txt.slice(txt.indexOf("["), txt.lastIndexOf("]") + 1)) as unknown[];
+      if (!Array.isArray(lista) || lista.length !== lote.length) return [];
+      return lote.filter((_, i) => String(lista[i]).toLowerCase().startsWith("n")).map((it) => it.id);
+    } catch {
+      return [];
+    }
+  }));
+  return resultados.flat();
+}
 
 function jsonDe(bruto: string) {
   return JSON.parse(bruto.slice(bruto.indexOf("{"), bruto.lastIndexOf("}") + 1));
@@ -24,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   const { data: biz } = await supabase.from("businesses").select("id, name, about_business, address, contact_whatsapp, vitrine_categories").eq("id", businessId).maybeSingle();
   if (!biz) return NextResponse.json({ error: "Negócio não encontrado." }, { status: 404 });
-  const { data: itens } = await supabase.from("content_items").select("id, title, brand_label, type").eq("business_id", businessId).eq("status", "published").limit(60);
+  const { data: itens } = await supabase.from("content_items").select("id, title, brand_label, type, image_url").eq("business_id", businessId).eq("status", "published").limit(60);
 
   // Conferência do que veio do site, antes de mostrar para a pessoa: categorias
   // com nome de menu do site (Todos, Início, Loja...) saem, nomes estranhos são
@@ -60,7 +99,12 @@ Na dúvida, mantenha. Responda SOMENTE em JSON: {"categorias": {"<original>": "<
           alterados++;
         }
       }
-      return NextResponse.json({ ok: true, alterados });
+      // Fotos: só fica a que mostra o produto com clareza. As outras saem e o card
+      // fica na cor da marca, até o dono colocar uma foto boa.
+      const comFoto = reais.filter((i): i is typeof i & { image_url: string } => !!i.image_url && /^https?:\/\//.test(i.image_url) && !(podeOcultar && ocultar.has(i.id))).slice(0, 32);
+      const semServir = await fotosQueNaoServem(comFoto);
+      await Promise.all(semServir.map((itemId) => supabase.from("content_items").update({ image_url: null, box_style: "cor" }).eq("id", itemId)));
+      return NextResponse.json({ ok: true, alterados, fotosTiradas: semServir.length });
     } catch {
       return NextResponse.json({ ok: true, alterados: 0 });
     }
