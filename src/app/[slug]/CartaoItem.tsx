@@ -26,13 +26,6 @@ export type ItemCartao = {
   link_kind: string | null;
 };
 
-/** Letreiro do card sem foto: um passo acima do tamanho base quando o nome é curto, pra não ficar tímido num box vazio. */
-function letreiro(title: string, size: BoxSize): string {
-  const base = parseInt(titleFontSize(title, size), 10);
-  const len = (title ?? "").trim().length;
-  return `${base + (len <= 14 ? 4 : len <= 24 ? 2 : 0)}px`;
-}
-
 /**
  * Cartão de item, o mesmo da vitrine (cor, título sobre a foto ou embaixo,
  * rodapé colorido, seta de entrada). A vitrine e a Home usam este componente,
@@ -90,8 +83,9 @@ function CartaoBase({
 
     const miolo = (
       <>
+        {photo ? (
         <div className="relative" style={{ aspectRatio: RATIOS[ratio].value }}>
-          {photo ? (
+          {photo && (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -125,58 +119,6 @@ function CartaoBase({
                 </div>
               )}
             </>
-          ) : (
-            // Sem foto: o nome vira o conteúdo do box, centralizado, sem
-            // rodapé branco repetindo a mesma informação embaixo. A fonte
-            // se ajusta ao formato do card e ao tamanho do título, pra
-            // título longo em card pequeno não estourar nem ficar apertado.
-            <div
-              className="flex h-full w-full flex-col justify-between gap-3 p-4 text-left"
-              style={{ backgroundColor: c.bg, backgroundImage: c.degrade ? `radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,0.16), transparent 62%), ${c.degrade}` : "radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,0.16), transparent 62%)" }}
-            >
-              {/* Em cima: a categoria, bem discreta (na vitrine o título da seção já diz isso). */}
-              <span
-                className="block min-h-[14px] truncate pr-8 font-[family-name:var(--font-manrope)] text-[10.5px] font-semibold uppercase tracking-[0.12em]"
-                style={{ color: c.fg, opacity: 0.62 }}
-              >
-                {origem === "home" ? item.brand_label?.trim() ?? "" : ""}
-              </span>
-              {/* Embaixo: o nome como letreiro, com peso e espaçamento de título. */}
-              <div className={`min-w-0 ${curtir ? "pr-11" : ""}`}>
-                <span
-                  className="line-clamp-4 block font-[family-name:var(--font-manrope)] font-semibold leading-[1.1] tracking-[-0.02em] [text-wrap:balance]"
-                  style={{ color: c.fg, fontSize: letreiro(item.title, size) }}
-                >
-                  {item.title}
-                </span>
-                {priceLabel && (
-                  <span className="mt-1.5 block font-[family-name:var(--font-manrope)] text-[13.5px] font-medium" style={{ color: c.fg, opacity: 0.85 }}>
-                    {priceLabel}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-          {/* Sem foto já mostra a tag/o destino dentro do próprio box, a setinha
-              no canto só faz sentido quando tem foto por cima e nada mais avisa. */}
-          {/* Sem foto: só a setinha no canto, pulsando e acendendo,
-              pra não disputar espaço com o nome no meio do box. */}
-          {destino && !photo && (
-            <span className="orbi-seta-pulsa pointer-events-none absolute right-4 top-4" style={{ color: c.fg }} aria-hidden>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                {isExterno ? (
-                  <>
-                    <path d="M7 17L17 7" />
-                    <path d="M8 7h9v9" />
-                  </>
-                ) : (
-                  <>
-                    <path d="M5 12h14" />
-                    <path d="M13 6l6 6-6 6" />
-                  </>
-                )}
-              </svg>
-            </span>
           )}
           {destino && photo && (
             <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border-[1.5px] border-white/90 bg-black/15 py-1 pl-3 pr-2.5 text-[12px] font-medium text-white backdrop-blur-[2px] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
@@ -185,6 +127,27 @@ function CartaoBase({
             </span>
           )}
         </div>
+        ) : (
+          // Sem foto: só o rodapé. Nome, descrição e preço em um cartão branco, sem o quadrado colorido.
+          <div className="flex min-h-[132px] flex-col justify-between gap-3 p-4">
+            <div className={`min-w-0 ${origem === "home" && !curtir ? "pl-8" : ""}`}>
+              <p className="line-clamp-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">{item.title}</p>
+              {item.description?.trim() && (
+                <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-text-secondary">{resumoCard(item.description)}</p>
+              )}
+            </div>
+            <div className={`flex min-h-[28px] items-center justify-between gap-2 ${curtir ? "pr-11" : ""}`}>
+              <p className="font-[family-name:var(--font-manrope)] text-[14px] font-medium text-text-secondary">{priceLabel ?? ""}</p>
+              {destino && !curtir && (
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-soft text-on-background" aria-hidden>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    {isExterno ? (<><path d="M7 17L17 7" /><path d="M8 7h9v9" /></>) : (<><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></>)}
+                  </svg>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
         {photo && item.title_placement !== "sobre" && (
           <div className={`flex items-center justify-between gap-3 p-4 ${curtir ? "pr-16" : ""}`}>
             <div className="min-w-0 flex-1">
