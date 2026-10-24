@@ -55,16 +55,16 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   if (activeBoxes === 0) {
     insightsQueue.push({
       title: "Ligue pelo menos um botão antes de divulgar",
-      description: "Sem nenhum botão ligado, quem abre seu link não vê nenhuma opção. Ligue ou crie um botão pra poder compartilhar.",
-      ctaLabel: "Abrir Botões",
+      description: "Sem botões, quem abre seu link não tem o que tocar.",
+      ctaLabel: "Abrir",
       href: "/admin/boxes",
     });
   }
   if (!hasItems) {
     insightsQueue.push({
       title: "Importe seu catálogo",
-      description: "Cole o link do seu site no Catálogo e a Orbi transforma seus produtos em cards automaticamente.",
-      ctaLabel: "Abrir Catálogo",
+      description: "Cole o link do seu site e a Orbi cria os cards.",
+      ctaLabel: "Importar",
       href: "/admin/vitrine",
     });
   }
@@ -78,9 +78,9 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
     insightsQueue.push({
       title: "Monte o cardápio",
       description: hasItems
-        ? "Envie o PDF, monte os pratos ou traga itens do seu Catálogo. Quando estiver pronto, é só ligar o botão."
-        : "Envie o PDF do cardápio ou monte os pratos com preço e foto. Quando estiver pronto, é só ligar o botão.",
-      ctaLabel: "Abrir Cardápio",
+        ? "Envie o PDF ou monte os pratos."
+        : "Envie o PDF ou monte os pratos.",
+      ctaLabel: "Abrir",
       href: "/admin/cardapio",
     });
   }
@@ -89,8 +89,8 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   if (!cardapioBox && pareceGastronomico(business.vitrine_categories as string[] | null, items.map((i) => i.title ?? ""))) {
     insightsQueue.push({
       title: "Parece que você vende comida ou bebida",
-      description: "Ative o Cardápio para mostrar pratos, preços e PDFs do jeito que o cliente espera. Se não for o seu caso, pode ignorar.",
-      ctaLabel: "Ativar cardápio",
+      description: "Ative o Cardápio com pratos, preços e PDF.",
+      ctaLabel: "Ativar",
       href: "/admin/cardapio",
     });
   }
@@ -98,9 +98,9 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
     insightsQueue.push({
       title: "Capriche nas fotos do Catálogo",
       description: itemsWithoutPhoto === items.length
-        ? "Nenhum item tem foto ainda, fotos bonitas fazem toda diferença na primeira impressão."
-        : `${itemsWithoutPhoto} ${itemsWithoutPhoto === 1 ? "item ainda não tem" : "itens ainda não têm"} foto de verdade, capriche pra ficar mais convidativo.`,
-      ctaLabel: "Editar Catálogo",
+        ? "Nenhum item tem foto ainda."
+        : `${itemsWithoutPhoto} ${itemsWithoutPhoto === 1 ? "item sem foto" : "itens sem foto"}.`,
+      ctaLabel: "Editar",
       href: "/admin/vitrine",
     });
   }
@@ -111,32 +111,32 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   if (!toneConfigured && acesso.hasAiChat) {
     insightsQueue.push({
       title: "Configure o tom de voz da Orbi",
-      description: "Defina como a assistente deve conversar com seus visitantes.",
-      ctaLabel: "Configurar Orbi",
+      description: "Como a Orbi conversa com seus visitantes.",
+      ctaLabel: "Definir",
       href: "/admin/agent",
     });
   }
   if (!orbiColorsConfigured) {
     insightsQueue.push({
       title: "Personalize a cor da sua Orbi",
-      description: "Escolha as cores da esfera de acordo com a paleta da sua marca, deixa tudo mais consistente com sua identidade.",
-      ctaLabel: "Configurar cores",
+      description: "Use as cores da sua marca na esfera.",
+      ctaLabel: "Escolher",
       href: "/admin/config/marca#cores",
     });
   }
   if (!business.logo_url) {
     insightsQueue.push({
       title: "Adicione seu logotipo",
-      description: "Deixa a página com a cara da sua marca, aparece no avatar, no chat e em vários lugares.",
-      ctaLabel: "Enviar logotipo",
+      description: "Aparece no avatar e no chat.",
+      ctaLabel: "Enviar",
       href: "/admin/config/marca#logo",
     });
   }
   if (!business.contact_whatsapp) {
     insightsQueue.push({
       title: "Configure seu WhatsApp",
-      description: "Sem WhatsApp cadastrado, os visitantes não conseguem falar direto com você.",
-      ctaLabel: "Adicionar WhatsApp",
+      description: "Sem ele, ninguém fala direto com você.",
+      ctaLabel: "Adicionar",
       href: "/admin/config/marca#contatos",
     });
   }
@@ -146,24 +146,24 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   if (!business.address?.trim() && !enderecoNoBox) {
     insightsQueue.push({
       title: "Adicione seu endereço",
-      description: "Ganha um botão pronto na tela inicial, com botões pro Waze e Google Maps.",
-      ctaLabel: "Adicionar endereço",
+      description: "Vira um botão com Waze e Google Maps.",
+      ctaLabel: "Adicionar",
       href: enderecoBoxId ? `/admin/boxes?box=${enderecoBoxId}` : "/admin/boxes",
     });
   }
   if (storyPhotos.length === 0) {
     insightsQueue.push({
       title: "Complete a página sobre o seu negócio",
-      description: "Adicione fotos do espaço, da equipe ou dos bastidores no carrossel, ajuda o visitante a confiar mais antes de comprar.",
-      ctaLabel: "Adicionar fotos",
+      description: "Fotos do espaço e da equipe passam confiança.",
+      ctaLabel: "Adicionar",
       href: hrefSobre("fotos"),
     });
   }
   if (!hasDifferentials) {
     insightsQueue.push({
       title: "Mostre seus diferenciais",
-      description: "O que faz seu negócio especial? Frete grátis, garantia, atendimento rápido, pequenos detalhes que pesam na decisão de compra.",
-      ctaLabel: "Adicionar diferenciais",
+      description: "Frete grátis, garantia, atendimento rápido.",
+      ctaLabel: "Adicionar",
       href: hrefSobre("diferenciais"),
     });
   }
@@ -171,9 +171,9 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
     insightsQueue.push({
       title: "Capriche nas descrições do Catálogo",
       description: itemsWithoutDescription === items.length
-        ? "Nenhum item tem descrição ainda, um texto curto e bom ajuda o visitante a entender o que está comprando."
-        : `${itemsWithoutDescription} ${itemsWithoutDescription === 1 ? "item ainda não tem" : "itens ainda não têm"} descrição, um texto curto já faz diferença.`,
-      ctaLabel: "Editar Catálogo",
+        ? "Nenhum item tem descrição ainda."
+        : `${itemsWithoutDescription} ${itemsWithoutDescription === 1 ? "item sem descrição" : "itens sem descrição"}.`,
+      ctaLabel: "Editar",
       href: "/admin/vitrine",
     });
   }
@@ -184,8 +184,8 @@ export async function getPendingInsights(businessId: string): Promise<Insight[]>
   if (insightsQueue.length === 0 && activeBoxes > 0 && hasItems) {
     insightsQueue.push({
       title: "Hora de divulgar mais",
-      description: "Sua página está completa. Vá em Números, aba Marketing: a Orbi sugere temas, pesquisa hashtags em alta e já escreve o texto pronto pra postar.",
-      ctaLabel: "Abrir Marketing",
+      description: "A Orbi sugere temas e escreve o texto do post.",
+      ctaLabel: "Abrir",
       href: "/admin/pulse",
     });
   }

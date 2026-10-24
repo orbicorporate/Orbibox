@@ -14,10 +14,10 @@ import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 type Categoria = "comece" | "confianca" | "marca" | "marketing";
 
 const CATEGORIAS: Record<Categoria, { label: string; blurb: string }> = {
-  comece: { label: "Primeiros passos", blurb: "O básico pra sua página funcionar de verdade." },
-  confianca: { label: "Mais confiança", blurb: "Detalhes que fazem o visitante confiar e comprar." },
-  marca: { label: "Sua marca", blurb: "Identidade e contato, pra ficar com a sua cara." },
-  marketing: { label: "Divulgação", blurb: "Depois de pronto, hora de trazer gente nova." },
+  comece: { label: "Primeiros passos", blurb: "O básico para funcionar." },
+  confianca: { label: "Mais confiança", blurb: "Detalhes que passam confiança." },
+  marca: { label: "Sua marca", blurb: "Identidade e contato." },
+  marketing: { label: "Divulgação", blurb: "Hora de trazer gente nova." },
 };
 const ORDEM_CATEGORIAS: Categoria[] = ["comece", "confianca", "marca", "marketing"];
 
@@ -237,7 +237,7 @@ export default async function PendenciasPage() {
         O que falta fazer
       </h1>
       <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-        Tudo que ainda pode melhorar no seu Orbibox, organizado por prioridade. Quanto mais completo, mais gente confia e compra.
+        Em ordem de prioridade. Quanto mais completo, mais gente confia.
       </p>
 
       <ProgressTags done={progress.done} pct={progress.pct} extras={extras} />
@@ -268,7 +268,7 @@ export default async function PendenciasPage() {
                         <p className="text-[14px] font-semibold leading-tight">{it.title}</p>
                         <p className="mt-1 text-[12.5px] leading-relaxed text-text-secondary">{it.description}</p>
                       </div>
-                      <span className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium text-text-secondary">
+                      <span className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium text-text-secondary ring-[0.5px] ring-black/15">
                         {it.ctaLabel}
                       </span>
                     </Link>
@@ -282,7 +282,7 @@ export default async function PendenciasPage() {
         <div className="mt-6 rounded-[24px] bg-[#E4F7EA] p-5 text-center">
           <p className="text-[15px] font-semibold text-[#1F7A45]">✓ Tudo em dia por aqui</p>
           <p className="mt-1 text-[12.5px] text-[#1F7A45]/80">
-            Seu Orbibox está completo. Agora é acompanhar os Números e continuar divulgando.
+            Agora é divulgar e acompanhar os Números.
           </p>
         </div>
       )}
