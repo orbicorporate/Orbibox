@@ -217,6 +217,7 @@ function NovaLista({ businessId, onClose, onCreated }: { businessId: string; onC
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [promptCopiado, setPromptCopiado] = useState(false);
+  const [maisOpcoes, setMaisOpcoes] = useState(false);
 
   const PROMPT_GPT = `Vou te passar uma lista de contatos bagunçada (pode estar em qualquer formato, com nomes e telefones misturados). Organize assim:
 
@@ -288,63 +289,79 @@ Aqui está a lista:
     }
   }
 
+  const card = "rounded-[24px] bg-white p-4 ring-[0.5px] ring-black/10";
+  const campo = "mt-2 w-full rounded-2xl bg-surface-soft px-4 py-2.5 text-[14px] outline-none focus:ring-[0.5px] focus:ring-black/40";
+  const num = "flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-background text-[12px] font-semibold text-white";
+  const extras = tagsMarcadas.size + (recompra ? 1 : 0);
+
   return (
-    <div className="rounded-[24px] border border-divider bg-surface-white p-5">
-      <p className="text-[15px] font-semibold">Nova lista</p>
+    <div className="flex flex-col gap-3">
+      <p className="text-[16px] font-semibold">Nova lista</p>
 
-      <p className="mt-3 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Nome da lista</p>
-      <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Compraram corte em julho" className="mt-1.5 w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
+      <div className={card}>
+        <div className="flex items-center gap-2.5"><span className={num}>1</span><p className="text-[14px] font-semibold">Nome da lista</p></div>
+        <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Compraram corte em julho" className={campo} />
+      </div>
 
-      <p className="mt-3 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Por que essas pessoas estão juntas?</p>
-      <p className="mt-0.5 text-[11.5px] text-text-tertiary">Isso é o que a Orbi usa pra escrever a mensagem certa. Quanto mais específico, melhor.</p>
-      <textarea value={motivo} onChange={(e) => setMotivo(e.target.value)} rows={2} placeholder="Ex: clientes que fizeram corte de cabelo em julho e ainda não voltaram" className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[14px] outline-none focus:border-on-background" />
+      <div className={card}>
+        <div className="flex items-center gap-2.5"><span className={num}>2</span><p className="text-[14px] font-semibold">Quem são eles?</p></div>
+        <p className="mt-1 text-[12px] text-text-tertiary">A Orbi usa isso pra escrever a mensagem.</p>
+        <textarea value={motivo} onChange={(e) => setMotivo(e.target.value)} rows={2} placeholder="Ex: fizeram corte em julho e não voltaram" className={`${campo} resize-none`} />
+      </div>
 
-      <button type="button" onClick={() => setRecompra((v) => !v)} className="mt-3 flex cursor-pointer items-center gap-2.5">
-        <span className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors ${recompra ? "bg-on-background" : "bg-surface-soft"}`}>
-          <span className={`h-4 w-4 rounded-full bg-white transition-transform ${recompra ? "translate-x-4" : ""}`} />
-        </span>
-        <span className="text-[13px] text-text-secondary">É lembrete recorrente (avisar de novo depois de um tempo)</span>
-      </button>
-      {recompra && (
-        <div className="mt-2 flex items-center gap-2 pl-11">
-          <span className="text-[13px] text-text-secondary">Lembrar de novo depois de</span>
-          <input value={dias} onChange={(e) => setDias(e.target.value.replace(/\D/g, ""))} inputMode="numeric" className="w-14 rounded-full border border-divider bg-surface-white px-2 py-1 text-center text-[13px] outline-none focus:border-on-background" />
-          <span className="text-[13px] text-text-secondary">dias</span>
+      <div className={card}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5"><span className={num}>3</span><p className="text-[14px] font-semibold">Contatos</p></div>
+          <button type="button" onClick={copiarPromptGpt} className="shrink-0 cursor-pointer rounded-full bg-surface-soft px-3 py-1.5 text-[11.5px] font-semibold text-text-secondary">
+            {promptCopiado ? "Copiado ✓" : "Organizar no ChatGPT"}
+          </button>
         </div>
-      )}
-
-      <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">O que você sabe sobre eles?</p>
-      <p className="mt-0.5 text-[11.5px] text-text-tertiary">Marque etiquetas pra contar à Orbi. Todas as pessoas dessa lista recebem essas etiquetas.</p>
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        {tags.map((tg) => (
-          <TagChip key={tg.id} tag={tg} ativo={tagsMarcadas.has(tg.id)} onClick={() => setTagsMarcadas((s) => { const n = new Set(s); if (n.has(tg.id)) n.delete(tg.id); else n.add(tg.id); return n; })} />
-        ))}
-        <NovaTag businessId={businessId} onCreated={(nova) => { setTags((prev) => [...prev, nova]); setTagsMarcadas((s) => new Set(s).add(nova.id)); }} />
+        <p className="mt-1 text-[12px] text-text-tertiary">Um por linha: nome e telefone.</p>
+        <textarea value={bruto} onChange={(e) => setBruto(e.target.value)} rows={5} placeholder={"Marina, 11 98888-7777\nJoão Pedro - (11) 97777-6666"} className={`${campo} resize-none text-[13.5px] leading-relaxed`} />
+        {bruto.trim() && <p className="mt-1.5 text-[12px] font-medium text-text-secondary">{contatos.length} {contatos.length === 1 ? "contato reconhecido" : "contatos reconhecidos"}</p>}
+        <div className="mt-2 flex justify-end"><AbrirChatGPT compacto /></div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-2">
-        <p className="text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Cole os contatos</p>
-        {/* Pra quem tem a lista bagunçada (print, caderno, grupo): copia um
-            prompt pronto pra organizar no ChatGPT e colar já formatado. */}
-        <button
-          type="button"
-          onClick={copiarPromptGpt}
-          className="shrink-0 cursor-pointer rounded-full bg-surface-soft px-3 py-1.5 text-[11.5px] font-semibold text-text-secondary"
-        >
-          {promptCopiado ? "Prompt copiado ✓" : "Copiar prompt pro ChatGPT"}
+      <div className={card}>
+        <button type="button" onClick={() => setMaisOpcoes((v) => !v)} className="flex w-full cursor-pointer items-center justify-between text-left">
+          <span className="text-[14px] font-semibold">Mais opções <span className="font-normal text-text-tertiary">(opcional){extras > 0 ? ` · ${extras}` : ""}</span></span>
+          <span className="text-text-tertiary">{maisOpcoes ? "−" : "+"}</span>
         </button>
+        {maisOpcoes && (
+          <div className="mt-3 flex flex-col gap-4">
+            <div>
+              <p className="text-[13px] font-medium">Etiquetas</p>
+              <p className="mt-0.5 text-[12px] text-text-tertiary">Todos da lista recebem.</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {tags.map((tg) => (
+                  <TagChip key={tg.id} tag={tg} ativo={tagsMarcadas.has(tg.id)} onClick={() => setTagsMarcadas((s) => { const n = new Set(s); if (n.has(tg.id)) n.delete(tg.id); else n.add(tg.id); return n; })} />
+                ))}
+                <NovaTag businessId={businessId} onCreated={(nova) => { setTags((prev) => [...prev, nova]); setTagsMarcadas((s) => new Set(s).add(nova.id)); }} />
+              </div>
+            </div>
+            <div>
+              <button type="button" onClick={() => setRecompra((v) => !v)} className="flex cursor-pointer items-center gap-2.5">
+                <span className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors ${recompra ? "bg-on-background" : "bg-surface-soft"}`}>
+                  <span className={`h-4 w-4 rounded-full bg-white transition-transform ${recompra ? "translate-x-4" : ""}`} />
+                </span>
+                <span className="text-[13px]">Lembrete recorrente</span>
+              </button>
+              {recompra && (
+                <div className="mt-2 flex items-center gap-2 pl-11">
+                  <span className="text-[13px] text-text-secondary">Lembrar após</span>
+                  <input value={dias} onChange={(e) => setDias(e.target.value.replace(/\D/g, ""))} inputMode="numeric" className="w-14 rounded-full bg-surface-soft px-2 py-1 text-center text-[13px] outline-none" />
+                  <span className="text-[13px] text-text-secondary">dias</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-      <div className="mt-1.5 flex justify-end">
-        <AbrirChatGPT compacto />
-      </div>
-      <p className="mt-0.5 text-[11.5px] text-text-tertiary">Um por linha: nome e telefone. Ex: Marina, 11 98888-7777</p>
-      <textarea value={bruto} onChange={(e) => setBruto(e.target.value)} rows={5} placeholder={"Marina, 11 98888-7777\nJoão Pedro - (11) 97777-6666"} className="mt-1.5 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-2.5 text-[13.5px] leading-relaxed outline-none focus:border-on-background" />
-      {bruto.trim() && <p className="mt-1 text-[11.5px] text-text-tertiary">{contatos.length} {contatos.length === 1 ? "contato reconhecido" : "contatos reconhecidos"}</p>}
 
-      {erro && <p className="mt-2 text-[12.5px] text-red-600">{erro}</p>}
+      {erro && <p className="text-[12.5px] text-red-600">{erro}</p>}
 
-      <div className="mt-4 flex gap-2">
-        <button type="button" onClick={onClose} className="flex-1 cursor-pointer rounded-full border border-divider bg-surface-white py-2.5 text-[13.5px] font-medium">Cancelar</button>
+      <div className="sticky bottom-24 z-10 flex gap-2 rounded-full bg-white p-1.5 shadow-lg ring-[0.5px] ring-black/10">
+        <button type="button" onClick={onClose} className="flex-1 cursor-pointer rounded-full bg-surface-soft py-2.5 text-[13.5px] font-medium">Cancelar</button>
         <button type="button" onClick={criar} disabled={salvando} className="flex-1 cursor-pointer rounded-full bg-on-background py-2.5 text-[13.5px] font-semibold text-white disabled:opacity-50">
           {salvando ? "Criando…" : "Criar lista"}
         </button>
