@@ -133,7 +133,7 @@ type ContentItem = {
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
 
-type CustomConfig = { horario?: { dias: number[]; abre: string; fecha: string }; label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
+type CustomConfig = { categoria?: string; horario?: { dias: number[]; abre: string; fecha: string }; label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -330,7 +330,8 @@ export function VisitorExperience({
       if (b.box_type === "custom") {
         const label = cfg.label || b.title || "Link";
         const onClick = () => {
-          if (cfg.action === "vitrine") chooseIntent("comprar");
+          // Bolinha de categoria abre o catálogo já filtrado nela.
+          if (cfg.action === "vitrine") { setCategoriaInicial(cfg.categoria?.trim() || null); chooseIntent("comprar"); }
           else if (cfg.action === "zara") chooseIntent("duvida");
           else if (cfg.action === "whatsapp") {
             // O campo pode vir como número cru ("15997587720") ou já como
@@ -589,7 +590,7 @@ export function VisitorExperience({
       else if (o.acao === "conhecer") push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
       else if (o.acao === "cardapio") push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
       else if (o.acao === "materiais") push({ ...base, rotulo: o.t || "Materiais", tipo: "materiais", onClick: o.onClick });
-      else if (o.acao === "vitrine" || o.acao === "comprar") push({ ...base, rotulo: o.t || "Catálogo", tipo: "catalogo", onClick: () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
+      else if (o.acao === "vitrine" || o.acao === "comprar") push({ ...base, rotulo: o.t || "Catálogo", tipo: "catalogo", onClick: o.acao === "vitrine" ? o.onClick : () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
     }
     if (!out.some((b) => b.tipo === "whatsapp") && whatsAtalho) {
       out.unshift({ key: "zap", estilo: "cor", editavel: false, rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
@@ -1705,7 +1706,7 @@ export function VisitorExperience({
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
             ) : (
               <>
-                <Showcase podeEditar={showOwnerControls} categoriaInicial={categoriaInicial} content={content} business={business} sessionId={sessionId} orbiColors={orbiColors} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
+                <Showcase key={categoriaInicial ?? "todas"} podeEditar={showOwnerControls} categoriaInicial={categoriaInicial} content={content} business={business} sessionId={sessionId} orbiColors={orbiColors} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
                 {/* Captura discreta no fim do catálogo: quem chegou até aqui
                     olhou tudo, é o momento certo de oferecer aviso. */}
                 {!business.vitrine_lead_top && (

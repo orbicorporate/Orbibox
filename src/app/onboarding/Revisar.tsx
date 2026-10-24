@@ -12,8 +12,10 @@ export type RevisaoDados = {
   cores: string[];
   whatsapp: string;
   endereco: string;
-  opcoes: string[];
-  principal: string | null;
+  /** Como a Orbi entendeu o que a pessoa vende, pelo que puxou do site. */
+  modo: ModoDestaque;
+  /** Cartões para tocar: categorias, produtos ou serviços (até 12). */
+  destacaveis: Destacavel[];
   temInstagram: boolean;
   temVoucher: boolean;
   /** Ramo de comida: sugere ligar o Cardápio. */
@@ -22,7 +24,21 @@ export type RevisaoDados = {
   servico: boolean;
 };
 
-export type RevisaoResultado = { cores: string[]; whatsapp: string; endereco: string; principal: string | null; horario: Horario | null; extras: string[] };
+export type ModoDestaque = "categoria" | "produto" | "servico" | "sugestao";
+export type Destacavel = { id: string; nome: string; foto: string | null; sub?: string; itemId?: string | null; novo?: boolean };
+
+export type RevisaoResultado = { cores: string[]; whatsapp: string; endereco: string; escolhidos: Destacavel[]; horario: Horario | null; extras: string[] };
+
+const MAX_DESTAQUES = 4;
+
+/** Texto legível sobre um fundo colorido. */
+function corDoTexto(hex: string) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return "#111318";
+  const n = parseInt(m[1], 16);
+  const l = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  return l > 0.62 ? "#111318" : "#FFFFFF";
+}
 
 const campo = "w-full rounded-full bg-surface-soft px-4 py-3 text-[15px] outline-none ring-1 ring-transparent focus:ring-on-background/30";
 
@@ -37,7 +53,10 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
   const [cores, setCores] = useState<string[]>(dados.cores);
   const [whatsapp, setWhatsapp] = useState(dados.whatsapp);
   const [endereco, setEndereco] = useState(dados.endereco);
-  const [principal, setPrincipal] = useState(dados.principal);
+  const [cartoes, setCartoes] = useState<Destacavel[]>(dados.destacaveis);
+  const [marcados, setMarcados] = useState<string[]>(dados.destacaveis.slice(0, 3).map((d) => d.id));
+  const [novoNome, setNovoNome] = useState<string | null>(null);
+  const [avisoLimite, setAvisoLimite] = useState(false);
   const [comHorario, setComHorario] = useState(false);
   const [dias, setDias] = useState<number[]>([1, 2, 3, 4, 5]);
   const [abre, setAbre] = useState("09:00");
@@ -62,6 +81,25 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
     setLogo(url);
     setEnviando(false);
   }
+
+  function alternarCartao(id: string) {
+    setAvisoLimite(false);
+    setMarcados((a) => {
+      if (a.includes(id)) return a.filter((x) => x !== id);
+      if (a.length >= MAX_DESTAQUES) { setAvisoLimite(true); return a; }
+      return [...a, id];
+    });
+  }
+  function adicionarCartao() {
+    const nome = (novoNome ?? "").trim();
+    if (!nome) { setNovoNome(null); return; }
+    const id = `n-${Date.now()}`;
+    setCartoes((c) => [...c, { id, nome, foto: null, novo: true }]);
+    if (marcados.length < MAX_DESTAQUES) setMarcados((a) => [...a, id]);
+    setNovoNome(null);
+  }
+  const usaveis = cores.length > 2 ? cores.slice(1) : cores.length > 0 ? cores : ["#111318"];
+  const palavra = dados.modo === "categoria" ? "categorias" : dados.modo === "servico" ? "serviços" : dados.modo === "produto" ? "produtos" : "o que você vende";
 
   const itensHome = [
     waOk && "WhatsApp",
@@ -164,19 +202,58 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         )}
       </section>
 
-      {dados.opcoes.length > 0 && (
-        <section className={card}>
-          <div className="flex items-center gap-3">
-            {num(5, !!principal)}
-            <div><p className="text-[15px] font-semibold leading-tight">O que vem primeiro?</p><p className="text-[12.5px] text-text-tertiary">Seu principal produto ou serviço, na frente de tudo</p></div>
+      <section className={card}>
+        <div className="flex items-center gap-3">
+          {num(5, marcados.length > 0)}
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-semibold leading-tight">Seus destaques</p>
+            <p className="text-[12.5px] text-text-tertiary">{dados.modo === "sugestao" ? "Toque no que você vende. Vira a frente da sua página" : `Toque nos ${palavra} que mais vendem`}</p>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {dados.opcoes.map((o) => (
-              <button key={o} type="button" aria-pressed={principal === o} onClick={() => setPrincipal(principal === o ? null : o)} className={`min-h-[40px] rounded-full px-4 text-[14px] font-medium ${principal === o ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{o}</button>
-            ))}
-          </div>
-        </section>
-      )}
+          <span className="shrink-0 text-[12px] font-medium text-text-tertiary">{marcados.length}/{MAX_DESTAQUES}</span>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2.5">
+          {cartoes.map((c, i) => {
+            const ordem = marcados.indexOf(c.id);
+            const on = ordem >= 0;
+            const bg = usaveis[i % usaveis.length];
+            return (
+              <button
+                key={c.id}
+                type="button"
+                aria-pressed={on}
+                onClick={() => alternarCartao(c.id)}
+                className={`relative aspect-[4/5] overflow-hidden rounded-[20px] text-left transition-transform active:scale-[0.97] ${on ? "ring-[2.5px] ring-on-background ring-offset-2" : "ring-[0.5px] ring-black/10"}`}
+                style={c.foto ? undefined : { backgroundColor: bg }}
+              >
+                {c.foto ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={c.foto} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                    <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 to-transparent" />
+                  </>
+                ) : null}
+                <span className="absolute inset-x-0 bottom-0 p-3">
+                  <span className="block text-[15px] font-semibold leading-tight line-clamp-2" style={{ color: c.foto ? "#fff" : corDoTexto(bg) }}>{c.nome}</span>
+                  {c.sub && <span className="mt-0.5 block truncate text-[11.5px]" style={{ color: c.foto ? "rgba(255,255,255,.8)" : corDoTexto(bg), opacity: c.foto ? 1 : 0.75 }}>{c.sub}</span>}
+                </span>
+                <span className={`absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full text-[12.5px] font-semibold shadow ${on ? "bg-on-background text-white" : "bg-white/85 text-transparent ring-[0.5px] ring-black/15"}`}>{on ? ordem + 1 : "·"}</span>
+              </button>
+            );
+          })}
+          {novoNome === null ? (
+            <button type="button" onClick={() => setNovoNome("")} className="flex aspect-[4/5] flex-col items-center justify-center gap-1.5 rounded-[20px] bg-surface-soft text-text-secondary active:scale-[0.97]">
+              <span className="text-[26px] leading-none">+</span>
+              <span className="text-[13px] font-medium">Adicionar</span>
+            </button>
+          ) : (
+            <div className="flex aspect-[4/5] flex-col justify-end gap-2 rounded-[20px] bg-surface-soft p-3">
+              <input autoFocus value={novoNome} onChange={(e) => setNovoNome(e.target.value.slice(0, 40))} onKeyDown={(e) => { if (e.key === "Enter") adicionarCartao(); }} placeholder="Nome" className="w-full rounded-full bg-white px-3 py-2 text-[14px] outline-none" />
+              <button type="button" onClick={adicionarCartao} className="rounded-full bg-on-background py-2 text-[13px] font-semibold text-white">Ok</button>
+            </div>
+          )}
+        </div>
+        {avisoLimite && <p className="mt-2 text-[12.5px] text-text-secondary">Até {MAX_DESTAQUES}. Desmarque um para trocar.</p>}
+      </section>
 
       {(dados.gastronomico || dados.servico) && (
         <section className={card}>
@@ -201,7 +278,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
       </section>
 
       {erro && <p className="px-1 text-[13px] text-red-600">{erro}</p>}
-      <button type="button" onClick={() => onConfirmar({ cores, whatsapp, endereco, principal, horario: comHorario && endereco.trim() && dias.length > 0 && abre < fecha ? { dias, abre, fecha } : null, extras })} className="orbi-gradient mt-1 w-full rounded-full py-4 text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
+      <button type="button" onClick={() => onConfirmar({ cores, whatsapp, endereco, escolhidos: marcados.map((id) => cartoes.find((c) => c.id === id)).filter((c): c is Destacavel => !!c), horario: comHorario && endereco.trim() && dias.length > 0 && abre < fecha ? { dias, abre, fecha } : null, extras })} className="orbi-gradient mt-1 w-full rounded-full py-4 text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
         Montar minha página →
       </button>
     </div>

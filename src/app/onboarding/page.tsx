@@ -16,7 +16,7 @@ import type { Json } from "@/lib/supabase/types";
 import { CONVERSOES, OBJETIVOS, conversaoPorId, ordenarBotoes, type BotaoChave, type ConversaoId, type ObjetivoId } from "@/lib/conversao";
 import { AnaliseAoVivo, BrandOrb, VitrineMontando, formatarWhatsapp, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 import { Pronto, type ProntoDados } from "./Pronto";
-import { Revisar, type RevisaoDados, type RevisaoResultado } from "./Revisar";
+import { Revisar, type Destacavel, type ModoDestaque, type RevisaoDados, type RevisaoResultado } from "./Revisar";
 
 type Color = { hex: string; role: string };
 type BrandAnalysis = {
@@ -336,13 +336,30 @@ export default function OnboardingPage() {
     // Pausa pra a pessoa conferir o que a Orbi achou (logotipo, contato, endereço)
     // e dizer o que vem primeiro. Só depois a Home é montada.
     const { data: pre } = await supabase.from("businesses").select("contact_whatsapp, contact_phone, address, logo_url, vitrine_categories").eq("id", id).maybeSingle();
-    const { data: preItens } = await supabase.from("content_items").select("title, brand_label, type").eq("business_id", id).eq("status", "published").order("position", { ascending: true }).limit(30);
+    const { data: preItens } = await supabase.from("content_items").select("id, title, brand_label, type, image_url, price").eq("business_id", id).eq("status", "published").order("position", { ascending: true }).limit(60);
     const catsPre = Array.from(new Set((preItens ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v)));
-    const opcoes = (catsPre.length > 0 ? catsPre : seg?.categorias ?? (preItens ?? []).filter((r) => r.type !== "link").map((r) => r.title)).slice(0, 8);
+    // Destaques: a Orbi decide sozinha se mostra categorias, produtos ou serviços,
+    // pelo que puxou do site. A pessoa só toca nos que mais vendem.
+    const reaisPre = (preItens ?? []).filter((r) => r.type !== "link");
+    const ehServico = !!seg?.servico || conv === "agendar";
+    const precoTxt = (v: number | null) => (v != null && v > 0 ? `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 })}` : undefined);
+    const modo: ModoDestaque = reaisPre.length === 0 ? "sugestao" : catsPre.length >= 2 && !ehServico ? "categoria" : ehServico ? "servico" : "produto";
+    const destacaveis: Destacavel[] = modo === "sugestao"
+      ? (seg?.categorias ?? []).slice(0, 8).map((nome) => ({ id: `s-${nome}`, nome, foto: null }))
+      : modo === "categoria"
+        ? catsPre.slice(0, 12).map((c) => {
+            const daCat = reaisPre.filter((r) => r.brand_label?.trim() === c);
+            const comFoto = daCat.filter((r) => r.image_url).sort((x, y) => (y.price ?? 0) - (x.price ?? 0))[0];
+            return { id: `c-${c}`, nome: c, foto: comFoto?.image_url ?? null, sub: `${daCat.length} ${daCat.length === 1 ? "item" : "itens"}`, itemId: comFoto?.id ?? null };
+          })
+        : [...reaisPre].sort((x, y) => Number(!!y.image_url) - Number(!!x.image_url)).slice(0, 12).map((r) => ({
+            id: r.id, nome: r.title, foto: r.image_url ?? null, itemId: r.id,
+            sub: modo === "servico" && precoTxt(r.price) ? `a partir de ${precoTxt(r.price)}` : precoTxt(r.price) ?? (r.brand_label?.trim() || undefined),
+          }));
     const waPre = (pre?.contact_whatsapp || pre?.contact_phone || whatsappDigits || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
     const conf = await new Promise<RevisaoResultado>((resolve) => {
       revisaoRef.current = resolve;
-      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, opcoes, principal: opcoes[0] ?? null, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
+      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, modo, destacaveis, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
       setStep("revisar");
     });
     setMontagem({ status: "pending", itens: [], segundos: null });
@@ -358,13 +375,28 @@ export default function OnboardingPage() {
       if (orbi) await supabase.from("agent_configs").update({ orbi_colors: orbi }).eq("business_id", id);
     }
     await supabase.from("businesses").update({ contact_whatsapp: waConf || null, address: enderecoFinal || null }).eq("id", id);
-    const principalFinal = conf.principal;
-    if (principalFinal && !catsPre.includes(principalFinal) && !seg?.categorias.includes(principalFinal)) {
-      // O principal é um item: sobe pro topo do catálogo.
-      const { data: topo } = await supabase.from("content_items").select("id, position").eq("business_id", id).order("position", { ascending: true }).limit(1).maybeSingle();
-      const { data: alvo } = await supabase.from("content_items").select("id").eq("business_id", id).eq("title", principalFinal).limit(1).maybeSingle();
-      if (alvo) await supabase.from("content_items").update({ position: (topo?.position ?? 0) - 1 }).eq("id", alvo.id);
+    const escolhidos = conf.escolhidos;
+    const paletaFinal = (conf.cores.length ? conf.cores : result.colors.map((c) => c.hex)).filter((h) => /^#[0-9a-f]{6}$/i.test(h));
+    const corUsavel = paletaFinal.length > 2 ? paletaFinal.slice(1) : paletaFinal.length ? paletaFinal : ["#111318"];
+    const corDe = (i: number) => corUsavel[i % corUsavel.length];
+
+    // Produtos ou serviços escolhidos: os que a pessoa escreveu viram itens novos,
+    // já na cor da marca, e todos os escolhidos sobem para o topo do catálogo.
+    let idsDestaque: string[] = [];
+    if (modo === "produto" || modo === "servico") {
+      for (const [i, e] of escolhidos.entries()) {
+        if (e.itemId) { idsDestaque.push(e.itemId); continue; }
+        const { data: criado } = await supabase.from("content_items").insert({ business_id: id, type: "product", title: e.nome, status: "published", position: -100 + i, box_color: corDe(i) }).select("id").single();
+        if (criado) idsDestaque.push(criado.id);
+      }
+      const { data: topo } = await supabase.from("content_items").select("position").eq("business_id", id).order("position", { ascending: true }).limit(1).maybeSingle();
+      const base = (topo?.position ?? 0) - idsDestaque.length - 1;
+      await Promise.all(idsDestaque.map((itemId, i) => supabase.from("content_items").update({ position: base + i }).eq("id", itemId)));
+    } else {
+      // Categorias: o destaque é o melhor item com foto de cada uma.
+      idsDestaque = escolhidos.map((e) => e.itemId).filter((v): v is string => !!v);
     }
+    const catsEscolhidas = modo === "categoria" || modo === "sugestao" ? escolhidos.map((e) => e.nome) : [];
 
     // Negócio gastronômico: a Orbi já deixa o Cardápio criado (desligado) e avisa na fila de pendências.
     // Ele aparece no menu e é só montar e ligar.
@@ -440,6 +472,16 @@ export default function OnboardingPage() {
       ...ordem.map((k, i) => linha(k, i + 1, true)),
     ];
     let pos = ordem.length + 1;
+    // Categorias escolhidas viram bolinhas logo depois dos botões principais:
+    // com a foto do melhor item, ou na cor da marca quando não tem foto.
+    if (modo === "categoria") {
+      for (const [i, e] of escolhidos.slice(0, 4).entries()) {
+        linhas.push({
+          business_id: id, box_type: "custom", title: e.nome, position: pos++, is_active: true,
+          config: { label: e.nome, subtitle: "Ver no catálogo", action: "vitrine", categoria: e.nome, color: "transparent", bolinhaCor: corDe(i), icon: e.foto ? "__logo__" : "◆", ...(e.foto ? { logo_url: e.foto, logo_ajuste: { z: 1.45, x: 0, y: 0 } } : {}) },
+        });
+      }
+    }
     // Catálogo e Conhecer sempre existem, mesmo desligados: o dono liga depois.
     if (!ordem.includes("catalogo")) linhas.push(linha("catalogo", pos++, false));
     if (!ordem.includes("conhecer")) linhas.push(linha("conhecer", pos++, false));
@@ -466,19 +508,47 @@ export default function OnboardingPage() {
       }
     }
 
-    // Home já com um destaque: o item principal (ou o de maior preço) que tem foto.
-    {
-      const { data: comFoto } = await supabase.from("content_items").select("id, title, price, brand_label, image_url").eq("business_id", id).eq("status", "published").not("image_url", "is", null).order("position", { ascending: true }).limit(20);
-      const lista = comFoto ?? [];
-      const escolhido = lista.find((i) => principalFinal && (i.title === principalFinal || i.brand_label?.trim() === principalFinal)) ?? [...lista].sort((a, b) => (b.price ?? 0) - (a.price ?? 0))[0];
-      if (escolhido) await supabase.from("businesses").update({ home_destaques: [{ t: "item", id: escolhido.id }] }).eq("id", id);
+    // Home com os destaques escolhidos. Sem escolha, o item de maior preço com foto.
+    if (idsDestaque.length > 0) {
+      await supabase.from("businesses").update({ home_destaques: idsDestaque.slice(0, 4).map((itemId) => ({ t: "item", id: itemId })) }).eq("id", id);
+    } else {
+      const { data: comFoto } = await supabase.from("content_items").select("id, price").eq("business_id", id).eq("status", "published").not("image_url", "is", null).order("price", { ascending: false, nullsFirst: false }).limit(1);
+      if (comFoto?.[0]) await supabase.from("businesses").update({ home_destaques: [{ t: "item", id: comFoto[0].id }] }).eq("id", id);
     }
 
-    // Categorias do catálogo: as que o site já trouxe nos itens, senão as do ramo.
-    if (imp.imported > 0) {
+    // Categorias do catálogo: as escolhidas na frente, depois as que o site trouxe (ou as do ramo).
+    {
       const { data: rotulos } = await supabase.from("content_items").select("brand_label").eq("business_id", id);
-      const cats = Array.from(new Set((rotulos ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v))).slice(0, 8).sort((a, b) => (a === principalFinal ? -1 : b === principalFinal ? 1 : 0));
+      const doSite = Array.from(new Set((rotulos ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v)));
+      const resto = doSite.length > 0 ? doSite : seg?.categorias ?? [];
+      const cats = Array.from(new Set([...catsEscolhidas, ...resto])).slice(0, 10);
       if (cats.length > 0) await supabase.from("businesses").update({ vitrine_categories: cats }).eq("id", id);
+    }
+
+    // Catálogo nas cores da marca: com foto pinta o rodapé, sem foto pinta o card.
+    // Só onde ainda não tem cor, pra não desfazer o que veio do site.
+    {
+      const { data: todos } = await supabase.from("content_items").select("id, image_url, box_color, footer_color").eq("business_id", id).order("position", { ascending: true }).limit(80);
+      await Promise.all((todos ?? []).map((it, i) => {
+        if (it.image_url && !it.footer_color) return supabase.from("content_items").update({ footer_color: corDe(i) }).eq("id", it.id);
+        if (!it.image_url && (!it.box_color || it.box_color === "neutro")) return supabase.from("content_items").update({ box_color: corDe(i) }).eq("id", it.id);
+        return null;
+      }));
+    }
+
+    // Texto curto para os destaques sem descrição. Roda em segundo plano, sem segurar a tela.
+    if (idsDestaque.length > 0) {
+      void (async () => {
+        const { data: semTexto } = await supabase.from("content_items").select("id, description").in("id", idsDestaque.slice(0, 4));
+        for (const it of semTexto ?? []) {
+          if (it.description?.trim()) continue;
+          try {
+            const r = await fetch("/api/gerar-descricao-item", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contentItemId: it.id }) });
+            const d = await r.json().catch(() => ({}));
+            if (r.ok && typeof d.texto === "string" && d.texto.trim()) await supabase.from("content_items").update({ description: d.texto.trim() }).eq("id", it.id);
+          } catch { /* fica sem texto, a pessoa escreve depois */ }
+        }
+      })();
     }
 
     await supabase.from("opportunities").insert({
