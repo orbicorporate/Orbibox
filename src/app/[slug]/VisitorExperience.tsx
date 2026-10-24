@@ -1124,27 +1124,13 @@ export function VisitorExperience({
                 </p>
               )}
               {(textos.frase ?? frase) ? (
-                <p className="mt-1.5 max-w-[320px] text-[14px] leading-snug text-text-secondary">{textos.frase ?? frase}</p>
+                <p className="mt-1.5 line-clamp-2 max-w-[320px] text-[14px] leading-snug text-text-secondary">{textos.frase ?? frase}</p>
               ) : null}
-              {textos.pergunta !== "" && (
-                <h1 className="mt-2 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-[1.15] tracking-[-0.015em]">
-                  {textos.pergunta?.trim() ? (
-                    textos.pergunta
-                  ) : (
-                    <>
-                      O que trouxe você
-                      <br />
-                      aqui hoje?
-                    </>
-                  )}
-                </h1>
-              )}
               {showOwnerControls && textosAberto && (
                 <div className="mt-3 w-full max-w-[360px] rounded-2xl bg-surface-white p-4 text-left shadow-[0_8px_30px_rgba(17,19,24,0.16)] ring-1 ring-black/[0.05]">
                   {([
                     { campo: "nome", rotulo: "Nome", valor: textos.nome, dica: "Nome do seu negócio" },
                     { campo: "frase", rotulo: "Frase", valor: textos.frase ?? frase ?? "", dica: "Uma frase que diz o que você faz" },
-                    { campo: "pergunta", rotulo: "Pergunta", valor: textos.pergunta === "" ? "" : textos.pergunta?.trim() ? textos.pergunta : "", dica: "O que trouxe você aqui hoje?" },
                   ] as const).map((c) => (
                     <div key={`${c.campo}-${c.valor}`} className="mb-3 block last:mb-0">
                       <div className="flex items-center justify-between gap-2">
@@ -1157,7 +1143,7 @@ export function VisitorExperience({
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3" /></svg>
                             </button>
                           )
-                        ) : (c.campo === "pergunta" ? textos.pergunta !== "" : !!(textos.frase ?? frase)) ? (
+                        ) : !!(textos.frase ?? frase) ? (
                           <button type="button" onClick={() => salvarTexto(c.campo, "")} aria-label={`Remover ${c.rotulo.toLowerCase()}`} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FDECEE] text-[#E5484D] active:scale-90">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3" /></svg>
                           </button>
@@ -1165,7 +1151,8 @@ export function VisitorExperience({
                       </div>
                       <input
                         defaultValue={c.valor}
-                        placeholder={c.campo === "nome" && ocultarNome ? "Oculto. Toque em Mostrar para voltar." : c.campo !== "nome" && (c.campo === "pergunta" ? textos.pergunta === "" : !(textos.frase ?? frase)) ? "Removida. Escreva aqui para voltar." : c.dica}
+                        maxLength={c.campo === "frase" ? 110 : 60}
+                        placeholder={c.campo === "nome" && ocultarNome ? "Oculto. Toque em Mostrar para voltar." : c.campo !== "nome" && !(textos.frase ?? frase) ? "Removida. Escreva aqui para voltar." : c.dica}
                         onBlur={(e) => {
                           const v = e.target.value.trim();
                           if (v !== c.valor.trim()) salvarTexto(c.campo, v);
@@ -1174,7 +1161,7 @@ export function VisitorExperience({
                       />
                     </div>
                   ))}
-                  <p className="text-[12px] text-text-tertiary">Toque na lixeira vermelha para esconder o nome, a frase ou a pergunta. Para voltar, escreva de novo ou toque em Mostrar.</p>
+                  <p className="text-[12px] text-text-tertiary">Toque na lixeira vermelha para esconder o nome ou a frase. Para voltar, escreva de novo ou toque em Mostrar.</p>
                   <button type="button" onClick={() => setTextosAberto(false)} className="mt-3 min-h-[44px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white">Concluir</button>
                 </div>
               )}
