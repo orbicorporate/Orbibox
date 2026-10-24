@@ -47,13 +47,66 @@ function contexto(taxa: number, visitas: number) {
   };
 }
 
-export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiColors }: { taxa: number; visitas: number; totalCliques: number; businessId: string; orbiColors?: string[] | null }) {
+// Explicação rápida de cada passo, aberta ao tocar.
+const DETALHES: Record<string, string> = {
+  "Compartilhe nos stories": "Poste um story com o link no adesivo Link. Quem vê toca e chega direto na sua página.",
+  "Coloque o link na bio": "Cole o link na bio do Instagram. É o lugar onde mais gente clica.",
+  "Mande nos grupos de WhatsApp": "Envie o link em grupos de clientes e amigos, com uma frase curta dizendo o que tem lá.",
+  "Mantenha o Catálogo em dia": "Atualize preços e fotos. Catálogo atual passa confiança e vende mais.",
+  "Confira se o WhatsApp está certo": "Toque no botão de WhatsApp da sua página e veja se abre a conversa certa.",
+  "WhatsApp ou Catálogo em primeiro": "Coloque a ação principal no topo. Quem chega age mais rápido.",
+  "Nomes claros nos botões": "Use verbos curtos, como Pedir, Agendar ou Ver cardápio.",
+  "Desligue botões sem uso": "Menos opções, mais cliques. Tire o que ninguém toca.",
+  "Uma ação clara no topo": "A primeira coisa que a pessoa vê deve ser o que você quer que ela faça.",
+  "Menos botões na tela": "Deixe só o essencial. Muitas opções travam a decisão.",
+  "Dá pra entender em 3 segundos?": "Abra sua página como visitante. Se não ficou claro rápido, simplifique.",
+  "Uma ação no topo": "Escolha uma ação principal e coloque no topo.",
+  "Alguns itens no Catálogo": "Cadastre pelo menos 5 itens com foto. Página vazia não convence.",
+  "Primeira tela limpa": "Tire o excesso da primeira tela. Foco em uma coisa só.",
+};
+
+function PassoSheet({ texto, url, onClose }: { texto: string; url: string | null; onClose: () => void }) {
+  const [copiado, setCopiado] = useState(false);
+  async function compartilhar() {
+    const msg = `Conheça minha página`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ text: msg, url: url ?? undefined });
+        return;
+      }
+    } catch { /* cancelado */ }
+    try {
+      await navigator.clipboard.writeText(url ?? "");
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch { /* sem clipboard */ }
+  }
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={onClose}>
+      <div className="w-full max-w-md rounded-t-[28px] bg-white p-5 pb-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-[17px] font-semibold leading-tight">{texto}</p>
+          <button type="button" onClick={onClose} aria-label="Fechar" className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-soft text-[14px]">✕</button>
+        </div>
+        <p className="mt-2 text-[14px] leading-snug text-text-secondary">{DETALHES[texto] ?? ""}</p>
+        {url && (
+          <button type="button" onClick={compartilhar} className="mt-4 w-full cursor-pointer rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
+            {copiado ? "Link copiado ✓" : "Compartilhar meu link"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiColors, slug }: { taxa: number; visitas: number; totalCliques: number; businessId: string; orbiColors?: string[] | null; slug?: string }) {
   // Anima o número e o arco de 0 até o valor real, ao montar.
   const [anim, setAnim] = useState(0);
   // Dica extra gerada pela Orbi por IA, complementa os passos fixos.
   const [extra, setExtra] = useState<{ titulo: string; texto: string } | null>(null);
   const [gerando, setGerando] = useState(false);
   const [erroExtra, setErroExtra] = useState(false);
+  const [aberto, setAberto] = useState<string | null>(null);
 
   async function gerarExtra() {
     if (gerando) return;
@@ -156,12 +209,17 @@ export function TaxaConversao({ taxa, visitas, totalCliques, businessId, orbiCol
         <div className="border-t border-divider px-5 py-4">
           <ol className="flex flex-col gap-2">
             {ctx.passos.map((texto, i) => (
-              <li key={i} className="flex items-center gap-3 rounded-full border border-divider bg-surface-white py-2.5 pl-3 pr-4">
-                <span className="orbi-gradient flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-on-background">{i + 1}</span>
-                <p className="text-[14.5px] font-medium leading-tight text-on-background">{texto}</p>
+              <li key={i}>
+                <button type="button" onClick={() => setAberto(texto)} className="flex w-full cursor-pointer items-center gap-3 rounded-full border border-divider bg-surface-white py-2.5 pl-3 pr-4 text-left">
+                  <span className="orbi-gradient flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-on-background">{i + 1}</span>
+                  <p className="flex-1 text-[14.5px] font-medium leading-tight text-on-background">{texto}</p>
+                  <span aria-hidden className="text-text-tertiary">›</span>
+                </button>
               </li>
             ))}
           </ol>
+
+          {aberto && <PassoSheet texto={aberto} url={slug ? `https://orbibox.app/${slug}` : null} onClose={() => setAberto(null)} />}
 
           {ctx.link && (
             <Link href={ctx.link.href} className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-button-primary px-5 py-2.5 text-[13.5px] font-semibold text-white">

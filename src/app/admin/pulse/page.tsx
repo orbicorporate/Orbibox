@@ -167,7 +167,7 @@ export default async function PulsePage({
         abaInicial={sp.aba === "marketing" ? "marketing" : "visitantes"}
         visitantes={
           <div className="flex flex-col">
-            <TaxaConversao taxa={taxa} visitas={visitas} totalCliques={totalCliques} businessId={business!.id} orbiColors={pulseOrbiColors} />
+            <TaxaConversao taxa={taxa} visitas={visitas} totalCliques={totalCliques} businessId={business!.id} orbiColors={pulseOrbiColors} slug={business!.slug} />
 
             {/* Filtro de período, logo acima dos números que ele afeta. */}
             <p className="mt-6 text-[12px] uppercase tracking-wide text-text-tertiary">Período</p>
