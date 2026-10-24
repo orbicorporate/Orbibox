@@ -100,13 +100,13 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
       </div>
 
       {passoAPasso && (
-        <Link href="/admin/comecar" className="mt-4 flex items-center gap-3 rounded-[24px] bg-on-background p-4 text-white shadow-[0_16px_32px_-18px_rgba(17,19,24,0.6)] transition-transform active:scale-[0.98]">
+        <Link href="/admin/comecar" className="passo-cereja mt-4 flex items-center gap-3 rounded-[24px] p-4 text-white shadow-[0_16px_32px_-14px_rgba(196,18,47,0.7)] transition-transform active:scale-[0.98]">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-[15px] font-semibold" aria-hidden>1·2·3</span>
           <span className="min-w-0 flex-1">
             <span className="block text-[16px] font-semibold leading-tight">Continue o passo a passo</span>
-            <span className="block text-[12.5px] text-white/65">Categorias, itens e página inicial</span>
+            <span className="block text-[12.5px] text-white/80">Categorias, itens e página inicial</span>
           </span>
-          <span aria-hidden>→</span>
+          <span aria-hidden className="passo-cereja-seta relative z-10">→</span>
         </Link>
       )}
 
