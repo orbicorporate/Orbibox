@@ -944,7 +944,7 @@ function Bolinha({ b, aberto, onClick }: { b: BolinhaVitrine; aberto: boolean; o
   // Presente: só o desenho, sem círculo de fundo, balançando de leve de tempos em tempos.
   if (b.tipo === "presente" && !b.logo) {
     return (
-      <button type="button" onClick={onClick} aria-label={b.rotulo} className="relative flex h-[60px] w-[60px] items-center justify-center text-on-background active:scale-95">
+      <button type="button" onClick={onClick} aria-label={b.rotulo} style={b.cor && !linha ? { color: b.cor } : undefined} className="relative flex h-[60px] w-[60px] items-center justify-center text-on-background active:scale-95">
         <svg width="46" height="46" viewBox="0 0 24 24" className="presente-treme" aria-hidden>
           <rect x="2" y="8.5" width="20" height="4" rx="1.6" fill="currentColor" />
           <path d="M4 14h6.6v7H6a2 2 0 0 1-2-2z" fill="currentColor" />
