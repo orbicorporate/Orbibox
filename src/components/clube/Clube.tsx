@@ -98,7 +98,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   const abrirAvaliacoes = (e: React.MouseEvent<HTMLElement>) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) });
   const cluster = !isOwner || resumo.fas > 0 || resumo.avaliacoes > 0 ? (
     <div className="flex min-h-[40px] items-center gap-3.5 text-[13.5px] font-normal text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]">
-      {(!isOwner || resumo.fas > 0) && (
+      {resumo.fas > 0 && (
         <button
           type="button"
           onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget) })}
@@ -115,12 +115,18 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
               <span className="tabular-nums">{resumo.fas}</span>
             </>
           )}
-          {!isOwner && (
-            <>
-              <span className={`coracao-pulsa ${eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}`}><IcCoracao cheio={eu.ehFa} tamanho={22} /></span>
-              <span>{eu.ehFa ? "Sou fã" : "Virar fã"}</span>
-            </>
-          )}
+        </button>
+      )}
+      {!isOwner && (
+        <button
+          type="button"
+          aria-pressed={eu.ehFa}
+          aria-label={eu.ehFa ? "Você é fã. Toque para deixar de ser fã" : "Virar fã"}
+          onClick={(e) => void alternarFa(rect(e.currentTarget))}
+          className="flex min-h-[40px] items-center gap-2 transition active:scale-[0.96]"
+        >
+          <span className={`coracao-pulsa ${eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}`}><IcCoracao cheio={eu.ehFa} tamanho={22} /></span>
+          <span>{eu.ehFa ? "Sou fã" : "Virar fã"}</span>
         </button>
       )}
       {temNota && (
@@ -131,6 +137,14 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       )}
     </div>
   ) : null;
+
+  /** Toque no coração: vira fã ou deixa de ser (o coração volta a ser só linhas). */
+  async function alternarFa(origem: DOMRect) {
+    if (!eu?.logado || !eu.userId) { pedirLogin("fa", origem); return; }
+    if (eu.ehFa) await deixarDeSerFa(businessId, eu.userId);
+    else { await virarFa(businessId, eu.userId); await curtirMarca(businessId, eu.userId, true); }
+    await recarregar();
+  }
 
   /** Convite da língua e do painel: pede só o número, sem código. Quem não entrou passa antes pelo login. */
   function querContato() {
