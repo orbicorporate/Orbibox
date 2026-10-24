@@ -947,7 +947,7 @@ export function ShowcaseBuilder({
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuAberto((v) => !v)}
-            className="flex items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[14px] font-medium text-text-secondary"
+            className="flex items-center gap-1.5 rounded-full border border-divider bg-white px-4 py-2.5 text-[14px] font-medium text-text-secondary"
             aria-expanded={menuAberto}
           >
             Mais
@@ -956,7 +956,7 @@ export function ShowcaseBuilder({
             </svg>
           </button>
           {menuAberto && (
-            <div className="absolute left-0 top-full z-30 mt-2 w-60 overflow-hidden rounded-2xl border border-divider bg-surface-white py-1.5 shadow-[0_12px_32px_rgba(17,19,24,0.14)]">
+            <div className="absolute left-0 top-full z-30 mt-2 w-60 overflow-hidden rounded-2xl border border-divider bg-white py-1.5 shadow-[0_16px_40px_rgba(17,19,24,0.22)]">
               <button onClick={() => { setMenuAberto(false); setShowImport(true); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">✦ Importar do site</button>
               {temCardapio && (
                 <button onClick={() => { setMenuAberto(false); void abrirTrazerDoCardapio(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Copiar itens do cardápio</button>

@@ -24,7 +24,7 @@ export const SUGESTOES_TAG: { name: string; color: string }[] = [
  * na hora; depois é só editar como qualquer outra. Só aparece enquanto não
  * há nenhuma etiqueta, pra não poluir quem já organizou as suas.
  */
-export function SugestoesTag({ businessId, onCreated }: { businessId: string; onCreated: (t: Tag) => void }) {
+export function SugestoesTag({ businessId, onCreated, existentes = [] }: { businessId: string; onCreated: (t: Tag) => void; existentes?: string[] }) {
   const [criando, setCriando] = useState<string | null>(null);
   const supabase = createClient();
 
@@ -35,18 +35,21 @@ export function SugestoesTag({ businessId, onCreated }: { businessId: string; on
     if (id) onCreated({ id: id as string, name: s.name, color: s.color, total: 0 });
   }
 
+  const restantes = SUGESTOES_TAG.filter((s) => !existentes.includes(s.name));
+  if (restantes.length === 0) return null;
+
   return (
     <div>
-      <p className="text-[13px] font-semibold text-text-secondary">Comece por um grupo</p>
+      <p className="text-[13px] font-semibold text-text-secondary">{existentes.length === 0 ? "Comece por um grupo" : "Mais grupos prontos"}</p>
       <div className="mt-2 flex flex-wrap gap-2">
-        {SUGESTOES_TAG.map((s) => (
+        {restantes.map((s) => (
           <button
             key={s.name}
             type="button"
             onClick={() => criar(s)}
             disabled={criando === s.name}
             className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium disabled:opacity-50"
-            style={{ backgroundColor: s.color + "22", color: s.color }}
+            style={{ backgroundColor: s.color, color: "#fff" }}
           >
             <span className="text-[13px] leading-none">+</span>
             {s.name}
@@ -64,7 +67,7 @@ export function TagChip({ tag, ativo, onClick }: { tag: Tag; ativo?: boolean; on
       type="button"
       onClick={onClick}
       className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-all"
-      style={ativo ? { backgroundColor: tag.color, color: "#fff" } : { backgroundColor: tag.color + "22", color: tag.color }}
+      style={ativo ? { backgroundColor: tag.color, color: "#fff", boxShadow: "0 0 0 2px #fff, 0 0 0 4px " + tag.color } : { backgroundColor: tag.color, color: "#fff", opacity: 0.85 }}
     >
       {ativo && (
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
@@ -164,7 +167,7 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
   if (abertaId && detalhe) {
     return (
       <div className="mt-5 flex flex-col gap-3">
-        <button type="button" onClick={() => { setAbertaId(null); recarregar(); }} className="cursor-pointer self-start text-[13px] text-text-tertiary hover:underline">← Etiquetas</button>
+        <button type="button" onClick={() => { setAbertaId(null); recarregar(); }} className="cursor-pointer self-start text-[13px] text-text-tertiary hover:underline">← Grupos</button>
 
         <div className="rounded-[24px] border border-divider bg-surface-white p-5">
           <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-semibold" style={{ backgroundColor: detalhe.color + "22", color: detalhe.color }}>{detalhe.name}</span>
@@ -207,9 +210,7 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
     <div className="mt-5 flex flex-col gap-3">
       <p className="text-[13px] leading-snug text-text-tertiary">Junte pessoas em grupos e fale com todas de uma vez.</p>
 
-      {tags.length === 0 ? (
-        <SugestoesTag businessId={businessId} onCreated={() => recarregar()} />
-      ) : (
+      {tags.length > 0 && (
         tags.map((t) => (
           <div key={t.id} className="flex items-center gap-1 rounded-[22px] border border-divider bg-surface-white p-2 pl-4">
             <button
@@ -240,6 +241,8 @@ export function PorEtiqueta({ businessId }: { businessId: string; orbiColors?: s
           </div>
         ))
       )}
+
+      <SugestoesTag businessId={businessId} onCreated={() => recarregar()} existentes={tags.map((t) => t.name)} />
 
       <NovaTag businessId={businessId} onCreated={() => recarregar()} />
 
