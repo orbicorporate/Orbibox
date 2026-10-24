@@ -4,7 +4,7 @@ import { useState } from "react";
 
 /** Mapa do Google embutido com botão para ampliar e reduzir. Só carrega quando chega perto na tela. */
 export function MapaEndereco({ endereco, className = "" }: { endereco: string; className?: string }) {
-  const [grande, setGrande] = useState(false);
+  const [grande, setGrande] = useState(true);
   return (
     <div className={`relative overflow-hidden rounded-[14px] bg-surface-soft transition-[height] duration-300 ${grande ? "h-[min(42vh,300px)]" : "h-[170px]"} ${className}`}>
       <iframe
