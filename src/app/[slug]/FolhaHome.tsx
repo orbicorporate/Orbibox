@@ -101,11 +101,19 @@ export function FolhaHome({
   const [rascunhos, setRascunhos] = useState<LinhaHome[]>([]);
   const [vista, setVista] = useState<"lista" | "novo" | "form" | "pdf">("lista");
   const [onde, setOnde] = useState<"bolinha" | "destaque">(posicaoInicial);
-  const [exemplo, setExemplo] = useState<"bolinha" | "destaque">(posicaoInicial);
   const mudar = (l: LinhaHome, pos: Posicao) => {
-    if (pos !== "escondido") setExemplo(pos);
     onMudar(l, pos);
   };
+  const [criandoBotoes, setCriandoBotoes] = useState(false);
+  async function criarBotoesProntos() {
+    setCriandoBotoes(true);
+    try {
+      await fetch("/api/comecar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "botoes" }) });
+      router.refresh();
+    } finally {
+      setCriandoBotoes(false);
+    }
+  }
   const [escolhido, setEscolhido] = useState<Preset | null>(null);
   const [nome, setNome] = useState("");
   const [valor, setValor] = useState("");
@@ -240,9 +248,7 @@ export function FolhaHome({
 
         {vista === "lista" && (
           <>
-            <Exemplo ativo={exemplo} onEscolher={setExemplo} />
-            <button type="button" onClick={() => { setOnde(posicaoInicial); setVista("novo"); }} className="mt-3 min-h-[44px] w-full rounded-full bg-surface-soft text-[14px] font-medium active:scale-[0.98]">+ Criar algo novo</button>
-
+            <p className="mt-3 text-[13.5px] leading-snug text-text-secondary">Escolha onde cada coisa aparece na sua Home.</p>
             {avisos.length > 0 && (
               <div className="mt-4 flex flex-col gap-2">
                 {avisos.map((a) => (
@@ -260,7 +266,12 @@ export function FolhaHome({
 
             <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Botões</p>
             <div className="mt-2 flex flex-col gap-2">
-              {botoes.length === 0 && <p className="text-[14.5px] text-text-secondary">Nenhum botão ainda. Toque em Criar algo novo.</p>}
+              {botoes.length === 0 && (
+                <div className="rounded-2xl bg-surface-soft p-4">
+                  <p className="text-[14.5px] text-text-secondary">Você ainda não tem botões. A Orbi cria os básicos e você muda depois.</p>
+                  <button type="button" disabled={criandoBotoes} onClick={() => void criarBotoesProntos()} className="mt-3 min-h-[44px] w-full rounded-full bg-on-background text-[14px] font-medium text-white disabled:opacity-50 active:scale-[0.98]">{criandoBotoes ? "Criando…" : "Criar botões prontos"}</button>
+                </div>
+              )}
               {botoes.map((l) => (
                 <Linha key={l.id} l={l} onMudar={mudar} />
               ))}
@@ -280,7 +291,6 @@ export function FolhaHome({
             )}
 
             <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Produtos</p>
-            <p className="mt-1.5 text-[14px] leading-snug text-text-secondary">Só itens publicados aparecem aqui. Se o seu item não está na lista, ele deve estar em rascunho: publique no Catálogo.</p>
             <div className="mt-2 flex flex-col gap-2">
               {itens.length === 0 && <p className="text-[14.5px] text-text-secondary">Nenhum produto no catálogo ainda.</p>}
               {itens.slice(0, 60).map((l) => (
@@ -290,7 +300,7 @@ export function FolhaHome({
             {rascunhos.length > 0 && (
               <>
                 <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Rascunhos</p>
-                <p className="mt-1.5 text-[14px] leading-snug text-text-secondary">Estes produtos ainda não estão publicados, por isso ninguém vê. Toque em Publicar para colocar na página.</p>
+                <p className="mt-1.5 text-[14px] leading-snug text-text-secondary">Ninguém vê estes ainda. Toque em Publicar.</p>
                 <div className="mt-2 flex flex-col gap-2">
                   {rascunhos.map((l) => (
                     <div key={l.id} className="flex items-center gap-3 rounded-2xl border border-divider p-2.5">
@@ -310,6 +320,9 @@ export function FolhaHome({
                 </div>
               </>
             )}
+            <div className="sticky -bottom-8 -mx-5 mt-6 bg-gradient-to-t from-white via-white to-white/0 px-5 pb-1 pt-4">
+              <button type="button" onClick={() => { setOnde(posicaoInicial); setVista("novo"); }} className="min-h-[48px] w-full rounded-full bg-on-background text-[15px] font-medium text-white shadow-[0_10px_24px_-12px_rgba(17,19,24,0.5)] active:scale-[0.98]">+ Criar algo novo</button>
+            </div>
           </>
         )}
 
@@ -450,31 +463,11 @@ function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHom
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-// Mini página de exemplo: mostra onde cada opção aparece. Toque em uma das duas para ver.
-function Exemplo({ ativo, onEscolher }: { ativo: "bolinha" | "destaque"; onEscolher: (p: "bolinha" | "destaque") => void }) {
-  const anel = (on: boolean) => (on ? "ring-2 ring-on-background" : "ring-1 ring-divider opacity-60");
-  return (
-    <div className="mt-3 rounded-2xl bg-surface-soft p-3">
-      <div className="mx-auto flex w-full max-w-[260px] flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
-        <span className="h-7 w-7 rounded-full bg-divider" aria-hidden />
-        <button type="button" onClick={() => onEscolher("bolinha")} aria-label="Ver exemplo de bolinha" className={`flex w-full items-center justify-center gap-2 rounded-xl p-2 ${anel(ativo === "bolinha")}`}>
-          {["#25D366", "#E3A35A", "#A84B3F", "#C9B58A", "#8A5A2B"].map((c) => (
-            <span key={c} className="h-7 w-7 rounded-full" style={{ background: c }} aria-hidden />
-          ))}
-        </button>
-        <button type="button" onClick={() => onEscolher("destaque")} aria-label="Ver exemplo de destaque" className={`flex w-full items-center gap-2 rounded-full bg-[#A38B6D] p-1.5 pr-3 ${anel(ativo === "destaque")}`}>
-          <span className="h-7 w-7 shrink-0 rounded-full bg-white" aria-hidden />
-          <span className="flex-1 text-left text-[11px] font-semibold leading-none text-white">Cardápio</span>
-          <span className="rounded-full bg-white px-2 py-1 text-[9px] font-bold text-[#A38B6D]">Abrir</span>
-        </button>
-      </div>
-      <p className="mt-2 text-center text-[12.5px] leading-snug text-text-secondary">
-        {ativo === "bolinha" ? "Bolinha: um ícone redondo na fileira de cima, com o nome embaixo. Bom para atalhos rápidos." : "Destaque: um cartão largo, logo abaixo das bolinhas. Bom para o que você quer que todo mundo veja primeiro."}
-      </p>
+      {!soDestaque && (l.pos !== "escondido" || l.tipo === "item") && (
+        <p className="mt-1.5 px-2 text-[12px] leading-snug text-text-tertiary">
+          {l.pos === "bolinha" ? "Ícone redondo na fileira de cima da Home." : l.pos === "destaque" ? "Cartão largo, logo abaixo das bolinhas." : "Aparece só dentro do catálogo."}
+        </p>
+      )}
     </div>
   );
 }
