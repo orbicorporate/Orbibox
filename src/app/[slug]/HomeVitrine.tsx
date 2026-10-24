@@ -422,7 +422,7 @@ export function HomeVitrine({
             {podeEditar && onEscolherItens ? (
               <button type="button" onClick={() => setEscolhendo(true)} aria-label={`${tituloItens}: escolher e ordenar os itens da Home`} className="flex min-h-[40px] min-w-0 items-center gap-2 rounded-full text-left active:opacity-70">
                 <h2 className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
-                <span className="shrink-0 text-[14px] text-on-background/60" aria-hidden>✎</span>
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-background text-[16px] font-medium leading-none text-white" aria-hidden>+</span>
               </button>
             ) : (
               <div className="flex min-w-0 items-center gap-1.5">
