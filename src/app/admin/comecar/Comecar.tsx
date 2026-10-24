@@ -139,10 +139,14 @@ export function Comecar(p: Props) {
                   <p className="text-[14px] text-text-secondary">Faça o passo 1 primeiro, para eu saber onde colocar cada item.</p>
                 ) : (
                   <>
-                    <ol className="flex flex-col gap-1.5 text-[14px] text-text-secondary">
+                    <Link href="/admin/vitrine?inspire=1" className="flex items-center justify-between gap-3 rounded-2xl bg-on-background px-4 py-3.5 text-white active:scale-[0.99]">
+                      <span><span className="block text-[14.5px] font-medium">Veja vitrines prontas antes</span><span className="block text-[12.5px] text-white/70">Modelos com fotos bem escolhidas</span></span>
+                      <span aria-hidden>›</span>
+                    </Link>
+                    <ol className="mt-3 flex flex-col gap-1.5 text-[14px] text-text-secondary">
                       <li>1. Toque em Adicionar na categoria.</li>
-                      <li>2. Coloque nome, foto e preço.</li>
-                      <li>3. Escolha lista ou página própria do produto.</li>
+                      <li>2. Escolha uma boa foto: nítida, de perto, luz clara.</li>
+                      <li>3. Coloque nome e preço.</li>
                     </ol>
                     <ul className="mt-3 flex flex-col gap-2">
                       {p.porCategoria.map((c) => (

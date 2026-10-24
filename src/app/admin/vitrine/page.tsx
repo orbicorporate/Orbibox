@@ -9,8 +9,8 @@ import Link from "next/link";
 
 type BrandColor = { hex: string; role?: string };
 
-export default async function VitrinePage({ searchParams }: { searchParams: Promise<{ novo?: string; abrir?: string; embed?: string; cat?: string }> }) {
-  const { novo, abrir, cat } = await searchParams;
+export default async function VitrinePage({ searchParams }: { searchParams: Promise<{ novo?: string; abrir?: string; embed?: string; cat?: string; inspire?: string }> }) {
+  const { novo, abrir, cat, inspire } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
@@ -64,6 +64,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
       )}
       <ShowcaseBuilder
         abrirNovo={novo === "1"}
+        abrirInspire={inspire === "1"}
         categoriaNovo={cat?.slice(0, 30) ?? null}
         abrirCapa={abrir === "capa" || abrir === "ajustes" || abrir === "novidades"}
         items={(items ?? []).map((i) => ({ ...i, image_url: capaDoItem(i.image_url, i.gallery_urls) }))}

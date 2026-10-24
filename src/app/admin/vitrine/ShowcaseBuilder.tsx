@@ -90,6 +90,7 @@ export function ShowcaseBuilder({
   initialLeadTop = false,
   siteSalvo = null,
   abrirNovo = false,
+  abrirInspire = false,
   categoriaNovo = null,
   abrirCapa = false,
   temCardapio = false,
@@ -116,6 +117,7 @@ export function ShowcaseBuilder({
   abrirCapa?: boolean;
   /** Veio de um atalho "Adicionar item agora": já abre um item novo. */
   abrirNovo?: boolean;
+  abrirInspire?: boolean;
   /** Categoria em que o item novo já nasce (vem do passo a passo). */
   categoriaNovo?: string | null;
   /** O negócio tem Cardápio ativo: libera passar itens entre os dois. */
@@ -234,7 +236,7 @@ export function ShowcaseBuilder({
   const [guiadoId, setGuiadoId] = useState<string | null>(null);
   const [improving, setImproving] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
-  const [showInspire, setShowInspire] = useState(false);
+  const [showInspire, setShowInspire] = useState(abrirInspire);
   const [showEstilo, setShowEstilo] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
   const [ajustesAbertos, setAjustesAbertos] = useState(abrirCapa);
