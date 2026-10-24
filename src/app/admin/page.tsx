@@ -68,6 +68,9 @@ export default async function HojePage() {
     realConvs = new Set((msgRows ?? []).map((m) => m.conversation_id)).size;
   }
 
+  // Itens publicados, para escolher um deles ao compartilhar nos Stories.
+  const { data: itensStories } = await supabase.from("content_items").select("id, title, image_url").eq("business_id", b.id).eq("status", "published").order("position", { ascending: true }).limit(12);
+
   const dataProxima = proximaData();
   const vouchersBaixos = (vouchersRes.data ?? [])
     .map((v) => ({ id: v.id, title: v.title, quantity_total: v.quantity_total, restam: v.quantity_total - v.quantity_claimed }))
@@ -100,7 +103,7 @@ export default async function HojePage() {
   return (
     <>
     <AbrirNaPagina />
-    <PopupDivulgacao businessId={b.id} nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={b.share_image_url || b.vitrine_cover_url || null} logo={b.logo_url ?? null} temVoucher={(vouchersRes.data ?? []).length > 0} />
+    <PopupDivulgacao businessId={b.id} nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={b.share_image_url || b.vitrine_cover_url || null} logo={b.logo_url ?? null} temVoucher={(vouchersRes.data ?? []).length > 0} itens={itensStories ?? []} />
     <HomeView
       saudacao={saudacaoDoMomento()}
       primeiroNome={primeiroNome}

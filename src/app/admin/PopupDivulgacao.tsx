@@ -12,7 +12,7 @@ type Dica = {
   passos?: string[];
   primario: string;
   /** "whatsapp" abre o WhatsApp com a mensagem pronta, "folha" abre o compartilhar (WhatsApp e Stories), "link" leva a uma tela do painel. */
-  acao: "whatsapp" | "folha" | "link";
+  acao: "whatsapp" | "folha" | "link" | "stories";
   href?: string;
   /** Para onde o compartilhamento aponta (padrão: a página do negócio). */
   caminho?: string;
@@ -21,6 +21,7 @@ type Dica = {
 };
 
 const ESPERA_MS = 20 * 3600 * 1000;
+const agora = () => Date.now();
 
 function Icone({ tipo }: { tipo: Dica["icone"] }) {
   const p = { width: 28, height: 28, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
@@ -35,11 +36,14 @@ function Icone({ tipo }: { tipo: Dica["icone"] }) {
  * primeira vez (compartilhar no WhatsApp e nos Stories). Depois, no máximo um
  * por dia, uma dica de cada vez. O que já foi feito ou adiado fica guardado no aparelho.
  */
-export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo, temVoucher }: {
+export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo, temVoucher, itens = [] }: {
   businessId: string; nome: string; slug: string; shareUrl: string; imagem: string | null; logo: string | null; temVoucher: boolean;
+  /** Itens publicados do catálogo, para escolher um e compartilhar nos Stories. */
+  itens?: { id: string; title: string; image_url: string | null }[];
 }) {
   const [dica, setDica] = useState<Dica | null>(null);
   const [folha, setFolha] = useState<AlvoCompartilhar | null>(null);
+  const [escolhendoItem, setEscolhendoItem] = useState(false);
   const chave = `orbibox-divulgar:${businessId}`;
 
   const dicas: Dica[] = [
@@ -51,9 +55,11 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
       mensagem: "Oi, quer conhecer nosso novo Orbibox?",
     },
     {
-      id: "stories", titulo: "Poste nos Stories", icone: "stories",
-      texto: "A gente gera a arte pronta com a sua marca. Você só escolhe o Instagram e cola o link no adesivo.",
-      primario: "Gerar arte para os Stories", acao: "folha",
+      id: "stories", titulo: "Que tal compartilhar nos Stories?", icone: "stories",
+      texto: itens.length > 0
+        ? "Compartilhe o seu Orbibox agora nos Stories. Você pode escolher um item do catálogo ou compartilhar o link do Orbibox completo."
+        : "Compartilhe o seu Orbibox agora nos Stories, com o link do Orbibox completo.",
+      primario: "Compartilhar o Orbibox completo", acao: "stories",
     },
     temVoucher
       ? { id: "voucher", titulo: "Divulgue o seu voucher", icone: "voucher", texto: "Um voucher no ar atrai quem ainda não conhece você. Mande a página para a sua lista e para os Stories.", primario: "Compartilhar a página", acao: "folha" }
@@ -72,7 +78,7 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
     const proxima = dicas.find((d) => !estado.feitas.includes(d.id));
     if (!proxima) return;
     const primeira = estado.feitas.length === 0 && estado.ultimo === 0;
-    if (!primeira && Date.now() - estado.ultimo < ESPERA_MS) return;
+    if (!primeira && agora() - estado.ultimo < ESPERA_MS) return;
     const t = setTimeout(() => setDica(proxima), primeira ? 900 : 1500);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,7 +88,7 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
     try {
       const atual = JSON.parse(localStorage.getItem(chave) || "{}") as { feitas?: string[]; ultimo?: number };
       const feitas = feita ? Array.from(new Set([...(atual.feitas ?? []), id])) : atual.feitas ?? [];
-      localStorage.setItem(chave, JSON.stringify({ feitas, ultimo: Date.now() }));
+      localStorage.setItem(chave, JSON.stringify({ feitas, ultimo: agora() }));
     } catch { /* sem armazenamento */ }
   }
 
@@ -100,12 +106,20 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
       window.open(`https://wa.me/?text=${encodeURIComponent(`${a.texto}\n${a.url}`)}`, "_blank", "noopener");
       return;
     }
-    if (d.acao === "folha") setFolha(alvoDe(d));
+    if (d.acao === "folha" || d.acao === "stories") setFolha(alvoDe(d));
+  }
+
+  function compartilharItem(d: Dica, it: { id: string; title: string; image_url: string | null }) {
+    guardar(true, d.id);
+    setDica(null);
+    setEscolhendoItem(false);
+    setFolha({ url: `${new URL(shareUrl).origin}/${slug}/p/${it.id}`, titulo: it.title, rotulo: nome, marca: nome, imagem: it.image_url ?? imagem, logo, texto: `Olha o que tem no ${nome}:` });
   }
 
   function depois(d: Dica) {
     guardar(false, d.id);
     setDica(null);
+    setEscolhendoItem(false);
   }
 
   return (
@@ -126,7 +140,37 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
                 ))}
               </ul>
             )}
-            {dica.acao === "link" && dica.href ? (
+            {dica.acao === "stories" ? (
+              escolhendoItem ? (
+                <div className="mt-5 text-left">
+                  <p className="text-[13px] text-text-tertiary">Escolha um item</p>
+                  <ul className="mt-2 flex max-h-[260px] flex-col gap-1.5 overflow-y-auto">
+                    {itens.map((it) => (
+                      <li key={it.id}>
+                        <button type="button" onClick={() => compartilharItem(dica, it)} className="flex min-h-[52px] w-full items-center gap-3 rounded-2xl bg-surface-soft px-3 text-left active:scale-[0.99]">
+                          <span className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-white">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {it.image_url && <img src={it.image_url} alt="" className="h-full w-full object-cover" />}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-[14px] text-on-background">{it.title}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <button type="button" onClick={() => setEscolhendoItem(false)} className="mt-2 min-h-[40px] text-[13px] text-text-secondary underline underline-offset-2">Voltar</button>
+                </div>
+              ) : (
+                <div className="mt-6 flex flex-col gap-2">
+                  <button type="button" onClick={() => fazer(dica)} className="flex min-h-[50px] w-full flex-col items-center justify-center rounded-full bg-button-primary text-[15px] font-normal text-white active:scale-[0.98]">
+                    {dica.primario}
+                    <span className="text-[11.5px] text-white/70">Recomendado</span>
+                  </button>
+                  {itens.length > 0 && (
+                    <button type="button" onClick={() => setEscolhendoItem(true)} className="min-h-[46px] w-full rounded-full bg-surface-soft text-[14px] font-normal text-on-background active:scale-[0.98]">Escolher um item do catálogo</button>
+                  )}
+                </div>
+              )
+            ) : dica.acao === "link" && dica.href ? (
               <Link href={dica.href} onClick={() => fazer(dica)} className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-full bg-button-primary text-[15px] font-normal text-white active:scale-[0.98]">{dica.primario}</Link>
             ) : (
               <button type="button" onClick={() => fazer(dica)} className={`mt-6 flex min-h-[50px] w-full items-center justify-center rounded-full text-[15px] font-normal text-white active:scale-[0.98] ${dica.acao === "whatsapp" ? "bg-[#25D366]" : "bg-button-primary"}`}>{dica.primario}</button>
