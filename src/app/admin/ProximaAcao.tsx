@@ -134,7 +134,7 @@ export function ProximaAcao({
       <div className={`rounded-[22px] bg-surface-white shadow-[0_18px_40px_-28px_rgba(17,19,24,.35)] ${compacto ? "p-3.5 [&_.detalhe]:hidden" : "p-4"}`}>
         <div className="flex items-center gap-2.5">
           <OrbiSimbolo size={22} />
-          <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-text-tertiary">Agora</p>
+          <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-text-tertiary">{atual && !concluida && !avisoGift ? ({ data: "Sugestão de campanha", gift: "Gift novo", estoque: "Estoque", pergunta: "Pergunta de cliente" } as Record<string, string>)[atual.tipo] ?? "Agora" : "Agora"}</p>
           {total > 1 && !concluida && (
             <p className="ml-auto text-[12px] tabular-nums text-text-tertiary" aria-label={`${total} coisas pra fazer`}>1 de {total}</p>
           )}
