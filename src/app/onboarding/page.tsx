@@ -42,7 +42,7 @@ async function analyzeBrand(name: string, instagram: string, website: string, de
   return res.json();
 }
 
-type Step = "dados" | "objetivo" | "analisando" | "montando" | "pronto";
+type Step = "dados" | "objetivo" | "acao" | "analisando" | "montando" | "pronto";
 type Escolha<T> = T | "orbi" | null;
 type Importacao = { imported: number; siteType: "ecommerce" | "institucional" | "links" | null; motivo: string | null; fetchError: string | null };
 
@@ -82,7 +82,6 @@ export default function OnboardingPage() {
   const resultadoRef = useRef<BrandAnalysis | null>(null);
   const respondeuRef = useRef(false);
   const leituraRef = useRef(0);
-  const perguntaDoisRef = useRef<HTMLDivElement>(null);
   const criouRef = useRef(false);
 
   const [montagem, setMontagem] = useState<{ status: "pending" | "ok"; itens: ItemMontado[]; segundos: number | null }>({ status: "pending", itens: [], segundos: null });
@@ -106,7 +105,7 @@ export default function OnboardingPage() {
 
   // Frases girando enquanto a leitura não termina.
   useEffect(() => {
-    if (step !== "objetivo" || analise.status === "ok") return;
+    if ((step !== "objetivo" && step !== "acao") || analise.status === "ok") return;
     const t = setTimeout(() => setFrase((f) => Math.min(f + 1, LENDO.length - 1)), 2600);
     return () => clearTimeout(t);
   }, [step, frase, analise.status]);
@@ -177,9 +176,10 @@ export default function OnboardingPage() {
   }
 
   // Ao escolher o objetivo a segunda pergunta aparece embaixo: leva a tela até ela.
+  // Escolheu o objetivo: segue sozinho para o passo 3 (dá tempo de ver a marcação).
   function escolherObjetivo(id: NonNullable<typeof objetivo>) {
     setObjetivo(id);
-    window.setTimeout(() => perguntaDoisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    window.setTimeout(() => setStep((s) => (s === "objetivo" ? "acao" : s)), 260);
   }
 
   function confirmarRespostas() {
@@ -478,7 +478,7 @@ export default function OnboardingPage() {
   const leituraOk = analise.status === "ok";
 
   return (
-    <main className={`relative flex min-h-screen justify-center px-5 ${step === "pronto" ? "items-start py-14" : step === "analisando" ? "items-start pb-16 pt-[9vh]" : "items-center py-16"}`}>
+    <main className={`relative flex min-h-screen justify-center overflow-x-clip px-5 ${step === "pronto" ? "items-start py-14" : step === "analisando" ? "items-start pb-16 pt-[9vh]" : "items-center py-16"}`}>
       {step === "dados" && (novoNegocio ? (
         <Link href="/admin" className="fixed right-4 top-4 z-10 rounded-full bg-surface-white px-3.5 py-2 text-[12px] font-medium text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.08)]">
           ← Voltar ao painel
@@ -489,7 +489,18 @@ export default function OnboardingPage() {
         </button>
       ))}
 
-      <div className={step === "pronto" ? "w-full" : "w-full max-w-md"}>
+      {(step === "dados" || step === "objetivo" || step === "acao") && (
+        <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+          <div className="absolute -left-24 -top-24 h-[320px] w-[320px] rounded-full bg-[#FFD9B8] opacity-60 blur-[90px]" />
+          <div className="absolute -right-28 top-1/3 h-[300px] w-[300px] rounded-full bg-[#CFC3FF] opacity-60 blur-[90px]" />
+          <div className="absolute -bottom-28 left-1/4 h-[300px] w-[300px] rounded-full bg-[#B9ECD6] opacity-60 blur-[90px]" />
+        </div>
+      )}
+
+      <div className={`relative z-10 ${step === "pronto" ? "w-full" : "w-full max-w-md"}`}>
+        {(step === "dados" || step === "objetivo" || step === "acao") && (
+          <Passos atual={step === "dados" ? 1 : step === "objetivo" ? 2 : 3} />
+        )}
         {step === "dados" && (
           <>
             <div className="mb-7 flex justify-center"><BrandOrb colors={null} size={72} /></div>
@@ -526,10 +537,14 @@ export default function OnboardingPage() {
           </>
         )}
 
-        {step === "objetivo" && (
+        {(step === "objetivo" || step === "acao") && (
           <div>
-            <button type="button" onClick={voltarParaDados} className="mb-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]">
-              ← Voltar e corrigir o nome ou os links
+            <button
+              type="button"
+              onClick={step === "objetivo" ? voltarParaDados : () => setStep("objetivo")}
+              className="mb-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]"
+            >
+              {step === "objetivo" ? "← Voltar e corrigir o nome ou os links" : "← Voltar"}
             </button>
             {/* A Orbi trabalhando, sempre visível no topo enquanto a pessoa escolhe. */}
             <div className="flex items-center gap-3 rounded-[22px] bg-surface-white px-4 py-3 ring-1 ring-black/[0.06]">
@@ -543,69 +558,80 @@ export default function OnboardingPage() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
-            <h2 className="mt-8 font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-tight tracking-[-0.01em]">
-              Enquanto isso: o que você mais quer conseguir?
+        {step === "objetivo" && (
+          <div key="objetivo" className="orbi-linha-entra">
+            <h2 className="mt-7 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.01em]">
+              O que você mais quer conseguir?
             </h2>
-            <div className="mt-4 flex flex-col gap-2" role="radiogroup" aria-label="Objetivo">
+            <p className="mt-1.5 text-[14px] text-text-secondary">Escolha uma. Dá pra mudar depois.</p>
+            <div className="mt-5 flex flex-col gap-2" role="radiogroup" aria-label="Objetivo">
               {OBJETIVOS.map((o) => (
-                <Opcao key={o.id} ativa={objetivo === o.id} onClick={() => escolherObjetivo(o.id)} titulo={o.rotulo} detalhe={o.detalhe} />
+                <Opcao key={o.id} ativa={objetivo === o.id} onClick={() => escolherObjetivo(o.id)} titulo={o.rotulo} detalhe={o.detalhe} icone={VISUAL_OBJETIVO[o.id].icone} cor={VISUAL_OBJETIVO[o.id].cor} />
               ))}
-              <Opcao ativa={objetivo === "orbi"} onClick={() => escolherObjetivo("orbi")} titulo="Não sei. Deixe a Orbi decidir" detalhe="Ela escolhe pelo que encontrou sobre você" orbi />
+              <Opcao ativa={objetivo === "orbi"} onClick={() => escolherObjetivo("orbi")} titulo="Não sei. Deixe a Orbi decidir" detalhe="Ela escolhe pelo que encontrou sobre você" icone="✦" cor="#DDF3EA" />
             </div>
+          </div>
+        )}
 
-            {objetivo && (
-              <div className="orbi-linha-entra" ref={perguntaDoisRef}>
-                <h2 className="mt-9 font-[family-name:var(--font-manrope)] text-[22px] font-medium leading-tight tracking-[-0.01em]">
-                  E o que você mais quer que seus clientes façam?
-                </h2>
-                <div className="mt-4 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Ação principal do cliente">
-                  {CONVERSOES.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={conversao === c.id}
-                      onClick={() => setConversao(c.id)}
-                      className={`min-h-[48px] rounded-2xl px-3.5 py-3 text-left text-[14px] font-medium transition-all active:scale-[0.98] ${conversao === c.id ? "bg-on-background text-white" : "bg-surface-white text-on-background ring-1 ring-divider"}`}
-                    >
-                      {c.rotulo}
-                    </button>
-                  ))}
+        {step === "acao" && (
+          <div key="acao" className="orbi-linha-entra">
+            <h2 className="mt-7 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.01em]">
+              O que seus clientes devem fazer?
+            </h2>
+            <p className="mt-1.5 text-[14px] text-text-secondary">Esse vira o primeiro botão da sua página.</p>
+            <div className="mt-5 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Ação principal do cliente">
+              {CONVERSOES.map((c) => {
+                const ativa = conversao === c.id;
+                const v = VISUAL_CONVERSAO[c.id];
+                return (
                   <button
+                    key={c.id}
                     type="button"
                     role="radio"
-                    aria-checked={conversao === "orbi"}
-                    onClick={() => setConversao("orbi")}
-                    className={`col-span-2 min-h-[48px] rounded-full px-3.5 py-3 text-left text-[14px] font-medium transition-all active:scale-[0.98] ${conversao === "orbi" ? "bg-on-background text-white" : "bg-surface-white text-text-secondary ring-1 ring-divider"}`}
+                    aria-checked={ativa}
+                    onClick={() => setConversao(c.id)}
+                    className={`flex min-h-[84px] flex-col items-start justify-between gap-2 rounded-[20px] px-3.5 py-3 text-left transition-all active:scale-[0.98] ${ativa ? "bg-on-background text-white" : "bg-surface-white ring-1 ring-divider"}`}
                   >
-                    ✦ Deixe a Orbi decidir
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full text-[16px]" style={{ background: v.cor }} aria-hidden>{v.icone}</span>
+                    <span className="text-[14px] font-medium leading-tight">{c.rotulo}</span>
                   </button>
-                </div>
+                );
+              })}
+              <button
+                type="button"
+                role="radio"
+                aria-checked={conversao === "orbi"}
+                onClick={() => setConversao("orbi")}
+                className={`col-span-2 min-h-[48px] rounded-full px-4 py-3 text-left text-[14px] font-medium transition-all active:scale-[0.98] ${conversao === "orbi" ? "bg-on-background text-white" : "bg-surface-white text-text-secondary ring-1 ring-divider"}`}
+              >
+                ✦ Deixe a Orbi decidir
+              </button>
+            </div>
 
-                {convEscolhida?.precisa === "whatsapp" && (
-                  <div className="orbi-linha-entra mt-4">
-                    <input
-                      placeholder="Seu WhatsApp (opcional)"
-                      inputMode="tel"
-                      value={whatsapp}
-                      onChange={(e) => setWhatsapp(formatarWhatsapp(e.target.value))}
-                      className={campo}
-                    />
-                    <p className="mt-1.5 px-1 text-[12px] text-text-tertiary">Se estiver no seu site, a Orbi acha sozinha.</p>
-                  </div>
-                )}
-                {convEscolhida?.precisa === "endereco" && (
-                  <div className="orbi-linha-entra mt-4">
-                    <input placeholder="Endereço do seu espaço (opcional)" value={endereco} onChange={(e) => setEndereco(e.target.value)} className={campo} />
-                    <p className="mt-1.5 px-1 text-[12px] text-text-tertiary">Vira um botão com mapa, Waze e Google Maps.</p>
-                  </div>
-                )}
+            {convEscolhida?.precisa === "whatsapp" && (
+              <div className="orbi-linha-entra mt-4">
+                <input
+                  placeholder="Seu WhatsApp (opcional)"
+                  inputMode="tel"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(formatarWhatsapp(e.target.value))}
+                  className={campo}
+                />
+                <p className="mt-1.5 px-1 text-[12px] text-text-tertiary">Se estiver no seu site, a Orbi acha sozinha.</p>
+              </div>
+            )}
+            {convEscolhida?.precisa === "endereco" && (
+              <div className="orbi-linha-entra mt-4">
+                <input placeholder="Endereço do seu espaço (opcional)" value={endereco} onChange={(e) => setEndereco(e.target.value)} className={campo} />
+                <p className="mt-1.5 px-1 text-[12px] text-text-tertiary">Vira um botão com mapa, Waze e Google Maps.</p>
               </div>
             )}
 
-            <Button className="mt-8 w-full" variant="orbi" disabled={!objetivo || !conversao} onClick={confirmarRespostas}>
-              {!objetivo ? "Escolha o que você mais quer conseguir" : !conversao ? "Falta responder a pergunta de cima" : "Ver meu Orbibox ✦"}
+            <Button className="mt-6 w-full" variant="orbi" disabled={!objetivo || !conversao} onClick={confirmarRespostas}>
+              {!conversao ? "Escolha uma opção" : "Ver meu Orbibox ✦"}
             </Button>
           </div>
         )}
@@ -632,20 +658,58 @@ export default function OnboardingPage() {
   );
 }
 
-function Opcao({ ativa, onClick, titulo, detalhe, orbi }: { ativa: boolean; onClick: () => void; titulo: string; detalhe: string; orbi?: boolean }) {
+const VISUAL_OBJETIVO: Record<string, { icone: string; cor: string }> = {
+  vender: { icone: "🛍️", cor: "#FFE0C7" },
+  apresentar: { icone: "✨", cor: "#E3DAFF" },
+  atender: { icone: "💬", cor: "#CFE8FF" },
+  tudo: { icone: "🚀", cor: "#C9F0DD" },
+};
+const VISUAL_CONVERSAO: Record<string, { icone: string; cor: string }> = {
+  comprar: { icone: "🛒", cor: "#FFE0C7" },
+  orcamento: { icone: "📝", cor: "#FFF1B8" },
+  whatsapp: { icone: "💬", cor: "#C9F0DD" },
+  agendar: { icone: "📅", cor: "#CFE8FF" },
+  visitar: { icone: "📍", cor: "#FFD0D9" },
+  conhecer: { icone: "👀", cor: "#E3DAFF" },
+  oferta: { icone: "🎟️", cor: "#FFE0C7" },
+  contato: { icone: "📞", cor: "#CFE8FF" },
+};
+
+/** 1, 2, 3: onde a pessoa está e quanto falta. */
+function Passos({ atual }: { atual: 1 | 2 | 3 }) {
+  const nomes = ["Seu negócio", "Seu objetivo", "Seus clientes"];
+  return (
+    <ol className="mb-7 flex items-center justify-center gap-2" aria-label={`Passo ${atual} de 3`}>
+      {nomes.map((n, i) => {
+        const num = i + 1;
+        const feito = num < atual;
+        const agora = num === atual;
+        return (
+          <li key={n} className="flex items-center gap-2" aria-current={agora ? "step" : undefined}>
+            <span className={`flex h-7 w-7 items-center justify-center rounded-full text-[12.5px] font-medium transition-colors ${agora ? "bg-on-background text-white" : feito ? "orbi-gradient text-on-background" : "bg-white/80 text-text-tertiary ring-1 ring-divider"}`}>
+              {feito ? "✓" : num}
+            </span>
+            <span className={`text-[12.5px] ${agora ? "font-medium text-on-background" : "text-text-tertiary"} ${agora ? "" : "hidden min-[400px]:inline"}`}>{n}</span>
+            {num < 3 && <span className={`h-px w-4 ${feito ? "bg-on-background/40" : "bg-divider"}`} aria-hidden />}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function Opcao({ ativa, onClick, titulo, detalhe, icone, cor }: { ativa: boolean; onClick: () => void; titulo: string; detalhe: string; icone?: string; cor?: string }) {
   return (
     <button
       type="button"
       role="radio"
       aria-checked={ativa}
       onClick={onClick}
-      className={`flex min-h-[60px] items-center gap-3 rounded-[20px] px-4 py-3 text-left transition-all active:scale-[0.99] ${ativa ? "bg-on-background text-white" : "bg-surface-white ring-1 ring-divider"}`}
+      className={`flex min-h-[64px] items-center gap-3 rounded-[20px] px-3.5 py-3 text-left transition-all active:scale-[0.99] ${ativa ? "bg-on-background text-white" : "bg-surface-white ring-1 ring-divider"}`}
     >
-      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${ativa ? "border-white" : "border-divider"}`} aria-hidden>
-        {ativa && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
-      </span>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[18px]" style={{ background: cor ?? "#EEF0EA" }} aria-hidden>{icone}</span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-medium leading-tight">{orbi && "✦ "}{titulo}</span>
+        <span className="block text-[15px] font-medium leading-tight">{titulo}</span>
         <span className={`mt-0.5 block text-[13px] leading-snug ${ativa ? "text-white/65" : "text-text-secondary"}`}>{detalhe}</span>
       </span>
     </button>
