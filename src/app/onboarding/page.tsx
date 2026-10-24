@@ -12,10 +12,11 @@ import { coresDaOrbi } from "@/lib/orbiCores";
 import { colorOf } from "@/lib/showcase";
 import { segmentoPorId } from "@/lib/segmentos";
 import { registrarFunil } from "@/lib/funil";
+import type { Json } from "@/lib/supabase/types";
 import { CONVERSOES, OBJETIVOS, conversaoPorId, ordenarBotoes, type BotaoChave, type ConversaoId, type ObjetivoId } from "@/lib/conversao";
 import { AnaliseAoVivo, BrandOrb, VitrineMontando, formatarWhatsapp, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 import { Pronto, type ProntoDados } from "./Pronto";
-import { Revisar, type RevisaoDados } from "./Revisar";
+import { Revisar, type RevisaoDados, type RevisaoResultado } from "./Revisar";
 
 type Color = { hex: string; role: string };
 type BrandAnalysis = {
@@ -88,7 +89,7 @@ export default function OnboardingPage() {
   const [montagem, setMontagem] = useState<{ status: "pending" | "ok"; itens: ItemMontado[]; segundos: number | null }>({ status: "pending", itens: [], segundos: null });
   const [pronto, setPronto] = useState<ProntoDados | null>(null);
   const [revisao, setRevisao] = useState<RevisaoDados | null>(null);
-  const revisaoRef = useRef<((v: { whatsapp: string; endereco: string; principal: string | null }) => void) | null>(null);
+  const revisaoRef = useRef<((v: RevisaoResultado) => void) | null>(null);
   const [bizId, setBizId] = useState<string | null>(null);
   const [tentando, setTentando] = useState(false);
 
@@ -339,9 +340,9 @@ export default function OnboardingPage() {
     const catsPre = Array.from(new Set((preItens ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v)));
     const opcoes = (catsPre.length > 0 ? catsPre : seg?.categorias ?? (preItens ?? []).filter((r) => r.type !== "link").map((r) => r.title)).slice(0, 8);
     const waPre = (pre?.contact_whatsapp || pre?.contact_phone || whatsappDigits || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
-    const conf = await new Promise<{ whatsapp: string; endereco: string; principal: string | null }>((resolve) => {
+    const conf = await new Promise<RevisaoResultado>((resolve) => {
       revisaoRef.current = resolve;
-      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, opcoes, principal: opcoes[0] ?? null, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta" });
+      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, opcoes, principal: opcoes[0] ?? null, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
       setStep("revisar");
     });
     setMontagem({ status: "pending", itens: [], segundos: null });
@@ -361,7 +362,7 @@ export default function OnboardingPage() {
     // Ele aparece no menu e é só montar e ligar.
     if (seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id)) {
       await supabase.from("smart_boxes").insert({
-        business_id: id, box_type: "custom", title: "Cardápio", position: 99, is_active: false,
+        business_id: id, box_type: "custom", title: "Cardápio", position: 99, is_active: conf.extras.includes("cardapio"),
         config: { label: "Cardápio", subtitle: "Veja os pratos e preços", icon: "🍴", action: "cardapio", color: "transparent" },
       });
     }
@@ -421,11 +422,12 @@ export default function OnboardingPage() {
         case "agent": return { business_id: id, box_type: "agent", title: NOMES.agent, position, is_active };
         case "conhecer": return { business_id: id, box_type: "content", title: NOMES.conhecer, position, is_active };
         case "whatsapp": return { business_id: id, box_type: "custom", title: waRotulo.label, position, is_active, config: { label: waRotulo.label, subtitle: waRotulo.subtitle, icon: "__wadisc__", color: "transparent", action: "whatsapp", url: "" } };
-        case "endereco": return { business_id: id, box_type: "custom", title: "Como chegar", position, is_active, config: { label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", color: "transparent", action: "endereco", url: enderecoFinal } };
+        case "endereco": return { business_id: id, box_type: "custom", title: "Como chegar", position, is_active, config: { label: "Como chegar", subtitle: "Veja no mapa", icon: "__pin__", color: "transparent", action: "endereco", url: enderecoFinal, ...(conf.horario ? { horario: conf.horario } : {}) } };
         case "cupom": return { business_id: id, box_type: "custom", title: NOMES.cupom, position, is_active, config: { label: NOMES.cupom, subtitle: "Resgate agora e aproveite", icon: "__ticket__", color: "transparent", action: "cupom" } };
       }
     };
-    const linhas = [
+    type LinhaBox = { business_id: string; box_type: string; title: string; position: number; is_active: boolean; config?: Json };
+    const linhas: LinhaBox[] = [
       { business_id: id, box_type: "hero", title: "Tela inicial", position: 0, is_active: true },
       ...ordem.map((k, i) => linha(k, i + 1, true)),
     ];
@@ -434,6 +436,8 @@ export default function OnboardingPage() {
     if (!ordem.includes("catalogo")) linhas.push(linha("catalogo", pos++, false));
     if (!ordem.includes("conhecer")) linhas.push(linha("conhecer", pos++, false));
     linhas.push({ business_id: id, box_type: "campaign", title: "Presentear", position: pos++, is_active: false });
+    // Sugestão do ramo: serviço ganha o botão Agendar (abre o WhatsApp).
+    if (conf.extras.includes("agendar") && waFinal) linhas.push({ business_id: id, box_type: "custom", title: "Agendar horário", position: pos++, is_active: true, config: { label: "Agendar horário", subtitle: "Escolha o melhor dia", icon: "__wadisc__", color: "transparent", action: "whatsapp", url: "" } });
     // Instagram digitado, ou o que a Orbi achou no site.
     let igFinal = instagramUrl;
     if (!igFinal && imp.siteType) {
@@ -452,6 +456,14 @@ export default function OnboardingPage() {
         const { error: e1 } = await supabase.from("smart_boxes").insert(l);
         if (e1) console.error("onboarding: falha no botão", l.title, e1);
       }
+    }
+
+    // Home já com um destaque: o item principal (ou o de maior preço) que tem foto.
+    {
+      const { data: comFoto } = await supabase.from("content_items").select("id, title, price, brand_label, image_url").eq("business_id", id).eq("status", "published").not("image_url", "is", null).order("position", { ascending: true }).limit(20);
+      const lista = comFoto ?? [];
+      const escolhido = lista.find((i) => principalFinal && (i.title === principalFinal || i.brand_label?.trim() === principalFinal)) ?? [...lista].sort((a, b) => (b.price ?? 0) - (a.price ?? 0))[0];
+      if (escolhido) await supabase.from("businesses").update({ home_destaques: [{ t: "item", id: escolhido.id }] }).eq("id", id);
     }
 
     // Categorias do catálogo: as que o site já trouxe nos itens, senão as do ramo.

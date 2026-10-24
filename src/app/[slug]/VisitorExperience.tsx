@@ -45,6 +45,8 @@ import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { CartaoItem } from "./CartaoItem";
 import { FolhaHome, type LinhaHome, type NovoBox, type Posicao, type CriarEm } from "./FolhaHome";
+import { HorarioContext } from "@/components/ui/HorarioContext";
+import { lerHorario } from "@/lib/horario";
 import { BoxDestaque, lerDestaques, type Destaque, type DestaqueSalvo, type BotaoDestaque } from "./BoxDestaque";
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
@@ -131,7 +133,7 @@ type ContentItem = {
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
 
-type CustomConfig = { label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
+type CustomConfig = { horario?: { dias: number[]; abre: string; fecha: string }; label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -879,7 +881,10 @@ export function VisitorExperience({
   const heroStyle = (business as { hero_style?: string }).hero_style || "brilho";
   const heroPrecisaVeu = heroStyle === "cheio" || heroStyle === "meio" || heroStyle === "degrade";
 
+  const horarioNegocio = lerHorario(boxList.map((b) => (b.config as CustomConfig | null)?.horario).find((h) => !!h));
+
   return (
+    <HorarioContext.Provider value={horarioNegocio}>
     <main className="relative min-h-screen overflow-hidden bg-background-main">
       {/* Fundo conforme o estilo escolhido pelo dono. "brilho" é o halo suave
           (padrão); os demais preenchem a tela com cor forte + um véu claro por
@@ -1824,6 +1829,7 @@ export function VisitorExperience({
         <OrbiFloatingButton onOpen={() => chooseIntent("duvida")} orbiColors={orbiColors} agentName={agentName} />
       )}
     </main>
+    </HorarioContext.Provider>
   );
 }
 

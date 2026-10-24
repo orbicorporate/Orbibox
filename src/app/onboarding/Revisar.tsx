@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatarWhatsapp } from "./MagicScreens";
+import { DIAS_CURTOS, type Horario } from "@/lib/horario";
 
 export type RevisaoDados = {
   bizId: string;
@@ -13,7 +14,13 @@ export type RevisaoDados = {
   principal: string | null;
   temInstagram: boolean;
   temVoucher: boolean;
+  /** Ramo de comida: sugere ligar o Cardápio. */
+  gastronomico: boolean;
+  /** Ramo de serviço: sugere o botão Agendar. */
+  servico: boolean;
 };
+
+export type RevisaoResultado = { whatsapp: string; endereco: string; principal: string | null; horario: Horario | null; extras: string[] };
 
 const campo = "w-full rounded-full bg-surface-soft px-4 py-3 text-[15px] outline-none ring-1 ring-transparent focus:ring-on-background/30";
 
@@ -22,12 +29,17 @@ const campo = "w-full rounded-full bg-surface-soft px-4 py-3 text-[15px] outline
  * endereço) e pergunta o que vem primeiro. Cada item vira um botão ou
  * bolinha pronta, sem a pessoa montar nada do zero.
  */
-export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirmar: (v: { whatsapp: string; endereco: string; principal: string | null }) => void }) {
+export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirmar: (v: RevisaoResultado) => void }) {
   const supabase = createClient();
   const [logo, setLogo] = useState(dados.logo);
   const [whatsapp, setWhatsapp] = useState(dados.whatsapp);
   const [endereco, setEndereco] = useState(dados.endereco);
   const [principal, setPrincipal] = useState(dados.principal);
+  const [comHorario, setComHorario] = useState(false);
+  const [dias, setDias] = useState<number[]>([1, 2, 3, 4, 5]);
+  const [abre, setAbre] = useState("09:00");
+  const [fecha, setFecha] = useState("18:00");
+  const [extras, setExtras] = useState<string[]>([...(dados.gastronomico ? ["cardapio"] : []), ...(dados.servico ? ["agendar"] : [])]);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const arquivo = useRef<HTMLInputElement>(null);
@@ -50,6 +62,8 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
   const itensHome = [
     waOk && "WhatsApp",
+    extras.includes("agendar") && "Agendar",
+    extras.includes("cardapio") && "Cardápio",
     endereco.trim() && "Mapa",
     dados.temInstagram && "Instagram",
     "Catálogo",
@@ -97,6 +111,29 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
           <div><p className="text-[15px] font-semibold leading-tight">Endereço</p><p className="text-[12.5px] text-text-tertiary">Vira a bolinha de mapa. Pule se não atende no local</p></div>
         </div>
         <input value={endereco} onChange={(e) => setEndereco(e.target.value)} placeholder="Rua, número, cidade" className={`${campo} mt-3`} />
+        {endereco.trim() && (
+          <div className="mt-3">
+            <button type="button" aria-pressed={comHorario} onClick={() => setComHorario((v) => !v)} className={`min-h-[40px] rounded-full px-4 text-[13.5px] font-medium ${comHorario ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>
+              {comHorario ? "✓ Mostrar Aberto agora no mapa" : "Mostrar Aberto agora no mapa"}
+            </button>
+            {comHorario && (
+              <div className="mt-3">
+                <div className="flex flex-wrap gap-1.5">
+                  {DIAS_CURTOS.map((d, i) => {
+                    const on = dias.includes(i);
+                    return <button key={d} type="button" aria-pressed={on} onClick={() => setDias((a) => (on ? a.filter((x) => x !== i) : [...a, i]))} className={`h-9 min-w-[44px] rounded-full px-3 text-[13px] font-medium ${on ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{d}</button>;
+                  })}
+                </div>
+                <div className="mt-3 flex items-center gap-2 text-[13px] text-text-secondary">
+                  <span>Das</span>
+                  <input type="time" value={abre} onChange={(e) => setAbre(e.target.value)} className="rounded-full bg-surface-soft px-3 py-2 text-[14px] outline-none" />
+                  <span>às</span>
+                  <input type="time" value={fecha} onChange={(e) => setFecha(e.target.value)} className="rounded-full bg-surface-soft px-3 py-2 text-[14px] outline-none" />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {dados.opcoes.length > 0 && (
@@ -113,6 +150,21 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         </section>
       )}
 
+      {(dados.gastronomico || dados.servico) && (
+        <section className={card}>
+          <p className="text-[15px] font-semibold leading-tight">Sugerido para o seu ramo</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[
+              dados.gastronomico && { id: "cardapio", t: "Cardápio com pratos e fotos" },
+              dados.servico && { id: "agendar", t: "Botão Agendar horário" },
+            ].filter((x): x is { id: string; t: string } => !!x).map((x) => {
+              const on = extras.includes(x.id);
+              return <button key={x.id} type="button" aria-pressed={on} onClick={() => setExtras((a) => (on ? a.filter((y) => y !== x.id) : [...a, x.id]))} className={`min-h-[40px] rounded-full px-4 text-[13.5px] font-medium ${on ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{on ? "✓ " : ""}{x.t}</button>;
+            })}
+          </div>
+        </section>
+      )}
+
       <section className="rounded-[22px] bg-surface-soft p-4">
         <p className="text-[12.5px] font-medium text-text-tertiary">Sua página inicial vai ter</p>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -121,7 +173,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
       </section>
 
       {erro && <p className="px-1 text-[13px] text-red-600">{erro}</p>}
-      <button type="button" onClick={() => onConfirmar({ whatsapp, endereco, principal })} className="orbi-gradient mt-1 w-full rounded-full py-4 text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
+      <button type="button" onClick={() => onConfirmar({ whatsapp, endereco, principal, horario: comHorario && endereco.trim() && dias.length > 0 && abre < fecha ? { dias, abre, fecha } : null, extras })} className="orbi-gradient mt-1 w-full rounded-full py-4 text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
         Montar minha página →
       </button>
     </div>

@@ -1,12 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useState, useSyncExternalStore } from "react";
+import { HorarioContext } from "./HorarioContext";
+import { statusHorario } from "@/lib/horario";
+
+// Muda a cada minuto, pra "Aberto agora" se manter certo. No servidor fica vazio.
+const assinarMinuto = (cb: () => void) => { const t = setInterval(cb, 60000); return () => clearInterval(t); };
+const minutoAtual = () => String(Math.floor(Date.now() / 60000));
 
 /** Mapa do Google embutido com botão para ampliar e reduzir. Só carrega quando chega perto na tela. */
 export function MapaEndereco({ endereco, className = "" }: { endereco: string; className?: string }) {
   const [grande, setGrande] = useState(true);
+  const horario = useContext(HorarioContext);
+  const minuto = useSyncExternalStore(assinarMinuto, minutoAtual, () => "");
+  const st = horario && minuto ? statusHorario(horario) : null;
   return (
-    <div className={`relative overflow-hidden rounded-[14px] bg-surface-soft transition-[height] duration-300 ${grande ? "h-[min(42vh,300px)]" : "h-[170px]"} ${className}`}>
+    <div className={className}>
+    {st && (
+      <p className="mb-2 flex items-center gap-2 text-[13px] font-medium">
+        <span className={`h-2 w-2 rounded-full ${st.aberto ? "bg-[#1F9E4C]" : "bg-[#C4122F]"}`} aria-hidden />
+        {st.texto}
+      </p>
+    )}
+    <div className={`relative overflow-hidden rounded-[14px] bg-surface-soft transition-[height] duration-300 ${grande ? "h-[min(42vh,300px)]" : "h-[170px]"}`}>
       <iframe
         title={`Mapa: ${endereco}`}
         src={`https://maps.google.com/maps?q=${encodeURIComponent(endereco)}&z=16&output=embed`}
@@ -25,6 +41,7 @@ export function MapaEndereco({ endereco, className = "" }: { endereco: string; c
         </svg>
         {grande ? "Reduzir" : "Ampliar"}
       </button>
+    </div>
     </div>
   );
 }
