@@ -573,7 +573,7 @@ export default function OnboardingPage() {
               ))}
               <Opcao ativa={objetivo === "orbi"} onClick={() => escolherObjetivo("orbi")} titulo="Não sei. Deixe a Orbi decidir" detalhe="Ela escolhe pelo que encontrou sobre você" icone="✦" cor="#DDF3EA" />
             </div>
-            <Dica>Quem tem WhatsApp, voucher e vitrine juntos costuma converter mais. Se ficar na dúvida, escolha "Fazer tudo isso".</Dica>
+            <Dica>Quem tem WhatsApp, voucher e vitrine juntos costuma converter mais. Se ficar na dúvida, escolha Fazer tudo isso.</Dica>
           </div>
         )}
 
