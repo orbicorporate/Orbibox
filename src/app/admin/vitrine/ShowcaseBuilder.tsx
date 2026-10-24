@@ -8,7 +8,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gravarFlag, useFlag } from "@/lib/useFlag";
-import { PassoLinha } from "@/components/ui/GuiaPassos";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -91,6 +90,7 @@ export function ShowcaseBuilder({
   siteSalvo = null,
   abrirNovo = false,
   abrirInspire = false,
+  semFoto = 0,
   categoriaNovo = null,
   abrirCapa = false,
   temCardapio = false,
@@ -118,6 +118,7 @@ export function ShowcaseBuilder({
   /** Veio de um atalho "Adicionar item agora": já abre um item novo. */
   abrirNovo?: boolean;
   abrirInspire?: boolean;
+  semFoto?: number;
   /** Categoria em que o item novo já nasce (vem do passo a passo). */
   categoriaNovo?: string | null;
   /** O negócio tem Cardápio ativo: libera passar itens entre os dois. */
@@ -244,7 +245,6 @@ export function ShowcaseBuilder({
   const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const estiloOk = useFlag(`vitrine_estilo_${businessId}`);
-  const guiaOculto = useFlag(`vitrine_guia_off_${businessId}`);
 
   // Fecha o menu "Mais" ao tocar fora dele.
   useEffect(() => {
@@ -268,9 +268,6 @@ export function ShowcaseBuilder({
     requestAnimationFrame(() => document.getElementById("vitrine-ajustes")?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
 
-  function esconderGuia() {
-    gravarFlag(`vitrine_guia_off_${businessId}`);
-  }
   const [showCoverExample, setShowCoverExample] = useState(false);
   const [applyingPalette, setApplyingPalette] = useState<string | null>(null);
   const [currentBrandColors, setCurrentBrandColors] = useState<BrandColor[]>(brandColors);
@@ -481,32 +478,6 @@ export function ShowcaseBuilder({
   const publishedCount = items.filter((i) => i.status === "published").length;
 
   // Passo a passo de quem está começando.
-  const paginasDeProduto = items.filter((i) => i.status === "published" && (i.link_kind ?? "produto") === "produto");
-  const paginasIncompletas = paginasDeProduto.filter((i) => i.gallery_urls.length === 0 && !(i.highlights ?? []).some((h) => h.trim()));
-  const passos = [
-    {
-      titulo: "Confira seus itens",
-      detalhe:
-        items.length === 0
-          ? "Importe do seu site ou crie o primeiro item"
-          : `A Orbi trouxe ${items.length} ${items.length === 1 ? "item" : "itens"}. Revise e deixe ativo o que quiser mostrar`,
-      feito: publishedCount > 0,
-      acao: () => (items.length === 0 ? setShowImport(true) : document.getElementById("vitrine-itens")?.scrollIntoView({ behavior: "smooth", block: "start" })),
-    },
-    {
-      titulo: "Complete a página de cada item",
-      detalhe:
-        paginasDeProduto.length === 0
-          ? "Fotos, diferenciais e uma pergunta pra Orbi"
-          : `${paginasDeProduto.length - paginasIncompletas.length} de ${paginasDeProduto.length} prontas. Toque pra ver quais faltam`,
-      feito: paginasDeProduto.length > 0 && paginasIncompletas.length === 0,
-      // Abre a lista das páginas aqui mesmo, a pessoa escolhe qual completar.
-      acao: () => setListaPaginas((v) => !v),
-      lista: true,
-    },
-  ];
-  const mostrarGuia = !guiaOculto && passos.some((p) => !p.feito);
-  const [listaPaginas, setListaPaginas] = useState(false);
   const [avisarNovidade, setAvisarNovidade] = useState<{ titulo: string; quantos: number } | null>(null);
 
   // Categorias que já existem em algum item, mesmo que ainda não estejam na
@@ -832,64 +803,6 @@ export function ShowcaseBuilder({
     <div className="mt-5 flex flex-col">
       <DialogRenderer />
 
-      {/* Passo a passo pra quem acabou de chegar: some sozinho quando os três
-          estão feitos (ou quando a pessoa esconde). */}
-      {mostrarGuia && (
-        <div className="mb-5">
-          <div className="flex items-center justify-between gap-2 px-1">
-            <p className="text-[13.5px] font-semibold">
-              Próximo passo <span className="ml-1 text-[12.5px] font-normal text-text-tertiary">{passos.filter((p) => p.feito).length} de {passos.length}</span>
-            </p>
-            <button onClick={esconderGuia} className="text-[12px] text-text-tertiary">Ocultar</button>
-          </div>
-          <div className="mt-3 flex flex-col gap-2.5">
-            {passos.map((p, i) => (i === passos.findIndex((x) => !x.feito) ? (
-              <div key={i}>
-              <PassoLinha
-                passo={{ titulo: p.titulo, detalhe: p.detalhe, feito: p.feito, onClick: p.acao }}
-                n={i + 1}
-                destaque={i === passos.findIndex((x) => !x.feito)}
-                fim={p.lista ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${listaPaginas ? "rotate-180" : ""}`} aria-hidden>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                ) : undefined}
-              />
-              {/* Lista das páginas: a pessoa vê quais faltam e escolhe. */}
-              {p.lista && listaPaginas && !p.feito && (
-                <div className="mt-1.5 flex flex-col gap-1.5 pl-3">
-                  {paginasDeProduto.length === 0 && (
-                    <p className="px-2 py-2 text-[12.5px] text-text-tertiary">Deixe algum item ativo primeiro, a página dele aparece aqui.</p>
-                  )}
-                  {[...paginasIncompletas, ...paginasDeProduto.filter((x) => !paginasIncompletas.includes(x))].map((it) => {
-                    const pronta = !paginasIncompletas.includes(it);
-                    return (
-                      <Link
-                        key={it.id}
-                        href={`/admin/vitrine/pagina/${it.id}`}
-                        className="flex items-center gap-3 rounded-2xl border border-divider bg-surface-white px-3 py-2.5"
-                      >
-                        <span
-                          className="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-cover bg-center"
-                          style={it.image_url ? { backgroundImage: `url(${it.image_url})` } : { backgroundColor: colorOf(it.box_color).bg }}
-                        />
-                        <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">{it.title}</span>
-                        {pronta ? (
-                          <span className="shrink-0 text-[12px] text-text-tertiary">✓ Pronta</span>
-                        ) : (
-                          <span className="shrink-0 rounded-full bg-on-background px-3 py-1 text-[12px] font-medium text-white">Completar</span>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-              </div>
-            ) : null))}
-          </div>
-        </div>
-      )}
-
       {guiadoId && (() => {
         const it = items.find((i) => i.id === guiadoId);
         if (!it) return null;
@@ -1000,23 +913,34 @@ export function ShowcaseBuilder({
       )}
       {importMsg && <p className={`mt-2 text-[13px] ${importMsg.kind === "ok" ? "text-text-secondary" : "text-red-600"}`}>{importMsg.text}</p>}
 
-      {/* Estilo: uma linha só, abre as paletas e as vitrines prontas. */}
-      {items.length > 0 && !estiloOk && (
-        <button
-          onClick={() => setShowEstilo(true)}
-          className="mt-3 flex items-center gap-3 rounded-[18px] border border-divider bg-surface-white px-4 py-3 text-left"
-        >
-          <span className="flex shrink-0 -space-x-1.5">
-            {(currentBrandColors.length ? currentBrandColors : [{ hex: "#E8E8E3" }, { hex: "#111318" }]).slice(0, 4).map((c, i) => (
-              <span key={`${c.hex}-${i}`} className="h-6 w-6 rounded-full border-2 border-surface-white shadow-[0_0_0_1px_rgba(17,19,24,0.12)]" style={{ backgroundColor: c.hex }} />
-            ))}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[14px] font-medium">Estilo do catálogo</span>
-            <span className="block text-[12px] text-text-tertiary">Cores e vitrines prontas</span>
-          </span>
-          <span className="shrink-0 text-[13px] font-medium text-text-secondary">Trocar →</span>
-        </button>
+      {/* Dois blocos lado a lado: estilo e fotos faltando. */}
+      {items.length > 0 && (!estiloOk || semFoto >= 3) && (
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          {!estiloOk && (
+            <button
+              onClick={() => setShowEstilo(true)}
+              className="flex flex-col items-start gap-2 rounded-[22px] bg-white p-4 text-left ring-[0.5px] ring-black/10"
+            >
+              <span className="flex -space-x-1.5">
+                {(currentBrandColors.length ? currentBrandColors : [{ hex: "#E8E8E3" }, { hex: "#111318" }]).slice(0, 4).map((c, i) => (
+                  <span key={`${c.hex}-${i}`} className="h-6 w-6 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(17,19,24,0.12)]" style={{ backgroundColor: c.hex }} />
+                ))}
+              </span>
+              <span className="text-[14px] font-semibold leading-tight">Estilo</span>
+              <span className="text-[12px] text-text-tertiary">Cores e vitrines</span>
+            </button>
+          )}
+          {semFoto >= 3 && (
+            <Link
+              href="/admin/vitrine/fotos"
+              className="flex flex-col items-start gap-2 rounded-[22px] bg-white p-4 text-left ring-[0.5px] ring-black/10"
+            >
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-on-background px-1.5 text-[12px] font-semibold text-white">{semFoto}</span>
+              <span className="text-[14px] font-semibold leading-tight">Sem foto</span>
+              <span className="text-[12px] text-text-tertiary">Escolher da galeria</span>
+            </Link>
+          )}
+        </div>
       )}
 
       {avisarNovidade && (

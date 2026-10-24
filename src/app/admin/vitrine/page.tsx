@@ -4,8 +4,6 @@ import { getCurrentBusinessId } from "@/lib/business";
 import { getInspirePhotos } from "@/lib/inspirePhotos";
 import { ShowcaseBuilder } from "./ShowcaseBuilder";
 import { capaDoItem } from "@/lib/showcase";
-import { GuiaBotao } from "@/components/guia/GuiaOrbi";
-import Link from "next/link";
 
 type BrandColor = { hex: string; role?: string };
 
@@ -55,14 +53,8 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
       <p className="mt-1 text-[14px] text-text-secondary">
         O que o cliente vê no seu link.
       </p>
-      <GuiaBotao className="mt-3 self-start" />
-      {semFoto >= 3 && (
-        <Link href="/admin/vitrine/fotos" className="mt-3 flex min-h-[52px] items-center justify-between gap-3 rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14px] active:scale-[0.99]">
-          <span><span className="font-medium">{semFoto} itens estão sem foto.</span> <span className="text-text-secondary">Escolher da sua galeria</span></span>
-          <span aria-hidden className="text-text-tertiary">›</span>
-        </Link>
-      )}
       <ShowcaseBuilder
+        semFoto={semFoto}
         abrirNovo={novo === "1"}
         abrirInspire={inspire === "1"}
         categoriaNovo={cat?.slice(0, 30) ?? null}
