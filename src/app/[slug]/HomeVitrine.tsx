@@ -18,6 +18,8 @@ import { ORBI_SPHERE_COLORS, sizeOf } from "@/lib/showcase";
 export type BolinhaVitrine = {
   key: string;
   rotulo: string;
+  /** Nome padrão, usado só no editor quando o dono apagou o nome da bolinha. */
+  rotuloPadrao?: string;
   tipo: "whatsapp" | "endereco" | "site" | "rede" | "voucher" | "sobre" | "presente" | "cardapio" | "materiais" | "catalogo";
   rede?: Rede;
   endereco?: string;
@@ -368,7 +370,7 @@ export function HomeVitrine({
                 className={`flex w-[72px] shrink-0 snap-center flex-col items-center transition-transform duration-150 ${arrastoB.pegado === b.key ? "z-20 scale-110 opacity-90" : ""}`}
               >
                 <Bolinha b={b} aberto={enderecoAberto === b.key} onClick={() => aoClicar(b)} />
-                <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>
+                {b.rotulo && <span className="mt-1.5 w-full truncate text-center text-[11.5px] leading-tight text-text-secondary">{b.rotulo}</span>}
               </div>
             ))}
             {podeEditar && onAdicionar && (
@@ -726,7 +728,7 @@ function ListaBolinhas({
             {b.editavel ? (
               <button
                 type="button"
-                aria-label={`Arrastar ${b.rotulo}`}
+                aria-label={`Arrastar ${b.rotulo || b.rotuloPadrao || "bolinha"}`}
                 onPointerDown={(e) => comecar(e, i)}
                 onPointerMove={mover}
                 onPointerUp={soltar}
@@ -750,7 +752,7 @@ function ListaBolinhas({
                 </AbrirEditor>
               )}
             </div>
-            <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{b.rotulo}</span>
+            <span className={`min-w-0 flex-1 truncate text-[14px] font-medium ${b.rotulo ? "" : "text-text-tertiary"}`}>{b.rotulo || b.rotuloPadrao || "Sem nome"}</span>
             {b.editavel ? (
               <>
                 {onCor && podeMudarCor(b) && b.estilo === "cor" && (
@@ -776,11 +778,12 @@ function ListaBolinhas({
               <div className="flex basis-full items-center gap-2 pl-[38px]">
                 {onRenomear && !b.editarHref && (
                   <input
-                    key={`${b.key}-${b.rotulo}`}
+                    key={b.key}
                     defaultValue={b.rotulo}
                     maxLength={24}
-                    aria-label={`Nome de ${b.rotulo}`}
-                    onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== b.rotulo) onRenomear(b.key, v); }}
+                    placeholder="Sem nome"
+                    aria-label={`Nome de ${b.rotulo || b.rotuloPadrao || "bolinha"}`}
+                    onChange={(e) => onRenomear(b.key, e.target.value)}
                     className="min-h-[40px] min-w-0 flex-1 rounded-full border border-divider bg-surface-white px-4 text-[14px] outline-none focus:border-on-background"
                   />
                 )}

@@ -130,7 +130,7 @@ type ContentItem = {
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
 
-type CustomConfig = { label?: string; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
+type CustomConfig = { label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -575,16 +575,18 @@ export function VisitorExperience({
       const base = { key: o.key, estilo, editavel: true, cor: o.bolinhaCor, logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual) : null, logoInteira: o.icon === "__logo__", logoAjuste: o.icon === "__logo__" ? (o.boxLogoAjuste ?? null) : null } as const;
       // O nome que o dono escolheu manda. Só os nomes padrão da criação viram o rótulo curto da bolinha.
       const nomeDono = (padroes: string[], curto: string) => (o.t && !padroes.includes(o.t.trim()) ? o.t : curto);
-      if (o.atalho === "whatsapp") out.push({ ...base, rotulo: nomeDono(["Fale no WhatsApp", "WhatsApp", "Link"], "WhatsApp"), tipo: "whatsapp", onClick: o.onClick });
-      else if (o.atalho === "endereco" && o.address) out.push({ ...base, rotulo: nomeDono(["Como chegar", "Local", "Endereço"], "Local"), tipo: "endereco", endereco: o.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
-      else if (o.rede) out.push({ ...base, rotulo: o.t || nomeDaRede(o.rede), tipo: "rede", rede: o.rede, onClick: o.onClick });
-      else if (o.atalho === "site") out.push({ ...base, rotulo: o.t || "Site", tipo: "site", onClick: o.onClick });
-      else if (o.cupom) out.push({ ...base, rotulo: nomeDono(["Vouchers", "Voucher"], "Vouchers"), tipo: "voucher", selo: o.selo === undefined ? "oferta" : o.selo, onClick: o.onClick });
-      else if (o.acao === "presentear" || o.acao === "gift") out.push({ ...base, rotulo: o.t || "Presentear", tipo: "presente", onClick: o.onClick });
-      else if (o.acao === "conhecer") out.push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
-      else if (o.acao === "cardapio") out.push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
-      else if (o.acao === "materiais") out.push({ ...base, rotulo: o.t || "Materiais", tipo: "materiais", onClick: o.onClick });
-      else if (o.acao === "vitrine" || o.acao === "comprar") out.push({ ...base, rotulo: o.t || "Catálogo", tipo: "catalogo", onClick: () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
+      const semNome = !!((boxList.find((x) => x.id === o.key)?.config ?? {}) as CustomConfig).semNome;
+      const push = (b: BolinhaVitrine) => out.push(semNome ? { ...b, rotuloPadrao: b.rotulo, rotulo: "" } : b);
+      if (o.atalho === "whatsapp") push({ ...base, rotulo: nomeDono(["Fale no WhatsApp", "WhatsApp", "Link"], "WhatsApp"), tipo: "whatsapp", onClick: o.onClick });
+      else if (o.atalho === "endereco" && o.address) push({ ...base, rotulo: nomeDono(["Como chegar", "Local", "Endereço"], "Local"), tipo: "endereco", endereco: o.address, onClick: () => trackClick({ businessId: business.id, kind: "link", sessionId }) });
+      else if (o.rede) push({ ...base, rotulo: o.t || nomeDaRede(o.rede), tipo: "rede", rede: o.rede, onClick: o.onClick });
+      else if (o.atalho === "site") push({ ...base, rotulo: o.t || "Site", tipo: "site", onClick: o.onClick });
+      else if (o.cupom) push({ ...base, rotulo: nomeDono(["Vouchers", "Voucher"], "Vouchers"), tipo: "voucher", selo: o.selo === undefined ? "oferta" : o.selo, onClick: o.onClick });
+      else if (o.acao === "presentear" || o.acao === "gift") push({ ...base, rotulo: o.t || "Presentear", tipo: "presente", onClick: o.onClick });
+      else if (o.acao === "conhecer") push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
+      else if (o.acao === "cardapio") push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
+      else if (o.acao === "materiais") push({ ...base, rotulo: o.t || "Materiais", tipo: "materiais", onClick: o.onClick });
+      else if (o.acao === "vitrine" || o.acao === "comprar") push({ ...base, rotulo: o.t || "Catálogo", tipo: "catalogo", onClick: () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
     }
     if (!out.some((b) => b.tipo === "whatsapp") && whatsAtalho) {
       out.unshift({ key: "zap", estilo: "cor", editavel: false, rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });
@@ -743,7 +745,8 @@ export function VisitorExperience({
     if (!box) return;
     const limpo = nome.trim();
     const cfg = { ...((box.config ?? {}) as CustomConfig) };
-    if (limpo) cfg.label = limpo; else delete cfg.label;
+    // Nome apagado = bolinha sem texto embaixo (e não volta ao nome padrão).
+    if (limpo) { cfg.label = limpo; delete cfg.semNome; } else { delete cfg.label; cfg.semNome = true; }
     setBoxList((prev) => prev.map((b) => (b.id === key ? { ...b, config: cfg, title: limpo || b.title } : b)));
     if (salvarNomeTimer.current) clearTimeout(salvarNomeTimer.current);
     salvarNomeTimer.current = setTimeout(async () => {
@@ -807,7 +810,7 @@ export function VisitorExperience({
     ctaTipo === "orbi"
       ? { tipo: "orbi", rotulo: `Pergunte à ${agentName?.trim() || "Orbi"}`, onClick: () => chooseIntent("duvida") }
       : ctaTipo === "whatsapp"
-        ? { tipo: "whatsapp", rotulo: zapBolinha && zapBolinha.rotulo !== "WhatsApp" ? zapBolinha.rotulo : "Falar no WhatsApp", onClick: zapBolinha?.onClick ?? (() => {}) }
+        ? { tipo: "whatsapp", rotulo: zapBolinha && zapBolinha.rotulo && zapBolinha.rotulo !== "WhatsApp" ? zapBolinha.rotulo : "Falar no WhatsApp", onClick: zapBolinha?.onClick ?? (() => {}) }
         : { tipo: "vitrine", rotulo: vitOpcao?.t || "Ver catálogo", onClick: () => chooseIntent("comprar") };
   const extrasVitrine = todasOpcoes
     .filter((o) => !destaquesHome.some((d) => d.t === "botao" && d.id === o.key))
