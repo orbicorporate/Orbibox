@@ -410,7 +410,13 @@ export default function OnboardingPage() {
     if (!ordem.includes("catalogo")) linhas.push(linha("catalogo", pos++, false));
     if (!ordem.includes("conhecer")) linhas.push(linha("conhecer", pos++, false));
     linhas.push({ business_id: id, box_type: "campaign", title: "Presentear", position: pos++, is_active: false });
-    if (instagramUrl) linhas.push({ business_id: id, box_type: "custom", title: "Instagram", position: pos++, is_active: true, config: { label: "Instagram", subtitle: "Siga a gente", icon: "@", color: "#111318", action: "link", url: instagramUrl } });
+    // Instagram digitado, ou o que a Orbi achou no site.
+    let igFinal = instagramUrl;
+    if (!igFinal && imp.siteType) {
+      const { data: ig } = await supabase.from("businesses").select("instagram_handle").eq("id", id).maybeSingle();
+      if (ig?.instagram_handle) igFinal = `https://instagram.com/${ig.instagram_handle}`;
+    }
+    if (igFinal) linhas.push({ business_id: id, box_type: "custom", title: "Instagram", position: pos++, is_active: true, config: { label: "Instagram", subtitle: "Siga a gente", icon: "@", color: "#111318", action: "link", url: igFinal } });
     if (siteUrl) linhas.push({ business_id: id, box_type: "custom", title: "Nosso site", position: pos++, is_active: true, config: { label: "Nosso site", subtitle: siteUrl.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""), icon: "➜", color: "#111318", action: "link", url: siteUrl } });
     // Toda linha leva config (a coluna não aceita vazio) e, se o lote falhar,
     // cada botão é tentado sozinho, pra a Home nunca nascer sem botões.

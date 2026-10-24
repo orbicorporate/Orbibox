@@ -60,7 +60,12 @@ export async function POST(req: NextRequest) {
 
     const tiposValidos: SiteType[] = ["ecommerce", "institucional", "links"];
     const siteType: SiteType = tiposValidos.includes(proposta.site_type) ? proposta.site_type : "institucional";
-    const items: Extracted[] = Array.isArray(proposta.items) ? proposta.items : [];
+    // Páginas institucionais (Sobre, Contato, políticas) não são produto nem serviço.
+    const PAGINA_INSTITUCIONAL = /^(sobre\b|quem somos|nossa hist|fale (com a gente|conosco)|contato|fale\b|trabalhe|blog\b|pol[ií]tica|termos|privacidade|perguntas frequentes|faq)/i;
+    const CAMINHO_INSTITUCIONAL = /\/(sobre|about|quem-somos|contato|contact|fale-conosco|politica|privacidade|termos|blog|faq)(\/|$|\?|#)/i;
+    const todos: Extracted[] = Array.isArray(proposta.items) ? proposta.items : [];
+    const filtrados = todos.filter((it) => !PAGINA_INSTITUCIONAL.test((it.title ?? "").trim()) && !(it.target_url && CAMINHO_INSTITUCIONAL.test(it.target_url)));
+    const items: Extracted[] = filtrados.length > 0 || todos.every((it) => PAGINA_INSTITUCIONAL.test((it.title ?? "").trim())) ? filtrados : todos;
 
     if (items.length === 0) {
       return NextResponse.json({ error: "Não encontrei produtos ou serviços nesse site.", imported: 0 });
@@ -190,14 +195,44 @@ export async function POST(req: NextRequest) {
       .eq("id", businessId)
       .maybeSingle();
 
+    // Logotipo: o que o site chama de logo, copiado pro nosso armazenamento.
+    let logoNovo: string | null = null;
+    if (lida.fonte === "site") {
+      const { data: temLogo } = await supabase.from("businesses").select("logo_url").eq("id", businessId).maybeSingle();
+      if (!temLogo?.logo_url) {
+        const nomeBase = business.name.trim().toLowerCase().split(/\s+/)[0] ?? "";
+        const cand = site.images.find((img) => /logo|logotipo|marca/i.test(`${img.alt} ${img.url}`) && !/parceir|cart[aã]o|selo|visa|master|pix/i.test(`${img.alt} ${img.url}`) && (nomeBase.length < 3 || `${img.alt} ${img.url}`.toLowerCase().includes(nomeBase) || /logo/i.test(img.url)));
+        const icone = site.html.match(/<link[^>]+rel=["'][^"']*apple-touch-icon[^"']*["'][^>]+href=["']([^"']+)["']/i)?.[1];
+        const fonteLogo = cand?.url ?? (icone ? new URL(icone, site.base || url).toString() : null);
+        if (fonteLogo) {
+          try {
+            const r = await safeFetch(fonteLogo, { signal: AbortSignal.timeout(8000) });
+            if (r.ok) {
+              const blob = await r.blob();
+              if (blob.type.startsWith("image/") && blob.size < 3_000_000) {
+                const ext = blob.type.includes("png") ? "png" : blob.type.includes("webp") ? "webp" : blob.type.includes("svg") ? "svg" : "jpg";
+                const path = `${businessId}/logo-${Date.now()}.${ext}`;
+                const { error: upErr } = await supabase.storage.from("box-images").upload(path, blob, { contentType: blob.type, cacheControl: "31536000", upsert: false });
+                if (!upErr) logoNovo = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
+              }
+            }
+          } catch { /* sem logo, o dono envia depois */ }
+        }
+      }
+    }
+
+    // Instagram achado nos links do site.
+    const igDoSite = lida.fonte === "site" ? site.links.map((l) => instagramHandle(l)).find((h) => !!h && !/^(p|reel|explore|accounts|share)$/i.test(h)) ?? null : null;
+
     await supabase
       .from("businesses")
       .update({
+        ...(logoNovo ? { logo_url: logoNovo } : {}),
         last_import_url: url,
         last_import_at: new Date().toISOString(),
         site_type: siteType,
         contact_site: lida.fonte === "site" ? url : atual?.contact_site ?? null,
-        instagram_handle: atual?.instagram_handle || (lida.fonte === "instagram" ? instagramHandle(url) : null) || (instagram ? instagramHandle(instagram) : null),
+        instagram_handle: atual?.instagram_handle || (lida.fonte === "instagram" ? instagramHandle(url) : null) || (instagram ? instagramHandle(instagram) : null) || igDoSite,
         // O que o dono escreveu no cadastro vale mais; a Orbi completa.
         about_business: atual?.about_business?.trim()
           ? proposta.about_business && !atual.about_business.includes(proposta.about_business.slice(0, 40))
