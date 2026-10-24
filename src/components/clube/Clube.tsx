@@ -94,6 +94,14 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   const temNota = resumo.avaliacoes > 0 && resumo.nota != null;
   const vazio = resumo.fas === 0 && resumo.avaliacoes === 0 && resumo.curtidas === 0;
 
+  /** Toque no coração: vira fã ou deixa de ser (o coração volta a ser só linhas). */
+  async function alternarFa(origem: DOMRect) {
+    if (!eu?.logado || !eu.userId) { pedirLogin("fa", origem); return; }
+    if (eu.ehFa) await deixarDeSerFa(businessId, eu.userId);
+    else { await virarFa(businessId, eu.userId); await curtirMarca(businessId, eu.userId, true); }
+    await recarregar();
+  }
+
   // Faixa discreta lá em cima, sem fundo: rostos e contagem de fãs, coração, e a nota (estrela colorida) com o balão de avaliações.
   const abrirAvaliacoes = (e: React.MouseEvent<HTMLElement>) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) });
   const cluster = !isOwner || resumo.fas > 0 || resumo.avaliacoes > 0 ? (
@@ -137,14 +145,6 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       )}
     </div>
   ) : null;
-
-  /** Toque no coração: vira fã ou deixa de ser (o coração volta a ser só linhas). */
-  async function alternarFa(origem: DOMRect) {
-    if (!eu?.logado || !eu.userId) { pedirLogin("fa", origem); return; }
-    if (eu.ehFa) await deixarDeSerFa(businessId, eu.userId);
-    else { await virarFa(businessId, eu.userId); await curtirMarca(businessId, eu.userId, true); }
-    await recarregar();
-  }
 
   /** Convite da língua e do painel: pede só o número, sem código. Quem não entrou passa antes pelo login. */
   function querContato() {
