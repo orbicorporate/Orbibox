@@ -2,6 +2,7 @@
 
 import { lerLogoAjuste, type LogoAjuste } from "@/components/ui/LogoBolinha";
 import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
+import { MapaEndereco } from "@/components/ui/MapaEndereco";
 import { DeliveryFlow } from "./DeliveryFlow";
 import { CardapioFlow } from "./CardapioFlow";
 import { MateriaisFlow } from "./MateriaisFlow";
@@ -1503,6 +1504,7 @@ export function VisitorExperience({
                       <div className="-mt-1 rounded-b-[24px] bg-surface-white px-5 pb-5 pt-1 shadow-[0_2px_12px_rgba(17,19,24,0.05)]">
                         <div className="border-t border-divider pt-3">
                           <p className="text-[14px] leading-relaxed text-text-secondary">{o.address}</p>
+                          <MapaEndereco endereco={o.address} className="mt-3" />
                           <div className="mt-3 flex gap-2">
                             <a href={`https://waze.com/ul?q=${encodeURIComponent(o.address)}&navigate=yes`} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Abrir no Waze</a>
                             <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address)}`} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Abrir no Google</a>
@@ -2190,15 +2192,7 @@ function AddressCard({ address }: { address: string }) {
           <OrbiMapPin size={26} className="shrink-0" />
           <span className="text-[14px] leading-relaxed text-text-secondary">{address}</span>
         </div>
-        <div className="mt-3 h-[170px] overflow-hidden rounded-[14px] bg-surface-soft">
-          <iframe
-            title={`Mapa: ${address}`}
-            src={`https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=16&output=embed`}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            className="h-full w-full border-0"
-          />
-        </div>
+        <MapaEndereco endereco={address} className="mt-3" />
         <div className="mt-3 flex gap-2">
           <a
             href={`https://waze.com/ul?q=${encodeURIComponent(address)}&navigate=yes`}

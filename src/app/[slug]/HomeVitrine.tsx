@@ -2,6 +2,7 @@
 
 import { LogoBolinha, type LogoAjuste } from "@/components/ui/LogoBolinha";
 import { IconeLinha, ehIconeLinha } from "@/components/ui/IconesLinha";
+import { MapaEndereco } from "@/components/ui/MapaEndereco";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
@@ -381,8 +382,9 @@ export function HomeVitrine({
       )}
 
       {aberto?.endereco && (
-        <div className="mt-4 w-full max-w-[320px] rounded-2xl bg-surface-white p-4 text-center shadow-[0_2px_12px_rgba(17,19,24,0.08)]">
+        <div className="mt-4 w-full max-w-[340px] rounded-2xl bg-surface-white p-4 text-center shadow-[0_2px_12px_rgba(17,19,24,0.08)]">
           <p className="text-[13.5px] leading-snug text-text-secondary">{aberto.endereco}</p>
+          <MapaEndereco endereco={aberto.endereco} className="mt-3 text-left" />
           <div className="mt-3 flex gap-2">
             <a href={`https://waze.com/ul?q=${encodeURIComponent(aberto.endereco)}&navigate=yes`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Waze</a>
             <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(aberto.endereco)}`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border border-divider py-2.5 text-center text-[14px] font-medium">Google Maps</a>
