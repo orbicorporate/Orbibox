@@ -32,8 +32,8 @@ function Icone({ tipo }: { tipo: Dica["icone"] }) {
 }
 
 /**
- * Popups de divulgação: o primeiro aparece logo que o dono abre o painel pela
- * primeira vez (compartilhar no WhatsApp e nos Stories). Depois, no máximo um
+ * Popups de divulgação: o primeiro aparece quando o dono termina de conferir o
+ * passo a passo (compartilhar no WhatsApp e nos Stories). Depois, no máximo um
  * por dia, uma dica de cada vez. O que já foi feito ou adiado fica guardado no aparelho.
  */
 export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo, temVoucher, itens = [] }: {
@@ -73,6 +73,12 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
   ];
 
   useEffect(() => {
+    // Só pede para divulgar depois que a pessoa conferiu o passo a passo
+    // (categorias, itens e página inicial). Antes disso a página não está pronta.
+    try {
+      const conferiu = [0, 1, 2].every((i) => localStorage.getItem(`comecar_ok_${i}_${slug}`) === "1");
+      if (!conferiu) return;
+    } catch { return; }
     let estado: { feitas: string[]; ultimo: number } = { feitas: [], ultimo: 0 };
     try { estado = JSON.parse(localStorage.getItem(chave) || "") || estado; } catch { /* primeira vez */ }
     const proxima = dicas.find((d) => !estado.feitas.includes(d.id));
