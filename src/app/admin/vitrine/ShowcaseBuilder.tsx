@@ -1898,7 +1898,7 @@ function ItemCard({
               <button onClick={onToggleEdit} className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] text-text-secondary">Fechar</button>
             </div>
 
-            <div>
+            <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Descrição</p>
               <textarea
                 value={item.description ?? ""}
@@ -1920,7 +1920,7 @@ function ItemCard({
               <button onClick={() => move(item, 1)} disabled={idx === total - 1} className="h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30" aria-label="Mover para frente">→</button>
             </div>
 
-            <div data-tour="item-formato" data-guia="formato-item">
+            <div data-tour="item-formato" data-guia="formato-item" className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
               <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Vale também na Home, quando o formato dos itens lá estiver em “Igual à vitrine”.</p>
               <div className="mt-2 flex gap-2">
@@ -1936,7 +1936,7 @@ function ItemCard({
               </div>
             </div>
 
-            <div data-tour="item-capa" data-guia="foto-item">
+            <div data-tour="item-capa" data-guia="foto-item" className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Foto de capa</p>
               <div className="mt-2">
                 <ImageUpload
@@ -1951,7 +1951,7 @@ function ItemCard({
             </div>
 
             {(item.link_kind ?? "produto") === "produto" && (
-              <div className="overflow-hidden rounded-[22px] border border-divider bg-surface-white">
+              <div className="order-[5] overflow-hidden rounded-[22px] border border-divider bg-surface-white">
                 {/* Cabeçalho escuro: deixa claro que tudo daqui pra baixo é da
                     página própria do produto, não do card da Vitrine. */}
                 <div className="flex items-center gap-3 bg-on-background px-5 py-4 text-white">
@@ -2005,10 +2005,18 @@ function ItemCard({
               </div>
             )}
 
-            <div className={cAv}>
+            <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
                 Cor do card{item.image_url ? " · aparece se remover a foto" : ""}
               </p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Sem foto, o card mostra só o nome e o preço. Branco é o padrão.</p>
+              <div
+                className="mt-3 flex items-center justify-between gap-3 rounded-2xl px-4 py-3 transition-colors"
+                style={item.box_color && item.box_color !== "neutro" ? { backgroundColor: c.bg, backgroundImage: c.degrade, color: c.fg } : { backgroundColor: "#FFFFFF", boxShadow: "inset 0 0 0 1px rgba(17,19,24,0.08)" }}
+              >
+                <span className="min-w-0 truncate font-[family-name:var(--font-manrope)] text-[16px] font-medium">{item.title || "Nome do item"}</span>
+                {priceLabel && <span className="shrink-0 text-[14px] font-medium">{priceLabel}</span>}
+              </div>
               <div className="mt-2 flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 {brandColors.length > 0 && (
                   <button onClick={() => setPaletteTab("Marca")} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium ${paletteTab === "Marca" ? "bg-button-primary text-white" : "bg-surface-soft text-text-secondary"}`}>✦ Marca</button>
@@ -2033,7 +2041,7 @@ function ItemCard({
                 modo "faixa", então a cor dele só aparece nesse caso, usando a
                 mesma paleta já escolhida em "Cor do card" (sem abas repetidas). */}
             {item.image_url && (
-              <div className={cAv}>
+              <div className={`${cAv} rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]`}>
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do card</p>
                 <div className="mt-2 flex gap-2">
                   {(["faixa", "sobre"] as const).map((v) => {
@@ -2059,7 +2067,7 @@ function ItemCard({
             {/* Cor da faixa de baixo do card: fica à vista (não escondida em
                 "Mais opções") e mostra na hora como o rodapé fica. */}
             {item.image_url && (item.title_placement ?? "faixa") === "faixa" && (
-              <div>
+              <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor da faixa do card</p>
                 <div className="mt-2 flex items-center justify-between gap-3 rounded-2xl px-4 py-3 transition-colors" style={{ backgroundColor: fc?.bg ?? "#FFFFFF", boxShadow: "inset 0 0 0 1px rgba(17,19,24,0.08)" }}>
                   <span className="min-w-0 truncate font-[family-name:var(--font-manrope)] text-[16px] font-medium" style={fc ? { color: fc.fg } : undefined}>{item.title || "Nome do item"}</span>

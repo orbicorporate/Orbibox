@@ -132,17 +132,20 @@ function CartaoBase({
           // Sem foto: só o rodapé. Nome, descrição e preço em um cartão branco, sem o quadrado colorido.
           // Neutro = branco. Qualquer outra cor escolhida em "Cor do card" pinta o cartão inteiro.
           <div
-            className="flex min-h-[132px] flex-col justify-between gap-3 p-4"
+            className="flex min-h-[148px] flex-col justify-end gap-1 p-4 text-left"
             style={colorido ? { backgroundColor: c.bg, backgroundImage: c.degrade ?? undefined, color: c.fg } : undefined}
           >
-            <div className={`min-w-0 ${origem === "home" && !curtir ? "pl-8" : ""}`}>
-              <p className="line-clamp-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">{item.title}</p>
-              {item.description?.trim() && (
-                <p className={`mt-1 line-clamp-2 text-[13px] leading-snug ${colorido ? "opacity-75" : "text-text-secondary"}`}>{resumoCard(item.description)}</p>
-              )}
-            </div>
-            <div className={`flex min-h-[28px] items-center justify-between gap-2 ${curtir ? "pr-11" : ""}`}>
-              <p className={`font-[family-name:var(--font-manrope)] text-[14px] font-medium ${colorido ? "opacity-85" : "text-text-secondary"}`}>{priceLabel ?? ""}</p>
+            {/* Nome sempre embaixo, alinhado à esquerda: o topo fica livre para o lápis e o X do dono. */}
+            <div className={`flex items-end justify-between gap-3 ${curtir ? "pr-11" : ""}`}>
+              <div className="min-w-0">
+                <p className="line-clamp-2 font-[family-name:var(--font-manrope)] text-[17px] font-medium leading-tight">{item.title}</p>
+                {item.description?.trim() && (
+                  <p className={`mt-1 line-clamp-2 text-[13px] leading-snug ${colorido ? "opacity-75" : "text-text-secondary"}`}>{resumoCard(item.description)}</p>
+                )}
+                {priceLabel && (
+                  <p className={`mt-1 font-[family-name:var(--font-manrope)] text-[14px] font-medium ${colorido ? "opacity-85" : "text-text-secondary"}`}>{priceLabel}</p>
+                )}
+              </div>
               {destino && !curtir && (
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${colorido ? "bg-white/25" : "bg-surface-soft text-on-background"}`} aria-hidden>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
