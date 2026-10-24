@@ -11,6 +11,7 @@ import { VoucherFormato } from "./VoucherFormato";
 import { VoucherExplainer } from "./VoucherExplainer";
 import { RedeemCodeCard } from "./RedeemCodeCard";
 import Link from "next/link";
+import { PassosGuiados } from "@/components/ui/PassosGuiados";
 
 type BoxConfigShape = { action?: string };
 
@@ -169,7 +170,17 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
       )}
 
       {canSave && (
-        <div className="mt-6 flex flex-col gap-4">
+        <PassosGuiados
+          titulo="Seu primeiro voucher"
+          passos={[
+            { t: "Crie a oferta", d: "Escolha o desconto, a quantidade e a validade.", feito: (vouchers?.length ?? 0) > 0, acao: { rotulo: "Criar voucher", href: "/admin/vouchers?novo=1" } },
+            { t: "Coloque na página inicial", d: "Sem o botão de vouchers na Home, ninguém vê a oferta.", feito: !!cupomBox, acao: { rotulo: "Ir para o botão", href: "#voucher-home" } },
+          ]}
+        />
+      )}
+
+      {canSave && (
+        <div id="voucher-home" className="mt-6 flex scroll-mt-24 flex-col gap-4">
           {/* O elo que faltava: colocar (ou confirmar que já tem) o box na Home */}
           <CupomBoxToggle businessId={business!.id} initialHasBox={!!cupomBox} boxId={cupomBox?.id ?? null} nextPosition={nextPosition} />
           {cupomBox && (
