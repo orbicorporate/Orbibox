@@ -1632,7 +1632,21 @@ function ItemCard({
           )}
           </>
         ) : editing ? (
-          <div className="h-full w-full" style={{ backgroundColor: broken ? "#FBEAEA" : item.box_color && item.box_color !== "neutro" ? c.bg : "#FFFFFF" }} />
+          // Sem foto, editando: ícone de foto no meio leva direto ao campo da foto de capa.
+          <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: broken ? "#FBEAEA" : item.box_color && item.box_color !== "neutro" ? c.bg : "#F2F2EE" }}>
+            <button
+              type="button"
+              onClick={() => document.querySelector(`#item-${item.id} [data-guia="foto-item"]`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
+              className="flex flex-col items-center gap-2 rounded-[22px] bg-white/85 px-6 py-4 text-on-background shadow-[0_8px_20px_-10px_rgba(17,19,24,0.35)] active:scale-[0.97]"
+            >
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <rect x="3" y="5" width="18" height="15" rx="3" />
+                <circle cx="9" cy="10.5" r="1.8" />
+                <path d="M21 16l-5-5-8 8" />
+              </svg>
+              <span className="text-[13px] font-semibold">Adicionar foto</span>
+            </button>
+          </div>
         ) : broken ? (
           // Link da foto quebrou, item já foi pausado sozinho (useEffect acima).
           // Clique é tratado pelo container pai, então isso é só uma div visual.
@@ -1766,7 +1780,7 @@ function ItemCard({
       {/* "Sem rodapé" (nome sobre a foto): fechado, o card é só a foto, igual
           na página pública. O status vai pro canto da foto. */}
       {(editing || (hasPhoto && item.title_placement !== "sobre")) && (
-        <div className="p-5">
+        <div className={editing ? "border-t border-black/[0.06] bg-[#EFEFEA] p-4" : "p-5"}>
           {!editing ? (
             hasPhoto && item.title_placement === "sobre" ? (
               // Nome já aparece sobre a foto, aqui embaixo fica só o status,
@@ -1829,7 +1843,7 @@ function ItemCard({
               <button onClick={onToggleEdit} className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#1F9E4C] py-1.5 pl-2 pr-3.5 text-[13px] font-semibold text-white shadow-[0_6px_14px_-6px_rgba(31,158,76,0.7)] active:scale-[0.97]"><span aria-hidden className="flex h-5 w-5 items-center justify-center rounded-full bg-white/25 text-[11px]">✓</span>Fechar</button>
             </div>
 
-            <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
+            <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Descrição</p>
               <textarea
                 value={item.description ?? ""}
@@ -1851,7 +1865,7 @@ function ItemCard({
               <button onClick={() => move(item, 1)} disabled={idx === total - 1} className="h-9 w-9 rounded-full bg-surface-soft text-[15px] disabled:opacity-30" aria-label="Mover para frente">→</button>
             </div>
 
-            <div data-tour="item-formato" data-guia="formato-item" className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
+            <div data-tour="item-formato" data-guia="formato-item" className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
               <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Vale também na Home, quando o formato dos itens lá estiver em “Igual à vitrine”.</p>
               <div className="mt-2 flex gap-2">
@@ -1867,7 +1881,7 @@ function ItemCard({
               </div>
             </div>
 
-            <div data-tour="item-capa" data-guia="foto-item" className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
+            <div data-tour="item-capa" data-guia="foto-item" className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Foto de capa</p>
               <div className="mt-2">
                 <ImageUpload
@@ -1936,7 +1950,7 @@ function ItemCard({
               </div>
             )}
 
-            <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
+            <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
                 Cor do card{item.image_url ? " · aparece se remover a foto" : ""}
               </p>
@@ -1972,7 +1986,7 @@ function ItemCard({
                 modo "faixa", então a cor dele só aparece nesse caso, usando a
                 mesma paleta já escolhida em "Cor do card" (sem abas repetidas). */}
             {item.image_url && (
-              <div className={`${cAv} rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]`}>
+              <div className={`${cAv} rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]`}>
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Nome do card</p>
                 <div className="mt-2 flex gap-2">
                   {(["faixa", "sobre"] as const).map((v) => {
@@ -1998,7 +2012,7 @@ function ItemCard({
             {/* Cor da faixa de baixo do card: fica à vista (não escondida em
                 "Mais opções") e mostra na hora como o rodapé fica. */}
             {item.image_url && (item.title_placement ?? "faixa") === "faixa" && (
-              <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
+              <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor da faixa do card</p>
                 <div className="mt-2 flex items-center justify-between gap-3 rounded-2xl px-4 py-3 transition-colors" style={{ backgroundColor: fc?.bg ?? "#FFFFFF", boxShadow: "inset 0 0 0 1px rgba(17,19,24,0.08)" }}>
                   <span className="min-w-0 truncate font-[family-name:var(--font-manrope)] text-[16px] font-medium" style={fc ? { color: fc.fg } : undefined}>{item.title || "Nome do item"}</span>
