@@ -511,104 +511,117 @@ export function HomeVitrine({
       {escolhendo && montado && onEscolherItens && createPortal(
         <>
           <button type="button" aria-label="Fechar" onClick={() => setEscolhendo(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
-          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-h-[85vh] w-full max-w-[440px] flex-col rounded-t-[28px] bg-white p-5 pb-6 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
-            <div className="flex shrink-0 items-center justify-between">
-              <span className="text-[17px] font-medium">Itens da Home</span>
-              <button type="button" onClick={() => { setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-h-[88vh] w-full max-w-[440px] flex-col rounded-t-[28px] bg-[#EFEFEA] p-4 pb-6 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+            <div className="flex shrink-0 items-center justify-between px-1">
+              <div>
+                <p className="text-[18px] font-semibold leading-tight">Destaques da Home</p>
+                <p className="mt-0.5 text-[12.5px] text-text-secondary">Toque para colocar ou tirar. Até {MAXIMO}.</p>
+              </div>
+              <button type="button" onClick={() => { setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] font-medium text-white">Concluir</button>
             </div>
+
+            {/* Contador: quantos já estão na Home, em bolinhas. */}
+            <div className="mt-3 flex shrink-0 items-center gap-2 px-1">
+              <div className="flex gap-1">
+                {Array.from({ length: MAXIMO }).map((_, k) => <span key={k} className={`h-2 w-5 rounded-full ${k < naSelecao.length ? "bg-[#3B5BDB]" : "bg-black/10"}`} />)}
+              </div>
+              <span className="text-[12.5px] font-medium text-text-secondary">{naSelecao.length} de {MAXIMO} na Home</span>
+            </div>
+
             {onTitulo && (
-              <label className="mt-3 block shrink-0">
-                <span className="text-[12px] font-medium text-text-tertiary">Nome da seção</span>
+              <label className="mt-3 flex shrink-0 items-center gap-3 rounded-2xl bg-white px-4 py-2.5 ring-1 ring-black/[0.06]">
+                <span className="shrink-0 text-[12.5px] font-medium text-text-tertiary">Título</span>
                 <input
                   defaultValue={tituloItens === "Destaque" ? "" : tituloItens}
                   placeholder="Destaque"
                   maxLength={40}
                   onBlur={(e) => { const v = e.target.value.trim(); if (v !== (tituloItens === "Destaque" ? "" : tituloItens)) onTitulo(v); }}
-                  className="mt-1 w-full rounded-2xl border border-divider px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
+                  className="min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none"
                 />
               </label>
             )}
-            <p className="mt-1 shrink-0 text-[13px] text-text-secondary">
-              {personalizado
-                ? `Você escolheu ${escolhidos.length} de ${MAXIMO}. Toque num item para tirar ou para colocar outro.`
-                : `Estes são os itens que a Home mostra agora, as capas da vitrine. Toque para tirar ou trocar, até ${MAXIMO}.`}
-            </p>
-            <input
-              type="search"
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar item"
-              className="mt-3 w-full shrink-0 rounded-full border border-divider px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
-            />
-            <p className="mt-2 shrink-0 text-[14px] leading-snug text-text-secondary">Só itens publicados aparecem aqui. Se o seu item não está na lista, ele deve estar em rascunho: publique no Catálogo.</p>
-            <AbrirEditor
-              href="/admin/vitrine?novo=1"
-              rotulo="Criar item"
-              aoFechar={() => void aposCriarItem()}
-              className="mt-3 flex min-h-[48px] w-full shrink-0 items-center justify-center gap-2 rounded-full bg-surface-soft text-[14px] font-medium active:scale-[0.98]"
-            >
-              <span className="text-[18px] leading-none" aria-hidden>+</span> Não achou? Criar um item novo
-            </AbrirEditor>
-            {avisoNovo && <p role="status" className="mt-2 shrink-0 rounded-xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary">{avisoNovo}</p>}
-            {avisoCheio && <p role="status" className="mt-2 shrink-0 rounded-xl bg-surface-soft px-3 py-2 text-[13px] text-text-secondary">Já são {MAXIMO} itens. Toque num dos marcados para tirar e depois escolha outro.</p>}
-            <ul className="mt-3 min-h-0 flex-1 overflow-y-auto">
+
+            <div className="mt-2 flex shrink-0 items-center gap-2 rounded-full bg-white px-4 ring-1 ring-black/[0.06]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0 text-text-tertiary" aria-hidden><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+              <input type="search" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar no catálogo" className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] outline-none" />
+            </div>
+
+            {avisoNovo && <p role="status" className="mt-2 shrink-0 rounded-xl bg-white px-3 py-2 text-[13px] text-text-secondary">{avisoNovo}</p>}
+            {avisoCheio && <p role="status" className="mt-2 shrink-0 rounded-xl bg-[#FFF4E5] px-3 py-2 text-[13px] text-[#7A4A0B]">Já são {MAXIMO}. Tire um para colocar outro.</p>}
+
+            <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
               {(() => {
                 const termo = busca.trim().toLowerCase();
                 const filtrados = todosEscolhiveis.filter((i) => i.title.toLowerCase().includes(termo));
                 const marcados = naSelecao.map((e) => filtrados.find((i) => i.id === e.id)).filter((i): i is ItemVitrine => !!i);
                 const outros = filtrados.filter((i) => !i.id.startsWith("cat:") && !naSelecao.some((e) => e.id === i.id));
                 const outrasCategorias = filtrados.filter((i) => i.id.startsWith("cat:") && !naSelecao.some((e) => e.id === i.id));
+                const alternar = (i: ItemVitrine, marcado: boolean) => {
+                  const atuais = naSelecao.map((e) => e.id);
+                  if (!marcado && atuais.length >= MAXIMO) { setAvisoCheio(true); return; }
+                  setAvisoCheio(false);
+                  const novos = marcado ? atuais.filter((id) => id !== i.id) : [...atuais, i.id];
+                  onEscolherItens(novos.length > 0 ? novos : null);
+                };
                 const linha = (i: ItemVitrine) => {
                   const ordem = naSelecao.findIndex((e) => e.id === i.id);
                   const marcado = ordem >= 0;
+                  const cat = i.id.startsWith("cat:");
                   return (
                     <li key={i.id}>
-                      <button
-                        type="button"
-                        aria-pressed={marcado}
-                        onClick={() => {
-                          const atuais = naSelecao.map((e) => e.id);
-                          if (!marcado && atuais.length >= MAXIMO) { setAvisoCheio(true); return; }
-                          setAvisoCheio(false);
-                          const novos = marcado ? atuais.filter((id) => id !== i.id) : [...atuais, i.id];
-                          onEscolherItens(novos.length > 0 ? novos : null);
-                        }}
-                        className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl px-1 py-1.5 text-left"
-                      >
+                      <button type="button" aria-pressed={marcado} onClick={() => alternar(i, marcado)} className="flex min-h-[60px] w-full items-center gap-3 px-3 py-2 text-left active:bg-black/[0.03]">
                         {i.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={i.image_url} alt="" loading="lazy" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+                          <img src={i.image_url} alt="" loading="lazy" className={`h-11 w-11 shrink-0 object-cover ${cat ? "rounded-full" : "rounded-xl"}`} />
                         ) : (
-                          <span className="h-11 w-11 shrink-0 rounded-xl bg-surface-soft" />
+                          <span className={`flex h-11 w-11 shrink-0 items-center justify-center bg-[#F2F2EE] text-[15px] font-semibold text-black/30 ${cat ? "rounded-full" : "rounded-xl"}`}>{i.title.charAt(0).toUpperCase()}</span>
                         )}
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[14.5px] font-medium">{i.title}</span>
-                          {i.id.startsWith("cat:") ? <span className="block truncate text-[12px] text-text-tertiary">Categoria do Catálogo</span> : i.brand_label?.trim() && <span className="block truncate text-[12px] text-text-tertiary">{i.brand_label.trim()}</span>}
+                          {cat ? <span className="block truncate text-[12px] text-[#8758BE]">Categoria inteira</span> : i.brand_label?.trim() && <span className="block truncate text-[12px] text-text-tertiary">{i.brand_label.trim()}</span>}
                         </span>
-                        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-medium ${marcado ? "bg-on-background text-white" : "border border-divider text-transparent"}`}>
-                          {marcado ? ordem + 1 : ""}
-                        </span>
+                        {marcado ? (
+                          <span className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-[#3B5BDB] pl-2.5 pr-3 text-[12.5px] font-semibold text-white">{ordem + 1}<span aria-hidden className="text-white/70">✕</span></span>
+                        ) : (
+                          <span className="flex h-8 shrink-0 items-center rounded-full bg-[#EEF1FB] px-3 text-[12.5px] font-semibold text-[#3B5BDB]">+ Pôr</span>
+                        )}
                       </button>
                     </li>
                   );
                 };
+                const grupo = (titulo: string, lista: ItemVitrine[]) => lista.length > 0 && (
+                  <div className="mb-3">
+                    <p className="px-2 pb-1.5 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">{titulo}</p>
+                    <ul className="divide-y divide-black/[0.06] overflow-hidden rounded-[20px] bg-white ring-1 ring-black/[0.06]">{lista.map(linha)}</ul>
+                  </div>
+                );
                 return (
                   <>
-                    {marcados.length > 0 && <li className="px-1 pb-1 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Na Home agora</li>}
-                    {marcados.map(linha)}
-                    {marcados.length > 0 && outros.length > 0 && <li className="px-1 pb-1 pt-4 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros itens</li>}
-                    {outros.map(linha)}
-                    {outrasCategorias.length > 0 && <li className="px-1 pb-1 pt-4 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Categorias do Catálogo</li>}
-                    {outrasCategorias.map(linha)}
+                    {grupo("Na Home agora", marcados)}
+                    {grupo("Itens do catálogo", outros)}
+                    {grupo("Categorias", outrasCategorias)}
+                    {filtrados.length === 0 && <p className="px-2 py-4 text-center text-[13.5px] text-text-tertiary">Nada encontrado.</p>}
                   </>
                 );
               })()}
-            </ul>
-            {personalizado && (
-              <button type="button" onClick={() => onEscolherItens(null)} className="mt-3 min-h-[44px] w-full shrink-0 rounded-full border border-divider text-[14px] font-medium active:scale-[0.98]">
-                Voltar ao automático (capas da vitrine)
-              </button>
-            )}
+            </div>
+
+            <div className="mt-2 flex shrink-0 flex-col items-center gap-1.5">
+              <AbrirEditor
+                href="/admin/vitrine?novo=1"
+                rotulo="Criar item"
+                aoFechar={() => void aposCriarItem()}
+                className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-white text-[14px] font-semibold ring-1 ring-black/[0.08] active:scale-[0.98]"
+              >
+                <span className="text-[18px] leading-none" aria-hidden>+</span> Criar item novo
+              </AbrirEditor>
+              <p className="text-center text-[11.5px] text-text-tertiary">Itens em rascunho não aparecem aqui.</p>
+              {personalizado && (
+                <button type="button" onClick={() => onEscolherItens(null)} className="min-h-[36px] text-[12.5px] font-medium text-text-secondary underline underline-offset-4">
+                  Voltar ao automático
+                </button>
+              )}
+            </div>
           </div>
         </>,
         document.body,
