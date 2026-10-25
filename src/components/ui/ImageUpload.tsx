@@ -250,20 +250,29 @@ export function ImageUpload({
           </div>
           </div>
 
-          <div className={showPrompt ? "rounded-2xl bg-white ring-1 ring-black/[0.08]" : "hidden"}>
-            {showPrompt && (
-              <div className="p-3.5">
-                {!iaIndisponivel && (
-                  <div className="mb-4">
-                    <button type="button" onClick={() => setShowGerador(true)} className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[14px] font-semibold text-white active:scale-[0.99]">
-                      Abrir o criador de imagem
-                    </button>
-                    <p className="mt-2 text-[12px] leading-snug text-text-tertiary">Descreva o que quer e, se tiver, anexe imagens de referência, como numa conversa.</p>
-                    <p className="mt-4 text-[12px] font-medium text-text-tertiary">Ou use o prompt no ChatGPT</p>
+          {showPrompt && (
+            <div className="flex flex-col gap-3">
+              {/* Opção 1: criar aqui, com a Orbi. */}
+              {!iaIndisponivel && (
+                <div className="rounded-[20px] p-4" style={{ background: "linear-gradient(135deg,#FFF1E3,#FFE6EE)" }}>
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-on-background text-[12px] font-semibold text-white">1</span>
+                    <p className="text-[14px] font-semibold">Criar aqui com a Orbi</p>
                   </div>
-                )}
-                <div className="rounded-xl bg-surface-soft p-3">
-                  <p className="select-text whitespace-pre-wrap text-[13px] leading-relaxed text-on-background">{promptTexto}</p>
+                  <p className="mt-1 text-[12.5px] leading-snug text-text-secondary">Descreva o que quer e anexe referências.</p>
+                  <button type="button" onClick={() => setShowGerador(true)} className="mt-3 flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[14px] font-semibold text-white active:scale-[0.99]">
+                    Abrir o criador de imagem
+                  </button>
+                </div>
+              )}
+              {/* Opção 2: levar o prompt pronto para o ChatGPT. */}
+              <div className="rounded-[20px] bg-white p-4 ring-1 ring-black/[0.08]">
+                <div className="flex items-center gap-2">
+                  {!iaIndisponivel && <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F2F2EE] text-[12px] font-semibold">2</span>}
+                  <p className="text-[14px] font-semibold">Usar no ChatGPT</p>
+                </div>
+                <div className="mt-3 max-h-[160px] overflow-y-auto rounded-xl bg-[#F2F2EE] p-3">
+                  <p className="select-text whitespace-pre-wrap text-[12.5px] leading-relaxed text-on-background">{promptTexto}</p>
                 </div>
                 <PassosPrompt />
                 <div className="mt-3 flex gap-2">
@@ -273,8 +282,8 @@ export function ImageUpload({
                   <AbrirChatGPT />
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {showFotos && (
