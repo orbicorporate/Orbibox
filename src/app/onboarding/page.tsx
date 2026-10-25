@@ -676,22 +676,23 @@ export default function OnboardingPage() {
         )}
 
         {(step === "objetivo" || step === "acao") && (
-          <div>
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={step === "objetivo" ? voltarParaDados : () => setStep("objetivo")}
-              className="mb-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-divider bg-surface-white px-4 text-[13.5px] font-medium text-text-secondary active:scale-[0.98]"
+              aria-label="Voltar"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/60 text-[16px] text-text-secondary ring-1 ring-white/80 backdrop-blur-xl active:scale-95"
             >
-              {step === "objetivo" ? "← Voltar e corrigir o nome ou os links" : "← Voltar"}
+              ←
             </button>
             {/* A Orbi trabalhando, sempre visível no topo enquanto a pessoa escolhe. */}
-            <div className="flex items-center gap-3 rounded-[22px] bg-surface-white px-4 py-3 ring-1 ring-black/[0.06]">
-              <BrandOrb colors={orbColors} size={36} />
+            <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-full bg-white/60 py-1.5 pl-1.5 pr-4 ring-1 ring-white/80 backdrop-blur-xl">
+              <BrandOrb colors={orbColors} size={32} />
               <div className="min-w-0 flex-1">
-                <p key={leituraOk ? "ok" : frase} className="orbi-linha-entra truncate text-[14px] font-medium">
-                  {leituraOk ? `Pronto, já conheço a ${name || "sua marca"}` : `${LENDO[frase]}…`}
+                <p key={leituraOk ? "ok" : frase} className="orbi-linha-entra truncate text-[13px] font-medium">
+                  {leituraOk ? "Pronto, já conheço sua marca" : `${LENDO[frase]}…`}
                 </p>
-                <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-surface-soft">
+                <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-black/5">
                   <div className="orbi-gradient h-full rounded-full transition-[width] duration-[1200ms] ease-out" style={{ width: leituraOk ? "100%" : `${18 + frase * 16}%` }} />
                 </div>
               </div>
@@ -700,57 +701,31 @@ export default function OnboardingPage() {
         )}
 
         {step === "objetivo" && (
-          <div key="objetivo" className="orbi-linha-entra">
-            <h2 className="mt-7 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.01em]">
-              O que você mais quer conseguir?
+          <div key="objetivo">
+            <h2 className="orbi-linha-entra mt-7 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">
+              O que você mais quer?
             </h2>
-            <p className="mt-1.5 text-[14px] text-text-secondary">Escolha uma. Dá pra mudar depois.</p>
-            <div className="mt-5 flex flex-col gap-2" role="radiogroup" aria-label="Objetivo">
-              {OBJETIVOS.map((o) => (
-                <Opcao key={o.id} ativa={objetivo === o.id} onClick={() => escolherObjetivo(o.id)} titulo={o.rotulo} detalhe={o.detalhe} icone={VISUAL_OBJETIVO[o.id].icone} cor={VISUAL_OBJETIVO[o.id].cor} />
+            <div className="mt-5 grid grid-cols-2 gap-2.5" role="radiogroup" aria-label="Objetivo">
+              {OBJETIVOS.map((o, i) => (
+                <Tile key={o.id} i={i} ativa={objetivo === o.id} onClick={() => escolherObjetivo(o.id)} titulo={o.rotulo} icone={VISUAL_OBJETIVO[o.id].icone} cor={VISUAL_OBJETIVO[o.id].cor} />
               ))}
-              <Opcao ativa={objetivo === "orbi"} onClick={() => escolherObjetivo("orbi")} titulo="Não sei. Deixe a Orbi decidir" detalhe="Ela escolhe pelo que encontrou sobre você" icone="✦" cor="#DDF3EA" />
+              <PilulaOrbi i={OBJETIVOS.length} ativa={objetivo === "orbi"} onClick={() => escolherObjetivo("orbi")} />
             </div>
-            <Dica>Quem tem WhatsApp, voucher e vitrine juntos costuma converter mais. Se ficar na dúvida, escolha Fazer tudo isso.</Dica>
           </div>
         )}
 
         {step === "acao" && (
-          <div key="acao" className="orbi-linha-entra">
-            <h2 className="mt-7 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.01em]">
-              O que seus clientes devem fazer?
+          <div key="acao">
+            <h2 className="orbi-linha-entra mt-7 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">
+              O que o cliente deve fazer?
             </h2>
-            <p className="mt-1.5 text-[14px] text-text-secondary">Esse vira o primeiro botão da sua página.</p>
-            <div className="mt-5 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Ação principal do cliente">
-              {CONVERSOES.map((c) => {
-                const ativa = conversao === c.id;
-                const v = VISUAL_CONVERSAO[c.id];
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={ativa}
-                    onClick={() => setConversao(c.id)}
-                    className={`flex min-h-[84px] flex-col items-start justify-between gap-2 rounded-[20px] px-3.5 py-3 text-left transition-all active:scale-[0.98] ${ativa ? "bg-on-background text-white" : "bg-surface-white ring-1 ring-divider"}`}
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full text-[16px]" style={{ background: v.cor }} aria-hidden>{v.icone}</span>
-                    <span className="text-[14px] font-medium leading-tight">{c.rotulo}</span>
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                role="radio"
-                aria-checked={conversao === "orbi"}
-                onClick={() => setConversao("orbi")}
-                className={`col-span-2 min-h-[48px] rounded-full px-4 py-3 text-left text-[14px] font-medium transition-all active:scale-[0.98] ${conversao === "orbi" ? "bg-on-background text-white" : "bg-surface-white text-text-secondary ring-1 ring-divider"}`}
-              >
-                ✦ Deixe a Orbi decidir
-              </button>
+            <p className="orbi-linha-entra mt-1 text-[14px] text-text-secondary">Vira o primeiro botão.</p>
+            <div className="mt-5 grid grid-cols-2 gap-2.5" role="radiogroup" aria-label="Ação principal do cliente">
+              {CONVERSOES.map((c, i) => (
+                <Tile key={c.id} i={i} ativa={conversao === c.id} onClick={() => setConversao(c.id)} titulo={c.rotulo} icone={VISUAL_CONVERSAO[c.id].icone} cor={VISUAL_CONVERSAO[c.id].cor} />
+              ))}
+              <PilulaOrbi i={CONVERSOES.length} ativa={conversao === "orbi"} onClick={() => setConversao("orbi")} />
             </div>
-
-            <Dica>{DICA_CONVERSAO[conversao ?? ""] ?? "Dica: o WhatsApp em destaque, em primeiro, é o que mais gera contato."}</Dica>
 
             {convEscolhida?.precisa === "whatsapp" && (
               <div className="orbi-linha-entra mt-4">
@@ -818,26 +793,7 @@ const VISUAL_CONVERSAO: Record<string, { icone: string; cor: string }> = {
   contato: { icone: "📞", cor: "#CFE8FF" },
 };
 
-const DICA_CONVERSAO: Record<string, string> = {
-  comprar: "Deixe seus produtos mais vendidos no topo do catálogo.",
-  orcamento: "Responda rápido: quem responde primeiro costuma fechar.",
-  whatsapp: "WhatsApp em destaque, sempre em primeiro. É onde o cliente decide.",
-  agendar: "Mostre o que está incluso. Menos dúvida, mais agendamento.",
-  visitar: "Endereço com mapa e horário de funcionamento à mão.",
-  conhecer: "Uma foto boa do produto principal vende mais que texto longo.",
-  oferta: "Um voucher com prazo curto cria urgência e traz o primeiro contato.",
-  contato: "Peça só o essencial. Quanto menos campos, mais contatos.",
-  orbi: "Sem certeza? A Orbi escolhe o que mais combina com o seu ramo.",
-};
 
-function Dica({ children }: { children: React.ReactNode }) {
-  return (
-    <p key={String(children)} className="orbi-linha-entra mt-4 flex items-start gap-2.5 rounded-[18px] bg-[#FFF6D6] px-3.5 py-3 text-[13px] leading-snug text-[#5A4A12]">
-      <span aria-hidden>💡</span>
-      <span>{children}</span>
-    </p>
-  );
-}
 
 /** 1, 2, 3: onde a pessoa está e quanto falta. */
 function Passos({ atual }: { atual: 1 | 2 | 3 }) {
@@ -862,20 +818,36 @@ function Passos({ atual }: { atual: 1 | 2 | 3 }) {
   );
 }
 
-function Opcao({ ativa, onClick, titulo, detalhe, icone, cor }: { ativa: boolean; onClick: () => void; titulo: string; detalhe: string; icone?: string; cor?: string }) {
+/** Escolha em vidro, de dois em dois: ícone grande e uma palavra. Entra em cascata. */
+function Tile({ i, ativa, onClick, titulo, icone, cor }: { i: number; ativa: boolean; onClick: () => void; titulo: string; icone: string; cor: string }) {
   return (
     <button
       type="button"
       role="radio"
       aria-checked={ativa}
       onClick={onClick}
-      className={`flex min-h-[64px] items-center gap-3 rounded-[20px] px-3.5 py-3 text-left transition-all active:scale-[0.99] ${ativa ? "bg-on-background text-white" : "bg-surface-white ring-1 ring-divider"}`}
+      style={{ animationDelay: `${i * 0.05}s` }}
+      className={`orbi-linha-entra relative flex min-h-[112px] flex-col items-start justify-between rounded-[24px] p-3.5 text-left backdrop-blur-xl transition-all duration-200 active:scale-[0.96] ${ativa ? "scale-[1.02] bg-on-background text-white shadow-[0_14px_30px_-14px_rgba(17,19,24,0.6)]" : "bg-white/55 ring-1 ring-white/80 shadow-[0_8px_24px_-16px_rgba(17,19,24,0.25)]"}`}
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[18px]" style={{ background: cor ?? "#EEF0EA" }} aria-hidden>{icone}</span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-medium leading-tight">{titulo}</span>
-        <span className={`mt-0.5 block text-[13px] leading-snug ${ativa ? "text-white/65" : "text-text-secondary"}`}>{detalhe}</span>
-      </span>
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl text-[22px]" style={{ background: ativa ? "rgba(255,255,255,.14)" : cor }} aria-hidden>{icone}</span>
+      <span className="text-[15px] font-medium leading-tight">{titulo}</span>
+      {ativa && <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[12px] text-on-background" aria-hidden>✓</span>}
     </button>
   );
 }
+
+function PilulaOrbi({ i, ativa, onClick }: { i: number; ativa: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={ativa}
+      onClick={onClick}
+      style={{ animationDelay: `${i * 0.05}s` }}
+      className={`orbi-linha-entra col-span-2 flex min-h-[52px] items-center justify-center gap-2 rounded-full text-[14px] font-medium backdrop-blur-xl transition-all active:scale-[0.98] ${ativa ? "bg-on-background text-white" : "bg-white/55 text-text-secondary ring-1 ring-white/80"}`}
+    >
+      <span aria-hidden>✦</span> Deixe a Orbi decidir
+    </button>
+  );
+}
+
