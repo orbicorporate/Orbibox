@@ -1152,16 +1152,21 @@ export function VisitorExperience({
                           </button>
                         ) : null}
                       </div>
+                      {c.campo === "nome" && ocultarNome ? (
+                        // Nome escondido: some o campo, fica só o aviso.
+                        <p className="mt-1 rounded-xl bg-[#F2F2EE] px-3 py-2.5 text-[14px] text-text-secondary">Nome escondido da tela inicial.</p>
+                      ) : (
                       <input
                         defaultValue={c.valor}
                         maxLength={c.campo === "frase" ? 110 : 60}
-                        placeholder={c.campo === "nome" && ocultarNome ? "Oculto. Toque em Mostrar para voltar." : c.campo !== "nome" && !(textos.frase ?? frase) ? "Removida. Escreva aqui para voltar." : c.dica}
+                        placeholder={c.campo !== "nome" && !(textos.frase ?? frase) ? "Removida. Escreva aqui para voltar." : c.dica}
                         onBlur={(e) => {
                           const v = e.target.value.trim();
                           if (v !== c.valor.trim()) salvarTexto(c.campo, v);
                         }}
                         className="mt-1 w-full rounded-xl border border-divider px-3 py-2.5 text-[15px] outline-none focus:border-on-background"
                       />
+                      )}
                     </div>
                   ))}
                   <p className="text-[12px] text-text-tertiary">Toque na lixeira vermelha para esconder o nome ou a frase. Para voltar, escreva de novo ou toque em Mostrar.</p>
