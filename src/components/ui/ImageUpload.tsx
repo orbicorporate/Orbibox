@@ -225,28 +225,29 @@ export function ImageUpload({
         {/* Sem foto própria: a Orbi busca uma pronta ou monta o prompt pra
             criar uma capa com a cara da marca no ChatGPT. */}
         <div className="flex flex-col gap-2">
-          <p className="px-1 text-[12px] font-medium text-text-tertiary">Ou escolha uma imagem</p>
-          {/* Três caminhos lado a lado, cada um com sua cor e uma palavra. */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="mt-1 border-t border-black/[0.08] pt-4">
+          <p className="px-1 text-center text-[12px] font-medium text-text-tertiary">Ou escolha uma imagem</p>
+          {/* Três bolinhas, minimalistas: cor, ícone e uma palavra. */}
+          <div className="mt-3 grid grid-cols-3">
             {[
-              { t: "Foto pronta", d: "Banco de fotos", bg: "linear-gradient(135deg,#C7F284,#6FD8C4)", ic: <path d="M21 16l-5-5-8 9M3 4h18v16H3zM9 10a2 2 0 1 0 0-.01" />, f: () => setShowFotos(true), on: false },
-              { t: "Minha galeria", d: "Já enviadas", bg: "linear-gradient(135deg,#9EC5FF,#B69CFF)", ic: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />, f: () => setShowGaleria(true), on: false },
-              { t: "Criar com IA", d: "Com suas cores", bg: "linear-gradient(135deg,#FFD9A8,#FF9FB8)", ic: <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />, f: abrirPrompt, on: showPrompt },
+              { t: "Foto pronta", bg: "linear-gradient(135deg,#C7F284,#6FD8C4)", ic: <path d="M21 16l-5-5-8 9M3 4h18v16H3zM9 10a2 2 0 1 0 0-.01" />, f: () => setShowFotos(true), on: false },
+              { t: "Galeria", bg: "linear-gradient(135deg,#9EC5FF,#B69CFF)", ic: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />, f: () => setShowGaleria(true), on: false },
+              { t: "Criar com IA", bg: "linear-gradient(135deg,#FFD9A8,#FF9FB8)", ic: <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />, f: abrirPrompt, on: showPrompt },
             ].map((o) => (
               <button
                 key={o.t}
                 type="button"
                 onClick={o.f}
                 aria-expanded={o.t === "Criar com IA" ? showPrompt : undefined}
-                className={`flex flex-col items-center gap-2 rounded-[20px] bg-white px-2 py-3.5 text-center ring-1 transition-transform active:scale-[0.97] ${o.on ? "ring-2 ring-on-background" : "ring-black/[0.08]"}`}
+                className="flex flex-col items-center gap-2 py-1 active:scale-[0.95]"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl text-on-background" style={{ background: o.bg }} aria-hidden>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">{o.ic}</svg>
+                <span className={`flex h-14 w-14 items-center justify-center rounded-full text-on-background shadow-[0_6px_16px_-8px_rgba(17,19,24,0.35)] ${o.on ? "ring-2 ring-on-background ring-offset-2" : ""}`} style={{ background: o.bg }} aria-hidden>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{o.ic}</svg>
                 </span>
-                <span className="text-[13px] font-semibold leading-tight text-on-background">{o.t}</span>
-                <span className="-mt-1 text-[11px] leading-tight text-text-tertiary">{o.d}</span>
+                <span className="text-[12.5px] font-medium text-on-background">{o.t}</span>
               </button>
             ))}
+          </div>
           </div>
 
           <div className={showPrompt ? "rounded-2xl bg-white ring-1 ring-black/[0.08]" : "hidden"}>
