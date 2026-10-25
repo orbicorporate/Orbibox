@@ -8,8 +8,8 @@ import { capaDoItem } from "@/lib/showcase";
 
 type BrandColor = { hex: string; role?: string };
 
-export default async function VitrinePage({ searchParams }: { searchParams: Promise<{ novo?: string; abrir?: string; embed?: string; cat?: string; inspire?: string }> }) {
-  const { novo, abrir, cat, inspire } = await searchParams;
+export default async function VitrinePage({ searchParams }: { searchParams: Promise<{ novo?: string; abrir?: string; embed?: string; cat?: string; inspire?: string; editar?: string }> }) {
+  const { novo, abrir, cat, inspire, editar } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const businessId = await getCurrentBusinessId(user!.id);
@@ -56,6 +56,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
       </p>
       <ShowcaseBuilder
         semFoto={semFoto}
+        editarId={editar ?? null}
         abrirNovo={novo === "1"}
         abrirInspire={inspire === "1"}
         categoriaNovo={cat?.slice(0, 30) ?? null}

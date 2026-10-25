@@ -3149,8 +3149,8 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                 return podeEditar ? (
                   <div key={item.id} className={`relative ${largura}`}>
                     {cartao}
-                    <LapisDono href={`/admin/vitrine/pagina/${item.id}`} rotulo={`Editar ${item.title}`} className="absolute right-2 top-2 z-10" />
-                    <ExcluirItemX id={item.id} titulo={item.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute right-12 top-2 z-10" />
+                    <LapisDono href={`/admin/vitrine?editar=${item.id}`} rotulo={`Editar ${item.title}`} className="absolute left-2 top-2 z-10" />
+                    <ExcluirItemX id={item.id} titulo={item.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />
                   </div>
                 ) : cartao;
               })}

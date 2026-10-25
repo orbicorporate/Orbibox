@@ -92,6 +92,7 @@ export function ShowcaseBuilder({
   abrirNovo = false,
   abrirInspire = false,
   semFoto = 0,
+  editarId = null,
   categoriaNovo = null,
   abrirCapa = false,
   temCardapio = false,
@@ -120,6 +121,8 @@ export function ShowcaseBuilder({
   abrirNovo?: boolean;
   abrirInspire?: boolean;
   semFoto?: number;
+  /** Abre já editando este item (vindo do lápis na página pública). */
+  editarId?: string | null;
   /** Categoria em que o item novo já nasce (vem do passo a passo). */
   categoriaNovo?: string | null;
   /** O negócio tem Cardápio ativo: libera passar itens entre os dois. */
@@ -211,7 +214,12 @@ export function ShowcaseBuilder({
     if (Math.abs(diff) > 1) window.scrollBy(0, diff);
   }, [items]);
   const [coverUrls, setCoverUrls] = useState<string[]>(initialCoverUrl ?? []);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(editarId);
+  useEffect(() => {
+    if (!editarId) return;
+    const t = setTimeout(() => document.getElementById(`item-${editarId}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 250);
+    return () => clearTimeout(t);
+  }, [editarId]);
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [catalogTitle, setCatalogTitle] = useState(initialCatalogTitle ?? "");
   const [catalogSubtitle, setCatalogSubtitle] = useState(initialCatalogSubtitle ?? "");

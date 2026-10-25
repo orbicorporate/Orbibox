@@ -451,7 +451,7 @@ export function HomeVitrine({
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative transition-transform duration-150 ${largo ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                     <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
-                    {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
+                    {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                   </li>
                 );
@@ -462,7 +462,7 @@ export function HomeVitrine({
               {mostrarNaOrdem.map((i) => (
                 <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                   <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
-                    {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
+                    {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                 </li>
               ))}
@@ -474,7 +474,7 @@ export function HomeVitrine({
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative transition-transform duration-150 ${grande ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                     <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
-                    {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine/pagina/${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
+                    {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                   </li>
                 );
