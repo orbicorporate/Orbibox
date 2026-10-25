@@ -38,12 +38,10 @@ const PASSOS = [
  */
 export function Pronto({
   d,
-  onPainel,
   onTentarDeNovo,
   tentando,
 }: {
   d: ProntoDados;
-  onPainel: (destino?: string) => void;
   onTentarDeNovo: () => void;
   tentando: boolean;
 }) {
@@ -93,10 +91,10 @@ export function Pronto({
       )}
 
       <div className="orbi-linha-entra flex w-full flex-col items-center gap-3" style={{ animationDelay: "0.45s" }}>
-        <button type="button" onClick={() => onPainel("/admin/comecar")} className="orbi-gradient w-full rounded-full py-4 text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
-          Começar o passo 1 →
-        </button>
-        <a href={`/${d.slug}?preview=1`} target="_blank" rel="noreferrer" className="text-[13px] font-medium text-text-secondary underline underline-offset-2">Ver como está agora</a>
+        {/* Abre a própria Home já com o tour curto (bolinhas, tags, destaques, catálogo). */}
+        <a href={`/${d.slug}?tour=1`} className="orbi-gradient w-full rounded-full py-4 text-center text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
+          Ver minha página →
+        </a>
         {d.diasTeste != null && d.diasTeste > 0 && <p className="text-[12.5px] text-text-tertiary">{d.diasTeste} dias grátis, sem cartão.</p>}
       </div>
     </div>

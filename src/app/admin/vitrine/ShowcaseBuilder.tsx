@@ -1723,6 +1723,7 @@ function ItemCard({
           {item.status === "published" && onDestacar && (
             <div className="relative">
               <button
+                data-tour="t-catalogo"
                 onClick={(e) => { e.stopPropagation(); setMenuDestaque((v) => !v); }}
                 aria-label={emDestaque ? "Em destaque na Home" : "Destacar na Home"}
                 aria-expanded={menuDestaque}

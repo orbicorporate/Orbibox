@@ -361,6 +361,7 @@ export function HomeVitrine({
           )}
           <div
             role="list"
+            data-tour="t-bolinhas"
             data-rolavel
             className="no-scrollbar relative -mx-6 flex w-[calc(100%+3rem)] snap-x snap-proximity scroll-px-6 gap-3 overflow-x-auto px-6 pb-2 pt-2 [justify-content:safe_center] [mask-image:linear-gradient(to_right,transparent,#000_22px,#000_calc(100%-22px),transparent)]"
           >
@@ -413,11 +414,12 @@ export function HomeVitrine({
         </nav>
       )}
 
-      {mostrar.length === 0 && <div className="mt-9 flex w-full flex-col items-center empty:hidden">{destaque}</div>}
+      {mostrar.length === 0 && <div data-tour="t-tags" className="mt-9 flex w-full flex-col items-center empty:hidden">{destaque}</div>}
+      {mostrar.length === 0 && podeEditar && onEscolherItens && <div data-tour="t-destaques" className="mt-6 w-full"><button type="button" onClick={() => setEscolhendo(true)} className="mt-3 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[20px] bg-[#EEF1FB] text-[14px] font-semibold text-[#3B5BDB] active:scale-[0.99]">+ Destacar do catálogo</button></div>}
 
       {mostrar.length > 0 && (
         <section className="mt-9 w-full" aria-label={tituloItens}>
-          <div className="mb-5 flex w-full min-w-0 flex-col items-center empty:hidden">{destaque}</div>
+          <div data-tour="t-tags" className="mb-5 flex w-full min-w-0 flex-col items-center empty:hidden">{destaque}</div>
           <div className="flex items-center justify-between gap-2">
             {podeEditar && onEscolherItens ? (
               <button type="button" onClick={() => setEscolhendo(true)} aria-label={`${tituloItens}: escolher e ordenar os itens da Home`} className="flex min-h-[40px] min-w-0 items-center gap-2 rounded-full text-left active:opacity-70">
@@ -442,7 +444,7 @@ export function HomeVitrine({
             </div>
           </div>
           {formato === "vitrine" ? (
-            <ul className="relative mt-3 grid grid-flow-dense grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+            <ul data-tour="t-destaques" className="relative mt-3 grid grid-flow-dense grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
               {mostrarNaOrdem.map((i) => {
                 const tam = sizeOf(i.layout_size);
                 const largo = tam === "destaque" || tam === "largo";
@@ -456,7 +458,7 @@ export function HomeVitrine({
               })}
             </ul>
           ) : formato === "carrossel" ? (
-            <ul data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-2">
+            <ul data-tour="t-destaques" data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-2">
               {mostrarNaOrdem.map((i) => (
                 <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
                   <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
@@ -466,7 +468,7 @@ export function HomeVitrine({
               ))}
             </ul>
           ) : (
-            <ul className="relative mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+            <ul data-tour="t-destaques" className="relative mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
               {mostrarNaOrdem.map((i, n) => {
                 const grande = formato === "destaque" && n === 0;
                 return (
@@ -479,6 +481,8 @@ export function HomeVitrine({
               })}
             </ul>
           )}
+          {/* Só o dono vê: atalho para escolher mais itens do catálogo para esta seção. */}
+          {podeEditar && onEscolherItens && mostrarNaOrdem.length < MAXIMO && <button type="button" onClick={() => setEscolhendo(true)} className="mt-3 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[20px] bg-[#EEF1FB] text-[14px] font-semibold text-[#3B5BDB] active:scale-[0.99]">+ Destacar do catálogo</button>}
         </section>
       )}
 

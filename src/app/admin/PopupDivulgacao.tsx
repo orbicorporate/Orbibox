@@ -73,10 +73,10 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
   ];
 
   useEffect(() => {
-    // Só pede para divulgar depois que a pessoa conferiu o passo a passo
-    // (categorias, itens e página inicial). Antes disso a página não está pronta.
+    // Só pede para divulgar depois que a pessoa viu o tour da Home (ou conferiu o
+    // passo a passo antigo). Antes disso ela ainda está entendendo a página.
     try {
-      const conferiu = [0, 1, 2].every((i) => localStorage.getItem(`comecar_ok_${i}_${slug}`) === "1");
+      const conferiu = localStorage.getItem(`orbi_tour_fim_${slug}`) === "1" || [0, 1, 2].every((i) => localStorage.getItem(`comecar_ok_${i}_${slug}`) === "1");
       if (!conferiu) return;
     } catch { return; }
     let estado: { feitas: string[]; ultimo: number } = { feitas: [], ultimo: 0 };

@@ -76,11 +76,10 @@ export type HomeViewProps = {
   /** Próxima pendência de cadastro, em linha fina embaixo do card principal quando ele está ocupado por uma oportunidade. */
   passoFaltando: { title: string; description: string; ctaLabel: string; href: string } | null;
   /** Mostra o convite para continuar o passo a passo do começo. */
-  passoAPasso?: boolean;
 };
 
 /** A home do painel, só apresentação: os dados vêm prontos de page.tsx. */
-export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, pelaMetade, mostrarConvite, gratis, perguntaRede, pendencias, avaliacao, passoFaltando, passoAPasso }: HomeViewProps) {
+export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, pelaMetade, mostrarConvite, gratis, perguntaRede, pendencias, avaliacao, passoFaltando }: HomeViewProps) {
   const cartao = "flex min-h-[92px] flex-col justify-between gap-3 rounded-[22px] bg-surface-white p-4 text-left ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]";
 
   return (
@@ -108,16 +107,10 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
         </Link>
       )}
 
-      {passoAPasso && (
-        <Link href="/admin/comecar" className="passo-cereja mt-4 flex items-center gap-3 rounded-[24px] p-4 text-white shadow-[0_16px_32px_-14px_rgba(196,18,47,0.7)] transition-transform active:scale-[0.98]">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-[15px] font-semibold" aria-hidden>1·2·3</span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[16px] font-semibold leading-tight">Continue o passo a passo</span>
-            <span className="block text-[12.5px] text-white/80">Categorias, itens e página inicial</span>
-          </span>
-          <span aria-hidden className="passo-cereja-seta relative z-10">→</span>
-        </Link>
-      )}
+      {/* Reabre o tour curto na própria página: o que é Home, tags, destaques e catálogo. */}
+      <a href={`/${b.slug}?tour=1`} className="mt-3 inline-flex items-center gap-2 self-start rounded-full bg-[#EEF1FB] px-4 py-2 text-[13px] font-semibold text-[#3B5BDB]">
+        <span aria-hidden>▶</span> Como funciona
+      </a>
 
       {gratis && <div className="-mx-4"><UpgradeGratis nome={b.name} /></div>}
 

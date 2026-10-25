@@ -32,6 +32,7 @@ import { NudgeLead } from "@/components/mobile/NudgeLead";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiAvatar, escalaDoAvatar, lerEsfera, lerSemFundo } from "@/components/orbi/OrbiAvatar";
+import { TourOrbibox } from "@/components/tour/TourOrbibox";
 import { formatPrice, groupByCategory, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
 import { heroBackground } from "@/lib/heroStyle";
@@ -887,6 +888,7 @@ export function VisitorExperience({
   return (
     <HorarioContext.Provider value={horarioNegocio}>
     <main className="relative min-h-screen overflow-hidden bg-background-main">
+      {isOwner && <TourOrbibox fase="home" slug={business.slug} iniciar={searchParams.get("tour") === "1"} />}
       {/* Fundo conforme o estilo escolhido pelo dono. "brilho" é o halo suave
           (padrão); os demais preenchem a tela com cor forte + um véu claro por
           cima pra a Orbi e os textos continuarem legíveis. */}

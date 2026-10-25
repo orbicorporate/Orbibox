@@ -2,6 +2,7 @@ import { PreviewAoVivo } from "@/components/mobile/PreviewAoVivo";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusinessId } from "@/lib/business";
 import { getInspirePhotos } from "@/lib/inspirePhotos";
+import { TourOrbibox } from "@/components/tour/TourOrbibox";
 import { ShowcaseBuilder } from "./ShowcaseBuilder";
 import { capaDoItem } from "@/lib/showcase";
 
@@ -79,6 +80,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
         homeBoxConfig={homeBoxConfig}
       />
       <PreviewAoVivo slug={business!.slug} tab="vitrine" />
+      <TourOrbibox fase="catalogo" slug={business!.slug} />
     </div>
   );
 }

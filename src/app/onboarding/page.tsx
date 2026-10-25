@@ -420,12 +420,13 @@ export default function OnboardingPage() {
     const quantidade = seg?.voucher?.quantity ?? 30;
     const horas = seg?.voucher?.horas ?? 168;
     let voucherCriado: { titulo: string; quantidade: number } | null = null;
+    let voucherId: string | null = null;
     if (obj === "vender" || obj === "tudo" || conv === "oferta") {
-      const { error: vErr } = await supabase.from("vouchers").insert({
+      const { data: vCriado, error: vErr } = await supabase.from("vouchers").insert({
         business_id: id, title: oferta.title, discount_type: oferta.discountType, discount_value: oferta.discountValue,
         quantity_total: quantidade, expires_hours: horas, badge: "Primeira visita", color: "cherry", is_active: true,
-      });
-      if (!vErr) voucherCriado = { titulo: oferta.title, quantidade };
+      }).select("id").single();
+      if (!vErr) { voucherCriado = { titulo: oferta.title, quantidade }; voucherId = vCriado?.id ?? null; }
     } else {
       try {
         localStorage.setItem(`orbi_voucher_rascunho_${id}`, JSON.stringify({
@@ -501,6 +502,12 @@ export default function OnboardingPage() {
     }
     if (igFinal) linhas.push({ business_id: id, box_type: "custom", title: "Instagram", position: pos++, is_active: true, config: { label: "Instagram", subtitle: "Siga a gente", icon: "@", color: "#111318", action: "link", url: igFinal } });
     if (siteUrl) linhas.push({ business_id: id, box_type: "custom", title: "Nosso site", position: pos++, is_active: true, config: { label: "Nosso site", subtitle: siteUrl.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""), icon: "➜", color: "#111318", action: "link", url: siteUrl } });
+    // Destaques escolhidos viram os boxes da seção Destaque da Home. Ficam no
+    // box que a Home usa para isso: o primeiro ativo do catálogo, senão a Tela inicial.
+    if (idsDestaque.length > 0) {
+      const alvo = [...linhas].sort((x, y) => x.position - y.position).find((l) => l.is_active && (l.box_type === "product" || (l.box_type === "custom" && (l.config as { action?: string } | undefined)?.action === "vitrine"))) ?? linhas.find((l) => l.box_type === "hero");
+      if (alvo) alvo.config = { ...((alvo.config as Record<string, unknown> | undefined) ?? {}), itensHome: idsDestaque.slice(0, 6) };
+    }
     // Toda linha leva config (a coluna não aceita vazio) e, se o lote falhar,
     // cada botão é tentado sozinho, pra a Home nunca nascer sem botões.
     const linhasOk = linhas.map((l) => ({ config: {}, ...l }));
@@ -513,13 +520,8 @@ export default function OnboardingPage() {
       }
     }
 
-    // Home com os destaques escolhidos. Sem escolha, o item de maior preço com foto.
-    if (idsDestaque.length > 0) {
-      await supabase.from("businesses").update({ home_destaques: idsDestaque.slice(0, 4).map((itemId) => ({ t: "item", id: itemId })) }).eq("id", id);
-    } else {
-      const { data: comFoto } = await supabase.from("content_items").select("id, price").eq("business_id", id).eq("status", "published").not("image_url", "is", null).order("price", { ascending: false, nullsFirst: false }).limit(1);
-      if (comFoto?.[0]) await supabase.from("businesses").update({ home_destaques: [{ t: "item", id: comFoto[0].id }] }).eq("id", id);
-    }
+    // Tags da Home: o voucher criado já aparece ali. Os produtos ficam nos boxes de Destaque.
+    await supabase.from("businesses").update({ home_destaques: voucherId ? [{ t: "voucher", id: voucherId }] : [] }).eq("id", id);
 
     // Categorias do catálogo: as escolhidas na frente, depois as que o site trouxe (ou as do ramo).
     {
@@ -602,11 +604,6 @@ export default function OnboardingPage() {
       return;
     }
     setStep("pronto");
-  }
-
-  function irPara(destino: string = "/admin/comecar") {
-    router.push(destino);
-    router.refresh();
   }
 
   async function handleSignOut() {
@@ -798,7 +795,7 @@ export default function OnboardingPage() {
           />
         )}
 
-        {step === "pronto" && pronto && <Pronto d={pronto} onPainel={irPara} onTentarDeNovo={tentarDeNovo} tentando={tentando} />}
+        {step === "pronto" && pronto && <Pronto d={pronto} onTentarDeNovo={tentarDeNovo} tentando={tentando} />}
       </div>
     </main>
   );
