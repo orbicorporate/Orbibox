@@ -1138,7 +1138,7 @@ export function ShowcaseBuilder({
               {sec.items.length === 0 && (
                 <button
                   onClick={() => createItem(sec.name === "Destaques" ? null : sec.name)}
-                  className="flex min-h-[90px] w-full items-center justify-center rounded-[20px] border border-dashed border-divider text-[13px] text-text-tertiary"
+                  className="flex min-h-[90px] w-full items-center justify-center rounded-[20px] bg-[#F2F2EE] text-[13px] font-medium text-text-secondary"
                 >
                   + Adicionar item nesta categoria
                 </button>
@@ -2149,7 +2149,7 @@ function ItemCard({
               )}
             </div>
 
-            <div>
+            <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
               <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Categoria</p>
               <p className="mt-1 text-[12px] leading-snug text-text-tertiary">Cada categoria vira uma seção com título no Catálogo.</p>
               <div className="mt-3 flex flex-col gap-2">
@@ -2161,10 +2161,10 @@ function ItemCard({
                       type="button"
                       onClick={() => save(item.id, { brand_label: v })}
                       aria-pressed={ativo}
-                      className={`flex w-full items-center gap-3 rounded-[20px] border px-4 py-3 text-left text-[15px] font-normal transition-colors ${ativo ? "border-on-background bg-surface-white shadow-[0_1px_4px_rgba(17,19,24,0.06)]" : "border-divider bg-surface-soft text-text-secondary"}`}
+                      className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-[15px] font-normal transition-colors ${ativo ? "bg-on-background text-white" : "bg-[#F2F2EE]"}`}
                     >
-                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${ativo ? "border-on-background bg-on-background" : "border-text-tertiary"}`} aria-hidden>
-                        {ativo && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${ativo ? "border-white bg-white" : "border-text-tertiary"}`} aria-hidden>
+                        {ativo && <span className="h-2 w-2 rounded-full bg-on-background" />}
                       </span>
                       <span className="min-w-0 flex-1 truncate">{t}</span>
                     </button>
@@ -2180,7 +2180,7 @@ function ItemCard({
                       onNewCategory(trimmed);
                     }
                   }}
-                  className="flex w-full items-center gap-3 rounded-[20px] border border-dashed border-text-tertiary px-4 py-3 text-left text-[15px] font-normal text-text-secondary"
+                  className="flex w-full items-center gap-3 rounded-[18px] bg-[#EEF1FB] px-4 py-3 text-left text-[15px] font-semibold text-[#3B5BDB]"
                 >
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center text-[16px] leading-none" aria-hidden>+</span>
                   Nova categoria
@@ -2188,7 +2188,7 @@ function ItemCard({
               </div>
             </div>
 
-            <div data-tour="item-destino">
+            <div data-tour="item-destino" className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
               <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Ao tocar no card…</p>
               <div className="mt-3 flex flex-col gap-2">
                 {([
@@ -2203,14 +2203,14 @@ function ItemCard({
                       type="button"
                       onClick={() => save(item.id, o.patch)}
                       aria-pressed={sel}
-                      className={`flex w-full items-start gap-3 rounded-[20px] border px-4 py-3.5 text-left transition-colors ${sel ? "border-on-background bg-surface-white shadow-[0_1px_4px_rgba(17,19,24,0.06)]" : "border-divider bg-surface-soft"}`}
+                      className={`flex w-full items-start gap-3 rounded-[18px] px-4 py-3.5 text-left transition-colors ${sel ? "bg-on-background text-white" : "bg-[#F2F2EE]"}`}
                     >
-                      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${sel ? "border-on-background bg-on-background" : "border-text-tertiary"}`} aria-hidden>
-                        {sel && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${sel ? "border-white bg-white" : "border-text-tertiary"}`} aria-hidden>
+                        {sel && <span className="h-2 w-2 rounded-full bg-on-background" />}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block text-[15px] font-normal">{o.titulo}</span>
-                        {sel && <span className="mt-0.5 block text-[13px] leading-snug text-text-secondary">{o.dica}</span>}
+                        {sel && <span className="mt-0.5 block text-[13px] leading-snug text-white/70">{o.dica}</span>}
                       </span>
                     </button>
                   );
@@ -2242,7 +2242,7 @@ function ItemCard({
               type="button"
               onClick={() => setAvancado((v) => !v)}
               aria-expanded={mostrarAvancado}
-              className="order-[90] flex w-full items-center justify-between rounded-2xl bg-surface-soft px-4 py-3 text-left text-[14px] font-medium"
+              className="order-[90] flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-left text-[14px] font-medium ring-1 ring-black/[0.08]"
             >
               <span>
                 Mais opções <span className="font-normal text-text-tertiary">(cores, nome na foto, posição, agendar)</span>
@@ -2402,7 +2402,7 @@ function MoreColorsButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Mais cores"
       title="Mais cores"
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-dashed border-text-tertiary text-[18px] text-text-secondary"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F2F2EE] text-[18px] text-text-secondary"
     >
       +
     </button>
