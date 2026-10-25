@@ -62,6 +62,14 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
   const router = useRouter();
   const passo = useSyncExternalStore(assinar, () => ler(slug), () => null);
   const [rect, setRect] = useState<Rect | null>(null);
+  const [copiado, setCopiado] = useState(false);
+  async function compartilhar() {
+    const url = `${window.location.origin}/${slug}`;
+    try {
+      if (navigator.share) { await navigator.share({ text: "Conheça nossa página", url }); return; }
+    } catch { /* cancelou */ }
+    try { await navigator.clipboard.writeText(url); setCopiado(true); } catch { /* sem clipboard */ }
+  }
 
   // ?tour=1 na Home começa do primeiro passo.
   useEffect(() => {
@@ -129,18 +137,16 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
       <div className="fixed inset-0 z-[95] flex items-end justify-center bg-black/55 p-4 sm:items-center">
         <div className="orbi-linha-entra w-full max-w-sm rounded-[28px] bg-white p-6 text-center shadow-2xl">
           <p className="font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight">Pronto!</p>
-          <p className="mt-1 text-[14px] text-text-secondary">Seu Orbibox está no ar. Agora explore:</p>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            {[
-              { t: "Vouchers", c: "#C4122F" },
-              { t: "Gift card", c: "#E8508A" },
-              { t: "Stories", c: "#8134AF" },
-              { t: "Números", c: "#0E9AA7" },
-            ].map((x) => (
-              <span key={x.t} className="rounded-2xl py-3 text-[14px] font-semibold text-white" style={{ backgroundColor: x.c }}>{x.t}</span>
-            ))}
+          <p className="mt-1 text-[14px] text-text-secondary">Seu Orbibox está no ar.</p>
+          {/* Uma única próxima ação: mandar o link para quem já conhece a marca. */}
+          <div className="mt-5 rounded-[22px] bg-[#E9F8EF] p-4 text-left">
+            <p className="text-[12px] font-semibold uppercase tracking-wide text-[#1F9E4C]">Agora faça isso</p>
+            <p className="mt-1 text-[16px] font-semibold leading-snug">Mande seu link para os clientes</p>
+            <button type="button" onClick={compartilhar} className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#1F9E4C] text-[15px] font-semibold text-white active:scale-[0.98]">
+              {copiado ? "Link copiado ✓" : "Compartilhar meu link"}
+            </button>
           </div>
-          <button type="button" onClick={avancar} className="orbi-gradient mt-5 w-full rounded-full py-3.5 text-[15.5px] font-semibold text-on-background">Vamos começar</button>
+          <button type="button" onClick={avancar} className="mt-3 min-h-[44px] w-full rounded-full text-[14px] font-medium text-text-secondary">Ir para o painel</button>
         </div>
       </div>
     );
