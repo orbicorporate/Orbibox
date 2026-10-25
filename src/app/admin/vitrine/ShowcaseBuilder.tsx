@@ -1686,22 +1686,23 @@ function ItemCard({
         {/* X pequeno pra excluir direto, sem precisar abrir a edição. */}
         <ExcluirComConfirmacao onConfirmar={onDelete} variante="x" />
 
-        {/* Setinhas pra subir e descer o box dentro da seção. */}
+        {/* Setinhas pra subir e descer o box dentro da seção. Ficam em pé, logo abaixo
+            do X, longe do status no topo direito, pra não encavalar em card estreito. */}
         {!editing && total > 1 && (
-          <div className="absolute left-12 top-3 flex h-7 overflow-hidden rounded-full bg-surface-white/95 shadow backdrop-blur" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute left-3 top-[52px] flex w-9 flex-col items-center overflow-hidden rounded-full bg-white/95 shadow backdrop-blur" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => move(item, -1)}
               disabled={idx <= 0}
-              className="flex h-7 w-7 items-center justify-center text-[13px] text-on-background disabled:opacity-25"
+              className="flex h-9 w-9 items-center justify-center text-[14px] text-on-background disabled:opacity-25"
               aria-label="Subir item"
             >
               ↑
             </button>
-            <span className="my-1 w-px bg-divider" />
+            <span className="h-px w-5 bg-divider" />
             <button
               onClick={() => move(item, 1)}
               disabled={idx >= total - 1}
-              className="flex h-7 w-7 items-center justify-center text-[13px] text-on-background disabled:opacity-25"
+              className="flex h-9 w-9 items-center justify-center text-[14px] text-on-background disabled:opacity-25"
               aria-label="Descer item"
             >
               ↓
