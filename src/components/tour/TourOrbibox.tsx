@@ -167,7 +167,7 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
         style={embaixo ? { bottom: 24 } : { top: 24 }}
       >
         <div className="flex items-center gap-2">
-          <span className="rounded-full px-3 py-1 text-[12.5px] font-semibold text-white" style={{ backgroundColor: parada.cor }}>{parada.nome}</span>
+          <span key={parada.nome} className="selo-vibra rounded-full px-3 py-1 text-[12.5px] font-semibold text-white" style={{ backgroundColor: parada.cor }}>{parada.nome}</span>
           <span className="ml-auto flex gap-1" aria-hidden>
             {PARADAS.slice(0, total).map((p, i) => <span key={p.nome} className="h-1.5 w-4 rounded-full" style={{ backgroundColor: i <= passo ? p.cor : "rgba(0,0,0,.1)" }} />)}
           </span>
