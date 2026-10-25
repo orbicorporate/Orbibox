@@ -243,7 +243,7 @@ export default async function PendenciasPage() {
       <ProgressTags done={progress.done} pct={progress.pct} extras={extras} />
 
       {insights.length > 0 ? (
-        <div className="mt-2 flex flex-col gap-7">
+        <div className="mt-4 flex flex-col gap-11">
           {categoriasComItens.map((cat) => (
             <div key={cat}>
               <div className="flex items-baseline gap-2">
@@ -252,9 +252,9 @@ export default async function PendenciasPage() {
                   {grupos[cat].length}
                 </span>
               </div>
-              <p className="mt-0.5 text-[12.5px] text-text-tertiary">{CATEGORIAS[cat].blurb}</p>
+              <p className="mt-1 text-[12.5px] text-text-tertiary">{CATEGORIAS[cat].blurb}</p>
 
-              <div className="mt-3 flex flex-col gap-2.5">
+              <div className="mt-4 flex flex-col gap-3">
                 {grupos[cat].map((it) => {
                   const meta = insightMeta(it);
                   return (
