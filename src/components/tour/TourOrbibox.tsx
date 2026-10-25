@@ -15,6 +15,7 @@ type Fase = "home" | "catalogo";
 type Parada = { fase: Fase; alvo: string | null; cor: string; nome: string; texto: string };
 
 const PARADAS: Parada[] = [
+  { fase: "home", alvo: null, cor: "#111318", nome: "Intro", texto: "" },
   { fase: "home", alvo: "t-bolinhas", cor: "#1FA855", nome: "Bolinhas", texto: "Atalhos rápidos: WhatsApp, endereço, redes." },
   { fase: "home", alvo: "t-tags", cor: "#F29D38", nome: "Tags", texto: "Voucher, gift card, promoção ou um produto em evidência." },
   { fase: "home", alvo: "t-destaques", cor: "#3B5BDB", nome: "Destaques", texto: "Produtos, serviços ou categorias do seu catálogo." },
@@ -58,6 +59,17 @@ export function tourVisto(slug: string): boolean {
 }
 
 type Rect = { top: number; left: number; width: number; height: number };
+
+/** Miniatura de uma das duas telas do Orbibox, na abertura do tour. */
+function Tela({ n, nome, cor, sub, desenho }: { n: number; nome: string; cor: string; sub: string; desenho: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative h-[150px] w-[92px] overflow-hidden rounded-[18px] border-[3px] border-[#16171a] bg-white p-2 shadow-lg">{desenho}</div>
+      <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-[12.5px] font-semibold text-white" style={{ backgroundColor: cor }}><span className="text-white/70">{n}</span>{nome}</span>
+      <span className="text-center text-[11.5px] leading-tight text-text-tertiary">{sub}</span>
+    </div>
+  );
+}
 
 export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug: string; iniciar?: boolean }) {
   const router = useRouter();
@@ -129,9 +141,47 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
 
   if (!ativa || !parada || passo === null) return null;
 
-  const fim = parada.alvo === null;
-  const total = PARADAS.length - 1;
+  const fim = parada.nome === "Pronto";
+  const intro = parada.nome === "Intro";
   const embaixo = rect ? rect.top + rect.height / 2 < window.innerHeight / 2 : true;
+
+  // Abertura: o Orbibox são duas telas. Você deixa as duas bonitas, a Orbi faz o resto.
+  if (intro) {
+    return (
+      <div className="fixed inset-0 z-[95] flex items-end justify-center bg-black/55 p-4 sm:items-center">
+        <div className="orbi-linha-entra w-full max-w-sm rounded-[28px] bg-white p-6 shadow-2xl">
+          <p className="text-center font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-tight">Seu Orbibox tem 2 telas</p>
+          <p className="mt-1 text-center text-[14px] text-text-secondary">Deixe as duas bonitas.</p>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <Tela n={1} nome="Tela inicial" cor="#1FA855" sub="Onde o cliente chega" desenho={
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="mt-1 h-7 w-7 rounded-full bg-black/10" />
+                <span className="flex gap-1">{["#25D366", "#EA4335", "#3B5BDB", "#F29D38"].map((c) => <span key={c} className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: c }} />)}</span>
+                <span className="h-3 w-14 rounded-full bg-[#F29D38]/70" />
+                <span className="grid w-full grid-cols-2 gap-1">{[0, 1, 2, 3].map((k) => <span key={k} className="h-7 rounded-md bg-[#3B5BDB]/25" />)}</span>
+              </div>
+            } />
+            <Tela n={2} nome="Catálogo" cor="#8758BE" sub="Categorias e produtos, cada um com página" desenho={
+              <div className="flex flex-col gap-1.5">
+                <span className="h-2 w-10 rounded-full bg-black/25" />
+                <span className="grid grid-cols-2 gap-1">{[0, 1].map((k) => <span key={k} className="h-8 rounded-md bg-[#8758BE]/30" />)}</span>
+                <span className="h-2 w-8 rounded-full bg-black/25" />
+                <span className="grid grid-cols-2 gap-1">{[0, 1, 2, 3].map((k) => <span key={k} className="h-6 rounded-md bg-[#8758BE]/20" />)}</span>
+              </div>
+            } />
+          </div>
+          <div className="mt-5 rounded-[20px] bg-[#F4EEFB] p-3.5">
+            <p className="text-[13px] font-semibold text-[#8758BE]">✦ O resto a sua IA faz</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {["Divulgar", "Campanhas", "Responder clientes", "Ofertas"].map((t) => <span key={t} className="rounded-full bg-white px-2.5 py-1 text-[12px] font-medium">{t}</span>)}
+            </div>
+          </div>
+          <button type="button" onClick={avancar} className="orbi-gradient mt-5 w-full rounded-full py-3.5 text-[15.5px] font-semibold text-on-background">Mostrar como funciona</button>
+          <button type="button" onClick={() => gravar(slug, null)} className="mt-1 min-h-[40px] w-full text-[13px] text-text-tertiary">Pular</button>
+        </div>
+      </div>
+    );
+  }
 
   if (fim) {
     return (
@@ -176,7 +226,7 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
         <div className="flex items-center gap-2">
           <span key={parada.nome} className="selo-vibra rounded-full px-3 py-1 text-[12.5px] font-semibold text-white" style={{ backgroundColor: parada.cor }}>{parada.nome}</span>
           <span className="ml-auto flex gap-1" aria-hidden>
-            {PARADAS.slice(0, total).map((p, i) => <span key={p.nome} className="h-1.5 w-4 rounded-full" style={{ backgroundColor: i <= passo ? p.cor : "rgba(0,0,0,.1)" }} />)}
+            {PARADAS.map((p, i) => (p.alvo ? <span key={p.nome} className="h-1.5 w-4 rounded-full" style={{ backgroundColor: i <= passo ? p.cor : "rgba(0,0,0,.1)" }} /> : null))}
           </span>
         </div>
         <p className="mt-2.5 text-[15px] leading-snug">{parada.texto}</p>
