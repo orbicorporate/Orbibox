@@ -453,7 +453,7 @@ export default function OnboardingPage() {
 
     const waRotulo = convInfo.principal === "whatsapp" && convInfo.rotuloWhatsapp ? convInfo.rotuloWhatsapp : { label: "Fale no WhatsApp", subtitle: "Atendimento rápido" };
     const NOMES: Record<BotaoChave, string> = {
-      catalogo: "O que fazemos",
+      catalogo: "Catálogo",
       agent: "Pergunte o que quiser",
       conhecer: "Conhecer",
       whatsapp: waRotulo.label,

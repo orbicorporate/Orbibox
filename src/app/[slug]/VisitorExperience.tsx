@@ -138,7 +138,7 @@ type CustomConfig = { categoria?: string; horario?: { dias: number[]; abre: stri
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
-  product: { k: "comprar", icon: "▤", t: "O que fazemos", d: BOX_DEFAULT_DESCRIPTION.product },
+  product: { k: "comprar", icon: "▤", t: "Catálogo", d: BOX_DEFAULT_DESCRIPTION.product },
   content: { k: "conhecer", icon: "◫", t: "Conhecer", d: BOX_DEFAULT_DESCRIPTION.content },
   campaign: { k: "presentear", icon: "◈", t: "Presentear", d: BOX_DEFAULT_DESCRIPTION.campaign },
   agent: { k: "duvida", icon: "__orb__", t: "Pergunte o que quiser", d: BOX_DEFAULT_DESCRIPTION.agent, ai: true },
@@ -591,7 +591,7 @@ export function VisitorExperience({
       else if (o.acao === "conhecer") push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
       else if (o.acao === "cardapio") push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
       else if (o.acao === "materiais") push({ ...base, rotulo: o.t || "Materiais", tipo: "materiais", onClick: o.onClick });
-      else if (o.acao === "vitrine" || o.acao === "comprar") push({ ...base, rotulo: o.t || "Catálogo", tipo: "catalogo", onClick: o.acao === "vitrine" ? o.onClick : () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
+      else if (o.acao === "vitrine" || o.acao === "comprar") push({ ...base, rotulo: nomeDono(["O que fazemos", "Catalogo"], "Catálogo"), tipo: "catalogo", onClick: o.acao === "vitrine" ? o.onClick : () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
     }
     if (!out.some((b) => b.tipo === "whatsapp") && whatsAtalho) {
       out.unshift({ key: "zap", estilo: "cor", editavel: false, rotulo: "WhatsApp", tipo: "whatsapp", onClick: () => { trackClick({ businessId: business.id, kind: "whatsapp", sessionId }); window.open(whatsAtalho, "_blank"); } });

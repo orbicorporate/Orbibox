@@ -38,7 +38,7 @@ const META: Record<string, { name: string; explica: string; icon: string; fixo?:
     icon: "◈",
     fixo: true,
   },
-  product: { name: "O que fazemos", explica: "Mostra seus produtos e serviços no catálogo que você montou.", icon: "▤" },
+  product: { name: "Catálogo", explica: "Mostra seus produtos e serviços no catálogo que você montou.", icon: "▤" },
   content: { name: "Conhecer", explica: "Conta sobre a marca, texto e fotos, usando o tom de voz do seu DNA.", icon: "◫" },
   campaign: { name: "Presentear", explica: "Uma seleção pensada para quem vai comprar para outra pessoa.", icon: "◇" },
   // O box da IA usa as partículas como assinatura fixa, é o "wow" do produto.

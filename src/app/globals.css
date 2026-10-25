@@ -1074,7 +1074,8 @@ body {
   84% { transform: rotate(-8deg); }
   92% { transform: rotate(4deg); }
 }
-.lapis-edita { animation: lapisBalanca 3.2s ease-in-out infinite; transform-origin: 70% 80%; }
+/* Lápis de editar sempre numa bolinha branca, pra ser visto sobre qualquer fundo. */
+.lapis-edita { animation: lapisBalanca 3.2s ease-in-out infinite; transform-origin: 70% 80%; background: #fff; border-radius: 9999px; box-shadow: 0 2px 8px rgba(17,19,24,.18), 0 0 0 0.5px rgba(17,19,24,.12); color: rgba(17,19,24,.75) !important; }
 .lapis-edita:active { animation: none; transform: scale(0.9); }
 @media (prefers-reduced-motion: reduce) { .lapis-edita { animation: none; } }
 /* Botão "Falar com a Orbi": preto, com um reflexo de luar (brilho frio e suave)

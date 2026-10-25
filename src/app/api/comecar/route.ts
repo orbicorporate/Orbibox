@@ -154,7 +154,7 @@ Na dúvida, mantenha. Responda SOMENTE em JSON: {"categorias": {"<original>": "<
     type Linha = { business_id: string; box_type: string; title: string; position: number; is_active: boolean; config: Record<string, string> };
     const linhas: Linha[] = [
       { business_id: businessId, box_type: "hero", title: "Tela inicial", position: 0, is_active: true, config: {} },
-      { business_id: businessId, box_type: "product", title: "O que fazemos", position: 1, is_active: true, config: {} },
+      { business_id: businessId, box_type: "product", title: "Catálogo", position: 1, is_active: true, config: {} },
       { business_id: businessId, box_type: "agent", title: "Pergunte o que quiser", position: 2, is_active: true, config: {} },
       { business_id: businessId, box_type: "content", title: "Conhecer", position: 3, is_active: true, config: {} },
     ];

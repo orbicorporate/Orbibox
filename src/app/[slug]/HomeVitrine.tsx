@@ -638,13 +638,13 @@ export function HomeVitrine({
       {editando && montado && createPortal(
         <>
           <button type="button" aria-label="Fechar" onClick={() => setEditando(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
-          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-h-[80vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-h-[80vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-[#EFEFEA] p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex items-center justify-between">
               <span className="text-[17px] font-medium">Editar bolinhas</span>
               <button type="button" onClick={() => setEditando(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
             </div>
             <p className="mt-1 text-[13px] text-text-secondary">Deixe em cor as que você quer destacar e as outras em linha. Use as setas para mudar a ordem.</p>
-            <div className="mt-4 flex items-center justify-between rounded-2xl bg-surface-soft p-3">
+            <div className="mt-4 flex items-center justify-between rounded-2xl bg-white p-3 ring-1 ring-black/[0.06]">
               <span className="text-[13.5px] font-medium">Todas</span>
               <Seletor valor={null} onChange={(e) => onEstilo(bolinhas.filter((x) => x.editavel).map((x) => x.key), e)} />
             </div>
@@ -736,7 +736,7 @@ function ListaBolinhas({
             key={b.key}
             ref={(el) => { itens.current[i] = el; }}
             style={{ transform: ty ? `translateY(${ty}px)` : undefined, transition: arrastando ? "none" : "transform .18s ease" }}
-            className={`relative flex flex-wrap items-center gap-2.5 rounded-2xl border bg-white p-2.5 ${arrastando ? "z-10 border-on-background/40 shadow-[0_8px_24px_rgba(17,19,24,0.18)]" : "border-divider"}`}
+            className={`relative flex flex-wrap items-center gap-2.5 rounded-[22px] bg-white p-3 ${arrastando ? "z-10 shadow-[0_10px_28px_rgba(17,19,24,0.22)] ring-2 ring-on-background/30" : "shadow-[0_2px_10px_rgba(17,19,24,0.07)] ring-1 ring-black/[0.06]"}`}
           >
             {b.editavel ? (
               <button
