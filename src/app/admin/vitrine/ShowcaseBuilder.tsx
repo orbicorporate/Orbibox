@@ -1607,8 +1607,32 @@ function ItemCard({
       id={`item-${item.id}`}
       ref={arrasto?.ref}
       {...(arrasto?.props ?? {})}
-      className={`overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] transition-transform ${arrasto?.pegado ? "scale-[1.03] shadow-2xl" : ""} ${widthClass}`}
-      style={{ ...(!editing && hasPhoto && fc && item.title_placement !== "sobre" ? { backgroundColor: fc.bg } : {}), ...((arrasto?.props as { style?: React.CSSProperties } | undefined)?.style ?? {}) }}
+      className={`flex flex-col transition-transform ${arrasto?.pegado ? "scale-[1.03]" : ""} ${widthClass}`}
+      style={(arrasto?.props as { style?: React.CSSProperties } | undefined)?.style}
+    >
+      {/* Fora do card, discretos: trocar o formato direto e subir/descer. */}
+      {!editing && (
+        <div className="mb-1 flex items-center justify-end gap-0.5 px-1" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => { const ordem: BoxSize[] = ["medio", "largo", "destaque", "alto"]; save(item.id, { layout_size: ordem[(ordem.indexOf(size) + 1) % ordem.length] }); }}
+            aria-label={`Formato: ${SIZE_LABEL[size]}. Tocar para trocar`}
+            title={`Formato: ${SIZE_LABEL[size]}`}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-on-background/70 active:scale-90"
+          >
+            <span className={`rounded-[3px] bg-current ${FORMA[size]}`} />
+          </button>
+          {total > 1 && (
+            <>
+              <button type="button" onClick={() => move(item, -1)} disabled={idx <= 0} aria-label="Subir item" className="flex h-8 w-8 items-center justify-center text-[15px] text-on-background/70 disabled:opacity-25">↑</button>
+              <button type="button" onClick={() => move(item, 1)} disabled={idx >= total - 1} aria-label="Descer item" className="flex h-8 w-8 items-center justify-center text-[15px] text-on-background/70 disabled:opacity-25">↓</button>
+            </>
+          )}
+        </div>
+      )}
+      <div
+      className={`flex-1 overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${arrasto?.pegado ? "shadow-2xl" : ""}`}
+      style={!editing && hasPhoto && fc && item.title_placement !== "sobre" ? { backgroundColor: fc.bg } : undefined}
     >
       <div
         className="relative"
@@ -1698,30 +1722,6 @@ function ItemCard({
         {/* X pequeno pra excluir direto, sem precisar abrir a edição. */}
         <ExcluirComConfirmacao onConfirmar={onDelete} variante="x" />
 
-        {/* Setinhas pra subir e descer o box dentro da seção. Ficam em pé, logo abaixo
-            do X, longe do status no topo direito, pra não encavalar em card estreito. */}
-        {!editing && total > 1 && (
-          <div className="absolute left-3 top-[52px] flex w-9 flex-col items-center overflow-hidden rounded-full bg-white/95 shadow backdrop-blur" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => move(item, -1)}
-              disabled={idx <= 0}
-              className="flex h-9 w-9 items-center justify-center text-[14px] text-on-background disabled:opacity-25"
-              aria-label="Subir item"
-            >
-              ↑
-            </button>
-            <span className="h-px w-5 bg-divider" />
-            <button
-              onClick={() => move(item, 1)}
-              disabled={idx >= total - 1}
-              className="flex h-9 w-9 items-center justify-center text-[14px] text-on-background disabled:opacity-25"
-              aria-label="Descer item"
-            >
-              ↓
-            </button>
-          </div>
-        )}
-
         {/* Tag preta de editar: deixa explícito que o box é editável, sem
             depender do usuário descobrir que o card inteiro é clicável. */}
         {(hasPhoto || !broken) && !editing && (
@@ -1755,9 +1755,9 @@ function ItemCard({
                 aria-label={emDestaque ? "Em destaque na Home" : "Destacar na Home"}
                 aria-expanded={menuDestaque}
                 title={emDestaque ? "Em destaque na Home" : "Destacar na Home"}
-                className={`flex h-9 w-9 items-center justify-center rounded-full shadow ${emDestaque ? "bg-[#FFF3D1] text-[#C98A0B]" : "bg-white text-text-secondary"}`}
+                className="flex h-9 w-9 items-center justify-center drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)] active:scale-90"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill={emDestaque ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill={emDestaque ? "#F5B400" : "#FFFFFF"} stroke={emDestaque ? "#8A5A00" : "#111318"} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" aria-hidden>
                   <path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" />
                 </svg>
               </button>
@@ -2322,6 +2322,7 @@ function ItemCard({
           onClose={() => setAllColorsFor(null)}
         />
       )}
+      </div>
     </div>
   );
 }
