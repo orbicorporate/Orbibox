@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { conferirAntesDeCompartilhar } from "@/components/compartilhar/ChecklistDivulgar";
 
 // Contexto do número: poucos passos curtos, cada um direto ao ponto.
 // Faixas realistas pra link-in-bio.
@@ -90,7 +91,7 @@ function PassoSheet({ texto, url, onClose }: { texto: string; url: string | null
         </div>
         <p className="mt-2 text-[14px] leading-snug text-text-secondary">{DETALHES[texto] ?? ""}</p>
         {url && (
-          <button type="button" onClick={compartilhar} className="mt-4 w-full cursor-pointer rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
+          <button type="button" onClick={() => conferirAntesDeCompartilhar(url.split("/").filter(Boolean).pop() ?? "", compartilhar)} className="mt-4 w-full cursor-pointer rounded-full bg-button-primary py-3 text-[14px] font-semibold text-white">
             {copiado ? "Link copiado ✓" : "Compartilhar meu link"}
           </button>
         )}

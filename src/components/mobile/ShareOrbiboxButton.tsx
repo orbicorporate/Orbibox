@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { registrarFunil } from "@/lib/funil";
+import { conferirAntesDeCompartilhar, slugDoLink } from "@/components/compartilhar/ChecklistDivulgar";
 
 /**
  * Botão de compartilhar de verdade, abre a folha nativa do celular
@@ -55,7 +56,8 @@ export function ShareOrbiboxButton({
     // Se ainda não configurou a capa/descrição, pergunta antes.
     // Sempre abre o modal antes de compartilhar: se já configurou, pergunta se
     // quer revisar a capa/descrição; se não, leva pra configurar.
-    setAsking(true);
+    // Antes, o checklist confere se Catálogo e Home estão bonitos.
+    conferirAntesDeCompartilhar(slugDoLink(url), () => setAsking(true));
   }
 
   return (

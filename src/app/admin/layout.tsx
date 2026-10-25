@@ -13,6 +13,7 @@ import { getBusinessProgress } from "@/lib/progress";
 import { getPendingInsights } from "@/lib/insights";
 import { TourOverlay } from "@/components/tour/TourOverlay";
 import { GuiaOrbi } from "@/components/guia/GuiaOrbi";
+import { ChecklistDivulgarHost } from "@/components/compartilhar/ChecklistDivulgar";
 import { ReferralCelebration } from "./ReferralCelebration";
 import { getCurrentBusinessId, listMyBusinesses } from "@/lib/business";
 import { AbrirInternoNoApp } from "@/components/AbrirInternoNoApp";
@@ -176,6 +177,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <TourOverlay businessId={business.id} />
       </Suspense>
       <GuiaOrbi />
+      <ChecklistDivulgarHost />
       </div>
     </div>
   );

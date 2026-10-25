@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
+import { conferirAntesDeCompartilhar } from "@/components/compartilhar/ChecklistDivulgar";
 
 /**
  * Tour curto depois do cadastro, na página real da pessoa. Cada parada tem uma
@@ -141,9 +142,9 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
           {/* Uma única próxima ação: mandar o link para quem já conhece a marca. */}
           <div className="mt-5 rounded-[22px] bg-[#E9F8EF] p-4 text-left">
             <p className="text-[12px] font-semibold uppercase tracking-wide text-[#1F9E4C]">Agora faça isso</p>
-            <p className="mt-1 text-[16px] font-semibold leading-snug">Mande seu link para os clientes</p>
-            <button type="button" onClick={compartilhar} className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#1F9E4C] text-[15px] font-semibold text-white active:scale-[0.98]">
-              {copiado ? "Link copiado ✓" : "Compartilhar meu link"}
+            <p className="mt-1 text-[16px] font-semibold leading-snug">Confira se está bonito e mande seu link</p>
+            <button type="button" onClick={() => { gravar(slug, null); conferirAntesDeCompartilhar(slug, compartilhar); }} className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#1F9E4C] text-[15px] font-semibold text-white active:scale-[0.98]">
+              {copiado ? "Link copiado ✓" : "Conferir e compartilhar"}
             </button>
           </div>
           <button type="button" onClick={avancar} className="mt-3 min-h-[44px] w-full rounded-full text-[14px] font-medium text-text-secondary">Ir para o painel</button>

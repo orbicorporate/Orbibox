@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { FolhaCompartilhar, type AlvoCompartilhar } from "@/components/compartilhar/Compartilhar";
+import { conferirAntesDeCompartilhar } from "@/components/compartilhar/ChecklistDivulgar";
 
 type Dica = {
   id: string;
@@ -107,12 +108,13 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
     guardar(true, d.id);
     setDica(null);
     if (d.acao === "link" && d.href) return;
+    // Antes de divulgar, o checklist confere Catálogo e Home.
     if (d.acao === "whatsapp") {
       const a = alvoDe(d);
-      window.open(`https://wa.me/?text=${encodeURIComponent(`${a.texto}\n${a.url}`)}`, "_blank", "noopener");
+      conferirAntesDeCompartilhar(slug, () => { window.open(`https://wa.me/?text=${encodeURIComponent(`${a.texto}\n${a.url}`)}`, "_blank", "noopener"); });
       return;
     }
-    if (d.acao === "folha" || d.acao === "stories") setFolha(alvoDe(d));
+    if (d.acao === "folha" || d.acao === "stories") conferirAntesDeCompartilhar(slug, () => setFolha(alvoDe(d)));
   }
 
   function compartilharItem(d: Dica, it: { id: string; title: string; image_url: string | null }) {
