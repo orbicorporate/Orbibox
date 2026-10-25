@@ -159,6 +159,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
   const [gerador, setGerador] = useState<{ edicao: boolean; url?: string } | null>(null);
   const [ajuste, setAjuste] = useState<string | null>(null);
   const [substituir, setSubstituir] = useState<string | null>(null);
+  const [menuFoto, setMenuFoto] = useState(false);
 
   // Cores e tom da marca pro prompt, buscados só quando a pessoa abre ele.
   async function abrirIA() {
@@ -201,6 +202,19 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
     if (!f.type.startsWith("image/")) return setErroFoto("Escolha um arquivo de imagem.");
     if (f.size > 20 * 1024 * 1024) return setErroFoto("Imagem muito grande, o limite é 20 MB.");
     setArquivo(f);
+  }
+
+  // Recortar a foto que já está: baixa e abre o recorte; a nova entra no lugar dela.
+  async function recortarAtual(url: string) {
+    setErroFoto(null);
+    try {
+      const r = await fetch(url);
+      const b = await r.blob();
+      setSubstituir(url);
+      setArquivo(new File([b], "foto.jpg", { type: b.type || "image/jpeg" }));
+    } catch {
+      setErroFoto("Não consegui abrir essa foto para recortar.");
+    }
   }
 
   async function enviarFoto(blob: Blob) {
@@ -426,7 +440,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
             {/* Sem nenhuma foto: um espaço vazio no formato certo. */}
             {slides.length === 0 && (
               <div
-                className="flex w-full shrink-0 flex-col items-center justify-center gap-1 rounded-[22px] border-2 border-dashed border-on-background/15 bg-surface-soft/60 p-5 text-center"
+                className="flex w-full shrink-0 flex-col items-center justify-center gap-1 rounded-[22px] bg-[#F2F2EE] p-5 text-center"
                 style={{ aspectRatio: aspect }}
               >
                 <span className="text-[14px] font-medium text-text-secondary">{enviando ? "Enviando…" : "Suas fotos aparecem aqui"}</span>
@@ -436,7 +450,12 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
           </div>
 
           <div className="mt-3 flex items-center justify-between gap-2">
-            <div className="flex gap-1.5">
+            {alvoEdicao && (
+              <button type="button" onClick={() => setMenuFoto(true)} className="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full bg-on-background px-4 text-[13px] font-semibold text-white active:scale-[0.97]">
+                ✎ Editar foto
+              </button>
+            )}
+            <div className="flex flex-1 justify-center gap-1.5">
               {slides.length > 1 &&
                 slides.map((_, i) => <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === ativo ? "bg-on-background" : "bg-on-background/25"}`} />)}
             </div>
@@ -493,23 +512,10 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
                 <button onClick={() => mover(ativo, -1)} disabled={ativo <= 0} className="min-h-[40px] px-2 disabled:opacity-35">‹ Antes</button>
                 <button onClick={() => mover(ativo, 1)} disabled={ativo >= midias.length - 1} className="min-h-[40px] px-2 disabled:opacity-35">Depois ›</button>
                 <button onClick={() => paraPrimeira(ativo)} disabled={ativo <= 0} className="min-h-[40px] px-2 text-on-background underline underline-offset-4 disabled:opacity-35">Tornar 1ª</button>
-                {alvoEdicao && (
-                  <>
-                    <span aria-hidden className="mx-1 h-4 w-px bg-divider" />
-                    <button type="button" onClick={() => setGerador({ edicao: true, url: alvoEdicao })} className="min-h-[40px] px-2">✦ Editar com a Orbi</button>
-                    <button type="button" onClick={() => setAjuste(alvoEdicao)} className="min-h-[40px] px-2">Ajustar luz</button>
-                  </>
-                )}
               </div>
             </div>
           )}
 
-          {alvoEdicao && midias.length <= 1 && (
-            <div className="mt-5 flex flex-wrap items-center gap-x-1 border-t border-divider pt-3 text-[13px] text-text-secondary">
-              <button type="button" onClick={() => setGerador({ edicao: true, url: alvoEdicao })} className="min-h-[40px] px-2">✦ Editar com a Orbi</button>
-              <button type="button" onClick={() => setAjuste(alvoEdicao)} className="min-h-[40px] px-2">Ajustar luz</button>
-            </div>
-          )}
 
           {/* Adicionar fotos: sempre à vista, logo abaixo do carrossel. */}
           {midias.length < MAX_MIDIAS && (
@@ -757,6 +763,31 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
           onFechar={() => setGerador(null)}
           onUsar={(f) => { if (gerador.edicao && gerador.url) setSubstituir(gerador.url); setGerador(null); escolherFoto(f); }}
         />
+      )}
+
+      {menuFoto && alvoEdicao && (
+        <div className="fixed inset-0 z-[95] flex items-end justify-center bg-black/40" onClick={() => setMenuFoto(false)}>
+          <div className="w-full max-w-md rounded-t-[28px] bg-white p-4 pb-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={alvoEdicao} alt="" className="h-14 w-14 rounded-xl object-cover" />
+              <p className="flex-1 text-[16px] font-semibold">Editar foto</p>
+              <button type="button" onClick={() => setMenuFoto(false)} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F2F2EE] text-[14px]">✕</button>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {[
+                { t: "Trocar", c: "#111318", f: () => { setSubstituir(alvoEdicao); inputRef.current?.click(); } },
+                { t: "Recortar", c: "#3B5BDB", f: () => void recortarAtual(alvoEdicao) },
+                { t: "Ajustar luz", c: "#F29D38", f: () => setAjuste(alvoEdicao) },
+                { t: "✦ Editar com a Orbi", c: "#8758BE", f: () => setGerador({ edicao: true, url: alvoEdicao }) },
+              ].map((o) => (
+                <button key={o.t} type="button" onClick={() => { setMenuFoto(false); o.f(); }} className="min-h-[56px] rounded-2xl px-3 text-[14px] font-semibold text-white active:scale-[0.97]" style={{ backgroundColor: o.c }}>
+                  {o.t}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {ajuste && (

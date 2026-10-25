@@ -38,7 +38,10 @@ export function ImageCropModal({
   onCancel,
   camada = "z-50",
   redonda = false,
+  topo,
 }: {
+  /** Troca os botões de formato por outro conteúdo (ex.: o formato do card do catálogo). */
+  topo?: React.ReactNode;
   file: File;
   lockedRatio?: Ratio | null;
   lockedReason?: string;
@@ -197,6 +200,7 @@ export function ImageCropModal({
       <div className="max-h-[94dvh] w-full max-w-[380px] overflow-y-auto rounded-[24px] bg-surface-white p-5">
         <p className="text-center text-[14px] font-medium">Enquadrar foto</p>
 
+        {topo ? <div className="mt-4">{topo}</div> : (<>
         <div className="mt-4 flex justify-center gap-2">
           {lockedRatio ? (
             <span className="rounded-full bg-surface-soft px-3 py-1.5 text-[12px] font-medium text-on-background">
@@ -219,6 +223,7 @@ export function ImageCropModal({
             {lockedReason ?? `A primeira foto deste item já definiu ${RATIOS[lockedRatio].label.toLowerCase()}, as próximas seguem o mesmo formato, pra capa e galeria combinarem.`}
           </p>
         )}
+        </>)}
 
         <div
           className={`relative mx-auto mt-4 touch-none overflow-hidden bg-surface-soft ${redonda && ratio === "quadrado" ? "rounded-full" : "rounded-2xl"}`}
