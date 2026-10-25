@@ -16,6 +16,7 @@ import type { Json } from "@/lib/supabase/types";
 import { CONVERSOES, OBJETIVOS, conversaoPorId, ordenarBotoes, type BotaoChave, type ConversaoId, type ObjetivoId } from "@/lib/conversao";
 import { AnaliseAoVivo, BrandOrb, VitrineMontando, formatarWhatsapp, type Analise, type Descoberta, type ItemMontado, type PontoForte } from "./MagicScreens";
 import { Pronto, type ProntoDados } from "./Pronto";
+import { coresDosCards } from "@/lib/paletaCards";
 import { Revisar, type CategoriaRevisao, type ItemRevisao, type RevisaoDados, type RevisaoResultado } from "./Revisar";
 
 type Color = { hex: string; role: string };
@@ -382,7 +383,7 @@ export default function OnboardingPage() {
     }
     await supabase.from("businesses").update({ contact_whatsapp: waConf || null, address: enderecoFinal || null }).eq("id", id);
     const paletaFinal = (conf.cores.length ? conf.cores : result.colors.map((c) => c.hex)).filter((h) => /^#[0-9a-f]{6}$/i.test(h));
-    const corUsavel = paletaFinal.length > 2 ? paletaFinal.slice(1) : paletaFinal.length ? paletaFinal : ["#111318"];
+    const corUsavel = coresDosCards(paletaFinal);
     const corDe = (i: number) => corUsavel[i % corUsavel.length];
     const catsEscolhidas = conf.categorias;
 

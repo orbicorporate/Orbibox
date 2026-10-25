@@ -130,12 +130,12 @@ export function Comecar(p: Props) {
                   {todasChips.map((c) => {
                     const on = escolhidas.includes(c);
                     return (
-                      <button key={c} type="button" onClick={() => alternar(c)} aria-pressed={on} className={`min-h-[40px] rounded-full px-4 text-[14px] font-medium transition-colors ${on ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{c}</button>
+                      <button key={c} type="button" onClick={() => alternar(c)} aria-pressed={on} className={`min-h-[40px] rounded-full px-4 text-[14px] font-medium transition-colors ${on ? "bg-on-background text-white" : "bg-[#F2F2EE] text-text-secondary"}`}>{c}</button>
                     );
                   })}
                   {todasChips.length === 0 && <span className="text-[13px] text-text-tertiary">A Orbi está pensando em sugestões…</span>}
                 </div>
-                <form onSubmit={(e) => { e.preventDefault(); adicionar(); }} className="mt-3 flex items-center gap-2 rounded-full bg-surface-soft p-1.5 pl-4">
+                <form onSubmit={(e) => { e.preventDefault(); adicionar(); }} className="mt-3 flex items-center gap-2 rounded-full bg-[#F2F2EE] p-1.5 pl-4">
                   <input value={nova} onChange={(e) => setNova(e.target.value)} placeholder="Outra categoria" className="min-w-0 flex-1 bg-transparent text-[14.5px] outline-none" enterKeyHint="done" />
                   <button type="submit" disabled={!nova.trim()} className="rounded-full bg-white px-4 py-2 text-[13px] font-medium disabled:opacity-40">Adicionar</button>
                 </form>
@@ -162,24 +162,24 @@ export function Comecar(p: Props) {
                     </ol>
                     <ul className="mt-3 flex flex-col gap-2">
                       {p.porCategoria.map((c) => (
-                        <li key={c.nome} className="rounded-2xl bg-surface-soft p-3">
+                        <li key={c.nome} className="rounded-2xl bg-[#F2F2EE] p-3 ring-[0.5px] ring-black/[0.06]">
                           <div className="flex items-center gap-3">
                             <span className="min-w-0 flex-1"><span className="block truncate text-[14.5px] font-medium">{c.nome}</span><span className="block text-[12px] text-text-tertiary">{c.n === 0 ? "Vazia" : c.n === 1 ? "1 item" : `${c.n} itens`}</span></span>
-                            <Link href={`/admin/vitrine?novo=1&cat=${encodeURIComponent(c.nome)}`} className="shrink-0 rounded-full bg-white px-4 py-2 text-[13px] font-medium">+ Adicionar</Link>
+                            <Link href={`/admin/vitrine?novo=1&cat=${encodeURIComponent(c.nome)}`} className="shrink-0 rounded-full bg-white px-4 py-2 text-[13px] font-medium shadow-sm ring-[0.5px] ring-black/10">+ Adicionar</Link>
                           </div>
                           {c.itens.length > 0 && (
                             <div className="mt-2.5 flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none]">
                               {c.itens.map((it, k) => (
                                 <span key={k} className="w-[72px] shrink-0">
-                                  <span className="block h-[72px] w-[72px] overflow-hidden rounded-xl bg-white">
+                                  <span className="block h-[72px] w-[72px] overflow-hidden rounded-xl bg-white ring-[0.5px] ring-black/10">
                                     {it.foto ? (
                                       // eslint-disable-next-line @next/next/no-img-element
                                       <img src={it.foto} alt="" className="h-full w-full object-cover" />
                                     ) : (
-                                      <span className="flex h-full w-full items-center justify-center text-[11px] text-text-tertiary">Sem foto</span>
+                                      <span className="flex h-full w-full items-center justify-center bg-[#E6E6E1] text-[20px] font-semibold text-black/30">{it.titulo.charAt(0).toUpperCase()}</span>
                                     )}
                                   </span>
-                                  <span className="mt-1 block truncate text-[11.5px] text-text-secondary">{it.titulo}</span>
+                                  <span className="mt-1 block truncate text-[11px] text-text-secondary">{it.titulo}</span>
                                 </span>
                               ))}
                             </div>
@@ -210,10 +210,10 @@ export function Comecar(p: Props) {
                         { ok: p.temEndereco, t: "Endereço com mapa", d: "Se atende no local", href: "/admin/config/marca#contatos", cta: "Colocar" },
                         { ok: p.boxes >= 3, t: "Botões e bolinhas", d: `${p.boxes} ligados. Crie mais ou mude a ordem`, href: "/admin/boxes", cta: "Abrir" },
                       ].map((x) => (
-                        <li key={x.t} className="flex items-center gap-3 rounded-2xl bg-surface-soft py-2.5 pl-3 pr-2">
+                        <li key={x.t} className="flex items-center gap-3 rounded-2xl bg-[#F2F2EE] py-2.5 pl-3 pr-2">
                           <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold ${x.ok ? "bg-[#1F9E4C] text-white" : "bg-black/10 text-text-tertiary"}`}>{x.ok ? "✓" : ""}</span>
                           <span className="min-w-0 flex-1"><span className="block text-[14.5px] font-medium">{x.t}</span><span className="block text-[12px] text-text-tertiary">{x.d}</span></span>
-                          <Link href={x.href} className="rounded-full bg-white px-4 py-2 text-[13px] font-medium">{x.ok ? "Ver" : x.cta}</Link>
+                          <Link href={x.href} className="rounded-full bg-white px-4 py-2 text-[13px] font-medium shadow-sm ring-[0.5px] ring-black/10">{x.ok ? "Ver" : x.cta}</Link>
                         </li>
                       ))}
                     </ul>
@@ -226,7 +226,7 @@ export function Comecar(p: Props) {
 
             {aqui && i === 3 && (
               <div className="mt-4">
-                <div className="flex items-center gap-2 rounded-full bg-surface-soft p-1.5 pl-4">
+                <div className="flex items-center gap-2 rounded-full bg-[#F2F2EE] p-1.5 pl-4">
                   <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{p.link.replace(/^https?:\/\//, "")}</span>
                   <ShareOrbiboxButton url={p.link} title={p.nome} className="shrink-0 rounded-full bg-on-background px-4 py-2 text-[13px] font-medium text-white">Divulgar</ShareOrbiboxButton>
                 </div>

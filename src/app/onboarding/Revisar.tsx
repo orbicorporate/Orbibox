@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatarWhatsapp } from "./MagicScreens";
 import { DIAS_CURTOS, type Horario } from "@/lib/horario";
+import { coresDosCards } from "@/lib/paletaCards";
 
 /** Categoria que veio do site (ou sugerida pelo ramo). */
 export type CategoriaRevisao = { nome: string; n: number; foto: string | null };
@@ -96,6 +97,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
   const [filtro, setFiltro] = useState<string | null>(null);
   const [novoItem, setNovoItem] = useState("");
   const [novoItemCat, setNovoItemCat] = useState<string | null>(null);
+  const [adicionando, setAdicionando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
   const etapas: Etapa[] = ["logo", "cores", "contato", "endereco", "categorias", "itens", "resumo"];
@@ -103,7 +105,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
   const etapa = etapas[passo];
 
   const waOk = whatsapp.replace(/\D/g, "").length >= 10;
-  const usaveis = cores.length > 2 ? cores.slice(1) : cores.length > 0 ? cores : ["#111318"];
+  const usaveis = coresDosCards(cores);
   const palavraItens = dados.servico ? "serviços" : "produtos";
 
   async function enviarLogo(f: File) {
@@ -167,16 +169,19 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
     });
   }
 
-  const itensHome = [
-    waOk && "WhatsApp",
-    extras.includes("agendar") && "Agendar",
-    extras.includes("cardapio") && "Cardápio",
-    endereco.trim() && "Mapa",
-    dados.temInstagram && "Instagram",
-    ...catsMarcadas,
-    "Catálogo",
-    dados.temVoucher && "Voucher",
-  ].filter((x): x is string => !!x);
+  // Bolinhas da Home como vão aparecer: cor própria de cada atalho e, nas
+  // categorias, a foto do melhor item ou uma cor da marca.
+  const fotoDaCat = new Map(cats.map((c) => [c.nome, c.foto]));
+  const bolinhasHome: { k: string; t: string; cor: string; icone: string; foto?: string | null }[] = [
+    ...(waOk ? [{ k: "wa", t: "WhatsApp", cor: "#25D366", icone: "✆" }] : []),
+    ...(extras.includes("agendar") ? [{ k: "ag", t: "Agendar", cor: "#3B5BDB", icone: "◷" }] : []),
+    ...(extras.includes("cardapio") ? [{ k: "ca", t: "Cardápio", cor: "#F29D38", icone: "≡" }] : []),
+    ...(endereco.trim() ? [{ k: "ma", t: "Local", cor: "#EA4335", icone: "⌖" }] : []),
+    ...(dados.temInstagram ? [{ k: "ig", t: "Instagram", cor: "linear-gradient(135deg,#F58529,#DD2A7B 55%,#8134AF)", icone: "◎" }] : []),
+    ...catsMarcadas.map((c, i) => ({ k: `c-${c}`, t: c, cor: usaveis[i % usaveis.length], icone: c.charAt(0).toUpperCase(), foto: fotoDaCat.get(c) ?? null })),
+    { k: "cat", t: "Catálogo", cor: "#0E9AA7", icone: "▤" },
+    ...(dados.temVoucher ? [{ k: "vo", t: "Vouchers", cor: "#111318", icone: "%" }] : []),
+  ];
 
   const titulos: Record<Etapa, { t: string; d: string }> = {
     logo: { t: "Seu logotipo", d: logo ? "A Orbi encontrou este. Está certo?" : "Não encontrei. Envie o seu." },
@@ -184,7 +189,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
     contato: { t: "WhatsApp ou telefone", d: "Vira o botão de contato." },
     endereco: { t: "Endereço", d: "Vira a bolinha de mapa. Pule se não atende no local." },
     categorias: { t: dados.servico ? "Tipos de serviço" : "Categorias", d: dados.categorias.length > 0 ? `A Orbi achou ${dados.categorias.length} no seu site. Toque nas mais importantes.` : "Toque nas que combinam com você ou escreva as suas." },
-    itens: { t: `Seus ${palavraItens}`, d: itens.length > 0 ? `Toque nos que mais vendem. Eles vão para a frente da Home.` : `Escreva seus principais ${palavraItens}. Cada um vira um card no catálogo.` },
+    itens: { t: `Seus ${palavraItens}`, d: itens.length > 0 ? `Toque em até ${MAX_ITENS} que mais vendem. Vão para a frente da Home.` : `Escreva seus principais ${palavraItens}.` },
     resumo: { t: "Tudo certo?", d: "Sua página inicial vai nascer assim." },
   };
 
@@ -320,94 +325,117 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
         {etapa === "itens" && (
           <>
-            <form onSubmit={(e) => { e.preventDefault(); adicionarItem(); }} className="rounded-2xl bg-surface-soft p-3">
-              <p className="text-[12.5px] font-medium text-text-secondary">{itens.length > 0 ? `Faltou algum? Escreva e ele vira um card no catálogo` : `Escreva um por vez`}</p>
-              <div className="mt-2 flex items-center gap-2 rounded-full bg-white p-1.5 pl-4">
-                <input value={novoItem} onChange={(e) => setNovoItem(e.target.value)} placeholder={dados.servico ? "Ex: Corte feminino" : "Ex: Bolo de chocolate"} className="min-w-0 flex-1 bg-transparent text-[14.5px] outline-none" enterKeyHint="done" />
-                <button type="submit" disabled={!novoItem.trim()} className="rounded-full bg-on-background px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-30">+ Adicionar</button>
+            {catsComItens.length > 1 && (
+              <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]">
+                <button type="button" onClick={() => setFiltro(null)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${filtro === null ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>Todos</button>
+                {catsComItens.map((c) => (
+                  <button key={c.nome} type="button" onClick={() => setFiltro(c.nome)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${filtro === c.nome ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{c.nome}</button>
+                ))}
               </div>
-              {cats.length > 0 && (
-                <div className="mt-2 flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none]">
-                  {cats.map((c) => (
-                    <button key={c.nome} type="button" onClick={() => setNovoItemCat(novoItemCat === c.nome ? null : c.nome)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${novoItemCat === c.nome ? "bg-on-background text-white" : "bg-white text-text-secondary"}`}>{c.nome}</button>
-                  ))}
-                </div>
-              )}
-            </form>
+            )}
 
-            {itens.length > 0 && (
-              <>
-                <div className="mt-4 flex items-center justify-between">
-                  <p className="text-[12.5px] font-medium text-text-tertiary">Os marcados entram em destaque na Home</p>
-                  <span className="text-[12px] font-medium text-text-tertiary">{itensMarcados.length}/{MAX_ITENS}</span>
+            <div className="grid grid-cols-2 gap-2.5">
+              {listaFiltrada.map((it) => {
+                const ordem = itensMarcados.indexOf(it.id);
+                const on = ordem >= 0;
+                const bg = usaveis[itens.indexOf(it) % usaveis.length];
+                return (
+                  <button
+                    key={it.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => alternarItem(it.id)}
+                    className={`relative aspect-square overflow-hidden rounded-[20px] text-left transition-transform active:scale-[0.97] ${on ? "ring-[2.5px] ring-on-background ring-offset-2" : ""}`}
+                    style={it.foto ? undefined : { backgroundColor: bg }}
+                  >
+                    {it.foto && (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={it.foto} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                        <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 to-transparent" />
+                      </>
+                    )}
+                    <span className="absolute inset-x-0 bottom-0 p-3">
+                      <span className="block text-[14px] font-semibold leading-tight line-clamp-2" style={{ color: it.foto ? "#fff" : corDoTexto(bg) }}>{it.nome}</span>
+                      {it.sub && it.sub !== "Novo" && <span className="mt-0.5 block truncate text-[11.5px]" style={{ color: it.foto ? "rgba(255,255,255,.8)" : corDoTexto(bg), opacity: it.foto ? 1 : 0.75 }}>{it.sub}</span>}
+                    </span>
+                    {on && <span className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-on-background text-[12.5px] font-semibold text-white shadow">{ordem + 1}</span>}
+                  </button>
+                );
+              })}
+              {!adicionando && (
+                <button type="button" onClick={() => setAdicionando(true)} className="flex aspect-square flex-col items-center justify-center gap-1 rounded-[20px] bg-surface-soft text-text-secondary active:scale-[0.97]">
+                  <span className="text-[26px] leading-none">+</span>
+                  <span className="text-[13px] font-medium">Adicionar</span>
+                </button>
+              )}
+            </div>
+
+            {(adicionando || itens.length === 0) && (
+              <form onSubmit={(e) => { e.preventDefault(); adicionarItem(); }} className="mt-3 rounded-2xl bg-surface-soft p-2">
+                <div className="flex items-center gap-2 rounded-full bg-white p-1.5 pl-4">
+                  <input autoFocus={itens.length > 0} value={novoItem} onChange={(e) => setNovoItem(e.target.value)} placeholder={dados.servico ? "Ex: Corte feminino" : "Nome do produto"} className="min-w-0 flex-1 bg-transparent text-[14.5px] outline-none" enterKeyHint="done" />
+                  <button type="submit" disabled={!novoItem.trim()} className="rounded-full bg-on-background px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-30">Ok</button>
                 </div>
-                {catsComItens.length > 1 && (
-                  <div className="mt-2 flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none]">
-                    <button type="button" onClick={() => setFiltro(null)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${filtro === null ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>Todos · {itens.length}</button>
-                    {catsComItens.map((c) => (
-                      <button key={c.nome} type="button" onClick={() => setFiltro(c.nome)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${filtro === c.nome ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{c.nome}</button>
+                {cats.length > 0 && novoItem.trim() && (
+                  <div className="mt-2 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]">
+                    {cats.map((c) => (
+                      <button key={c.nome} type="button" onClick={() => setNovoItemCat(novoItemCat === c.nome ? null : c.nome)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${novoItemCat === c.nome ? "bg-on-background text-white" : "bg-white text-text-secondary"}`}>{c.nome}</button>
                     ))}
                   </div>
                 )}
-                <div className="mt-3 grid grid-cols-2 gap-2.5">
-                  {listaFiltrada.map((it) => {
-                    const ordem = itensMarcados.indexOf(it.id);
-                    const on = ordem >= 0;
-                    const bg = usaveis[itens.indexOf(it) % usaveis.length];
-                    return (
-                      <button
-                        key={it.id}
-                        type="button"
-                        aria-pressed={on}
-                        onClick={() => alternarItem(it.id)}
-                        className={`relative aspect-[4/5] overflow-hidden rounded-[20px] text-left transition-transform active:scale-[0.97] ${on ? "ring-[2.5px] ring-on-background ring-offset-2" : "ring-[0.5px] ring-black/10"}`}
-                        style={it.foto ? undefined : { backgroundColor: bg }}
-                      >
-                        {it.foto && (
-                          <>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={it.foto} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                            <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 to-transparent" />
-                          </>
-                        )}
-                        <span className="absolute inset-x-0 bottom-0 p-3">
-                          <span className="block text-[14.5px] font-semibold leading-tight line-clamp-2" style={{ color: it.foto ? "#fff" : corDoTexto(bg) }}>{it.nome}</span>
-                          <span className="mt-0.5 block truncate text-[11.5px]" style={{ color: it.foto ? "rgba(255,255,255,.8)" : corDoTexto(bg), opacity: it.foto ? 1 : 0.75 }}>{it.foto ? (it.sub ?? it.categoria ?? "") : `Sem foto${it.sub && it.sub !== "Novo" ? ` · ${it.sub}` : ""}`}</span>
-                        </span>
-                        <span className={`absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full text-[12.5px] font-semibold shadow ${on ? "bg-on-background text-white" : "bg-white/85 text-transparent ring-[0.5px] ring-black/15"}`}>{on ? ordem + 1 : "·"}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {itens.some((i) => !i.foto) && (
-                  <p className="mt-3 rounded-2xl bg-surface-soft p-3 text-[12.5px] leading-snug text-text-secondary">
-                    Os sem foto clara no site ficam na cor da marca. Para colocar a foto depois: Catálogo, toque no item e depois em Foto de capa.
-                  </p>
-                )}
-              </>
+              </form>
+            )}
+
+            {itens.some((i) => !i.foto) && (
+              <p className="mt-3 px-1 text-[12px] leading-snug text-text-tertiary">Sem foto? Coloque depois em Catálogo, no item, Foto de capa.</p>
             )}
           </>
         )}
 
         {etapa === "resumo" && (
           <>
-            <p className="text-[12.5px] font-medium text-text-tertiary">Sua página inicial vai ter</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {itensHome.map((i) => <span key={i} className="rounded-full bg-surface-soft px-3.5 py-1.5 text-[13px] font-medium">{i}</span>)}
+            {/* Prévia da Home: bolinhas como vão aparecer e os destaques nas cores da marca. */}
+            <div className="flex items-center gap-2.5">
+              {logo && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logo} alt="" className="h-10 w-10 shrink-0 rounded-full bg-white object-contain p-1 ring-1 ring-black/10" />
+              )}
+              <p className="text-[12.5px] font-medium text-text-tertiary">Sua página inicial</p>
+            </div>
+            <div className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+              {bolinhasHome.map((b) => (
+                <span key={b.k} className="flex w-[58px] shrink-0 flex-col items-center gap-1.5">
+                  <span className="relative flex h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-full text-[19px] text-white shadow-[inset_0_-6px_10px_-5px_rgba(0,0,0,0.25),0_5px_12px_-6px_rgba(0,0,0,0.35)]" style={{ background: b.foto ? "#fff" : b.cor }}>
+                    {b.foto ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={b.foto} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span aria-hidden style={{ color: corDoTexto(b.cor.startsWith("#") ? b.cor : "#111318") }}>{b.icone}</span>
+                    )}
+                  </span>
+                  <span className="w-full truncate text-center text-[11px] font-medium text-text-secondary">{b.t}</span>
+                </span>
+              ))}
             </div>
             {itensMarcados.length > 0 && (
               <>
-                <p className="mt-4 text-[12.5px] font-medium text-text-tertiary">Em destaque</p>
-                <div className="mt-2 flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none]">
+                <p className="mt-5 text-[12.5px] font-medium text-text-tertiary">Destaque</p>
+                <div className="mt-2 grid grid-cols-2 gap-2">
                   {itensMarcados.map((id, k) => {
                     const it = itens.find((x) => x.id === id);
                     if (!it) return null;
                     const bg = usaveis[k % usaveis.length];
                     return (
-                      <span key={id} className="relative h-24 w-20 shrink-0 overflow-hidden rounded-2xl" style={it.foto ? undefined : { backgroundColor: bg }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        {it.foto && <img src={it.foto} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-                        <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-1.5 text-[11px] font-medium leading-tight text-white line-clamp-2">{it.nome}</span>
+                      <span key={id} className="relative aspect-square overflow-hidden rounded-[18px]" style={it.foto ? undefined : { backgroundColor: bg }}>
+                        {it.foto && (
+                          <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={it.foto} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                            <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
+                          </>
+                        )}
+                        <span className="absolute inset-x-0 bottom-0 p-2.5 text-[13px] font-semibold leading-tight line-clamp-2" style={{ color: it.foto ? "#fff" : corDoTexto(bg) }}>{it.nome}</span>
                       </span>
                     );
                   })}
@@ -415,7 +443,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
               </>
             )}
             {itensMarcados.some((id) => !itens.find((x) => x.id === id)?.foto) && (
-              <p className="mt-3 text-[12.5px] leading-snug text-text-secondary">Os sem foto entram na cor da marca. Para trocar: Catálogo, toque no item e depois em Foto de capa.</p>
+              <p className="mt-3 text-[12px] leading-snug text-text-tertiary">Sem foto? Coloque depois em Catálogo, no item, Foto de capa.</p>
             )}
             {(dados.gastronomico || dados.servico) && (
               <>
