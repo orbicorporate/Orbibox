@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { galleryRatioOf, formatPrice, isVideoUrl, youtubeId, instagramReelId, type GalleryRatio } from "@/lib/showcase";
 import { ImageCropModal, RATIOS, RATIO_PIXELS } from "@/components/ui/ImageCropModal";
+import { AVISO_FORA_DA_MEDIDA, arquivoDaUrl, estaNaMedida } from "@/lib/medidaImagem";
 import { PromptParaIA } from "@/components/ui/LinhaExpansivel";
 import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
@@ -160,6 +161,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
   const [ajuste, setAjuste] = useState<string | null>(null);
   const [substituir, setSubstituir] = useState<string | null>(null);
   const [menuFoto, setMenuFoto] = useState(false);
+  const [foraDaMedida, setForaDaMedida] = useState(false);
 
   // Cores e tom da marca pro prompt, buscados só quando a pessoa abre ele.
   async function abrirIA() {
@@ -728,9 +730,14 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
         <MinhaGaleriaPicker
           businessId={business.id}
           onFechar={() => setDaGaleria(false)}
-          onEscolher={(url) => {
+          onEscolher={async (url) => {
             setDaGaleria(false);
             if (midias.includes(url)) return irPara(midias.indexOf(url));
+            // Fora da medida das fotos da página: abre o recorte antes de entrar.
+            if (!(await estaNaMedida(url, RATIOS[formato].value))) {
+              try { setForaDaMedida(true); setArquivo(await arquivoDaUrl(url)); } catch { setErroFoto("Não consegui abrir essa imagem. Tente outra."); }
+              return;
+            }
             const nova = [...midias, url];
             salvarMidias(nova);
             irPara(nova.length - 1);
@@ -802,9 +809,9 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
         <ImageCropModal
           file={arquivo}
           lockedRatio={formato}
-          lockedReason="Todas as fotos da página seguem o mesmo formato."
-          onCancel={() => { setArquivo(null); setSubstituir(null); }}
-          onConfirm={(blob) => enviarFoto(blob)}
+          lockedReason={foraDaMedida ? AVISO_FORA_DA_MEDIDA : "Todas as fotos da página seguem o mesmo formato."}
+          onCancel={() => { setArquivo(null); setSubstituir(null); setForaDaMedida(false); }}
+          onConfirm={(blob) => { setForaDaMedida(false); void enviarFoto(blob); }}
         />
       )}
     </div>,

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageCropModal, RATIOS, RATIO_PIXELS, type Ratio } from "./ImageCropModal";
 import { FotoProntaPicker } from "./FotoProntaPicker";
 import { MinhaGaleriaPicker } from "./MinhaGaleriaPicker";
+import { AVISO_FORA_DA_MEDIDA, arquivoDaUrl, estaNaMedida } from "@/lib/medidaImagem";
 import { GeradorImagemSheet } from "./GeradorImagemSheet";
 import { AjusteFoto } from "./AjusteFoto";
 import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
@@ -56,6 +57,7 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [foraDaMedida, setForaDaMedida] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showFotos, setShowFotos] = useState(false);
@@ -292,9 +294,11 @@ export function ImageUpload({
             businessId={businessId}
             atual={value}
             onFechar={() => setShowGaleria(false)}
-            onEscolher={(url) => {
+            onEscolher={async (url) => {
               setShowGaleria(false);
-              onChange(url);
+              // Nunca entra imagem fora da medida: se não bate com o formato, abre o recorte.
+              if (await estaNaMedida(url, RATIOS[ratio].value)) { onChange(url); return; }
+              try { setForaDaMedida(true); setPendingFile(await arquivoDaUrl(url)); } catch { setError("Não consegui abrir essa imagem. Tente outra."); }
             }}
           />
         )}
@@ -327,7 +331,7 @@ export function ImageUpload({
         )}
 
         {pendingFile && (
-          <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} lockedReason={lockedReason} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
+          <ImageCropModal file={pendingFile} lockedRatio={lockedRatio ?? (foraDaMedida ? ratio : null)} lockedReason={foraDaMedida ? AVISO_FORA_DA_MEDIDA : lockedReason} onCancel={() => { setPendingFile(null); setForaDaMedida(false); }} onConfirm={(b, r) => { setForaDaMedida(false); return uploadBlob(b, r); }} />
         )}
       </div>
     );
@@ -457,7 +461,7 @@ export function ImageUpload({
       )}
 
       {pendingFile && (
-        <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} lockedReason={lockedReason} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
+        <ImageCropModal file={pendingFile} lockedRatio={lockedRatio ?? (foraDaMedida ? ratio : null)} lockedReason={foraDaMedida ? AVISO_FORA_DA_MEDIDA : lockedReason} onCancel={() => { setPendingFile(null); setForaDaMedida(false); }} onConfirm={(b, r) => { setForaDaMedida(false); return uploadBlob(b, r); }} />
       )}
     </div>
   );

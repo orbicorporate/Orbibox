@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { ZERO, exportarAjustada, temAjustes, type Ajustes } from "@/lib/foto-edicao";
 import { PainelAjustes } from "./PainelAjustes";
+import { AVISO_FORA_DA_MEDIDA } from "@/lib/medidaImagem";
 
 export type Ratio = "quadrado" | "retrato" | "paisagem" | "banner";
 export const RATIOS: Record<Ratio, { value: number; label: string }> = {
@@ -219,7 +220,7 @@ export function ImageCropModal({
           )}
         </div>
         {lockedRatio && (
-          <p className="mt-2 text-center text-[11px] text-text-tertiary">
+          <p className={lockedReason === AVISO_FORA_DA_MEDIDA ? "mt-3 rounded-2xl bg-[#FFF4E5] px-3 py-2.5 text-center text-[13px] font-medium text-[#7A4A0B]" : "mt-2 text-center text-[11px] text-text-tertiary"}>
             {lockedReason ?? `A primeira foto deste item já definiu ${RATIOS[lockedRatio].label.toLowerCase()}, as próximas seguem o mesmo formato, pra capa e galeria combinarem.`}
           </p>
         )}
