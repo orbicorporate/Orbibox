@@ -430,10 +430,13 @@ export function ConfigForm({
           {camposContato}
         </Secao>
 
-        <Link href="/admin/agent" className="mt-3 flex items-center gap-3 rounded-[18px] px-1 py-2 text-[13.5px] text-text-secondary">
-          <OrbiSimbolo size={32} />
-          <span className="min-w-0 flex-1">Próximo: configurar sua IA</span>
-          <span aria-hidden>→</span>
+        <Link href="/admin/agent" className="passo-cereja mt-4 flex items-center gap-3 rounded-[22px] p-4 text-white shadow-[0_16px_32px_-14px_rgba(196,18,47,0.7)] transition-transform active:scale-[0.98]">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15"><OrbiSimbolo size={34} /></span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[12px] text-white/75">Próximo passo</span>
+            <span className="block text-[16px] font-semibold leading-tight">Configurar sua IA</span>
+          </span>
+          <span aria-hidden className="passo-cereja-seta relative z-10">→</span>
         </Link>
       </div>
       )}
