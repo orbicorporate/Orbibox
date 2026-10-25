@@ -8,7 +8,6 @@ import { FotoProntaPicker } from "./FotoProntaPicker";
 import { MinhaGaleriaPicker } from "./MinhaGaleriaPicker";
 import { GeradorImagemSheet } from "./GeradorImagemSheet";
 import { AjusteFoto } from "./AjusteFoto";
-import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 import { OrbiMiniVerde } from "@/components/orbi/OrbiConcluido";
 import { AbrirChatGPT } from "@/components/ui/AbrirChatGPT";
 import { PassosPrompt } from "@/components/ui/PassosPrompt";
@@ -224,66 +223,33 @@ export function ImageUpload({
         {/* Sem foto própria: a Orbi busca uma pronta ou monta o prompt pra
             criar uma capa com a cara da marca no ChatGPT. */}
         <div className="flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={() => setShowFotos(true)}
-            className="orbi-gradient group w-full rounded-[20px] p-[1.5px] text-left shadow-[0_6px_22px_rgba(120,220,160,0.22)] transition-transform active:scale-[0.99]"
-          >
-            <span className="flex w-full items-center gap-3.5 rounded-[18.5px] bg-surface-white px-3.5 py-3.5">
-              {/* Mini colagem de fotos, pra já dizer do que se trata. */}
-              <span className="relative h-12 w-14 shrink-0" aria-hidden>
-                <span className="absolute left-0 top-1.5 h-9 w-9 -rotate-12 rounded-lg bg-gradient-to-br from-[#C7F284] to-[#6FD8C4] shadow-sm" />
-                <span className="absolute right-0 top-0.5 h-9 w-9 rotate-12 rounded-lg bg-gradient-to-br from-[#9EC5FF] to-[#B69CFF] shadow-sm" />
-                <span className="absolute left-1/2 top-1 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-lg bg-on-background text-white shadow-md transition-transform group-hover:-translate-y-0.5">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="16" rx="3" />
-                    <circle cx="9" cy="10" r="2" />
-                    <path d="M21 16l-5-5-8 9" />
-                  </svg>
+          <p className="px-1 text-[12px] font-medium text-text-tertiary">Ou escolha uma imagem</p>
+          {/* Três caminhos lado a lado, cada um com sua cor e uma palavra. */}
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { t: "Foto pronta", d: "Banco de fotos", bg: "linear-gradient(135deg,#C7F284,#6FD8C4)", ic: <path d="M21 16l-5-5-8 9M3 4h18v16H3zM9 10a2 2 0 1 0 0-.01" />, f: () => setShowFotos(true), on: false },
+              { t: "Minha galeria", d: "Já enviadas", bg: "linear-gradient(135deg,#9EC5FF,#B69CFF)", ic: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />, f: () => setShowGaleria(true), on: false },
+              { t: "Criar com IA", d: "Com suas cores", bg: "linear-gradient(135deg,#FFD9A8,#FF9FB8)", ic: <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />, f: abrirPrompt, on: showPrompt },
+            ].map((o) => (
+              <button
+                key={o.t}
+                type="button"
+                onClick={o.f}
+                aria-expanded={o.t === "Criar com IA" ? showPrompt : undefined}
+                className={`flex flex-col items-center gap-2 rounded-[20px] bg-white px-2 py-3.5 text-center ring-1 transition-transform active:scale-[0.97] ${o.on ? "ring-2 ring-on-background" : "ring-black/[0.08]"}`}
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl text-on-background" style={{ background: o.bg }} aria-hidden>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">{o.ic}</svg>
                 </span>
-                <OrbiSimbolo size={20} className="absolute -bottom-1 -right-1" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold text-on-background">Buscar foto pronta</span>
-                <span className="mt-0.5 block text-[12.5px] leading-snug text-text-secondary">A Orbi entende o tema e escolhe fotos profissionais</span>
-              </span>
-              <span className="shrink-0 rounded-full bg-on-background px-3.5 py-2 text-[12.5px] font-semibold text-white">Buscar</span>
-            </span>
-          </button>
+                <span className="text-[13px] font-semibold leading-tight text-on-background">{o.t}</span>
+                <span className="-mt-1 text-[11px] leading-tight text-text-tertiary">{o.d}</span>
+              </button>
+            ))}
+          </div>
 
-          <button
-            type="button"
-            onClick={() => setShowGaleria(true)}
-            className="flex w-full items-center gap-3 rounded-2xl border border-divider bg-surface-white px-3.5 py-3 text-left active:scale-[0.99]"
-          >
-            <span className="grid h-9 w-9 shrink-0 grid-cols-2 gap-0.5 overflow-hidden rounded-lg" aria-hidden>
-              <span className="bg-gradient-to-br from-[#C7F284] to-[#6FD8C4]" />
-              <span className="bg-gradient-to-br from-[#9EC5FF] to-[#B69CFF]" />
-              <span className="bg-gradient-to-br from-[#FFD9A8] to-[#FFB3C1]" />
-              <span className="bg-surface-soft" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-medium text-on-background">Minha galeria</span>
-              <span className="block text-[12px] text-text-tertiary">Imagens que você já enviou, pra usar de novo</span>
-            </span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-tertiary" aria-hidden>
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </button>
-
-          <div className={`rounded-2xl border bg-surface-white ${showPrompt ? "border-on-background/15" : "border-divider"}`}>
-            <button type="button" onClick={abrirPrompt} className="flex w-full items-center gap-3 px-3.5 py-3 text-left">
-              <OrbiSimbolo size={36} />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[14px] font-medium text-on-background">Criar com a cara da marca</span>
-                <span className="block text-[12px] text-text-tertiary">{iaIndisponivel ? "Prompt pronto pro ChatGPT, com suas cores" : "A Orbi cria aqui, com suas cores"}</span>
-              </span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary transition-transform ${showPrompt ? "rotate-180" : ""}`} aria-hidden>
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
+          <div className={showPrompt ? "rounded-2xl bg-white ring-1 ring-black/[0.08]" : "hidden"}>
             {showPrompt && (
-              <div className="px-3.5 pb-3.5">
+              <div className="p-3.5">
                 {!iaIndisponivel && (
                   <div className="mb-4">
                     <button type="button" onClick={() => setShowGerador(true)} className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[14px] font-semibold text-white active:scale-[0.99]">
