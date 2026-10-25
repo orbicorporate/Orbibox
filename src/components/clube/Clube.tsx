@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { carregarCurtidas } from "@/lib/clube-curtidas";
 import type { PedidoFa } from "./CurtirItem";
 import {
-  aceitarWhatsapp, atualizarPerfil, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, entrarComEmail, entrarComNumero,
+  aceitarWhatsapp, atualizarPerfil, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, excluirAvaliacao, entrarComEmail, entrarComNumero,
   enviarFotoPerfil, entrarComGoogle, getAfinidade, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
   sairDoClube, salvarContatoWhatsapp, virarFa,
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type Resumo,
@@ -476,6 +476,7 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
   const [foto, setFoto] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [confirmaExcluir, setConfirmaExcluir] = useState(false);
 
   const carregar = useCallback(async () => setLista(await getAvaliacoes(businessId)), [businessId]);
   useEffect(() => {
@@ -493,6 +494,17 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
     setEnviando(false);
     if (!ok) return setMsg("Não consegui enviar a avaliação. Tente de novo.");
     setMsg("Obrigado! Sua avaliação já aparece na lista.");
+    await Promise.all([carregar(), aoMudar()]);
+  }
+  async function excluir() {
+    if (!eu.userId) return;
+    setEnviando(true);
+    const ok = await excluirAvaliacao(businessId, eu.userId);
+    setEnviando(false);
+    setConfirmaExcluir(false);
+    if (!ok) return setMsg("Não consegui excluir. Tente de novo.");
+    setNota(0); setComent("");
+    setMsg("Avaliação excluída.");
     await Promise.all([carregar(), aoMudar()]);
   }
   async function enviarResposta(id: string) {
@@ -590,6 +602,15 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
                     <button type="button" onClick={enviar} disabled={enviando || nota < 1} className="mt-2 min-h-[46px] w-full rounded-full bg-button-primary text-[15px] font-medium text-white disabled:opacity-50 active:scale-[0.98]">
                       {enviando ? "Enviando..." : eu.minhaAvaliacao ? "Atualizar avaliação" : "Enviar avaliação"}
                     </button>
+                    {eu.minhaAvaliacao && (confirmaExcluir ? (
+                      <div className="mt-2 flex items-center justify-center gap-2">
+                        <span className="text-[13px] text-text-secondary">Excluir sua avaliação?</span>
+                        <button type="button" onClick={excluir} disabled={enviando} className="min-h-[36px] rounded-full bg-[#E5484D] px-4 text-[13px] font-semibold text-white disabled:opacity-50">Excluir</button>
+                        <button type="button" onClick={() => setConfirmaExcluir(false)} className="min-h-[36px] rounded-full bg-[#F2F2EE] px-4 text-[13px]">Cancelar</button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => setConfirmaExcluir(true)} className="mt-2 min-h-[40px] w-full rounded-full text-[13.5px] font-medium text-[#E5484D]">Excluir minha avaliação</button>
+                    ))}
                   </>
                 )}
                 {msg && <p role="status" className="mt-2 text-center text-[13.5px] text-text-secondary">{msg}</p>}

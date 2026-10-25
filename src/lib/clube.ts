@@ -163,6 +163,10 @@ export async function enviarAvaliacao(businessId: string, userId: string, v: { n
   const { error } = await clubeDb().from("reviews").upsert(linha, { onConflict: "business_id,customer_id" });
   return !error;
 }
+export async function excluirAvaliacao(businessId: string, userId: string) {
+  const { error } = await clubeDb().from("reviews").delete().eq("business_id", businessId).eq("customer_id", userId);
+  return !error;
+}
 export async function responderAvaliacao(reviewId: string, texto: string) {
   await clubeDb().rpc("clube_responder", { p_review: reviewId, p_texto: texto });
 }
