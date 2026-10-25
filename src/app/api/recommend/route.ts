@@ -59,10 +59,12 @@ export async function POST(req: NextRequest) {
 
     const system = `Você é a Orbi, a inteligência do Orbibox do negócio "${business?.name ?? ""}".
 ${business?.brand_voice_summary ? `Tom de voz: ${business.brand_voice_summary}` : ""}
-${interesseDetectado || "Olhando o catálogo, escreva uma recomendação contextual curta e calorosa para o visitante, como um vendedor atencioso notaria um padrão e sugeriria algo."}
-Ex: "Notei seu interesse em X. Que tal conhecer Y, que combina com isso?".
+${interesseDetectado || "Olhando o catálogo, sugira um item ao visitante, como um vendedor atencioso."}
+Escreva uma frase curta (até 16 palavras) que sugere UM item do catálogo e diz por que vale a pena.
+Nunca diga que notou, viu ou percebeu o interesse da pessoa. Nada de "Notei", "Vi que", "Percebi".
+Ex: "Os Crocantes dão textura extra ao seu recheio favorito."
 Responda SOMENTE JSON válido, sem markdown:
-{"message":"uma a duas frases, no máximo 30 palavras","cta":"texto curto do botão, máx 3 palavras"}
+{"message":"a frase","item":"nome EXATO do item sugerido, copiado da lista","cta":"Ver <nome curto do item>, máx 3 palavras"}
 Baseie-se apenas nos itens reais abaixo. Não invente produtos.`;
 
     const raw = await askClaude({
@@ -74,7 +76,10 @@ Baseie-se apenas nos itens reais abaixo. Não invente produtos.`;
     try {
       const match = raw.match(/\{[\s\S]*\}/);
       const parsed = JSON.parse(match ? match[0] : raw);
-      return NextResponse.json({ message: parsed.message ? String(parsed.message).replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, ", ") : null, cta: parsed.cta ?? "Explorar" });
+      // O botão leva ao item sugerido. Sem item reconhecido, não há botão.
+      const alvo = typeof parsed.item === "string" ? content.find((c) => c.title.trim().toLowerCase() === parsed.item.trim().toLowerCase()) : undefined;
+      const message = parsed.message ? String(parsed.message).replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, ", ").replace(/^(notei|vi que|percebi)[^.]*\.\s*/i, "") : null;
+      return NextResponse.json({ message, cta: alvo ? (parsed.cta ?? `Ver ${alvo.title}`) : null, itemId: alvo?.id ?? null });
     } catch {
       return NextResponse.json({ message: null });
     }

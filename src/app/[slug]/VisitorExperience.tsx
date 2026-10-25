@@ -2942,8 +2942,9 @@ function OrbiChat({
   );
 }
 
-function OrbiRecommendation({ businessId, sessionId, onOrbi, orbiColors }: { businessId: string; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
-  const [rec, setRec] = useState<{ message: string; cta: string } | null>(null);
+function OrbiRecommendation({ businessId, sessionId, slug, orbiColors }: { businessId: string; sessionId: string | null; slug: string; orbiColors?: string[] | null }) {
+  const router = useRouter();
+  const [rec, setRec] = useState<{ message: string; cta: string | null; itemId: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -2951,12 +2952,11 @@ function OrbiRecommendation({ businessId, sessionId, onOrbi, orbiColors }: { bus
       method: "POST",
       headers: { "Content-Type": "application/json" },
       // Manda o sessionId pra API poder olhar o que essa pessoa clicou
-      // de verdade (categoria/produto) e basear a recomendação nisso,
-      // em vez de sugerir algo genérico do catálogo.
+      // de verdade (categoria/produto) e basear a recomendação nisso.
       body: JSON.stringify({ businessId, sessionId }),
     })
       .then((r) => r.json())
-      .then((d) => { if (d.message) setRec({ message: d.message, cta: d.cta ?? "Explorar" }); })
+      .then((d) => { if (d.message) setRec({ message: d.message, cta: d.cta ?? null, itemId: d.itemId ?? null }); })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
@@ -2971,8 +2971,9 @@ function OrbiRecommendation({ businessId, sessionId, onOrbi, orbiColors }: { bus
       </span>
       <OrbiInsightHeader />
       <OrbiInsightMessage>{rec.message}</OrbiInsightMessage>
-      {onOrbi && (
-        <button onClick={onOrbi} className={orbiInsightCtaClass}>
+      {/* O botão leva ao item sugerido, como o texto promete. */}
+      {rec.itemId && rec.cta && (
+        <button onClick={() => router.push(`/${slug}/p/${rec.itemId}`)} className={orbiInsightCtaClass}>
           {rec.cta} <OrbiSparkleMini />
         </button>
       )}
@@ -3124,7 +3125,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
       )}
 
       <div className="mt-6 flex flex-col gap-8">
-        {visible.map((sec, si) => (
+        {visible.map((sec) => (
           <div key={sec.name || "_sem"}>
             {sections.length > 1 && sec.name && (
               <h3 className="mb-3 font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h3>
@@ -3155,10 +3156,11 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                 ) : cartao;
               })}
             </div>
-            {si === 0 && <div className="mt-6"><OrbiRecommendation businessId={business.id} sessionId={sessionId} onOrbi={onOrbi} orbiColors={orbiColors} /></div>}
           </div>
         ))}
       </div>
+      {/* Sugestão da Orbi no fim do catálogo, sem cortar a vitrine no meio. */}
+      <div className="mt-8"><OrbiRecommendation businessId={business.id} sessionId={sessionId} slug={business.slug} orbiColors={orbiColors} /></div>
       <BarraContato business={business} sessionId={sessionId} onOrbi={onOrbi} />
     </>
   );
