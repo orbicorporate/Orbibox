@@ -237,7 +237,7 @@ export default async function PendenciasPage() {
         O que falta fazer
       </h1>
       <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-        Em ordem de prioridade. Quanto mais completo, mais gente confia.
+        Quanto mais completo, mais a sua IA aprende e te ajuda a vender.
       </p>
 
       <ProgressTags done={progress.done} pct={progress.pct} extras={extras} />
