@@ -115,15 +115,15 @@ export function SuporteView({ whatsappHref, negocio, orbiColors }: { whatsappHre
 
         {msgs.length === 0 && (
           <div className="grid grid-cols-2 gap-2 px-4 pb-1">
-            {SUGESTOES.map((a) => (
-              <button key={a.id} type="button" onClick={() => void enviar(a.pergunta)} className="cursor-pointer rounded-2xl bg-surface-soft px-3.5 py-3 text-left text-[13px] font-medium leading-tight active:opacity-70">{a.pergunta}</button>
+            {SUGESTOES.map((a, i) => (
+              <button key={a.id} type="button" onClick={() => void enviar(a.pergunta)} className="cursor-pointer rounded-2xl px-3.5 py-3 text-left text-[13px] font-medium leading-tight active:scale-[0.98]" style={{ backgroundColor: ["#EEF1FB", "#E9F8EF", "#FFF4E5", "#F4EEFB"][i % 4] }}>{a.pergunta}</button>
             ))}
           </div>
         )}
 
-        <form onSubmit={(e) => { e.preventDefault(); void enviar(texto); }} className="m-4 flex items-center gap-2 rounded-full bg-surface-soft p-1.5 pl-4">
-          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ex: como coloco o preço?" className="min-w-0 flex-1 bg-transparent text-[15px] outline-none" enterKeyHint="send" />
-          <button type="submit" disabled={pensando || !texto.trim()} aria-label="Enviar" className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-on-background text-white transition-opacity disabled:opacity-30">
+        <form onSubmit={(e) => { e.preventDefault(); void enviar(texto); }} className="m-4 flex items-center gap-2 rounded-full bg-white p-1.5 pl-5 shadow-[0_8px_22px_-12px_rgba(17,19,24,0.35)] ring-2 ring-on-background/15 focus-within:ring-on-background/60">
+          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escreva sua dúvida..." className="min-w-0 flex-1 bg-transparent py-1.5 text-[15.5px] outline-none placeholder:text-text-tertiary" enterKeyHint="send" />
+          <button type="submit" disabled={pensando || !texto.trim()} aria-label="Enviar" className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-on-background text-white transition-opacity disabled:opacity-40">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </button>
         </form>
