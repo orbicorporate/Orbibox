@@ -5,6 +5,7 @@ import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import { parsePreco, precoParaCampo } from "@/lib/preco";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import Link from "next/link";
+import { coresDosCards } from "@/lib/paletaCards";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gravarFlag, useFlag } from "@/lib/useFlag";
@@ -282,8 +283,8 @@ export function ShowcaseBuilder({
     snapshot();
     gravarFlag(`vitrine_estilo_${businessId}`);
 
-    // Cores utilizáveis (pula a primeira, que costuma ser o fundo claro).
-    const usaveis = cores.length > 2 ? cores.slice(1) : cores;
+    // Cores utilizáveis: as vivas da marca primeiro, depois as escuras (sem branco e cinza).
+    const usaveis = coresDosCards(cores.map((c) => c.hex)).map((hex) => ({ hex }));
 
     const updates = items.map((item, idx) => {
       const cor = usaveis[idx % usaveis.length].hex;
