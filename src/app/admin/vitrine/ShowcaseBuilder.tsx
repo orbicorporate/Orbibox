@@ -1620,7 +1620,7 @@ function ItemCard({
             title={`Formato: ${SIZE_LABEL[size]}`}
             className="flex h-8 w-8 items-center justify-center rounded-full text-on-background/70 active:scale-90"
           >
-            <span className={`rounded-[3px] bg-current ${FORMA[size]}`} />
+            <span className={`scale-[0.6] rounded-[4px] bg-current ${FORMA[size]}`} />
           </button>
           {total > 1 && (
             <>
