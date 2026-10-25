@@ -1069,7 +1069,19 @@ export function ShowcaseBuilder({
               {isDestaques ? (
                 <p className="text-[13px] text-text-tertiary">Sem categoria</p>
               ) : (
-                <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
+                <div className="flex min-w-0 items-center gap-2">
+                  <h2 className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
+                  {/* + ao lado do nome: abre o cadastro de um item novo já nesta categoria. */}
+                  <button
+                    type="button"
+                    onClick={() => createItem(sec.name)}
+                    disabled={creating}
+                    aria-label={`Novo item em ${sec.name}`}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-on-background text-[18px] leading-none text-white shadow-sm active:scale-95 disabled:opacity-40"
+                  >
+                    +
+                  </button>
+                </div>
               )}
               {!isDestaques && (
               <div className="flex shrink-0 items-center gap-1.5">
