@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
+import { registrarFunil } from "@/lib/funil";
 
 const SUGESTOES = ["O que mais chamou atenção esta semana?", "De onde estão vindo meus clientes?", "O que eu faço pra vender mais?"];
 
@@ -23,6 +24,7 @@ export function PerguntaOrbi({ orbiColors }: { orbiColors: string[] | null }) {
       const d = await r.json();
       if (!r.ok || !d.resposta) throw new Error();
       setResposta({ pergunta, resposta: d.resposta, href: d.href, rotulo: d.rotulo });
+      registrarFunil("copiloto_pergunta", { meta: { pergunta: pergunta.slice(0, 500), resposta: String(d.resposta).slice(0, 400), fonte: "ia" } });
       setTexto("");
     } catch {
       setErro("Não consegui responder agora. Tente de novo em instantes.");

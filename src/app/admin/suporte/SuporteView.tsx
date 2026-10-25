@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { OrbiParticleSphere } from "@/components/orbi/OrbiParticleSphere";
 import { AJUDAS, buscarAjuda } from "@/lib/ajuda";
+import { registrarFunil } from "@/lib/funil";
 
 type Msg = { role: "user" | "assistant"; content: string; href?: string | null; rotulo?: string | null };
 
@@ -29,7 +30,7 @@ function RespostaOrbi({ texto }: { texto: string }) {
   );
 }
 
-export function SuporteView({ whatsappHref, negocio, orbiColors }: { whatsappHref: string; negocio: string; orbiColors: string[] | null }) {
+export function SuporteView({ businessId, whatsappHref, negocio, orbiColors }: { businessId: string | null; whatsappHref: string; negocio: string; orbiColors: string[] | null }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [texto, setTexto] = useState("");
   const [pensando, setPensando] = useState(false);
@@ -47,7 +48,10 @@ export function SuporteView({ whatsappHref, negocio, orbiColors }: { whatsappHre
     setMsgs(novas);
     rolar();
     const local = buscarAjuda(q);
+    // O master vê o que os donos perguntam (painel Master, aba Perguntas).
+    const registrar = (resposta: string, fonte: string) => registrarFunil("suporte_pergunta", { businessId, meta: { pergunta: q.slice(0, 500), resposta: resposta.slice(0, 400), fonte } });
     if (local) {
+      registrar(local.passos.join(" "), "ajuda");
       setMsgs([...novas, { role: "assistant", content: local.passos.map((p, i) => `${i + 1}. ${p}`).join("\n"), href: local.acao?.href, rotulo: local.acao?.rotulo }]);
       rolar();
       return;
@@ -58,7 +62,9 @@ export function SuporteView({ whatsappHref, negocio, orbiColors }: { whatsappHre
       const d = await r.json();
       if (!r.ok || !d.resposta) throw new Error();
       setMsgs([...novas, { role: "assistant", content: d.resposta, href: d.href, rotulo: d.rotulo }]);
+      registrar(d.resposta, "ia");
     } catch {
+      registrar("", "erro");
       setErro("Não consegui responder agora. Tente de novo ou chame o suporte no WhatsApp.");
     } finally {
       setPensando(false);
