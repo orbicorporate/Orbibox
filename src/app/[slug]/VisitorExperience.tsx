@@ -942,7 +942,7 @@ export function VisitorExperience({
             <div className="absolute inset-x-0 bottom-0 mx-auto max-h-[75vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-surface-white p-5 pb-8 shadow-[0_-12px_40px_rgba(0,0,0,0.25)]">
               <div className="flex items-center justify-between">
                 <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Ícone de “{alvo.t}”</p>
-                <button type="button" onClick={() => setIconeBox(null)} className="min-h-[40px] px-2 text-[14px] text-text-secondary">Fechar</button>
+                <button type="button" onClick={() => setIconeBox(null)} className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#1F9E4C] pl-2 pr-4 text-[14px] font-semibold text-white shadow-[0_6px_14px_-6px_rgba(31,158,76,0.7)] active:scale-[0.97]"><span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25 text-[12px]">✓</span>Fechar</button>
               </div>
               <button
                 type="button"
@@ -1385,7 +1385,7 @@ export function VisitorExperience({
                       >
                         <div className="mb-1 flex items-center justify-between">
                           <span className="text-[16px] font-medium">Cor do card</span>
-                          <button type="button" onClick={() => setColorPickerBox(null)} className="min-h-[40px] px-2 text-[14px] text-text-secondary">Fechar</button>
+                          <button type="button" onClick={() => setColorPickerBox(null)} className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#1F9E4C] pl-2 pr-4 text-[14px] font-semibold text-white shadow-[0_6px_14px_-6px_rgba(31,158,76,0.7)] active:scale-[0.97]"><span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25 text-[12px]">✓</span>Fechar</button>
                         </div>
                         <p className="px-0.5 pb-2 text-[11px] font-medium uppercase tracking-wide text-text-tertiary">Cores nobres</p>
                         <div className="grid grid-cols-8 gap-2">

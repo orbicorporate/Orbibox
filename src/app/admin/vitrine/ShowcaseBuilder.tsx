@@ -1826,7 +1826,7 @@ function ItemCard({
                 placeholder="Nome do item"
                 className="min-w-0 flex-1 border-b border-divider bg-transparent pb-1 font-[family-name:var(--font-manrope)] text-[19px] font-medium outline-none focus:border-on-background"
               />
-              <button onClick={onToggleEdit} className="shrink-0 rounded-full bg-surface-soft px-3 py-1.5 text-[12px] text-text-secondary">Fechar</button>
+              <button onClick={onToggleEdit} className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#1F9E4C] py-1.5 pl-2 pr-3.5 text-[13px] font-semibold text-white shadow-[0_6px_14px_-6px_rgba(31,158,76,0.7)] active:scale-[0.97]"><span aria-hidden className="flex h-5 w-5 items-center justify-center rounded-full bg-white/25 text-[11px]">✓</span>Fechar</button>
             </div>
 
             <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
