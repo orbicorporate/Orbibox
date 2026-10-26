@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { MinhaGaleriaPicker } from "@/components/ui/MinhaGaleriaPicker";
-import { ImageCropModal } from "@/components/ui/ImageCropModal";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { COVER_RATIO_BY_SIZE, SIZE_LABEL, type BoxSize } from "@/lib/showcase";
 
 type Linha = { id: string; title: string; categoria: string; temFoto: boolean; formato: BoxSize };
@@ -20,8 +19,6 @@ export function FotosEmLote({ businessId, itens }: { businessId: string; itens: 
   const [encadear, setEncadear] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [mostrarTodos, setMostrarTodos] = useState(false);
-  // Foto escolhida esperando o recorte no formato do card (que pode ser trocado ali mesmo).
-  const [recorte, setRecorte] = useState<{ id: string; file: File } | null>(null);
   const [formatos, setFormatos] = useState<Record<string, BoxSize>>({});
   const [formatoSel, setFormatoSel] = useState<BoxSize>("medio");
   const [salvando, setSalvando] = useState(false);
@@ -35,42 +32,24 @@ export function FotosEmLote({ businessId, itens }: { businessId: string; itens: 
     return Array.from(m.entries());
   }, [visiveis]);
 
-  // Escolheu na galeria: baixa a foto e abre o recorte travado no formato do card.
-  async function escolher(url: string) {
-    const id = aberto;
-    if (!id) return;
+  // Foto escolhida (enviada, pronta, da galeria ou criada com IA), já no formato do card.
+  async function salvarFoto(id: string, url: string) {
     setErro(null);
-    try {
-      const r = await fetch(url);
-      const blob = await r.blob();
-      const file = new File([blob], "foto.jpg", { type: blob.type || "image/jpeg" });
-      const item = itens.find((i) => i.id === id);
-      setFormatoSel(item ? formatoDe(item) : "medio");
-      setRecorte({ id, file });
-      setAberto(null);
-    } catch {
-      setErro("Não consegui abrir essa foto. Tente outra.");
-    }
-  }
-
-  async function confirmarRecorte(blob: Blob) {
-    if (!recorte) return;
-    const id = recorte.id;
     setSalvando(true);
-    setErro(null);
-    const path = `${businessId}/item-${id}-${Date.now()}.jpg`;
-    const up = await supabase.storage.from("box-images").upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: blob.type || "image/jpeg" });
-    if (up.error) { setSalvando(false); setErro("Não consegui enviar essa foto. Tente de novo."); return; }
-    const url = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
     const { error } = await supabase.from("content_items").update({ image_url: url, image_is_placeholder: false, box_style: "foto", layout_size: formatoSel }).eq("id", id);
     setSalvando(false);
-    setRecorte(null);
     if (error) { setErro("Não consegui salvar essa foto. Tente de novo."); return; }
     setFotos((p) => ({ ...p, [id]: url }));
     setFormatos((p) => ({ ...p, [id]: formatoSel }));
     const proximo = encadear ? pendentes.find((i) => i.id !== id) : undefined;
-    if (proximo) setAberto(proximo.id);
-    else setEncadear(false);
+    if (proximo) abrir(proximo.id);
+    else { setAberto(null); setEncadear(false); }
+  }
+
+  function abrir(id: string) {
+    const item = itens.find((i) => i.id === id);
+    setFormatoSel(item ? formatoDe(item) : "medio");
+    setAberto(id);
   }
 
   const atual = itens.find((i) => i.id === aberto);
@@ -82,7 +61,7 @@ export function FotosEmLote({ businessId, itens }: { businessId: string; itens: 
         {pendentes.length > 0 && (
           <button
             type="button"
-            onClick={() => { setEncadear(true); setAberto(pendentes[0].id); }}
+            onClick={() => { setEncadear(true); abrir(pendentes[0].id); }}
             className="min-h-[44px] rounded-full bg-button-primary px-5 text-[14px] font-semibold text-white active:scale-[0.97]"
           >
             Começar pelo primeiro
@@ -101,7 +80,7 @@ export function FotosEmLote({ businessId, itens }: { businessId: string; itens: 
                 <li key={i.id}>
                   <button
                     type="button"
-                    onClick={() => { setEncadear(false); setAberto(i.id); }}
+                    onClick={() => { setEncadear(false); abrir(i.id); }}
                     className="flex min-h-[64px] w-full items-center gap-3 rounded-2xl bg-white p-2.5 text-left ring-1 ring-black/[0.08] active:scale-[0.99]"
                   >
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#F2F2EE] text-[18px] text-text-tertiary">
@@ -129,43 +108,45 @@ export function FotosEmLote({ businessId, itens }: { businessId: string; itens: 
         {mostrarTodos ? "Mostrar só os sem foto" : "Mostrar todos os itens"}
       </button>
 
-      {recorte && (
-        <ImageCropModal
-          key={formatoSel}
-          file={recorte.file}
-          lockedRatio={COVER_RATIO_BY_SIZE[formatoSel]}
-          camada="z-[90]"
-          topo={
-            <div>
-              <p className="text-center text-[12px] text-text-tertiary">Formato do card</p>
+      {aberto && atual && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/40" onClick={() => { setAberto(null); setEncadear(false); }}>
+          <div className="max-h-[92vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-[#EFEFEA] p-4 pb-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-1">
+              <div className="min-w-0">
+                <p className="truncate text-[18px] font-semibold leading-tight">{atual.title}</p>
+                <p className="mt-0.5 text-[12.5px] text-text-secondary">{encadear && pendentes.length > 1 ? `Faltam ${pendentes.length} sem foto` : "Foto do card"}</p>
+              </div>
+              <button type="button" onClick={() => { setAberto(null); setEncadear(false); }} aria-label="Fechar" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[14px]">✕</button>
+            </div>
+
+            {/* Formato do card: a foto já sai recortada nele. */}
+            <div className="mt-3 rounded-[22px] bg-white p-3 ring-1 ring-black/[0.06]">
+              <p className="px-1 text-[12.5px] font-medium text-text-tertiary">Formato do card</p>
               <div className="mt-2 grid grid-cols-4 gap-1.5">
                 {ORDEM.map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => setFormatoSel(f)}
-                    aria-pressed={formatoSel === f}
-                    className={`flex flex-col items-center gap-1.5 rounded-2xl py-2 ${formatoSel === f ? "bg-on-background text-white" : "bg-[#F2F2EE] text-text-secondary"}`}
-                  >
-                    <span className={`flex h-9 items-center`}><span className={`rounded-[3px] bg-current ${FORMA[f]}`} /></span>
+                  <button key={f} type="button" onClick={() => setFormatoSel(f)} aria-pressed={formatoSel === f} className={`flex flex-col items-center gap-1.5 rounded-2xl py-2 ${formatoSel === f ? "bg-on-background text-white" : "bg-[#F2F2EE] text-text-secondary"}`}>
+                    <span className="flex h-9 items-center"><span className={`rounded-[3px] bg-current ${FORMA[f]}`} /></span>
                     <span className="text-[11px] font-medium">{SIZE_LABEL[f]}</span>
                   </button>
                 ))}
               </div>
             </div>
-          }
-          onConfirm={(blob) => { if (!salvando) void confirmarRecorte(blob); }}
-          onCancel={() => { setRecorte(null); setEncadear(false); }}
-        />
-      )}
 
-      {aberto && atual && (
-        <MinhaGaleriaPicker
-          businessId={businessId}
-          atual={fotos[aberto] ?? null}
-          onEscolher={escolher}
-          onFechar={() => { setAberto(null); setEncadear(false); }}
-        />
+            {/* Todas as formas de ter a foto: enviar, foto pronta, galeria ou criar com IA. */}
+            <div className="mt-3 rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
+              <ImageUpload
+                key={`${atual.id}-${formatoSel}`}
+                value={fotos[atual.id] ?? null}
+                businessId={businessId}
+                lockedRatio={COVER_RATIO_BY_SIZE[formatoSel]}
+                lockedReason="A foto segue o formato do card escolhido acima."
+                promptSubject={atual.title}
+                onChange={(url) => { if (url) void salvarFoto(atual.id, url); }}
+              />
+              {salvando && <p className="mt-2 text-center text-[12.5px] text-text-tertiary">Salvando…</p>}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
