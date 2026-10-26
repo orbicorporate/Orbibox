@@ -308,10 +308,12 @@ export function ShowcaseBuilder({
         return item.image_url ? { ...item, footer_color: cor } : { ...item, box_color: cor };
       })
     );
-    setCurrentBrandColors(cores);
+    // As cores da marca nunca são trocadas por uma paleta pronta: assim "Sua marca"
+    // continua na lista pra voltar quando quiser. Só os itens ganham as novas cores.
+    if (paletteId === "orbi") setCurrentBrandColors(cores);
 
     await Promise.all([
-      supabase.from("businesses").update({ brand_colors: cores }).eq("id", businessId),
+      ...(paletteId === "orbi" ? [supabase.from("businesses").update({ brand_colors: cores }).eq("id", businessId)] : []),
       ...updates.map((u) =>
         supabase
           .from("content_items")
@@ -1338,26 +1340,40 @@ export function ShowcaseBuilder({
                 <p className="font-[family-name:var(--font-manrope)] text-[19px] font-semibold">Estilo do catálogo</p>
                 <button onClick={() => setShowEstilo(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft text-[14px]" aria-label="Fechar">✕</button>
               </div>
-              <p className="mt-1 text-[13px] text-text-secondary">Toque numa paleta pra aplicar em todos os itens.</p>
-              <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                {currentBrandColors.length > 0 && (
-                  <PaletteChip label="✦ A cara da sua marca" cores={currentBrandColors} loading={applyingPalette === "orbi"} onClick={() => aplicarPaleta("orbi", currentBrandColors)} />
-                )}
-                {VITRINE_THEMES.map((t) => (
-                  <PaletteChip key={t.id} label={t.vibe} cores={t.colors} loading={applyingPalette === t.id} onClick={() => aplicarPaleta(t.id, t.colors)} />
-                ))}
-              </div>
+              {/* Primeiro a inspiração: vitrines prontas por tipo de negócio. */}
               <button
                 onClick={() => { setShowEstilo(false); setShowInspire(true); }}
-                className="orbi-gradient mt-4 flex w-full items-center gap-3 rounded-[18px] p-3.5 text-left text-on-background"
+                className="mt-3 flex w-full items-center gap-3.5 overflow-hidden rounded-[22px] bg-on-background p-3 text-left text-white shadow-[0_14px_30px_-16px_rgba(17,19,24,0.7)] active:scale-[0.99]"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-white/40">✦</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[14px] font-semibold leading-tight">Ver vitrines prontas</span>
-                  <span className="block text-[12px] opacity-80">Por tipo de negócio, aplica o estilo num toque</span>
+                <span className="relative h-16 w-20 shrink-0" aria-hidden>
+                  {(() => {
+                    const fotos = Object.values(inspirePhotos).flatMap((t) => t.photos.map((p) => p.url)).slice(0, 3);
+                    return [0, 1, 2].map((k) => (
+                      <span key={k} className="absolute top-1 h-14 w-11 overflow-hidden rounded-xl ring-2 ring-on-background" style={{ left: k * 16, transform: `rotate(${(k - 1) * 8}deg)`, zIndex: k === 1 ? 3 : 1, background: ["linear-gradient(135deg,#C7F284,#6FD8C4)", "linear-gradient(135deg,#FFD9A8,#FF9FB8)", "linear-gradient(135deg,#9EC5FF,#B69CFF)"][k] }}>
+                        {fotos[k] && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={fotos[k]} alt="" className="h-full w-full object-cover" />
+                        )}
+                      </span>
+                    ));
+                  })()}
                 </span>
-                <span aria-hidden>→</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-semibold leading-tight">Inspire-se com vitrines prontas</span>
+                  <span className="mt-0.5 block text-[12px] text-white/70">Aplica o estilo num toque</span>
+                </span>
+                <span aria-hidden className="text-white/80">→</span>
               </button>
+
+              <p className="mt-5 text-[12.5px] font-medium text-text-tertiary">Ou só as cores</p>
+              <div className="mt-2 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                {currentBrandColors.length > 0 && (
+                  <PaletteChip label="✦ Sua marca" cores={currentBrandColors} loading={applyingPalette === "orbi"} onClick={() => aplicarPaleta("orbi", currentBrandColors)} />
+                )}
+                {VITRINE_THEMES.map((t) => (
+                  <PaletteChip key={t.id} label={t.name} cores={t.colors} loading={applyingPalette === t.id} onClick={() => aplicarPaleta(t.id, t.colors)} />
+                ))}
+              </div>
             </div>
           </div>,
           document.body,
@@ -1763,9 +1779,9 @@ function ItemCard({
                 aria-label={emDestaque ? "Em destaque na página inicial" : "Destacar na página inicial"}
                 aria-expanded={menuDestaque}
                 title={emDestaque ? "Em destaque na página inicial" : "Destacar na página inicial"}
-                className="flex h-9 w-9 items-center justify-center drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)] active:scale-90"
+                className="selo-vibra flex h-9 w-9 items-center justify-center active:scale-90"
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill={emDestaque ? "#F5B400" : "#FFFFFF"} stroke={emDestaque ? "#8A5A00" : "#111318"} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" aria-hidden>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill={emDestaque ? "#F5B400" : "#FFFFFF"} stroke={emDestaque ? "#8A5A00" : "#111318"} strokeWidth="1.1" strokeLinejoin="round" strokeLinecap="round" aria-hidden>
                   <path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" />
                 </svg>
               </button>
