@@ -83,7 +83,7 @@ export function FotosEmLote({ businessId, itens }: { businessId: string; itens: 
                     onClick={() => { setEncadear(false); abrir(i.id); }}
                     className="flex min-h-[64px] w-full items-center gap-3 rounded-2xl bg-white p-2.5 text-left ring-1 ring-black/[0.08] active:scale-[0.99]"
                   >
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#F2F2EE] text-[18px] text-text-tertiary">
+                    <span className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[18px] text-text-tertiary ${url ? "bg-[#F2F2EE]" : ""}`}>
                       {url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={url} alt="" className="h-full w-full object-cover" />
