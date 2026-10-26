@@ -9,7 +9,7 @@ export type PedidoFa = { titulo: string; alvo: string; id: string };
  * Coração de curtir um item, voucher ou qualquer coisa da marca.
  * Só fã curte: quem ainda não é fã recebe o convite para virar fã.
  */
-export function CurtirItem({ businessId, alvo, id, titulo, className = "" }: { businessId: string; alvo: string; id: string; titulo: string; className?: string }) {
+export function CurtirItem({ businessId, alvo, id, titulo, className = "", cor }: { businessId: string; alvo: string; id: string; titulo: string; className?: string; /** Cor da linha do coração (clara em fundo escuro). */ cor?: string }) {
   const e = useCurtidas(businessId);
   const curtiu = e.curtidos.has(chaveCurtida(alvo, id));
 
@@ -24,7 +24,7 @@ export function CurtirItem({ businessId, alvo, id, titulo, className = "" }: { b
   }
 
   return (
-    <button type="button" onClick={clique} aria-pressed={curtiu} aria-label={curtiu ? `Descurtir ${titulo}` : `Curtir ${titulo}`} className={`cl-cora ${curtiu ? "on" : ""} ${className}`}>
+    <button type="button" onClick={clique} aria-pressed={curtiu} aria-label={curtiu ? `Descurtir ${titulo}` : `Curtir ${titulo}`} className={`cl-cora ${curtiu ? "on" : ""} ${className}`} style={cor ? ({ "--cora": cor } as React.CSSProperties) : undefined}>
       <IcCoracao cheio={curtiu} />
     </button>
   );

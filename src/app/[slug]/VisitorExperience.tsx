@@ -2111,7 +2111,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                     {v.badge?.trim() && (
                       <span className="absolute left-2 top-2 rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
                     )}
-                    <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} className="absolute bottom-2 right-2 z-10" />
+                    <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} cor="#FFFFFF" className="absolute bottom-2 right-2 z-10" />
                     <BotaoCompartilhar alvo={{ url: `/${business.slug}?v=${v.id}`, titulo: v.title, rotulo: "Voucher", marca: business.name, imagem: v.image_url ?? capaDaMarca(business), logo: business.logo_url, cor: voucherTheme(v.color).via, texto: `Peguei este voucher de ${business.name}, pega o seu:` }} tam={17} className="absolute bottom-2 left-2 z-10 grid h-9 w-9 place-items-center rounded-full bg-black/35 text-white backdrop-blur-md transition-transform active:scale-90" />
                   </div>
                   <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
@@ -2151,7 +2151,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                   {v.badge?.trim() && (
                     <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
                   )}
-                  <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} className="absolute bottom-3 right-3 z-10" />
+                  <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} cor="#FFFFFF" className="absolute bottom-3 right-3 z-10" />
                   <BotaoCompartilhar alvo={{ url: `/${business.slug}?v=${v.id}`, titulo: v.title, rotulo: "Voucher", marca: business.name, imagem: v.image_url ?? capaDaMarca(business), logo: business.logo_url, cor: voucherTheme(v.color).via, texto: `Peguei este voucher de ${business.name}, pega o seu:` }} tam={18} className="absolute bottom-3 left-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/35 text-white backdrop-blur-md transition-transform active:scale-90" />
                 </div>
                 <div className="px-2 pb-1 pt-3.5">
@@ -3170,7 +3170,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                   />
                 );
                 return podeEditar ? (
-                  <div key={item.id} className={`relative ${largura}`}>
+                  <div key={item.id} className={`relative ${largura} ${item.image_url ? "" : "flex flex-col self-stretch"}`}>
                     {cartao}
                     <LapisDono href={`/admin/vitrine?editar=${item.id}`} rotulo={`Editar ${item.title}`} className="absolute left-2 top-2 z-10" />
                     <ExcluirItemX id={item.id} titulo={item.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />

@@ -131,9 +131,12 @@ function CartaoBase({
         ) : (
           // Sem foto: só o rodapé. Nome, descrição e preço em um cartão branco, sem o quadrado colorido.
           // Neutro = branco. Qualquer outra cor escolhida em "Cor do card" pinta o cartão inteiro.
+          // Ocupa a altura toda da linha (acompanha o card do lado) e leva um leve degradê na cor.
           <div
-            className="flex min-h-[148px] flex-col justify-end gap-1 p-4 text-left"
-            style={colorido ? { backgroundColor: c.bg, backgroundImage: c.degrade ?? undefined, color: c.fg } : undefined}
+            className="flex min-h-[148px] flex-1 flex-col justify-end gap-1 p-4 text-left"
+            style={colorido
+              ? { backgroundColor: c.bg, backgroundImage: c.degrade ?? "linear-gradient(160deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.14) 100%)", color: c.fg }
+              : { backgroundImage: "linear-gradient(160deg, #FFFFFF 0%, #F3F3EE 100%)" }}
           >
             {/* Nome sempre embaixo, alinhado à esquerda: o topo fica livre para o lápis e o X do dono. */}
             <div className={`flex items-end justify-between gap-3 ${curtir ? "pr-11" : ""}`}>
@@ -172,7 +175,8 @@ function CartaoBase({
       </>
     );
 
-    const classe = `block text-left overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${largura}`;
+    // Sem foto: estica até a altura do card vizinho, para não sobrar buraco na linha.
+    const classe = `${photo ? "block" : "flex flex-1 flex-col self-stretch"} text-left overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${largura}`;
     const cardStyle = photo && fc && item.title_placement !== "sobre" ? { backgroundColor: fc.bg } : undefined;
 
     if (!destino) {
@@ -208,12 +212,21 @@ function CartaoBase({
 
 }
 
+/** Cor da linha do coração: clara quando o fundo embaixo dele é escuro (sem sombra). */
+function corDoCoracao(item: ItemCartao): string | undefined {
+  if (item.image_url) {
+    if (item.title_placement === "sobre") return "#FFFFFF";
+    return item.footer_color ? colorOf(item.footer_color).fg : undefined;
+  }
+  return item.box_color && item.box_color !== "neutro" ? colorOf(item.box_color).fg : undefined;
+}
+
 export function CartaoItem(props: Parameters<typeof CartaoBase>[0]) {
   if (!props.curtir) return <CartaoBase {...props} />;
   return (
-    <div className={`relative ${props.largura}`}>
+    <div className={`relative ${props.largura} ${props.item.image_url ? "" : "flex flex-col self-stretch"}`}>
       <CartaoBase {...props} largura="w-full" />
-      <CurtirItem businessId={props.businessId} alvo="item" id={props.item.id} titulo={props.item.title} className="absolute bottom-3 right-3 z-10" />
+      <CurtirItem businessId={props.businessId} alvo="item" id={props.item.id} titulo={props.item.title} cor={corDoCoracao(props.item)} className="absolute bottom-3 right-3 z-10" />
     </div>
   );
 }
