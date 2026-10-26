@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { FolhaCompartilhar, type AlvoCompartilhar } from "@/components/compartilhar/Compartilhar";
-import { conferirAntesDeCompartilhar } from "@/components/compartilhar/ChecklistDivulgar";
+import { conferirAntesDeCompartilhar, conferirTour } from "@/components/compartilhar/ChecklistDivulgar";
 
 type Dica = {
   id: string;
@@ -46,10 +45,10 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
   const [dica, setDica] = useState<Dica | null>(null);
   const [folha, setFolha] = useState<AlvoCompartilhar | null>(null);
   const [escolhendoItem, setEscolhendoItem] = useState(false);
-  // Antes da primeira dica, pergunta se a página está pronta.
-  const [perguntando, setPerguntando] = useState(true);
+  // Entrega do link, com o aviso da capinha do WhatsApp.
+  const [entrega, setEntrega] = useState(false);
+  const [copiado, setCopiado] = useState(false);
   const chave = `orbibox-divulgar:${businessId}`;
-  const router = useRouter();
 
   const dicas: Dica[] = [
     {
@@ -135,20 +134,20 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
 
   return (
     <>
-      {dica && dica.id === "primeiro" && perguntando && createPortal(
+      {dica && dica.id === "primeiro" && createPortal(
         <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/35 px-4 pb-[max(20px,env(safe-area-inset-bottom))] sm:items-center" role="dialog" aria-modal="true" aria-label="Seu Orbibox está pronto?" onClick={() => depois(dica)}>
           <div onClick={(e) => e.stopPropagation()} className="acao-entra w-full max-w-[380px] rounded-[32px] bg-surface-white p-6 text-center shadow-[0_24px_60px_rgba(17,19,24,0.3)]">
             <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#E9F8EF] text-[30px]" aria-hidden>🚀</span>
             <p className="mt-4 font-[family-name:var(--font-manrope)] text-[22px] font-normal leading-tight tracking-[-0.01em] text-on-background">Acha que seu Orbibox está pronto?</p>
             <div className="mt-6 flex flex-col gap-2">
-              <button type="button" onClick={() => setPerguntando(false)} className="min-h-[52px] w-full rounded-full bg-[#1F9E4C] text-[15px] font-medium text-white active:scale-[0.98]">Sim, quero divulgar</button>
-              <button type="button" onClick={() => { depois(dica); router.push(`/${slug}`); }} className="min-h-[50px] w-full rounded-full bg-[#F2F2EE] text-[15px] font-medium text-on-background active:scale-[0.98]">Não, vou melhorar</button>
+              <button type="button" onClick={() => { guardar(true, dica.id); setDica(null); conferirTour(slug, () => setEntrega(true)); }} className="min-h-[52px] w-full rounded-full bg-[#1F9E4C] text-[15px] font-medium text-white active:scale-[0.98]">Quero conferir</button>
+              <button type="button" onClick={() => { guardar(true, dica.id); setDica(null); setEntrega(true); }} className="min-h-[50px] w-full rounded-full bg-[#F2F2EE] text-[15px] font-medium text-on-background active:scale-[0.98]">Certeza que sim</button>
             </div>
           </div>
         </div>,
         document.body,
       )}
-      {dica && !(dica.id === "primeiro" && perguntando) && createPortal(
+      {dica && dica.id !== "primeiro" && createPortal(
         <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/35 px-4 pb-[max(20px,env(safe-area-inset-bottom))] sm:items-center" role="dialog" aria-modal="true" aria-label={dica.titulo} onClick={() => depois(dica)}>
           <div onClick={(e) => e.stopPropagation()} className="acao-entra w-full max-w-[380px] rounded-[32px] bg-surface-white p-6 text-center shadow-[0_24px_60px_rgba(17,19,24,0.3)]">
             <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-surface-soft text-on-background"><Icone tipo={dica.icone} /></span>
@@ -199,10 +198,34 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
             ) : (
               <button type="button" onClick={() => fazer(dica)} className={`mt-6 flex min-h-[50px] w-full items-center justify-center rounded-full text-[15px] font-normal text-white active:scale-[0.98] ${dica.acao === "whatsapp" ? "bg-[#25D366]" : "bg-button-primary"}`}>{dica.primario}</button>
             )}
-            {dica.id === "primeiro" && (
-              <button type="button" onClick={() => { guardar(true, dica.id); setDica(null); setFolha(alvoDe(dica)); }} className="mt-2 min-h-[46px] w-full rounded-full bg-surface-soft text-[14px] font-normal text-on-background active:scale-[0.98]">Ver outras opções (Stories e mais)</button>
-            )}
             <button type="button" onClick={() => depois(dica)} className="mt-1 min-h-[44px] w-full text-[13.5px] text-text-tertiary">Agora não</button>
+          </div>
+        </div>,
+        document.body,
+      )}
+      {entrega && createPortal(
+        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/35 px-4 pb-[max(20px,env(safe-area-inset-bottom))] sm:items-center" role="dialog" aria-modal="true" aria-label="Seu link" onClick={() => setEntrega(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="acao-entra w-full max-w-[380px] rounded-[32px] bg-surface-white p-6 text-center shadow-[0_24px_60px_rgba(17,19,24,0.3)]">
+            <p className="font-[family-name:var(--font-manrope)] text-[22px] font-normal leading-tight tracking-[-0.01em] text-on-background">Seu link está pronto</p>
+            <div className="mt-4 flex items-center gap-2 rounded-full bg-surface-soft p-1.5 pl-4">
+              <span className="min-w-0 flex-1 truncate text-left text-[14px] text-on-background">{shareUrl.replace(/^https?:\/\//, "")}</span>
+              <button type="button" onClick={() => { void navigator.clipboard?.writeText(shareUrl).then(() => { setCopiado(true); setTimeout(() => setCopiado(false), 2000); }); }} className="shrink-0 rounded-full bg-on-background px-4 py-2 text-[13px] font-medium text-white active:scale-95">{copiado ? "Copiado" : "Copiar"}</button>
+            </div>
+            <div className="mt-4 overflow-hidden rounded-2xl bg-surface-soft text-left">
+              {imagem && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imagem} alt="" className="h-28 w-full object-cover" />
+              )}
+              <div className="px-3.5 py-3">
+                <p className="text-[14px] text-on-background">{nome}</p>
+                <p className="mt-0.5 text-[12.5px] text-text-secondary">Essa é a capinha que aparece quando o link é enviado no WhatsApp.</p>
+              </div>
+            </div>
+            <div className="mt-5 flex flex-col gap-2">
+              <button type="button" onClick={() => { setEntrega(false); window.open(`https://wa.me/?text=${encodeURIComponent(`Oi, quer conhecer nosso novo Orbibox?\n${shareUrl}`)}`, "_blank", "noopener"); }} className="min-h-[52px] w-full rounded-full bg-[#25D366] text-[15px] font-medium text-white active:scale-[0.98]">Compartilhar no WhatsApp</button>
+              <Link href="/admin/config/marca" onClick={() => setEntrega(false)} className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-[#F2F2EE] text-[14.5px] font-medium text-on-background active:scale-[0.98]">Ajustar a capinha</Link>
+              <button type="button" onClick={() => setEntrega(false)} className="min-h-[40px] text-[13.5px] text-text-tertiary">Fechar</button>
+            </div>
           </div>
         </div>,
         document.body,

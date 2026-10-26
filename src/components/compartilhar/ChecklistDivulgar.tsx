@@ -15,7 +15,7 @@ import { createPortal } from "react-dom";
  */
 
 const EVENTO = "orbi-checklist-divulgar";
-type Pedido = { slug: string; compartilhar: () => void | Promise<void> };
+type Pedido = { slug: string; compartilhar: () => void | Promise<void>; /** Tour de conferência: página inicial, depois catálogo, sem pergunta no começo. */ tour?: boolean };
 
 const kOk = (slug: string) => `orbi_checklist_ok_${slug}`;
 const kVezes = (slug: string) => `orbi_share_n_${slug}`;
@@ -25,6 +25,11 @@ function gravar(k: string, v: string) { try { window.localStorage.setItem(k, v);
 /** Tira o slug de um link do Orbibox (https://orbibox.app/vabene → vabene). */
 export function slugDoLink(url: string): string {
   try { return new URL(url, window.location.origin).pathname.split("/").filter(Boolean)[0] ?? ""; } catch { return ""; }
+}
+
+/** Tour de conferência: leva pela página inicial (bolinhas, tags e destaque) e depois pelo catálogo (itens). */
+export function conferirTour(slug: string, aoTerminar: () => void) {
+  window.dispatchEvent(new CustomEvent<Pedido>(EVENTO, { detail: { slug, compartilhar: aoTerminar, tour: true } }));
 }
 
 export function conferirAntesDeCompartilhar(slug: string, compartilhar: () => void | Promise<void>) {
@@ -52,7 +57,7 @@ export function ChecklistDivulgarHost() {
       const conferiu = lerNum(kOk(d.slug)) === 1;
       setPedido(d);
       setCarregando(true);
-      setTela(conferiu ? "pergunta" : "catalogo");
+      setTela(d.tour ? "home" : conferiu ? "pergunta" : "catalogo");
     };
     window.addEventListener(EVENTO, ouvir);
     return () => window.removeEventListener(EVENTO, ouvir);
@@ -71,7 +76,9 @@ export function ChecklistDivulgarHost() {
   }
   function ir(t: Tela) { setCarregando(true); setTela(t); }
 
-  const etapa = tela === "catalogo" ? 1 : tela === "home" ? 2 : 0;
+  const tour = !!pedido.tour;
+  const etapa = tela === "catalogo" ? (tour ? 2 : 1) : tela === "home" ? (tour ? 1 : 2) : 0;
+  const proxima: Tela = tela === "home" ? (tour ? "catalogo" : "pronto") : tour ? "pronto" : "home";
   const destino = tela === "catalogo" ? `/${slug}?preview=1&tab=vitrine` : `/${slug}?preview=1`;
   const editar = tela === "catalogo" ? "/admin/vitrine" : `/${slug}`;
 
@@ -96,7 +103,7 @@ export function ChecklistDivulgarHost() {
               <span className="text-[12.5px] text-text-tertiary">{etapa} de 2</span>
               <button type="button" onClick={fechar} aria-label="Fechar" className="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#F2F2EE] text-[14px]">✕</button>
             </div>
-            <p className="mt-2 text-[17px] font-semibold">Está pronto para divulgar?</p>
+            <p className="mt-2 text-[17px] font-semibold">{tour ? (tela === "home" ? "Confira as bolinhas, as tags e o destaque" : "Confira os itens do catálogo") : "Está pronto para divulgar?"}</p>
             {/* Prévia de celular: a página como o cliente vê. */}
             <div className="relative mx-auto mt-3 min-h-0 w-full max-w-[300px] flex-1 overflow-hidden rounded-[24px] border-[4px] border-[#16171a] bg-white" style={{ height: "min(56dvh, 520px)" }}>
               <iframe key={destino} src={destino} title="Prévia" onLoad={() => setCarregando(false)} className="h-full w-full border-0" />
@@ -104,7 +111,7 @@ export function ChecklistDivulgarHost() {
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <a href={editar} className="flex min-h-[50px] items-center justify-center rounded-full bg-[#F2F2EE] text-[15px] font-semibold">✎ Editar</a>
-              <button type="button" onClick={() => ir(tela === "catalogo" ? "home" : "pronto")} className="min-h-[50px] rounded-full bg-[#1F9E4C] text-[15px] font-semibold text-white">✓ Está pronto</button>
+              <button type="button" onClick={() => ir(proxima)} className="min-h-[50px] rounded-full bg-[#1F9E4C] text-[15px] font-semibold text-white">✓ Está pronto</button>
             </div>
           </>
         )}
@@ -118,7 +125,7 @@ export function ChecklistDivulgarHost() {
               onClick={() => { gravar(kOk(slug), "1"); compartilharAgora(); }}
               className="mt-5 min-h-[50px] w-full rounded-full bg-[#1F9E4C] text-[15px] font-semibold text-white"
             >
-              Compartilhar meu link
+              {tour ? "Continuar" : "Compartilhar meu link"}
             </button>
           </div>
         )}
