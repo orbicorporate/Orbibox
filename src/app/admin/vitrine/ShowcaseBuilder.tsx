@@ -2020,7 +2020,7 @@ function ItemCard({
               </p>
               <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Se não usar foto, fica assim.</p>
               {/* Exemplo: o card sem foto como aparece no catálogo. */}
-              <div className="mt-3 flex justify-center rounded-2xl bg-[#F2F2EE] p-3">
+              <div className="mt-3 flex justify-center p-1">
                 <div
                   className="flex aspect-square w-[150px] flex-col justify-end gap-0.5 rounded-[20px] p-3.5 text-left shadow-[0_6px_16px_-8px_rgba(17,19,24,0.3)] transition-colors"
                   style={item.box_color && item.box_color !== "neutro" ? { backgroundColor: c.bg, backgroundImage: c.degrade, color: c.fg } : { backgroundColor: "#FFFFFF", boxShadow: "inset 0 0 0 1px rgba(17,19,24,0.08)" }}
@@ -2040,10 +2040,10 @@ function ItemCard({
               <div className="mt-3 flex flex-wrap gap-2.5">
                 {paletteTab === "Marca"
                   ? brandColors.map((bc, i) => (
-                      <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { box_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.box_color.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: bc.hex }} />
+                      <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { box_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.box_color.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-black/25"}`} style={{ backgroundColor: bc.hex }} />
                     ))
                   : Object.entries(PALETTE_GROUPS.find((g) => g.name === paletteTab)?.colors ?? {}).map(([key, cc]) => (
-                      <button key={key} onClick={() => save(item.id, { box_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.box_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg, backgroundImage: cc.degrade }} />
+                      <button key={key} onClick={() => save(item.id, { box_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.box_color === key ? "border-2 border-on-background" : "border-black/25"}`} style={{ backgroundColor: cc.bg, backgroundImage: cc.degrade }} />
                     ))}
                 <MoreColorsButton onClick={() => setAllColorsFor("box")} />
               </div>
@@ -2082,7 +2082,7 @@ function ItemCard({
               <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor da faixa do card</p>
                 {/* Exemplo: o card com foto e a faixa na cor escolhida. */}
-                <div className="mt-2 flex justify-center rounded-2xl bg-[#F2F2EE] p-3">
+                <div className="mt-2 flex justify-center p-1">
                   <div className="w-[150px] overflow-hidden rounded-[20px] shadow-[0_6px_16px_-8px_rgba(17,19,24,0.3)]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={item.image_url} alt="" className="aspect-square w-full object-cover" />
@@ -2097,14 +2097,14 @@ function ItemCard({
                     onClick={() => save(item.id, { footer_color: null })}
                     aria-label="Branco"
                     title="Branco"
-                    className={`h-10 w-10 rounded-full border bg-white ${!item.footer_color ? "border-2 border-on-background" : "border-divider"}`}
+                    className={`h-10 w-10 rounded-full border bg-white ${!item.footer_color ? "border-2 border-on-background" : "border-black/25"}`}
                   />
                   {(brandColors.length > 0
                     ? brandColors.map((bc, i) => (
-                        <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { footer_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.footer_color?.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: bc.hex }} />
+                        <button key={`${bc.hex}-${i}`} onClick={() => save(item.id, { footer_color: bc.hex })} aria-label={bc.role ?? bc.hex} title={bc.role ?? bc.hex} className={`h-10 w-10 rounded-full border ${item.footer_color?.toLowerCase() === bc.hex.toLowerCase() ? "border-2 border-on-background" : "border-black/25"}`} style={{ backgroundColor: bc.hex }} />
                       ))
                     : Object.entries(PALETTE_GROUPS[0]?.colors ?? {}).map(([key, cc]) => (
-                        <button key={key} onClick={() => save(item.id, { footer_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.footer_color === key ? "border-2 border-on-background" : "border-divider"}`} style={{ backgroundColor: cc.bg }} />
+                        <button key={key} onClick={() => save(item.id, { footer_color: key })} aria-label={cc.label} title={cc.label} className={`h-10 w-10 rounded-full border ${item.footer_color === key ? "border-2 border-on-background" : "border-black/25"}`} style={{ backgroundColor: cc.bg }} />
                       )))}
                   <MoreColorsButton onClick={() => setAllColorsFor("footer")} />
                 </div>
@@ -2502,7 +2502,7 @@ function AllColorsSheet({
 }) {
   const cur = (current ?? "").toLowerCase();
   const pick = (v: string | null) => { onSelect(v); onClose(); };
-  const ring = (active: boolean) => (active ? "ring-2 ring-on-background ring-offset-2" : "border border-divider");
+  const ring = (active: boolean) => (active ? "ring-2 ring-on-background ring-offset-2" : "border border-black/25");
   const customHex = /^#[0-9a-f]{6}$/i.test(current ?? "") ? current! : "#888888";
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50" onClick={onClose}>
