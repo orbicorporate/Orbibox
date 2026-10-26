@@ -24,17 +24,9 @@ export type ProntoDados = {
   diasTeste: number | null;
 };
 
-const PASSOS = [
-  { n: 1, t: "Categorias", d: "Monte o menu do catálogo" },
-  { n: 2, t: "Produtos e serviços", d: "Preencha cada categoria" },
-  { n: 3, t: "Página inicial", d: "Botões, contato e endereço" },
-  { n: 4, t: "Divulgar", d: "Coloque no ar" },
-];
-
 /**
- * Fim do cadastro: curto e sem dúvida do que fazer agora. Diz o que a Orbi
- * já fez e leva direto para o passo a passo, em vez de soltar a pessoa numa
- * página vazia.
+ * Fim do cadastro: o Orbibox está no ar. Mostra o que a Orbi já deixou pronto
+ * e leva para a página inicial, onde o tour curto explica as duas telas.
  */
 export function Pronto({
   d,
@@ -45,41 +37,33 @@ export function Pronto({
   onTentarDeNovo: () => void;
   tentando: boolean;
 }) {
+  // O que a Orbi já deixou pronto, cada coisa com sua cor.
   const feitos = [
-    d.importados > 0 ? `${d.importados} ${d.importados === 1 ? "item trazido" : "itens trazidos"} do seu site` : null,
-    d.paleta.length > 0 ? "Cores da sua marca" : null,
-    "Orbi pronta para conversar",
-    d.voucher ? `Voucher: ${d.voucher.titulo}` : null,
-  ].filter((x): x is string => !!x);
+    d.importados > 0 ? { t: `${d.importados} ${d.importados === 1 ? "item" : "itens"} no catálogo`, c: "#8758BE", i: "▦" } : null,
+    d.paleta.length > 0 ? { t: "Cores da marca", c: "#E8508A", i: "●" } : null,
+    { t: "Orbi atendendo", c: "#3B5BDB", i: "✦" },
+    d.voucher ? { t: d.voucher.titulo, c: "#C4122F", i: "%" } : null,
+  ].filter((x): x is { t: string; c: string; i: string } => !!x);
 
   return (
-    <div className="mx-auto flex w-full max-w-[440px] flex-col items-center gap-6 text-center">
-      <div className="orbi-linha-entra flex flex-col items-center gap-3">
-        <OrbiOrb size={72} colors={d.orbColors} />
-        <div>
-          <p className="text-[13px] font-medium text-text-tertiary">{d.nome}</p>
-          <h1 className="mt-1 font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-[1.1] tracking-[-0.02em]">Seu Orbibox foi criado</h1>
-          <p className="mt-2 text-[15px] text-text-secondary">Falta pouco. Vamos montar juntos, em 4 passos.</p>
+    <div className="mx-auto flex min-h-[calc(100dvh-64px)] w-full max-w-[400px] flex-col items-center justify-center gap-7 text-center">
+      <div className="orbi-linha-entra flex flex-col items-center">
+        <div className="relative">
+          <span aria-hidden className="absolute -inset-6 rounded-full bg-[radial-gradient(circle,rgba(155,230,200,0.55),transparent_70%)] blur-xl" />
+          <OrbiOrb size={96} colors={d.orbColors} />
         </div>
+        <p className="mt-5 text-[13px] font-semibold uppercase tracking-[0.12em] text-text-tertiary">{d.nome}</p>
+        <h1 className="mt-1.5 font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-[1.08] tracking-[-0.02em]">Seu Orbibox<br />está no ar</h1>
       </div>
 
-      <div className="orbi-linha-entra flex flex-wrap justify-center gap-2" style={{ animationDelay: "0.15s" }}>
+      <div className="orbi-linha-entra grid w-full grid-cols-2 gap-2" style={{ animationDelay: "0.15s" }}>
         {feitos.map((f) => (
-          <span key={f} className="rounded-full bg-surface-white px-3.5 py-1.5 text-[12.5px] font-medium ring-1 ring-black/[0.06]">✓ {f}</span>
+          <div key={f.t} className="flex items-center gap-2.5 rounded-[18px] bg-white/80 p-2.5 text-left ring-1 ring-black/[0.06] backdrop-blur">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[14px] text-white" style={{ backgroundColor: f.c }} aria-hidden>{f.i}</span>
+            <span className="min-w-0 text-[12.5px] font-medium leading-tight">{f.t}</span>
+          </div>
         ))}
       </div>
-
-      <ol className="orbi-linha-entra flex w-full flex-col gap-2 text-left" style={{ animationDelay: "0.3s" }}>
-        {PASSOS.map((p) => (
-          <li key={p.n} className="flex items-center gap-3 rounded-[20px] bg-surface-white p-3.5 ring-1 ring-black/[0.06]">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-on-background text-[14px] font-semibold text-white">{p.n}</span>
-            <span className="min-w-0">
-              <span className="block text-[15px] font-semibold leading-tight">{p.t}</span>
-              <span className="block text-[12.5px] text-text-tertiary">{p.d}</span>
-            </span>
-          </li>
-        ))}
-      </ol>
 
       {d.fetchError && (
         <p className="text-[13px] leading-snug text-text-secondary">
@@ -95,6 +79,7 @@ export function Pronto({
         <a href={`/${d.slug}?tour=1`} className="orbi-gradient w-full rounded-full py-4 text-center text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
           Ver minha página →
         </a>
+        <p className="text-[12.5px] text-text-tertiary">Mostramos rapidinho como deixar ela linda.</p>
         {d.diasTeste != null && d.diasTeste > 0 && <p className="text-[12.5px] text-text-tertiary">{d.diasTeste} dias grátis, sem cartão.</p>}
       </div>
     </div>

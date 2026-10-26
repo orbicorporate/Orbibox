@@ -633,7 +633,7 @@ export default function OnboardingPage() {
   const leituraOk = analise.status === "ok";
 
   return (
-    <main className={`relative flex min-h-[100dvh] justify-center overflow-x-clip overscroll-none px-5 ${step === "pronto" ? "items-start py-14" : step === "analisando" ? "items-start pb-16 pt-[9vh]" : step === "dados" ? "items-center py-8" : "items-start pb-10 pt-6"}`}>
+    <main className={`relative flex min-h-[100dvh] justify-center overflow-x-clip overscroll-none px-5 ${step === "pronto" ? "items-center py-6" : step === "analisando" ? "items-start pb-16 pt-[9vh]" : step === "dados" ? "items-center py-8" : "items-start pb-10 pt-6"}`}>
       {step === "dados" && (novoNegocio ? (
         <Link href="/admin" className="fixed right-4 top-4 z-10 rounded-full bg-surface-white px-3.5 py-2 text-[12px] font-medium text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.08)]">
           ← Voltar ao painel
