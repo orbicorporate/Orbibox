@@ -12,15 +12,16 @@ import { conferirAntesDeCompartilhar } from "@/components/compartilhar/Checklist
  */
 
 type Fase = "home" | "catalogo";
-type Parada = { fase: Fase; alvo: string | null; cor: string; nome: string; texto: string };
+/** `url`: ao chegar nesta parada, abre esta tela da página (ex.: o catálogo como o visitante vê). */
+type Parada = { fase: Fase; alvo: string | null; cor: string; nome: string; texto: string; url?: (slug: string) => string };
 
 const PARADAS: Parada[] = [
   { fase: "home", alvo: null, cor: "#111318", nome: "Intro", texto: "" },
   { fase: "home", alvo: "t-bolinhas", cor: "#1FA855", nome: "Bolinhas", texto: "Atalhos rápidos: WhatsApp, endereço, redes." },
   { fase: "home", alvo: "t-tags", cor: "#F29D38", nome: "Tags", texto: "Voucher, gift card, promoção ou um produto em evidência." },
   { fase: "home", alvo: "t-destaques", cor: "#3B5BDB", nome: "Destaques", texto: "Produtos ou serviços em destaque na página inicial." },
-  { fase: "catalogo", alvo: "t-catalogo", cor: "#8758BE", nome: "Catálogo", texto: "Todos os seus itens, cada um com página própria. A coroa leva o item para a página inicial." },
-  { fase: "catalogo", alvo: null, cor: "#111318", nome: "Pronto", texto: "Seu Orbibox está no ar." },
+  { fase: "home", alvo: "t-catalogo", cor: "#8758BE", nome: "Catálogo", texto: "Todos os seus produtos e serviços, cada um com página própria. O lápis edita cada um.", url: (slug) => `/${slug}?tab=vitrine` },
+  { fase: "home", alvo: null, cor: "#111318", nome: "Pronto", texto: "Seu Orbibox está no ar." },
 ];
 
 const EVENTO = "orbi-tour";
@@ -105,7 +106,9 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
     const prox = passo + 1;
     if (prox >= PARADAS.length) { gravar(slug, null); router.push("/admin"); return; }
     gravar(slug, prox);
-    if (PARADAS[prox].fase !== fase) router.push(PARADAS[prox].fase === "catalogo" ? "/admin/vitrine" : `/${slug}`);
+    const destino = PARADAS[prox].url?.(slug);
+    if (destino) router.push(destino);
+    else if (PARADAS[prox].fase !== fase) router.push(PARADAS[prox].fase === "catalogo" ? "/admin/vitrine" : `/${slug}`);
   }, [passo, slug, fase, router]);
 
   // Procura o alvo; se a parte não existe nesta página (ex.: sem tags), pula a parada.
@@ -217,15 +220,6 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
             boxShadow: `0 0 0 9999px rgba(11,12,16,0.62), 0 0 0 3px ${parada.cor}, 0 0 30px 6px ${parada.cor}80`,
           }}
         >
-          {/* Na parada do catálogo, a coroa aparece desenhada dentro do destaque,
-              pra a pessoa ver o botão certo mesmo se o card se mexer. */}
-          {parada.alvo === "t-catalogo" && (
-            <span className="absolute inset-0 flex items-center justify-center rounded-[22px] bg-white">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="#F5B400" stroke="#8A5A00" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" aria-hidden>
-                <path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" />
-              </svg>
-            </span>
-          )}
         </div>
       ) : (
         <div className="fixed inset-0 bg-black/60" />

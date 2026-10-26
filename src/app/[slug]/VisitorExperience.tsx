@@ -33,6 +33,7 @@ import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
 import { OrbiAvatar, escalaDoAvatar, lerEsfera, lerSemFundo } from "@/components/orbi/OrbiAvatar";
 import { TourOrbibox } from "@/components/tour/TourOrbibox";
+import { ChecklistDivulgarHost } from "@/components/compartilhar/ChecklistDivulgar";
 import { formatPrice, groupByCategory, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
 import { BOX_DEFAULT_DESCRIPTION } from "@/lib/boxDefaults";
 import { heroBackground } from "@/lib/heroStyle";
@@ -889,6 +890,7 @@ export function VisitorExperience({
     <HorarioContext.Provider value={horarioNegocio}>
     <main className="relative min-h-screen overflow-hidden bg-background-main">
       {isOwner && <TourOrbibox fase="home" slug={business.slug} iniciar={searchParams.get("tour") === "1"} />}
+      {isOwner && <ChecklistDivulgarHost />}
       {/* Fundo conforme o estilo escolhido pelo dono. "brilho" é o halo suave
           (padrão); os demais preenchem a tela com cor forte + um véu claro por
           cima pra a Orbi e os textos continuarem legíveis. */}
@@ -1713,7 +1715,7 @@ export function VisitorExperience({
               <Card className="mt-6 text-[15px] text-text-secondary">Ainda não há produtos publicados por aqui.</Card>
             ) : (
               <>
-                <Showcase key={categoriaInicial ?? "todas"} podeEditar={showOwnerControls} categoriaInicial={categoriaInicial} content={content} business={business} sessionId={sessionId} orbiColors={orbiColors} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} />
+<div data-tour="t-catalogo">                <Showcase key={categoriaInicial ?? "todas"} podeEditar={showOwnerControls} categoriaInicial={categoriaInicial} content={content} business={business} sessionId={sessionId} orbiColors={orbiColors} onOrbi={hasAiChat ? () => chooseIntent("duvida") : undefined} /></div>
                 {/* Captura discreta no fim do catálogo: quem chegou até aqui
                     olhou tudo, é o momento certo de oferecer aviso. */}
                 {!business.vitrine_lead_top && (
