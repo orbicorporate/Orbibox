@@ -175,9 +175,9 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
             } />
           </div>
           <div className="mt-5 rounded-[20px] bg-[#F4EEFB] p-3.5">
-            <p className="text-[13px] font-semibold text-[#8758BE]">✦ O resto a sua IA faz</p>
+            <p className="text-[13px] font-semibold text-[#8758BE]">✦ O que a Orbi faz por você</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {["Divulgar", "Campanhas", "Responder clientes", "Ofertas"].map((t) => <span key={t} className="rounded-full bg-white px-2.5 py-1 text-[12px] font-medium">{t}</span>)}
+              {["Atende clientes", "Sugere campanhas", "Sugere pautas", "Capta contatos", "Mostra números", "Oferece soluções", "E muito mais"].map((t) => <span key={t} className="rounded-full bg-white px-2.5 py-1 text-[12px] font-medium">{t}</span>)}
             </div>
           </div>
           <button type="button" onClick={avancar} className="orbi-gradient mt-5 w-full rounded-full py-3.5 text-[15.5px] font-semibold text-on-background">Mostrar como funciona</button>
