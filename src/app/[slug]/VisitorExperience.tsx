@@ -53,7 +53,7 @@ import { BoxDestaque, lerDestaques, type Destaque, type DestaqueSalvo, type Bota
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
 import { SobreEditorSheet, type SobreParte } from "./SobreEditorSheet";
-import { aoSalvar, avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { aoSalvar, avisarErroSalvar, avisarSalvo, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
 import { IconeLinha, ICONES_LINHA } from "@/components/ui/IconesLinha";
 import { LIMITES_GRATIS } from "@/lib/planoGratis";
@@ -559,8 +559,14 @@ export function VisitorExperience({
   }
   // Box destaque da tela inicial: vouchers e produtos que o dono fixa no topo.
   const [destaquesHome, setDestaquesHome] = useState<DestaqueSalvo[]>(() => lerDestaques(business.home_destaques));
-  async function salvarDestaques(lista: DestaqueSalvo[]) {
+  // Cópia sempre atual dos destaques: toques rápidos não leem um valor velho da tela.
+  const destRef = useRef<DestaqueSalvo[]>(destaquesHome);
+  function aplicarDestaques(lista: DestaqueSalvo[]) {
+    destRef.current = lista;
     setDestaquesHome(lista);
+  }
+  async function salvarDestaques(lista: DestaqueSalvo[]) {
+    aplicarDestaques(lista);
     conferirSalvo(await supabase.from("businesses").update({ home_destaques: lista }).eq("id", business.id));
   }
   const frase = fraseDoNegocio(business);
@@ -658,25 +664,41 @@ export function VisitorExperience({
   function passouDoLimiteGratis(destino: Posicao): boolean {
     if (!gratis) return false;
     const nBol = bolinhasVitrine.filter((b) => b.editavel).length;
-    const nDest = destaquesHome.filter((d) => d.t === "botao" || d.t === "item").length;
+    const nDest = destRef.current.filter((d) => d.t === "botao" || d.t === "item").length;
     if (destino === "bolinha" && nBol >= LIMITES_GRATIS.bolinhas) { setAvisoGratis(`No grátis são até ${LIMITES_GRATIS.bolinhas} bolinhas. Tire uma para colocar outra, ou assine.`); return true; }
     if (destino === "destaque" && nDest >= LIMITES_GRATIS.boxes) { setAvisoGratis(`No grátis são até ${LIMITES_GRATIS.boxes} boxes. Tire um para colocar outro, ou assine.`); return true; }
     setAvisoGratis(null);
     return false;
   }
-  async function mudarLinha(l: LinhaHome, pos: Posicao) {
+  // Salvamentos da folha em fila: um toque só grava depois do anterior, na ordem.
+  const filaMudar = useRef<Promise<void>>(Promise.resolve());
+  function mudarLinha(l: LinhaHome, pos: Posicao) {
     if (pos !== "escondido" && l.pos !== pos && passouDoLimiteGratis(pos)) return;
-    const sem = destaquesHome.filter((d) => !(d.id === l.id && (d.t === l.tipo || (l.tipo === "item" && d.t === "item_bolinha"))));
-    const proxima: DestaqueSalvo[] = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : l.tipo === "item" && pos === "bolinha" ? [...sem, { t: "item_bolinha", id: l.id, p: Math.max(0, ...boxList.map((b) => b.position), ...destaquesHome.map((d) => (d.t === "item_bolinha" && typeof d.p === "number" ? d.p : 0))) + 1 }] : sem;
-    if (l.tipo === "botao") {
-      const real = boxList.find((b) => b.id === l.id);
-      const ativo = pos !== "escondido";
-      if (real && real.is_active !== ativo) {
-        setBoxList((prev) => prev.map((b) => (b.id === l.id ? { ...b, is_active: ativo } : b)));
-        conferirSalvo(await supabase.from("smart_boxes").update({ is_active: ativo }).eq("id", l.id));
+    const atuais = destRef.current;
+    const sem = atuais.filter((d) => !(d.id === l.id && (d.t === l.tipo || (l.tipo === "item" && d.t === "item_bolinha"))));
+    const proxima: DestaqueSalvo[] = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : l.tipo === "item" && pos === "bolinha" ? [...sem, { t: "item_bolinha", id: l.id, p: Math.max(0, ...boxList.map((b) => b.position), ...atuais.map((d) => (d.t === "item_bolinha" && typeof d.p === "number" ? d.p : 0))) + 1 }] : sem;
+    const mudouDestaques = JSON.stringify(proxima) !== JSON.stringify(atuais);
+    const ativo = pos !== "escondido";
+    const real = l.tipo === "botao" ? boxList.find((b) => b.id === l.id) : undefined;
+    const mudouAtivo = !!real && real.is_active !== ativo;
+    // A tela responde na hora, sem esperar o banco.
+    if (mudouDestaques) aplicarDestaques(proxima);
+    if (mudouAtivo) setBoxList((prev) => prev.map((b) => (b.id === l.id ? { ...b, is_active: ativo } : b)));
+    filaMudar.current = filaMudar.current.then(async () => {
+      let falhou = false;
+      if (mudouAtivo) {
+        const r = await supabase.from("smart_boxes").update({ is_active: ativo }).eq("id", l.id).select("id");
+        if (r.error || (r.data?.length ?? 0) === 0) {
+          falhou = true;
+          setBoxList((prev) => prev.map((b) => (b.id === l.id ? { ...b, is_active: !ativo } : b)));
+        }
       }
-    }
-    if (JSON.stringify(proxima) !== JSON.stringify(destaquesHome)) await salvarDestaques(proxima);
+      if (mudouDestaques) {
+        const r = await supabase.from("businesses").update({ home_destaques: proxima }).eq("id", business.id);
+        if (r.error) { falhou = true; aplicarDestaques(atuais); }
+      }
+      if (falhou) avisarErroSalvar(); else avisarSalvo();
+    });
   }
   // O que ainda não existe e se monta em tela própria (Cardápio, Delivery, Materiais).
   const criarEm: CriarEm[] = (() => {
@@ -1017,7 +1039,7 @@ export function VisitorExperience({
           avisos={avisosFolha}
           whatsappInicial={business.contact_whatsapp ?? ""}
           enderecoInicial={business.address ?? ""}
-          onMudar={(l, pos) => void mudarLinha(l, pos)}
+          onMudar={(l, pos) => mudarLinha(l, pos)}
           gratis={gratis}
           avisoGratis={avisoGratis}
           onCriarBox={criarBoxNaPosicao}
