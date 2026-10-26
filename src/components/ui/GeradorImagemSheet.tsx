@@ -151,12 +151,12 @@ export function GeradorImagemSheet({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[130] flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Criar imagem com a Orbi">
+    <div className="fixed inset-0 z-[130] flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label={edicao ? "Criar capa com a Orbi" : "Criar imagem com a Orbi"}>
       <button aria-label="Fechar" onClick={() => !gerando && onFechar()} className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" />
       <div className="relative flex max-h-[92dvh] w-full max-w-[560px] flex-col overflow-hidden rounded-t-3xl bg-surface-white shadow-2xl sm:rounded-3xl">
         <div className="flex items-center gap-3 border-b border-divider px-5 py-3.5">
           <OrbiSimbolo size={30} />
-          <p className="min-w-0 flex-1 truncate text-[15px] font-semibold text-on-background">{edicao ? "Editar a foto com a Orbi" : "Criar imagem com a Orbi"}</p>
+          <p className="min-w-0 flex-1 truncate text-[15px] font-semibold text-on-background">{edicao ? "Criar capa com a Orbi" : "Criar imagem com a Orbi"}</p>
           <button type="button" onClick={onFechar} disabled={gerando} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px] text-text-secondary disabled:opacity-50">✕</button>
         </div>
 
@@ -176,7 +176,7 @@ export function GeradorImagemSheet({
           ) : (
             <>
               <div>
-                <label htmlFor="gerador-prompt" className="text-[13px] font-medium text-on-background">{edicao ? "O que você quer mudar na foto?" : "O que você quer ver na imagem?"}</label>
+                <label htmlFor="gerador-prompt" className="text-[13px] font-medium text-on-background">{edicao ? "O que você quer ver na capa?" : "O que você quer ver na imagem?"}</label>
                 {sugestoes && sugestoes.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {sugestoes.map((t) => (
@@ -198,8 +198,11 @@ export function GeradorImagemSheet({
               </div>
 
               <div>
-                <p className="text-[13px] font-medium text-on-background">Imagens de referência <span className="font-normal text-text-tertiary">(opcional, até {MAX_REFS})</span></p>
-                <p className="mt-0.5 text-[12px] text-text-tertiary">Logo, produto ou um estilo que você gosta. Diga no texto como usar cada uma.</p>
+                <p className="text-[13px] font-medium text-on-background">Imagens de referência <span className="font-normal text-text-tertiary">(até {MAX_REFS})</span></p>
+                <p className="mt-1.5 rounded-2xl bg-[#FFF6DB] px-3.5 py-2.5 text-[13px] leading-snug text-[#6B4A00]">
+                  <span aria-hidden>📸 </span>Envie a foto do seu produto. É importante ter ela para a Orbi usar: a imagem sai muito mais fiel ao que você vende.
+                </p>
+                <p className="mt-1.5 text-[12px] text-text-tertiary">Pode ser também a logo ou um estilo que você gosta. Diga no texto como usar cada uma.</p>
                 <input ref={entrada} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void addRef(f); e.target.value = ""; }} />
                 <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
                   {refs.map((r) => (
@@ -211,7 +214,7 @@ export function GeradorImagemSheet({
                   ))}
                   {refs.length < MAX_REFS && (
                     <>
-                      <button type="button" onClick={() => entrada.current?.click()} disabled={gerando} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary disabled:opacity-60">Enviar imagem</button>
+                      <button type="button" onClick={() => entrada.current?.click()} disabled={gerando} className="orbi-gradient min-h-[46px] rounded-full px-5 text-[14px] font-semibold text-on-background shadow-[0_8px_20px_-10px_rgba(110,197,214,0.9)] transition-transform active:scale-[0.97] disabled:opacity-60">Enviar foto do produto</button>
                       <button type="button" onClick={() => setGaleria(true)} disabled={gerando} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary disabled:opacity-60">Minha galeria</button>
                     </>
                   )}
@@ -230,7 +233,7 @@ export function GeradorImagemSheet({
               disabled={gerando || texto.trim().length < 3}
               className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[14.5px] font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
             >
-              {gerando ? (<><OrbiMiniVerde size={16} />{edicao ? "Editando… pode levar até 1 minuto" : "Criando… pode levar até 1 minuto"}</>) : edicao ? "Editar foto" : "Criar imagem"}
+              {gerando ? (<><OrbiMiniVerde size={16} />{edicao ? "Criando a capa… pode levar até 1 minuto" : "Criando… pode levar até 1 minuto"}</>) : edicao ? "Criar capa" : "Criar imagem"}
             </button>
           </div>
         )}
