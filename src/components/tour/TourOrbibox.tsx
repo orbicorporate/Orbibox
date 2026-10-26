@@ -119,6 +119,7 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
         window.setTimeout(medir, 380);
+        window.setTimeout(medir, 900);
         return;
       }
       tentativas += 1;
@@ -207,7 +208,7 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
     <div className="fixed inset-0 z-[95]">
       {rect ? (
         <div
-          className="pointer-events-none fixed rounded-[22px] transition-all duration-300"
+          className="pointer-events-none fixed overflow-hidden rounded-[22px] transition-all duration-300"
           style={{
             top: rect.top - 8,
             left: rect.left - 8,
@@ -215,7 +216,17 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
             height: rect.height + 16,
             boxShadow: `0 0 0 9999px rgba(11,12,16,0.62), 0 0 0 3px ${parada.cor}, 0 0 30px 6px ${parada.cor}80`,
           }}
-        />
+        >
+          {/* Na parada do catálogo, a coroa aparece desenhada dentro do destaque,
+              pra a pessoa ver o botão certo mesmo se o card se mexer. */}
+          {parada.alvo === "t-catalogo" && (
+            <span className="absolute inset-0 flex items-center justify-center rounded-[22px] bg-white">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#F5B400" stroke="#8A5A00" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" aria-hidden>
+                <path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" />
+              </svg>
+            </span>
+          )}
+        </div>
       ) : (
         <div className="fixed inset-0 bg-black/60" />
       )}
