@@ -2007,12 +2007,15 @@ function ItemCard({
                 Cor do card{item.image_url ? " · aparece se remover a foto" : ""}
               </p>
               <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Sem foto, o card mostra só o nome e o preço. Branco é o padrão.</p>
-              <div
-                className="mt-3 flex items-center justify-between gap-3 rounded-2xl px-4 py-3 transition-colors"
-                style={item.box_color && item.box_color !== "neutro" ? { backgroundColor: c.bg, backgroundImage: c.degrade, color: c.fg } : { backgroundColor: "#FFFFFF", boxShadow: "inset 0 0 0 1px rgba(17,19,24,0.08)" }}
-              >
-                <span className="min-w-0 truncate font-[family-name:var(--font-manrope)] text-[16px] font-medium">{item.title || "Nome do item"}</span>
-                {priceLabel && <span className="shrink-0 text-[14px] font-medium">{priceLabel}</span>}
+              {/* Exemplo: o card sem foto como aparece no catálogo. */}
+              <div className="mt-3 flex justify-center rounded-2xl bg-[#F2F2EE] p-3">
+                <div
+                  className="flex aspect-square w-[150px] flex-col justify-end gap-0.5 rounded-[20px] p-3.5 text-left shadow-[0_6px_16px_-8px_rgba(17,19,24,0.3)] transition-colors"
+                  style={item.box_color && item.box_color !== "neutro" ? { backgroundColor: c.bg, backgroundImage: c.degrade, color: c.fg } : { backgroundColor: "#FFFFFF", boxShadow: "inset 0 0 0 1px rgba(17,19,24,0.08)" }}
+                >
+                  <span className="line-clamp-2 font-[family-name:var(--font-manrope)] text-[15px] font-medium leading-tight">{item.title || "Nome do item"}</span>
+                  {priceLabel && <span className="text-[12.5px] font-medium opacity-80">{priceLabel}</span>}
+                </div>
               </div>
               <div className="mt-2 flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 {brandColors.length > 0 && (
@@ -2066,9 +2069,16 @@ function ItemCard({
             {item.image_url && (item.title_placement ?? "faixa") === "faixa" && (
               <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
                 <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor da faixa do card</p>
-                <div className="mt-2 flex items-center justify-between gap-3 rounded-2xl px-4 py-3 transition-colors" style={{ backgroundColor: fc?.bg ?? "#FFFFFF", boxShadow: "inset 0 0 0 1px rgba(17,19,24,0.08)" }}>
-                  <span className="min-w-0 truncate font-[family-name:var(--font-manrope)] text-[16px] font-medium" style={fc ? { color: fc.fg } : undefined}>{item.title || "Nome do item"}</span>
-                  {priceLabel && <span className="shrink-0 text-[14px] font-medium" style={fc ? { color: fc.fg } : undefined}>{priceLabel}</span>}
+                {/* Exemplo: o card com foto e a faixa na cor escolhida. */}
+                <div className="mt-2 flex justify-center rounded-2xl bg-[#F2F2EE] p-3">
+                  <div className="w-[150px] overflow-hidden rounded-[20px] shadow-[0_6px_16px_-8px_rgba(17,19,24,0.3)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={item.image_url} alt="" className="aspect-square w-full object-cover" />
+                    <div className="px-3 py-2.5" style={{ backgroundColor: fc?.bg ?? "#FFFFFF", color: fc?.fg ?? "#111318" }}>
+                      <span className="block truncate font-[family-name:var(--font-manrope)] text-[14px] font-medium leading-tight">{item.title || "Nome do item"}</span>
+                      {priceLabel && <span className="block text-[12px] opacity-80">{priceLabel}</span>}
+                    </div>
+                  </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2.5">
                   <button
