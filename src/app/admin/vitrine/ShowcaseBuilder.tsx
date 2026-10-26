@@ -1646,6 +1646,21 @@ function ItemCard({
           >
             <span className={`scale-[0.6] rounded-[4px] bg-current ${FORMA[size]}`} />
           </button>
+          {/* Faixa branca com o nome embaixo da foto, ou o nome por cima da foto. Só faz sentido com foto. */}
+          {hasPhoto && (
+            <button
+              type="button"
+              onClick={() => save(item.id, { title_placement: (item.title_placement ?? "faixa") === "sobre" ? "faixa" : "sobre" })}
+              aria-label={(item.title_placement ?? "faixa") === "sobre" ? "Colocar faixa branca com o nome" : "Tirar a faixa branca, nome sobre a foto"}
+              title={(item.title_placement ?? "faixa") === "sobre" ? "Sem faixa" : "Com faixa branca"}
+              className="flex h-8 w-8 items-center justify-center rounded-full active:scale-90"
+            >
+              <span className="flex h-[22px] w-[18px] flex-col overflow-hidden rounded-[4px] bg-on-background/70 ring-1 ring-on-background/70">
+                <span className="flex-1" />
+                {(item.title_placement ?? "faixa") !== "sobre" && <span className="h-[7px] bg-white" />}
+              </span>
+            </button>
+          )}
           {total > 1 && (
             <>
               <button type="button" onClick={() => move(item, -1)} disabled={idx <= 0} aria-label="Subir item" className="flex h-8 w-8 items-center justify-center text-[15px] text-on-background/70 disabled:opacity-25">↑</button>
