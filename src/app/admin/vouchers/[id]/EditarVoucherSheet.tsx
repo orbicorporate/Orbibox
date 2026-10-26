@@ -55,6 +55,7 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
       expires_hours: expiresHours.trim() ? Number(expiresHours) : null,
       show_discount: mostrarDesconto,
       apenas_fas: apenasFas,
+      sugerido: false,
     };
     if (!travado) {
       campos.discount_type = discountType;

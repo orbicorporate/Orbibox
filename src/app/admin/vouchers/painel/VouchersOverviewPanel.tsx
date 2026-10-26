@@ -154,6 +154,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1.5">
                     <span className="truncate text-[15px] font-semibold">{v.title}</span>
+                    {v.sugerido && <span className="tag-sugestao shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">Sugestão</span>}
                   </span>
                   <span className="mt-0.5 block text-[12.5px] text-text-tertiary">{discountLabel(v)} · {v.quantity_total - v.quantity_claimed} de {v.quantity_total} restantes</span>
                 </span>

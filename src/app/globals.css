@@ -598,6 +598,22 @@ body {
   90% { transform: translateX(0) rotate(0deg); }
 }
 .orbi-treme { animation: orbiTreme 3s ease-in-out infinite; }
+.tag-sugestao {
+  background: linear-gradient(120deg, #F5C84B, #E9A100 55%, #F8D878);
+  color: #5A3A00;
+  box-shadow: 0 6px 14px -6px rgba(233, 161, 0, 0.8);
+  animation: tagSugestaoVibra 2.4s ease-in-out infinite;
+}
+@keyframes tagSugestaoVibra {
+  0%, 62%, 100% { transform: translateX(0) rotate(0); }
+  66% { transform: translateX(-2px) rotate(-3deg); }
+  70% { transform: translateX(2px) rotate(3deg); }
+  74% { transform: translateX(-2px) rotate(-3deg); }
+  78% { transform: translateX(2px) rotate(3deg); }
+  82% { transform: translateX(-1px) rotate(-1deg); }
+  86% { transform: translateX(0) rotate(0); }
+}
+@media (prefers-reduced-motion: reduce) { .tag-sugestao { animation: none; } }
 @media (prefers-reduced-motion: reduce) { .orbi-treme { animation: none; } }
 .orbi-shake-cta {
   animation: orbiShake 0.5s ease-in-out 1s 1;

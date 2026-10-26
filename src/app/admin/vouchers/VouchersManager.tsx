@@ -310,6 +310,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-semibold">{v.title}</p>
+                  {v.sugerido && <span className="tag-sugestao mt-1 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide">Sugestão · toque e troque</span>}
                   <p className="mt-0.5 text-[14px] text-text-secondary">{discountLabel(v)}</p>
                   {v.badge?.trim() && (
                     <span className="mt-1.5 inline-block rounded-full bg-[#FCE8EC] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#C4143A]">{v.badge}</span>
@@ -378,6 +379,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         <div className="flex items-center gap-3 rounded-[22px] bg-surface-white p-4 ring-1 ring-black/[0.07]">
           <span className="min-w-0 flex-1 text-[13.5px] leading-snug">
             <span className="block font-semibold">{ehSugestao ? "A Orbi deixou um voucher pronto" : "Você tem um voucher guardado"}</span>
+            {ehSugestao && <span className="tag-sugestao mt-1 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide">Sugestão · toque e troque</span>}
             <span className="text-text-secondary">{ehSugestao ? "Pensado pro seu ramo. Revise e publique." : "Continue de onde parou."}</span>
           </span>
           <button type="button" onClick={apagarRascunho} className="text-[12.5px] text-text-tertiary underline">Apagar</button>

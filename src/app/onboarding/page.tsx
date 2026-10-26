@@ -449,7 +449,7 @@ export default function OnboardingPage() {
     if (obj === "vender" || obj === "tudo" || conv === "oferta") {
       const { data: vCriado, error: vErr } = await supabase.from("vouchers").insert({
         business_id: id, title: oferta.title, discount_type: oferta.discountType, discount_value: oferta.discountValue,
-        quantity_total: quantidade, expires_hours: horas, badge: "Primeira visita", color: "cherry", is_active: true,
+        quantity_total: quantidade, expires_hours: horas, badge: "Primeira visita", color: "cherry", is_active: true, sugerido: true,
       }).select("id").single();
       if (!vErr) { voucherCriado = { titulo: oferta.title, quantidade }; voucherId = vCriado?.id ?? null; }
     } else {

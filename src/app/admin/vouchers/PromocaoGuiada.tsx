@@ -144,6 +144,7 @@ export function PromocaoGuiada({
         quantity_total: Number(d.quantityTotal),
         expires_hours: d.expiresHours.trim() ? Number(d.expiresHours) : null,
         image_url: d.imageUrl,
+        sugerido: false,
       }).eq("id", criado.id).select().single();
       v = conferirSalvo(res) ? (res.data as Voucher) : null;
     } else {
