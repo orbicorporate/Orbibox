@@ -1,6 +1,7 @@
 "use client";
 
 import { origemPublica } from "@/lib/appUrl";
+import { IconeOrbi, type NomeIcone } from "./IconesOrbi";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -796,24 +797,22 @@ export default function OnboardingPage() {
   );
 }
 
-const VISUAL_OBJETIVO: Record<string, { icone: string; cor: string }> = {
-  vender: { icone: "🛍️", cor: "#FFE0C7" },
-  apresentar: { icone: "✨", cor: "#E3DAFF" },
-  atender: { icone: "💬", cor: "#CFE8FF" },
-  tudo: { icone: "🚀", cor: "#C9F0DD" },
+const VISUAL_OBJETIVO: Record<string, { icone: NomeIcone; cor: string }> = {
+  vender: { icone: "sacola", cor: "#FF7A3D" },
+  apresentar: { icone: "brilho", cor: "#8758BE" },
+  atender: { icone: "balao", cor: "#3B82F6" },
+  tudo: { icone: "orbita", cor: "#1F9E4C" },
 };
-const VISUAL_CONVERSAO: Record<string, { icone: string; cor: string }> = {
-  comprar: { icone: "🛒", cor: "#FFE0C7" },
-  orcamento: { icone: "📝", cor: "#FFF1B8" },
-  whatsapp: { icone: "💬", cor: "#C9F0DD" },
-  agendar: { icone: "📅", cor: "#CFE8FF" },
-  visitar: { icone: "📍", cor: "#FFD0D9" },
-  conhecer: { icone: "👀", cor: "#E3DAFF" },
-  oferta: { icone: "🎟️", cor: "#FFE0C7" },
-  contato: { icone: "📞", cor: "#CFE8FF" },
+const VISUAL_CONVERSAO: Record<string, { icone: NomeIcone; cor: string }> = {
+  comprar: { icone: "carrinho", cor: "#FF7A3D" },
+  orcamento: { icone: "documento", cor: "#E9A100" },
+  whatsapp: { icone: "whatsapp", cor: "#1FA855" },
+  agendar: { icone: "agenda", cor: "#3B82F6" },
+  visitar: { icone: "pino", cor: "#EA4335" },
+  conhecer: { icone: "olho", cor: "#8758BE" },
+  oferta: { icone: "ticket", cor: "#E8457C" },
+  contato: { icone: "telefone", cor: "#0EA5E9" },
 };
-
-
 
 /** 1, 2, 3: onde a pessoa está e quanto falta. Barrinhas centralizadas e o nome do passo atual. */
 function Passos({ atual }: { atual: 1 | 2 | 3 }) {
@@ -831,7 +830,7 @@ function Passos({ atual }: { atual: 1 | 2 | 3 }) {
 }
 
 /** Escolha em vidro, de dois em dois: ícone grande e uma palavra. Entra em cascata. */
-function Tile({ i, ativa, onClick, titulo, icone, cor }: { i: number; ativa: boolean; onClick: () => void; titulo: string; icone: string; cor: string }) {
+function Tile({ i, ativa, onClick, titulo, icone, cor }: { i: number; ativa: boolean; onClick: () => void; titulo: string; icone: NomeIcone; cor: string }) {
   return (
     <button
       type="button"
@@ -841,7 +840,7 @@ function Tile({ i, ativa, onClick, titulo, icone, cor }: { i: number; ativa: boo
       style={{ animationDelay: `${i * 0.05}s` }}
       className={`orbi-linha-entra relative flex min-h-[112px] flex-col items-start justify-between rounded-[24px] p-3.5 text-left backdrop-blur-xl transition-all duration-200 active:scale-[0.96] ${ativa ? "scale-[1.02] bg-on-background text-white shadow-[0_14px_30px_-14px_rgba(17,19,24,0.6)]" : "bg-white/55 ring-1 ring-white/80 shadow-[0_8px_24px_-16px_rgba(17,19,24,0.25)]"}`}
     >
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl text-[22px]" style={{ background: ativa ? "rgba(255,255,255,.14)" : cor }} aria-hidden>{icone}</span>
+      <IconeOrbi nome={icone} cor={cor} tamanho={44} />
       <span className="text-[15px] font-medium leading-tight">{titulo}</span>
       {ativa && <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[12px] text-on-background" aria-hidden>✓</span>}
     </button>

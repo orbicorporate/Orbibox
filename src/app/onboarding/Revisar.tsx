@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatarWhatsapp } from "./MagicScreens";
 import { DIAS_CURTOS, type Horario } from "@/lib/horario";
 import { coresDosCards } from "@/lib/paletaCards";
+import { IconeOrbi, type NomeIcone } from "./IconesOrbi";
 
 /** Categoria que veio do site (ou sugerida pelo ramo). */
 export type CategoriaRevisao = { nome: string; n: number; foto: string | null };
@@ -48,14 +49,14 @@ export type RevisaoResultado = {
 };
 
 /** Cor e ícone de cada etapa da revisão. */
-const VISUAL_ETAPA: Record<string, { bg: string; icone: string }> = {
-  logo: { bg: "linear-gradient(135deg,#E9E9E4,#CFCFC8)", icone: "◎" },
-  cores: { bg: "linear-gradient(135deg,#FF9FB8,#B69CFF)", icone: "" },
-  contato: { bg: "linear-gradient(135deg,#5BE38B,#1FA855)", icone: "✆" },
-  endereco: { bg: "linear-gradient(135deg,#FF8A7A,#EA4335)", icone: "⌖" },
-  categorias: { bg: "linear-gradient(135deg,#B69CFF,#8758BE)", icone: "▦" },
-  itens: { bg: "linear-gradient(135deg,#9EC5FF,#3B5BDB)", icone: "★" },
-  resumo: { bg: "linear-gradient(135deg,#9BE6C8,#6FC3D6)", icone: "✓" },
+const VISUAL_ETAPA: Record<string, { cor: string; icone: NomeIcone }> = {
+  logo: { cor: "#111318", icone: "orbita" },
+  cores: { cor: "#8758BE", icone: "paleta" },
+  contato: { cor: "#1FA855", icone: "whatsapp" },
+  endereco: { cor: "#EA4335", icone: "pino" },
+  categorias: { cor: "#3B82F6", icone: "grade" },
+  itens: { cor: "#E9A100", icone: "estrela" },
+  resumo: { cor: "#1F9E4C", icone: "check" },
 };
 
 const MAX_CATEGORIAS = 4;
@@ -180,20 +181,6 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
     });
   }
 
-  // Bolinhas da página inicial como vão aparecer: cor própria de cada atalho e, nas
-  // categorias, a foto do melhor item ou uma cor da marca.
-  const fotoDaCat = new Map(cats.map((c) => [c.nome, c.foto]));
-  const bolinhasHome: { k: string; t: string; cor: string; icone: string; foto?: string | null }[] = [
-    ...(waOk ? [{ k: "wa", t: "WhatsApp", cor: "#25D366", icone: "✆" }] : []),
-    ...(extras.includes("agendar") ? [{ k: "ag", t: "Agendar", cor: "#3B5BDB", icone: "◷" }] : []),
-    ...(extras.includes("cardapio") ? [{ k: "ca", t: "Cardápio", cor: "#F29D38", icone: "≡" }] : []),
-    ...(endereco.trim() ? [{ k: "ma", t: "Local", cor: "#EA4335", icone: "⌖" }] : []),
-    ...(dados.temInstagram ? [{ k: "ig", t: "Instagram", cor: "linear-gradient(135deg,#F58529,#DD2A7B 55%,#8134AF)", icone: "◎" }] : []),
-    ...catsMarcadas.map((c, i) => ({ k: `c-${c}`, t: c, cor: usaveis[i % usaveis.length], icone: c.charAt(0).toUpperCase(), foto: fotoDaCat.get(c) ?? null })),
-    { k: "cat", t: "Catálogo", cor: "#0E9AA7", icone: "▤" },
-    ...(dados.temVoucher ? [{ k: "vo", t: "Vouchers", cor: "#111318", icone: "%" }] : []),
-  ];
-
   const titulos: Record<Etapa, { t: string; d: string }> = {
     logo: { t: "Seu logotipo", d: logo ? "A Orbi encontrou este. Está certo?" : "Não encontrei. Envie o seu." },
     cores: { t: "Cores da marca", d: "Toque numa cor para trocar." },
@@ -201,7 +188,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
     endereco: { t: "Endereço", d: "Vira a bolinha de mapa. Pule se não atende no local." },
     categorias: { t: dados.servico ? "Tipos de serviço" : "Categorias", d: dados.categorias.length > 0 ? `A Orbi achou ${dados.categorias.length} no seu site. Toque nas mais importantes.` : "Toque nas que combinam com você ou escreva as suas." },
     itens: { t: `Seus ${palavraItens}`, d: itens.length > 0 ? `Toque em até ${MAX_ITENS} para destaque na página inicial. Fotos você coloca depois.` : `Escreva seus principais ${palavraItens}.` },
-    resumo: { t: "Tudo certo?", d: "Sua página inicial vai nascer assim." },
+    resumo: { t: "Sua página inicial está sendo montada", d: "Vamos concluir juntos, logo depois de abrir." },
   };
 
   const listaFiltrada = filtro ? itens.filter((i) => i.categoria === filtro) : itens;
@@ -221,16 +208,18 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         </div>
         {/* Ícone grande da etapa, flutuando: dá cara e ocupa o espaço com intenção. */}
         <div key={etapa} className="orbi-linha-entra mt-7 flex flex-col items-center text-center">
-          <span className="icone-etapa flex h-[92px] w-[92px] items-center justify-center rounded-[30px] text-[40px] text-white shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)]" style={{ background: VISUAL_ETAPA[etapa].bg }} aria-hidden>
-            {etapa === "logo" && logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt="" className="h-[70%] w-[70%] rounded-2xl bg-white object-contain p-1.5" />
-            ) : etapa === "cores" ? (
-              <span className="grid grid-cols-2 gap-1">{(cores.length ? cores : ["#fff"]).slice(0, 4).map((c, i) => <span key={i} className="h-5 w-5 rounded-full ring-2 ring-white/70" style={{ backgroundColor: c }} />)}</span>
-            ) : (
-              VISUAL_ETAPA[etapa].icone
-            )}
-          </span>
+          {etapa === "logo" && logo ? (
+            <span className="icone-etapa flex h-[92px] w-[92px] items-center justify-center overflow-hidden rounded-full bg-white p-3 shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)] ring-1 ring-black/[0.06]" aria-hidden>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={logo} alt="" className="h-full w-full object-contain" />
+            </span>
+          ) : etapa === "cores" && cores.length > 0 ? (
+            <span className="icone-etapa flex h-[92px] w-[92px] items-center justify-center rounded-full shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)]" style={{ backgroundColor: VISUAL_ETAPA.cores.cor }} aria-hidden>
+              <span className="grid grid-cols-2 gap-1">{cores.slice(0, 4).map((c, i) => <span key={i} className="h-5 w-5 rounded-full ring-2 ring-white/80" style={{ backgroundColor: c }} />)}</span>
+            </span>
+          ) : (
+            <IconeOrbi nome={VISUAL_ETAPA[etapa].icone} cor={VISUAL_ETAPA[etapa].cor} tamanho={92} traco={1.5} className="icone-etapa shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)]" />
+          )}
           <h1 className="mt-5 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">{titulos[etapa].t}</h1>
           <p className="mt-1.5 max-w-[320px] text-[14.5px] leading-snug text-text-secondary">{titulos[etapa].d}</p>
         </div>
@@ -416,56 +405,30 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
         {etapa === "resumo" && (
           <>
-            {/* Prévia da página inicial: bolinhas como vão aparecer e os destaques nas cores da marca. */}
-            <div className="flex items-center gap-2.5">
-              {logo && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logo} alt="" className="h-10 w-10 shrink-0 rounded-full bg-white object-contain p-1 ring-1 ring-black/10" />
-              )}
-              <p className="text-[12.5px] font-medium text-text-tertiary">Sua página inicial</p>
-            </div>
-            <div className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-              {bolinhasHome.map((b) => (
-                <span key={b.k} className="flex w-[58px] shrink-0 flex-col items-center gap-1.5">
-                  <span className="relative flex h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-full text-[19px] text-white shadow-[inset_0_-6px_10px_-5px_rgba(0,0,0,0.25),0_5px_12px_-6px_rgba(0,0,0,0.35)]" style={{ background: b.foto ? "#fff" : b.cor }}>
-                    {b.foto ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={b.foto} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <span aria-hidden style={{ color: corDoTexto(b.cor.startsWith("#") ? b.cor : "#111318") }}>{b.icone}</span>
-                    )}
+            {/* Em vez de uma prévia que não fica igual à de verdade: o que já está pronto e o que fazemos juntos depois. */}
+            <ul className="flex flex-col gap-2">
+              {[
+                { ok: !!logo, nome: "orbita" as const, cor: "#111318", t: "Logotipo", d: logo ? "Pronto" : "Você coloca depois" },
+                { ok: cores.length > 0, nome: "paleta" as const, cor: "#8758BE", t: "Cores da marca", d: cores.length > 0 ? `${cores.length} cores` : "Você escolhe depois" },
+                { ok: waOk, nome: "whatsapp" as const, cor: "#1FA855", t: "WhatsApp", d: waOk ? formatarWhatsapp(whatsapp) : "Você coloca depois" },
+                { ok: !!endereco.trim(), nome: "pino" as const, cor: "#EA4335", t: "Endereço", d: endereco.trim() || "Você coloca depois" },
+                { ok: catsMarcadas.length > 0, nome: "grade" as const, cor: "#3B82F6", t: "Categorias", d: catsMarcadas.length > 0 ? catsMarcadas.join(", ") : "Você escolhe depois" },
+                { ok: itensMarcados.length > 0, nome: "estrela" as const, cor: "#E9A100", t: "Destaques", d: itensMarcados.length > 0 ? `${itensMarcados.length} na página inicial` : "Você escolhe depois" },
+              ].map((x, i) => (
+                <li key={x.t} style={{ animationDelay: `${i * 0.05}s` }} className="orbi-linha-entra flex items-center gap-3 rounded-[20px] bg-white/70 p-3 ring-1 ring-white/80 backdrop-blur-xl">
+                  <IconeOrbi nome={x.nome} cor={x.ok ? x.cor : "#B8B8B2"} tamanho={40} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[14.5px] font-medium leading-tight">{x.t}</span>
+                    <span className="block truncate text-[12.5px] text-text-secondary">{x.d}</span>
                   </span>
-                  <span className="w-full truncate text-center text-[11px] font-medium text-text-secondary">{b.t}</span>
-                </span>
+                  {x.ok && <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1F9E4C] text-[12px] text-white" aria-hidden>✓</span>}
+                </li>
               ))}
+            </ul>
+            <div className="mt-3 flex items-center gap-3 rounded-[20px] bg-on-background p-4 text-white">
+              <IconeOrbi nome="brilho" cor="#1F9E4C" tamanho={40} />
+              <p className="text-[13.5px] leading-snug">Depois de abrir, a Orbi te mostra o que falta: fotos, bolinhas e os últimos ajustes.</p>
             </div>
-            {itensMarcados.length > 0 && (
-              <>
-                <p className="mt-5 text-[12.5px] font-medium text-text-tertiary">Destaque</p>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  {itensMarcados.map((id, k) => {
-                    const it = itens.find((x) => x.id === id);
-                    if (!it) return null;
-                    const bg = usaveis[k % usaveis.length];
-                    return (
-                      <span key={id} className="relative aspect-square overflow-hidden rounded-[18px]" style={it.foto ? undefined : { backgroundColor: bg }}>
-                        {it.foto && (
-                          <>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={it.foto} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                            <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
-                          </>
-                        )}
-                        <span className="absolute inset-x-0 bottom-0 p-2.5 text-[13px] font-semibold leading-tight line-clamp-2" style={{ color: it.foto ? "#fff" : corDoTexto(bg) }}>{it.nome}</span>
-                      </span>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-            {itensMarcados.some((id) => !itens.find((x) => x.id === id)?.foto) && (
-              <p className="mt-3 text-[12px] leading-snug text-text-tertiary">Sem foto? Coloque depois em Catálogo, no item, Foto de capa.</p>
-            )}
             {(dados.gastronomico || dados.servico) && (
               <>
                 <p className="mt-4 text-[12.5px] font-medium text-text-tertiary">Sugerido para o seu ramo</p>
