@@ -15,6 +15,7 @@ import { CartaoItem, type ItemCartao } from "./CartaoItem";
 import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { ORBI_SPHERE_COLORS, sizeOf } from "@/lib/showcase";
+import { avisarErroSalvar } from "@/components/ui/AvisoSalvar";
 
 export type BolinhaVitrine = {
   key: string;
@@ -46,6 +47,34 @@ export type BolinhaVitrine = {
 };
 
 export type ItemVitrine = ItemCartao;
+
+const ORDEM_FORMATO = ["medio", "largo", "destaque", "alto"] as const;
+const FORMA_MINI: Record<string, string> = { destaque: "h-3 w-6", largo: "h-2 w-6", medio: "h-4 w-4", alto: "h-5 w-3" };
+const COR_MINI: Record<string, string> = { destaque: "#FF7A3D", largo: "#3B82F6", medio: "#1FA855", alto: "#8758BE" };
+
+/** Dois ícones no canto do card, só para o dono: trocar o formato e ligar/desligar a faixa branca com o nome. */
+function AjustesCartao({ item, comFormato, onAjustar }: { item: ItemVitrine; comFormato: boolean; onAjustar: (id: string, patch: { layout_size?: string; title_placement?: string }) => void }) {
+  const tam = sizeOf(item.layout_size);
+  const semFaixa = item.title_placement === "sobre";
+  const botao = "flex h-8 w-8 items-center justify-center rounded-full border border-divider bg-surface-white/90 shadow-md backdrop-blur active:scale-95";
+  return (
+    <div className="absolute left-2 top-12 z-10 flex gap-2">
+      {comFormato && (
+        <button type="button" aria-label="Trocar o formato do card" onClick={() => onAjustar(item.id, { layout_size: ORDEM_FORMATO[(ORDEM_FORMATO.indexOf(tam as (typeof ORDEM_FORMATO)[number]) + 1) % ORDEM_FORMATO.length] })} className={botao}>
+          <span className={`rounded-[3px] ${FORMA_MINI[tam] ?? FORMA_MINI.medio}`} style={{ backgroundColor: COR_MINI[tam] ?? COR_MINI.medio }} />
+        </button>
+      )}
+      {item.image_url && (
+        <button type="button" aria-label={semFaixa ? "Colocar faixa branca com o nome" : "Tirar a faixa branca"} onClick={() => onAjustar(item.id, { title_placement: semFaixa ? "faixa" : "sobre" })} className={botao}>
+          <span className="flex h-[18px] w-[14px] flex-col overflow-hidden rounded-[3px] bg-on-background/70 ring-1 ring-on-background/70">
+            <span className="flex-1" />
+            {!semFaixa && <span className="h-[6px] bg-white" />}
+          </span>
+        </button>
+      )}
+    </div>
+  );
+}
 
 export type BotaoPrincipal = "orbi" | "vitrine" | "whatsapp";
 
@@ -235,6 +264,14 @@ export function HomeVitrine({
   const [avisoCheio, setAvisoCheio] = useState(false);
   // Itens que o dono acabou de excluir: somem na hora, o servidor confirma em seguida.
   const [excluidos, setExcluidos] = useState<string[]>([]);
+  // Formato e faixa branca mexidos aqui mesmo: a tela muda na hora e o banco grava em seguida.
+  const [ajustes, setAjustes] = useState<Record<string, { layout_size?: string; title_placement?: string }>>({});
+  async function ajustarCartao(id: string, patch: { layout_size?: string; title_placement?: string }) {
+    setAjustes((a) => ({ ...a, [id]: { ...a[id], ...patch } }));
+    const { error } = await createClient().from("content_items").update(patch).eq("id", id);
+    if (error) { setAjustes((a) => Object.fromEntries(Object.entries(a).filter(([k]) => k !== id))); avisarErroSalvar(); return; }
+    router.refresh();
+  }
   const [avisoNovo, setAvisoNovo] = useState<string | null>(null);
   const router = useRouter();
 
@@ -316,7 +353,7 @@ export function HomeVitrine({
   const arrastoB = useArrastarOrdem(bolinhas.map((b) => b.key), podeEditar && !!onReordenar, (ord) => onReordenar?.(ord.filter((k) => bolinhas.find((b) => b.key === k)?.editavel)));
   const bolinhasNaOrdem = arrastoB.ordem.map((k) => bolinhas.find((b) => b.key === k)).filter((b): b is BolinhaVitrine => !!b);
   const arrastoI = useArrastarOrdem(mostrar.map((i) => i.id), podeEditar && !!onReordenarItens, (ids) => onReordenarItens?.(ids));
-  const mostrarNaOrdem = arrastoI.ordem.map((id) => mostrar.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i && !excluidos.includes(i.id));
+  const mostrarNaOrdem = arrastoI.ordem.map((id) => mostrar.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i && !excluidos.includes(i.id)).map((i) => (ajustes[i.id] ? { ...i, ...ajustes[i.id] } : i));
 
   return (
     <div className="mt-8 flex w-full flex-col items-center">
@@ -490,6 +527,7 @@ export function HomeVitrine({
                     <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
+                    {podeEditar && !i.id.startsWith("cat:") && <AjustesCartao item={i} comFormato={formato === "vitrine"} onAjustar={ajustarCartao} />}
                   </li>
                 );
               })}
@@ -501,6 +539,7 @@ export function HomeVitrine({
                   <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
+                    {podeEditar && !i.id.startsWith("cat:") && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
                 </li>
               ))}
             </ul>
@@ -513,6 +552,7 @@ export function HomeVitrine({
                     <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
+                    {podeEditar && !i.id.startsWith("cat:") && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
                   </li>
                 );
               })}
