@@ -342,6 +342,9 @@ export default function OnboardingPage() {
       } catch { /* segue com o que veio */ }
     }
 
+    // Galeria já nasce cheia com as fotos do site (em segundo plano).
+    void fetch("/api/galeria/do-site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessId: id }) }).catch(() => {});
+
     // Pausa pra a pessoa conferir o que a Orbi achou (logotipo, contato, endereço)
     // e dizer o que vem primeiro. Só depois a página inicial é montada.
     const { data: pre } = await supabase.from("businesses").select("contact_whatsapp, contact_phone, address, logo_url, vitrine_categories").eq("id", id).maybeSingle();

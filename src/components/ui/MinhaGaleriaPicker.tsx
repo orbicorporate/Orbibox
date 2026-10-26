@@ -78,6 +78,14 @@ export function MinhaGaleriaPicker({
     let vivo = true;
     (async () => {
       try {
+        // Enche a galeria com as fotos do site (uma vez por aparelho; rodar de novo não duplica).
+        try {
+          const k = `orbi_galeria_site_${businessId}`;
+          if (!window.localStorage.getItem(k)) {
+            await fetch("/api/galeria/do-site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessId }) });
+            window.localStorage.setItem(k, "1");
+          }
+        } catch { /* segue com o que já tem */ }
         await sincronizarBiblioteca(supabase, businessId);
         const [{ data: cats }, { data: imgs, error }] = await Promise.all([
           supabase.from("image_categories").select("id, name, position").eq("business_id", businessId).order("position"),
@@ -122,7 +130,7 @@ export function MinhaGaleriaPicker({
         <div className="flex shrink-0 items-start justify-between gap-2 px-5 pt-5">
           <div>
             <p className="font-[family-name:var(--font-manrope)] text-[18px] font-semibold">Minha galeria</p>
-            <p className="text-[12.5px] text-text-tertiary">Toque numa foto para ver, editar ou usar.</p>
+            <p className="text-[12.5px] text-text-tertiary">Preencha a sua galeria ao máximo. Toque numa foto para usar.</p>
           </div>
           <button onClick={onFechar} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[14px]" aria-label="Fechar">
             ✕
@@ -167,7 +175,7 @@ export function MinhaGaleriaPicker({
             </p>
           )}
           {itens && !erro && visiveis.length === 0 && subindo === 0 && (
-            <div className="rounded-[20px] border border-dashed border-divider p-6 text-center">
+            <div className="rounded-[20px] bg-[#F2F2EE] p-6 text-center">
               <p className="text-[14px] font-medium">Sua galeria está vazia</p>
               <p className="mt-1 text-[13px] text-text-tertiary">{filtro === "todas" ? "As fotos que você enviar aparecem aqui para usar de novo." : "Nenhuma foto nesta categoria ainda."}</p>
             </div>
@@ -180,7 +188,7 @@ export function MinhaGaleriaPicker({
                 onClick={() => arquivo.current?.click()}
                 disabled={subindo > 0}
                 aria-label="Subir fotos para a galeria"
-                className="flex aspect-square items-center justify-center rounded-xl border border-dashed border-text-tertiary/50 bg-surface-soft/60 text-text-secondary transition-transform active:scale-[0.96]"
+                className="flex aspect-square items-center justify-center rounded-xl bg-[#F2F2EE] text-text-secondary transition-transform active:scale-[0.96]"
               >
                 {subindo > 0 ? <span className="text-[12px] font-medium">{subindo}…</span> : (
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg>
