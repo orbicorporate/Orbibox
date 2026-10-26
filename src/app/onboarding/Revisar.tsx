@@ -187,22 +187,24 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         <div className="mt-2 flex gap-1" aria-hidden>
           {etapas.map((e, i) => <span key={e} className={`h-1.5 flex-1 rounded-full ${i < passo ? "bg-[#1F9E4C]" : i === passo ? "bg-on-background" : "bg-black/10"}`} />)}
         </div>
-        {/* Ícone grande da etapa, flutuando: dá cara e ocupa o espaço com intenção. */}
-        <div key={etapa} className="orbi-linha-entra mt-7 flex flex-col items-center text-center">
+      </div>
+
+      <section className="flex flex-1 flex-col justify-center pb-4">
+        <div key={etapa} className="flex flex-col items-center text-center">
           {etapa === "logo" && logo ? (
-            <span className="icone-etapa flex h-[92px] w-[92px] items-center justify-center overflow-hidden rounded-full bg-white p-3 shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)] ring-1 ring-black/[0.06]" aria-hidden>
+            <span className="icone-etapa orbi-foto-entra flex h-[104px] w-[104px] items-center justify-center overflow-hidden rounded-full bg-white p-3.5 shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)] ring-1 ring-black/[0.06]" aria-hidden>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logo} alt="" className="h-full w-full object-contain" />
             </span>
           ) : etapa === "cores" ? null : (
-            <IconeOrbi nome={VISUAL_ETAPA[etapa].icone} cor={VISUAL_ETAPA[etapa].cor} tamanho={92} traco={1.5} className="icone-etapa shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)]" />
+            <span className="orbi-foto-entra">
+              <IconeOrbi nome={VISUAL_ETAPA[etapa].icone} cor={VISUAL_ETAPA[etapa].cor} tamanho={104} traco={1.5} className="icone-etapa shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)]" />
+            </span>
           )}
-          <h1 className="mt-5 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">{titulos[etapa].t}</h1>
-          <p className="mt-1.5 max-w-[320px] text-[14.5px] leading-snug text-text-secondary">{titulos[etapa].d}</p>
+          <h1 style={{ animationDelay: "0.12s" }} className="orbi-linha-entra mt-6 font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-tight tracking-[-0.01em]">{titulos[etapa].t}</h1>
+          <p style={{ animationDelay: "0.24s" }} className="orbi-linha-entra mt-2 max-w-[320px] text-[15px] leading-snug text-text-secondary">{titulos[etapa].d}</p>
         </div>
-      </div>
-
-      <section className="flex flex-1 flex-col justify-center">
+        <div key={etapa + "-conteudo"} style={{ animationDelay: "0.36s" }} className="orbi-linha-entra mt-9 w-full">
         {etapa === "logo" && (
           <div className="flex flex-col items-center gap-4 py-2">
             <input ref={arquivo} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void enviarLogo(f); e.target.value = ""; }} />
@@ -215,7 +217,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         {etapa === "cores" && (
           <div className="flex flex-wrap items-center justify-center gap-3">
             {cores.map((c, i) => (
-              <span key={i} className="relative">
+              <span key={i} style={{ animationDelay: `${0.4 + i * 0.09}s` }} className="orbi-foto-entra relative">
                 <label className="block h-14 w-14 cursor-pointer rounded-full ring-1 ring-black/15" style={{ backgroundColor: c }}>
                   <input type="color" value={c} onChange={(e) => setCores((a) => a.map((x, j) => (j === i ? e.target.value : x)))} className="sr-only" aria-label={`Trocar a cor ${i + 1}`} />
                 </label>
@@ -388,6 +390,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
             )}
           </>
         )}
+        </div>
       </section>
 
       {aviso && <p className="px-1 text-[13px] text-text-secondary">{aviso}</p>}
