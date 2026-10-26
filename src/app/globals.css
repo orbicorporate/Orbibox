@@ -1647,3 +1647,8 @@ html[data-embed] .embed-oculta { display: none !important; }
 .celular-flutua { transform-style: preserve-3d; animation: celularFlutua 6s ease-in-out infinite; }
 .celular-sombra { animation: celularSombra 6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .celular-flutua { animation: none; transform: rotateX(8deg) rotateY(-12deg); } .celular-sombra { animation: none; } }
+
+/* Ícone grande de cada etapa da revisão do cadastro, flutuando de leve. */
+@keyframes iconeEtapa { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(3deg); } }
+.icone-etapa { animation: iconeEtapa 4.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .icone-etapa { animation: none; } }

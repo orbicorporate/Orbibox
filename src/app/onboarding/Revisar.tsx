@@ -47,6 +47,17 @@ export type RevisaoResultado = {
   extras: string[];
 };
 
+/** Cor e ícone de cada etapa da revisão. */
+const VISUAL_ETAPA: Record<string, { bg: string; icone: string }> = {
+  logo: { bg: "linear-gradient(135deg,#E9E9E4,#CFCFC8)", icone: "◎" },
+  cores: { bg: "linear-gradient(135deg,#FF9FB8,#B69CFF)", icone: "" },
+  contato: { bg: "linear-gradient(135deg,#5BE38B,#1FA855)", icone: "✆" },
+  endereco: { bg: "linear-gradient(135deg,#FF8A7A,#EA4335)", icone: "⌖" },
+  categorias: { bg: "linear-gradient(135deg,#B69CFF,#8758BE)", icone: "▦" },
+  itens: { bg: "linear-gradient(135deg,#9EC5FF,#3B5BDB)", icone: "★" },
+  resumo: { bg: "linear-gradient(135deg,#9BE6C8,#6FC3D6)", icone: "✓" },
+};
+
 const MAX_CATEGORIAS = 4;
 const MAX_ITENS = 4;
 
@@ -199,7 +210,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
   const opcional = etapa === "logo" || etapa === "endereco" || etapa === "contato";
 
   return (
-    <div className="orbi-linha-entra flex flex-col gap-4 pb-28">
+    <div className="orbi-linha-entra flex min-h-[calc(100dvh-64px)] flex-col gap-6 pb-32">
       <div>
         <div className="flex items-center justify-between">
           <p className="text-[13px] font-medium text-text-tertiary">Confira antes de abrir · {passo + 1} de {etapas.length}</p>
@@ -208,11 +219,24 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         <div className="mt-2 flex gap-1" aria-hidden>
           {etapas.map((e, i) => <span key={e} className={`h-1.5 flex-1 rounded-full ${i < passo ? "bg-[#1F9E4C]" : i === passo ? "bg-on-background" : "bg-black/10"}`} />)}
         </div>
-        <h1 className="mt-5 font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight tracking-[-0.01em]">{titulos[etapa].t}</h1>
-        <p className="mt-1 text-[14px] text-text-secondary">{titulos[etapa].d}</p>
+        {/* Ícone grande da etapa, flutuando: dá cara e ocupa o espaço com intenção. */}
+        <div key={etapa} className="orbi-linha-entra mt-7 flex flex-col items-center text-center">
+          <span className="icone-etapa flex h-[92px] w-[92px] items-center justify-center rounded-[30px] text-[40px] text-white shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)]" style={{ background: VISUAL_ETAPA[etapa].bg }} aria-hidden>
+            {etapa === "logo" && logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt="" className="h-[70%] w-[70%] rounded-2xl bg-white object-contain p-1.5" />
+            ) : etapa === "cores" ? (
+              <span className="grid grid-cols-2 gap-1">{(cores.length ? cores : ["#fff"]).slice(0, 4).map((c, i) => <span key={i} className="h-5 w-5 rounded-full ring-2 ring-white/70" style={{ backgroundColor: c }} />)}</span>
+            ) : (
+              VISUAL_ETAPA[etapa].icone
+            )}
+          </span>
+          <h1 className="mt-5 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">{titulos[etapa].t}</h1>
+          <p className="mt-1.5 max-w-[320px] text-[14.5px] leading-snug text-text-secondary">{titulos[etapa].d}</p>
+        </div>
       </div>
 
-      <section>
+      <section className="flex flex-1 flex-col justify-center">
         {etapa === "logo" && (
           <div className="flex flex-col items-center gap-4 py-2">
             <span className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-surface-soft ring-1 ring-black/10">

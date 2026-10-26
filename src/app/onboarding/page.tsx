@@ -627,7 +627,7 @@ export default function OnboardingPage() {
         </button>
       ))}
 
-      {(step === "dados" || step === "objetivo" || step === "acao") && (
+      {(step === "dados" || step === "objetivo" || step === "acao" || step === "revisar") && (
         <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
           <div className="absolute -left-24 -top-24 h-[320px] w-[320px] rounded-full bg-[#FFD9B8] opacity-60 blur-[90px]" />
           <div className="absolute -right-28 top-1/3 h-[300px] w-[300px] rounded-full bg-[#CFC3FF] opacity-60 blur-[90px]" />
