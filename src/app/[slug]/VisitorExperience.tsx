@@ -3190,6 +3190,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                     sessionId={sessionId}
                     largura={podeEditar ? "w-full" : largura}
                     curtir={!podeEditar}
+                    editarHref={podeEditar ? `/admin/vitrine?editar=${item.id}` : undefined}
                   />
                 );
                 return podeEditar ? (

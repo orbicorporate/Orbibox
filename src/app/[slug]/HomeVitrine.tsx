@@ -524,7 +524,7 @@ export function HomeVitrine({
                 const largo = tam === "destaque" || tam === "largo";
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative flex flex-col transition-transform duration-150 ${largo ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
-                    <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
+                    <CartaoItem origem="home" editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <AjustesCartao item={i} comFormato={formato === "vitrine"} onAjustar={ajustarCartao} />}
@@ -536,7 +536,7 @@ export function HomeVitrine({
             <ul data-tour="t-destaques" data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-2">
               {mostrarNaOrdem.map((i) => (
                 <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
-                  <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
+                  <CartaoItem origem="home" editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
@@ -549,7 +549,7 @@ export function HomeVitrine({
                 const grande = formato === "destaque" && n === 0;
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative flex flex-col transition-transform duration-150 ${grande ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
-                    <CartaoItem origem="home" curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
+                    <CartaoItem origem="home" editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}

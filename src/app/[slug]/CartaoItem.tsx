@@ -42,6 +42,7 @@ function CartaoBase({
   proporcao,
   origem,
   curtir,
+  editarHref,
 }: {
   item: ItemCartao;
   slug: string;
@@ -57,6 +58,8 @@ function CartaoBase({
   origem?: "home";
   /** Reserva espaço pro coração no canto de baixo. */
   curtir?: boolean;
+  /** Modo edição: tocar em qualquer parte do card abre o painel de edição, não o destino do link. */
+  editarHref?: string;
 }) {
     const c = colorOf(item.box_color);
     const colorido = !!item.box_color && item.box_color !== "neutro";
@@ -68,7 +71,9 @@ function CartaoBase({
     // Categoria de loja vai direto pro site do dono (decisão já tomada).
     // Produto e serviço abrem a página interna, com carrossel, descrição e CTAs.
     // "nenhum" = card só de vitrine, não clicável.
-    const destino = item.link_kind === "nenhum"
+    const destino = editarHref
+      ? editarHref
+      : item.link_kind === "nenhum"
       ? null
       : item.link_kind === "categoria-interna"
         ? item.target_url
@@ -77,7 +82,7 @@ function CartaoBase({
         : item.target_url && item.link_kind === "externo"
           ? item.target_url
           : `/${slug}/p/${item.id}${origem === "home" ? "?de=home" : ""}`;
-    const isExterno = item.link_kind === "categoria" || item.link_kind === "externo";
+    const isExterno = !editarHref && (item.link_kind === "categoria" || item.link_kind === "externo");
     const kindClique: "categoria" | "produto" | "link" =
       item.link_kind === "categoria" ? "categoria" : item.link_kind === "produto" ? "produto" : "link";
     const priceLabel = formatPrice(item);
@@ -202,7 +207,7 @@ function CartaoBase({
       <Link
         key={item.id}
         href={destino}
-        onClick={() => { if (item.link_kind !== "categoria-interna") trackClick({ businessId, kind: "produto", contentItemId: item.id, sessionId, targetUrl: destino }); }}
+        onClick={() => { if (!editarHref && item.link_kind !== "categoria-interna") trackClick({ businessId, kind: "produto", contentItemId: item.id, sessionId, targetUrl: destino }); }}
         className={classe}
         style={cardStyle}
       >
