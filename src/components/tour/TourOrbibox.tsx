@@ -18,7 +18,7 @@ const PARADAS: Parada[] = [
   { fase: "home", alvo: null, cor: "#111318", nome: "Intro", texto: "" },
   { fase: "home", alvo: "t-bolinhas", cor: "#1FA855", nome: "Bolinhas", texto: "Atalhos rápidos: WhatsApp, endereço, redes." },
   { fase: "home", alvo: "t-tags", cor: "#F29D38", nome: "Tags", texto: "Voucher, gift card, promoção ou um produto em evidência." },
-  { fase: "home", alvo: "t-destaques", cor: "#3B5BDB", nome: "Destaques", texto: "Produtos, serviços ou categorias do seu catálogo." },
+  { fase: "home", alvo: "t-destaques", cor: "#3B5BDB", nome: "Destaques", texto: "Produtos ou serviços em destaque na página inicial." },
   { fase: "catalogo", alvo: "t-catalogo", cor: "#8758BE", nome: "Catálogo", texto: "Todos os seus itens, cada um com página própria. A coroa leva o item para a página inicial." },
   { fase: "catalogo", alvo: null, cor: "#111318", nome: "Pronto", texto: "Seu Orbibox está no ar." },
 ];
