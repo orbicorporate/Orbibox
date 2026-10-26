@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { TOUR_STEPS } from "./tourSteps";
+import { useCartaoNaTela } from "./useCartaoNaTela";
 
 type Rect = { top: number; left: number; width: number; height: number };
 
@@ -73,6 +74,7 @@ export function TourOverlay({ businessId }: { businessId: string }) {
     };
   }, [step, measure]);
 
+  const { ref: cartaoRef, style: cartaoStyle } = useCartaoNaTela(rect);
   if (!step || stepIndex === null) return null;
 
   const isLast = stepIndex === TOUR_STEPS.length - 1;
@@ -91,16 +93,13 @@ export function TourOverlay({ businessId }: { businessId: string }) {
 
   // Posição do cartão: perto do alvo quando ele foi encontrado, senão
   // centralizado na tela, nunca deixa o usuário sem explicação nenhuma.
-  const cardTop = rect
-    ? Math.min(Math.max(rect.top + rect.height + 16, 16), window.innerHeight - 220)
-    : undefined;
 
   // Portal direto no <body>: se o tour fosse desenhado dentro de algum
   // elemento com animação/transform, o "fixed" passa a contar a partir dele
   // e o cartão sai do centro (no celular chegava a cortar na borda).
   if (!mounted) return null;
   return createPortal(
-    <div className="fixed inset-0 z-[60]">
+    <div className="fixed inset-0 z-[10000]">
       {rect ? (
         <div
           className="pointer-events-none fixed rounded-[20px] transition-all duration-300"
@@ -117,12 +116,9 @@ export function TourOverlay({ businessId }: { businessId: string }) {
       )}
 
       <div
+        ref={cartaoRef}
         className="fixed z-10 w-[calc(100vw-32px)] max-w-[360px] rounded-[24px] bg-surface-white p-5 shadow-[0_12px_40px_rgba(0,0,0,0.25)]"
-        style={
-          cardTop !== undefined
-            ? { left: "50%", top: cardTop, transform: "translateX(-50%)" }
-            : { left: "50%", top: "50%", transform: "translate(-50%, -50%)" }
-        }
+        style={cartaoStyle}
       >
         <p className="text-[12px] font-medium text-text-tertiary">
           {stepIndex + 1} de {TOUR_STEPS.length}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
+import { useCartaoNaTela } from "@/components/tour/useCartaoNaTela";
 
 /**
  * Guia passo a passo: ilumina UM botão por vez, diz em uma frase o que fazer
@@ -154,15 +155,16 @@ function GuiaInterno() {
     setRect(null);
   }
 
+  const { ref: cartaoRef, style: cartaoStyle } = useCartaoNaTela(rect, i === 0 && !pathname.startsWith("/admin/vitrine"));
   if (i === null) return null;
 
-  const base = "fixed left-1/2 z-[70] w-[92vw] max-w-[380px] -translate-x-1/2 rounded-[26px] bg-surface-white p-5 shadow-[0_16px_44px_rgba(0,0,0,0.3)]";
+  const base = "fixed z-[10000] w-[92vw] max-w-[380px] rounded-[26px] bg-surface-white p-5 shadow-[0_16px_44px_rgba(0,0,0,0.3)]";
 
   if (fim) {
     return createPortal(
-      <div className="fixed inset-0 z-[70]">
+      <div className="fixed inset-0 z-[10000]">
         <div className="fixed inset-0 bg-[#0B0C10]/60" />
-        <div className={`${base} top-1/2 -translate-y-1/2 text-center`}>
+        <div className={`${base} left-1/2 top-1/2 max-h-[calc(100dvh-24px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto text-center`}>
           <p className="text-[34px]" aria-hidden>🎉</p>
           <p className="mt-1 font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">Pronto!</p>
           <p className="mt-1 text-[16px] leading-snug text-text-secondary">Seu primeiro item está criado. Continue montando: mais itens, fotos e botões. Compartilhe o link quando a página estiver bem completa.</p>
@@ -179,14 +181,9 @@ function GuiaInterno() {
 
   // Fora do Catálogo, o primeiro passo leva a pessoa até lá.
   const foraDoCatalogo = i === 0 && !pathname.startsWith("/admin/vitrine");
-  const cardTop = rect
-    ? rect.top + rect.height + 18 + 190 > window.innerHeight
-      ? Math.max(rect.top - 18 - 190, 12)
-      : rect.top + rect.height + 18
-    : undefined;
 
   return createPortal(
-    <div className="pointer-events-none fixed inset-0 z-[70]">
+    <div className="pointer-events-none fixed inset-0 z-[10000]">
       {rect && !foraDoCatalogo ? (
         <div
           className="fixed rounded-[18px] transition-all duration-300"
@@ -202,8 +199,9 @@ function GuiaInterno() {
         <div className="fixed inset-0 bg-[#0B0C10]/55" />
       )}
       <div
+        ref={cartaoRef}
         className={`${base} pointer-events-auto`}
-        style={cardTop !== undefined && !foraDoCatalogo ? { top: cardTop } : { top: "50%", transform: "translate(-50%, -50%)" }}
+        style={cartaoStyle}
       >
         <div className="flex items-center gap-1.5" aria-label={`Passo ${i + 1} de ${PASSOS.length}`}>
           {PASSOS.map((_, n) => (

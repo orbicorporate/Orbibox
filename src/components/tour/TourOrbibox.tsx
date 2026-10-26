@@ -152,7 +152,7 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
   // Abertura: o Orbibox são duas telas. Você deixa as duas bonitas, a Orbi faz o resto.
   if (intro) {
     return (
-      <div className="fixed inset-0 z-[95] flex items-end justify-center bg-black/55 p-4 sm:items-center">
+      <div className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/55 p-4 sm:items-center">
         <div className="orbi-linha-entra w-full max-w-sm rounded-[28px] bg-white p-6 shadow-2xl">
           <p className="text-center font-[family-name:var(--font-manrope)] text-[24px] font-medium leading-tight">Seu Orbibox tem 2 telas</p>
           <p className="mt-1 text-center text-[14px] text-text-secondary">Deixe as duas bonitas.</p>
@@ -189,7 +189,7 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
 
   if (fim) {
     return (
-      <div className="fixed inset-0 z-[95] flex items-end justify-center bg-black/55 p-4 sm:items-center">
+      <div className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/55 p-4 sm:items-center">
         <div className="orbi-linha-entra w-full max-w-sm rounded-[28px] bg-white p-6 text-center shadow-2xl">
           <p className="font-[family-name:var(--font-manrope)] text-[26px] font-medium leading-tight">Pronto!</p>
           <p className="mt-1 text-[14px] text-text-secondary">Seu Orbibox está no ar.</p>
@@ -208,7 +208,7 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
   }
 
   return (
-    <div className="fixed inset-0 z-[95]">
+    <div className="fixed inset-0 z-[10000]">
       {rect ? (
         <div
           className="pointer-events-none fixed overflow-hidden rounded-[22px] transition-all duration-300"
@@ -226,7 +226,7 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
       )}
       <div
         className="fixed inset-x-4 mx-auto max-w-sm rounded-[24px] bg-white p-4 shadow-2xl"
-        style={embaixo ? { bottom: 24 } : { top: 24 }}
+        style={{ ...(embaixo ? { bottom: "max(24px, env(safe-area-inset-bottom))" } : { top: "max(24px, env(safe-area-inset-top))" }), maxHeight: "calc(100dvh - 48px)", overflowY: "auto" }}
       >
         <div className="flex items-center gap-2">
           <span key={parada.nome} className="selo-vibra rounded-full px-3 py-1 text-[12.5px] font-semibold text-white" style={{ backgroundColor: parada.cor }}>{parada.nome}</span>

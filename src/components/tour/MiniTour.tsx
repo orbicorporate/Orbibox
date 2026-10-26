@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { useCartaoNaTela } from "./useCartaoNaTela";
 
 export type MiniTourStep = { id: string; title: string; body: string };
 
@@ -23,6 +25,7 @@ export function MiniTour({
     if (!active) setIndex(0);
   }
   const step = active ? steps[index] : null;
+  const { ref: cartaoRef, style: cartaoStyle } = useCartaoNaTela(rect);
 
   const measure = useCallback(() => {
     if (!step) return;
@@ -79,12 +82,11 @@ export function MiniTour({
     setIndex((i) => i + 1);
   }
 
-  const cardTop = rect
-    ? Math.min(Math.max(rect.top + rect.height + 14, 16), window.innerHeight - 200)
-    : undefined;
-
-  return (
-    <div className="fixed inset-0 z-[60]">
+  // Portal no body: dentro de uma folha com transform, o "fixed" contaria a
+  // partir dela e o cartão sairia da tela ou ficaria atrás dela.
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[10000]">
       {rect ? (
         <div
           className="pointer-events-none fixed rounded-[18px] transition-all duration-300"
@@ -101,8 +103,9 @@ export function MiniTour({
       )}
 
       <div
-        className="fixed left-1/2 z-10 w-[86vw] max-w-[340px] -translate-x-1/2 rounded-[22px] bg-surface-white p-4.5 shadow-[0_12px_36px_rgba(0,0,0,0.25)]"
-        style={cardTop !== undefined ? { top: cardTop } : { top: "50%", transform: "translate(-50%, -50%)" }}
+        ref={cartaoRef}
+        className="fixed z-10 w-[86vw] max-w-[340px] rounded-[22px] bg-surface-white p-4.5 shadow-[0_12px_36px_rgba(0,0,0,0.25)]"
+        style={cartaoStyle}
       >
         <p className="text-[11px] font-medium text-text-tertiary">
           {index + 1} de {steps.length}
@@ -120,6 +123,7 @@ export function MiniTour({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
