@@ -208,13 +208,15 @@ export function ImageUpload({
 
         {value && (
           <div className="grid grid-cols-2 gap-2">
-            {!iaIndisponivel && (
-              <button type="button" onClick={() => { setEditandoComIA(true); setShowGerador(true); }} className="flex min-h-[46px] items-center justify-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 text-[13px] font-medium">
-                <span className="text-[14px] leading-none">✦</span> Criar capa com a Orbi
-              </button>
-            )}
-            <button type="button" onClick={() => setAjustando(true)} className={`flex min-h-[46px] items-center justify-center gap-1.5 rounded-2xl border border-divider bg-surface-white px-3 text-[13px] font-medium ${iaIndisponivel ? "col-span-2" : ""}`}>
-              Ajustar luz
+            <button
+              type="button"
+              onClick={async () => { setError(null); try { setPendingFile(await arquivoDaUrl(value)); } catch { setError("Não consegui abrir essa foto. Tente enviar de novo."); } }}
+              className="flex min-h-[46px] items-center justify-center rounded-2xl border border-divider bg-surface-white px-3 text-center text-[13px] font-medium leading-tight"
+            >
+              Editar foto atual
+            </button>
+            <button type="button" onClick={() => setAjustando(true)} className="flex min-h-[46px] items-center justify-center rounded-2xl border border-divider bg-surface-white px-3 text-center text-[13px] font-medium leading-tight">
+              Painel de edição completo
             </button>
           </div>
         )}
