@@ -79,17 +79,6 @@ export function SuporteView({ businessId, whatsappHref, negocio, orbiColors }: {
         <p className="mt-1 text-[14px] text-text-secondary">Fale com a gente ou tire a dúvida com a Orbi.</p>
       </div>
 
-      <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-[24px] bg-[#1F9E4C] p-4 text-white shadow-[0_14px_28px_-16px_rgba(31,158,76,0.7)] transition-transform active:scale-[.98]">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/20">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M21 12a8.5 8.5 0 0 1-12.3 7.6L3 21l1.4-5.5A8.5 8.5 0 1 1 21 12Z" /></svg>
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[16px] font-semibold leading-tight">Falar com o suporte</span>
-          <span className="block text-[13px] text-white/80">Nume Company no WhatsApp</span>
-        </span>
-        <span aria-hidden>→</span>
-      </a>
-
       <div className="overflow-hidden rounded-[26px] bg-white ring-[0.5px] ring-black/10">
         <div className="flex items-center gap-3 p-4">
           <OrbiParticleSphere size={44} colors={orbiColors ?? undefined} className="shrink-0 rounded-full" />
@@ -120,10 +109,11 @@ export function SuporteView({ businessId, whatsappHref, negocio, orbiColors }: {
         {erro && <p className="px-4 pt-3 text-[12.5px] text-red-600">{erro}</p>}
 
         {msgs.length === 0 && (
-          <div className="grid grid-cols-2 gap-2 px-4 pb-1">
-            {SUGESTOES.map((a, i) => (
-              <button key={a.id} type="button" onClick={() => void enviar(a.pergunta)} className="cursor-pointer rounded-2xl px-3.5 py-3 text-left text-[13px] font-medium leading-tight active:scale-[0.98]" style={{ backgroundColor: ["#EEF1FB", "#E9F8EF", "#FFF4E5", "#F4EEFB"][i % 4] }}>{a.pergunta}</button>
-            ))}
+          <div className="px-4 pb-1">
+            <Link href="/admin/comecar" className="flex min-h-[56px] w-full items-center justify-between gap-3 rounded-[20px] bg-on-background px-5 text-left text-[16px] text-white transition-transform active:scale-[0.98]">
+              <span>O que eu faço agora?</span>
+              <span aria-hidden>→</span>
+            </Link>
           </div>
         )}
 
@@ -134,6 +124,25 @@ export function SuporteView({ businessId, whatsappHref, negocio, orbiColors }: {
           </button>
         </form>
       </div>
+
+      {msgs.length === 0 && (
+        <div className="grid grid-cols-2 gap-2">
+          {SUGESTOES.map((a, i) => (
+              <button key={a.id} type="button" onClick={() => void enviar(a.pergunta)} className="cursor-pointer rounded-2xl px-3.5 py-3 text-left text-[13px] font-medium leading-tight active:scale-[0.98]" style={{ backgroundColor: ["#EEF1FB", "#E9F8EF", "#FFF4E5", "#F4EEFB"][i % 4] }}>{a.pergunta}</button>
+            ))}
+        </div>
+      )}
+
+      <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-[24px] bg-[#1F9E4C] p-4 text-white shadow-[0_14px_28px_-16px_rgba(31,158,76,0.7)] transition-transform active:scale-[.98]">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/20">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M21 12a8.5 8.5 0 0 1-12.3 7.6L3 21l1.4-5.5A8.5 8.5 0 1 1 21 12Z" /></svg>
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[16px] font-semibold leading-tight">Falar com o suporte</span>
+          <span className="block text-[13px] text-white/80">Nume Company no WhatsApp</span>
+        </span>
+        <span aria-hidden>→</span>
+      </a>
 
       <div>
         <p className="px-1 text-[12px] font-medium uppercase tracking-wide text-text-tertiary">Dúvidas comuns</p>
