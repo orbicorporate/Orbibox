@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { IconeBotao } from "./IconeBotao";
 import { createClient } from "@/lib/supabase/client";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
@@ -12,7 +14,8 @@ import { formatPrice } from "@/lib/showcase";
 import { textoSobre } from "@/lib/cardapio";
 import type { ItemCartao } from "./CartaoItem";
 
-export type Destaque = { t: "voucher" | "item" | "botao"; id: string };
+/** `logo`: imagem própria da tag de um item (sem ela, vale a foto do item). */
+export type Destaque = { t: "voucher" | "item" | "botao"; id: string; logo?: string | null };
 /** O que fica salvo em home_destaques: os destaques e os itens que viraram bolinha. */
 export type DestaqueSalvo = Destaque | { t: "item_bolinha"; id: string; p?: number; logo?: string | null };
 
@@ -70,6 +73,8 @@ export function BoxDestaque({
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [vouchers, setVouchers] = useState<V[]>([]);
+  // Tag de item em edição: ícone próprio da tag, editar o item ou tirar da Home.
+  const [editandoItem, setEditandoItem] = useState<string | null>(null);
   useEffect(() => {
     let vivo = true;
     (async () => {
@@ -156,18 +161,18 @@ export function BoxDestaque({
     );
   };
 
-  const cartaoItem = (i: ItemCartao, largo: boolean) => {
+  const cartaoItem = (i: ItemCartao, largo: boolean, logo?: string | null) => {
     const destino = i.link_kind === "nenhum" ? null : i.link_kind === "categoria" ? i.target_url : i.target_url && i.link_kind === "externo" ? i.target_url : `/${slug}/p/${i.id}`;
     const externo = i.link_kind === "categoria" || i.link_kind === "externo";
     const kind: "categoria" | "produto" | "link" = i.link_kind === "categoria" ? "categoria" : i.link_kind === "produto" ? "produto" : "link";
     const apoio = formatPrice(i) || i.brand_label || "";
     const miolo = (
       <>
-        {i.image_url ? (
+        {logo || i.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={i.image_url} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
+          <img src={(logo || i.image_url)!} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" />
         ) : (
-          <span className="h-14 w-14 shrink-0 rounded-full bg-surface-soft" />
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#F2F2EE] text-[18px] font-semibold text-black/30">{i.title.charAt(0).toUpperCase()}</span>
         )}
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[14.5px] font-semibold leading-tight">{i.title}</span>
@@ -187,10 +192,10 @@ export function BoxDestaque({
   };
 
   const renderCartao = (c: (typeof cartoes)[number], largo: boolean) => {
-    const cartao = "v" in c && c.v ? cartaoVoucher(c.v, largo) : "b" in c && c.b ? cartaoBotao(c.b, largo) : "i" in c && c.i ? cartaoItem(c.i, largo) : null;
+    const cartao = "v" in c && c.v ? cartaoVoucher(c.v, largo) : "b" in c && c.b ? cartaoBotao(c.b, largo) : "i" in c && c.i ? cartaoItem(c.i, largo, c.d.logo) : null;
     if (!cartao || !podeEditar) return cartao;
     // Dono: lapisinho em cada cartão, levando direto ao lugar certo de editar.
-    const editar = "v" in c && c.v ? { href: `/admin/vouchers/${c.v.id}`, rotulo: "Editar voucher" } : "b" in c && c.b ? { href: `/admin/boxes?box=${c.b.key}#box-${c.b.key}`, rotulo: "Editar botão" } : "i" in c && c.i ? { href: `/admin/vitrine/pagina/${c.i.id}`, rotulo: "Editar produto" } : null;
+    const editar = "v" in c && c.v ? { href: `/admin/vouchers/${c.v.id}`, rotulo: "Editar voucher" } : "b" in c && c.b ? { href: `/admin/boxes?box=${c.b.key}#box-${c.b.key}`, rotulo: "Editar botão" } : null;
     return (
       <div className={`relative ${larguraBase(largo)}`}>
         {cartao}
@@ -207,18 +212,62 @@ export function BoxDestaque({
             ✎
           </AbrirEditor>
         )}
+        {"i" in c && c.i && (
+          <button type="button" onClick={() => setEditandoItem(c.d.id)} aria-label="Editar a tag" className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white text-[13px] text-text-secondary shadow-md active:scale-95">
+            ✎
+          </button>
+        )}
       </div>
     );
   };
 
   const maisQuadrado = podeEditar && (
-    <button type="button" onClick={() => onAbrirFolha()} aria-label="Fixar ou tirar itens do destaque" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-divider text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
+    <button type="button" onClick={() => onAbrirFolha()} aria-label="Fixar ou tirar itens do destaque" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#F2F2EE] text-[26px] font-light leading-none text-text-secondary active:scale-95">+</button>
+  );
+
+  const itemEditado = editandoItem ? itens.find((x) => x.id === editandoItem) : null;
+  const destaqueEditado = editandoItem ? destaques.find((d) => d.t === "item" && d.id === editandoItem) : null;
+  const salvarLogo = (logo: string | null) => onSalvar(destaques.map((d) => (d.t === "item" && d.id === editandoItem ? { ...d, logo } : d)));
+  const folhaItem = podeEditar && itemEditado && destaqueEditado && typeof document !== "undefined" && createPortal(
+    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40" onClick={() => setEditandoItem(null)}>
+      <div className="max-h-[88vh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-[#EFEFEA] p-4 pb-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <p className="text-[18px] font-semibold leading-tight">Tag em destaque</p>
+            <p className="mt-0.5 text-[12.5px] text-text-secondary">Atalho para {itemEditado.title} na Home.</p>
+          </div>
+          <button type="button" onClick={() => setEditandoItem(null)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] font-medium text-white">Concluir</button>
+        </div>
+        {/* Prévia de como a tag aparece. */}
+        <div className="mt-3 rounded-[22px] bg-white p-3 ring-1 ring-black/[0.06]">{cartaoItem(itemEditado, true, destaqueEditado.logo)}</div>
+
+        <div className="mt-3 rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06]">
+          <p className="text-[14px] font-semibold">Ícone da tag</p>
+          <p className="mt-0.5 text-[12.5px] text-text-secondary">Muda só a bolinha da tag. A foto do item continua a mesma.</p>
+          <div className="mt-3">
+            <ImageUpload value={destaqueEditado.logo ?? itemEditado.image_url ?? null} businessId={businessId} lockedRatio="quadrado" promptKind="avatar" onChange={(url) => salvarLogo(url)} />
+          </div>
+          {destaqueEditado.logo && (
+            <button type="button" onClick={() => salvarLogo(null)} className="mt-2 min-h-[40px] w-full rounded-full bg-[#F2F2EE] text-[13.5px] font-medium">Voltar para a foto do item</button>
+          )}
+        </div>
+
+        <div className="mt-3 flex flex-col gap-2">
+          <AbrirEditor href={`/admin/vitrine?editar=${itemEditado.id}`} rotulo="Editar o item" className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-white text-[14px] font-semibold ring-1 ring-black/[0.08]">
+            Editar o item no catálogo
+          </AbrirEditor>
+          <button type="button" onClick={() => { alternar("item", itemEditado.id); setEditandoItem(null); }} className="min-h-[44px] w-full rounded-full text-[14px] font-medium text-[#E5484D]">Tirar da Home</button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 
   return (
     <section className="w-full" aria-label="Em destaque">
+      {folhaItem}
       {cartoes.length === 0 ? (
-        <button type="button" onClick={() => onAbrirFolha()} className="flex min-h-[72px] w-full max-w-[300px] flex-col items-start justify-center gap-1 rounded-[20px] border-2 border-dashed border-divider px-4 text-left text-text-secondary">
+        <button type="button" onClick={() => onAbrirFolha()} className="flex min-h-[72px] w-full max-w-[300px] flex-col items-start justify-center gap-1 rounded-[20px] bg-[#F2F2EE] px-4 text-left text-text-secondary">
           <span className="text-[15px] font-medium">+ Fixar em destaque</span>
           <span className="text-[12.5px] text-text-tertiary">Fixe um botão, voucher ou produto aqui. Só você vê este aviso.</span>
         </button>
