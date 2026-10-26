@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { origemPublica } from "@/lib/appUrl";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -283,18 +284,38 @@ export function FolhaCompartilhar({ alvo, aoFechar }: { alvo: AlvoCompartilhar; 
       <div role="dialog" aria-modal="true" aria-label={`Compartilhar ${alvo.titulo}`} onClick={(e) => e.stopPropagation()} className={`cp-box ${saindo ? "sai" : ""}`}>
         <span aria-hidden className="mx-auto mb-4 block h-1 w-10 rounded-full bg-black/10" />
         {/* Prévia da capinha, do jeito que chega no WhatsApp. */}
-        <div className="flex items-center gap-3 rounded-[22px] bg-surface-soft p-2.5">
-          <span className="relative h-16 w-16 flex-none overflow-hidden rounded-[16px] bg-white">
-            {alvo.imagem || alvo.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={(alvo.imagem || alvo.logo)!} alt="" className={`h-full w-full ${alvo.imagem ? "object-cover" : "object-contain p-2"}`} />
-            ) : null}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[15px] font-medium text-on-background">{alvo.titulo}</span>
-            <span className="block truncate text-[12.5px] text-text-tertiary">{alvo.titulo === alvo.marca ? "Orbibox" : alvo.marca} · {link.replace(/^https?:\/\//, "").replace(/\?.*$/, "")}</span>
-          </span>
+        <div className="rounded-[22px] bg-[#EFE9E1] p-3">
+          <div className="ml-auto w-[92%] rounded-[14px] rounded-tr-[4px] bg-[#D9FDD3] p-1.5 shadow-[0_1px_1px_rgba(17,19,24,0.12)]">
+            <div className="overflow-hidden rounded-[10px] bg-black/[0.06]">
+              <div className="flex h-[118px] w-full items-center justify-center bg-white/60">
+                {alvo.imagem ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={alvo.imagem} alt="" className="h-full w-full object-cover" />
+                ) : alvo.logo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={alvo.logo} alt="" className="h-full w-full object-contain p-4" />
+                ) : (
+                  <span className="text-[12.5px] text-text-tertiary">Sem capinha</span>
+                )}
+              </div>
+              <div className="px-2.5 py-2">
+                <p className="truncate text-[13.5px] font-medium text-on-background">{alvo.titulo === alvo.marca ? `Confere isso no Orbibox da ${alvo.marca}` : alvo.titulo}</p>
+                <p className="truncate text-[12px] text-text-secondary">{alvo.titulo === alvo.marca ? "Veja tudo em um só link" : alvo.marca}</p>
+                <p className="truncate text-[11.5px] text-text-tertiary">{link.replace(/^https?:\/\//, "").replace(/\?.*$/, "")}</p>
+              </div>
+            </div>
+            <p className="px-1.5 pb-0.5 pt-1.5 text-[13px] leading-snug text-on-background">{texto} <span className="text-[#027EB5] underline">{link.replace(/^https?:\/\//, "").replace(/\?.*$/, "")}</span></p>
+          </div>
         </div>
+        {alvo.titulo === alvo.marca && (
+          <Link href="/admin/config/marca" onClick={() => fechar()} className="mt-2.5 flex items-center gap-3 rounded-[18px] bg-[#F4F1FB] px-3.5 py-3 active:scale-[0.99]">
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14px] font-medium text-on-background">{alvo.imagem ? "Deixe a capinha ainda mais bonita" : "Crie uma capinha legal"}</span>
+              <span className="block text-[12.5px] text-text-secondary">É a primeira coisa que a pessoa vê no WhatsApp.</span>
+            </span>
+            <span className="shrink-0 text-[18px] text-text-tertiary" aria-hidden>→</span>
+          </Link>
+        )}
 
         <ul className="mt-5 grid grid-cols-4 gap-2">
           {opcoes.map((o, i) => (
