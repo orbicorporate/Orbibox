@@ -16,10 +16,12 @@ const PASSOS = [
   { n: "3", titulo: "Divulgue e acompanhe", texto: "Cole o seu link na bio, instale o app no celular e veja o que dá resultado.", visual: "link" },
 ];
 
-export default async function LandingPage({ searchParams }: { searchParams: Promise<{ code?: string }> }) {
+export default async function LandingPage({ searchParams }: { searchParams: Promise<{ code?: string; de?: string }> }) {
   // Se o Supabase mandar o link de confirmação pra raiz do site (Site URL),
   // encaminha pro callback que finaliza o login.
-  const { code } = await searchParams;
+  const { code, de } = await searchParams;
+  // Quem chegou pelo convite de uma marca mantém a origem até o cadastro.
+  const cadastro = de ? `/signup?de=${encodeURIComponent(de.slice(0, 60))}` : "/signup";
   if (code) redirect(`/auth/callback?code=${encodeURIComponent(code)}`);
 
   let inspire: InspireLanding = {};
@@ -60,7 +62,7 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
             Tudo em um único link. Mostre seu site ou Instagram e a Orbi monta sua vitrine, atende seus clientes e ajuda você a vender mais.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
-            <Link href="/signup" className="inline-flex min-h-[56px] items-center justify-center rounded-full px-8 text-[16px] font-medium bg-on-background text-white shadow-[0_16px_38px_-16px_rgba(17,19,24,0.6)] transition-transform active:scale-[0.98]">
+            <Link href={cadastro} className="inline-flex min-h-[56px] items-center justify-center rounded-full px-8 text-[16px] font-medium bg-on-background text-white shadow-[0_16px_38px_-16px_rgba(17,19,24,0.6)] transition-transform active:scale-[0.98]">
               Criar meu Orbibox grátis ✦
             </Link>
             <Link href="/apresentacao" className="inline-flex min-h-[56px] items-center justify-center rounded-full px-6 text-[15px] text-text-secondary underline underline-offset-4">
@@ -142,7 +144,7 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
             <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/50">Atendimento que não dorme</p>
             <h2 className="mt-3 font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-[1.1] tracking-[-0.025em] sm:text-[40px]">Enquanto você trabalha, a Orbi atende.</h2>
             <p className="mt-4 max-w-[440px] text-[16px] leading-relaxed text-white/70">Ela conhece seus produtos, preços e horários. Responde na hora, e quando alguém se interessa, o contato chega para você.</p>
-            <Link href="/signup" className="orbi-gradient mt-8 inline-flex min-h-[52px] items-center justify-center rounded-full px-7 text-[15px] font-medium text-on-background active:scale-[0.98]">Quero uma Orbi para o meu negócio ✦</Link>
+            <Link href={cadastro} className="orbi-gradient mt-8 inline-flex min-h-[52px] items-center justify-center rounded-full px-7 text-[15px] font-medium text-on-background active:scale-[0.98]">Quero uma Orbi para o meu negócio ✦</Link>
           </Reveal>
           <Reveal delay={150} className="flex justify-center lg:justify-end"><OrbiChatDemo /></Reveal>
         </div>
@@ -156,7 +158,7 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
             <div className="relative flex flex-col items-center">
               <OrbiOrb size={72} className="mb-6" />
               <h2 className="max-w-xl font-[family-name:var(--font-manrope)] text-[32px] font-medium leading-[1.08] tracking-[-0.03em] sm:text-[48px]">Sua marca com inteligência própria, aplicativo e muito mais.</h2>
-              <Link href="/signup" className="mt-8 inline-flex min-h-[56px] items-center justify-center rounded-full bg-on-background px-8 text-[16px] font-medium text-white transition-transform active:scale-[0.98]">Criar meu Orbibox grátis ✦</Link>
+              <Link href={cadastro} className="mt-8 inline-flex min-h-[56px] items-center justify-center rounded-full bg-on-background px-8 text-[16px] font-medium text-white transition-transform active:scale-[0.98]">Criar meu Orbibox grátis ✦</Link>
               <p className="mt-3 text-[13.5px] text-on-background/70">Tudo em um único link. 7 dias grátis, sem cartão.</p>
             </div>
           </div>
@@ -170,7 +172,7 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
         <nav className="flex items-center gap-1">
           <Link href="/apresentacao" className="flex min-h-[44px] items-center px-3 hover:text-on-background">Como funciona</Link>
           <Link href="/login" className="flex min-h-[44px] items-center px-3 hover:text-on-background">Entrar</Link>
-          <Link href="/signup" className="flex min-h-[44px] items-center px-3 hover:text-on-background">Criar conta</Link>
+          <Link href={cadastro} className="flex min-h-[44px] items-center px-3 hover:text-on-background">Criar conta</Link>
         </nav>
       </footer>
     </main>
