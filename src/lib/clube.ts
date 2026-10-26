@@ -266,6 +266,14 @@ export async function souFa(businessId: string): Promise<boolean> {
 }
 
 /** Outras marcas que os fãs deste radar também seguem (só de quem deixou as marcas públicas). */
+export type OrbiboxAtivo = { id: string; slug: string; name: string; logo_url: string | null };
+
+/** Todos os Orbibox ativos (prontos e com endereço), com a logo, para o radar de descobrir. */
+export async function getOrbiboxAtivos(): Promise<OrbiboxAtivo[]> {
+  const { data } = await clubeDb().from("businesses").select("id, slug, name, logo_url").eq("onboarding_status", "ready").not("slug", "is", null).order("updated_at", { ascending: false }).limit(60);
+  return (data as OrbiboxAtivo[] | null) ?? [];
+}
+
 export async function getAfinidade(businessId: string): Promise<MarcaAfim[]> {
   const { data } = await clubeDb().rpc("clube_afinidade", { p_business: businessId });
   return (data as MarcaAfim[] | null) ?? [];

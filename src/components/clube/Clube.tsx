@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { carregarCurtidas } from "@/lib/clube-curtidas";
 import type { PedidoFa } from "./CurtirItem";
 import {
   aceitarWhatsapp, atualizarPerfil, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, excluirAvaliacao, entrarComEmail, entrarComNumero,
-  enviarFotoPerfil, entrarComGoogle, getAfinidade, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
+  enviarFotoPerfil, entrarComGoogle, getAfinidade, getOrbiboxAtivos, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
   sairDoClube, salvarContatoWhatsapp, virarFa,
-  type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type Resumo,
+  type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type OrbiboxAtivo, type Resumo,
 } from "@/lib/clube";
 import { OrbiAvatar, lerEsfera, lerLogoEscala } from "@/components/orbi/OrbiAvatar";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
@@ -667,6 +668,37 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
 }) {
   const [fas, setFas] = useState<FaLite[] | null>(null);
   const [fa, setFa] = useState<FaLite | null>(null);
+  // Radar de descobrir: logos de todos os Orbibox ativos.
+  const router = useRouter();
+  const [descobrindo, setDescobrindo] = useState(false);
+  const [ativos, setAtivos] = useState<OrbiboxAtivo[] | null>(null);
+  function abrirDescobrir() {
+    setDescobrindo(true);
+    if (ativos === null) getOrbiboxAtivos().then(setAtivos);
+  }
+  const itensAtivos: ItemOrbita[] = useMemo(() => {
+    const out: ItemOrbita[] = [];
+    let anel = 0, noAnel = 0;
+    for (const b of (ativos ?? []).filter((x) => x.slug !== slug)) {
+      if (noAnel >= CAP_ANEL[anel]) { anel++; noAnel = 0; }
+      if (anel > 2) break;
+      const s = TAM[anel] + 6 - (noAnel % 3) * 3;
+      out.push({
+        key: b.id, size: s, anel, legenda: b.name, rotulo: `Abrir ${b.name}`,
+        aoTocar: () => router.push(`/${b.slug}`),
+        node: (
+          <span className="grid place-items-center overflow-hidden rounded-full bg-white shadow-[0_6px_16px_-8px_rgba(17,19,24,0.4)] ring-1 ring-divider" style={{ width: s, height: s }}>
+            {b.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={b.logo_url} alt="" className="h-full w-full object-contain p-1.5" />
+            ) : <span className="text-[13px] text-text-secondary">{b.name.charAt(0).toUpperCase()}</span>}
+          </span>
+        ),
+      });
+      noAnel++;
+    }
+    return out;
+  }, [ativos, slug, router]);
   const [marcas, setMarcas] = useState<MarcaDoFa[] | null>(null);
   /** Nota e texto que este fã deu a cada marca (id da marca → avaliação). */
   const [notasFa, setNotasFa] = useState<Record<string, { nota: number; comentario: string | null }>>({});
@@ -1095,6 +1127,28 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                   ))}
                   {avMarca.marca.slug !== slug && (
                     <a href={`/${avMarca.marca.slug}`} className="mx-auto mt-2 inline-flex min-h-[44px] items-center rounded-full bg-surface-soft px-6 text-[14px] font-semibold active:scale-95">Abrir {avMarca.marca.name}</a>
+                  )}
+                </div>
+              </>
+            )}
+            <button type="button" onClick={abrirDescobrir} className="mt-1 flex min-h-[40px] items-center gap-1.5 rounded-full px-4 text-[13px] text-text-tertiary active:scale-95">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
+              Descobrir
+            </button>
+          </div>
+
+          {/* Descobrir: o radar com a logo de cada Orbibox ativo */}
+          <div className={`cl-camada ${descobrindo ? "on" : ""}`} aria-hidden={!descobrindo}>
+            {descobrindo && (
+              <>
+                <Cabecalho titulo="Descobrir" sub="Os Orbibox que estão no ar. Toque para visitar." fechar={() => setDescobrindo(false)} rotuloFechar="Voltar" />
+                <div className="flex min-h-0 flex-1 flex-col justify-center px-2 pb-6">
+                  {ativos === null ? (
+                    <p className="text-center text-[14px] text-text-tertiary">Procurando...</p>
+                  ) : itensAtivos.length === 0 ? (
+                    <p className="px-8 text-center text-[15px] text-text-secondary">Ainda não há outros Orbibox no ar.</p>
+                  ) : (
+                    <Orbita itens={itensAtivos} aneis={ANEIS} centro={<span className="grid h-[88px] w-[88px] place-items-center rounded-full bg-on-background text-center text-[12px] leading-tight text-white">{itensAtivos.length}<br />Orbibox</span>} />
                   )}
                 </div>
               </>
