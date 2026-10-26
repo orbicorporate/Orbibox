@@ -2015,10 +2015,15 @@ function ItemCard({
             )}
 
             <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
-              <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
-                Cor do card{item.image_url ? " · aparece se remover a foto" : ""}
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Cor do card</p>
+                <span className="rounded-full bg-[#FFF1C7] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#7A5200]">Só se não usar foto</span>
+              </div>
+              <p className="mt-1 text-[13px] leading-snug text-text-secondary">
+                {item.image_url
+                  ? "Este item tem foto, então esta cor não aparece. Ela só vale se você remover a foto."
+                  : "Como o card fica sem foto."}
               </p>
-              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Se não usar foto, fica assim.</p>
               {/* Exemplo: o card sem foto como aparece no catálogo. */}
               <div className="mt-3 flex justify-center p-1">
                 <div

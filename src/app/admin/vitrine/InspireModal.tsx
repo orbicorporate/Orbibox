@@ -147,7 +147,7 @@ export function InspireModal({ businessId, inspirePhotos, onClose }: { businessI
                 <button onClick={() => setOpenId(open ? null : tema.id)} className="flex w-full items-center gap-3 p-4 text-left">
                   <div className="flex shrink-0 gap-1">
                     {tema.colors.slice(0, 3).map((c, i) => (
-                      <span key={i} className="h-6 w-6 rounded-full border border-divider" style={{ backgroundColor: c.hex }} />
+                      <span key={i} className="h-6 w-6 rounded-full border border-black/25" style={{ backgroundColor: c.hex }} />
                     ))}
                   </div>
                   <div className="min-w-0 flex-1">

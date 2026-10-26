@@ -1371,7 +1371,7 @@ export function VisitorExperience({
                                 {NOBRES.slice(0, 7).map((c) => {
                                   const claro = ["#F1EDE4", "#D9D4C7", "#D8C8A0"].includes(c.hex);
                                   return (
-                                    <button key={c.hex} type="button" onClick={() => setBoxColor(o.key, c.hex)} aria-label={c.nome} title={c.nome} className={`flex h-9 w-9 items-center justify-center rounded-full ${claro ? "border border-divider" : ""}`} style={{ backgroundColor: c.hex }}>
+                                    <button key={c.hex} type="button" onClick={() => setBoxColor(o.key, c.hex)} aria-label={c.nome} title={c.nome} className={`flex h-9 w-9 items-center justify-center rounded-full ${claro ? "border border-black/25" : ""}`} style={{ backgroundColor: c.hex }}>
                                       {o.color?.toLowerCase() === c.hex.toLowerCase() && (
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={claro ? "#111318" : "#fff"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
                                       )}
@@ -1450,7 +1450,7 @@ export function VisitorExperience({
                                 key={c.hex}
                                 type="button"
                                 onClick={() => setBoxColor(o.key, c.hex)}
-                                className={`flex h-9 w-9 items-center justify-center rounded-full ${claro ? "border border-divider" : ""}`}
+                                className={`flex h-9 w-9 items-center justify-center rounded-full ${claro ? "border border-black/25" : ""}`}
                                 style={{ backgroundColor: c.hex }}
                                 aria-label={c.nome}
                                 title={c.nome}
