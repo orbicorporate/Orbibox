@@ -68,6 +68,8 @@ const FORMA: Record<BoxSize, string> = {
   medio: "h-6 w-5",
   alto: "h-9 w-5",
 };
+/** Cada formato tem a sua cor, para reconhecer de relance. */
+const FORMA_COR: Record<BoxSize, string> = { destaque: "#FF7A3D", largo: "#3B82F6", medio: "#1FA855", alto: "#8758BE" };
 
 // A foto de capa preenche o box na grade, então ela segue o formato do box,
 // não uma escolha própria. Largo e Destaque são baixinhos (paisagem), Alto é
@@ -1644,7 +1646,7 @@ function ItemCard({
             title={`Formato: ${SIZE_LABEL[size]}`}
             className="flex h-8 w-8 items-center justify-center rounded-full text-on-background/70 active:scale-90"
           >
-            <span className={`scale-[0.6] rounded-[4px] bg-current ${FORMA[size]}`} />
+            <span className={`scale-[0.6] rounded-[4px] ${FORMA[size]}`} style={{ backgroundColor: FORMA_COR[size] }} />
           </button>
           {/* Faixa branca com o nome embaixo da foto, ou o nome por cima da foto. Só faz sentido com foto. */}
           {hasPhoto && (
@@ -1935,7 +1937,7 @@ function ItemCard({
                   const ativo = size === s;
                   return (
                     <button key={s} onClick={() => save(item.id, { layout_size: s })} className={`flex flex-1 flex-col items-center gap-1.5 rounded-2xl border p-2.5 ${ativo ? "border-on-background bg-surface-soft" : "border-divider"}`}>
-                      <span className={`rounded-[4px] ${FORMA[s]} ${ativo ? "bg-on-background" : "bg-divider"}`} />
+                      <span className={`rounded-[4px] ${FORMA[s]} ${ativo ? "" : "opacity-45"}`} style={{ backgroundColor: FORMA_COR[s] }} />
                       <span className="text-[11px] text-text-secondary">{SIZE_LABEL[s]}</span>
                     </button>
                   );

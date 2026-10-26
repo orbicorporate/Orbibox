@@ -9,6 +9,8 @@ type Linha = { id: string; title: string; categoria: string; temFoto: boolean; f
 
 /** Formatos desenhados como miniatura (mesmo desenho do catálogo). */
 const FORMA: Record<BoxSize, string> = { destaque: "h-5 w-10", largo: "h-3 w-10", medio: "h-6 w-6", alto: "h-9 w-5" };
+/** Cada formato tem a sua cor, para reconhecer de relance. */
+const FORMA_COR: Record<BoxSize, string> = { destaque: "#FF7A3D", largo: "#3B82F6", medio: "#1FA855", alto: "#8758BE" };
 const ORDEM: BoxSize[] = ["medio", "largo", "destaque", "alto"];
 
 /** Lista os itens e deixa colocar a foto de cada um direto da galeria, um depois do outro. */
@@ -125,7 +127,7 @@ export function FotosEmLote({ businessId, itens }: { businessId: string; itens: 
               <div className="mt-2 grid grid-cols-4 gap-1.5">
                 {ORDEM.map((f) => (
                   <button key={f} type="button" onClick={() => setFormatoSel(f)} aria-pressed={formatoSel === f} className={`flex flex-col items-center gap-1.5 rounded-2xl py-2 ${formatoSel === f ? "bg-on-background text-white" : "bg-[#F2F2EE] text-text-secondary"}`}>
-                    <span className="flex h-9 items-center"><span className={`rounded-[3px] bg-current ${FORMA[f]}`} /></span>
+                    <span className="flex h-9 items-center"><span className={`rounded-[4px] ${FORMA[f]}`} style={{ backgroundColor: FORMA_COR[f] }} /></span>
                     <span className="text-[11px] font-medium">{SIZE_LABEL[f]}</span>
                   </button>
                 ))}
