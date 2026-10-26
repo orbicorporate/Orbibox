@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { OrbiOrb } from "@/components/orbi/OrbiOrb";
+import type { RevisaoDados } from "./Revisar";
 import { homeCardShellClass, homeCardShellStyle, HomeOptionCardContent } from "@/components/orbi/HomeOptionCard";
 
 /**
@@ -254,28 +255,22 @@ export function AnaliseAoVivo({
 // ---------------------------------------------------------------------------
 export type ItemMontado = { title: string; image_url: string | null; bg: string; fg: string };
 
-const ETAPAS = [
-  (alvo: string) => `Lendo ${alvo}`,
-  () => "Separando produtos e serviços",
-  () => "Escolhendo as melhores fotos",
-  () => "Escrevendo as descrições",
-  (_: string, marca: string) => `Aplicando as cores da ${marca}`,
-];
-// Depois das etapas principais, a importação ainda pode levar um tempo
-// (site grande, muitas fotos). Essas frases giram pra tela nunca parecer
-// travada.
+// Frases que giram depois que as etapas principais acabam, pra tela nunca
+// parecer travada em sites grandes.
 const ETAPAS_LONGAS = [
-  "Organizando por categoria",
   "Conferindo preços e nomes",
   "Ajustando as fotos pro celular",
   "Sites com muitos produtos levam um pouco mais",
   "Quase lá",
 ];
 
+type Msg = { id: string; texto: string; tipo?: "itens" | "cats" | "desc" | "cores" };
+
 export function VitrineMontando({
   nome,
   alvo,
   orbColors,
+  dados,
   status,
   segundos,
   onContinuar,
@@ -283,105 +278,139 @@ export function VitrineMontando({
   nome: string;
   alvo: string;
   orbColors: string[] | null;
+  dados: RevisaoDados | null;
   status: "pending" | "ok";
   itens: ItemMontado[];
   segundos: number | null;
   onContinuar: () => void;
 }) {
   const marca = nome.trim() || "sua marca";
+  const itensSite = dados?.itens ?? [];
+  const cats = dados?.categorias ?? [];
+  const paleta = (dados?.cores ?? []).slice(0, 5);
+  const comFoto = itensSite.filter((i) => i.foto).slice(0, 6);
 
-  // Enquanto a importação roda, as etapas avançam rápido no começo e depois
-  // passam a girar frases de "ainda trabalhando", com um contador de tempo.
-  const [etapa, setEtapa] = useState(0);
+  // O feed conta o que a Orbi achou e está montando, só com dados reais.
+  const msgs = useMemo<Msg[]>(() => {
+    const m: Msg[] = [{ id: "ler", texto: `Lendo ${alvo}` }];
+    if (itensSite.length > 0) m.push({ id: "itens", texto: `Separei ${itensSite.length} ${itensSite.length === 1 ? "item" : "itens"} pro seu catálogo`, tipo: "itens" });
+    if (cats.length > 0) m.push({ id: "cats", texto: `Organizei em ${cats.length} ${cats.length === 1 ? "categoria" : "categorias"}`, tipo: "cats" });
+    m.push({ id: "desc", texto: "Escrevendo as descrições", tipo: "desc" });
+    if (paleta.length > 0) m.push({ id: "cores", texto: `Aplicando as cores da ${marca}`, tipo: "cores" });
+    return m;
+  }, [alvo, itensSite.length, cats.length, paleta.length, marca]);
+
+  const [reveladas, setReveladas] = useState(1);
+  useEffect(() => {
+    if (reveladas >= msgs.length) return;
+    const t = setTimeout(() => setReveladas((r) => r + 1), 2300);
+    return () => clearTimeout(t);
+  }, [reveladas, msgs.length]);
+  const visiveis = msgs.slice(0, status === "ok" ? msgs.length : reveladas);
+  const acabouFeed = reveladas >= msgs.length;
+
+  // Depois das mensagens, frases de "ainda trabalhando" e contador de tempo.
+  const [longa, setLonga] = useState(0);
   const [decorrido, setDecorrido] = useState(0);
   useEffect(() => {
-    if (status !== "pending") return;
-    const t = setTimeout(() => setEtapa((e) => e + 1), etapa < ETAPAS.length - 1 ? 2800 : 8000);
+    if (status !== "pending" || !acabouFeed) return;
+    const t = setTimeout(() => setLonga((e) => e + 1), 7000);
     return () => clearTimeout(t);
-  }, [etapa, status]);
+  }, [longa, status, acabouFeed]);
   useEffect(() => {
     if (status !== "pending") return;
     const t = setInterval(() => setDecorrido((d) => d + 1), 1000);
     return () => clearInterval(t);
   }, [status]);
-  // Barra que sempre anda mas nunca chega a 100% antes de terminar de verdade.
   const pct = status === "ok" ? 100 : Math.round(8 + 87 * (1 - Math.exp(-decorrido / 40)));
 
-  // Os cards reais não aparecem aqui: uma miniatura nunca faz jus à vitrine
-  // de verdade. O celular fica cinza "pensando" e, quando termina, fica fosco
-  // com o aviso de pronto. A pessoa vê o resultado real ao abrir a vitrine.
   const [pronto, setPronto] = useState(false);
   useEffect(() => {
     if (status !== "ok") return;
-    const t = setTimeout(() => setPronto(true), 700);
+    const t = setTimeout(() => setPronto(true), 900);
     return () => clearTimeout(t);
   }, [status]);
 
-  const textoEtapa =
-    status === "ok"
-      ? "Finalizando seu catálogo"
-      : etapa < ETAPAS.length
-        ? ETAPAS[etapa](alvo, marca)
-        : ETAPAS_LONGAS[Math.min(etapa - ETAPAS.length, ETAPAS_LONGAS.length - 1)];
+  const pensando = acabouFeed ? ETAPAS_LONGAS[Math.min(longa, ETAPAS_LONGAS.length - 1)] : null;
 
   return (
-    <div className="flex flex-col items-center pb-4 pt-12 text-center">
-      {/* Celular */}
-      {/* Celular em perspectiva 3D, flutuando, com reflexo de vidro e sombra no chão. */}
-      <div className="relative [perspective:1400px]">
-      <div className="celular-flutua relative w-[300px] rounded-[44px] bg-gradient-to-b from-[#2A2C31] to-[#0E0F12] p-[4px] shadow-[0_50px_80px_-30px_rgba(17,19,24,0.55),0_0_0_1px_rgba(255,255,255,0.06)_inset]">
-        <span aria-hidden className="pointer-events-none absolute inset-0 z-30 rounded-[44px] bg-[linear-gradient(115deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_38%)]" />
-        <div className="relative h-[560px] overflow-hidden rounded-[40px] bg-background-main">
-          <div className="absolute left-1/2 top-2 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-on-background" />
-          <div className="flex h-full flex-col px-3 pb-3 pt-10">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full">
-                <OrbiOrb size={32} colors={orbColors} />
+    <div className="flex flex-col items-center pb-4 pt-8 text-center">
+      <BrandOrb colors={orbColors} size={84} brilho />
+      <p className="mt-4 font-[family-name:var(--font-manrope)] text-[22px] font-medium tracking-[-0.01em]">Montando a {marca}</p>
+
+      {/* Feed: as mensagens novas entram embaixo e empurram as antigas pra cima. */}
+      <div
+        className="mt-5 flex h-[min(52dvh,470px)] w-full max-w-md flex-col justify-end gap-4 overflow-hidden text-left [mask-image:linear-gradient(to_bottom,transparent,black_22%)]"
+        aria-live="polite"
+      >
+        {visiveis.map((msg) => (
+          <div key={msg.id} className="orbi-linha-entra">
+            <div className="inline-block max-w-[92%] rounded-[22px] rounded-bl-md border border-white/70 bg-white/70 px-4 py-2.5 text-[15px] leading-snug shadow-[0_8px_24px_-14px_rgba(17,19,24,0.35)] backdrop-blur-xl">
+              {msg.texto}
+            </div>
+
+            {msg.tipo === "itens" && (
+              <div className="mt-2.5 flex gap-2 overflow-hidden">
+                {(comFoto.length > 0 ? comFoto : itensSite.slice(0, 4)).map((it, k) => (
+                  <div key={it.id} className="orbi-foto-entra w-[72px] shrink-0" style={{ animationDelay: `${k * 200}ms` }}>
+                    <div className="relative h-[72px] w-[72px] overflow-hidden rounded-2xl bg-surface-soft">{it.foto && <Foto src={it.foto} sizes="72px" />}</div>
+                    <p className="mt-1 truncate text-[11px] text-text-secondary">{it.nome}</p>
+                  </div>
+                ))}
               </div>
-              <p className="truncate text-left font-[family-name:var(--font-manrope)] text-[15px] font-semibold">{marca}</p>
-            </div>
+            )}
 
-            <div className="mt-3 grid grid-cols-2 gap-2 overflow-hidden">
-              {[0, 1, 2, 3, 4, 5, 6].map((k) => (
-                <div
-                  key={k}
-                  className={`orbi-shimmer rounded-2xl ${k === 0 ? "col-span-2 h-[140px]" : "h-[112px]"}`}
-                  style={{ animationDelay: `${k * 140}ms`, backgroundColor: orbColors?.length ? `color-mix(in srgb, ${orbColors[k % orbColors.length]} 16%, #F2F2EE)` : "#ECEDE9" }}
-                />
-              ))}
-            </div>
+            {msg.tipo === "cats" && (
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {cats.slice(0, 8).map((c, k) => (
+                  <span key={c.nome} className="orbi-foto-entra flex items-center gap-1.5 rounded-full bg-white/80 py-1 pl-1 pr-3 text-[13px] shadow-sm" style={{ animationDelay: `${k * 160}ms` }}>
+                    <span className="relative h-6 w-6 overflow-hidden rounded-full bg-surface-soft">{c.foto && <Foto src={c.foto} sizes="24px" />}</span>
+                    {c.nome}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {msg.tipo === "desc" && (
+              <div className="mt-2.5 flex w-[230px] flex-col gap-1.5">
+                {[100, 82, 64].map((w, k) => (
+                  <span key={w} className="orbi-shimmer h-2.5 rounded-full bg-surface-soft" style={{ width: `${w}%`, animationDelay: `${k * 180}ms` }} />
+                ))}
+              </div>
+            )}
+
+            {msg.tipo === "cores" && (
+              <div className="mt-2.5 flex gap-2.5">
+                {paleta.map((hex, k) => (
+                  <span key={hex + k} className="orbi-foto-entra h-9 w-9 rounded-full border border-black/5 shadow-sm" style={{ backgroundColor: hex, animationDelay: `${k * 200}ms` }} />
+                ))}
+              </div>
+            )}
           </div>
+        ))}
 
-          {/* Pronto: vidro fosco por cima com o aviso */}
-          {pronto && (
-            <div className="orbi-fosco-entra absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/45 px-6 backdrop-blur-md">
-              <span style={{ animationDelay: "0.15s" }} className="orbi-check-entra flex h-12 w-12 items-center justify-center rounded-full bg-on-background text-white shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
-              </span>
-              <p className="orbi-linha-entra mt-4 font-[family-name:var(--font-manrope)] text-[21px] font-medium leading-tight tracking-[-0.01em]" style={{ animationDelay: "0.35s" }}>
-                Seu catálogo está pronto
-              </p>
-              <p className="orbi-linha-entra mt-1.5 text-[15px] leading-snug text-text-secondary" style={{ animationDelay: "0.6s" }}>
-                Visite e edite à vontade.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-      <div aria-hidden className="celular-sombra mx-auto mt-6 h-5 w-[220px] rounded-[50%] bg-black/20 blur-xl" />
+        {pronto ? (
+          <div className="orbi-linha-entra flex items-center gap-3 rounded-[22px] bg-on-background px-4 py-3 text-white">
+            <span className="orbi-check-entra flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </span>
+            <p className="font-[family-name:var(--font-manrope)] text-[16px] font-medium">Seu catálogo está pronto</p>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 pl-1" aria-hidden>
+            {[0, 1, 2].map((k) => (
+              <span key={k} className="h-1.5 w-1.5 animate-bounce rounded-full bg-text-tertiary" style={{ animationDelay: `${k * 150}ms` }} />
+            ))}
+            {pensando && <span key={pensando} className="orbi-linha-entra ml-1 text-[13px] text-text-tertiary">{pensando}</span>}
+          </div>
+        )}
       </div>
 
       {!pronto ? (
-        <div className="mt-4 flex w-full max-w-[300px] flex-col items-center">
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbi-gradient-start" />
-            <p key={textoEtapa} className="orbi-linha-entra text-[15px] text-text-secondary">
-              {textoEtapa}…
-            </p>
-          </div>
-          <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-surface-soft" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+        <div className="mt-5 flex w-full max-w-md flex-col items-center">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-soft" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
             <div className="orbi-gradient h-full rounded-full transition-[width] duration-1000 ease-out" style={{ width: `${pct}%` }} />
           </div>
           <p className="mt-2.5 text-[12px] leading-snug text-text-tertiary">
@@ -391,14 +420,14 @@ export function VitrineMontando({
       ) : (
         <>
           {segundos != null && (
-            <p className="orbi-linha-entra mt-6 text-[15px] text-text-secondary" style={{ animationDelay: "0.8s" }}>
+            <p className="orbi-linha-entra mt-5 text-[15px] text-text-secondary" style={{ animationDelay: "0.4s" }}>
               Pronto em {segundos} segundos
             </p>
           )}
           <button
             onClick={onContinuar}
-            className="orbi-linha-entra orbi-gradient mt-5 w-full max-w-sm rounded-full py-3.5 text-[15px] font-medium text-on-background"
-            style={{ animationDelay: "1s" }}
+            className="orbi-linha-entra orbi-gradient mt-4 w-full max-w-sm rounded-full py-3.5 text-[15px] font-medium text-on-background"
+            style={{ animationDelay: "0.6s" }}
           >
             Continuar →
           </button>

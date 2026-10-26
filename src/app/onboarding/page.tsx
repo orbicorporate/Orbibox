@@ -787,6 +787,7 @@ export default function OnboardingPage() {
             nome={name}
             alvo={alvo ?? "sua marca"}
             orbColors={orbColors}
+            dados={revisao}
             status={montagem.status}
             itens={montagem.itens}
             segundos={montagem.segundos}
