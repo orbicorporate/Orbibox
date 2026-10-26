@@ -140,7 +140,7 @@ export function ChecklistDivulgarHost() {
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <a href={editar} className="flex min-h-[50px] items-center justify-center rounded-full bg-[#F2F2EE] text-[15px] font-semibold">✎ Editar</a>
-              <button type="button" onClick={() => ir(proxima)} className="min-h-[50px] rounded-full bg-[#1F9E4C] text-[15px] font-semibold text-white">✓ Está pronto</button>
+              <button type="button" onClick={() => ir(proxima)} className="min-h-[50px] rounded-full bg-[#1F9E4C] text-[15px] font-semibold text-white">{proxima === "pronto" ? "✓ Está pronto" : `✓ ${tela === "catalogo" ? "Catálogo" : "Página inicial"} ok, próximo`}</button>
             </div>
           </>
         )}
