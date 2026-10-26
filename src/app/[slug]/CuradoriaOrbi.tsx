@@ -78,13 +78,21 @@ export function CuradoriaOrbi({
     try {
       const r = await fetch("/api/curate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessId, mode: "curate", question: opcao }) });
       const d = await r.json();
-      setFrase(d.frase ?? null);
+      if (!r.ok || !d.frase) throw new Error("curadoria");
+      // Os itens vêm completos do servidor; o que já está na tela só complementa.
+      const map = new Map(products.map((p) => [p.id, p]));
+      const lista: Product[] = Array.isArray(d.itens) && d.itens.length > 0
+        ? (d.itens as Product[])
+        : (d.ids ?? []).map((id: string) => map.get(id)).filter((x: Product | undefined): x is Product => !!x);
+      // Nunca promete opções sem mostrar: sem itens, usa os primeiros da vitrine.
+      const final = lista.length > 0 ? lista : products.slice(0, 4);
+      setCurados(final);
+      setFrase(lista.length > 0 ? d.frase : final.length > 0 ? "Estas são algumas opções da vitrine:" : "Não achei algo exato pra isso. Dá uma olhada no catálogo ou fala com a gente.");
       setConvite(d.convite ?? null);
       setWhatsapp(d.whatsapp ?? null);
-      const map = new Map(products.map((p) => [p.id, p]));
-      setCurados((d.ids ?? []).map((id: string) => map.get(id)).filter(Boolean));
     } catch {
-      setFrase("Não consegui montar agora, mas dá uma olhada no catálogo abaixo!");
+      setCurados(products.slice(0, 4));
+      setFrase(products.length > 0 ? "Estas são algumas opções da vitrine:" : "Não consegui montar agora, mas dá uma olhada no catálogo abaixo!");
     } finally {
       setCurating(false);
     }

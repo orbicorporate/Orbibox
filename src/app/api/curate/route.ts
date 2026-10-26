@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
     const [{ data: biz }, { data: items }] = await Promise.all([
       supabase.from("businesses").select("name, about_business, differentials, policies, contact_whatsapp, service_modes, brand_voice_summary").eq("id", businessId).maybeSingle(),
-      supabase.from("content_items").select("id, title, description, price, brand_label").eq("business_id", businessId).eq("status", "published").limit(30),
+      supabase.from("content_items").select("id, title, description, price, price_type, price_max, image_url, brand_label").eq("business_id", businessId).eq("status", "published").order("position", { ascending: true }).limit(30),
     ]);
 
     const catalog = (items ?? [])
@@ -121,22 +121,55 @@ Escreva também o convite pra falar com uma pessoa agora ("convite"), curto e es
 Responda APENAS um JSON válido, sem texto antes ou depois:
 {"frase":"...","convite":"...","ids":["id1","id2"]}
 Use só ids que existem no catálogo. Se nada combinar bem, retorne poucos ou nenhum.`;
-      const raw = await callClaude(system, contexto, 400);
-      try {
-        const clean = raw.replace(/```json|```/g, "").trim();
-        const parsed = JSON.parse(clean);
-        const validIds = new Set((items ?? []).map((i) => i.id));
-        const ids = (parsed.ids ?? []).filter((id: string) => validIds.has(id)).slice(0, 4);
-        const limpar = (s: string) => s.replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, ", ");
+      const todos = items ?? [];
+      const limpar = (s: string) => s.replace(/\s*—\s*/g, ", ").replace(/\s*–\s*/g, ", ");
+      // Garantia: se a IA falhar, vier sem ids ou com ids inválidos, a Orbi
+      // ainda mostra itens reais (os que mais combinam com o texto escolhido,
+      // ou os primeiros do catálogo). Nunca promete opções e deixa a lista vazia.
+      const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const palavras = norm(question).split(/[^a-z0-9]+/).filter((w) => w.length >= 3);
+      const porTexto = () => {
+        const pontos = todos.map((i) => {
+          const alvo = norm(`${i.title} ${i.brand_label ?? ""} ${i.description ?? ""}`);
+          return { i, n: palavras.reduce((acc, w) => acc + (alvo.includes(w) ? 1 : 0), 0) };
+        });
+        const achados = pontos.filter((p) => p.n > 0).sort((a, b) => b.n - a.n).map((p) => p.i);
+        return (achados.length > 0 ? achados : todos).slice(0, 4);
+      };
+      const montar = (ids: string[], frase: string, convite: string | null) => {
+        const porId = new Map(todos.map((i) => [i.id, i]));
+        const escolhidos = ids.map((id) => porId.get(id)).filter((x): x is NonNullable<typeof x> => !!x);
         return NextResponse.json({
-          frase: limpar(String(parsed.frase ?? "Separei estas opções pra você:")),
-          convite: parsed.convite ? limpar(String(parsed.convite)) : "Quer falar com a gente agora?",
+          frase,
+          convite,
           // O botão só aparece se o negócio tiver WhatsApp cadastrado.
           whatsapp: biz?.contact_whatsapp ?? null,
-          ids,
+          ids: escolhidos.map((i) => i.id),
+          // Os itens vêm completos daqui: a tela não depende de já ter carregado o produto.
+          itens: escolhidos.map((i) => ({ id: i.id, title: i.title, price: i.price, price_type: i.price_type, price_max: i.price_max, image_url: i.image_url })),
         });
+      };
+      const fraseFallback = "Estas são as opções que mais combinam com o que você escolheu:";
+      let raw = "";
+      try {
+        raw = await callClaude(system, contexto, 800);
       } catch {
-        return NextResponse.json({ frase: "Separei estas opções pra você:", ids: [] });
+        return montar(porTexto().map((i) => i.id), fraseFallback, "Quer falar com a gente agora?");
+      }
+      try {
+        // Pega o primeiro objeto JSON, mesmo com texto ou cercas de código em volta.
+        const ini = raw.indexOf("{"), fim = raw.lastIndexOf("}");
+        const parsed = JSON.parse(raw.slice(ini, fim + 1));
+        const validIds = new Set(todos.map((i) => i.id));
+        let ids: string[] = (Array.isArray(parsed.ids) ? parsed.ids : []).filter((id: string) => validIds.has(id)).slice(0, 4);
+        let frase = limpar(String(parsed.frase ?? "")).trim();
+        if (ids.length === 0) {
+          ids = porTexto().map((i) => i.id);
+          frase = fraseFallback;
+        }
+        return montar(ids, frase || fraseFallback, parsed.convite ? limpar(String(parsed.convite)) : "Quer falar com a gente agora?");
+      } catch {
+        return montar(porTexto().map((i) => i.id), fraseFallback, "Quer falar com a gente agora?");
       }
     }
 
