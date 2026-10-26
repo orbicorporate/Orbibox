@@ -27,13 +27,13 @@ export const CONVERSOES: {
   objetivoConversa: string;
   precisa?: "whatsapp" | "endereco";
 }[] = [
+  { id: "conhecer", rotulo: "Conhecer produtos", principal: "catalogo", reserva: "conhecer", objetivoConversa: "apresentar os produtos e recomendar o mais adequado" },
+  { id: "whatsapp", rotulo: "Falar no WhatsApp", principal: "whatsapp", reserva: "agent", rotuloWhatsapp: { label: "Fale no WhatsApp", subtitle: "Atendimento rápido" }, objetivoConversa: "levar o cliente para o WhatsApp", precisa: "whatsapp" },
+  { id: "oferta", rotulo: "Resgatar uma oferta", principal: "cupom", reserva: "catalogo", objetivoConversa: "oferecer o voucher e levar ao resgate" },
   { id: "comprar", rotulo: "Comprar", principal: "catalogo", reserva: "agent", objetivoConversa: "levar o cliente a comprar" },
   { id: "orcamento", rotulo: "Pedir orçamento", principal: "whatsapp", reserva: "agent", rotuloWhatsapp: { label: "Pedir orçamento", subtitle: "Resposta rápida no WhatsApp" }, objetivoConversa: "entender a necessidade e encaminhar um pedido de orçamento", precisa: "whatsapp" },
-  { id: "whatsapp", rotulo: "Falar no WhatsApp", principal: "whatsapp", reserva: "agent", rotuloWhatsapp: { label: "Fale no WhatsApp", subtitle: "Atendimento rápido" }, objetivoConversa: "levar o cliente para o WhatsApp", precisa: "whatsapp" },
   { id: "agendar", rotulo: "Agendar", principal: "whatsapp", reserva: "agent", rotuloWhatsapp: { label: "Agendar horário", subtitle: "Escolha o melhor dia no WhatsApp" }, objetivoConversa: "levar o cliente a agendar um horário", precisa: "whatsapp" },
   { id: "visitar", rotulo: "Visitar o local", principal: "endereco", reserva: "whatsapp", objetivoConversa: "convidar o cliente a visitar o espaço", precisa: "endereco" },
-  { id: "conhecer", rotulo: "Conhecer produtos", principal: "catalogo", reserva: "conhecer", objetivoConversa: "apresentar os produtos e recomendar o mais adequado" },
-  { id: "oferta", rotulo: "Resgatar uma oferta", principal: "cupom", reserva: "catalogo", objetivoConversa: "oferecer o voucher e levar ao resgate" },
   { id: "contato", rotulo: "Entrar em contato", principal: "whatsapp", reserva: "agent", rotuloWhatsapp: { label: "Fale com a gente", subtitle: "Resposta rápida" }, objetivoConversa: "capturar o contato do cliente", precisa: "whatsapp" },
 ];
 

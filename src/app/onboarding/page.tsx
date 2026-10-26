@@ -188,6 +188,10 @@ export default function OnboardingPage() {
     window.setTimeout(() => setStep((s) => (s === "objetivo" ? "acao" : s)), 260);
   }
 
+  function rolarAoContinuar() {
+    setTimeout(() => document.getElementById("btn-continuar-acao")?.scrollIntoView({ behavior: "smooth", block: "center" }), 250);
+  }
+
   function confirmarRespostas() {
     respondeuRef.current = true;
     registrarFunil("onb_respostas", { meta: { objetivo, conversao } });
@@ -742,9 +746,9 @@ export default function OnboardingPage() {
             </h2>
             <div className="mt-8 grid grid-cols-2 gap-3" role="radiogroup" aria-label="Ação principal do cliente">
               {CONVERSOES.map((c, i) => (
-                <Tile key={c.id} i={i} ativa={conversao === c.id} onClick={() => setConversao(c.id)} titulo={c.rotulo} icone={VISUAL_CONVERSAO[c.id].icone} cor={VISUAL_CONVERSAO[c.id].cor} />
+                <Tile key={c.id} i={i} ativa={conversao === c.id} onClick={() => { setConversao(c.id); rolarAoContinuar(); }} titulo={c.rotulo} icone={VISUAL_CONVERSAO[c.id].icone} cor={VISUAL_CONVERSAO[c.id].cor} />
               ))}
-              <PilulaOrbi i={CONVERSOES.length} ativa={conversao === "orbi"} onClick={() => setConversao("orbi")} />
+              <PilulaOrbi i={CONVERSOES.length} ativa={conversao === "orbi"} onClick={() => { setConversao("orbi"); rolarAoContinuar(); }} />
             </div>
 
             {convEscolhida?.precisa === "whatsapp" && (
@@ -766,7 +770,7 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            <Button className="mt-6 w-full" variant="orbi" disabled={!objetivo || !conversao} onClick={confirmarRespostas}>
+            <Button id="btn-continuar-acao" className="mt-6 w-full" variant="orbi" disabled={!objetivo || !conversao} onClick={confirmarRespostas}>
               {!conversao ? "Escolha uma opção" : "Ver meu Orbibox ✦"}
             </Button>
           </div>
