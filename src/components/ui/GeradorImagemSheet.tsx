@@ -192,7 +192,7 @@ export function GeradorImagemSheet({
                   disabled={gerando}
                   rows={4}
                   maxLength={900}
-                  placeholder={refs.length > 0 ? "Ex.: a logo anexada em destaque, fotografia poética e minimalista com fundo claro" : "Ex.: fotografia poética e minimalista com fundo claro"}
+                  placeholder={refs.length > 0 ? "Ex.: a logo anexada em destaque, fotografia do produto poética e minimalista com fundo claro" : "Ex.: fotografia do produto poética e minimalista com fundo claro"}
                   className="mt-2 w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[14.5px] leading-relaxed outline-none focus:border-on-background disabled:opacity-60"
                 />
               </div>
