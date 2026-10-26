@@ -1929,7 +1929,7 @@ function ItemCard({
 
             <div data-tour="item-formato" data-guia="formato-item" className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
-              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Vale também na página inicial, quando o formato dos itens lá estiver em “Igual à vitrine”.</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Vale também na página inicial, quando o formato dos itens lá estiver em “Igual ao Catálogo”.</p>
               <div className="mt-2 flex gap-2">
                 {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {
                   const ativo = size === s;

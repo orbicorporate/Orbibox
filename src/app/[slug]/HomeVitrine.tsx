@@ -58,11 +58,48 @@ const BOTOES: Record<BotaoPrincipal, { titulo: string; texto: string }> = {
 export type FormatoItens = "vitrine" | "destaque" | "grade" | "carrossel";
 
 const FORMATOS: { v: FormatoItens; titulo: string; texto: string }[] = [
-  { v: "vitrine", titulo: "Igual à vitrine", texto: "Cada item no tamanho que você escolheu no Catálogo (Grande, Largo, Pequeno ou Alto)." },
-  { v: "destaque", titulo: "Um grande e o resto em grade", texto: "O primeiro item grande, os outros em duas colunas." },
-  { v: "grade", titulo: "Grade", texto: "Todos do mesmo tamanho, duas colunas." },
-  { v: "carrossel", titulo: "Carrossel", texto: "Uma linha que rola de lado. Ocupa pouca altura." },
+  { v: "vitrine", titulo: "Igual ao Catálogo", texto: "Cada item no tamanho que você escolheu." },
+  { v: "destaque", titulo: "Um grande + grade", texto: "O primeiro grande, os outros em duas colunas." },
+  { v: "grade", titulo: "Grade", texto: "Todos do mesmo tamanho." },
+  { v: "carrossel", titulo: "Carrossel", texto: "Uma linha que rola de lado." },
 ];
+
+/** Desenho pequeno de cada formato, pra pessoa ver antes de escolher. */
+function MiniFormato({ v, ativo }: { v: FormatoItens; ativo: boolean }) {
+  const b = `rounded-[5px] ${ativo ? "bg-on-background" : "bg-[#CFCFC8]"}`;
+  const fraco = `rounded-[5px] ${ativo ? "bg-on-background/45" : "bg-[#E2E2DC]"}`;
+  return (
+    <span className="flex h-[78px] w-full overflow-hidden rounded-xl bg-[#F2F2EE] p-2" aria-hidden>
+      {v === "vitrine" && (
+        <span className="grid h-full w-full grid-cols-2 grid-rows-3 gap-1">
+          <span className={`${b} col-span-2`} />
+          <span className={`${b} row-span-2`} />
+          <span className={fraco} />
+          <span className={fraco} />
+        </span>
+      )}
+      {v === "destaque" && (
+        <span className="grid h-full w-full grid-cols-2 grid-rows-3 gap-1">
+          <span className={`${b} col-span-2 row-span-2`} />
+          <span className={fraco} />
+          <span className={fraco} />
+        </span>
+      )}
+      {v === "grade" && (
+        <span className="grid h-full w-full grid-cols-2 grid-rows-2 gap-1">
+          <span className={b} /><span className={b} /><span className={fraco} /><span className={fraco} />
+        </span>
+      )}
+      {v === "carrossel" && (
+        <span className="flex h-full w-full items-center gap-1">
+          <span className={`${b} h-[70%] w-[38%] shrink-0`} />
+          <span className={`${b} h-[70%] w-[38%] shrink-0`} />
+          <span className={`${fraco} h-[70%] w-[38%] shrink-0`} />
+        </span>
+      )}
+    </span>
+  );
+}
 
 const MINIMO_COM_FOTO = 2;
 const MAXIMO = 6;
@@ -630,18 +667,23 @@ export function HomeVitrine({
       {editandoFormato && montado && onFormato && createPortal(
         <>
           <button type="button" aria-label="Fechar" onClick={() => setEditandoFormato(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
-          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-white p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-[440px] rounded-t-[28px] bg-[#EFEFEA] p-5 pb-8 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex items-center justify-between">
               <span className="text-[17px] font-medium">Formato dos itens</span>
               <button type="button" onClick={() => setEditandoFormato(false)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] text-white">Concluir</button>
             </div>
-            <div role="radiogroup" className="mt-4 flex flex-col gap-2">
-              {FORMATOS.map((f) => (
-                <button key={f.v} type="button" role="radio" aria-checked={formato === f.v} onClick={() => onFormato(f.v)} className={`rounded-2xl border-2 p-3.5 text-left ${formato === f.v ? "border-on-background" : "border-divider"}`}>
-                  <span className="block text-[14.5px] font-medium">{f.titulo}</span>
-                  <span className="mt-0.5 block text-[13px] text-text-secondary">{f.texto}</span>
-                </button>
-              ))}
+            <div role="radiogroup" aria-label="Formato dos itens" className="mt-4 grid grid-cols-2 gap-2.5">
+              {FORMATOS.map((f) => {
+                const ativo = formato === f.v;
+                return (
+                  <button key={f.v} type="button" role="radio" aria-checked={ativo} onClick={() => onFormato(f.v)} className={`relative flex flex-col rounded-[20px] p-2.5 text-left transition active:scale-[0.98] ${ativo ? "bg-white ring-2 ring-on-background" : "bg-white ring-1 ring-black/[0.08]"}`}>
+                    <MiniFormato v={f.v} ativo={ativo} />
+                    <span className="mt-2 block px-0.5 text-[14px] font-semibold leading-tight">{f.titulo}</span>
+                    <span className="mt-0.5 block px-0.5 text-[12px] leading-snug text-text-secondary">{f.texto}</span>
+                    {ativo && <span className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#1F9E4C] text-[13px] text-white" aria-hidden>✓</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </>,
