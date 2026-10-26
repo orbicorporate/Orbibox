@@ -1081,7 +1081,7 @@ export function VisitorExperience({
           </Link>
           <button
             onClick={() => setPreviewMode(false)}
-            className="flex items-center gap-1.5 rounded-full bg-on-background/90 px-3.5 py-2 text-[13px] font-medium text-white shadow-lg backdrop-blur"
+            className="cupom-box orbi-treme flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium text-white shadow-[0_8px_20px_-6px_rgba(188,20,50,0.6)]"
           >
             ✎ Editar
           </button>

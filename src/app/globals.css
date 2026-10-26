@@ -282,6 +282,37 @@ body {
   .box-metal::before { animation: none; opacity: 0; }
 }
 
+/* Seleção com as cores da Orbi: degradê que corre devagar por baixo e, ao
+   marcar, uma faixa forte de luz passa de ponta a ponta uma vez. */
+.sel-orbi {
+  position: relative;
+  overflow: hidden;
+  color: #111318;
+  background-image: linear-gradient(120deg, #A3E4C2, #6EC5D6, #9BE3D0, #7FD1E6, #A3E4C2);
+  background-size: 300% 300%;
+  animation: selOrbiFlow 6s ease-in-out infinite;
+}
+.sel-orbi::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, rgba(255,255,255,0) 20%, rgba(255,255,255,0.95) 45%, rgba(110,197,214,0.9) 55%, rgba(163,228,194,0) 80%);
+  transform: translateX(-130%);
+  animation: selOrbiSweep 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) 1 forwards;
+}
+@keyframes selOrbiFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes selOrbiSweep {
+  to { transform: translateX(130%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sel-orbi { animation: none; }
+  .sel-orbi::after { animation: none; opacity: 0; }
+}
+
 /* Sino de notificação — pisca de leve enquanto tiver conversa não vista. */
 .notif-badge {
   animation: notifPulse 1.4s ease-in-out infinite;
@@ -555,6 +586,19 @@ body {
   60% { transform: translateX(2px) rotate(1deg); }
   75% { transform: translateX(-1px); }
 }
+/* Tremidinha rápida a cada poucos segundos, chama atenção sem cansar. */
+@keyframes orbiTreme {
+  0%, 62%, 100% { transform: translateX(0) rotate(0deg); }
+  66% { transform: translateX(-3px) rotate(-3deg); }
+  70% { transform: translateX(3px) rotate(3deg); }
+  74% { transform: translateX(-3px) rotate(-2.5deg); }
+  78% { transform: translateX(3px) rotate(2.5deg); }
+  82% { transform: translateX(-2px) rotate(-1.5deg); }
+  86% { transform: translateX(2px) rotate(1deg); }
+  90% { transform: translateX(0) rotate(0deg); }
+}
+.orbi-treme { animation: orbiTreme 3s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .orbi-treme { animation: none; } }
 .orbi-shake-cta {
   animation: orbiShake 0.5s ease-in-out 1s 1;
   animation-iteration-count: infinite;

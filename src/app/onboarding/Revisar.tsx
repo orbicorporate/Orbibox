@@ -71,7 +71,7 @@ function corDoTexto(hex: string) {
   return l > 0.62 ? "#111318" : "#FFFFFF";
 }
 
-const campo = "w-full rounded-full bg-surface-soft px-4 py-3 text-[15px] outline-none ring-1 ring-transparent focus:ring-on-background/30";
+const campo = "w-full rounded-full bg-surface-soft px-4 py-3 text-center text-[15px] outline-none ring-1 ring-transparent focus:ring-on-background/30";
 const chip = (on: boolean) => `min-h-[40px] rounded-full px-4 text-[14px] font-medium transition-colors ${on ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`;
 
 type Etapa = "logo" | "cores" | "contato" | "endereco" | "categorias" | "itens" | "resumo";
@@ -99,17 +99,13 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
   // Categorias: as do site (ou as sugestões do ramo) mais as que a pessoa escreveu.
   const catsIniciais = dados.categorias.length > 0 ? dados.categorias : dados.sugestoes.map((nome) => ({ nome, n: 0, foto: null }));
-  const [cats, setCats] = useState<CategoriaRevisao[]>(catsIniciais);
+  const [cats] = useState<CategoriaRevisao[]>(catsIniciais);
   const [catsMarcadas, setCatsMarcadas] = useState<string[]>([...catsIniciais].sort((a, b) => b.n - a.n).slice(0, 3).map((c) => c.nome));
-  const [novaCat, setNovaCat] = useState("");
 
   // Itens: os do site mais os novos. Começa com os 3 primeiros com foto marcados.
-  const [itens, setItens] = useState<ItemRevisao[]>(dados.itens);
+  const [itens] = useState<ItemRevisao[]>(dados.itens);
   const [itensMarcados, setItensMarcados] = useState<string[]>(dados.itens.filter((i) => i.foto).slice(0, 3).map((i) => i.id));
   const [filtro, setFiltro] = useState<string | null>(null);
-  const [novoItem, setNovoItem] = useState("");
-  const [novoItemCat, setNovoItemCat] = useState<string | null>(null);
-  const [adicionando, setAdicionando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
   const etapas: Etapa[] = ["logo", "cores", "contato", "endereco", "categorias", "itens", "resumo"];
@@ -142,13 +138,6 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
       return [...a, nome];
     });
   }
-  function adicionarCat() {
-    const nome = novaCat.trim().slice(0, 30);
-    if (!nome) return;
-    if (!cats.some((c) => c.nome.toLowerCase() === nome.toLowerCase())) setCats((c) => [...c, { nome, n: 0, foto: null }]);
-    if (!catsMarcadas.includes(nome) && catsMarcadas.length < MAX_CATEGORIAS) setCatsMarcadas((a) => [...a, nome]);
-    setNovaCat("");
-  }
   function alternarItem(id: string) {
     setAviso(null);
     setItensMarcados((a) => {
@@ -156,14 +145,6 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
       if (a.length >= MAX_ITENS) { setAviso(`Até ${MAX_ITENS} em destaque. Desmarque um para trocar.`); return a; }
       return [...a, id];
     });
-  }
-  function adicionarItem() {
-    const nome = novoItem.trim().slice(0, 60);
-    if (!nome) return;
-    const id = `n-${Date.now()}`;
-    setItens((l) => [{ id, nome, foto: null, categoria: novoItemCat, sub: "Novo" }, ...l]);
-    if (itensMarcados.length < MAX_ITENS) setItensMarcados((a) => [...a, id]);
-    setNovoItem("");
   }
 
   function confirmar() {
@@ -187,7 +168,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
     contato: { t: "WhatsApp ou telefone", d: "Vira o botão de contato." },
     endereco: { t: "Endereço", d: "Vira a bolinha de mapa. Pule se não atende no local." },
     categorias: { t: dados.servico ? "Tipos de serviço" : "Categorias", d: dados.categorias.length > 0 ? `A Orbi achou ${dados.categorias.length} no seu site. Toque nas mais importantes.` : "Toque nas que combinam com você ou escreva as suas." },
-    itens: { t: `Seus ${palavraItens}`, d: itens.length > 0 ? `Toque em até ${MAX_ITENS} para destaque na página inicial. Fotos você coloca depois.` : `Escreva seus principais ${palavraItens}.` },
+    itens: { t: `Seus ${palavraItens}`, d: itens.length > 0 ? `Toque em até ${MAX_ITENS} para destaque na página inicial. Fotos você coloca depois.` : `Você inclui seus ${palavraItens} depois, no painel.` },
     resumo: { t: "Sua página inicial está sendo montada", d: "Vamos concluir juntos, logo depois de abrir." },
   };
 
@@ -213,11 +194,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logo} alt="" className="h-full w-full object-contain" />
             </span>
-          ) : etapa === "cores" && cores.length > 0 ? (
-            <span className="icone-etapa flex h-[92px] w-[92px] items-center justify-center rounded-full shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)]" style={{ backgroundColor: VISUAL_ETAPA.cores.cor }} aria-hidden>
-              <span className="grid grid-cols-2 gap-1">{cores.slice(0, 4).map((c, i) => <span key={i} className="h-5 w-5 rounded-full ring-2 ring-white/80" style={{ backgroundColor: c }} />)}</span>
-            </span>
-          ) : (
+          ) : etapa === "cores" ? null : (
             <IconeOrbi nome={VISUAL_ETAPA[etapa].icone} cor={VISUAL_ETAPA[etapa].cor} tamanho={92} traco={1.5} className="icone-etapa shadow-[0_22px_40px_-18px_rgba(17,19,24,0.55)]" />
           )}
           <h1 className="mt-5 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">{titulos[etapa].t}</h1>
@@ -228,14 +205,6 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
       <section className="flex flex-1 flex-col justify-center">
         {etapa === "logo" && (
           <div className="flex flex-col items-center gap-4 py-2">
-            <span className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-surface-soft ring-1 ring-black/10">
-              {logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logo} alt="" className="h-full w-full object-contain p-3" />
-              ) : (
-                <span className="text-[13px] text-text-tertiary">Sem logo</span>
-              )}
-            </span>
             <input ref={arquivo} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void enviarLogo(f); e.target.value = ""; }} />
             <button type="button" onClick={() => arquivo.current?.click()} disabled={enviando} className="rounded-full px-5 py-2.5 text-[14px] font-medium text-text-secondary ring-[0.5px] ring-black/25 disabled:opacity-50">
               {enviando ? "Enviando…" : logo ? "Trocar logotipo" : "Enviar logotipo"}
@@ -244,7 +213,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         )}
 
         {etapa === "cores" && (
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             {cores.map((c, i) => (
               <span key={i} className="relative">
                 <label className="block h-14 w-14 cursor-pointer rounded-full ring-1 ring-black/15" style={{ backgroundColor: c }}>
@@ -267,7 +236,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         {etapa === "contato" && (
           <>
             <input value={whatsapp} onChange={(e) => setWhatsapp(formatarWhatsapp(e.target.value))} inputMode="tel" placeholder="(11) 99999-9999" className={campo} />
-            {whatsapp.trim() !== "" && !waOk && <p className="mt-2 text-[12.5px] text-red-600">Número incompleto. Coloque o DDD.</p>}
+            {whatsapp.trim() !== "" && !waOk && <p className="mt-2 text-center text-[12.5px] text-red-600">Número incompleto. Coloque o DDD.</p>}
           </>
         )}
 
@@ -275,19 +244,19 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
           <>
             <input value={endereco} onChange={(e) => setEndereco(e.target.value)} placeholder="Rua, número, cidade" className={campo} />
             {endereco.trim() && (
-              <div className="mt-3">
+              <div className="mt-3 flex flex-col items-center">
                 <button type="button" aria-pressed={comHorario} onClick={() => setComHorario((v) => !v)} className={chip(comHorario)}>
                   {comHorario ? "✓ Mostrar Aberto agora no mapa" : "Mostrar Aberto agora no mapa"}
                 </button>
                 {comHorario && (
-                  <div className="mt-3">
-                    <div className="flex flex-wrap gap-1.5">
+                  <div className="mt-3 flex flex-col items-center">
+                    <div className="flex flex-wrap justify-center gap-1.5">
                       {DIAS_CURTOS.map((d, i) => {
                         const on = dias.includes(i);
                         return <button key={d} type="button" aria-pressed={on} onClick={() => setDias((a) => (on ? a.filter((x) => x !== i) : [...a, i]))} className={`h-9 min-w-[44px] rounded-full px-3 text-[13px] font-medium ${on ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{d}</button>;
                       })}
                     </div>
-                    <div className="mt-3 flex items-center gap-2 text-[13px] text-text-secondary">
+                    <div className="mt-3 flex items-center justify-center gap-2 text-[13px] text-text-secondary">
                       <span>Das</span>
                       <input type="time" value={abre} onChange={(e) => setAbre(e.target.value)} className="rounded-full bg-surface-soft px-3 py-2 text-[14px] outline-none" />
                       <span>às</span>
@@ -302,16 +271,13 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
         {etapa === "categorias" && (
           <>
-            <div className="flex items-center justify-between">
-              <p className="text-[12.5px] font-medium text-text-tertiary">As marcadas viram bolinhas no topo da página inicial</p>
-              <span className="text-[12px] font-medium text-text-tertiary">{catsMarcadas.length}/{MAX_CATEGORIAS}</span>
-            </div>
+            <p className="text-center text-[12.5px] font-medium text-text-tertiary">As marcadas viram bolinhas no topo da página inicial · {catsMarcadas.length}/{MAX_CATEGORIAS}</p>
             <div className="mt-3 flex flex-col gap-2">
               {cats.map((c) => {
                 const ordem = catsMarcadas.indexOf(c.nome);
                 const on = ordem >= 0;
                 return (
-                  <button key={c.nome} type="button" aria-pressed={on} onClick={() => alternarCat(c.nome)} className={`flex items-center gap-3 rounded-2xl p-2 pr-3 text-left transition-colors ${on ? "bg-on-background text-white" : "bg-surface-soft"}`}>
+                  <button key={c.nome} type="button" aria-pressed={on} onClick={() => alternarCat(c.nome)} className={`flex items-center gap-3 rounded-2xl p-2 pr-3 text-left transition-colors ${on ? "sel-orbi" : "bg-surface-soft"}`}>
                     <span className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-white/80">
                       {c.foto ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -320,34 +286,31 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
                         <span className="block h-full w-full" style={{ backgroundColor: usaveis[cats.indexOf(c) % usaveis.length] }} />
                       )}
                     </span>
-                    <span className="min-w-0 flex-1">
+                    <span className="relative z-10 min-w-0 flex-1 text-center">
                       <span className="block truncate text-[15px] font-medium">{c.nome}</span>
-                      <span className={`block text-[12px] ${on ? "text-white/70" : "text-text-tertiary"}`}>{c.n > 0 ? `${c.n} ${c.n === 1 ? "item" : "itens"} do site` : "Nova"}</span>
+                      <span className={`block text-[12px] ${on ? "text-on-background/70" : "text-text-tertiary"}`}>{c.n > 0 ? `${c.n} ${c.n === 1 ? "item" : "itens"} do site` : "Nova"}</span>
                     </span>
-                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12.5px] font-semibold ${on ? "bg-white text-on-background" : "bg-white text-transparent ring-[0.5px] ring-black/15"}`}>{on ? ordem + 1 : "·"}</span>
+                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12.5px] font-semibold ${on ? "relative z-10 bg-white text-on-background" : "bg-white text-transparent ring-[0.5px] ring-black/15"}`}>{on ? ordem + 1 : "·"}</span>
                   </button>
                 );
               })}
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); adicionarCat(); }} className="mt-3 flex items-center gap-2 rounded-full bg-surface-soft p-1.5 pl-4">
-              <input value={novaCat} onChange={(e) => setNovaCat(e.target.value)} placeholder={dados.servico ? "Outro tipo de serviço" : "Outra categoria"} className="min-w-0 flex-1 bg-transparent text-[14.5px] outline-none" enterKeyHint="done" />
-              <button type="submit" disabled={!novaCat.trim()} className="rounded-full bg-on-background px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-30">+ Adicionar</button>
-            </form>
+            <p className="mt-4 text-center text-[12.5px] leading-snug text-text-tertiary">Depois você cria e edita categorias no painel.</p>
           </>
         )}
 
         {etapa === "itens" && (
           <>
             {catsComItens.length > 1 && (
-              <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]">
-                <button type="button" onClick={() => setFiltro(null)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${filtro === null ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>Todos</button>
+              <div className="mb-3 flex flex-wrap justify-center gap-1.5">
+                <button type="button" onClick={() => setFiltro(null)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${filtro === null ? "sel-orbi" : "bg-surface-soft text-text-secondary"}`}>Todos</button>
                 {catsComItens.map((c) => (
-                  <button key={c.nome} type="button" onClick={() => setFiltro(c.nome)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${filtro === c.nome ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>{c.nome}</button>
+                  <button key={c.nome} type="button" onClick={() => setFiltro(c.nome)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${filtro === c.nome ? "sel-orbi" : "bg-surface-soft text-text-secondary"}`}>{c.nome}</button>
                 ))}
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="flex flex-wrap justify-center gap-2.5">
               {listaFiltrada.map((it) => {
                 const ordem = itensMarcados.indexOf(it.id);
                 const on = ordem >= 0;
@@ -358,7 +321,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
                     type="button"
                     aria-pressed={on}
                     onClick={() => alternarItem(it.id)}
-                    className={`relative aspect-square overflow-hidden rounded-[20px] text-left transition-transform active:scale-[0.97] ${on ? "ring-[2.5px] ring-on-background ring-offset-2" : ""}`}
+                    className={`relative aspect-square w-[calc(50%-5px)] overflow-hidden rounded-[20px] text-left transition-transform active:scale-[0.97] ${on ? "ring-[2.5px] ring-[#6EC5D6] ring-offset-2" : ""}`}
                     style={it.foto ? undefined : { backgroundColor: bg }}
                   >
                     {it.foto && (
@@ -372,33 +335,13 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
                       <span className="block text-[14px] font-semibold leading-tight line-clamp-2" style={{ color: it.foto ? "#fff" : corDoTexto(bg) }}>{it.nome}</span>
                       {it.sub && it.sub !== "Novo" && <span className="mt-0.5 block truncate text-[11.5px]" style={{ color: it.foto ? "rgba(255,255,255,.8)" : corDoTexto(bg), opacity: it.foto ? 1 : 0.75 }}>{it.sub}</span>}
                     </span>
-                    {on && <span className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-on-background text-[12.5px] font-semibold text-white shadow">{ordem + 1}</span>}
+                    {on && <span className="orbi-gradient absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full text-[12.5px] font-semibold text-on-background shadow">{ordem + 1}</span>}
                   </button>
                 );
               })}
-              {!adicionando && (
-                <button type="button" onClick={() => setAdicionando(true)} className="flex aspect-square flex-col items-center justify-center gap-1 rounded-[20px] bg-surface-soft text-text-secondary active:scale-[0.97]">
-                  <span className="text-[26px] leading-none">+</span>
-                  <span className="text-[13px] font-medium">Adicionar</span>
-                </button>
-              )}
             </div>
 
-            {(adicionando || itens.length === 0) && (
-              <form onSubmit={(e) => { e.preventDefault(); adicionarItem(); }} className="mt-3 rounded-2xl bg-surface-soft p-2">
-                <div className="flex items-center gap-2 rounded-full bg-white p-1.5 pl-4">
-                  <input autoFocus={itens.length > 0} value={novoItem} onChange={(e) => setNovoItem(e.target.value)} placeholder={dados.servico ? "Ex: Corte feminino" : "Nome do produto"} className="min-w-0 flex-1 bg-transparent text-[14.5px] outline-none" enterKeyHint="done" />
-                  <button type="submit" disabled={!novoItem.trim()} className="rounded-full bg-on-background px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-30">Ok</button>
-                </div>
-                {cats.length > 0 && novoItem.trim() && (
-                  <div className="mt-2 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]">
-                    {cats.map((c) => (
-                      <button key={c.nome} type="button" onClick={() => setNovoItemCat(novoItemCat === c.nome ? null : c.nome)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${novoItemCat === c.nome ? "bg-on-background text-white" : "bg-white text-text-secondary"}`}>{c.nome}</button>
-                    ))}
-                  </div>
-                )}
-              </form>
-            )}
+            <p className="mt-4 text-center text-[12.5px] leading-snug text-text-tertiary">Depois você inclui e edita {palavraItens} e categorias no painel.</p>
 
           </>
         )}

@@ -325,13 +325,13 @@ export function VitrineMontando({
         : ETAPAS_LONGAS[Math.min(etapa - ETAPAS.length, ETAPAS_LONGAS.length - 1)];
 
   return (
-    <div className="flex flex-col items-center py-4 text-center">
+    <div className="flex flex-col items-center pb-4 pt-12 text-center">
       {/* Celular */}
       {/* Celular em perspectiva 3D, flutuando, com reflexo de vidro e sombra no chão. */}
       <div className="relative [perspective:1400px]">
-      <div className="celular-flutua relative w-[300px] rounded-[48px] bg-gradient-to-b from-[#2A2C31] to-[#0E0F12] p-[10px] shadow-[0_50px_80px_-30px_rgba(17,19,24,0.55),0_0_0_1px_rgba(255,255,255,0.06)_inset]">
-        <span aria-hidden className="pointer-events-none absolute inset-0 z-30 rounded-[48px] bg-[linear-gradient(115deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_38%)]" />
-        <div className="relative h-[560px] overflow-hidden rounded-[39px] bg-background-main">
+      <div className="celular-flutua relative w-[300px] rounded-[44px] bg-gradient-to-b from-[#2A2C31] to-[#0E0F12] p-[4px] shadow-[0_50px_80px_-30px_rgba(17,19,24,0.55),0_0_0_1px_rgba(255,255,255,0.06)_inset]">
+        <span aria-hidden className="pointer-events-none absolute inset-0 z-30 rounded-[44px] bg-[linear-gradient(115deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_38%)]" />
+        <div className="relative h-[560px] overflow-hidden rounded-[40px] bg-background-main">
           <div className="absolute left-1/2 top-2 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-on-background" />
           <div className="flex h-full flex-col px-3 pb-3 pt-10">
             <div className="flex items-center gap-2">

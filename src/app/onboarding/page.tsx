@@ -738,9 +738,8 @@ export default function OnboardingPage() {
         {step === "acao" && (
           <div key="acao">
             <h2 className="orbi-linha-entra mt-7 font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.01em]">
-              O que o cliente deve fazer?
+              Qual ação mais importante do seu cliente quando ele chegar no seu Orbibox?
             </h2>
-            <p className="orbi-linha-entra mt-1 text-[14px] text-text-secondary">Vira o primeiro botão.</p>
             <div className="mt-5 grid grid-cols-2 gap-2.5" role="radiogroup" aria-label="Ação principal do cliente">
               {CONVERSOES.map((c, i) => (
                 <Tile key={c.id} i={i} ativa={conversao === c.id} onClick={() => setConversao(c.id)} titulo={c.rotulo} icone={VISUAL_CONVERSAO[c.id].icone} cor={VISUAL_CONVERSAO[c.id].cor} />
@@ -838,11 +837,11 @@ function Tile({ i, ativa, onClick, titulo, icone, cor }: { i: number; ativa: boo
       aria-checked={ativa}
       onClick={onClick}
       style={{ animationDelay: `${i * 0.05}s` }}
-      className={`orbi-linha-entra relative flex min-h-[112px] flex-col items-start justify-between rounded-[24px] p-3.5 text-left backdrop-blur-xl transition-all duration-200 active:scale-[0.96] ${ativa ? "scale-[1.02] bg-on-background text-white shadow-[0_14px_30px_-14px_rgba(17,19,24,0.6)]" : "bg-white/55 ring-1 ring-white/80 shadow-[0_8px_24px_-16px_rgba(17,19,24,0.25)]"}`}
+      className={`orbi-linha-entra relative flex min-h-[112px] flex-col items-start justify-between rounded-[24px] p-3.5 text-left backdrop-blur-xl transition-all duration-200 active:scale-[0.96] ${ativa ? "sel-orbi scale-[1.02] shadow-[0_14px_30px_-14px_rgba(110,197,214,0.8)]" : "bg-white/55 ring-1 ring-white/80 shadow-[0_8px_24px_-16px_rgba(17,19,24,0.25)]"}`}
     >
       <IconeOrbi nome={icone} cor={cor} tamanho={44} />
-      <span className="text-[15px] font-medium leading-tight">{titulo}</span>
-      {ativa && <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[12px] text-on-background" aria-hidden>✓</span>}
+      <span className="relative z-10 text-[15px] font-medium leading-tight">{titulo}</span>
+      {ativa && <span className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-on-background text-[12px] text-white" aria-hidden>✓</span>}
     </button>
   );
 }
@@ -855,7 +854,7 @@ function PilulaOrbi({ i, ativa, onClick }: { i: number; ativa: boolean; onClick:
       aria-checked={ativa}
       onClick={onClick}
       style={{ animationDelay: `${i * 0.05}s` }}
-      className={`orbi-linha-entra col-span-2 flex min-h-[52px] items-center justify-center gap-2 rounded-full text-[14px] font-medium backdrop-blur-xl transition-all active:scale-[0.98] ${ativa ? "bg-on-background text-white" : "bg-white/55 text-text-secondary ring-1 ring-white/80"}`}
+      className={`orbi-linha-entra col-span-2 flex min-h-[52px] items-center justify-center gap-2 rounded-full text-[14px] font-medium backdrop-blur-xl transition-all active:scale-[0.98] ${ativa ? "sel-orbi" : "bg-white/55 text-text-secondary ring-1 ring-white/80"}`}
     >
       <span aria-hidden>✦</span> Deixe a Orbi decidir
     </button>
