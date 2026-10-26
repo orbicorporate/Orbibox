@@ -173,14 +173,14 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       {cluster && (slotTopo ? createPortal(cluster, slotTopo) : <div className="flex flex-wrap items-center justify-center gap-2">{cluster}</div>)}
 
       {!isOwner && !eu.minhaAvaliacao && (
-        <div className="nr-home flex items-center gap-1.5" aria-label="Dê sua nota">
-          <span className="text-[12px] text-text-tertiary">Dê sua nota</span>
+        <div className="nr-home flex items-center gap-1.5" aria-label="Avalie">
+          <span className="text-[12px] text-text-tertiary">Avalie</span>
           <span className="flex" role="radiogroup" aria-label="Nota">
             {[1, 2, 3, 4, 5].map((n) => (
               <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
                 onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin("avaliar", null); }}
-                className="grid h-8 w-7 place-items-center active:scale-90">
-                <Estrela cheia={false} tam={15} />
+                className="grid h-9 w-8 place-items-center active:scale-90">
+                <Estrela cheia={false} tam={19} />
               </button>
             ))}
           </span>
