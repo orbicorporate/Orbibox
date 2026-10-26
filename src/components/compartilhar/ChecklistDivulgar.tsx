@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 /**
@@ -42,6 +42,35 @@ export function conferirAntesDeCompartilhar(slug: string, compartilhar: () => vo
     return;
   }
   window.dispatchEvent(new CustomEvent<Pedido>(EVENTO, { detail: { slug, compartilhar } }));
+}
+
+/** Largura de um celular de verdade: a página renderiza assim e a prévia só encolhe, sem quebrar nomes. */
+const LARGURA_CELULAR = 390;
+
+function PreviaEscalada({ src, onLoad }: { src: string; onLoad: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [caixa, setCaixa] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const medir = () => setCaixa({ w: el.clientWidth, h: el.clientHeight });
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const escala = caixa.w > 0 ? caixa.w / LARGURA_CELULAR : 1;
+  return (
+    <div ref={ref} className="h-full w-full overflow-hidden">
+      <iframe
+        src={src}
+        title="Prévia"
+        onLoad={onLoad}
+        className="origin-top-left border-0"
+        style={{ width: LARGURA_CELULAR, height: caixa.h / escala, transform: `scale(${escala})` }}
+      />
+    </div>
+  );
 }
 
 type Tela = "pergunta" | "catalogo" | "home" | "pronto";
@@ -106,7 +135,7 @@ export function ChecklistDivulgarHost() {
             <p className="mt-2 text-[17px] font-semibold">{tour ? (tela === "home" ? "Confira as bolinhas, as tags e o destaque" : "Confira os itens do catálogo") : "Está pronto para divulgar?"}</p>
             {/* Prévia de celular: a página como o cliente vê. */}
             <div className="relative mx-auto mt-3 min-h-0 w-full max-w-[300px] flex-1 overflow-hidden rounded-[24px] border-[4px] border-[#16171a] bg-white" style={{ height: "min(56dvh, 520px)" }}>
-              <iframe key={destino} src={destino} title="Prévia" onLoad={() => setCarregando(false)} className="h-full w-full border-0" />
+              <PreviaEscalada key={destino} src={destino} onLoad={() => setCarregando(false)} />
               {carregando && <div className="orbi-shimmer absolute inset-0 bg-[#F2F2EE]" aria-hidden />}
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
