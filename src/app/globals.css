@@ -1632,6 +1632,14 @@ html[data-embed] .embed-oculta { display: none !important; }
 }
 .suporte-piscar { animation: suporte-piscar 14s ease-in-out 4s infinite; }
 @media (prefers-reduced-motion: reduce) { .suporte-piscar { animation: none; } }
+/* Versão rápida, para a bolinha de ajuda da página do dono. */
+@keyframes suporte-piscar-rapido {
+  0%, 40%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); background-color: #fff; color: #5b5f66; }
+  50% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); background-color: #dc2626; color: #fff; }
+  90% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); background-color: #dc2626; color: #fff; }
+}
+.suporte-piscar-rapido { animation: suporte-piscar-rapido 1.6s ease-in-out 0.5s infinite; }
+@media (prefers-reduced-motion: reduce) { .suporte-piscar-rapido { animation: none; } }
 
 /* Botão do passo a passo: degradê cereja que respira, com brilho passando. */
 @keyframes passoCerejaFluxo {

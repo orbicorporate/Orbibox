@@ -1064,7 +1064,7 @@ export function VisitorExperience({
           >
             Painel
           </Link>
-          <Link href="/admin/suporte" aria-label="Suporte e ajuda" title="Suporte" className="suporte-piscar flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-white/90 text-[14px] font-medium text-text-secondary shadow-lg">?</Link>
+          <Link href="/admin/suporte" aria-label="Suporte e ajuda" title="Suporte" className="suporte-piscar-rapido flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-white/90 text-[14px] font-medium text-text-secondary shadow-lg">?</Link>
           <button
             onClick={() => setPreviewMode(true)}
             className="flex items-center gap-1.5 rounded-full bg-surface-white/90 px-3.5 py-2 text-[13px] font-medium text-text-secondary shadow-lg backdrop-blur"
