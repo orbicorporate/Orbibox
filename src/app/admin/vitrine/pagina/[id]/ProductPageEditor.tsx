@@ -525,7 +525,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
               <p className="mb-3 text-[12px] uppercase tracking-[0.14em] text-text-tertiary">Adicionar fotos e vídeos</p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={() => setFotosProntas(true)} className="orbi-gradient rounded-full p-[1.5px] transition-transform active:scale-[0.98]">
-                  <span className="flex min-h-[37px] items-center gap-1.5 rounded-full bg-surface-white px-4 text-[13px] text-on-background">✦ Foto pronta</span>
+                  <span className="flex min-h-[37px] items-center gap-1.5 rounded-full bg-surface-white px-4 text-[13px] text-on-background">✦ Busca Web</span>
                 </button>
                 <button type="button" onClick={() => setDaGaleria(true)} className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-soft px-4 text-[13px] text-on-background disabled:opacity-50">Da galeria</button>
                 <button type="button" onClick={() => inputRef.current?.click()} disabled={enviando} className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-surface-soft px-4 text-[13px] text-on-background disabled:opacity-50">{enviando ? "Enviando…" : "Enviar foto"}</button>

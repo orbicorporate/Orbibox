@@ -230,7 +230,7 @@ export function ImageUpload({
           {/* Três bolinhas, minimalistas: cor, ícone e uma palavra. */}
           <div className="mt-3 grid grid-cols-3">
             {[
-              { t: "Foto pronta", bg: "linear-gradient(135deg,#C7F284,#6FD8C4)", ic: <path d="M21 16l-5-5-8 9M3 4h18v16H3zM9 10a2 2 0 1 0 0-.01" />, f: () => setShowFotos(true), on: false },
+              { t: "Busca Web", bg: "linear-gradient(135deg,#C7F284,#6FD8C4)", ic: <path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-4.3-4.3" />, f: () => setShowFotos(true), on: false },
               { t: "Galeria", bg: "linear-gradient(135deg,#9EC5FF,#B69CFF)", ic: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />, f: () => setShowGaleria(true), on: false },
               { t: "Criar com IA", bg: "linear-gradient(135deg,#FFD9A8,#FF9FB8)", ic: <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />, f: abrirPrompt, on: showPrompt },
             ].map((o) => (
