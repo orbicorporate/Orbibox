@@ -47,7 +47,7 @@ type Preset = {
 const POSICOES: { v: Posicao; r: string }[] = [
   { v: "escondido", r: "Escondido" },
   { v: "bolinha", r: "Bolinha" },
-  { v: "destaque", r: "Destaque" },
+  { v: "destaque", r: "Tag" },
 ];
 
 /**
@@ -332,7 +332,7 @@ export function FolhaHome({
             <div role="radiogroup" className="grid grid-cols-2 gap-1 rounded-full bg-surface-soft p-1">
               {(["bolinha", "destaque"] as const).map((p) => (
                 <button key={p} type="button" role="radio" aria-checked={onde === p} onClick={() => setOnde(p)} className={`min-h-[38px] rounded-full text-[13.5px] font-medium ${onde === p ? "bg-on-background text-white" : "text-text-secondary"}`}>
-                  {p === "bolinha" ? "Bolinha" : "Destaque"}
+                  {p === "bolinha" ? "Bolinha" : "Tag"}
                 </button>
               ))}
             </div>
@@ -394,7 +394,7 @@ export function FolhaHome({
               </label>
             )}
             {erro && <p role="alert" className="text-[13px] text-red-600">{erro}</p>}
-            <button type="submit" disabled={salvando} className="min-h-[48px] rounded-full bg-button-primary text-[15px] font-medium text-white disabled:opacity-50">{salvando ? "Adicionando..." : onde === "destaque" ? "Adicionar em destaque" : "Adicionar como bolinha"}</button>
+            <button type="submit" disabled={salvando} className="min-h-[48px] rounded-full bg-button-primary text-[15px] font-medium text-white disabled:opacity-50">{salvando ? "Adicionando..." : onde === "destaque" ? "Adicionar como tag" : "Adicionar como bolinha"}</button>
           </form>
         )}
 
@@ -412,7 +412,7 @@ export function FolhaHome({
             </button>
             {erro && <p role="alert" className="text-[13px] text-red-600">{erro}</p>}
             <button type="button" onClick={() => void criarPdf()} disabled={!nomePdf.trim() || !filePdf || salvando} className="min-h-[48px] rounded-full bg-on-background text-[15px] font-semibold text-white disabled:opacity-40 active:scale-[0.98]">
-              {salvando ? "Criando o botão…" : onde === "destaque" ? "Criar botão em destaque" : "Criar botão como bolinha"}
+              {salvando ? "Criando o botão…" : onde === "destaque" ? "Criar botão como tag" : "Criar botão como bolinha"}
             </button>
           </div>
         )}
@@ -447,12 +447,12 @@ function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHom
         )}
         {soDestaque && (
           <button type="button" role="switch" aria-checked={l.pos === "destaque"} onClick={() => onMudar(l, l.pos === "destaque" ? "bolinha" : "destaque")} className={`min-h-[36px] shrink-0 rounded-full px-4 text-[13px] font-medium ${l.pos === "destaque" ? "bg-on-background text-white" : "border border-divider text-text-secondary"}`}>
-            {l.pos === "destaque" ? "Em destaque" : "Destacar"}
+            {l.pos === "destaque" ? "Tag ligada" : "Virar tag"}
           </button>
         )}
       </div>
       {!soDestaque && l.tipo !== "item" && l.pos === "escondido" && (
-        <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-[12.5px] leading-snug text-text-secondary">Desligado: não aparece na página. Escolha Bolinha ou Destaque para ligar.</p>
+        <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-[12.5px] leading-snug text-text-secondary">Desligado: não aparece na página. Escolha Bolinha ou Tag para ligar.</p>
       )}
       {!soDestaque && (
         <div role="radiogroup" aria-label={`Onde mostrar ${l.titulo}`} className={`mt-2 grid gap-1 rounded-full bg-surface-soft p-1 ${l.semEscondido ? "grid-cols-2" : "grid-cols-3"}`}>
@@ -465,7 +465,7 @@ function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHom
       )}
       {!soDestaque && (l.pos !== "escondido" || l.tipo === "item") && (
         <p className="mt-1.5 px-2 text-[12px] leading-snug text-text-tertiary">
-          {l.pos === "bolinha" ? "Ícone redondo na fileira de cima da página inicial." : l.pos === "destaque" ? "Cartão largo, logo abaixo das bolinhas." : "Aparece só dentro do catálogo."}
+          {l.pos === "bolinha" ? "Ícone redondo na fileira de cima da página inicial." : l.pos === "destaque" ? "Tag larga, logo abaixo das bolinhas." : "Aparece só dentro do catálogo."}
         </p>
       )}
     </div>
