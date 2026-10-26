@@ -53,7 +53,7 @@ import { BoxDestaque, lerDestaques, type Destaque, type DestaqueSalvo, type Bota
 import { HomeVitrine, type BolinhaVitrine, type FormatoItens, type BotaoPrincipal } from "./HomeVitrine";
 import { LogoEditor } from "./LogoEditor";
 import { SobreEditorSheet, type SobreParte } from "./SobreEditorSheet";
-import { avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { aoSalvar, avisarErroSalvar, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
 import { IconeLinha, ICONES_LINHA } from "@/components/ui/IconesLinha";
 import { LIMITES_GRATIS } from "@/lib/planoGratis";
@@ -234,6 +234,22 @@ export function VisitorExperience({
   const estiloUrl = searchParams.get("estilo");
   // Vitrine é o padrão único para todos; a grade clássica só aparece forçada pela URL.
   const estiloVitrine = estiloUrl !== "classica";
+
+  // Conta quantas vezes o dono mexeu na página inicial (salvamentos com pelo menos 2s de
+  // distância contam como mexidas diferentes). O convite para divulgar só aparece depois de 2.
+  useEffect(() => {
+    if (!isOwner) return;
+    let ultimo = 0;
+    return aoSalvar(() => {
+      const t = Date.now();
+      if (t - ultimo < 2000) return;
+      ultimo = t;
+      try {
+        const k = `orbi_mexeu_home_${business.slug}`;
+        localStorage.setItem(k, String((Number(localStorage.getItem(k)) || 0) + 1));
+      } catch { /* sem armazenamento */ }
+    });
+  }, [isOwner, business.slug]);
 
   useEffect(() => {
     // Dono ou prévia do painel: não abre sessão nem registra cliques.

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FolhaCompartilhar, type AlvoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import { conferirAntesDeCompartilhar } from "@/components/compartilhar/ChecklistDivulgar";
 
@@ -45,7 +46,10 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
   const [dica, setDica] = useState<Dica | null>(null);
   const [folha, setFolha] = useState<AlvoCompartilhar | null>(null);
   const [escolhendoItem, setEscolhendoItem] = useState(false);
+  // Antes da primeira dica, pergunta se a página está pronta.
+  const [perguntando, setPerguntando] = useState(true);
   const chave = `orbibox-divulgar:${businessId}`;
+  const router = useRouter();
 
   const dicas: Dica[] = [
     {
@@ -74,11 +78,10 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
   ];
 
   useEffect(() => {
-    // Só pede para divulgar depois que a pessoa viu o tour da página inicial (ou conferiu o
-    // passo a passo antigo). Antes disso ela ainda está entendendo a página.
+    // Só pede para divulgar depois que a pessoa mexeu em pelo menos 2 itens da página inicial
+    // (o catálogo já é conferido no servidor). Antes disso ela ainda está montando a página.
     try {
-      const conferiu = localStorage.getItem(`orbi_tour_fim_${slug}`) === "1" || [0, 1, 2].every((i) => localStorage.getItem(`comecar_ok_${i}_${slug}`) === "1");
-      if (!conferiu) return;
+      if ((Number(localStorage.getItem(`orbi_mexeu_home_${slug}`)) || 0) < 2) return;
     } catch { return; }
     let estado: { feitas: string[]; ultimo: number } = { feitas: [], ultimo: 0 };
     try { estado = JSON.parse(localStorage.getItem(chave) || "") || estado; } catch { /* primeira vez */ }
@@ -132,7 +135,20 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
 
   return (
     <>
-      {dica && createPortal(
+      {dica && dica.id === "primeiro" && perguntando && createPortal(
+        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/35 px-4 pb-[max(20px,env(safe-area-inset-bottom))] sm:items-center" role="dialog" aria-modal="true" aria-label="Seu Orbibox está pronto?" onClick={() => depois(dica)}>
+          <div onClick={(e) => e.stopPropagation()} className="acao-entra w-full max-w-[380px] rounded-[32px] bg-surface-white p-6 text-center shadow-[0_24px_60px_rgba(17,19,24,0.3)]">
+            <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#E9F8EF] text-[30px]" aria-hidden>🚀</span>
+            <p className="mt-4 font-[family-name:var(--font-manrope)] text-[22px] font-normal leading-tight tracking-[-0.01em] text-on-background">Acha que seu Orbibox está pronto?</p>
+            <div className="mt-6 flex flex-col gap-2">
+              <button type="button" onClick={() => setPerguntando(false)} className="min-h-[52px] w-full rounded-full bg-[#1F9E4C] text-[15px] font-medium text-white active:scale-[0.98]">Sim, quero divulgar</button>
+              <button type="button" onClick={() => { depois(dica); router.push(`/${slug}`); }} className="min-h-[50px] w-full rounded-full bg-[#F2F2EE] text-[15px] font-medium text-on-background active:scale-[0.98]">Não, vou melhorar</button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+      {dica && !(dica.id === "primeiro" && perguntando) && createPortal(
         <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/35 px-4 pb-[max(20px,env(safe-area-inset-bottom))] sm:items-center" role="dialog" aria-modal="true" aria-label={dica.titulo} onClick={() => depois(dica)}>
           <div onClick={(e) => e.stopPropagation()} className="acao-entra w-full max-w-[380px] rounded-[32px] bg-surface-white p-6 text-center shadow-[0_24px_60px_rgba(17,19,24,0.3)]">
             <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-surface-soft text-on-background"><Icone tipo={dica.icone} /></span>

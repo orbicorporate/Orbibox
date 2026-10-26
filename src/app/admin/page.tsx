@@ -103,8 +103,8 @@ export default async function HojePage() {
   return (
     <>
     <AbrirNaPagina />
-    {/* Só convida a divulgar quando a página inicial já tem pelo menos 6 elementos. */}
-    {activeBoxes >= 6 && <PopupDivulgacao businessId={b.id} nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={b.share_image_url || b.vitrine_cover_url || null} logo={b.logo_url ?? null} temVoucher={(vouchersRes.data ?? []).length > 0} itens={itensStories ?? []} />}
+    {/* Só convida a divulgar quando já tem catálogo. O popup ainda confere se a pessoa mexeu em 2 itens da página inicial. */}
+    {(itensStories ?? []).length > 0 && <PopupDivulgacao businessId={b.id} nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={b.share_image_url || b.vitrine_cover_url || null} logo={b.logo_url ?? null} temVoucher={(vouchersRes.data ?? []).length > 0} itens={itensStories ?? []} />}
     <HomeView
       saudacao={saudacaoDoMomento()}
       primeiroNome={primeiroNome}
