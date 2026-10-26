@@ -200,7 +200,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
     contato: { t: "WhatsApp ou telefone", d: "Vira o botão de contato." },
     endereco: { t: "Endereço", d: "Vira a bolinha de mapa. Pule se não atende no local." },
     categorias: { t: dados.servico ? "Tipos de serviço" : "Categorias", d: dados.categorias.length > 0 ? `A Orbi achou ${dados.categorias.length} no seu site. Toque nas mais importantes.` : "Toque nas que combinam com você ou escreva as suas." },
-    itens: { t: `Seus ${palavraItens}`, d: itens.length > 0 ? `Toque em até ${MAX_ITENS} que mais vendem. Vão para destaque na página inicial.` : `Escreva seus principais ${palavraItens}.` },
+    itens: { t: `Seus ${palavraItens}`, d: itens.length > 0 ? `Toque em até ${MAX_ITENS} para destaque na página inicial. Fotos você coloca depois.` : `Escreva seus principais ${palavraItens}.` },
     resumo: { t: "Tudo certo?", d: "Sua página inicial vai nascer assim." },
   };
 
@@ -411,9 +411,6 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
               </form>
             )}
 
-            {itens.some((i) => !i.foto) && (
-              <p className="mt-3 px-1 text-[12px] leading-snug text-text-tertiary">Sem foto? Coloque depois em Catálogo, no item, Foto de capa.</p>
-            )}
           </>
         )}
 

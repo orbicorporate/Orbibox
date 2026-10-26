@@ -363,10 +363,20 @@ export default function OnboardingPage() {
       id: r.id, nome: r.title, foto: r.image_url ?? null, categoria: r.brand_label?.trim() || null,
       sub: precoTxt(r.price) ? (ehServico ? `a partir de ${precoTxt(r.price)}` : precoTxt(r.price)) : undefined,
     }));
+    // Site sem categorias: a Orbi sugere categorias a partir dos itens que vieram,
+    // em vez de usar só a lista genérica do ramo (que pode não bater com o que a marca vende).
+    let sugestoesCats: string[] = catsPre.length > 0 ? [] : (seg?.categorias ?? []).slice(0, 8);
+    if (catsPre.length === 0 && reaisPre.length >= 3) {
+      try {
+        const r = await fetch("/api/comecar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "sugerir", businessId: id }) });
+        const d = await r.json();
+        if (Array.isArray(d.categorias) && d.categorias.length >= 2) sugestoesCats = d.categorias.map(String).slice(0, 8);
+      } catch { /* fica com as do ramo */ }
+    }
     const waPre = (pre?.contact_whatsapp || pre?.contact_phone || whatsappDigits || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
     const conf = await new Promise<RevisaoResultado>((resolve) => {
       revisaoRef.current = resolve;
-      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, categorias: categoriasRev, sugestoes: catsPre.length > 0 ? [] : (seg?.categorias ?? []).slice(0, 8), itens: itensRev, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
+      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, categorias: categoriasRev, sugestoes: sugestoesCats, itens: itensRev, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
       setStep("revisar");
     });
     setMontagem({ status: "pending", itens: [], segundos: null });
@@ -386,6 +396,13 @@ export default function OnboardingPage() {
     const corUsavel = coresDosCards(paletaFinal);
     const corDe = (i: number) => corUsavel[i % corUsavel.length];
     const catsEscolhidas = conf.categorias;
+    // Itens do site sem categoria e categorias escolhidas na revisão: a Orbi encaixa
+    // cada item na categoria que combina, pra o catálogo não nascer bagunçado.
+    if (catsPre.length === 0 && catsEscolhidas.length > 0 && reaisPre.length > 0) {
+      try {
+        await fetch("/api/comecar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "salvar", categorias: catsEscolhidas, businessId: id }) });
+      } catch { /* o dono organiza depois */ }
+    }
 
     // Destaques: os itens do site escolhidos e os que a pessoa escreveu, que viram
     // cards novos na cor da marca (na categoria marcada). Todos sobem para o topo.
