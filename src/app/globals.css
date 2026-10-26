@@ -1729,3 +1729,18 @@ html[data-embed] .embed-oculta { display: none !important; }
   .logo-tremido, .logo-reflexo { animation: none; }
   .logo-reflexo { display: none; }
 }
+
+
+/* Opções da pergunta da Orbi: entram em cascata e depois flutuam de leve, cada uma no seu ritmo. */
+@keyframes chipOrbiEntra {
+  from { opacity: 0; transform: translateY(14px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes chipOrbiFlutua {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.chip-orbi {
+  animation: chipOrbiEntra 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both, chipOrbiFlutua 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) { .chip-orbi { animation: none; } }

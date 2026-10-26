@@ -111,20 +111,20 @@ export function CuradoriaOrbi({
 
   return (
     <>
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-3.5 py-3">
         {/* Pergunta da Orbi, em balão de conversa. */}
-        <div className="flex items-end gap-2">
-          <OrbiParticleSphere size={28} colors={orbiColors ?? undefined} vivid className="shrink-0 rounded-full" />
-          <div className="relative max-w-[88%] rounded-2xl rounded-bl-md bg-white/45 backdrop-blur-md ring-1 ring-white/70 px-3.5 py-2.5 shadow-[0_2px_10px_rgba(17,19,24,0.06)]">
+        <div className="orbi-linha-entra flex items-end gap-3">
+          <span className="orbi-thinking shrink-0"><OrbiParticleSphere size={52} colors={orbiColors ?? undefined} vivid className="rounded-full" /></span>
+          <div className="relative max-w-[90%] rounded-[26px] rounded-bl-md bg-white/55 backdrop-blur-md ring-1 ring-white/80 px-5 py-4 shadow-[0_8px_24px_-10px_rgba(17,19,24,0.18)]">
             {loadingQ ? (
               <p className="text-[14px] text-text-tertiary">Pensando numa pergunta pra você…</p>
             ) : (
-              <p className="pr-5 text-[15px] font-medium leading-snug">{pergunta}</p>
+              <p className="pr-6 font-[family-name:var(--font-manrope)] text-[21px] font-medium leading-snug tracking-[-0.01em]">{pergunta}</p>
             )}
             <button
               onClick={() => setShowHelp((v) => !v)}
               aria-label="Como funciona"
-              className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-surface-soft text-[10px] font-bold text-text-tertiary"
+              className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-surface-soft text-[11px] text-text-tertiary"
             >
               ?
             </button>
@@ -138,12 +138,13 @@ export function CuradoriaOrbi({
         )}
 
         {loadingQ ? null : !escolhida ? (
-          <div className="ml-9 flex flex-wrap gap-1.5">
-            {opcoes.map((o) => (
+          <div className="grid grid-cols-2 gap-2.5">
+            {opcoes.map((o, i) => (
               <button
                 key={o}
                 onClick={() => escolher(o)}
-                className="cursor-pointer rounded-full border border-white/70 bg-white/45 backdrop-blur-md px-3.5 py-1.5 text-[13px] font-medium transition-colors hover:border-on-background"
+                style={{ animationDelay: `${0.25 + i * 0.1}s, ${i * 0.45}s` }}
+                className="chip-orbi flex min-h-[64px] cursor-pointer items-center justify-center rounded-[22px] border border-white/80 bg-white/60 px-4 py-3 text-center text-[16px] font-medium leading-tight shadow-[0_8px_22px_-12px_rgba(17,19,24,0.25)] backdrop-blur-md transition-transform active:scale-95"
               >
                 {o}
               </button>
