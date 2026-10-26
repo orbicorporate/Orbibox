@@ -335,7 +335,7 @@ export function LogoEditor({
             <span className="px-6 text-center text-[13px] text-text-tertiary">Ainda sem logo. Envie uma imagem.</span>
           ) : estilo === "sem-fundo" ? (
             <div
-              className="flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-3xl p-3 ring-1 ring-black/10"
+              className="flex h-[180px] w-[180px] items-center justify-center overflow-hidden rounded-full p-5 ring-1 ring-black/10"
               style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "20px 20px" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -346,7 +346,7 @@ export function LogoEditor({
           )}
         </div>
         {urlPrevia && !carregando && (
-          <p className="mt-1 text-center text-[12px] text-text-tertiary">{estilo === "sem-fundo" ? "Prévia. O quadriculado é a parte transparente." : "Prévia de como fica na sua página."}</p>
+          <p className="mt-1 text-center text-[12px] text-text-tertiary">{estilo === "sem-fundo" ? "Prévia na esfera. O quadriculado é a parte transparente." : "Prévia de como fica na sua página."}</p>
         )}
 
         <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { escolherArquivo(e.target.files?.[0]); e.target.value = ""; }} />
