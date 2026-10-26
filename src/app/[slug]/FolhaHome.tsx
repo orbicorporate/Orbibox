@@ -320,7 +320,7 @@ export function FolhaHome({
                 </div>
               </>
             )}
-            <div className="sticky -bottom-8 -mx-5 mt-6 bg-gradient-to-t from-white via-white to-white/0 px-5 pb-1 pt-4">
+            <div className="sticky -bottom-3 -mx-5 mt-6 bg-gradient-to-t from-white via-white to-white/0 px-5 pb-3 pt-4">
               <button type="button" onClick={() => { setOnde(posicaoInicial); setVista("novo"); }} className="min-h-[48px] w-full rounded-full bg-on-background text-[15px] font-medium text-white shadow-[0_10px_24px_-12px_rgba(17,19,24,0.5)] active:scale-[0.98]">+ Criar algo novo</button>
             </div>
           </>
