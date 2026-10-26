@@ -1062,8 +1062,9 @@ export function VisitorExperience({
             onClick={() => { try { sessionStorage.setItem("orbibox_abriu", "1"); } catch { /* sem armazenamento */ } }}
             className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#8F0D26] via-[#C4122F] to-[#E4264C] px-4 py-2 text-[13px] font-medium text-white shadow-[0_8px_20px_-8px_rgba(196,18,47,0.7)] transition-transform active:scale-95"
           >
-            Meu painel
+            Painel
           </Link>
+          <Link href="/admin/suporte" aria-label="Suporte e ajuda" title="Suporte" className="suporte-piscar flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-white/90 text-[14px] font-medium text-text-secondary shadow-lg">?</Link>
           <button
             onClick={() => setPreviewMode(true)}
             className="flex items-center gap-1.5 rounded-full bg-surface-white/90 px-3.5 py-2 text-[13px] font-medium text-text-secondary shadow-lg backdrop-blur"
