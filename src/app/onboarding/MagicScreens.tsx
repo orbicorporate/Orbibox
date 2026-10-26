@@ -327,8 +327,11 @@ export function VitrineMontando({
   return (
     <div className="flex flex-col items-center py-4 text-center">
       {/* Celular */}
-      <div className="relative w-[260px] rounded-[40px] bg-on-background p-2.5 shadow-[0_24px_60px_-20px_rgba(17,19,24,0.45)]">
-        <div className="relative h-[470px] overflow-hidden rounded-[32px] bg-background-main">
+      {/* Celular em perspectiva 3D, flutuando, com reflexo de vidro e sombra no chão. */}
+      <div className="relative [perspective:1400px]">
+      <div className="celular-flutua relative w-[300px] rounded-[48px] bg-gradient-to-b from-[#2A2C31] to-[#0E0F12] p-[10px] shadow-[0_50px_80px_-30px_rgba(17,19,24,0.55),0_0_0_1px_rgba(255,255,255,0.06)_inset]">
+        <span aria-hidden className="pointer-events-none absolute inset-0 z-30 rounded-[48px] bg-[linear-gradient(115deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_38%)]" />
+        <div className="relative h-[560px] overflow-hidden rounded-[39px] bg-background-main">
           <div className="absolute left-1/2 top-2 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-on-background" />
           <div className="flex h-full flex-col px-3 pb-3 pt-10">
             <div className="flex items-center gap-2">
@@ -342,8 +345,8 @@ export function VitrineMontando({
               {[0, 1, 2, 3, 4, 5, 6].map((k) => (
                 <div
                   key={k}
-                  className={`orbi-shimmer rounded-2xl bg-surface-soft ${k === 0 ? "col-span-2 h-[118px]" : "h-[96px]"}`}
-                  style={{ animationDelay: `${k * 140}ms` }}
+                  className={`orbi-shimmer rounded-2xl ${k === 0 ? "col-span-2 h-[140px]" : "h-[112px]"}`}
+                  style={{ animationDelay: `${k * 140}ms`, backgroundColor: orbColors?.length ? `color-mix(in srgb, ${orbColors[k % orbColors.length]} 16%, #F2F2EE)` : "#ECEDE9" }}
                 />
               ))}
             </div>
@@ -367,9 +370,11 @@ export function VitrineMontando({
           )}
         </div>
       </div>
+      <div aria-hidden className="celular-sombra mx-auto mt-6 h-5 w-[220px] rounded-[50%] bg-black/20 blur-xl" />
+      </div>
 
       {!pronto ? (
-        <div className="mt-6 flex w-full max-w-[260px] flex-col items-center">
+        <div className="mt-4 flex w-full max-w-[300px] flex-col items-center">
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbi-gradient-start" />
             <p key={textoEtapa} className="orbi-linha-entra text-[15px] text-text-secondary">

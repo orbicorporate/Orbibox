@@ -1640,3 +1640,10 @@ html[data-embed] .embed-oculta { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .estrela-avaliar, .estrela-avaliar svg { animation: none; }
 }
+
+/* Celular do cadastro: perspectiva 3D flutuando devagar, com a sombra acompanhando. */
+@keyframes celularFlutua { 0%, 100% { transform: rotateX(10deg) rotateY(-16deg) rotateZ(2deg) translateY(0); } 50% { transform: rotateX(6deg) rotateY(-10deg) rotateZ(1deg) translateY(-12px); } }
+@keyframes celularSombra { 0%, 100% { transform: scaleX(1); opacity: .9; } 50% { transform: scaleX(.86); opacity: .6; } }
+.celular-flutua { transform-style: preserve-3d; animation: celularFlutua 6s ease-in-out infinite; }
+.celular-sombra { animation: celularSombra 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .celular-flutua { animation: none; transform: rotateX(8deg) rotateY(-12deg); } .celular-sombra { animation: none; } }

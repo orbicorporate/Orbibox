@@ -212,7 +212,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         <p className="mt-1 text-[14px] text-text-secondary">{titulos[etapa].d}</p>
       </div>
 
-      <section className="rounded-[24px] bg-white p-4 ring-[0.5px] ring-black/10">
+      <section>
         {etapa === "logo" && (
           <div className="flex flex-col items-center gap-4 py-2">
             <span className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-surface-soft ring-1 ring-black/10">
@@ -466,7 +466,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
       {aviso && <p className="px-1 text-[13px] text-text-secondary">{aviso}</p>}
       {erro && <p className="px-1 text-[13px] text-red-600">{erro}</p>}
 
-      <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#F5F5F2] via-[#F5F5F2] to-transparent px-5 pb-6 pt-8">
+      <div className="fixed inset-x-0 bottom-0 z-20 px-5 pb-6 pt-3">
         <div className="mx-auto flex max-w-md flex-col items-center gap-2">
           {etapa === "resumo" ? (
             <button type="button" onClick={confirmar} className="orbi-gradient w-full rounded-full py-4 text-[16px] font-medium text-on-background transition-transform active:scale-[0.98]">
