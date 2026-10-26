@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { corDoLogo } from "@/lib/corDoLogo";
 
 /**
  * Avatar redondo com o logotipo do negócio, no lugar da esfera da Orbi.
@@ -38,8 +39,18 @@ export function OrbiAvatar({ logoUrl, size = 96, className = "", esfera, escala 
   // Logo largo ou alto (ex.: oval horizontal) cortado no círculo fica fora de medida:
   // quando a imagem não é quase quadrada, entra inteira sobre um disco claro.
   const [largo, setLargo] = useState(false);
+  // Fundo do perfil: a cor do próprio logo com 40% de força.
+  const [corLogo, setCorLogo] = useState<string | null>(null);
+  // Lê a cor numa cópia com CORS, sem arriscar a imagem visível (que pode vir de um site sem CORS).
+  const amostrarCor = (src: string) => {
+    if (corLogo) return;
+    const im = new Image();
+    im.crossOrigin = "anonymous";
+    im.onload = () => setCorLogo(corDoLogo(im));
+    im.src = src;
+  };
   const inteiro = !esfera && largo;
-  const medir = (img: HTMLImageElement) => { const { naturalWidth: w, naturalHeight: h } = img; if (w && h) setLargo(w / h > 1.2 || h / w > 1.2); };
+  const medir = (img: HTMLImageElement) => { const { naturalWidth: w, naturalHeight: h } = img; if (w && h) setLargo(w / h > 1.2 || h / w > 1.2); amostrarCor(img.src); };
   return (
     <div className={`orbi-av relative shrink-0 ${className}`} style={{ width: size, height: size }} aria-hidden>
       <span className="orbi-av-brilho" />
@@ -47,7 +58,7 @@ export function OrbiAvatar({ logoUrl, size = 96, className = "", esfera, escala 
       <span className="orbi-av-anel orbi-av-anel-b" />
       <div
         className={`orbi-av-miolo ${esfera ? `orbi-av-esfera orbi-av-esfera-${cor ? (CLARAS.has(cor.id) ? "claro" : "escuro") : esfera}` : ""}`}
-        style={cor ? { background: `radial-gradient(circle at 35% 25%, ${cor.de}, ${cor.ate} 74%)` } : inteiro ? { background: "radial-gradient(circle at 35% 25%, #FFFFFF, #ECEDE9 74%)" } : undefined}
+        style={cor ? { background: `radial-gradient(circle at 35% 25%, ${cor.de}, ${cor.ate} 74%)` } : inteiro ? { background: corLogo ? `radial-gradient(circle at 35% 25%, rgba(${corLogo},0.22), rgba(${corLogo},0.4) 74%), #FFFFFF` : "radial-gradient(circle at 35% 25%, #FFFFFF, #ECEDE9 74%)" } : undefined}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
