@@ -3140,7 +3140,40 @@ function VitrineCoverBleed({ business, podeEditar = false }: { business: Busines
 function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaInicial = null, podeEditar = false }: { podeEditar?: boolean; categoriaInicial?: string | null; content: ContentItem[]; business: Business; sessionId: string | null; onOrbi?: () => void; orbiColors?: string[] | null }) {
   const router = useRouter();
   const [excluidos, setExcluidos] = useState<string[]>([]);
-  const sections = groupByCategory(content, business.vitrine_categories ?? []);
+  // Ajustes feitos agora (formato, faixa, posição): aparecem na hora e voltam atrás se não salvar.
+  const [ajustes, setAjustes] = useState<Record<string, { layout_size?: string; title_placement?: string; position?: number }>>({});
+  const conteudoAjustado = content.map((i) => (ajustes[i.id] ? { ...i, ...ajustes[i.id] } : i));
+  const sections = groupByCategory(conteudoAjustado, business.vitrine_categories ?? []);
+
+  async function ajustarItem(id: string, patch: { layout_size?: string; title_placement?: string }) {
+    const antes = ajustes[id];
+    setAjustes((a) => ({ ...a, [id]: { ...a[id], ...patch } }));
+    const { error } = await createClient().from("content_items").update(patch).eq("id", id);
+    if (error) {
+      setAjustes((a) => { const n = { ...a }; if (antes) n[id] = antes; else delete n[id]; return n; });
+      avisarErroSalvar();
+      return;
+    }
+    router.refresh();
+  }
+
+  async function moverItem(lista: { id: string; position: number }[], idx: number, dir: -1 | 1) {
+    const alvo = idx + dir;
+    if (alvo < 0 || alvo >= lista.length) return;
+    const nova = [...lista];
+    [nova[idx], nova[alvo]] = [nova[alvo], nova[idx]];
+    // Posições repetidas não dão pra trocar: renumera a seção a partir da menor.
+    const pos = lista.map((x) => x.position);
+    const unicas = new Set(pos).size === pos.length;
+    const menor = Math.min(...pos);
+    const novasPos = unicas ? [...pos].sort((x, y) => x - y) : nova.map((_, k) => menor + k);
+    const mudancas = nova.map((x, k) => ({ id: x.id, position: novasPos[k] })).filter((x, k) => x.position !== lista.find((l) => l.id === x.id)!.position || k === idx || k === alvo);
+    const anteriores = ajustes;
+    setAjustes((a) => { const n = { ...a }; for (const m of mudancas) n[m.id] = { ...n[m.id], position: m.position }; return n; });
+    const res = await Promise.all(mudancas.map((m) => createClient().from("content_items").update({ position: m.position }).eq("id", m.id)));
+    if (res.some((r) => r.error)) { setAjustes(anteriores); avisarErroSalvar(); return; }
+    router.refresh();
+  }
   // Chips e títulos só pras categorias de verdade; itens sem categoria
   // aparecem no topo, sem título.
   const nomeadas = sections.filter((s) => s.name);
@@ -3179,7 +3212,7 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                 visitante vê aqui, sem surpresa. items-start: card sem rodapé
                 não estica até a altura do vizinho. */}
             <div className="flex flex-wrap items-start gap-5">
-              {sec.items.filter((it) => !excluidos.includes(it.id)).map((item) => {
+              {sec.items.filter((it) => !excluidos.includes(it.id)).map((item, idxSec, listaSec) => {
                 const largura = sizeOf(item.layout_size) === "medio" ? "w-[calc(50%-10px)] lg:w-[calc(25%-15px)]" : "w-full lg:w-[calc(50%-10px)]";
                 const cartao = (
                   <CartaoItem
@@ -3195,9 +3228,38 @@ function Showcase({ content, business, sessionId, onOrbi, orbiColors, categoriaI
                 );
                 return podeEditar ? (
                   <div key={item.id} className={`relative ${largura} ${item.image_url ? "" : "flex flex-col self-stretch"}`}>
+                    <div className="mb-1 flex items-center justify-end gap-0.5 px-1">
+                      <button
+                        type="button"
+                        onClick={() => { const ordem = ["medio", "largo", "destaque", "alto"]; const atual = sizeOf(item.layout_size); void ajustarItem(item.id, { layout_size: ordem[(ordem.indexOf(atual) + 1) % ordem.length] }); }}
+                        aria-label="Trocar o formato do card"
+                        className="flex h-9 w-9 items-center justify-center rounded-full active:scale-90"
+                      >
+                        <span className={`rounded-[3px] ${({ destaque: "h-3 w-6", largo: "h-2 w-6", medio: "h-4 w-4", alto: "h-5 w-3" } as Record<string, string>)[sizeOf(item.layout_size)] ?? "h-4 w-4"}`} style={{ backgroundColor: ({ destaque: "#FF7A3D", largo: "#3B82F6", medio: "#1FA855", alto: "#8758BE" } as Record<string, string>)[sizeOf(item.layout_size)] ?? "#1FA855" }} />
+                      </button>
+                      {item.image_url && (
+                        <button
+                          type="button"
+                          onClick={() => void ajustarItem(item.id, { title_placement: item.title_placement === "sobre" ? "faixa" : "sobre" })}
+                          aria-label={item.title_placement === "sobre" ? "Colocar faixa branca com o nome" : "Tirar a faixa branca"}
+                          className="flex h-9 w-9 items-center justify-center rounded-full active:scale-90"
+                        >
+                          <span className="flex h-[22px] w-[18px] flex-col overflow-hidden rounded-[4px] bg-on-background/70 ring-1 ring-on-background/70">
+                            <span className="flex-1" />
+                            {item.title_placement !== "sobre" && <span className="h-[7px] bg-white" />}
+                          </span>
+                        </button>
+                      )}
+                      {listaSec.length > 1 && (
+                        <>
+                          <button type="button" onClick={() => void moverItem(listaSec, idxSec, -1)} disabled={idxSec === 0} aria-label="Subir item" className="flex h-9 w-9 items-center justify-center text-[16px] text-on-background/70 disabled:opacity-25">↑</button>
+                          <button type="button" onClick={() => void moverItem(listaSec, idxSec, 1)} disabled={idxSec === listaSec.length - 1} aria-label="Descer item" className="flex h-9 w-9 items-center justify-center text-[16px] text-on-background/70 disabled:opacity-25">↓</button>
+                        </>
+                      )}
+                    </div>
                     {cartao}
-                    <LapisDono href={`/admin/vitrine?editar=${item.id}`} rotulo={`Editar ${item.title}`} className="absolute left-2 top-2 z-10" />
-                    <ExcluirItemX id={item.id} titulo={item.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />
+                    <LapisDono href={`/admin/vitrine?editar=${item.id}`} rotulo={`Editar ${item.title}`} className="absolute left-2 top-14 z-10" />
+                    <ExcluirItemX id={item.id} titulo={item.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-14 z-10" />
                   </div>
                 ) : cartao;
               })}
