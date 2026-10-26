@@ -31,7 +31,7 @@ import { ContatoForm, chaveLead, lerVisitante } from "@/components/mobile/Contat
 import { NudgeLead } from "@/components/mobile/NudgeLead";
 import { OrbiContactDisc } from "@/components/orbi/OrbiContactDisc";
 import { OrbiMapPin } from "@/components/orbi/OrbiMapPin";
-import { OrbiAvatar, escalaDoAvatar, lerEsfera, lerSemFundo } from "@/components/orbi/OrbiAvatar";
+import { LogoSolto, OrbiAvatar, escalaDoAvatar, lerEsfera, lerSemFundo } from "@/components/orbi/OrbiAvatar";
 import { TourOrbibox } from "@/components/tour/TourOrbibox";
 import { ChecklistDivulgarHost } from "@/components/compartilhar/ChecklistDivulgar";
 import { formatPrice, groupByCategory, sizeOf, youtubeId, instagramReelId } from "@/lib/showcase";
@@ -1092,8 +1092,7 @@ export function VisitorExperience({
                 <OrbiParticleSphere size={96} colors={orbiColors ?? undefined} className="rounded-full" />
               ) : logoAtual && lerSemFundo(heroAvatar) ? (
                 // Só o desenho do logo, solto, sem disco nem anel.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoAtual} alt="" className="object-contain drop-shadow-[0_6px_14px_rgba(17,19,24,0.18)]" style={{ width: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100, height: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100 }} />
+                <LogoSolto src={logoAtual} anim={!!lerSemFundo(heroAvatar)?.anim} className="drop-shadow-[0_6px_14px_rgba(17,19,24,0.18)]" style={{ width: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100, height: (96 * (lerSemFundo(heroAvatar)?.escala ?? 100)) / 100 }} />
               ) : logoAtual ? (
                 // "logo" ou "auto" (padrão): logo se tiver, senão a esfera.
                 <OrbiAvatar logoUrl={logoAtual} size={96} color={orbiColors?.[0]} esfera={lerEsfera(heroAvatar)?.tom} escala={escalaDoAvatar(heroAvatar)} />

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
-import { ESFERAS, OrbiAvatar, lerEsfera, lerLogoEscala, lerSemFundo, type TomEsfera } from "@/components/orbi/OrbiAvatar";
+import { ESFERAS, LogoSolto, OrbiAvatar, lerEsfera, lerLogoEscala, lerSemFundo, type TomEsfera } from "@/components/orbi/OrbiAvatar";
 
 type Estilo = "logo" | "sem-fundo" | `esfera-${TomEsfera}`;
 
@@ -227,6 +227,8 @@ export function LogoEditor({
   const escalaInicial = esferaAtual?.escala ?? soltoAtual?.escala ?? lerLogoEscala(avatar) ?? 100;
   const [estilo, setEstilo] = useState<Estilo>(estiloInicial);
   const [escala, setEscala] = useState(escalaInicial);
+  const animInicial = !!soltoAtual?.anim;
+  const [anim, setAnim] = useState(animInicial);
   // Solto e esfera ficam por cima da página ou de um disco: o fundo do arquivo atrapalharia, então sai sozinho.
   const semFundo = estilo !== "logo";
 
@@ -299,7 +301,7 @@ export function LogoEditor({
       }
       // Esfera clara ou escura guarda o estilo em hero_avatar; voltar ao logo simples só mexe se já era esfera.
       const novoAvatar: string | null =
-        estilo === "sem-fundo" ? `sem-fundo-${escala}`
+        estilo === "sem-fundo" ? `sem-fundo-${escala}${anim ? "-anim" : ""}`
         : estilo !== "logo" ? `${estilo}-${escala}`
         : escala !== 100 ? `logo-${escala}`
         : estiloInicial !== "logo" || /^logo-\d+$/.test(avatar ?? "") ? "logo"
@@ -319,7 +321,7 @@ export function LogoEditor({
     }
   }
 
-  const mudou = trocou || semFundo || estilo !== estiloInicial || escala !== escalaInicial;
+  const mudou = trocou || semFundo || estilo !== estiloInicial || escala !== escalaInicial || anim !== animInicial;
 
   if (typeof document === "undefined") return null;
   return createPortal(
@@ -338,8 +340,9 @@ export function LogoEditor({
               className="flex h-[180px] w-[180px] items-center justify-center overflow-hidden rounded-full p-5 ring-1 ring-black/10"
               style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "20px 20px" }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={urlPrevia} alt="" className="h-full w-full object-contain" style={{ transform: `scale(${escala / 100})` }} />
+              <span className="block h-full w-full" style={{ transform: `scale(${escala / 100})` }}>
+                <LogoSolto src={urlPrevia} anim={anim} className="h-full w-full" />
+              </span>
             </div>
           ) : (
             <OrbiAvatar logoUrl={urlPrevia} size={150} esfera={estilo === "logo" ? undefined : (estilo.slice(7) as TomEsfera)} escala={escala} />
@@ -378,6 +381,24 @@ export function LogoEditor({
             <p className="mt-2 text-[12.5px] text-text-tertiary">
               {estilo === "logo" ? "A imagem preenche um círculo com anel de luz girando." : estilo === "sem-fundo" ? "Só o desenho do logo, solto na página, sem círculo." : "O logo sobre um disco colorido com luz de vidro."}
             </p>
+            {estilo === "sem-fundo" && (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={anim}
+                onClick={() => setAnim((v) => !v)}
+                disabled={salvando}
+                className="mt-4 flex w-full items-center justify-between gap-3 rounded-2xl bg-[#F2F2EE] px-4 py-3 text-left"
+              >
+                <span>
+                  <span className="block text-[14px] font-medium">✨ Animação</span>
+                  <span className="block text-[12.5px] text-text-tertiary">Um reflexo passa pelo logo e ele dá um leve tremido.</span>
+                </span>
+                <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${anim ? "bg-[#1F9E4C]" : "bg-black/15"}`}>
+                  <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${anim ? "left-[22px]" : "left-0.5"}`} />
+                </span>
+              </button>
+            )}
             {estilo.startsWith("esfera") && (
               <div className="mt-4">
                 <p className="text-[12.5px] text-text-tertiary">Cor da esfera: {ESFERAS.find((e) => `esfera-${e.id}` === estilo)?.nome}</p>
@@ -419,20 +440,21 @@ export function LogoEditor({
           <div className="mt-3 rounded-2xl border border-divider p-4">
             <button type="button" aria-expanded={ajustando} onClick={() => setAjustando((v) => !v)} className="flex w-full items-center justify-between gap-3 text-left">
               <span>
-                <span className="block text-[14px] font-medium">Ajustar recorte</span>
-                <span className="block text-[12.5px] text-text-tertiary">O fundo já saiu sozinho. Só mexa se sobrou alguma parte.</span>
+                <span className="block text-[14px] font-medium">Sobrou fundo em volta do logo?</span>
+                <span className="block text-[12.5px] text-text-tertiary">O fundo sai sozinho. Abra só se aparecer um pedaço do fundo antigo na prévia.</span>
               </span>
               <span aria-hidden className={`text-text-tertiary transition-transform ${ajustando ? "rotate-90" : ""}`}>›</span>
             </button>
             {ajustando && (
               <div className="mt-4">
-                <label htmlFor="logo-limpeza" className="text-[13px] font-medium">Quanto fundo remover</label>
-                <input id="logo-limpeza" type="range" min={5} max={70} value={tolerancia} onChange={(e) => setTolerancia(Number(e.target.value))} className="mt-1 w-full accent-[#111318]" />
-                <div className="flex justify-between text-[12px] text-text-tertiary"><span>Menos</span><span>Mais</span></div>
+                <p className="text-[13px] font-medium">1. Puxe para apagar mais fundo</p>
+                <p className="mt-0.5 text-[12px] text-text-tertiary">Se começar a apagar o logo, volte um pouco.</p>
+                <input id="logo-limpeza" aria-label="Quanto fundo apagar" type="range" min={5} max={70} value={tolerancia} onChange={(e) => setTolerancia(Number(e.target.value))} className="mt-1 w-full accent-[#111318]" />
+                <div className="flex justify-between text-[12px] text-text-tertiary"><span>Apaga menos</span><span>Apaga mais</span></div>
                 {urlRetoque && (
                   <div className="mt-4 border-t border-divider pt-4">
-                    <p className="text-[13px] font-medium">Ainda tem fundo em algum ponto?</p>
-                    <p className="mt-0.5 text-[12px] text-text-tertiary">Toque nele na imagem para apagar.</p>
+                    <p className="text-[13px] font-medium">2. Ou toque no pedaço que sobrou</p>
+                    <p className="mt-0.5 text-[12px] text-text-tertiary">O quadriculado já é transparente. Toque só onde ainda aparece fundo.</p>
                     <div
                       className="relative mt-2 w-full max-w-[320px] overflow-hidden rounded-2xl ring-1 ring-black/10"
                       style={{ backgroundColor: "#fff", backgroundImage: "conic-gradient(#E9E9E4 25%, #fff 0 50%, #E9E9E4 0 75%, #fff 0)", backgroundSize: "16px 16px" }}

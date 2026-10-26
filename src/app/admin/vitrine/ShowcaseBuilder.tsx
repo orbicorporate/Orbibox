@@ -1772,6 +1772,16 @@ function ItemCard({
             ✎ Editar
           </button>
         )}
+        {/* Item aberto com foto: atalho que desce até o painel da foto. */}
+        {hasPhoto && editing && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); document.querySelector(`#item-${item.id} [data-guia="foto-item"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }}
+            className="absolute bottom-3 left-1/2 z-10 inline-flex min-h-[44px] -translate-x-1/2 items-center gap-1.5 rounded-full bg-white px-5 text-[14px] font-semibold text-on-background shadow-[0_6px_18px_-6px_rgba(17,19,24,0.45)] active:scale-[0.97]"
+          >
+            <span aria-hidden>✎</span> Editar imagem
+          </button>
+        )}
 
         {/* Selos no canto, só o que precisa da foto pra fazer sentido fica aqui.
             O status (Ativo/Rascunho) agora mora no rodapé branco, junto do título,
@@ -2006,7 +2016,7 @@ function ItemCard({
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
                 Cor do card{item.image_url ? " · aparece se remover a foto" : ""}
               </p>
-              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Sem foto, o card mostra só o nome e o preço. Branco é o padrão.</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Se não usar foto, fica assim.</p>
               {/* Exemplo: o card sem foto como aparece no catálogo. */}
               <div className="mt-3 flex justify-center rounded-2xl bg-[#F2F2EE] p-3">
                 <div
@@ -2254,7 +2264,7 @@ function ItemCard({
               <div className="mt-3 flex flex-col gap-2">
                 {([
                   { v: "produto", titulo: "Abrir a página do produto", dica: "Uma página só desse item, com capa, fotos, descrição e preço.", patch: { link_kind: "produto", target_url: null } },
-                  { v: "externo", titulo: "Levar para um link", dica: "Manda direto para seu site, página de vendas ou WhatsApp.", patch: { link_kind: "externo", target_url: item.target_url ?? "" } },
+                  { v: "externo", titulo: "Levar para um link (WhatsApp, site, página de vendas)", dica: "Manda direto para seu site, página de vendas ou WhatsApp.", patch: { link_kind: "externo", target_url: item.target_url ?? "" } },
                   { v: "nenhum", titulo: "Só mostrar", dica: "O card fica de exposição, sem abrir nada.", patch: { link_kind: "nenhum", target_url: null } },
                 ] as const).map((o) => {
                   const sel = (item.link_kind ?? "produto") === o.v;

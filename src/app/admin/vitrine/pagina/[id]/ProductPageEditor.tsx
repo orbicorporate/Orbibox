@@ -615,7 +615,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
           {!item.image_url && (
             <div className="mt-6 rounded-3xl bg-surface-soft p-4">
               <p className="text-[13px] text-text-secondary">Cor do card</p>
-              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Sem foto, o card mostra só o nome e o preço. Branco é o padrão; escolha uma cor para dar destaque.</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Se não usar foto, fica assim.</p>
               <div className="no-scrollbar mt-3 flex gap-2.5 overflow-x-auto pb-1">
                 <button type="button" onClick={() => { setCorCard("neutro"); salvar({ box_color: "neutro" }); }} aria-label="Branco" title="Branco" className={`h-10 w-10 shrink-0 rounded-full bg-white ${corCard === "neutro" ? "ring-2 ring-on-background ring-offset-2" : "border border-divider"}`} />
                 {PALETTE_GROUPS.flatMap((g) => Object.entries(g.colors)).filter(([chave]) => chave !== "neutro").map(([chave, cc]) => (

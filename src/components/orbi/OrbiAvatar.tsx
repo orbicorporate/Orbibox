@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { corDoLogo } from "@/lib/corDoLogo";
 
 /**
@@ -86,12 +86,24 @@ export function lerEsfera(v: string | null | undefined): { tom: TomEsfera; escal
   return { tom: m[1] as TomEsfera, escala: Math.min(130, Math.max(50, n)) };
 }
 
-/** hero_avatar guarda "sem-fundo" ou "sem-fundo-120" (tamanho do logo solto em %, 50 a 160). */
-export function lerSemFundo(v: string | null | undefined): { escala: number } | null {
-  const m = /^sem-fundo(?:-(\d{2,3}))?$/.exec(v ?? "");
+/** hero_avatar guarda "sem-fundo", "sem-fundo-120" (tamanho do logo solto em %, 50 a 160) e "-anim" no fim quando tem animação. */
+export function lerSemFundo(v: string | null | undefined): { escala: number; anim: boolean } | null {
+  const m = /^sem-fundo(?:-(\d{2,3}))?(-anim)?$/.exec(v ?? "");
   if (!m) return null;
   const n = m[1] ? Number(m[1]) : 100;
-  return { escala: Math.min(160, Math.max(50, n)) };
+  return { escala: Math.min(160, Math.max(50, n)), anim: !!m[2] };
+}
+
+/** Logo solto (sem fundo). Com animação: um reflexo passa por cima do desenho e ele dá um leve tremido. */
+export function LogoSolto({ src, anim, className = "", style }: { src: string; anim: boolean; className?: string; style?: CSSProperties }) {
+  const mascara = `url("${src}") center / contain no-repeat`;
+  return (
+    <span className={`relative inline-block ${anim ? "logo-tremido" : ""} ${className}`} style={style}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" className="block h-full w-full object-contain" draggable={false} />
+      {anim && <span aria-hidden className="logo-reflexo" style={{ WebkitMask: mascara, mask: mascara }} />}
+    </span>
+  );
 }
 
 /** hero_avatar guarda o logo simples como "logo" ou "logo-120" (zoom do logo no círculo, em %, 60 a 160). */

@@ -1652,3 +1652,28 @@ html[data-embed] .embed-oculta { display: none !important; }
 @keyframes iconeEtapa { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(3deg); } }
 .icone-etapa { animation: iconeEtapa 4.5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .icone-etapa { animation: none; } }
+
+/* Logo sem fundo animado: reflexo passando e leve tremido. */
+.logo-tremido { animation: logo-tremido 3.6s ease-in-out infinite; transform-origin: 50% 60%; }
+@keyframes logo-tremido {
+  0%, 62%, 100% { transform: rotate(0deg); }
+  66% { transform: rotate(-3deg); }
+  70% { transform: rotate(3deg); }
+  74% { transform: rotate(-2deg); }
+  78% { transform: rotate(1.2deg); }
+  82% { transform: rotate(0deg); }
+}
+.logo-reflexo {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.85) 50%, transparent 62%);
+  background-size: 260% 100%;
+  animation: logo-reflexo 3.6s ease-in-out infinite;
+}
+@keyframes logo-reflexo {
+  0% { background-position: 130% 0; }
+  45%, 100% { background-position: -30% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-tremido, .logo-reflexo { animation: none; }
+  .logo-reflexo { display: none; }
+}
