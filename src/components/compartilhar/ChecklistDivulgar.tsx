@@ -133,8 +133,12 @@ export function ChecklistDivulgarHost() {
               <button type="button" onClick={fechar} aria-label="Fechar" className="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#F2F2EE] text-[14px]">✕</button>
             </div>
             <p className="mt-2 text-[17px] font-semibold">{tour ? (tela === "home" ? "Confira as bolinhas, as tags e o destaque" : "Confira os itens do catálogo") : "Está pronto para divulgar?"}</p>
+            <p className="orbi-linha-entra mt-2.5 flex items-center gap-2 rounded-2xl bg-[#FFF6DB] px-3.5 py-2.5 text-[13.5px] leading-snug text-[#6B4A00]">
+              <span aria-hidden>✨</span>
+              Sugiro ajustar as imagens dos box antes de lançar.
+            </p>
             {/* Prévia de celular: a página como o cliente vê. */}
-            <div className="relative mx-auto mt-3 min-h-0 w-full max-w-[300px] flex-1 overflow-hidden rounded-[24px] border-[4px] border-[#16171a] bg-white" style={{ height: "min(56dvh, 520px)" }}>
+            <div className="relative mx-auto mt-3 min-h-0 w-full max-w-[300px] flex-1 overflow-hidden rounded-[24px] border-[4px] border-[#16171a] bg-white" style={{ height: "min(50dvh, 480px)" }}>
               <PreviaEscalada key={destino} src={destino} onLoad={() => setCarregando(false)} />
               {carregando && <div className="orbi-shimmer absolute inset-0 bg-[#F2F2EE]" aria-hidden />}
             </div>
