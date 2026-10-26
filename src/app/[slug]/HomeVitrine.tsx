@@ -678,8 +678,7 @@ export function HomeVitrine({
                 return (
                   <button key={f.v} type="button" role="radio" aria-checked={ativo} onClick={() => onFormato(f.v)} className={`relative flex flex-col rounded-[20px] p-2.5 text-left transition active:scale-[0.98] ${ativo ? "bg-white ring-2 ring-on-background" : "bg-white ring-1 ring-black/[0.08]"}`}>
                     <MiniFormato v={f.v} ativo={ativo} />
-                    <span className="mt-2 block px-0.5 text-[14px] font-semibold leading-tight">{f.titulo}</span>
-                    <span className="mt-0.5 block px-0.5 text-[12px] leading-snug text-text-secondary">{f.texto}</span>
+                    <span className="mt-2 block px-0.5 pb-0.5 text-[14.5px] font-medium leading-tight">{f.titulo}</span>
                     {ativo && <span className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#1F9E4C] text-[13px] text-white" aria-hidden>✓</span>}
                   </button>
                 );
