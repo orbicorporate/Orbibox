@@ -58,7 +58,7 @@ const LENDO = [
   "Criando sua primeira experiência",
 ];
 
-const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-3.5 text-[15px] outline-none transition-colors placeholder:text-text-tertiary focus:border-on-background";
+const campo = "w-full rounded-full bg-white/80 px-5 py-3.5 text-[15px] outline-none ring-1 ring-black/[0.08] backdrop-blur transition-shadow placeholder:text-text-tertiary focus:ring-2 focus:ring-on-background/40";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -616,7 +616,7 @@ export default function OnboardingPage() {
   const leituraOk = analise.status === "ok";
 
   return (
-    <main className={`relative flex min-h-screen justify-center overflow-x-clip px-5 ${step === "pronto" ? "items-start py-14" : step === "analisando" ? "items-start pb-16 pt-[9vh]" : "items-center py-16"}`}>
+    <main className={`relative flex min-h-[100dvh] justify-center overflow-x-clip overscroll-none px-5 ${step === "pronto" ? "items-start py-14" : step === "analisando" ? "items-start pb-16 pt-[9vh]" : step === "dados" ? "items-center py-8" : "items-start pb-10 pt-6"}`}>
       {step === "dados" && (novoNegocio ? (
         <Link href="/admin" className="fixed right-4 top-4 z-10 rounded-full bg-surface-white px-3.5 py-2 text-[12px] font-medium text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.08)]">
           ← Voltar ao painel
@@ -641,13 +641,13 @@ export default function OnboardingPage() {
         )}
         {step === "dados" && (
           <>
-            <div className="mb-7 flex justify-center"><BrandOrb colors={null} size={72} /></div>
+            <div className="mb-5 flex justify-center"><BrandOrb colors={null} size={64} /></div>
             {novoNegocio && <p className="mb-2 text-center text-[13px] font-medium text-text-tertiary">Novo Orbibox</p>}
             <h1 className="text-center font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-[1.12] tracking-[-0.02em]">Qual é o seu negócio?</h1>
             <p className="mx-auto mt-2 max-w-[340px] text-center text-[15px] leading-relaxed text-text-secondary">
               Mostre seu site ou Instagram. A Orbi lê tudo e monta seu Orbibox pra você.
             </p>
-            <form onSubmit={comecar} className="mt-8 flex flex-col gap-3">
+            <form onSubmit={comecar} className="mt-7 flex flex-col gap-2.5">
               <input required autoFocus placeholder="Nome da empresa" value={name} onChange={(e) => setName(e.target.value)} className={campo} />
               <input placeholder="seusite.com.br" inputMode="url" autoCapitalize="none" value={website} onChange={(e) => setWebsite(e.target.value)} className={campo} />
               <input placeholder="@seuinstagram" autoCapitalize="none" value={instagram} onChange={(e) => setInstagram(e.target.value)} className={campo} />
@@ -657,11 +657,11 @@ export default function OnboardingPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}
-                  className={`${campo} resize-none`}
+                  className={`${campo} resize-none !rounded-[24px]`}
                 />
               ) : (
                 !temLinks && (
-                  <button type="button" onClick={() => setSemLinks(true)} className="self-start px-1 text-[13px] text-text-secondary underline underline-offset-2">
+                  <button type="button" onClick={() => setSemLinks(true)} className="self-center px-1 text-[13px] text-text-secondary underline underline-offset-2">
                     Não tenho site nem Instagram
                   </button>
                 )
@@ -795,26 +795,18 @@ const VISUAL_CONVERSAO: Record<string, { icone: string; cor: string }> = {
 
 
 
-/** 1, 2, 3: onde a pessoa está e quanto falta. */
+/** 1, 2, 3: onde a pessoa está e quanto falta. Barrinhas centralizadas e o nome do passo atual. */
 function Passos({ atual }: { atual: 1 | 2 | 3 }) {
   const nomes = ["Seu negócio", "Seu objetivo", "Seus clientes"];
   return (
-    <ol className="mb-7 flex items-center justify-center gap-2" aria-label={`Passo ${atual} de 3`}>
-      {nomes.map((n, i) => {
-        const num = i + 1;
-        const feito = num < atual;
-        const agora = num === atual;
-        return (
-          <li key={n} className="flex items-center gap-2" aria-current={agora ? "step" : undefined}>
-            <span className={`flex h-7 w-7 items-center justify-center rounded-full text-[12.5px] font-medium transition-colors ${agora ? "bg-on-background text-white" : feito ? "orbi-gradient text-on-background" : "bg-white/80 text-text-tertiary ring-1 ring-divider"}`}>
-              {feito ? "✓" : num}
-            </span>
-            <span className={`text-[12.5px] ${agora ? "font-medium text-on-background" : "text-text-tertiary"} ${agora ? "" : "hidden min-[400px]:inline"}`}>{n}</span>
-            {num < 3 && <span className={`h-px w-4 ${feito ? "bg-on-background/40" : "bg-divider"}`} aria-hidden />}
-          </li>
-        );
-      })}
-    </ol>
+    <div className="mb-6 flex flex-col items-center gap-2" aria-label={`Passo ${atual} de 3: ${nomes[atual - 1]}`}>
+      <div className="flex items-center gap-1.5" aria-hidden>
+        {[1, 2, 3].map((n) => (
+          <span key={n} className={`h-1.5 rounded-full transition-all duration-500 ${n === atual ? "w-8 bg-on-background" : n < atual ? "orbi-gradient w-5" : "w-5 bg-black/10"}`} />
+        ))}
+      </div>
+      <p className="text-[12.5px] text-text-tertiary"><span className="font-semibold text-on-background">{atual} de 3</span> · {nomes[atual - 1]}</p>
+    </div>
   );
 }
 
