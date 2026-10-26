@@ -348,7 +348,7 @@ const d = (i: number) => ({ animationDelay: `${i * 0.14}s` });
  * uniformemente em volta, tipo uma explosão de comemoração. */
 const CONFETE_ANGULOS = Array.from({ length: 7 }, (_, i) => (i / 7) * Math.PI * 2);
 
-/** Renderiza o conteúdo na largura real da Home (390px) e só reduz com
+/** Renderiza o conteúdo na largura real da página inicial (390px) e só reduz com
  * escala pra caber na tela do celular desenhado. Assim a proporção entre
  * fonte, ícone, padding e card fica idêntica ao site de verdade. */
 function TelaReal({ children }: { children: ReactNode }) {

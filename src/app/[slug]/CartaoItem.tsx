@@ -28,8 +28,8 @@ export type ItemCartao = {
 
 /**
  * Cartão de item, o mesmo da vitrine (cor, título sobre a foto ou embaixo,
- * rodapé colorido, seta de entrada). A vitrine e a Home usam este componente,
- * assim o item tem a mesma cara nos dois lugares. Na Home, o formato escolhido
+ * rodapé colorido, seta de entrada). A vitrine e a página inicial usam este componente,
+ * assim o item tem a mesma cara nos dois lugares. Na página inicial, o formato escolhido
  * (destaque, grade, carrossel) define tamanho e proporção.
  */
 function CartaoBase({

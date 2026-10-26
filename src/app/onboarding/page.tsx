@@ -285,7 +285,7 @@ export default function OnboardingPage() {
       brand_colors: result.colors,
       brand_voice_summary: result.voiceSummary,
       brand_font: result.font || "Manrope",
-      // "analyzing" = montando. Só vira "ready" no fim; se a pessoa sair no meio, a Home oferece terminar.
+      // "analyzing" = montando. Só vira "ready" no fim; se a pessoa sair no meio, a página inicial oferece terminar.
       onboarding_status: "analyzing",
       objetivo: obj,
       conversao: conv,
@@ -343,7 +343,7 @@ export default function OnboardingPage() {
     }
 
     // Pausa pra a pessoa conferir o que a Orbi achou (logotipo, contato, endereço)
-    // e dizer o que vem primeiro. Só depois a Home é montada.
+    // e dizer o que vem primeiro. Só depois a página inicial é montada.
     const { data: pre } = await supabase.from("businesses").select("contact_whatsapp, contact_phone, address, logo_url, vitrine_categories").eq("id", id).maybeSingle();
     const { data: preItens } = await supabase.from("content_items").select("id, title, brand_label, type, image_url, price").eq("business_id", id).eq("status", "published").order("position", { ascending: true }).limit(60);
     const catsPre = Array.from(new Set((preItens ?? []).map((r) => r.brand_label?.trim()).filter((v): v is string => !!v)));
@@ -502,14 +502,14 @@ export default function OnboardingPage() {
     }
     if (igFinal) linhas.push({ business_id: id, box_type: "custom", title: "Instagram", position: pos++, is_active: true, config: { label: "Instagram", subtitle: "Siga a gente", icon: "@", color: "#111318", action: "link", url: igFinal } });
     if (siteUrl) linhas.push({ business_id: id, box_type: "custom", title: "Nosso site", position: pos++, is_active: true, config: { label: "Nosso site", subtitle: siteUrl.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""), icon: "➜", color: "#111318", action: "link", url: siteUrl } });
-    // Destaques escolhidos viram os boxes da seção Destaque da Home. Ficam no
-    // box que a Home usa para isso: o primeiro ativo do catálogo, senão a Tela inicial.
+    // Destaques escolhidos viram os boxes da seção Destaque da página inicial. Ficam no
+    // box que a página inicial usa para isso: o primeiro ativo do catálogo, senão a Tela inicial.
     if (idsDestaque.length > 0) {
       const alvo = [...linhas].sort((x, y) => x.position - y.position).find((l) => l.is_active && (l.box_type === "product" || (l.box_type === "custom" && (l.config as { action?: string } | undefined)?.action === "vitrine"))) ?? linhas.find((l) => l.box_type === "hero");
       if (alvo) alvo.config = { ...((alvo.config as Record<string, unknown> | undefined) ?? {}), itensHome: idsDestaque.slice(0, 6) };
     }
     // Toda linha leva config (a coluna não aceita vazio) e, se o lote falhar,
-    // cada botão é tentado sozinho, pra a Home nunca nascer sem botões.
+    // cada botão é tentado sozinho, pra a página inicial nunca nascer sem botões.
     const linhasOk = linhas.map((l) => ({ config: {}, ...l }));
     const { error: boxesErr } = await supabase.from("smart_boxes").insert(linhasOk);
     if (boxesErr) {
@@ -520,7 +520,7 @@ export default function OnboardingPage() {
       }
     }
 
-    // Tags da Home: o voucher criado já aparece ali. Os produtos ficam nos boxes de Destaque.
+    // Tags da página inicial: o voucher criado já aparece ali. Os produtos ficam nos boxes de Destaque.
     await supabase.from("businesses").update({ home_destaques: voucherId ? [{ t: "voucher", id: voucherId }] : [] }).eq("id", id);
 
     // Categorias do catálogo: as escolhidas na frente, depois as que o site trouxe (ou as do ramo).

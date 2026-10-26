@@ -18,7 +18,7 @@ function Celular({ children }: { children: React.ReactNode }) {
 }
 
 const DESENHOS = [
-  // 1. box Presentear na Home
+  // 1. box Presentear na página inicial
   <svg key="1" viewBox="0 0 120 100" className="h-[84px] w-full" aria-hidden>
     <Celular>
       <rect x="40" y="20" width="40" height="9" rx="3" fill={TRACO} opacity=".08" />

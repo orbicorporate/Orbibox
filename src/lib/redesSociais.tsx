@@ -1,5 +1,5 @@
 /**
- * Redes sociais não viram box na Home: viram uma fileira de bolinhas com o
+ * Redes sociais não viram box na página inicial: viram uma fileira de bolinhas com o
  * ícone da rede. Aqui fica o reconhecimento pelo link e os ícones.
  */
 

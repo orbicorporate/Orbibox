@@ -248,7 +248,7 @@ export function FolhaHome({
 
         {vista === "lista" && (
           <>
-            <p className="mt-3 text-[13.5px] leading-snug text-text-secondary">Escolha onde cada coisa aparece na sua Home.</p>
+            <p className="mt-3 text-[13.5px] leading-snug text-text-secondary">Escolha onde cada coisa aparece na sua página inicial.</p>
             {avisos.length > 0 && (
               <div className="mt-4 flex flex-col gap-2">
                 {avisos.map((a) => (
@@ -465,7 +465,7 @@ function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHom
       )}
       {!soDestaque && (l.pos !== "escondido" || l.tipo === "item") && (
         <p className="mt-1.5 px-2 text-[12px] leading-snug text-text-tertiary">
-          {l.pos === "bolinha" ? "Ícone redondo na fileira de cima da Home." : l.pos === "destaque" ? "Cartão largo, logo abaixo das bolinhas." : "Aparece só dentro do catálogo."}
+          {l.pos === "bolinha" ? "Ícone redondo na fileira de cima da página inicial." : l.pos === "destaque" ? "Cartão largo, logo abaixo das bolinhas." : "Aparece só dentro do catálogo."}
         </p>
       )}
     </div>

@@ -147,7 +147,7 @@ function GiftIcon() {
 
 // Ícone + cor + categoria de cada pendência, casado por palavra-chave do
 // título (vem de getPendingInsights). Mesma paleta de referência usada no
-// checklist da Home (ProgressWidgets), pra tudo no app falar a mesma
+// checklist da página inicial (ProgressWidgets), pra tudo no app falar a mesma
 // língua visual.
 function insightMeta(insight: Insight): { categoria: Categoria; bg: string; fg: string; icon: ReactNode } {
   const t = insight.title.toLowerCase();

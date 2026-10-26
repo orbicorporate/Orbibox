@@ -5,7 +5,7 @@ import { useId, useState, type ReactNode } from "react";
 
 /**
  * Linha fina que expande no próprio lugar: título sempre visível, e ao tocar
- * abre o texto de apoio e o botão que leva à tela certa. Evita sair da Home
+ * abre o texto de apoio e o botão que leva à tela certa. Evita sair da página inicial
  * só pra ler do que se trata.
  */
 export function LinhaExpansivel({

@@ -81,7 +81,7 @@ export function VouchersOverviewPanel({ businessId, initialVouchers, initialRede
   }, [redemptions]);
   const varios = vouchers.length > 1;
 
-  // Vindo do cartão "Resgates" da Home (#resgates): já leva até a lista de quem pegou.
+  // Vindo do cartão "Resgates" da página inicial (#resgates): já leva até a lista de quem pegou.
   useEffect(() => {
     if (window.location.hash !== "#resgates") return;
     const t = setTimeout(() => {

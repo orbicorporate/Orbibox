@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Perguntas dos donos" };
 
-// O que os donos perguntam à Orbi no Suporte e na Home do painel. Serve pra
+// O que os donos perguntam à Orbi no Suporte e na página inicial do painel. Serve pra
 // achar o que confunde no produto e o que falta explicar.
 type Meta = { pergunta?: string; resposta?: string; fonte?: string };
 
@@ -41,7 +41,7 @@ export default async function PerguntasPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-semibold tracking-[-0.02em]">Perguntas dos donos</h1>
-        <p className="mt-1 text-[14px] text-text-secondary">O que perguntam à Orbi no Suporte e na Home. Últimas {eventos.length}.</p>
+        <p className="mt-1 text-[14px] text-text-secondary">O que perguntam à Orbi no Suporte e na página inicial. Últimas {eventos.length}.</p>
       </div>
 
       {temas.length > 0 && (
@@ -59,7 +59,7 @@ export default async function PerguntasPage() {
           {eventos.map((e) => {
             const m = (e.meta ?? {}) as Meta;
             const nome = (e.business_id && nomeId.get(e.business_id)) || (e.user_id && nomeDono.get(e.user_id)) || "Sem negócio";
-            const onde = e.evento === "suporte_pergunta" ? "Suporte" : "Home";
+            const onde = e.evento === "suporte_pergunta" ? "Suporte" : "Página inicial";
             return (
               <li key={e.id} className="rounded-[18px] bg-white p-4 ring-1 ring-black/[0.08]">
                 <div className="flex flex-wrap items-center gap-2 text-[12px] text-text-tertiary">

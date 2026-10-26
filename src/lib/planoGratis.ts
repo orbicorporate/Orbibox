@@ -59,7 +59,7 @@ type CaixaLite = { id: string; box_type: string; title: string | null; is_active
 type ItemLite = { id: string; title: string | null; image_url: string | null };
 
 /**
- * Separa o que a Home mostra hoje em: bolinhas, boxes de destaque e o que o plano grátis nunca mantém.
+ * Separa o que a página inicial mostra hoje em: bolinhas, boxes de destaque e o que o plano grátis nunca mantém.
  * Chaves: box:<id> e item_bolinha:<id> (bolinhas); botao:<id> e item:<id> (destaques).
  */
 export function classificarHome(caixas: CaixaLite[], destaquesSalvos: DestaqueGuardado[], itens: ItemLite[]): EscolhaHome {

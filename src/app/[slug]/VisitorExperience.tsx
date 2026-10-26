@@ -166,7 +166,7 @@ export function VisitorExperience({
   isOwner: boolean;
   hasAiChat: boolean;
   hasVouchers: boolean;
-  /** Cor do voucher mais novo no ar: o botão de Vouchers da Home segue essa cor. */
+  /** Cor do voucher mais novo no ar: o botão de Vouchers da página inicial segue essa cor. */
   corVoucher?: string | null;
   giftEnabled?: boolean;
   /** Dono no plano grátis: limites de bolinhas e boxes e sem recursos pagos. */
@@ -183,7 +183,7 @@ export function VisitorExperience({
   const [slotTopo, setSlotTopo] = useState<HTMLElement | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   // Cópia local editável dos boxes, o dono pode reordenar e renomear direto
-  // na Home (sem precisar ir pro painel), e isso atualiza tanto a tela na
+  // na página inicial (sem precisar ir pro painel), e isso atualiza tanto a tela na
   // hora quanto o banco.
   const [boxList, setBoxList] = useState<BoxRow[]>(boxes);
   // Quando a página atualiza (o dono salvou algo no editor por cima), os botões novos substituem a cópia local.
@@ -205,7 +205,7 @@ export function VisitorExperience({
   const [todasCores, setTodasCores] = useState(false);
   const [enderecoIconeAberto, setEnderecoIconeAberto] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
-  // "Modo visitante", o dono liga isso pra ver a Home exatamente como o
+  // "Modo visitante", o dono liga isso pra ver a página inicial exatamente como o
   // visitante vê, sem os controles de edição no meio, sem precisar sair da
   // página nem abrir uma aba anônima.
   // ?preview=1 já entra em modo visitante. É a prévia embutida no painel:
@@ -218,16 +218,16 @@ export function VisitorExperience({
   // chat real já preenchida, pronta pra mandar, em vez de perder o que a
   // pessoa escreveu.
   const [orbiPrefill, setOrbiPrefill] = useState<string | undefined>(undefined);
-  // Pergunta digitada no campo da Home: a Orbi já responde ao abrir, sem pedir pra enviar de novo.
+  // Pergunta digitada no campo da página inicial: a Orbi já responde ao abrir, sem pedir pra enviar de novo.
   const [orbiEnviarAuto, setOrbiEnviarAuto] = useState(false);
-  // Box de endereço expande direto na Home (sem navegar pra outra tela) , 
+  // Box de endereço expande direto na página inicial (sem navegar pra outra tela) , 
   // guarda qual box está expandido agora (ou null se nenhum).
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
   // Logo editável na própria página (lapinho no modo de edição).
   const [logoAtual, setLogoAtual] = useState<string | null>(business.logo_url);
   const [editandoLogo, setEditandoLogo] = useState(false);
   const [heroAvatar, setHeroAvatar] = useState<string | null>(business.hero_avatar);
-  // Estilo da Home em grade: "classica" (cards) ou "vitrine" (bolinhas + fotos).
+  // Estilo da página inicial em grade: "classica" (cards) ou "vitrine" (bolinhas + fotos).
   // Fica guardado em home_mode ("vitrine"); ?estilo=vitrine|classica na URL
   // força um dos dois só pra testar, sem salvar nada.
   const estiloUrl = searchParams.get("estilo");
@@ -428,7 +428,7 @@ export function VisitorExperience({
     }
   }
 
-  // Reordenar direto na Home, troca a posição desse box com o vizinho na
+  // Reordenar direto na página inicial, troca a posição desse box com o vizinho na
   // direção pedida (dentre os que aparecem na tela agora).
   async function moveOption(key: string, dir: -1 | 1) {
     const idx = options.findIndex((o) => o.key === key);
@@ -445,7 +445,7 @@ export function VisitorExperience({
     conferirSalvo(r1.error ? r1 : r2);
   }
 
-  // Troca o formato direto na Home, o dono vê o card mudar de tamanho na
+  // Troca o formato direto na página inicial, o dono vê o card mudar de tamanho na
   // hora, em vez de escolher às cegas lá no editor de Boxes. Define um valor
   // explícito (não mais "automático") pra esse box.
   async function toggleLayout(key: string, currentlyLargo: boolean) {
@@ -673,8 +673,8 @@ export function VisitorExperience({
     grupo("materiais", "materiais-novo", "Materiais", "PDFs e guias", "/admin/materiais");
     return out;
   })();
-  // Ordem dos itens em destaque, mexida direto na Home (segurar e arrastar).
-  // Grava na lista de destaques do dono, nunca na ordem do Catálogo. Se a Home
+  // Ordem dos itens em destaque, mexida direto na página inicial (segurar e arrastar).
+  // Grava na lista de destaques do dono, nunca na ordem do Catálogo. Se a página inicial
   // estava no automático, a ordem arrastada passa a ser a escolha do dono.
   const contentHome = content;
   async function reordenarItens(ids: string[]) {
@@ -697,7 +697,7 @@ export function VisitorExperience({
     setBoxList((prev) => prev.map((b) => (b.id === box.id ? { ...b, config: cfg } : b)));
     conferirSalvo(await supabase.from("smart_boxes").update({ config: cfg }).eq("id", box.id));
   }
-  // Destaques da Home escolhidos pelo dono. Ficam no box do catálogo e, se a marca não tem esse box, no box "Tela inicial".
+  // Destaques da página inicial escolhidos pelo dono. Ficam no box do catálogo e, se a marca não tem esse box, no box "Tela inicial".
   const boxItensHome = boxList.find((b) => b.id === boxFormato?.key) ?? boxList.find((b) => b.box_type === "hero");
   const itensHomeSalvos = (() => {
     const v = ((boxItensHome?.config ?? {}) as CustomConfig).itensHome;
@@ -804,7 +804,7 @@ export function VisitorExperience({
     if (itensMudaram) await salvarDestaques(novosDestaques);
     conferirSalvo(res.find((r) => r.error) ?? { error: null });
   }
-  // Botão principal da Home em Vitrine: Orbi (quando há IA), Vitrine ou WhatsApp.
+  // Botão principal da página inicial em Vitrine: Orbi (quando há IA), Vitrine ou WhatsApp.
   const zapBolinha = bolinhasVitrine.find((b) => b.tipo === "whatsapp");
   const vitOpcao = todasOpcoes.find((o) => o.acao === "vitrine" || o.acao === "comprar");
   const temVitrine = !!vitOpcao || content.length > 0;
@@ -2759,7 +2759,7 @@ function OrbiChat({
     }
   }
 
-  // Pergunta vinda do campo da Home: responde assim que a conversa estiver pronta.
+  // Pergunta vinda do campo da página inicial: responde assim que a conversa estiver pronta.
   const enviouAuto = useRef(false);
   useEffect(() => {
     if (!enviarAoAbrir || enviouAuto.current || !conversationId || !initialInput?.trim()) return;

@@ -21,7 +21,7 @@ const fmtNota = (n: number) => n.toFixed(1).replace(".", ",");
 const chave = (slug: string) => `clube-pendente-${slug}`;
 
 /* =====================================================================
-   Bloco da Home: Virar fã, curtir e as pílulas coloridas
+   Bloco da página inicial: Virar fã, curtir e as pílulas coloridas
    ===================================================================== */
 export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null, isOwner, slotTopo = null }: { businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar?: string | null; isOwner: boolean; slotTopo?: HTMLElement | null }) {
   const [resumo, setResumo] = useState<Resumo | null>(null);
@@ -323,7 +323,7 @@ export function PedirFaFolha({ businessId, slug, nome }: { businessId: string; s
   );
 }
 
-/** Botão de virar fã usado fora da Home (ex.: voucher exclusivo para fãs). */
+/** Botão de virar fã usado fora da página inicial (ex.: voucher exclusivo para fãs). */
 export function BotaoVirarFa({ businessId, slug, aoVirarFa, className, children }: { businessId: string; slug: string; aoVirarFa: () => void; className?: string; children: React.ReactNode }) {
   const [aberto, setAberto] = useState(false);
   async function clique() {
@@ -1301,7 +1301,7 @@ function ContatoFolha({ businessId, userId, nome, inicial, aoFechar, aoConcluir 
 
 /* =====================================================================
    Nota rápida: toca numa estrela e abre um box pequeno com as estrelas
-   e um texto curto opcional. Serve na Home e na lista de marcas do fã.
+   e um texto curto opcional. Serve na página inicial e na lista de marcas do fã.
    ===================================================================== */
 export function NotaRapida({ businessId, userId, marca, inicial, comentarioInicial, aoFechar, aoSalvar }: {
   businessId: string; userId: string; marca: string; inicial: number; comentarioInicial?: string | null; aoFechar: () => void; aoSalvar: (nota: number, comentario: string) => void;

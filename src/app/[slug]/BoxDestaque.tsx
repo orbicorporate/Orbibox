@@ -73,7 +73,7 @@ export function BoxDestaque({
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [vouchers, setVouchers] = useState<V[]>([]);
-  // Tag de item em edição: ícone próprio da tag, editar o item ou tirar da Home.
+  // Tag de item em edição: ícone próprio da tag, editar o item ou tirar da página inicial.
   const [editandoItem, setEditandoItem] = useState<string | null>(null);
   useEffect(() => {
     let vivo = true;
@@ -234,7 +234,7 @@ export function BoxDestaque({
         <div className="flex items-center justify-between px-1">
           <div>
             <p className="text-[18px] font-semibold leading-tight">Tag em destaque</p>
-            <p className="mt-0.5 text-[12.5px] text-text-secondary">Atalho para {itemEditado.title} na Home.</p>
+            <p className="mt-0.5 text-[12.5px] text-text-secondary">Atalho para {itemEditado.title} na página inicial.</p>
           </div>
           <button type="button" onClick={() => setEditandoItem(null)} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] font-medium text-white">Concluir</button>
         </div>
@@ -256,7 +256,7 @@ export function BoxDestaque({
           <AbrirEditor href={`/admin/vitrine?editar=${itemEditado.id}`} rotulo="Editar o item" className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-white text-[14px] font-semibold ring-1 ring-black/[0.08]">
             Editar o item no catálogo
           </AbrirEditor>
-          <button type="button" onClick={() => { alternar("item", itemEditado.id); setEditandoItem(null); }} className="min-h-[44px] w-full rounded-full text-[14px] font-medium text-[#E5484D]">Tirar da Home</button>
+          <button type="button" onClick={() => { alternar("item", itemEditado.id); setEditandoItem(null); }} className="min-h-[44px] w-full rounded-full text-[14px] font-medium text-[#E5484D]">Tirar da página inicial</button>
         </div>
       </div>
     </div>,

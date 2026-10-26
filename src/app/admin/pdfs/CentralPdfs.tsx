@@ -22,7 +22,7 @@ const botaoSec = "inline-flex min-h-[44px] items-center justify-center rounded-f
 
 /**
  * Um lugar só para os PDFs da marca. Antes havia cinco portas diferentes; aqui o dono
- * sobe o arquivo e escolhe o destino: botão na Home, ou dentro do Cardápio.
+ * sobe o arquivo e escolhe o destino: botão na página inicial, ou dentro do Cardápio.
  */
 export function CentralPdfs({ businessId, botoes, cardapio }: { businessId: string; botoes: BotaoPdf[]; cardapio: Cardapio }) {
   const router = useRouter();
@@ -100,7 +100,7 @@ export function CentralPdfs({ businessId, botoes, cardapio }: { businessId: stri
           .select("id")
           .single();
         if (error || !caixa) { setErro("Não consegui criar o botão. Tente de novo."); return; }
-        // Já aparece em destaque no topo da Home, como o botão de PDF criado pelo Destaque.
+        // Já aparece em destaque no topo da página inicial, como o botão de PDF criado pelo Destaque.
         const { data: neg } = await supabase.from("businesses").select("home_destaques").eq("id", businessId).maybeSingle();
         const atuais = Array.isArray(neg?.home_destaques) ? (neg!.home_destaques as { t: string; id: string }[]) : [];
         await supabase.from("businesses").update({ home_destaques: [...atuais, { t: "botao", id: caixa.id }] as Json }).eq("id", businessId);
@@ -108,7 +108,7 @@ export function CentralPdfs({ businessId, botoes, cardapio }: { businessId: stri
       setArquivo(null);
       setNome("");
       if (input.current) input.current.value = "";
-      setAviso(destino === "home" ? "Pronto. O botão já está em destaque na sua Home." : "Pronto. O PDF já está dentro do seu Cardápio.");
+      setAviso(destino === "home" ? "Pronto. O botão já está em destaque na sua página inicial." : "Pronto. O PDF já está dentro do seu Cardápio.");
       router.refresh();
     } finally {
       setOcupado(null);
@@ -251,7 +251,7 @@ export function CentralPdfs({ businessId, botoes, cardapio }: { businessId: stri
       {vazio && <p className="mt-6 text-center text-[13.5px] text-text-tertiary">Nenhum PDF ainda. Quando você enviar, ele aparece aqui.</p>}
 
       {botoes.length > 0 && (
-        <section className="mt-7" aria-label="Botões de PDF na Home">
+        <section className="mt-7" aria-label="Botões de PDF na página inicial">
           <h2 className="text-[15px] font-medium">Botões na tela inicial</h2>
           <ul className="mt-2 flex flex-col gap-2">
             {botoes.map((b) => (

@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 /**
  * Antes de divulgar, a pessoa confere se a página está bonita: primeiro o
- * Catálogo, depois a Home, cada um numa prévia de celular com "Está pronto"
+ * Catálogo, depois a página inicial, cada um numa prévia de celular com "Está pronto"
  * ou "Editar". Regras:
  * - Primeira vez que tenta compartilhar: abre o checklist.
  * - Segunda vez: pergunta se já conferiu (Conferir ou Já conferi).
@@ -81,7 +81,7 @@ export function ChecklistDivulgarHost() {
         {tela === "pergunta" && (
           <div className="text-center">
             <p className="font-[family-name:var(--font-manrope)] text-[22px] font-medium leading-tight">Já conferiu se está bonito?</p>
-            <p className="mt-1.5 text-[14px] text-text-secondary">Uma olhada rápida no Catálogo e na Home antes de divulgar.</p>
+            <p className="mt-1.5 text-[14px] text-text-secondary">Uma olhada rápida no Catálogo e na página inicial antes de divulgar.</p>
             <div className="mt-5 flex flex-col gap-2">
               <button type="button" onClick={() => ir("catalogo")} className="min-h-[50px] rounded-full bg-on-background text-[15px] font-semibold text-white">Conferir agora</button>
               <button type="button" onClick={compartilharAgora} className="min-h-[46px] rounded-full bg-[#F2F2EE] text-[14px] font-medium">Já conferi, compartilhar</button>
@@ -92,7 +92,7 @@ export function ChecklistDivulgarHost() {
         {(tela === "catalogo" || tela === "home") && (
           <>
             <div className="flex items-center gap-2">
-              <span className="rounded-full px-3 py-1 text-[12.5px] font-semibold text-white" style={{ backgroundColor: tela === "catalogo" ? "#8758BE" : "#1FA855" }}>{tela === "catalogo" ? "Catálogo" : "Home"}</span>
+              <span className="rounded-full px-3 py-1 text-[12.5px] font-semibold text-white" style={{ backgroundColor: tela === "catalogo" ? "#8758BE" : "#1FA855" }}>{tela === "catalogo" ? "Catálogo" : "Página inicial"}</span>
               <span className="text-[12.5px] text-text-tertiary">{etapa} de 2</span>
               <button type="button" onClick={fechar} aria-label="Fechar" className="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#F2F2EE] text-[14px]">✕</button>
             </div>

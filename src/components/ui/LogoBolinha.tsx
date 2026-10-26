@@ -23,7 +23,7 @@ export function lerLogoAjuste(v: unknown): LogoAjuste | null {
 /**
  * A logo da marca dentro de uma bolinha: inteira (sem cortar), com o efeito esfera
  * e, se o dono ajustou, no tamanho e na posição que ele escolheu. É o mesmo desenho
- * na Home e na prévia do editor.
+ * na página inicial e na prévia do editor.
  */
 export function LogoBolinha({ src, ajuste, linha = false }: { src: string; ajuste?: LogoAjuste | null; linha?: boolean }) {
   const a = ajuste ? limitarLogo(ajuste) : null;

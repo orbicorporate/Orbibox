@@ -6,7 +6,7 @@ import { AI_MODEL_RAPIDO, ANTHROPIC_API_URL } from "@/lib/aiModel";
 import { SEGMENTOS } from "@/lib/segmentos";
 
 // Passo a passo do começo: a Orbi sugere categorias do catálogo, salva as
-// escolhidas e já organiza os itens que existem, e recria os botões da Home
+// escolhidas e já organiza os itens que existem, e recria os botões da página inicial
 // caso a página tenha nascido sem eles.
 
 export const maxDuration = 60;

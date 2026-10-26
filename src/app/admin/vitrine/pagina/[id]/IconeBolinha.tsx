@@ -13,8 +13,8 @@ const ICONES = ICON_LIBRARY.filter((ic) => !isAnimatedIcon(ic));
 type Destaque = { t: string; id: string; p?: number; logo?: string | null };
 
 /**
- * Imagem da bolinha deste item na Home (só aparece quando o item virou bolinha).
- * Fica guardada junto da lista de destaques da Home, no campo `logo` da bolinha.
+ * Imagem da bolinha deste item na página inicial (só aparece quando o item virou bolinha).
+ * Fica guardada junto da lista de destaques da página inicial, no campo `logo` da bolinha.
  */
 export function IconeBolinha({ businessId, itemId, fotoItem, logoMarca, inicial }: { businessId: string; itemId: string; fotoItem: string | null; logoMarca: string | null; inicial: string | null }) {
   const supabase = createClient();
@@ -38,7 +38,7 @@ export function IconeBolinha({ businessId, itemId, fotoItem, logoMarca, inicial 
     const { error } = await supabase.from("businesses").update({ home_destaques: nova as never }).eq("id", businessId);
     setSalvando(false);
     if (error) { setAtual(anterior); setErro("Não consegui salvar. Tente de novo."); return; }
-    // Limpa o cache de navegação: a Home já abre com o ícone novo.
+    // Limpa o cache de navegação: a página inicial já abre com o ícone novo.
     router.refresh();
   }
 
@@ -50,7 +50,7 @@ export function IconeBolinha({ businessId, itemId, fotoItem, logoMarca, inicial 
 
   return (
     <div className="mt-5">
-      <p className="text-[13px] font-semibold text-text-secondary">Ícone da bolinha <span className="font-normal text-text-tertiary">(como aparece na Home)</span></p>
+      <p className="text-[13px] font-semibold text-text-secondary">Ícone da bolinha <span className="font-normal text-text-tertiary">(como aparece na página inicial)</span></p>
       <div className="mt-2 flex flex-wrap items-center gap-2.5">
         {opcoes.map((o) => {
           const ativa = o.url === null ? atual === null : atual === o.url;

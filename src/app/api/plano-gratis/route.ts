@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     const validasBol = new Set(home.bolinhas.map((c) => c.chave));
     const validasDest = new Set(home.destaques.map((c) => c.chave));
     if (bol.some((k) => !validasBol.has(k)) || dest.some((k) => !validasDest.has(k))) {
-      return NextResponse.json({ error: "A escolha não bate com a sua Home. Recarregue a tela." }, { status: 409 });
+      return NextResponse.json({ error: "A escolha não bate com a sua página inicial. Recarregue a tela." }, { status: 409 });
     }
 
     // Caixas a desligar: as bloqueadas no grátis e as que não foram escolhidas.

@@ -193,7 +193,7 @@ export type ProgressExtra = { key: string; label: string; href: string; done: bo
 
 // Versão em tags do mesmo checklist, uma pílula compacta por funcionalidade
 // (várias por linha, não uma por linha). Ao contrário do ProgressCard (que
-// some quando bate 100%, faz sentido na Home onde o espaço é concorrido),
+// some quando bate 100%, faz sentido na página inicial onde o espaço é concorrido),
 // essa fica sempre visível: com tudo pronto, declara "100% preenchido" e
 // mostra as tags todas marcadas, em vez de simplesmente desaparecer.
 // `extras` é pra recursos opcionais que vale a pena conferir mas não

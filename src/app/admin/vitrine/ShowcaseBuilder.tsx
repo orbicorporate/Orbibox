@@ -144,9 +144,9 @@ export function ShowcaseBuilder({
     setLeadTop(next);
     conferirSalvo(await supabase.from("businesses").update({ vitrine_lead_top: next }).eq("id", businessId));
   }
-  // Destaques da Home (carrossel). Guarda a lista inteira para preservar vouchers e botões.
+  // Destaques da página inicial (carrossel). Guarda a lista inteira para preservar vouchers e botões.
   const [destaquesHome, setDestaquesHome] = useState(destaquesHomeIniciais);
-  // O item aparece na Home de dois jeitos: no carrossel de destaques ou na grade "Itens da Home".
+  // O item aparece na página inicial de dois jeitos: no carrossel de destaques ou na grade "Itens da página inicial".
   // A coroa considera os dois, e Tirar remove dos dois.
   const [configHome, setConfigHome] = useState(homeBoxConfig);
   const selecaoGrade = (() => {
@@ -1707,7 +1707,7 @@ function ItemCard({
             </span>
           </div>
         ) : (
-          // Sem foto: o mesmo cartão da Home, só o rodapé (nome, descrição e preço). Neutro é branco;
+          // Sem foto: o mesmo cartão da página inicial, só o rodapé (nome, descrição e preço). Neutro é branco;
           // outra cor escolhida pinta o cartão. O card inteiro (tratado pelo container pai) continua clicável pra editar.
           <div
             className="flex h-full w-full flex-col justify-end gap-1 pb-4 pl-4 pr-20 pt-16 text-left"
@@ -1760,9 +1760,9 @@ function ItemCard({
               <button
                 data-tour="t-catalogo"
                 onClick={(e) => { e.stopPropagation(); setMenuDestaque((v) => !v); }}
-                aria-label={emDestaque ? "Em destaque na Home" : "Destacar na Home"}
+                aria-label={emDestaque ? "Em destaque na página inicial" : "Destacar na página inicial"}
                 aria-expanded={menuDestaque}
-                title={emDestaque ? "Em destaque na Home" : "Destacar na Home"}
+                title={emDestaque ? "Em destaque na página inicial" : "Destacar na página inicial"}
                 className="flex h-9 w-9 items-center justify-center drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)] active:scale-90"
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill={emDestaque ? "#F5B400" : "#FFFFFF"} stroke={emDestaque ? "#8A5A00" : "#111318"} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" aria-hidden>
@@ -1770,12 +1770,12 @@ function ItemCard({
                 </svg>
               </button>
               {menuDestaque && createPortal(
-                <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/35 px-6" onClick={(e) => { e.stopPropagation(); setMenuDestaque(false); }} role="dialog" aria-modal="true" aria-label="Destaque na Home">
+                <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/35 px-6" onClick={(e) => { e.stopPropagation(); setMenuDestaque(false); }} role="dialog" aria-modal="true" aria-label="Destaque na página inicial">
                   <div onClick={(e) => e.stopPropagation()} className="w-full max-w-[300px] rounded-3xl bg-white p-5 text-on-background shadow-[0_12px_40px_rgba(17,19,24,0.3)]">
-                    <p className="text-[16px] font-medium">{emDestaque ? "Em destaque na Home" : "Destacar na Home?"}</p>
-                    <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">{emDestaque ? "Este item aparece na Home. Quer tirar?" : "O item aparece no topo da Home."}</p>
+                    <p className="text-[16px] font-medium">{emDestaque ? "Em destaque na página inicial" : "Destacar na página inicial?"}</p>
+                    <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">{emDestaque ? "Este item aparece na página inicial. Quer tirar?" : "O item aparece no topo da página inicial."}</p>
                     <div className="mt-4 flex gap-2">
-                      <button onClick={() => { onDestacar(); setMenuDestaque(false); }} className="min-h-[44px] flex-1 rounded-full bg-on-background px-4 text-[14px] font-medium text-white">{emDestaque ? "Tirar da Home" : "Destacar"}</button>
+                      <button onClick={() => { onDestacar(); setMenuDestaque(false); }} className="min-h-[44px] flex-1 rounded-full bg-on-background px-4 text-[14px] font-medium text-white">{emDestaque ? "Tirar da página inicial" : "Destacar"}</button>
                       <button onClick={() => setMenuDestaque(false)} className="min-h-[44px] rounded-full bg-[#EFEDE8] px-4 text-[14px] font-medium">Fechar</button>
                     </div>
                   </div>
@@ -1888,7 +1888,7 @@ function ItemCard({
 
             <div data-tour="item-formato" data-guia="formato-item" className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.08] shadow-[0_2px_8px_rgba(17,19,24,0.05)]">
               <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Formato</p>
-              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Vale também na Home, quando o formato dos itens lá estiver em “Igual à vitrine”.</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Vale também na página inicial, quando o formato dos itens lá estiver em “Igual à vitrine”.</p>
               <div className="mt-2 flex gap-2">
                 {(Object.keys(SIZE_LABEL) as BoxSize[]).map((s) => {
                   const ativo = size === s;

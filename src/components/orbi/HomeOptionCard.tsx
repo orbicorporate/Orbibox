@@ -38,7 +38,7 @@ export function isCustomBoxColor(color?: string | null): boolean {
   return !!color && color !== "transparent" && color.toLowerCase() !== "#111318";
 }
 
-/** Ícone de um box da Home, igual nos dois lugares (site real e preview do admin). */
+/** Ícone de um box da página inicial, igual nos dois lugares (site real e preview do admin). */
 export function HomeIcon({
   icon,
   boxLogo,
@@ -87,7 +87,7 @@ export function HomeIcon({
 }
 
 /** Classes do "casco" do card, únicas pros dois formatos, fonte única de
- * verdade pra não desalinhar visual entre a Home real e o preview do admin.
+ * verdade pra não desalinhar visual entre a página inicial real e o preview do admin.
  * `cupom` troca o fundo branco pelo degradê cereja padrão do box de
  * Vouchers; se o dono escolher uma cor própria pra ele (mesma regra dos
  * outros boxes), essa cor tem prioridade sobre o vermelho padrão. */
@@ -115,7 +115,7 @@ export function homeCardShellStyle(color?: string | null): CSSProperties | undef
 }
 
 /** Miolo do card (ícone + título + descrição + indicador), igual nos dois
- * formatos e nos dois lugares que usam. `titleNode` deixa a Home trocar o
+ * formatos e nos dois lugares que usam. `titleNode` deixa a página inicial trocar o
  * título por um campo de edição inline sem duplicar o resto do card. */
 export function HomeOptionCardContent({
   layout,
@@ -204,7 +204,7 @@ export function HomeOptionCardContent({
   );
 }
 
-/** Card completo, sem interação, pro preview do admin. Na Home real, a
+/** Card completo, sem interação, pro preview do admin. Na página inicial real, a
  * interatividade (clique, edição, setinhas) é montada em volta desse mesmo
  * conteúdo, então os dois nunca desalinham visualmente. */
 export function HomeOptionCardPreview({

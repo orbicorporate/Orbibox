@@ -41,7 +41,7 @@ export type RevisaoResultado = {
   endereco: string;
   /** Categorias importantes, na ordem em que foram tocadas (inclui as novas). */
   categorias: string[];
-  /** Produtos ou serviços em destaque na Home (inclui os novos). */
+  /** Produtos ou serviços em destaque na página inicial (inclui os novos). */
   itens: ItemEscolhido[];
   horario: Horario | null;
   extras: string[];
@@ -76,10 +76,10 @@ const chip = (on: boolean) => `min-h-[40px] rounded-full px-4 text-[14px] font-m
 type Etapa = "logo" | "cores" | "contato" | "endereco" | "categorias" | "itens" | "resumo";
 
 /**
- * Antes de abrir a Home: uma etapa por vez, cada uma editável. A pessoa confere
+ * Antes de abrir a página inicial: uma etapa por vez, cada uma editável. A pessoa confere
  * o que a Orbi achou no site (logotipo, cores, contato, endereço), toca nas
  * categorias e nos produtos ou serviços mais importantes e pode adicionar o que
- * faltou. Tudo vira item do catálogo e os escolhidos já entram em destaque na Home.
+ * faltou. Tudo vira item do catálogo e os escolhidos já entram em destaque na página inicial.
  */
 export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirmar: (v: RevisaoResultado) => void }) {
   const supabase = createClient();
@@ -180,7 +180,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
     });
   }
 
-  // Bolinhas da Home como vão aparecer: cor própria de cada atalho e, nas
+  // Bolinhas da página inicial como vão aparecer: cor própria de cada atalho e, nas
   // categorias, a foto do melhor item ou uma cor da marca.
   const fotoDaCat = new Map(cats.map((c) => [c.nome, c.foto]));
   const bolinhasHome: { k: string; t: string; cor: string; icone: string; foto?: string | null }[] = [
@@ -200,7 +200,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
     contato: { t: "WhatsApp ou telefone", d: "Vira o botão de contato." },
     endereco: { t: "Endereço", d: "Vira a bolinha de mapa. Pule se não atende no local." },
     categorias: { t: dados.servico ? "Tipos de serviço" : "Categorias", d: dados.categorias.length > 0 ? `A Orbi achou ${dados.categorias.length} no seu site. Toque nas mais importantes.` : "Toque nas que combinam com você ou escreva as suas." },
-    itens: { t: `Seus ${palavraItens}`, d: itens.length > 0 ? `Toque em até ${MAX_ITENS} que mais vendem. Vão para a frente da Home.` : `Escreva seus principais ${palavraItens}.` },
+    itens: { t: `Seus ${palavraItens}`, d: itens.length > 0 ? `Toque em até ${MAX_ITENS} que mais vendem. Vão para destaque na página inicial.` : `Escreva seus principais ${palavraItens}.` },
     resumo: { t: "Tudo certo?", d: "Sua página inicial vai nascer assim." },
   };
 
@@ -314,7 +314,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
         {etapa === "categorias" && (
           <>
             <div className="flex items-center justify-between">
-              <p className="text-[12.5px] font-medium text-text-tertiary">As marcadas viram bolinhas no topo da Home</p>
+              <p className="text-[12.5px] font-medium text-text-tertiary">As marcadas viram bolinhas no topo da página inicial</p>
               <span className="text-[12px] font-medium text-text-tertiary">{catsMarcadas.length}/{MAX_CATEGORIAS}</span>
             </div>
             <div className="mt-3 flex flex-col gap-2">
@@ -419,7 +419,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
         {etapa === "resumo" && (
           <>
-            {/* Prévia da Home: bolinhas como vão aparecer e os destaques nas cores da marca. */}
+            {/* Prévia da página inicial: bolinhas como vão aparecer e os destaques nas cores da marca. */}
             <div className="flex items-center gap-2.5">
               {logo && (
                 // eslint-disable-next-line @next/next/no-img-element

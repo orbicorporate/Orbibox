@@ -19,7 +19,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
     .eq("id", businessId!)
     .single();
   // "Novo item" (?novo=1): abre o cadastro em passos da própria vitrine (nome, foto, descrição, preço e categoria,
-  // com Pular), o mesmo de quem toca em "Novo item" aqui dentro. Vale também para quem vem da Home.
+  // com Pular), o mesmo de quem toca em "Novo item" aqui dentro. Vale também para quem vem da página inicial.
   const { data: items } = await supabase
     .from("content_items")
     .select("*")
@@ -35,7 +35,7 @@ export default async function VitrinePage({ searchParams }: { searchParams: Prom
   const { data: caixas } = await supabase.from("smart_boxes").select("config").eq("business_id", business!.id).eq("box_type", "custom");
   const temCardapio = (caixas ?? []).some((b) => (b.config as { action?: string } | null)?.action === "cardapio");
 
-  // Mesma regra da Home: a vitrine ativa guarda a escolha dos itens; sem ela, vale o box de entrada (hero).
+  // Mesma regra da página inicial: a vitrine ativa guarda a escolha dos itens; sem ela, vale o box de entrada (hero).
   const { data: boxesHome } = await supabase.from("smart_boxes").select("id, box_type, is_active, position, config").eq("business_id", business!.id).in("box_type", ["product", "hero", "custom"]).order("position", { ascending: true });
   const boxDaHome = (boxesHome ?? []).find((b) => b.is_active && (b.box_type === "product" || (b.box_type === "custom" && ["vitrine", "comprar"].includes(String((b.config as { action?: string } | null)?.action ?? ""))))) ?? (boxesHome ?? []).find((b) => b.box_type === "hero") ?? null;
   const homeBoxConfig = (boxDaHome?.config && typeof boxDaHome.config === "object" && !Array.isArray(boxDaHome.config) ? boxDaHome.config : {}) as Record<string, unknown>;

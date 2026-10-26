@@ -15,7 +15,7 @@ export default async function PdfsPage() {
   const businessId = await getCurrentBusinessId(user!.id);
 
   if (businessId && (await getAccessInfoForBusiness(businessId)).isFree) {
-    return <BloqueioGratis recurso="PDFs da marca" descricao="Cardápio de Natal, tabela de preços e catálogos em PDF, direto na sua página." itens={["Botão que abre o PDF na Home","Reduz o arquivo sozinho para abrir rápido","Troque o arquivo sempre que precisar"]} />;
+    return <BloqueioGratis recurso="PDFs da marca" descricao="Cardápio de Natal, tabela de preços e catálogos em PDF, direto na sua página." itens={["Botão que abre o PDF na página inicial","Reduz o arquivo sozinho para abrir rápido","Troque o arquivo sempre que precisar"]} />;
   }  const { data: boxes } = await supabase
     .from("smart_boxes")
     .select("id, title, config, is_active")
@@ -25,7 +25,7 @@ export default async function PdfsPage() {
 
   const lista = boxes ?? [];
   const cardapio = lista.find((b) => (b.config as { action?: string } | null)?.action === "cardapio") ?? null;
-  // Botões de PDF da Home: botões personalizados que abrem um arquivo guardado aqui.
+  // Botões de PDF da página inicial: botões personalizados que abrem um arquivo guardado aqui.
   const botoes: BotaoPdf[] = lista
     .filter((b) => {
       const c = (b.config ?? {}) as { action?: string; url?: string };

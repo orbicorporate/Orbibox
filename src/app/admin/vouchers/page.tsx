@@ -26,7 +26,7 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
   }  const access = businessId ? await getAccessInfoForBusiness(businessId) : null;
   const canSave = !!access?.hasVouchers;
 
-  // Link público pelo domínio de produção, como na Home do painel.
+  // Link público pelo domínio de produção, como na página inicial do painel.
   const host = APP_HOST;
   const linkBase = `${host.includes("localhost") ? "http" : "https"}://${host}`;
 
@@ -115,7 +115,7 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
             </div>
           </div>
 
-          {/* Passo a passo, agora com o passo que faltava: colocar o box na Home */}
+          {/* Passo a passo, agora com o passo que faltava: colocar o box na página inicial */}
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary">Passo a passo</p>
             <div className="mt-4 flex flex-col gap-4">
@@ -174,14 +174,14 @@ export default async function VouchersPage({ searchParams }: { searchParams: Pro
           titulo="Seu primeiro voucher"
           passos={[
             { t: "Crie a oferta", d: "Escolha o desconto, a quantidade e a validade.", feito: (vouchers?.length ?? 0) > 0, acao: { rotulo: "Criar voucher", href: "/admin/vouchers?novo=1" } },
-            { t: "Coloque na página inicial", d: "Sem o botão de vouchers na Home, ninguém vê a oferta.", feito: !!cupomBox, acao: { rotulo: "Ir para o botão", href: "#voucher-home" } },
+            { t: "Coloque na página inicial", d: "Sem o botão de vouchers na página inicial, ninguém vê a oferta.", feito: !!cupomBox, acao: { rotulo: "Ir para o botão", href: "#voucher-home" } },
           ]}
         />
       )}
 
       {canSave && (
         <div id="voucher-home" className="mt-6 flex scroll-mt-24 flex-col gap-4">
-          {/* O elo que faltava: colocar (ou confirmar que já tem) o box na Home */}
+          {/* O elo que faltava: colocar (ou confirmar que já tem) o box na página inicial */}
           <CupomBoxToggle businessId={business!.id} initialHasBox={!!cupomBox} boxId={cupomBox?.id ?? null} nextPosition={nextPosition} />
           {cupomBox && (
             <VoucherFormato boxId={cupomBox.id} config={(cupomBox.config ?? {}) as Record<string, unknown>} inicial={(cupomBox.config as { voucherFormato?: string } | null)?.voucherFormato === "quadrado" ? "quadrado" : "horizontal"} />

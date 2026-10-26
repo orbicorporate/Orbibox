@@ -186,7 +186,7 @@ export function HomeVitrine({
   formato: FormatoItens;
   /** Undefined quando não há onde guardar a escolha (sem box da vitrine). */
   onFormato?: (f: FormatoItens) => void;
-  /** Ids que o dono escolheu para a Home, na ordem. Null ou vazio: mostra as capas da vitrine. */
+  /** Ids que o dono escolheu para a página inicial, na ordem. Null ou vazio: mostra as capas da vitrine. */
   itensEscolhidos?: string[] | null;
   /** Só o dono: guarda a escolha (null volta ao automático). Undefined quando não há onde guardar. */
   onEscolherItens?: (ids: string[] | null) => void;
@@ -224,10 +224,10 @@ export function HomeVitrine({
     if (novo.status !== "published") await supabase.from("content_items").update({ status: "published" }).eq("id", novo.id);
     const atuais = naSelecao.map((e) => e.id);
     if (atuais.length >= MAXIMO) {
-      setAvisoNovo(`"${novo.title}" foi criado, mas já são ${MAXIMO} itens na Home. Tire um e marque o novo.`);
+      setAvisoNovo(`"${novo.title}" foi criado, mas já são ${MAXIMO} itens na página inicial. Tire um e marque o novo.`);
     } else {
       onEscolherItens?.([...atuais, novo.id]);
-      setAvisoNovo(`"${novo.title}" foi criado e entrou nos itens da Home.`);
+      setAvisoNovo(`"${novo.title}" foi criado e entrou nos itens da página inicial.`);
     }
     router.refresh();
   }
@@ -258,7 +258,7 @@ export function HomeVitrine({
   const todosEscolhiveis = [...comFoto, ...categoriasCartao];
   const escolhidos = (itensEscolhidos ?? []).map((id) => todosEscolhiveis.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i).slice(0, MAXIMO);
   const personalizado = escolhidos.length > 0;
-  // Sem escolha do dono, a Home mostra as capas da vitrine: os itens sem categoria (Rodízio, Buffet, Drinks...).
+  // Sem escolha do dono, a página inicial mostra as capas da vitrine: os itens sem categoria (Rodízio, Buffet, Drinks...).
   // Os pratos de um cardápio importado, que têm categoria, ficam de fora. Sem nenhuma capa, vale a ordem do catálogo.
   const porPosicao = [...comFoto].sort((a, b) => a.position - b.position);
   const capas = porPosicao.filter((i) => !i.brand_label?.trim());
@@ -422,7 +422,7 @@ export function HomeVitrine({
           <div data-tour="t-tags" className="mb-5 flex w-full min-w-0 flex-col items-center empty:hidden">{destaque}</div>
           <div className="flex items-center justify-between gap-2">
             {podeEditar && onEscolherItens ? (
-              <button type="button" onClick={() => setEscolhendo(true)} aria-label={`${tituloItens}: escolher e ordenar os itens da Home`} className="flex min-h-[40px] min-w-0 items-center gap-2 rounded-full text-left active:opacity-70">
+              <button type="button" onClick={() => setEscolhendo(true)} aria-label={`${tituloItens}: escolher e ordenar os itens da página inicial`} className="flex min-h-[40px] min-w-0 items-center gap-2 rounded-full text-left active:opacity-70">
                 <h2 className="truncate font-[family-name:var(--font-manrope)] text-[17px] font-medium tracking-[-0.01em]">{tituloItens}</h2>
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-background text-[16px] font-medium leading-none text-white" aria-hidden>+</span>
               </button>
@@ -514,18 +514,18 @@ export function HomeVitrine({
           <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-h-[88vh] w-full max-w-[440px] flex-col rounded-t-[28px] bg-[#EFEFEA] p-4 pb-6 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex shrink-0 items-center justify-between px-1">
               <div>
-                <p className="text-[18px] font-semibold leading-tight">Destaques da Home</p>
+                <p className="text-[18px] font-semibold leading-tight">Destaques da página inicial</p>
                 <p className="mt-0.5 text-[12.5px] text-text-secondary">Toque para colocar ou tirar. Até {MAXIMO}.</p>
               </div>
               <button type="button" onClick={() => { setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] font-medium text-white">Concluir</button>
             </div>
 
-            {/* Contador: quantos já estão na Home, em bolinhas. */}
+            {/* Contador: quantos já estão na página inicial, em bolinhas. */}
             <div className="mt-3 flex shrink-0 items-center gap-2 px-1">
               <div className="flex gap-1">
                 {Array.from({ length: MAXIMO }).map((_, k) => <span key={k} className={`h-2 w-5 rounded-full ${k < naSelecao.length ? "bg-[#3B5BDB]" : "bg-black/10"}`} />)}
               </div>
-              <span className="text-[12.5px] font-medium text-text-secondary">{naSelecao.length} de {MAXIMO} na Home</span>
+              <span className="text-[12.5px] font-medium text-text-secondary">{naSelecao.length} de {MAXIMO} na página inicial</span>
             </div>
 
             {onTitulo && (
@@ -597,7 +597,7 @@ export function HomeVitrine({
                 );
                 return (
                   <>
-                    {grupo("Na Home agora", marcados)}
+                    {grupo("Na página inicial agora", marcados)}
                     {grupo("Itens do catálogo", outros)}
                     {grupo("Categorias", outrasCategorias)}
                     {filtrados.length === 0 && <p className="px-2 py-4 text-center text-[13.5px] text-text-tertiary">Nada encontrado.</p>}

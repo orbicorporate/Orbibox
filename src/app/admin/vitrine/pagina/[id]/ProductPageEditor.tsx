@@ -124,7 +124,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
   });
   const [formato, setFormato] = useState<GalleryRatio>(galleryRatioOf(item.gallery_ratio, item.layout_size));
   const [estado, setEstado] = useState<"salvo" | "salvando" | "erro">("salvo");
-  // Página nova nasce como rascunho: ninguém vê, nem na Home. Aqui o dono publica com um toque.
+  // Página nova nasce como rascunho: ninguém vê, nem na página inicial. Aqui o dono publica com um toque.
   const [publicada, setPublicada] = useState(item.status === "published");
   const [publicando, setPublicando] = useState(false);
   async function publicar(valor: boolean) {
@@ -134,7 +134,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
     setPublicando(false);
     if (!error) router.refresh();
   }
-  // Capa do card (a foto que aparece na Home e no catálogo). Sem capa própria, vale a primeira foto da galeria.
+  // Capa do card (a foto que aparece na página inicial e no catálogo). Sem capa própria, vale a primeira foto da galeria.
   const [capa, setCapa] = useState<string | null>(item.image_url);
   async function definirCapa(src: string | null) {
     const anterior = capa;
@@ -367,7 +367,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
         <div className={`mx-4 mt-4 flex items-center gap-3 rounded-[22px] border p-3.5 ${publicada ? "border-divider bg-surface-white" : "border-[#F2C078] bg-[#FFF6E8]"}`}>
           <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${publicada ? "bg-[#1DB8A4]" : "bg-[#E8890C]"}`} aria-hidden />
           <p className="min-w-0 flex-1 text-[13px] leading-snug">
-            {publicada ? <><span className="font-medium">Publicada.</span> <span className="text-text-secondary">Já aparece na sua página.</span></> : <><span className="font-medium">Rascunho.</span> <span className="text-text-secondary">Ninguém vê esta página, nem na Home, até você publicar.</span></>}
+            {publicada ? <><span className="font-medium">Publicada.</span> <span className="text-text-secondary">Já aparece na sua página.</span></> : <><span className="font-medium">Rascunho.</span> <span className="text-text-secondary">Ninguém vê esta página, nem na página inicial, até você publicar.</span></>}
           </p>
           <button type="button" onClick={() => void publicar(!publicada)} disabled={publicando} className={`min-h-[40px] shrink-0 rounded-full px-4 text-[13px] font-semibold disabled:opacity-50 ${publicada ? "bg-surface-soft text-text-secondary" : "bg-on-background text-white"}`}>
             {publicando ? "…" : publicada ? "Tirar do ar" : "Publicar"}

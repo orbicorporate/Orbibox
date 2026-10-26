@@ -6,7 +6,7 @@ import { conferirAntesDeCompartilhar } from "@/components/compartilhar/Checklist
 
 /**
  * Tour curto depois do cadastro, na página real da pessoa. Cada parada tem uma
- * cor própria, um nome curto e uma frase. As três primeiras ficam na Home
+ * cor própria, um nome curto e uma frase. As três primeiras ficam na página inicial
  * pública (bolinhas, tags e destaques); as duas últimas no Catálogo do painel.
  * O passo atual fica guardado no aparelho, então o tour atravessa as páginas.
  */
@@ -19,7 +19,7 @@ const PARADAS: Parada[] = [
   { fase: "home", alvo: "t-bolinhas", cor: "#1FA855", nome: "Bolinhas", texto: "Atalhos rápidos: WhatsApp, endereço, redes." },
   { fase: "home", alvo: "t-tags", cor: "#F29D38", nome: "Tags", texto: "Voucher, gift card, promoção ou um produto em evidência." },
   { fase: "home", alvo: "t-destaques", cor: "#3B5BDB", nome: "Destaques", texto: "Produtos, serviços ou categorias do seu catálogo." },
-  { fase: "catalogo", alvo: "t-catalogo", cor: "#8758BE", nome: "Catálogo", texto: "Todos os seus itens, cada um com página própria. A coroa leva o item para a Home." },
+  { fase: "catalogo", alvo: "t-catalogo", cor: "#8758BE", nome: "Catálogo", texto: "Todos os seus itens, cada um com página própria. A coroa leva o item para a página inicial." },
   { fase: "catalogo", alvo: null, cor: "#111318", nome: "Pronto", texto: "Seu Orbibox está no ar." },
 ];
 
@@ -84,7 +84,7 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
     try { await navigator.clipboard.writeText(url); setCopiado(true); } catch { /* sem clipboard */ }
   }
 
-  // ?tour=1 na Home começa do primeiro passo.
+  // ?tour=1 na página inicial começa do primeiro passo.
   useEffect(() => {
     if (iniciar) gravar(slug, 0);
   }, [iniciar, slug]);

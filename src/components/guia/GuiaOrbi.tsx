@@ -43,7 +43,7 @@ function marcarFeito() {
   } catch {}
 }
 
-/** Abre o guia de qualquer lugar (a Home usa isso depois de levar a pessoa ao Catálogo). */
+/** Abre o guia de qualquer lugar (a página inicial usa isso depois de levar a pessoa ao Catálogo). */
 export function iniciarGuia() {
   window.dispatchEvent(new Event(EVENTO));
 }

@@ -31,7 +31,7 @@ export function VerComoFicou({ slug }: { slug: string }) {
   const rotulo = voucher ? "Ver este voucher na página" : "Ver como ficou";
   const edita = voucher || /^\/admin\/(vouchers|vitrine|cardapio|delivery|materiais|gift|rede)(\/|$)/.test(caminho);
   if (!edita) return null;
-  // Cada editor abre a tela que a pessoa está mexendo, não a Home.
+  // Cada editor abre a tela que a pessoa está mexendo, não a página inicial.
   const destino = voucher ? `?v=${voucher}`
     : /^\/admin\/cardapio(\/|$)/.test(caminho) ? "?cardapio=1"
     : /^\/admin\/delivery(\/|$)/.test(caminho) ? "?delivery=1"

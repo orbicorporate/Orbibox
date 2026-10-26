@@ -111,7 +111,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { data: bizCat } = await supabase.from("businesses").select("vitrine_categories").eq("id", business.id).maybeSingle();
   const { data: titulosItens } = await supabase.from("content_items").select("title").eq("business_id", business.id).eq("status", "published").limit(30);
   const sugerirCardapio = !temCardapio && pareceGastronomico(bizCat?.vitrine_categories as string[] | null, (titulosItens ?? []).map((i) => i.title ?? ""));
-  // Mesma fila de pendências usada na Home e em "/admin/pendencias", agora
+  // Mesma fila de pendências usada na página inicial e em "/admin/pendencias", agora
   // também alimenta o sino do header em toda tela do painel.
   const headerPendencias = (await getPendingInsights(business.id)).map((i) => ({ title: i.title, href: i.href }));
 
