@@ -3046,7 +3046,7 @@ function BarraContato({ business, sessionId, onOrbi }: { business: Business; ses
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", sessionId })}
-          className="inline-flex items-center gap-2 rounded-full bg-button-primary px-5 py-3 text-[14px] font-medium text-white"
+          className="inline-flex items-center gap-2 rounded-full bg-[#1F9E4C] px-5 py-3 text-[14px] font-medium text-white"
         >
           WhatsApp
         </a>

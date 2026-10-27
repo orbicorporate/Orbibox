@@ -717,7 +717,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
             <span className="rounded-full btn-orbi-preto py-3.5 text-center text-[14px] font-medium">✦ Falar com a Orbi</span>
             {(business.contact_whatsapp || business.contact_phone) && (
               <div className="flex gap-2.5">
-                {business.contact_whatsapp && <span className="flex-1 rounded-full border border-divider py-3 text-center text-[13.5px] font-medium">WhatsApp</span>}
+                {business.contact_whatsapp && <span className="flex-1 rounded-full bg-[#1F9E4C] py-3 text-center text-[13.5px] font-semibold text-white">WhatsApp</span>}
                 {business.contact_phone && <span className="flex-1 rounded-full border border-divider py-3 text-center text-[13.5px] font-medium">Ligar</span>}
               </div>
             )}

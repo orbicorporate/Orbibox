@@ -323,7 +323,7 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => trackClick({ businessId: business.id, kind: "whatsapp", contentItemId: item.id })}
-                  className="flex-1 rounded-full border border-divider py-3 text-center text-[13.5px] font-medium"
+                  className="flex-1 rounded-full bg-[#1F9E4C] py-3 text-center text-[13.5px] font-semibold text-white"
                 >
                   WhatsApp
                 </a>
