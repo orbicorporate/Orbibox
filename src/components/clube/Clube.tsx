@@ -729,29 +729,6 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
     setDescobrindo(true);
     if (ativos === null) getOrbiboxAtivos().then(setAtivos);
   }
-  const itensAtivos: ItemOrbita[] = useMemo(() => {
-    const out: ItemOrbita[] = [];
-    let anel = 0, noAnel = 0;
-    for (const b of (ativos ?? []).filter((x) => x.slug !== slug)) {
-      if (noAnel >= CAP_ANEL[anel]) { anel++; noAnel = 0; }
-      if (anel > 2) break;
-      const s = TAM[anel] + 6 - (noAnel % 3) * 3;
-      out.push({
-        key: b.id, size: s, anel, legenda: b.name, rotulo: `Abrir ${b.name}`,
-        aoTocar: () => router.push(`/${b.slug}`),
-        node: (
-          <span className="grid place-items-center overflow-hidden rounded-full bg-white shadow-[0_6px_16px_-8px_rgba(17,19,24,0.4)] ring-1 ring-divider" style={{ width: s, height: s }}>
-            {b.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={b.logo_url} alt="" className="h-full w-full object-contain p-1.5" />
-            ) : <span className="text-[13px] text-text-secondary">{b.name.charAt(0).toUpperCase()}</span>}
-          </span>
-        ),
-      });
-      noAnel++;
-    }
-    return out;
-  }, [ativos, slug, router]);
   const [marcas, setMarcas] = useState<MarcaDoFa[] | null>(null);
   /** Nota e texto que este fã deu a cada marca (id da marca → avaliação). */
   const [notasFa, setNotasFa] = useState<Record<string, { nota: number; comentario: string | null }>>({});
@@ -873,9 +850,14 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                 )}
               </div>
             </div>
-            <button type="button" onClick={fechar} aria-label="Fechar" className="-mr-1 grid h-11 w-11 flex-none place-items-center rounded-full text-on-background active:scale-95">
-              <IcX />
-            </button>
+            <div className="-mr-1 flex flex-none items-center">
+              <button type="button" onClick={abrirDescobrir} aria-label="Descobrir Orbibox" title="Descobrir Orbibox" className="grid h-11 w-11 place-items-center rounded-full text-text-tertiary active:scale-95">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
+              </button>
+              <button type="button" onClick={fechar} aria-label="Fechar" className="grid h-11 w-11 place-items-center rounded-full text-on-background active:scale-95">
+                <IcX />
+              </button>
+            </div>
           </div>
           <div className="flex min-h-0 flex-1 flex-col justify-center px-2 pt-2">
             {fas === null ? (
@@ -891,30 +873,6 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
             )}
           </div>
           <div className="cl-entra px-6 text-center" style={{ ["--i" as string]: 5 }}>
-            {afins.length > 0 && (
-              <div className="mx-auto mb-3 max-w-[340px]">
-                <p className="text-[12.5px] text-text-secondary">
-                  {afins[0].fas} {afins[0].fas === 1 ? "fã deste radar também gosta" : "fãs deste radar também gostam"} de <b className="font-semibold text-on-background">{afins[0].name}</b>
-                  {afins.length > 1 ? <>{afins.length > 2 ? ", " : " e "}<b className="font-semibold text-on-background">{afins[1].name}</b></> : null}
-                  {afins.length > 2 ? <> e <b className="font-semibold text-on-background">{afins[2].name}</b></> : null}
-                </p>
-                <ul className="mt-2 flex flex-wrap justify-center gap-2">
-                  {afins.slice(0, 6).map((m) => (
-                    <li key={m.id}>
-                      <a href={`/${m.slug}`} className="flex min-h-[44px] items-center gap-1.5 rounded-full bg-surface-white py-1 pl-1 pr-3 text-[12.5px] font-semibold ring-1 ring-divider active:scale-95">
-                        <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
-                          {m.logo_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={m.logo_url} alt="" className="h-full w-full object-contain p-0.5" />
-                          ) : <span className="text-[11px] font-extrabold">{m.name.charAt(0).toUpperCase()}</span>}
-                        </span>
-                        {m.name}<span className="text-text-tertiary tabular-nums">{m.fas}</span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
             {temNivel && (
               <div className="mx-auto mb-3 max-w-[340px]">
                 <div className="h-1.5 rounded-full" style={{ background: "linear-gradient(90deg,#F2556B,#FF9A3C,#1DB8A4,#3E8BEA)" }} aria-hidden />
@@ -1184,25 +1142,36 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                 </div>
               </>
             )}
-            <button type="button" onClick={abrirDescobrir} className="mt-1 flex min-h-[40px] items-center gap-1.5 rounded-full px-4 text-[13px] text-text-tertiary active:scale-95">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
-              Descobrir
-            </button>
           </div>
 
           {/* Descobrir: o radar com a logo de cada Orbibox ativo */}
           <div className={`cl-camada ${descobrindo ? "on" : ""}`} aria-hidden={!descobrindo}>
             {descobrindo && (
               <>
-                <Cabecalho titulo="Descobrir" sub="Os Orbibox que estão no ar. Toque para visitar." fechar={() => setDescobrindo(false)} rotuloFechar="Voltar" />
-                <div className="flex min-h-0 flex-1 flex-col justify-center px-2 pb-6">
-                  {ativos === null ? (
-                    <p className="text-center text-[14px] text-text-tertiary">Procurando...</p>
-                  ) : itensAtivos.length === 0 ? (
-                    <p className="px-8 text-center text-[15px] text-text-secondary">Ainda não há outros Orbibox no ar.</p>
-                  ) : (
-                    <Orbita itens={itensAtivos} aneis={ANEIS} centro={<span className="grid h-[88px] w-[88px] place-items-center rounded-full bg-on-background text-center text-[12px] leading-tight text-white">{itensAtivos.length}<br />Orbibox</span>} />
+                <Cabecalho titulo="Descobrir Orbibox" sub="Os Orbibox que os fãs deste radar também curtem" fechar={() => setDescobrindo(false)} rotuloFechar="Voltar" />
+                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-8 pt-2">
+                  {afins.length > 0 && (
+                    <>
+                      <p className="px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Também curtidos pelos fãs</p>
+                      {afins.map((m) => (
+                        <LinhaOrbibox key={m.id} nome={m.name} logo={m.logo_url} detalhe={`${m.fas} ${m.fas === 1 ? "fã" : "fãs"} em comum`} aoTocar={() => router.push(`/${m.slug}`)} />
+                      ))}
+                    </>
                   )}
+                  {ativos === null ? (
+                    <p className="py-4 text-center text-[14px] text-text-tertiary">Procurando...</p>
+                  ) : (() => {
+                    const jaMostrados = new Set(afins.map((m) => m.id));
+                    const outros = ativos.filter((b) => b.slug !== slug && !jaMostrados.has(b.id));
+                    return outros.length > 0 ? (
+                      <>
+                        <p className="mt-3 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar</p>
+                        {outros.map((b) => (
+                          <LinhaOrbibox key={b.id} nome={b.name} logo={b.logo_url} aoTocar={() => router.push(`/${b.slug}`)} />
+                        ))}
+                      </>
+                    ) : afins.length === 0 ? <p className="px-8 py-6 text-center text-[15px] text-text-secondary">Ainda não há outros Orbibox no ar.</p> : null;
+                  })()}
                 </div>
               </>
             )}
@@ -1234,6 +1203,25 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
   );
 }
 
+
+/** Uma linha da lista de Orbibox: logo, nome e toque para visitar. */
+function LinhaOrbibox({ nome, logo, detalhe, aoTocar }: { nome: string; logo: string | null; detalhe?: string; aoTocar: () => void }) {
+  return (
+    <button type="button" onClick={aoTocar} className="flex min-h-[56px] w-full items-center gap-3 rounded-full bg-surface-white py-2 pl-2 pr-4 text-left ring-1 ring-divider active:scale-[0.98]">
+      <span className="grid h-10 w-10 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
+        {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logo} alt="" className="h-full w-full object-contain p-1" />
+        ) : <span className="text-[14px] font-semibold">{nome.charAt(0).toUpperCase()}</span>}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[15px] font-medium">{nome}</span>
+        {detalhe && <span className="block text-[12.5px] text-text-tertiary">{detalhe}</span>}
+      </span>
+      <span aria-hidden className="text-text-tertiary">→</span>
+    </button>
+  );
+}
 
 const AVISO_CHAVE = (slug: string) => `clube-validar-${slug}`;
 
