@@ -37,8 +37,8 @@ function Icone({ tipo }: { tipo: Dica["icone"] }) {
  * passo a passo (compartilhar no WhatsApp e nos Stories). Depois, no máximo um
  * por dia, uma dica de cada vez. O que já foi feito ou adiado fica guardado no aparelho.
  */
-export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo, temVoucher, itens = [] }: {
-  businessId: string; nome: string; slug: string; shareUrl: string; imagem: string | null; logo: string | null; temVoucher: boolean;
+export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo, temVoucher, descricao = null, itens = [] }: {
+  businessId: string; nome: string; slug: string; shareUrl: string; imagem: string | null; logo: string | null; temVoucher: boolean; descricao?: string | null;
   /** Itens publicados do catálogo, para escolher um e compartilhar nos Stories. */
   itens?: { id: string; title: string; image_url: string | null }[];
 }) {
@@ -103,7 +103,7 @@ export function PopupDivulgacao({ businessId, nome, slug, shareUrl, imagem, logo
 
   function alvoDe(d: Dica): AlvoCompartilhar {
     const url = d.caminho ? `${new URL(shareUrl).origin}${d.caminho}` : shareUrl;
-    return { url, titulo: nome, marca: nome, imagem, logo, texto: d.mensagem ?? `Conhece ${nome}? Dá uma olhada:` };
+    return { url, titulo: nome, marca: nome, descricao, imagem, logo, texto: d.mensagem ?? `Conhece ${nome}? Dá uma olhada:` };
   }
 
   function fazer(d: Dica) {

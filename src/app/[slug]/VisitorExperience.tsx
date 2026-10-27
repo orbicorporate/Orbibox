@@ -1055,7 +1055,7 @@ export function VisitorExperience({
       {isOwner && intent === null && !previewMode && (
         <div className="fixed right-4 top-4 z-20 flex items-center gap-2">
           <BotaoCompartilhar
-            alvo={{ url: `/${business.slug}`, titulo: business.name, marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, texto: `Conhece ${business.name}? Dá uma olhada:` }}
+            alvo={{ url: `/${business.slug}`, titulo: business.name, marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, descricao: business.share_description || business.about_business, texto: `Conhece ${business.name}? Dá uma olhada:` }}
             className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#C4122F] text-white shadow-lg transition-transform active:scale-90 [&_svg]:h-4 [&_svg]:w-4"
           />
           <Link
@@ -1093,7 +1093,7 @@ export function VisitorExperience({
       {isOwner && previewMode && !previewTravado && (
         <div className="fixed right-4 top-4 z-20 flex items-center gap-2">
           <BotaoCompartilhar
-            alvo={{ url: `/${business.slug}`, titulo: business.name, marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, texto: `Conhece ${business.name}? Dá uma olhada:` }}
+            alvo={{ url: `/${business.slug}`, titulo: business.name, marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, descricao: business.share_description || business.about_business, texto: `Conhece ${business.name}? Dá uma olhada:` }}
             className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#C4122F] text-white shadow-lg transition-transform active:scale-90 [&_svg]:h-4 [&_svg]:w-4"
           />
           <Link
@@ -1120,7 +1120,7 @@ export function VisitorExperience({
         {intent === null && !isOwner && (
           <div className="absolute left-4 top-4 z-20">
             <BotaoCompartilhar
-              alvo={{ url: `/${business.slug}`, titulo: business.name, marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, texto: `Conhece ${business.name}? Dá uma olhada:` }}
+              alvo={{ url: `/${business.slug}`, titulo: business.name, marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, descricao: business.share_description || business.about_business, texto: `Conhece ${business.name}? Dá uma olhada:` }}
               className="grid h-10 w-10 place-items-center rounded-full bg-surface-white/80 text-on-background shadow-[0_2px_10px_rgba(17,19,24,0.08)] ring-1 ring-black/[0.04] backdrop-blur-md transition-transform active:scale-90"
             />
           </div>

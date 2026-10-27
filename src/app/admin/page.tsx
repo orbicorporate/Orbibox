@@ -104,7 +104,7 @@ export default async function HojePage() {
     <>
     <AbrirNaPagina />
     {/* Só convida a divulgar quando já tem catálogo. O popup ainda confere se a pessoa mexeu em 2 itens da página inicial. */}
-    {(itensStories ?? []).length > 0 && <PopupDivulgacao businessId={b.id} nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={b.share_image_url || b.vitrine_cover_url || null} logo={b.logo_url ?? null} temVoucher={(vouchersRes.data ?? []).length > 0} itens={itensStories ?? []} />}
+    {(itensStories ?? []).length > 0 && <PopupDivulgacao descricao={b.share_description || b.about_business} businessId={b.id} nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={b.share_image_url || b.vitrine_cover_url || null} logo={b.logo_url ?? null} temVoucher={(vouchersRes.data ?? []).length > 0} itens={itensStories ?? []} />}
     <HomeView
       saudacao={saudacaoDoMomento()}
       primeiroNome={primeiroNome}

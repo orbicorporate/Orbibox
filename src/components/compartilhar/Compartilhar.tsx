@@ -22,6 +22,8 @@ export type AlvoCompartilhar = {
   /** Frase que vai antes do link no WhatsApp. */
   texto?: string;
   marca: string;
+  /** Descrição salva pra o preview do link da marca (a mesma que o WhatsApp mostra). */
+  descricao?: string | null;
   imagem?: string | null;
   logo?: string | null;
   /** Cor de destaque da arte do story. */
@@ -38,6 +40,12 @@ function urlCompleta(u: string) {
     return u;
   }
   return `${origemPublica()}${u.startsWith("/") ? "" : "/"}${u}`;
+}
+
+/** Igual ao corte do preview real: uma linha só no WhatsApp. */
+function curtoPreview(t: string) {
+  const f = t.trim();
+  return f.length > 38 ? `${f.slice(0, 36).replace(/[\s,.;:]+\S*$/, "").replace(/[\s,.;:]+$/, "")}…` : f;
 }
 
 export function IconeCompartilhar({ tam = 20 }: { tam?: number }) {
@@ -299,8 +307,8 @@ export function FolhaCompartilhar({ alvo, aoFechar }: { alvo: AlvoCompartilhar; 
                 )}
               </div>
               <div className="px-2.5 py-2">
-                <p className="truncate text-[13.5px] font-medium text-on-background">{alvo.titulo === alvo.marca ? `Confere isso no Orbibox da ${alvo.marca}` : alvo.titulo}</p>
-                <p className="truncate text-[12px] text-text-secondary">{alvo.titulo === alvo.marca ? "Veja tudo em um só link" : alvo.marca}</p>
+                <p className="truncate text-[13.5px] font-medium text-on-background">{alvo.titulo === alvo.marca ? `Visite nosso Orbibox - ${alvo.marca}` : alvo.titulo}</p>
+                <p className="truncate text-[12px] text-text-secondary">{alvo.titulo === alvo.marca ? (alvo.descricao?.trim() ? curtoPreview(alvo.descricao) : `Conheça ${alvo.marca}, produtos, serviços e contato num só link.`) : alvo.marca}</p>
                 <p className="truncate text-[11.5px] text-text-tertiary">{link.replace(/^https?:\/\//, "").replace(/\?.*$/, "")}</p>
               </div>
             </div>
