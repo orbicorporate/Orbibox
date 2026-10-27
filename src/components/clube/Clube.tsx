@@ -206,7 +206,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       {isOwner && vazio && <p className="max-w-[300px] text-center text-[13px] text-text-tertiary">Quando seus clientes virarem fãs e avaliarem, os números aparecem aqui.</p>}
       {isOwner && resumo.fas === 0 && resumo.avaliacoes > 0 ? null : null}
       {!isOwner && eu.logado && eu.anonimo && <AvisoValidarPerfil slug={slug} />}
-      {!isOwner && <LinguaContato nome={nome} slug={slug} ocupado={aberta !== null || pedido !== null} eu={eu} onQuero={querContato} />}
+      {!isOwner && <LinguaContato slug={slug} ocupado={aberta !== null || pedido !== null} eu={eu} onQuero={querContato} />}
 
       {aberta?.tipo === "avaliacoes" && (
         <AvaliacoesFolha
@@ -1244,7 +1244,7 @@ const LINGUA_CHAVE = (slug: string) => `clube-lingua-${slug}`;
  * para receber novidades e promoções. Some se ele já aceitou; depois de dispensada,
  * só volta em 3 dias, no máximo 3 vezes.
  */
-function LinguaContato({ nome, slug, ocupado, eu, onQuero }: { nome: string; slug: string; ocupado: boolean; eu: Eu; onQuero: () => void }) {
+function LinguaContato({ slug, ocupado, eu, onQuero }: { slug: string; ocupado: boolean; eu: Eu; onQuero: () => void }) {
   const [pronta, setPronta] = useState(false);
   const [aberta, setAberta] = useState(false);
   const jaAceitou = eu.logado && eu.ehFa && eu.aceiteWhatsapp;
