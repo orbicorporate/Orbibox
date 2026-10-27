@@ -52,14 +52,14 @@ export function AnexoProduto({ anexo }: { anexo: Anexo }) {
         <button type="button" onClick={() => setAberta(true)} className={classe}>{cartao}</button>
       )}
       {aberta && typeof document !== "undefined" && createPortal(
-        <div className="fixed inset-0 z-[120] flex flex-col bg-black/90" role="dialog" aria-modal="true" aria-label={titulo}>
+        <div className="fixed inset-0 z-[120] flex flex-col bg-[#F7F7F4]" role="dialog" aria-modal="true" aria-label={titulo}>
           <div className="flex items-center justify-between gap-3 px-4 py-3">
-            <p className="min-w-0 truncate text-[14px] font-medium text-white">{titulo}</p>
-            <button type="button" onClick={() => setAberta(false)} className="min-h-[40px] shrink-0 rounded-full bg-white/15 px-5 text-[14px] font-medium text-white active:scale-[0.97]">Fechar</button>
+            <p className="min-w-0 truncate text-[14px] font-medium text-on-background">{titulo}</p>
+            <button type="button" onClick={() => setAberta(false)} className="min-h-[40px] shrink-0 rounded-full bg-black/[0.07] px-5 text-[14px] font-medium text-on-background active:scale-[0.97]">Fechar</button>
           </div>
           <button type="button" aria-label="Fechar" onClick={() => setAberta(false)} className="flex min-h-0 flex-1 cursor-default items-center justify-center px-3 pb-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={anexo.url} alt={titulo} className="max-h-full max-w-full object-contain" />
+            <img src={anexo.url} alt={titulo} className="max-h-full max-w-full rounded-[24px] bg-white object-contain shadow-[0_18px_44px_-18px_rgba(17,19,24,0.35)] ring-1 ring-black/[0.06]" />
           </button>
         </div>,
         document.body,
