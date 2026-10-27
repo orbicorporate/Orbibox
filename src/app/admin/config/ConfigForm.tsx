@@ -270,7 +270,7 @@ export function ConfigForm({
         value={b.address ?? ""}
         onChange={(e) => set("address", e.target.value)}
         onBlur={(e) => save("address", e.target.value)}
-        placeholder="Rua, número, bairro, cidade, aparece na página Sobre e abre no mapa"
+        placeholder="Rua, número, bairro, cidade e estado. Ex: Av. dos Bandeirantes 1001, São Paulo - SP"
         className={campo}
       />
 

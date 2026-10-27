@@ -1,5 +1,6 @@
 "use client";
 
+import { consultaMapa } from "@/lib/enderecoMapa";
 import { useContext, useState, useSyncExternalStore } from "react";
 import { HorarioContext } from "./HorarioContext";
 import { statusHorario } from "@/lib/horario";
@@ -25,7 +26,7 @@ export function MapaEndereco({ endereco, className = "" }: { endereco: string; c
     <div className={`relative overflow-hidden rounded-[14px] bg-surface-soft transition-[height] duration-300 ${grande ? "h-[min(42vh,300px)]" : "h-[170px]"}`}>
       <iframe
         title={`Mapa: ${endereco}`}
-        src={`https://maps.google.com/maps?q=${encodeURIComponent(endereco)}&z=16&output=embed`}
+        src={`https://maps.google.com/maps?q=${encodeURIComponent(consultaMapa(endereco))}&z=16&output=embed`}
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
         className="h-full w-full border-0"

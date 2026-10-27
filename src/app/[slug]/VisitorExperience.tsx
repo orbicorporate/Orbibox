@@ -1,5 +1,6 @@
 "use client";
 
+import { consultaMapa } from "@/lib/enderecoMapa";
 import { lerLogoAjuste, type LogoAjuste } from "@/components/ui/LogoBolinha";
 import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
 import { MapaEndereco } from "@/components/ui/MapaEndereco";
@@ -1558,8 +1559,8 @@ export function VisitorExperience({
                           <p className="text-[14px] leading-relaxed text-text-secondary">{o.address}</p>
                           <MapaEndereco endereco={o.address} className="mt-3" />
                           <div className="mt-3 flex gap-2">
-                            <a href={`https://waze.com/ul?q=${encodeURIComponent(o.address)}&navigate=yes`} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Abrir no Waze</a>
-                            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address)}`} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Abrir no Google</a>
+                            <a href={`https://waze.com/ul?q=${encodeURIComponent(consultaMapa(o.address))}&navigate=yes`} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Abrir no Waze</a>
+                            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consultaMapa(o.address))}`} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Abrir no Google</a>
                           </div>
                         </div>
                       </div>
@@ -1640,8 +1641,8 @@ export function VisitorExperience({
                     <div className="mt-3 w-full max-w-[320px] rounded-2xl bg-surface-white p-4 text-center shadow-[0_2px_12px_rgba(17,19,24,0.08)]">
                       <p className="text-[13.5px] leading-snug text-text-secondary">{end}</p>
                       <div className="mt-3 flex gap-2">
-                        <a href={`https://waze.com/ul?q=${encodeURIComponent(end)}&navigate=yes`} target="_blank" rel="noopener noreferrer" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId })} className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Waze</a>
-                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(end)}`} target="_blank" rel="noopener noreferrer" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId })} className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Google Maps</a>
+                        <a href={`https://waze.com/ul?q=${encodeURIComponent(consultaMapa(end))}&navigate=yes`} target="_blank" rel="noopener noreferrer" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId })} className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Waze</a>
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consultaMapa(end))}`} target="_blank" rel="noopener noreferrer" onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId })} className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Google Maps</a>
                       </div>
                     </div>
                   );
@@ -2248,7 +2249,7 @@ function AddressCard({ address }: { address: string }) {
         <MapaEndereco endereco={address} className="mt-3" />
         <div className="mt-3 flex gap-2">
           <a
-            href={`https://waze.com/ul?q=${encodeURIComponent(address)}&navigate=yes`}
+            href={`https://waze.com/ul?q=${encodeURIComponent(consultaMapa(address))}&navigate=yes`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium"
@@ -2256,7 +2257,7 @@ function AddressCard({ address }: { address: string }) {
             Abrir no Waze
           </a>
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consultaMapa(address))}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium"

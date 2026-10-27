@@ -765,7 +765,7 @@ export default function OnboardingPage() {
             )}
             {convEscolhida?.precisa === "endereco" && (
               <div className="orbi-linha-entra mt-4">
-                <input placeholder="Endereço do seu espaço (opcional)" value={endereco} onChange={(e) => setEndereco(e.target.value)} className={campo} />
+                <input placeholder="Endereço com cidade e estado (opcional)" value={endereco} onChange={(e) => setEndereco(e.target.value)} className={campo} />
                 <p className="mt-1.5 px-1 text-[12px] text-text-tertiary">Vira um botão com mapa, Waze e Google Maps.</p>
               </div>
             )}

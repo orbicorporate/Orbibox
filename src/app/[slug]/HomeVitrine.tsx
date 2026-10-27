@@ -1,5 +1,6 @@
 "use client";
 
+import { consultaMapa } from "@/lib/enderecoMapa";
 import { LogoBolinha, type LogoAjuste } from "@/components/ui/LogoBolinha";
 import { IconeLinha, ehIconeLinha } from "@/components/ui/IconesLinha";
 import { MapaEndereco } from "@/components/ui/MapaEndereco";
@@ -469,8 +470,8 @@ export function HomeVitrine({
           <p className="px-7 text-[13.5px] leading-snug text-text-secondary">{aberto.endereco}</p>
           <MapaEndereco endereco={aberto.endereco} className="mt-3 text-left" />
           <div className="mt-3 flex gap-2">
-            <a href={`https://waze.com/ul?q=${encodeURIComponent(aberto.endereco)}&navigate=yes`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Waze</a>
-            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(aberto.endereco)}`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Google Maps</a>
+            <a href={`https://waze.com/ul?q=${encodeURIComponent(consultaMapa(aberto.endereco))}&navigate=yes`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Waze</a>
+            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consultaMapa(aberto.endereco))}`} target="_blank" rel="noopener noreferrer" onClick={aberto.onClick} className="flex-1 rounded-full border-[0.5px] border-divider py-2.5 text-center text-[14px] font-medium">Google Maps</a>
           </div>
         </div>
       )}
