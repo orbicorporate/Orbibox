@@ -90,7 +90,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
           {saudacao}, {primeiroNome ?? b.name}.
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-2.5">
-          <Link href={`/${b.slug}`} target="_blank" className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-on-background px-5 text-[14px] font-medium text-white transition-transform active:scale-[0.98]">
+          <Link href={`/${b.slug}`} target="_blank" className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#A80F28,#C4122F_50%,#E4264C)] px-5 text-[14px] font-semibold text-white shadow-[0_8px_18px_-10px_rgba(196,18,47,0.9)] transition-transform active:scale-[0.98]">
             Ver minha página <span aria-hidden>↗</span>
           </Link>
           <QRCodeButton url={shareUrl} businessName={b.name} className="inline-flex min-h-[44px] items-center rounded-full border border-divider px-4 text-[14px] text-text-secondary">QR Code</QRCodeButton>
