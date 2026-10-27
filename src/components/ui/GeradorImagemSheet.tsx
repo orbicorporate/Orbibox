@@ -215,7 +215,7 @@ export function GeradorImagemSheet({
                   {refs.length < MAX_REFS && (
                     <>
                       <button type="button" onClick={() => entrada.current?.click()} disabled={gerando} className="orbi-gradient min-h-[46px] rounded-full px-5 text-[14px] font-semibold text-on-background shadow-[0_8px_20px_-10px_rgba(110,197,214,0.9)] transition-transform active:scale-[0.97] disabled:opacity-60">Enviar foto do produto</button>
-                      <button type="button" onClick={() => setGaleria(true)} disabled={gerando} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary disabled:opacity-60">Minha galeria</button>
+                      <button type="button" onClick={() => setGaleria(true)} disabled={gerando} className="min-h-[40px] rounded-full bg-[linear-gradient(110deg,#A80F28,#C4122F_50%,#E4264C)] px-4 text-[13px] font-semibold text-white shadow-[0_8px_18px_-10px_rgba(196,18,47,0.9)] transition-transform active:scale-[0.97] disabled:opacity-60">Minha galeria</button>
                     </>
                   )}
                 </div>
