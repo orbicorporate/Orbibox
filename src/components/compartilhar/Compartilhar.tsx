@@ -51,9 +51,9 @@ export function IconeCompartilhar({ tam = 20 }: { tam?: number }) {
   );
 }
 
-/** Link da página da marca compartilhado por quem visita: o preview vira "Confere isso no Orbibox da...". */
+/** O link compartilhado fica limpo, só o endereço da marca, sem nada depois. */
 function comoPublico(alvo: AlvoCompartilhar): AlvoCompartilhar {
-  return /^\/[^/?#]+$/.test(alvo.url) ? { ...alvo, url: `${alvo.url}?de=p` } : alvo;
+  return alvo;
 }
 
 export function BotaoCompartilhar({ alvo, className, tam = 20, style, children }: { alvo: AlvoCompartilhar; className?: string; tam?: number; style?: React.CSSProperties; children?: React.ReactNode }) {
