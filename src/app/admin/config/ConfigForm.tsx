@@ -9,6 +9,7 @@ import { HelperText } from "@/components/ui/HelperText";
 import { ChipGroup, CLASSES, FAIXAS_ETARIAS, PAGAMENTOS, ATENDIMENTOS } from "./ChipGroup";
 import { StatusTag } from "@/components/ui/SecaoRecolhivel";
 import { addToLogoGallery, parseLogoGallery } from "@/lib/logoGallery";
+import { CampoEndereco } from "@/components/ui/CampoEndereco";
 import { GuiaPassos, Secao, rolarAte } from "@/components/ui/GuiaPassos";
 import { OrbiColorsPanel } from "@/app/admin/agent/OrbiColorsPanel";
 import { HeroBackgroundPanel } from "@/app/admin/agent/HeroBackgroundPanel";
@@ -91,7 +92,7 @@ export function ConfigForm({
     const hash = window.location.hash.replace("#", "");
     if (hash === "endereco") {
       const t = setTimeout(() => {
-        const el = document.getElementById("campo-endereco") as HTMLInputElement | null;
+        const el = document.querySelector<HTMLInputElement>("#campo-endereco input");
         el?.scrollIntoView({ behavior: "smooth", block: "center" });
         el?.focus({ preventScroll: true });
       }, 450);
@@ -273,15 +274,9 @@ export function ConfigForm({
         className={campo}
       />
 
-      <p className={rotulo}>Endereço</p>
-      <input
-        id="campo-endereco"
-        value={b.address ?? ""}
-        onChange={(e) => set("address", e.target.value)}
-        onBlur={(e) => save("address", e.target.value)}
-        placeholder="Rua, número, bairro, cidade e estado. Ex: Av. dos Bandeirantes 1001, São Paulo - SP"
-        className={campo}
-      />
+      <div id="campo-endereco">
+        <CampoEndereco value={b.address ?? ""} onCommit={(v) => { set("address", v); void save("address", v); }} campo={campo} rotulo={rotulo} />
+      </div>
 
     </div>
   );
