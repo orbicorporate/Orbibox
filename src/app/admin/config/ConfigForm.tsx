@@ -103,6 +103,17 @@ export function ConfigForm({
     const t = setTimeout(() => rolarAte(`marca-${alvo}`), 250);
     return () => clearTimeout(t);
   }, []);
+  // Já estando na tela, trocar só o #secao (ex: tocar em "Deixe a capinha mais bonita") abre e leva até a seção.
+  useEffect(() => {
+    const aoMudar = () => {
+      const alvo = window.location.hash.replace("#", "");
+      if (!["logo", "cores", "compartilhamento", "contatos"].includes(alvo)) return;
+      setAbertos((a) => ({ ...a, [alvo as SecaoMarca]: true }));
+      setTimeout(() => rolarAte(`marca-${alvo}`), 250);
+    };
+    window.addEventListener("hashchange", aoMudar);
+    return () => window.removeEventListener("hashchange", aoMudar);
+  }, []);
   const coresVistas = useFlag(`marca_cores_${business.id}`);
   function alternar(sec: SecaoMarca) {
     setAbertos((a) => ({ ...a, [sec]: !a[sec] }));
