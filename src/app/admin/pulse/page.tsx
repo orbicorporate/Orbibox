@@ -53,7 +53,7 @@ export default async function PulsePage({
   const normalizaOrigem = (raw: string | null): string => {
     const s = (raw || "").toLowerCase().trim();
     if (!s || s === "direct" || s === "direto") return "Link direto";
-    if (s.includes("instagram")) return "Instagram";
+    if (s.includes("instagram") || s === "ig" || s === "insta") return "Instagram";
     if (s.includes("google")) return "Google";
     if (s.includes("facebook") || s === "fb") return "Facebook";
     if (s.includes("tiktok")) return "TikTok";
