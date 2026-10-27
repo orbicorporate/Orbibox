@@ -2880,7 +2880,7 @@ function OrbiChat({
             {messages.map((m, i) => (
               <div
                 key={i}
-                className={`max-w-[85%] rounded-2xl px-5 py-4 text-[16px] leading-[1.6] ${
+                className={`max-w-[85%] rounded-2xl px-5 py-4 text-[18px] leading-[1.55] ${
                   m.role === "agent"
                     ? "bg-gradient-to-br from-orbi-gradient-start/15 via-surface-white to-orbi-gradient-end/10 shadow-[0_2px_12px_rgba(17,19,24,0.06)]"
                     : "ml-auto bg-on-background text-white"
