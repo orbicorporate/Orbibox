@@ -316,12 +316,12 @@ export function FolhaCompartilhar({ alvo, aoFechar }: { alvo: AlvoCompartilhar; 
           </div>
         </div>
         {alvo.titulo === alvo.marca && (
-          <Link href="/admin/config/marca#compartilhamento" onClick={() => fechar()} className="mt-2.5 flex items-center gap-3 rounded-[18px] bg-[#F4F1FB] px-3.5 py-3 active:scale-[0.99]">
+          <Link href="/admin/config/marca#compartilhamento" onClick={() => fechar()} className="mt-2.5 flex items-center gap-3 rounded-[18px] bg-[linear-gradient(110deg,#A80F28,#C4122F_50%,#E4264C)] px-3.5 py-3 text-white shadow-[0_10px_22px_-12px_rgba(196,18,47,0.9)] active:scale-[0.99]">
             <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-medium text-on-background">{alvo.imagem ? "Deixe a capinha ainda mais bonita" : "Crie uma capinha legal"}</span>
-              <span className="block text-[12.5px] text-text-secondary">É a primeira coisa que a pessoa vê no WhatsApp.</span>
+              <span className="block text-[14px] font-semibold text-white">{alvo.imagem ? "Deixe a capinha ainda mais bonita" : "Crie uma capinha legal"}</span>
+              <span className="block text-[12.5px] text-white/80">É a primeira coisa que a pessoa vê no WhatsApp.</span>
             </span>
-            <span className="shrink-0 text-[18px] text-text-tertiary" aria-hidden>→</span>
+            <span className="shrink-0 text-[18px] text-white" aria-hidden>→</span>
           </Link>
         )}
 
