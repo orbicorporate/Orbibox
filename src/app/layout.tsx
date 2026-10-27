@@ -26,8 +26,7 @@ const openSans = Open_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: "Orbibox, A web que se adapta a quem entra",
-  description:
-    "One link. Infinite experiences. Soft Intelligence para transformar seu catálogo em uma experiência adaptativa.",
+  description: "Sua marca com catálogo inteligente",
   manifest: "/manifest.json",
   icons: {
     icon: [
