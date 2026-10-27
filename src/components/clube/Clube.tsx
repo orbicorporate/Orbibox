@@ -31,6 +31,10 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   const [contatoAberto, setContatoAberto] = useState(false);
   const [pedido, setPedido] = useState<PedidoFa | null>(null);
   const [notaHome, setNotaHome] = useState<number | null>(null);
+  // Logo depois de virar fã, convida a colocar uma foto de perfil (uma vez por pessoa).
+  const [pedirFoto, setPedirFoto] = useState(false);
+  const [subindoFoto, setSubindoFoto] = useState(false);
+  const [erroFoto, setErroFoto] = useState<string | null>(null);
 
   const recarregar = useCallback(async () => {
     const [r, e] = await Promise.all([getResumo(businessId), getEu(businessId)]);
@@ -39,6 +43,32 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     void carregarCurtidas(businessId);
     return e;
   }, [businessId]);
+
+  useEffect(() => {
+    if (isOwner || !eu?.logado || !eu.userId || !eu.ehFa || eu.foto || aberta !== null || pedido !== null || pedirFoto) return;
+    const chaveFoto = `orbi_foto_perfil_pedida_${eu.userId}`;
+    try {
+      if (window.localStorage.getItem(chaveFoto)) return;
+      window.localStorage.setItem(chaveFoto, "1");
+    } catch { /* sem armazenamento: pergunta só nesta visita */ }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPedirFoto(true);
+  }, [eu, aberta, pedido, pedirFoto, isOwner]);
+
+  async function subirFotoPerfil(arq: File) {
+    if (!eu?.userId) return;
+    setSubindoFoto(true);
+    setErroFoto(null);
+    try {
+      const url = await enviarFotoPerfil(eu.userId, arq);
+      if (!url) throw new Error("falhou");
+      setPedirFoto(false);
+      await recarregar();
+    } catch {
+      setErroFoto("Não consegui enviar essa foto. Tente outra.");
+    }
+    setSubindoFoto(false);
+  }
 
   const executar = useCallback(async (p: string, e: Eu) => {
     if (!e.userId) return;
@@ -206,6 +236,22 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       {isOwner && vazio && <p className="max-w-[300px] text-center text-[13px] text-text-tertiary">Quando seus clientes virarem fãs e avaliarem, os números aparecem aqui.</p>}
       {isOwner && resumo.fas === 0 && resumo.avaliacoes > 0 ? null : null}
       {!isOwner && eu.logado && eu.anonimo && <AvisoValidarPerfil slug={slug} />}
+      {pedirFoto && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[9000] flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => !subindoFoto && setPedirFoto(false)}>
+          <div role="dialog" aria-modal="true" aria-label="Foto de perfil" onClick={(e) => e.stopPropagation()} className="orbi-linha-entra w-full max-w-[400px] rounded-3xl bg-surface-white p-6 text-center shadow-xl">
+            <p className="text-[20px] font-semibold text-on-background">Você agora é fã de {nome}</p>
+            <p className="mt-1 text-[14px] text-text-secondary">Quer colocar uma foto de perfil? Leva poucos segundos e aparece entre os fãs.</p>
+            <label className={`mt-5 flex min-h-[50px] w-full cursor-pointer items-center justify-center rounded-full bg-button-primary text-[15px] font-semibold text-white active:scale-[0.98] ${subindoFoto ? "opacity-60" : ""}`}>
+              {subindoFoto ? "Enviando…" : "Escolher ou tirar foto"}
+              <input type="file" accept="image/*" className="hidden" disabled={subindoFoto} onChange={(e) => { const f = e.target.files?.[0]; if (f) void subirFotoPerfil(f); e.target.value = ""; }} />
+            </label>
+            {erroFoto && <p role="alert" className="mt-2 text-[13px] text-red-600">{erroFoto}</p>}
+            <button type="button" disabled={subindoFoto} onClick={() => setPedirFoto(false)} className="mt-2 min-h-[44px] w-full rounded-full text-[14px] font-medium text-text-secondary">Agora não</button>
+          </div>
+        </div>,
+        document.body,
+      )}
+
       {!isOwner && <LinguaContato slug={slug} ocupado={aberta !== null || pedido !== null} eu={eu} onQuero={querContato} />}
 
       {aberta?.tipo === "avaliacoes" && (
