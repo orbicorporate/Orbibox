@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 
 /** Posição e tamanho da logo dentro da bolinha: zoom (0,5 a 2,5) e deslocamento em % do tamanho da logo. */
@@ -25,8 +28,36 @@ export function lerLogoAjuste(v: unknown): LogoAjuste | null {
  * e, se o dono ajustou, no tamanho e na posição que ele escolheu. É o mesmo desenho
  * na página inicial e na prévia do editor.
  */
+/** Vê se a imagem tem fundo sólido nos cantos (um quadrado com cor). Sem poder ler a imagem, assume que não. */
+function useFundoSolido(src: string) {
+  const [solido, setSolido] = useState(false);
+  useEffect(() => {
+    let vivo = true;
+    const im = new Image();
+    im.crossOrigin = "anonymous";
+    im.onload = () => {
+      try {
+        const n = 24;
+        const c = document.createElement("canvas");
+        c.width = n; c.height = n;
+        const g = c.getContext("2d", { willReadFrequently: true });
+        if (!g) return;
+        g.drawImage(im, 0, 0, n, n);
+        const pts = [[1, 1], [n - 2, 1], [1, n - 2], [n - 2, n - 2]];
+        const opacos = pts.filter(([x, y]) => g.getImageData(x, y, 1, 1).data[3] > 200).length;
+        if (vivo) setSolido(opacos >= 3);
+      } catch { /* sem permissão pra ler a imagem: mantém o padrão */ }
+    };
+    im.src = src;
+    return () => { vivo = false; };
+  }, [src]);
+  return solido;
+}
+
 export function LogoBolinha({ src, ajuste, linha = false }: { src: string; ajuste?: LogoAjuste | null; linha?: boolean }) {
   const a = ajuste ? limitarLogo(ajuste) : null;
+  // Imagem com fundo próprio (um quadrado de cor): preenche a bolinha toda, sem o quadrado aparecendo dentro dela.
+  const cheia = useFundoSolido(src);
   const img: CSSProperties = {
     WebkitTouchCallout: "none",
     WebkitUserSelect: "none",
@@ -40,7 +71,7 @@ export function LogoBolinha({ src, ajuste, linha = false }: { src: string; ajust
       style={linha ? undefined : { background: "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 52%), #ECEAE4", boxShadow: "inset 0 -7px 12px -5px rgba(0,0,0,0.20), inset 0 1.5px 2px rgba(255,255,255,0.9), 0 6px 16px -6px rgba(17,19,24,0.38)" }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" draggable={false} style={img} className="h-[70%] w-[70%] object-contain" />
+      <img src={src} alt="" draggable={false} style={img} className={cheia ? "h-full w-full rounded-full object-cover" : "h-[70%] w-[70%] object-contain"} />
     </span>
   );
 }
