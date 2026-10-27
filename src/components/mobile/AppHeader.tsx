@@ -148,7 +148,7 @@ export function AppHeader({
               />,
               document.body,
             )}
-            <div className="absolute right-0 top-12 z-50 w-[300px] overflow-hidden rounded-[24px] bg-surface-white p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
+            <div className="absolute right-0 top-12 z-50 max-h-[calc(100dvh-9rem)] w-[300px] overflow-y-auto overscroll-contain rounded-[24px] bg-surface-white p-3 pb-5 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
               <p className="px-2 pb-2 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Pendências</p>
 
               {totalSino === 0 ? (
@@ -218,7 +218,7 @@ export function AppHeader({
               />,
               document.body,
             )}
-            <div className="absolute right-0 top-12 z-50 w-[320px] overflow-hidden rounded-[28px] bg-[#F3F3F0] p-3 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
+            <div className="absolute right-0 top-12 z-50 max-h-[calc(100dvh-9rem)] w-[320px] overflow-y-auto overscroll-contain rounded-[28px] bg-[#F3F3F0] p-3 pb-6 shadow-[0_20px_60px_rgba(17,19,24,0.22)]">
               <p className="px-2 pb-2 pt-1 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Configurações</p>
 
               {/* Grade 2x2: as quatro coisas mais usadas, cada uma num bloco
