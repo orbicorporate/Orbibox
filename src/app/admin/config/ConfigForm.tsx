@@ -83,12 +83,20 @@ export function ConfigForm({
       logo: !business.logo_url || hash === "logo",
       cores: hash === "cores" || hash === "cores-orbi" || hash === "fundo-pagina",
       compartilhamento: hash === "compartilhamento",
-      contatos: hash === "contatos",
+      contatos: hash === "contatos" || hash === "endereco",
     };
   });
   // Vindo de um link com #secao (ex: do aviso de compartilhar): leva até ela.
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
+    if (hash === "endereco") {
+      const t = setTimeout(() => {
+        const el = document.getElementById("campo-endereco") as HTMLInputElement | null;
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        el?.focus({ preventScroll: true });
+      }, 450);
+      return () => clearTimeout(t);
+    }
     const alvo = hash === "cores-orbi" || hash === "fundo-pagina" ? "cores" : hash;
     if (!["logo", "cores", "compartilhamento", "contatos"].includes(alvo)) return;
     const t = setTimeout(() => rolarAte(`marca-${alvo}`), 250);
@@ -267,6 +275,7 @@ export function ConfigForm({
 
       <p className={rotulo}>Endereço</p>
       <input
+        id="campo-endereco"
         value={b.address ?? ""}
         onChange={(e) => set("address", e.target.value)}
         onBlur={(e) => save("address", e.target.value)}

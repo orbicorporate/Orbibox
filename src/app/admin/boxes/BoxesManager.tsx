@@ -97,7 +97,7 @@ const ACAO_EXPLICA: Partial<Record<NonNullable<BoxConfig["action"]>, { titulo: s
   endereco: {
     titulo: "Mostra o endereço",
     texto: "Com atalho pro Waze e Google Maps.",
-    href: "/admin/config",
+    href: "/admin/config/marca#endereco",
     link: "Alterar endereço →",
   },
   avaliar: {
