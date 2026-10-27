@@ -70,7 +70,7 @@ export async function generateMetadata({
     : fonteDescricao;
   // Título do preview do link, o convite vem antes do nome, não só o nome cru.
   // Quando quem compartilha é o público (link com ?de=publico), o convite vem de um cliente, não da marca.
-  const tituloPreview = de === "publico" ? `Confere isso no Orbibox da ${b.name}` : `Visite nosso Orbibox - ${b.name}`;
+  const tituloPreview = (de === "p" || de === "publico") ? `Confere isso no Orbibox da ${b.name}` : `Visite nosso Orbibox - ${b.name}`;
 
   // Link de pedido de avaliação (?clube=avaliar): direto ao ponto, sem "visite".
   if (clube === "avaliar") {
