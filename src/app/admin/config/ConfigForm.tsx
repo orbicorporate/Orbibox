@@ -435,7 +435,7 @@ export function ConfigForm({
         </Secao>
 
         <Link href="/admin/agent" className="passo-cereja mt-4 flex items-center gap-3 rounded-[22px] p-4 text-white shadow-[0_16px_32px_-14px_rgba(196,18,47,0.7)] transition-transform active:scale-[0.98]">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15"><OrbiSimbolo size={34} /></span>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.18)]"><OrbiSimbolo size={34} /></span>
           <span className="min-w-0 flex-1">
             <span className="block text-[12px] text-white/75">Próximo passo</span>
             <span className="block text-[16px] font-semibold leading-tight">Configurar sua IA</span>
