@@ -89,7 +89,14 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   // Atalhos por link: /slug?clube=fas abre a lista de fãs (dono); /slug?clube=avaliar abre direto a tela de avaliação (qualquer pessoa).
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const alvo = new URLSearchParams(window.location.search).get("clube");
+    const qs = new URLSearchParams(window.location.search);
+    const alvo = qs.get("clube");
+    // O atalho vale só na chegada: tira do endereço pra o retorno do login (ou um recarregar) não reabrir a tela.
+    if (alvo) {
+      qs.delete("clube");
+      const resto = qs.toString();
+      try { window.history.replaceState(null, "", `${window.location.pathname}${resto ? `?${resto}` : ""}${window.location.hash}`); } catch { /* ignora */ }
+    }
     if (alvo === "fas" && isOwner) queueMicrotask(() => setAberta({ tipo: "fas", origem: null }));
     if (alvo === "avaliar" && !isOwner) queueMicrotask(() => setAberta({ tipo: "avaliacoes", origem: null }));
   }, [isOwner]);
