@@ -31,16 +31,16 @@ const ICONES: Record<IconeBolinha, { cor: string; d: string[] }> = {
 function Bolinha({ tipo, rotulo }: { tipo: IconeBolinha; rotulo: string }) {
   const ic = ICONES[tipo];
   return (
-    <div className="flex w-[58px] flex-col items-center gap-1">
+    <div className="flex w-[62px] shrink-0 flex-col items-center gap-1.5">
       <span
-        className="flex h-[46px] w-[46px] items-center justify-center rounded-full text-white"
+        className="flex h-[54px] w-[54px] items-center justify-center rounded-full text-white"
         style={{ background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0) 48%), ${ic.cor}`, boxShadow: "inset 0 -6px 10px -5px rgba(0,0,0,0.22)" }}
       >
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           {ic.d.map((d) => <path key={d} d={d} />)}
         </svg>
       </span>
-      <span className="max-w-full truncate text-[9.5px] leading-none text-text-secondary">{rotulo}</span>
+      <span className="max-w-full truncate text-[10px] leading-none text-text-secondary">{rotulo}</span>
     </div>
   );
 }
@@ -93,7 +93,7 @@ export function PhoneDemo() {
               <p className="mt-1 max-w-[220px] text-[11px] leading-snug text-text-secondary">{m.frase}</p>
             </div>
 
-            <div ref={linha} className="-mx-4 mt-5 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div ref={linha} className="-mx-4 mt-5 flex gap-0 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {m.bolinhas.map((b) => <Bolinha key={b.rotulo} {...b} />)}
             </div>
 
