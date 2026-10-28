@@ -1863,7 +1863,7 @@ function ItemCard({
             <button onClick={onToggleEdit} className="flex w-full items-center justify-between gap-3 text-left">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium" style={fc ? { color: fc.fg } : undefined}>{item.title}</p>
+                  <p className="truncate font-[family-name:var(--font-manrope)] text-[19px] font-medium" style={{ color: fc ? fc.fg : "#111318" }}>{item.title}</p>
                   {hasPhoto && (
                     <span
                       onClick={(e) => { e.stopPropagation(); onTogglePublish(); }}
@@ -1876,11 +1876,11 @@ function ItemCard({
                   )}
                 </div>
                 {item.description?.trim() && (
-                  <p className={`mt-1 line-clamp-1 text-[12px] leading-snug ${fc ? "" : "text-text-tertiary"}`} style={fc ? { color: fc.fg, opacity: 0.7 } : undefined}>{resumoCard(item.description)}</p>
+                  <p className="mt-1 line-clamp-1 text-[12px] leading-snug" style={{ color: fc ? fc.fg : "#111318", opacity: 0.7 }}>{resumoCard(item.description)}</p>
                 )}
               </div>
               {priceLabel && (
-                <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[15px] font-medium" style={fc ? { color: fc.fg } : undefined}>{priceLabel}</p>
+                <p className="shrink-0 font-[family-name:var(--font-manrope)] text-[15px] font-medium" style={{ color: fc ? fc.fg : "#111318" }}>{priceLabel}</p>
               )}
             </button>
             )

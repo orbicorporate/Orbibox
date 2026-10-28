@@ -148,11 +148,18 @@ export const BOX_COLORS: Record<string, Swatch> = Object.assign(
 
 /** Preto ou branco, o que der mais contraste sobre o hex informado. */
 export function contrastFg(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.6 ? "#111318" : "#FFFFFF";
+  const lin = (v: number) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  const r = lin(parseInt(hex.slice(1, 3), 16));
+  const g = lin(parseInt(hex.slice(3, 5), 16));
+  const b = lin(parseInt(hex.slice(5, 7), 16));
+  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  // Escolhe a fonte (escura ou branca) com maior contraste real sobre o fundo.
+  const comBranco = 1.05 / (L + 0.05);
+  const comEscuro = (L + 0.05) / 0.057;
+  return comEscuro >= comBranco ? "#111318" : "#FFFFFF";
 }
 
 /**
