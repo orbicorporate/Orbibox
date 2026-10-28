@@ -72,7 +72,7 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
           <p className="mt-4 text-[13.5px] text-text-tertiary">7 dias grátis, sem cartão.</p>
         </div>
         <div className="flex justify-center">
-          <PhoneDemo inspire={inspire} />
+          <PhoneDemo />
         </div>
       </section>
 
