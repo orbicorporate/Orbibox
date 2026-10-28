@@ -8,6 +8,9 @@ export type MarcaLanding = {
   frase: string;
   pergunta: string;
   logo: string;
+  /** Como o avatar aparece na página de verdade (hero_avatar) e o halo colorido de fundo. */
+  avatar: string;
+  halo: [string, string];
   cor: string; // cor da marca (brilho, botão principal)
   fundo: string; // fundo da página
   principal: string;
@@ -20,7 +23,7 @@ const B = "https://bzuajbbwueptvkngtsoy.supabase.co/storage/v1/object/public/box
 
 export const MARCAS_LANDING: MarcaLanding[] = [
   {
-    id: "jardineira", chip: "Jardineira Grill", nome: "Jardineira Grill", frase: "Rodízio de carnes nobres e buffet com frutos do mar.", pergunta: "O que vamos celebrar?", logo: `${B}/b2cf5a8d-fac5-4bb2-a9d0-d1443078aa0b/logo-1792546852685-debkr0.png`, cor: "#2E2A26", fundo: "#EFE8DC", principal: "Reservar mesa",
+    id: "jardineira", chip: "Jardineira Grill", nome: "Jardineira Grill", frase: "Rodízio de carnes nobres e buffet com frutos do mar.", pergunta: "O que vamos celebrar?", logo: `${B}/b2cf5a8d-fac5-4bb2-a9d0-d1443078aa0b/logo-1792546852685-debkr0.png`, avatar: "esfera-claro-80", halo: ["#CBB889", "#CBB889"], cor: "#2E2A26", fundo: "#EFE8DC", principal: "Reservar mesa",
     bolinhas: [{ tipo: "cardapio", rotulo: "Cardápio" }, { tipo: "whatsapp", rotulo: "WhatsApp" }, { tipo: "endereco", rotulo: "Como chegar" }, { tipo: "voucher", rotulo: "Vouchers" }, { tipo: "catalogo", rotulo: "Pacotes" }, { tipo: "presente", rotulo: "Presente" }],
     secao: "Em destaque",
     cards: [
@@ -31,26 +34,28 @@ export const MARCAS_LANDING: MarcaLanding[] = [
       { titulo: "Adega", url: `${B}/b2cf5a8d-fac5-4bb2-a9d0-d1443078aa0b/1791461209001-hkmlsk.jpg` },
       { titulo: "Drinks", url: `${B}/b2cf5a8d-fac5-4bb2-a9d0-d1443078aa0b/1791458703727-mn9yne.jpg` },
       { titulo: "Pacotes", url: `${B}/b2cf5a8d-fac5-4bb2-a9d0-d1443078aa0b/1791512492146-bz56su.jpg` },
-      { titulo: "Ano Novo", url: `${B}/b2cf5a8d-fac5-4bb2-a9d0-d1443078aa0b/1792674357099-8yh1c7.jpg` },
+      { titulo: "Eventos", url: `${B}/b2cf5a8d-fac5-4bb2-a9d0-d1443078aa0b/1791423225039-kk964g.jpg` },
     ],
   },
   {
-    id: "vabene", chip: "Vabene", nome: "Vabene", frase: "Insumos para confeitaria e sorveteria.", pergunta: "O que você vai criar?", logo: `${B}/81e38462-b747-44e2-a095-4ca2f63fc709/logo-1793061274899-mjmrte.png`, cor: "#FD0927", fundo: "#FFFFFF", principal: "Ver catálogo",
+    id: "vabene", chip: "Vabene", nome: "Vabene", frase: "Insumos para confeitaria e sorveteria.", pergunta: "O que você vai criar?", logo: `${B}/81e38462-b747-44e2-a095-4ca2f63fc709/logo-1793061274899-mjmrte.png`, avatar: "esfera-claro-105", halo: ["#FD0927", "#C9A74D"], cor: "#FD0927", fundo: "#FFFFFF", principal: "Ver catálogo",
     bolinhas: [{ tipo: "catalogo", rotulo: "Catálogo" }, { tipo: "whatsapp", rotulo: "WhatsApp" }, { tipo: "materiais", rotulo: "Materiais" }, { tipo: "voucher", rotulo: "Vouchers" }, { tipo: "endereco", rotulo: "Onde estamos" }, { tipo: "presente", rotulo: "Presente" }],
     secao: "Categorias",
     cards: [
       { titulo: "Recheios Artesanais", url: "/catalogo-vabene/artesanal-01.webp" },
+      { titulo: "Recheios Forneáveis", url: "/catalogo-vabene/forneavel-01.webp" },
+      { titulo: "Recheios e Toppings", url: "/catalogo-vabene/topping-01.webp" },
       { titulo: "Ganaches", url: "/catalogo-vabene/ganache-01.webp" },
       { titulo: "Crocantes", url: "/catalogo-vabene/crocante-01.webp" },
       { titulo: "Cookies", url: "/catalogo-vabene/cookies-01.webp" },
-      { titulo: "Recheios Forneáveis", url: "/catalogo-vabene/forneavel-01.webp" },
-      { titulo: "Toppings", url: "/catalogo-vabene/topping-01.webp" },
-      { titulo: "Pastas", url: "/catalogo-vabene/pasta-01.webp" },
+      { titulo: "Confeitos", url: "/catalogo-vabene/ball-01.webp" },
       { titulo: "Amendoim", url: "/catalogo-vabene/amendoim-01.webp" },
+      { titulo: "Pastas Saborizantes", url: "/catalogo-vabene/pasta-01.webp" },
+      { titulo: "Recheios para Pizza", url: "/catalogo-vabene/pizza-01.webp" },
     ],
   },
   {
-    id: "melten", chip: "Melten", nome: "Melten", frase: "Fondue, sorvete e açaí do seu jeito.", pergunta: "Qual é a vontade de hoje?", logo: `${B}/9bf040e8-3ecb-4d2b-b560-e57524cf2510/logo-1791598239291-w08ipd.png`, cor: "#9C8163", fundo: "#EDEBE7", principal: "Monte o seu pote",
+    id: "melten", chip: "Melten", nome: "Melten", frase: "Fondue, sorvete e açaí do seu jeito.", pergunta: "Qual é a vontade de hoje?", logo: `${B}/9bf040e8-3ecb-4d2b-b560-e57524cf2510/logo-1791598239291-w08ipd.png`, avatar: "auto", halo: ["#B8860B", "#FFD166"], cor: "#9C8163", fundo: "#EDEBE7", principal: "Monte o seu pote",
     bolinhas: [{ tipo: "cardapio", rotulo: "Cardápio" }, { tipo: "delivery", rotulo: "Delivery" }, { tipo: "voucher", rotulo: "Vouchers" }, { tipo: "whatsapp", rotulo: "WhatsApp" }, { tipo: "endereco", rotulo: "Como chegar" }, { tipo: "presente", rotulo: "Presente" }],
     secao: "Mais pedidos",
     cards: [

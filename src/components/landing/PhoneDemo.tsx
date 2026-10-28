@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { OrbiAvatar, lerEsfera, escalaDoAvatar } from "@/components/orbi/OrbiAvatar";
 import { MARCAS_LANDING, type IconeBolinha } from "./marcas";
 
 /** Rola suave com aceleração e freio (easeInOutSine), sem o tranco do scroll nativo. */
@@ -9,7 +10,7 @@ function deslizar(el: HTMLElement, eixo: "left" | "top", destino: number, ms: nu
   const t0 = performance.now();
   const passo = (agora: number) => {
     const k = Math.min(1, (agora - t0) / ms);
-    const v = ini + (destino - ini) * (0.5 - Math.cos(Math.PI * k) / 2);
+    const v = ini + (destino - ini) * (k * k * k * (k * (6 * k - 15) + 10));
     if (eixo === "left") el.scrollLeft = v; else el.scrollTop = v;
     if (k < 1) ids.push(window.requestAnimationFrame(passo));
   };
@@ -71,7 +72,7 @@ export function PhoneDemo() {
     const t = [
       window.setTimeout(() => deslizar(l, "left", l.scrollWidth, 1700, anim), 900),
       window.setTimeout(() => deslizar(l, "left", 0, 1500, anim), 3000),
-      window.setTimeout(() => deslizar(p, "top", p.scrollHeight, 4200, anim), 4300),
+      window.setTimeout(() => deslizar(p, "top", p.scrollHeight, 6500, anim), 4200),
     ];
     return () => { t.forEach(window.clearTimeout); anim.forEach(window.cancelAnimationFrame); };
   }, [i, pausado]);
@@ -81,12 +82,14 @@ export function PhoneDemo() {
       <div className="relative">
         <div aria-hidden className="absolute -inset-10 rounded-full opacity-40 blur-3xl transition-colors duration-700" style={{ background: m.cor }} />
         <div className="relative w-[286px] rounded-[44px] border-[7px] border-[#16171a] shadow-[0_40px_80px_-30px_rgba(17,19,24,0.55)] transition-colors duration-700 sm:w-[310px]" style={{ background: m.fundo }}>
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[37px]">
+            <div className="absolute -bottom-24 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full opacity-30 blur-[60px] transition-all duration-700" style={{ backgroundImage: `linear-gradient(135deg, ${m.halo[0]}, ${m.halo[1]})` }} />
+          </div>
           <div className="absolute left-1/2 top-2 z-10 h-[18px] w-[84px] -translate-x-1/2 rounded-full bg-[#16171a]" aria-hidden />
-          <div key={m.id} ref={pagina} onPointerDown={() => setPausado(true)} className="lp-fade h-[560px] overflow-y-auto overscroll-contain rounded-[36px] px-4 pb-6 pt-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:h-[600px]">
+          <div key={m.id} ref={pagina} onPointerDown={() => setPausado(true)} className="lp-fade relative z-[1] h-[560px] overflow-y-auto overscroll-contain rounded-[36px] px-4 pb-6 pt-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:h-[600px]">
             <div className="flex flex-col items-center text-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={m.logo} alt={m.nome} className="h-12 w-12 rounded-full bg-white object-contain ring-1 ring-black/10" />
-              <p className="mt-2 text-[10.5px] uppercase tracking-[0.14em] text-text-tertiary">{m.nome}</p>
+              <OrbiAvatar logoUrl={m.logo} size={64} esfera={lerEsfera(m.avatar)?.tom} escala={escalaDoAvatar(m.avatar)} />
+              <p className="mt-3 text-[10.5px] uppercase tracking-[0.14em] text-text-tertiary">{m.nome}</p>
               <p className="mt-1 max-w-[220px] text-[11px] leading-snug text-text-secondary">{m.frase}</p>
             </div>
 
@@ -105,7 +108,7 @@ export function PhoneDemo() {
               {m.cards.map((c) => (
                 <div key={c.titulo} style={{ boxShadow: `0 12px 26px -12px ${m.cor}, 0 0 0 1.5px color-mix(in srgb, ${m.cor} 30%, transparent)` }} className="relative aspect-[4/5] overflow-hidden rounded-[18px] bg-surface-soft">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.url} alt={c.titulo} loading={i === 0 ? "eager" : "lazy"} className="h-full w-full object-cover" />
+                  <img src={c.url} alt={c.titulo} loading="eager" className="h-full w-full object-cover" />
                   <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent px-2 pb-2 pt-6 text-[10.5px] leading-tight text-white">{c.titulo}</span>
                 </div>
               ))}
