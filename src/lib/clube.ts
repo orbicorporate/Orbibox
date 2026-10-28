@@ -274,6 +274,14 @@ export async function getOrbiboxAtivos(): Promise<OrbiboxAtivo[]> {
   return (data as OrbiboxAtivo[] | null) ?? [];
 }
 
+/** Nota média e total de avaliações publicadas de cada Orbibox (id da marca → nota). */
+export async function getNotas(): Promise<Record<string, { nota: number; total: number }>> {
+  const { data } = await clubeDb().rpc("clube_notas");
+  const mapa: Record<string, { nota: number; total: number }> = {};
+  for (const r of (data as { business_id: string; nota: number | string; total: number | string }[] | null) ?? []) mapa[r.business_id] = { nota: Number(r.nota), total: Number(r.total) };
+  return mapa;
+}
+
 export async function getAfinidade(businessId: string): Promise<MarcaAfim[]> {
   const { data } = await clubeDb().rpc("clube_afinidade", { p_business: businessId });
   return (data as MarcaAfim[] | null) ?? [];

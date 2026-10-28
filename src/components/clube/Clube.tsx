@@ -7,7 +7,7 @@ import { carregarCurtidas } from "@/lib/clube-curtidas";
 import type { PedidoFa } from "./CurtirItem";
 import {
   aceitarWhatsapp, atualizarPerfil, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, excluirAvaliacao, entrarComEmail, entrarComNumero,
-  enviarFotoPerfil, entrarComGoogle, getAfinidade, getOrbiboxAtivos, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
+  enviarFotoPerfil, entrarComGoogle, getAfinidade, getOrbiboxAtivos, getNotas, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
   sairDoClube, salvarContatoWhatsapp, virarFa,
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type OrbiboxAtivo, type Resumo,
 } from "@/lib/clube";
@@ -748,6 +748,8 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
   const router = useRouter();
   const [descobrindo, setDescobrindo] = useState(descobrirInicial);
   const [ativos, setAtivos] = useState<OrbiboxAtivo[] | null>(null);
+  const [notas, setNotas] = useState<Record<string, { nota: number; total: number }>>({});
+  useEffect(() => { getNotas().then(setNotas); }, []);
   useEffect(() => { if (descobrirInicial) getOrbiboxAtivos().then(setAtivos); }, [descobrirInicial]);
   function abrirDescobrir() {
     setDescobrindo(true);
@@ -1204,9 +1206,11 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                   {afins.length > 0 && (
                     <>
                       <p className="px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Também curtidos pelos fãs</p>
-                      {afins.map((m) => (
-                        <LinhaOrbibox key={m.id} nome={m.name} logo={m.logo_url} detalhe={`${m.fas} ${m.fas === 1 ? "fã" : "fãs"} em comum`} aoTocar={() => router.push(`/${m.slug}`)} />
-                      ))}
+                      <div className="flex flex-wrap justify-center gap-2.5 px-1 pb-1">
+                        {afins.map((m, n) => (
+                          <TagOrbibox key={m.id} indice={n} nome={m.name} logo={m.logo_url} nota={notas[m.id]?.nota} extra={`${m.fas} em comum`} aoTocar={() => router.push(`/${m.slug}`)} />
+                        ))}
+                      </div>
                     </>
                   )}
                   {ativos === null ? (
@@ -1217,9 +1221,11 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                     return outros.length > 0 ? (
                       <>
                         <p className="mt-3 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar ({outros.length})</p>
-                        {outros.map((b) => (
-                          <LinhaOrbibox key={b.id} nome={b.name} logo={b.logo_url} aoTocar={() => router.push(`/${b.slug}`)} />
-                        ))}
+                        <div className="flex flex-wrap justify-center gap-2.5 px-1">
+                          {outros.map((b, n) => (
+                            <TagOrbibox key={b.id} indice={n} nome={b.name} logo={b.logo_url} nota={notas[b.id]?.nota} aoTocar={() => router.push(`/${b.slug}`)} />
+                          ))}
+                        </div>
                       </>
                     ) : afins.length === 0 ? <p className="px-8 py-6 text-center text-[15px] text-text-secondary">Ainda não há outros Orbibox no ar.</p> : null;
                   })()}
@@ -1256,20 +1262,29 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
 
 
 /** Uma linha da lista de Orbibox: logo, nome e toque para visitar. */
-function LinhaOrbibox({ nome, logo, detalhe, aoTocar }: { nome: string; logo: string | null; detalhe?: string; aoTocar: () => void }) {
+/** Tag curta e flutuante de um Orbibox: logo, nome e nota em estrelas. */
+function TagOrbibox({ nome, logo, nota, extra, indice, aoTocar }: { nome: string; logo: string | null; nota?: number; extra?: string; indice: number; aoTocar: () => void }) {
   return (
-    <button type="button" onClick={aoTocar} className="flex min-h-[56px] w-full items-center gap-3 rounded-full bg-surface-white py-2 pl-2 pr-4 text-left ring-1 ring-divider active:scale-[0.98]">
-      <span className="grid h-10 w-10 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
+    <button
+      type="button"
+      onClick={aoTocar}
+      style={{ animationDelay: `${(indice % 6) * -1.1}s` }}
+      className="tag-flutua flex min-h-[44px] max-w-full items-center gap-2 rounded-full bg-surface-white py-1.5 pl-1.5 pr-3.5 text-left shadow-[0_6px_16px_-8px_rgba(17,19,24,0.28)] ring-1 ring-divider active:scale-[0.96]"
+    >
+      <span className="grid h-8 w-8 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logo} alt="" className="h-full w-full object-contain p-1" />
-        ) : <span className="text-[14px] font-semibold">{nome.charAt(0).toUpperCase()}</span>}
+          <img src={logo} alt="" className="h-full w-full object-contain p-0.5" />
+        ) : <span className="text-[12px] font-semibold">{nome.charAt(0).toUpperCase()}</span>}
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-[15px] font-medium">{nome}</span>
-        {detalhe && <span className="block text-[12.5px] text-text-tertiary">{detalhe}</span>}
-      </span>
-      <span aria-hidden className="text-text-tertiary">→</span>
+      <span className="min-w-0 truncate text-[14px] font-medium">{nome}</span>
+      {nota != null && (
+        <span className="flex flex-none items-center gap-0.5 text-[12.5px] tabular-nums text-text-secondary">
+          <Estrela cheia tam={13} />
+          {fmtNota(nota)}
+        </span>
+      )}
+      {extra && <span className="flex-none text-[11.5px] text-text-tertiary">{extra}</span>}
     </button>
   );
 }
