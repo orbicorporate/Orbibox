@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MARCAS_LANDING, type IconeBolinha } from "./marcas";
 
 const ICONES: Record<IconeBolinha, { cor: string; d: string[] }> = {
@@ -42,6 +42,23 @@ export function PhoneDemo() {
   }, [pausado]);
 
   const m = MARCAS_LANDING[i];
+  const linha = useRef<HTMLDivElement>(null);
+  const pagina = useRef<HTMLDivElement>(null);
+
+  // Cada marca: as bolinhas deslizam pro lado, depois a tela sobe mostrando mais.
+  useEffect(() => {
+    if (pausado) return;
+    const l = linha.current, p = pagina.current;
+    if (!l || !p) return;
+    l.scrollTo({ left: 0 });
+    p.scrollTo({ top: 0 });
+    const reduz = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduz) return;
+    const t1 = window.setTimeout(() => l.scrollTo({ left: l.scrollWidth, behavior: "smooth" }), 900);
+    const t2 = window.setTimeout(() => l.scrollTo({ left: 0, behavior: "smooth" }), 2600);
+    const t3 = window.setTimeout(() => p.scrollTo({ top: p.scrollHeight, behavior: "smooth" }), 3600);
+    return () => { window.clearTimeout(t1); window.clearTimeout(t2); window.clearTimeout(t3); };
+  }, [i, pausado]);
 
   return (
     <div className="flex flex-col items-center">
@@ -49,7 +66,7 @@ export function PhoneDemo() {
         <div aria-hidden className="absolute -inset-10 rounded-full opacity-40 blur-3xl transition-colors duration-700" style={{ background: m.cor }} />
         <div className="relative w-[286px] rounded-[44px] border-[7px] border-[#16171a] shadow-[0_40px_80px_-30px_rgba(17,19,24,0.55)] transition-colors duration-700 sm:w-[310px]" style={{ background: m.fundo }}>
           <div className="absolute left-1/2 top-2 z-10 h-[18px] w-[84px] -translate-x-1/2 rounded-full bg-[#16171a]" aria-hidden />
-          <div key={m.id} className="lp-fade h-[560px] overflow-hidden rounded-[36px] px-4 pb-4 pt-9 sm:h-[600px]">
+          <div key={m.id} ref={pagina} onPointerDown={() => setPausado(true)} className="lp-fade h-[560px] overflow-y-auto overscroll-contain rounded-[36px] px-4 pb-4 pt-9 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:h-[600px]">
             <div className="flex flex-col items-center text-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={m.logo} alt={m.nome} className="h-12 w-12 rounded-full bg-white object-contain ring-1 ring-black/10" />
@@ -57,7 +74,7 @@ export function PhoneDemo() {
               <p className="mt-1 max-w-[220px] text-[11px] leading-snug text-text-secondary">{m.frase}</p>
             </div>
 
-            <div className="mt-3 flex justify-between px-1">
+            <div ref={linha} className="-mx-4 mt-3 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {m.bolinhas.map((b) => <Bolinha key={b.rotulo} {...b} />)}
             </div>
 
