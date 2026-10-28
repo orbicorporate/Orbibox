@@ -92,7 +92,7 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
   const images = item.gallery_urls.length > 0 ? item.gallery_urls : [item.image_url].filter((u): u is string => !!u);
   // Com carrossel próprio, vale o formato escolhido pra ele (quadrado ou
   // paisagem); só com a capa, segue o formato da capa.
-  const ratio = item.gallery_urls.length > 0 ? galleryRatioOf(item.gallery_ratio, item.layout_size) : COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
+  const ratio = item.gallery_urls.length > 0 || item.gallery_ratio ? galleryRatioOf(item.gallery_ratio, item.layout_size) : COVER_RATIO_BY_SIZE[sizeOf(item.layout_size)];
   const aspectRatio = RATIOS[ratio].value;
 
   // Abrir a página do item já conta como interesse, mesmo tipo de clique de sempre.
