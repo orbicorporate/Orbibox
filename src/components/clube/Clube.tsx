@@ -246,7 +246,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
         </div>
       )}
       {notaHome != null && eu.userId && (
-        <NotaRapida businessId={businessId} userId={eu.userId} marca={nome} inicial={notaHome} comentarioInicial={eu.minhaAvaliacao?.comentario}
+        <NotaRapida businessId={businessId} userId={eu.userId} marca={nome} inicial={notaHome} comentarioInicial={eu.minhaAvaliacao?.comentario} oferecerFa={!eu.ehFa}
           aoFechar={() => setNotaHome(null)} aoSalvar={() => { void recarregar(); }} />
       )}
 
@@ -1562,8 +1562,8 @@ function ContatoFolha({ businessId, userId, nome, inicial, aoFechar, aoConcluir 
    Nota rápida: toca numa estrela e abre um box pequeno com as estrelas
    e um texto curto opcional. Serve na página inicial e na lista de marcas do fã.
    ===================================================================== */
-export function NotaRapida({ businessId, userId, marca, inicial, comentarioInicial, aoFechar, aoSalvar }: {
-  businessId: string; userId: string; marca: string; inicial: number; comentarioInicial?: string | null; aoFechar: () => void; aoSalvar: (nota: number, comentario: string) => void;
+export function NotaRapida({ businessId, userId, marca, inicial, comentarioInicial, oferecerFa = false, aoFechar, aoSalvar }: {
+  businessId: string; userId: string; marca: string; inicial: number; comentarioInicial?: string | null; oferecerFa?: boolean; aoFechar: () => void; aoSalvar: (nota: number, comentario: string) => void;
 }) {
   const [nota, setNota] = useState(inicial);
   const [texto, setTexto] = useState(comentarioInicial ?? "");
@@ -1571,6 +1571,8 @@ export function NotaRapida({ businessId, userId, marca, inicial, comentarioInici
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [saindo, setSaindo] = useState(false);
+  // Quem avalia e ainda não é fã vira fã junto (pode desmarcar o coração).
+  const [viraFa, setViraFa] = useState(oferecerFa);
   const reduzido = useReduzido();
 
   const fechar = useCallback(() => {
@@ -1591,6 +1593,10 @@ export function NotaRapida({ businessId, userId, marca, inicial, comentarioInici
     const ok = await enviarAvaliacao(businessId, userId, { nota, comentario: texto, completo: false, foto: true });
     setEnviando(false);
     if (!ok) return setErro("Não consegui salvar agora. Se a marca já respondeu sua avaliação, ela não pode mais ser mudada.");
+    if (oferecerFa && viraFa) {
+      await virarFa(businessId, userId);
+      await curtirMarca(businessId, userId, true);
+    }
     aoSalvar(nota, texto.trim());
     fechar();
   }
@@ -1607,6 +1613,12 @@ export function NotaRapida({ businessId, userId, marca, inicial, comentarioInici
             </button>
           ))}
         </div>
+        {oferecerFa && (
+          <button type="button" role="switch" aria-checked={viraFa} onClick={() => setViraFa((v) => !v)} className="mx-auto mt-1 flex min-h-[44px] items-center gap-2 rounded-full px-3 text-[14px] text-text-secondary active:scale-[0.97]">
+            <span className={`coracao-pulsa ${viraFa ? "text-[#F2556B]" : "text-on-background/60"}`}><IcCoracao cheio={viraFa} tamanho={22} /></span>
+            {viraFa ? `Você também vira fã de ${marca}` : `Virar fã de ${marca}`}
+          </button>
+        )}
         {escrever ? (
           <>
             <label htmlFor="nr-texto" className="sr-only">Comentário curto</label>
