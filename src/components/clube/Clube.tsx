@@ -231,18 +231,29 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
         </button>
       )}
 
-      {!isOwner && !eu.minhaAvaliacao && (
-        <div className="nr-home flex items-center gap-1.5" aria-label="Avalie">
-          <span className="text-[12px] text-text-tertiary">Avalie</span>
-          <span className="flex" role="radiogroup" aria-label="Nota">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
-                onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin("avaliar", null); }}
-                className="grid h-9 w-8 place-items-center active:scale-90">
-                <Estrela cheia={false} tam={19} />
+      {!isOwner && (!eu.ehFa || !eu.minhaAvaliacao) && (
+        <div className="nr-home flex w-full max-w-[340px] flex-col items-center gap-0.5 rounded-[26px] bg-surface-white/80 px-5 py-3 ring-1 ring-black/[0.06]" aria-label="Convite para virar fã">
+          <p className="text-center text-[14px] text-on-background">
+            {!eu.ehFa && !eu.minhaAvaliacao ? "Adoraríamos ter você como fã. Topa?" : eu.ehFa ? "Obrigado por ser fã! Que nota você dá?" : `Quer ser fã de ${nome}?`}
+          </p>
+          <div className="flex items-center gap-3">
+            {!eu.ehFa && (
+              <button type="button" aria-label="Virar fã" onClick={(e) => void alternarFa(rect(e.currentTarget))} className="grid h-11 w-11 place-items-center text-on-background/75 active:scale-90">
+                <span className="coracao-pulsa"><IcCoracao cheio={false} tamanho={26} /></span>
               </button>
-            ))}
-          </span>
+            )}
+            {!eu.minhaAvaliacao && (
+              <span className="flex" role="radiogroup" aria-label="Nota">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
+                    onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin("avaliar", null); }}
+                    className="grid h-11 w-8 place-items-center active:scale-90">
+                    <Estrela cheia={false} tam={22} />
+                  </button>
+                ))}
+              </span>
+            )}
+          </div>
         </div>
       )}
       {notaHome != null && eu.userId && (
