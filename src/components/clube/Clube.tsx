@@ -165,7 +165,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
             <>
               <span className="flex">
                 {resumo.recentes.slice(0, 3).map((f, i) => (
-                  <Rosto key={f.id} url={f.foto} nome={f.nome} size={26} className={i ? "-ml-2 ring-2 ring-white" : "ring-2 ring-white"} />
+                  <Rosto key={f.id} url={f.foto} nome={f.nome} cor={f.cor} size={26} className={i ? "-ml-2 ring-2 ring-white" : "ring-2 ring-white"} />
                 ))}
               </span>
               <span className="tabular-nums">{resumo.fas}</span>
@@ -853,7 +853,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
       if (noAnel >= CAP_ANEL[anel]) { anel++; noAnel = 0; }
       if (anel > 2) break;
       const s = TAM[anel] - (noAnel % 3) * 3;
-      out.push({ key: f.id, size: s, anel, legenda: f.nome, rotulo: `Fã ${f.nome ?? ""}`, aoTocar: () => void abrirFa(f), node: <Rosto url={f.foto_url} nome={f.nome} size={s} blob aro={f.nivel != null ? NIVEIS[Math.min(3, Math.max(0, f.nivel))].cor : undefined} /> });
+      out.push({ key: f.id, size: s, anel, legenda: f.nome, rotulo: `Fã ${f.nome ?? ""}`, aoTocar: () => void abrirFa(f), node: <Rosto url={f.foto_url} nome={f.nome} cor={f.cor} size={s} blob aro={f.nivel != null ? NIVEIS[Math.min(3, Math.max(0, f.nivel))].cor : undefined} /> });
       noAnel++;
     }
     const resto = resumo.fas - out.length;
@@ -892,7 +892,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                   <div className="flex" aria-hidden>
                     {resumo.recentes.slice(0, 4).map((r, i) => (
                       <span key={r.id} className="-ml-2.5 rounded-full ring-2 ring-[var(--background-main,#fff)] first:ml-0" style={{ zIndex: 4 - i }}>
-                        <Rosto url={r.foto} nome={r.nome} size={34} />
+                        <Rosto url={r.foto} nome={r.nome} cor={r.cor} size={34} />
                       </span>
                     ))}
                   </div>
@@ -989,7 +989,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                       </>
                     )}
                     <button type="button" onClick={() => setEditandoPerfil(true)} className="flex min-h-[64px] flex-1 flex-col items-center justify-center gap-1.5 px-2 py-2 text-center active:bg-surface-soft">
-                      <Rosto url={eu.foto} nome={eu.nome} size={22} />
+                      <Rosto url={eu.foto} nome={eu.nome} cor={eu.corAvatar} size={22} />
                       <span className="block text-[13px] font-normal leading-tight text-on-background">{enviandoFoto ? "Enviando…" : "Meu perfil"}</span>
                     </button>
                   </div>
@@ -1014,8 +1014,11 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                 {editandoPerfil && eu.userId && createPortal(
                   <PerfilFa
                     eu={eu}
+                    donoLogo={isOwner ? logoUrl : null}
+                    nomeMarca={nome}
                     enviandoFoto={enviandoFoto}
                     escolherFoto={(arq) => setFotoParaCortar(arq)}
+                    usarLogo={async () => { if (!logoUrl) return; await atualizarPerfil(eu.userId!, { foto_url: logoUrl }); await aoMudar(); getFas(businessId).then(setFas); }}
                     tirarFoto={async () => { await atualizarPerfil(eu.userId!, { foto_url: null }); await aoMudar(); getFas(businessId).then(setFas); }}
                     salvar={async (c) => { await atualizarPerfil(eu.userId!, c); await aoMudar(); getFas(businessId).then(setFas); setEditandoPerfil(false); }}
                     fechar={() => setEditandoPerfil(false)}
@@ -1038,7 +1041,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                 <Cabecalho titulo="Perfil do fã" sub={`Radar de fãs de ${nome}`} fechar={() => setFa(null)} rotuloFechar="Voltar aos fãs" />
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-2">
                   <div className="flex flex-col items-center px-1 pb-2 pt-4 text-center">
-                    <Rosto url={fa.foto_url} nome={fa.nome} size={96} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
+                    <Rosto url={fa.foto_url} nome={fa.nome} cor={fa.cor} size={96} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
                     {!!eu.userId && eu.userId === fa.id && (
                       <label className="mt-3 inline-flex min-h-[40px] cursor-pointer items-center rounded-full bg-surface-soft px-5 text-[14px] text-on-background active:scale-95">
                         {enviandoFoto ? "Enviando…" : "Trocar foto de perfil"}
@@ -1210,7 +1213,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                       <span className="flex">
                         {resumo.recentes.slice(0, 4).map((r, i) => (
                           <span key={r.id} className="-ml-2 rounded-full ring-2 ring-[var(--background-main,#fff)] first:ml-0" style={{ zIndex: 4 - i }}>
-                            <Rosto url={r.foto} nome={r.nome} size={30} />
+                            <Rosto url={r.foto} nome={r.nome} cor={r.cor} size={30} />
                           </span>
                         ))}
                       </span>
@@ -1278,14 +1281,15 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
 
 /** Uma linha da lista de Orbibox: logo, nome e toque para visitar. */
 /** Editar o próprio perfil de fã: foto, nome, Instagram e site. */
-function PerfilFa({ eu, enviandoFoto, escolherFoto, tirarFoto, salvar, fechar }: {
-  eu: Eu; enviandoFoto: boolean; escolherFoto: (arq: File) => void; tirarFoto: () => Promise<void>;
-  salvar: (c: { nome: string | null; instagram: string | null; site: string | null }) => Promise<void>; fechar: () => void;
+function PerfilFa({ eu, donoLogo, nomeMarca, enviandoFoto, escolherFoto, tirarFoto, usarLogo, salvar, fechar }: {
+  eu: Eu; donoLogo: string | null; nomeMarca: string; usarLogo: () => Promise<void>; enviandoFoto: boolean; escolherFoto: (arq: File) => void; tirarFoto: () => Promise<void>;
+  salvar: (c: { nome: string | null; instagram: string | null; site: string | null; cor_avatar: string | null }) => Promise<void>; fechar: () => void;
 }) {
   const [nome, setNome] = useState(eu.nome ?? "");
   const [insta, setInsta] = useState(eu.instagram ?? "");
   const [site, setSite] = useState(eu.site ?? "");
   const [salvando, setSalvando] = useState(false);
+  const [cor, setCor] = useState<string | null>(eu.corAvatar);
   const campo = "mt-1.5 min-h-[48px] w-full rounded-full border border-divider bg-white px-5 text-[15px] outline-none focus:border-on-background";
 
   async function aoSalvar() {
@@ -1296,6 +1300,7 @@ function PerfilFa({ eu, enviandoFoto, escolherFoto, tirarFoto, salvar, fechar }:
       nome: nome.trim() || null,
       instagram: handle || null,
       site: url ? (/^https?:\/\//i.test(url) ? url : `https://${url}`) : null,
+      cor_avatar: cor,
     });
     setSalvando(false);
   }
@@ -1310,15 +1315,28 @@ function PerfilFa({ eu, enviandoFoto, escolherFoto, tirarFoto, salvar, fechar }:
         </div>
 
         <div className="mt-5 flex flex-col items-center gap-3">
-          <Rosto url={eu.foto} nome={nome || eu.nome} size={88} />
+          <Rosto url={eu.foto} nome={nome || eu.nome} cor={cor} size={88} />
           <div className="flex flex-wrap items-center justify-center gap-2">
             <label className="inline-flex min-h-[40px] cursor-pointer items-center rounded-full bg-surface-soft px-5 text-[14px] active:scale-95">
               {enviandoFoto ? "Enviando…" : eu.foto ? "Trocar foto" : "Adicionar foto"}
               <input type="file" accept="image/*" className="sr-only" onChange={(e) => { const arq = e.target.files?.[0]; e.target.value = ""; if (arq) escolherFoto(arq); }} />
             </label>
+            {donoLogo && eu.foto !== donoLogo && (
+              <button type="button" onClick={() => void usarLogo()} className="inline-flex min-h-[40px] items-center rounded-full bg-surface-soft px-5 text-[14px] active:scale-95">Usar a logo de {nomeMarca}</button>
+            )}
             {eu.foto && (
               <button type="button" onClick={() => void tirarFoto()} className="inline-flex min-h-[40px] items-center rounded-full px-4 text-[14px] text-text-secondary underline underline-offset-4">Tirar foto</button>
             )}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-[13px] text-text-secondary">Cor da bolinha <span className="text-text-tertiary">(quando está sem foto)</span></p>
+          <div className="mt-2 flex flex-wrap items-center gap-2.5">
+            <button type="button" onClick={() => setCor(null)} aria-label="Cor automática" aria-pressed={cor === null} className={`flex h-9 min-w-9 items-center justify-center rounded-full bg-surface-soft px-3 text-[12px] text-text-secondary ${cor === null ? "ring-2 ring-on-background ring-offset-2" : "ring-1 ring-black/10"}`}>Auto</button>
+            {["#E5489B", "#F2556B", "#FF9A3C", "#D6A13C", "#1DB8A4", "#3E8BEA", "#7D5BA6", "#111318"].map((c) => (
+              <button key={c} type="button" onClick={() => setCor(c)} aria-label={`Cor ${c}`} aria-pressed={cor === c} style={{ background: c }} className={`h-9 w-9 rounded-full ${cor === c ? "ring-2 ring-on-background ring-offset-2" : "ring-1 ring-black/10"}`} />
+            ))}
           </div>
         </div>
 

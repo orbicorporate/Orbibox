@@ -15,14 +15,14 @@ export function clubeDb(): SupabaseClient {
   return _c;
 }
 
-export type FaLite = { id: string; nome: string | null; foto_url: string | null; nivel?: number };
+export type FaLite = { id: string; nome: string | null; foto_url: string | null; nivel?: number; cor?: string | null };
 export type Resumo = {
   fas: number;
   curtidas: number;
   avaliacoes: number;
   nota: number | null;
   distribuicao: number[];
-  recentes: { id: string; nome: string | null; foto: string | null }[];
+  recentes: { id: string; nome: string | null; foto: string | null; cor?: string | null }[];
 };
 export type Avaliacao = {
   id: string;
@@ -41,6 +41,7 @@ export type Eu = {
   foto: string | null;
   instagram: string | null;
   site: string | null;
+  corAvatar: string | null;
   telefone: string | null;
   telefoneVerificado: boolean;
   mostrarMarcas: boolean;
@@ -60,16 +61,28 @@ export type ContatoWhats = { nome: string | null; telefone: string; desde: strin
 
 const RESUMO_VAZIO: Resumo = { fas: 0, curtidas: 0, avaliacoes: 0, nota: null, distribuicao: [0, 0, 0, 0, 0], recentes: [] };
 
+/** Cor escolhida por cada fã para a bolinha sem foto (id do fã → cor). */
+async function getCores(businessId: string): Promise<Record<string, string>> {
+  const { data } = await clubeDb().rpc("clube_cores", { p_business: businessId });
+  const m: Record<string, string> = {};
+  for (const r of (data as { id: string; cor: string }[] | null) ?? []) m[r.id] = r.cor;
+  return m;
+}
+
 export async function getResumo(businessId: string): Promise<Resumo> {
-  const { data } = await clubeDb().rpc("clube_resumo", { p_business: businessId });
-  return data ? { ...RESUMO_VAZIO, ...(data as Resumo), nota: (data as Resumo).nota == null ? null : Number((data as Resumo).nota) } : RESUMO_VAZIO;
+  const [{ data }, cores] = await Promise.all([clubeDb().rpc("clube_resumo", { p_business: businessId }), getCores(businessId)]);
+  if (!data) return RESUMO_VAZIO;
+  const r = { ...RESUMO_VAZIO, ...(data as Resumo), nota: (data as Resumo).nota == null ? null : Number((data as Resumo).nota) };
+  return { ...r, recentes: r.recentes.map((f) => ({ ...f, cor: cores[f.id] ?? null })) };
 }
 export async function getFas(businessId: string): Promise<FaLite[]> {
+  const cores = await getCores(businessId);
+  const comCor = (l: FaLite[]) => l.map((f) => ({ ...f, cor: cores[f.id] ?? null }));
   // Com o nível de proximidade (avaliou, comprou, curtiu, só virou fã). Se a função ainda não existe, cai na lista simples.
   const novo = await clubeDb().rpc("clube_fas_nivel", { p_business: businessId, p_limite: 60 });
-  if (!novo.error && novo.data) return novo.data as FaLite[];
+  if (!novo.error && novo.data) return comCor(novo.data as FaLite[]);
   const { data } = await clubeDb().rpc("clube_fas", { p_business: businessId, p_limite: 60 });
-  return (data as FaLite[] | null) ?? [];
+  return comCor((data as FaLite[] | null) ?? []);
 }
 export async function getAvaliacoes(businessId: string): Promise<Avaliacao[]> {
   const { data } = await clubeDb().rpc("clube_avaliacoes", { p_business: businessId });
@@ -85,7 +98,7 @@ export async function getContatos(businessId: string): Promise<ContatoWhats[]> {
 }
 
 const EU_ANON: Eu = {
-  logado: false, userId: null, nome: null, foto: null, instagram: null, site: null, telefone: null, telefoneVerificado: false, mostrarMarcas: false,
+  logado: false, userId: null, nome: null, foto: null, instagram: null, site: null, corAvatar: null, telefone: null, telefoneVerificado: false, mostrarMarcas: false,
   ehFa: false, aceiteWhatsapp: false, contatoWhatsapp: null, curtiu: false, anonimo: false, podeAvaliar: false, minhaAvaliacao: null,
 };
 
@@ -96,7 +109,7 @@ export async function getEu(businessId: string): Promise<Eu> {
   if (!user) return EU_ANON;
   await garantirCliente(user);
   const [cli, fan, like, pode, rev] = await Promise.all([
-    db.from("customers").select("nome, foto_url, instagram, site, telefone, telefone_verificado, mostrar_marcas").eq("id", user.id).maybeSingle(),
+    db.from("customers").select("nome, foto_url, instagram, site, cor_avatar, telefone, telefone_verificado, mostrar_marcas").eq("id", user.id).maybeSingle(),
     db.from("fans").select("aceite_whatsapp, contato_whatsapp").eq("business_id", businessId).eq("customer_id", user.id).maybeSingle(),
     db.from("likes").select("alvo_id").eq("customer_id", user.id).eq("alvo", "marca").eq("alvo_id", businessId).maybeSingle(),
     db.rpc("pode_avaliar", { p_business: businessId }),
@@ -109,6 +122,7 @@ export async function getEu(businessId: string): Promise<Eu> {
     foto: cli.data?.foto_url ?? null,
     instagram: (cli.data?.instagram as string | null | undefined) ?? null,
     site: (cli.data?.site as string | null | undefined) ?? null,
+    corAvatar: (cli.data?.cor_avatar as string | null | undefined) ?? null,
     telefone: cli.data?.telefone ?? null,
     telefoneVerificado: !!cli.data?.telefone_verificado,
     mostrarMarcas: !!cli.data?.mostrar_marcas,
@@ -134,7 +148,7 @@ async function garantirCliente(user: User) {
   });
 }
 
-export async function atualizarPerfil(userId: string, campos: { nome?: string | null; mostrar_marcas?: boolean; telefone?: string | null; instagram?: string | null; site?: string | null; foto_url?: string | null }) {
+export async function atualizarPerfil(userId: string, campos: { nome?: string | null; mostrar_marcas?: boolean; telefone?: string | null; instagram?: string | null; site?: string | null; foto_url?: string | null; cor_avatar?: string | null }) {
   await clubeDb().from("customers").update(campos).eq("id", userId);
 }
 

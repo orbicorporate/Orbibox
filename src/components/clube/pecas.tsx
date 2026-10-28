@@ -23,12 +23,12 @@ export function corDe(txt: string): string {
   for (let i = 0; i < txt.length; i++) h = (h * 31 + txt.charCodeAt(i)) >>> 0;
   return CORES[h % CORES.length];
 }
-export function Rosto({ url, nome, size, blob = false, className = "", aro }: { url?: string | null; nome?: string | null; size: number; blob?: boolean; className?: string; aro?: string }) {
+export function Rosto({ url, nome, size, blob = false, className = "", aro, cor }: { url?: string | null; nome?: string | null; size: number; blob?: boolean; className?: string; aro?: string; cor?: string | null }) {
   const ini = (nome ?? "?").trim().charAt(0).toUpperCase() || "?";
   return (
     <span
       className={`cl-av ${blob ? "cl-blob" : ""} ${className}`}
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.42), backgroundImage: url ? `url("${url}")` : corDe(nome ?? "?"), ...(aro ? { borderColor: aro, boxShadow: `0 6px 16px rgba(0,0,0,.18), 0 0 0 4px ${aro}2E` } : null) }}
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.42), backgroundImage: url ? `url("${url}")` : cor && /^#[0-9a-f]{6}$/i.test(cor) ? `linear-gradient(135deg, ${cor}, color-mix(in srgb, ${cor} 68%, black))` : corDe(nome ?? "?"), ...(aro ? { borderColor: aro, boxShadow: `0 6px 16px rgba(0,0,0,.18), 0 0 0 4px ${aro}2E` } : null) }}
       aria-hidden
     >
       {url ? null : ini}
