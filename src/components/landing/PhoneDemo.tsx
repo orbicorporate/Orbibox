@@ -116,9 +116,11 @@ export function PhoneDemo() {
           </div>
         </div>
 
-        <div className="lp-float absolute -right-4 bottom-24 hidden items-center gap-2 rounded-full bg-surface-white px-3.5 py-2 text-[12.5px] shadow-[0_14px_34px_-12px_rgba(17,19,24,0.4)] sm:flex">
-          <span className="orbi-gradient flex h-6 w-6 items-center justify-center rounded-full text-[11px]" aria-hidden>✦</span>
-          Pergunte à Orbi
+        <div className="pointer-events-none absolute inset-x-0 bottom-6 z-20 flex justify-center">
+          <div className="lp-float flex items-center gap-2 rounded-full bg-surface-white px-4 py-2.5 text-[12.5px] shadow-[0_14px_34px_-12px_rgba(17,19,24,0.45)] ring-1 ring-black/[0.05]">
+            <span className="orbi-gradient flex h-6 w-6 items-center justify-center rounded-full text-[11px]" aria-hidden>✦</span>
+            Atendimento inteligente
+          </div>
         </div>
       </div>
 
