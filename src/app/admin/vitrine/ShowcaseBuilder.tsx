@@ -1672,7 +1672,9 @@ function ItemCard({
         </div>
       )}
       <div
-      className={`flex-1 overflow-hidden rounded-[24px] bg-surface-white shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${arrasto?.pegado ? "shadow-2xl" : ""}`}
+      // Com cor de rodapé escolhida, não usa bg-surface-white: o "vidro" do painel
+      // pinta um degradê branco por cima e clareava a cor, deixando a fonte branca ilegível.
+      className={`flex-1 overflow-hidden rounded-[24px] ${!editing && hasPhoto && fc && item.title_placement !== "sobre" ? "" : "bg-surface-white"} shadow-[0_2px_14px_rgba(17,19,24,0.06)] ${arrasto?.pegado ? "shadow-2xl" : ""}`}
       style={!editing && hasPhoto && fc && item.title_placement !== "sobre" ? { backgroundColor: fc.bg } : undefined}
     >
       <div
