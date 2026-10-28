@@ -136,7 +136,7 @@ type ContentItem = {
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
 
-type CustomConfig = { categoria?: string; horario?: { dias: number[]; abre: string; fecha: string }; label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
+type CustomConfig = { categoria?: string; horario?: { dias: number[]; abre: string; fecha: string }; label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; catAjustes?: Record<string, { layout_size?: string; title_placement?: string }>; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -743,6 +743,19 @@ export function VisitorExperience({
     const v = ((boxItensHome?.config ?? {}) as CustomConfig).itensHome;
     return Array.isArray(v) ? v : null;
   })();
+  // Formato e faixa dos cartões de categoria na Home (não existem como item no catálogo, ficam no box).
+  const ajustesCategorias = ((boxItensHome?.config ?? {}) as CustomConfig).catAjustes ?? {};
+  async function ajustarCategoria(nome: string, patch: { layout_size?: string; title_placement?: string }) {
+    if (!boxItensHome) { avisarErroSalvar(); return; }
+    const anterior = (boxItensHome.config ?? {}) as CustomConfig;
+    const cfg: CustomConfig = { ...anterior, catAjustes: { ...(anterior.catAjustes ?? {}), [nome]: { ...(anterior.catAjustes?.[nome] ?? {}), ...patch } } };
+    setBoxList((prev) => prev.map((b) => (b.id === boxItensHome.id ? { ...b, config: cfg } : b)));
+    const res = await supabase.from("smart_boxes").update({ config: cfg }).eq("id", boxItensHome.id).select("id");
+    if (res.error || (res.data?.length ?? 0) === 0) {
+      setBoxList((prev) => prev.map((b) => (b.id === boxItensHome.id ? { ...b, config: anterior } : b)));
+      avisarErroSalvar();
+    }
+  }
   async function guardarItensHome(ids: string[] | null) {
     if (!boxItensHome) { avisarErroSalvar(); return; }
     const anterior = (boxItensHome.config ?? {}) as CustomConfig;
@@ -1253,6 +1266,8 @@ export function VisitorExperience({
                 onFormato={boxFormato ? escolherFormato : undefined}
                 itensEscolhidos={itensHomeSalvos}
                 onEscolherItens={guardarItensHome}
+                ajustesCategorias={ajustesCategorias}
+                onAjustarCategoria={ajustarCategoria}
                 extras={extrasVitrine}
                 podeEditar={showOwnerControls}
                 onEstilo={estiloBolinhas}

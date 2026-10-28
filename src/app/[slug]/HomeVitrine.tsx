@@ -206,6 +206,8 @@ export function HomeVitrine({
   onFormato,
   itensEscolhidos,
   onEscolherItens,
+  ajustesCategorias,
+  onAjustarCategoria,
 }: {
   bolinhas: BolinhaVitrine[];
   ctaRotulo: string;
@@ -257,6 +259,9 @@ export function HomeVitrine({
   itensEscolhidos?: string[] | null;
   /** Só o dono: guarda a escolha (null volta ao automático). Undefined quando não há onde guardar. */
   onEscolherItens?: (ids: string[] | null) => void;
+  /** Formato e faixa salvos de cada cartão de categoria, por nome. */
+  ajustesCategorias?: Record<string, { layout_size?: string; title_placement?: string }>;
+  onAjustarCategoria?: (nome: string, patch: { layout_size?: string; title_placement?: string }) => void;
 }) {
   const [editandoFormato, setEditandoFormato] = useState(false);
   const [editandoTitulo, setEditandoTitulo] = useState(false);
@@ -269,6 +274,7 @@ export function HomeVitrine({
   const [ajustes, setAjustes] = useState<Record<string, { layout_size?: string; title_placement?: string }>>({});
   async function ajustarCartao(id: string, patch: { layout_size?: string; title_placement?: string }) {
     setAjustes((a) => ({ ...a, [id]: { ...a[id], ...patch } }));
+    if (id.startsWith("cat:")) { onAjustarCategoria?.(id.slice(4), patch); return; }
     const { error } = await createClient().from("content_items").update(patch).eq("id", id);
     if (error) { setAjustes((a) => Object.fromEntries(Object.entries(a).filter(([k]) => k !== id))); avisarErroSalvar(); return; }
     router.refresh();
@@ -323,8 +329,8 @@ export function HomeVitrine({
       if (atual) { if (!atual.image_url && i.image_url) { atual.image_url = i.image_url; atual.box_style = "foto"; } continue; }
       vistas.set(nome, {
         id: `cat:${nome}`, title: nome, description: null, price: null, price_type: null, price_max: null,
-        image_url: i.image_url, brand_label: null, type: "product", position: i.position, layout_size: "medio",
-        box_color: "neutro", footer_color: null, box_style: i.image_url ? "foto" : "cor", title_placement: "sobre",
+        image_url: i.image_url, brand_label: null, type: "product", position: i.position, layout_size: ajustesCategorias?.[nome]?.layout_size ?? "medio",
+        box_color: "neutro", footer_color: null, box_style: i.image_url ? "foto" : "cor", title_placement: ajustesCategorias?.[nome]?.title_placement ?? "sobre",
         target_url: `/${slug}?tab=vitrine&cat=${encodeURIComponent(nome)}`, link_kind: "categoria-interna",
       });
     }
@@ -529,7 +535,7 @@ export function HomeVitrine({
                     <CartaoItem origem="home" editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
-                    {podeEditar && !i.id.startsWith("cat:") && <AjustesCartao item={i} comFormato={formato === "vitrine"} onAjustar={ajustarCartao} />}
+                    {podeEditar && <AjustesCartao item={i} comFormato={formato === "vitrine"} onAjustar={ajustarCartao} />}
                   </li>
                 );
               })}
@@ -541,7 +547,7 @@ export function HomeVitrine({
                   <CartaoItem origem="home" editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
-                    {podeEditar && !i.id.startsWith("cat:") && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
+                    {podeEditar && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
                 </li>
               ))}
             </ul>
@@ -554,7 +560,7 @@ export function HomeVitrine({
                     <CartaoItem origem="home" editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
-                    {podeEditar && !i.id.startsWith("cat:") && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
+                    {podeEditar && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
                   </li>
                 );
               })}
