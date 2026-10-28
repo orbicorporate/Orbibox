@@ -156,6 +156,7 @@ export function ShowcaseBuilder({
     if (salva.length > 0) return salva;
     const pub = items.filter((i) => i.status === "published").sort((a, b) => a.position - b.position);
     const capas = pub.filter((i) => !i.brand_label?.trim());
+    if (capas.length === 0 && new Set(pub.map((i) => i.brand_label?.trim()).filter(Boolean)).size >= 2) return [];
     return (capas.length > 0 ? capas : pub).slice(0, 6).map((i) => i.id);
   })();
   const itemEmDestaque = (id: string) => destaquesHome.some((d) => d.t === "item" && d.id === id) || selecaoGrade.includes(id);

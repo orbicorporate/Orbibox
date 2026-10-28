@@ -337,7 +337,8 @@ export function HomeVitrine({
   // Os pratos de um cardápio importado, que têm categoria, ficam de fora. Sem nenhuma capa, vale a ordem do catálogo.
   const porPosicao = [...comFoto].sort((a, b) => a.position - b.position);
   const capas = porPosicao.filter((i) => !i.brand_label?.trim());
-  const base = personalizado ? escolhidos : capas.length > 0 ? capas : porPosicao;
+  // Sem capas e com 2+ categorias, o automático destaca as categorias (não produtos soltos).
+  const base = personalizado ? escolhidos : capas.length > 0 ? capas : categoriasCartao.length >= 2 ? categoriasCartao : porPosicao;
   const naSelecao = personalizado ? escolhidos : base.slice(0, MAXIMO);
   const mostrar = personalizado || comFoto.length >= MINIMO_COM_FOTO ? base.slice(0, MAXIMO) : [];
 
@@ -627,6 +628,10 @@ export function HomeVitrine({
             {avisoNovo && <p role="status" className="mt-2 shrink-0 rounded-xl bg-white px-3 py-2 text-[13px] text-text-secondary">{avisoNovo}</p>}
             {avisoCheio && <p role="status" className="mt-2 shrink-0 rounded-xl bg-[#FFF4E5] px-3 py-2 text-[13px] text-[#7A4A0B]">Já são {MAXIMO}. Tire um para colocar outro.</p>}
 
+            {categoriasCartao.length === 0 && comFoto.length >= 6 && (
+              <p className="mt-2 shrink-0 px-1 text-[12.5px] leading-snug text-text-tertiary">Dica: separe o catálogo em categorias e destaque as categorias aqui.</p>
+            )}
+
             <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
               {(() => {
                 const termo = busca.trim().toLowerCase();
@@ -676,8 +681,8 @@ export function HomeVitrine({
                 return (
                   <>
                     {grupo("Na página inicial agora", marcados)}
-                    {grupo("Itens do catálogo", outros)}
                     {grupo("Categorias", outrasCategorias)}
+                    {grupo("Itens do catálogo", outros)}
                     {filtrados.length === 0 && <p className="px-2 py-4 text-center text-[13.5px] text-text-tertiary">Nada encontrado.</p>}
                   </>
                 );
