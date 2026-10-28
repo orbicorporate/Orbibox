@@ -234,33 +234,32 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
         </button>
       )}
 
-      {!isOwner && (!eu.ehFa || !eu.minhaAvaliacao) && (
-        <div className="nr-home flex w-full max-w-[340px] flex-col items-center gap-0.5 rounded-[26px] bg-surface-white/80 px-5 py-3 ring-1 ring-black/[0.06]" aria-label="Convite para virar fã">
-          <p className="text-center text-[14px] text-on-background">
-            {!eu.ehFa && !eu.minhaAvaliacao ? "Adoraríamos ter você como fã. Topa?" : eu.ehFa ? "Obrigado por ser fã! Que nota você dá?" : `Quer ser fã de ${nome}?`}
-          </p>
-          <div className="flex items-center gap-3">
-            {!eu.ehFa && (
-              <button type="button" aria-label="Virar fã" onClick={(e) => void alternarFa(rect(e.currentTarget))} className="grid h-11 w-11 place-items-center text-on-background/75 active:scale-90">
-                <span className="coracao-pulsa"><IcCoracao cheio={false} tamanho={26} /></span>
+      {!isOwner && !eu.ehFa && (
+        <button
+          type="button"
+          onClick={(e) => void alternarFa(rect(e.currentTarget))}
+          className="nr-home flex min-h-[44px] items-center gap-2 rounded-full bg-surface-white/80 px-5 text-[14px] text-on-background ring-1 ring-black/[0.06] active:scale-[0.97]"
+        >
+          <span className="coracao-pulsa text-on-background/75"><IcCoracao cheio={false} tamanho={20} /></span>
+          Virar fã
+        </button>
+      )}
+      {!isOwner && eu.ehFa && !eu.minhaAvaliacao && (
+        <div className="nr-home lp-pop flex flex-col items-center" aria-label="Avaliar">
+          <p className="text-[13.5px] text-text-secondary">Que bom ter você. Quer avaliar também?</p>
+          <span className="flex" role="radiogroup" aria-label="Nota">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
+                onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin("avaliar", null); }}
+                className="grid h-11 w-9 place-items-center active:scale-90">
+                <Estrela cheia={false} tam={24} />
               </button>
-            )}
-            {!eu.minhaAvaliacao && (
-              <span className="flex" role="radiogroup" aria-label="Nota">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
-                    onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin("avaliar", null); }}
-                    className="grid h-11 w-8 place-items-center active:scale-90">
-                    <Estrela cheia={false} tam={22} />
-                  </button>
-                ))}
-              </span>
-            )}
-          </div>
+            ))}
+          </span>
         </div>
       )}
       {notaHome != null && eu.userId && (
-        <NotaRapida businessId={businessId} userId={eu.userId} marca={nome} inicial={notaHome} comentarioInicial={eu.minhaAvaliacao?.comentario} oferecerFa={!eu.ehFa}
+        <NotaRapida businessId={businessId} userId={eu.userId} marca={nome} inicial={notaHome} comentarioInicial={eu.minhaAvaliacao?.comentario}
           aoFechar={() => setNotaHome(null)} aoSalvar={() => { void recarregar(); }} />
       )}
 
@@ -1371,6 +1370,68 @@ function PerfilFa({ eu, donoLogo, nomeMarca, enviandoFoto, escolherFoto, tirarFo
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Sugestão discreta depois que a pessoa navega: se ela ainda não é fã nem avaliou, aparece um cartão
+ * pequeno embaixo, uma vez por visita. Virou fã? A mesma janela pergunta se quer avaliar também.
+ */
+export function SugestaoFa({ businessId, slug, nome, ativo, atrasoMs = 1200 }: { businessId: string; slug: string; nome: string; ativo: boolean; atrasoMs?: number }) {
+  const [eu, setEu] = useState<Eu | null>(null);
+  const [visivel, setVisivel] = useState(false);
+  const [etapa, setEtapa] = useState<"fa" | "nota">("fa");
+  const [nota, setNota] = useState<number | null>(null);
+  const chaveSug = `orbibox-sugestao-${slug}`;
+
+  useEffect(() => { let vivo = true; getEu(businessId).then((e) => { if (vivo) setEu(e); }); return () => { vivo = false; }; }, [businessId]);
+
+  const pendente = !!eu && !(eu.ehFa && eu.minhaAvaliacao);
+  useEffect(() => {
+    if (!ativo || !pendente) return;
+    try { if (sessionStorage.getItem(chaveSug)) return; } catch { /* segue */ }
+    const t = window.setTimeout(() => {
+      try { sessionStorage.setItem(chaveSug, "1"); } catch { /* ignora */ }
+      setVisivel(true);
+    }, atrasoMs);
+    return () => window.clearTimeout(t);
+  }, [ativo, pendente, atrasoMs, chaveSug]);
+
+  const fechar = () => setVisivel(false);
+  const recarregarEu = async () => setEu(await getEu(businessId));
+
+  if (!visivel || !eu) return null;
+  const jaFa = eu.ehFa || etapa === "nota";
+  return (
+    <>
+      <div className="lp-pop fixed inset-x-0 bottom-4 z-[70] mx-auto flex w-[calc(100%-32px)] max-w-[400px] items-center gap-3 rounded-[26px] bg-surface-white py-3 pl-5 pr-3 shadow-[0_18px_44px_-16px_rgba(17,19,24,0.45)] ring-1 ring-black/[0.06]" role="dialog" aria-label="Sugestão">
+        {!jaFa ? (
+          <>
+            <p className="min-w-0 flex-1 text-[14px] leading-snug text-on-background">Gostando? Vire fã de {nome}.</p>
+            <BotaoVirarFa businessId={businessId} slug={slug} aoVirarFa={() => { setEtapa("nota"); void recarregarEu(); }} className="flex min-h-[42px] flex-none items-center gap-1.5 rounded-full bg-[#111318] px-4 text-[13.5px] font-medium text-white active:scale-95">
+              <IcCoracao cheio={false} tamanho={17} /> Virar fã
+            </BotaoVirarFa>
+          </>
+        ) : eu.minhaAvaliacao ? (
+          <p className="min-w-0 flex-1 text-[14px] text-on-background">Obrigado por ser fã de {nome}!</p>
+        ) : (
+          <div className="flex min-w-0 flex-1 flex-col">
+            <p className="text-[13.5px] leading-snug text-text-secondary">Que bom ter você. Quer avaliar também?</p>
+            <span className="-ml-1 flex" role="radiogroup" aria-label="Nota">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`} onClick={() => setNota(n)} className="grid h-10 w-9 place-items-center active:scale-90">
+                  <Estrela cheia={false} tam={23} />
+                </button>
+              ))}
+            </span>
+          </div>
+        )}
+        <button type="button" onClick={fechar} aria-label="Fechar" className="grid h-9 w-9 flex-none place-items-center rounded-full text-text-tertiary active:scale-90">✕</button>
+      </div>
+      {nota != null && eu.userId && (
+        <NotaRapida businessId={businessId} userId={eu.userId} marca={nome} inicial={nota} aoFechar={() => setNota(null)} aoSalvar={() => { void recarregarEu(); }} />
+      )}
+    </>
   );
 }
 

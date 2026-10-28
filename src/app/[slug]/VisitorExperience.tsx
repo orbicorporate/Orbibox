@@ -2,7 +2,7 @@
 
 import { consultaMapa } from "@/lib/enderecoMapa";
 import { lerLogoAjuste, type LogoAjuste } from "@/components/ui/LogoBolinha";
-import { marcarInteresse } from "@/lib/interesse";
+import { marcarInteresse, assinarInteresse, temInteresse } from "@/lib/interesse";
 import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
 import { MapaEndereco } from "@/components/ui/MapaEndereco";
 import { DeliveryFlow } from "./DeliveryFlow";
@@ -19,7 +19,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties }
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BotaoVirarFa, ClubeBloco } from "@/components/clube/Clube";
+import { BotaoVirarFa, ClubeBloco, SugestaoFa } from "@/components/clube/Clube";
 import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import { CurtirItem } from "@/components/clube/CurtirItem";
 import { souFa } from "@/lib/clube";
@@ -183,6 +183,7 @@ export function VisitorExperience({
   const searchParams = useSearchParams();
   const router = useRouter();
   const [intent, setIntent] = useState<Intent | null>(null);
+  const interessado = useSyncExternalStore(assinarInteresse, temInteresse, () => false);
   // Abrir o catálogo conta como interesse: libera o convite "Crie o seu Orbibox".
   useEffect(() => { if (intent === "comprar" && !isOwner) marcarInteresse(); }, [intent, isOwner]);
   const [slotTopo, setSlotTopo] = useState<HTMLElement | null>(null);
@@ -1879,6 +1880,7 @@ export function VisitorExperience({
       </div>
 
       {!isOwner && intent === null && <CrieSeuOrbibox de={business.slug} />}
+      {!isOwner && <SugestaoFa businessId={business.id} slug={business.slug} nome={business.name} ativo={interessado && intent === null} />}
 
       {/* Orbi flutuante, sempre à mão, exceto quando o chat já está aberto ou
           o dono está visualizando a própria página. Só pra quem tem chat. */}
