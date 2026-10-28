@@ -132,7 +132,7 @@ function MiniFormato({ v, ativo }: { v: FormatoItens; ativo: boolean }) {
 }
 
 const MINIMO_COM_FOTO = 2;
-const MAXIMO = 6;
+const MAXIMO = 12;
 
 function Icone({ tipo, rede, linha }: { tipo: BolinhaVitrine["tipo"]; rede?: Rede; linha?: boolean }) {
   const p = { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
@@ -608,7 +608,7 @@ export function HomeVitrine({
             {/* Contador: quantos já estão na página inicial, em bolinhas. */}
             <div className="mt-3 flex shrink-0 items-center gap-2 px-1">
               <div className="flex gap-1">
-                {Array.from({ length: MAXIMO }).map((_, k) => <span key={k} className={`h-2 w-5 rounded-full ${k < naSelecao.length ? "bg-[#3B5BDB]" : "bg-black/10"}`} />)}
+                {Array.from({ length: MAXIMO }).map((_, k) => <span key={k} className={`h-2 w-3 rounded-full ${k < naSelecao.length ? "bg-[#3B5BDB]" : "bg-black/10"}`} />)}
               </div>
               <span className="text-[12.5px] font-medium text-text-secondary">{naSelecao.length} de {MAXIMO} na página inicial</span>
             </div>

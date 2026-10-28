@@ -157,7 +157,7 @@ export function ShowcaseBuilder({
     const pub = items.filter((i) => i.status === "published").sort((a, b) => a.position - b.position);
     const capas = pub.filter((i) => !i.brand_label?.trim());
     if (capas.length === 0 && new Set(pub.map((i) => i.brand_label?.trim()).filter(Boolean)).size >= 2) return [];
-    return (capas.length > 0 ? capas : pub).slice(0, 6).map((i) => i.id);
+    return (capas.length > 0 ? capas : pub).slice(0, 12).map((i) => i.id);
   })();
   const itemEmDestaque = (id: string) => destaquesHome.some((d) => d.t === "item" && d.id === id) || selecaoGrade.includes(id);
   async function alternarDestaque(itemId: string) {
@@ -182,7 +182,7 @@ export function ShowcaseBuilder({
     if (selecaoGrade.includes(itemId) && homeBoxId) {
       let nova = selecaoGrade.filter((id) => id !== itemId);
       // Home sem nenhum item voltaria ao automático e o item reapareceria: completa com os primeiros do Catálogo.
-      if (nova.length === 0) nova = items.filter((i) => i.status === "published" && i.id !== itemId).sort((a, b) => a.position - b.position).slice(0, 6).map((i) => i.id);
+      if (nova.length === 0) nova = items.filter((i) => i.status === "published" && i.id !== itemId).sort((a, b) => a.position - b.position).slice(0, 12).map((i) => i.id);
       const anteriorCfg = configHome;
       const cfg = { ...configHome, itensHome: nova };
       setConfigHome(cfg);
