@@ -481,6 +481,17 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
             </div>
           </div>
 
+          {/* Atalho à vista: mais fotos da galeria direto sob o carrossel. */}
+          {midias.length < MAX_MIDIAS && (
+            <button
+              type="button"
+              onClick={() => setDaGaleria(true)}
+              className="mt-3 flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full border border-divider bg-surface-white text-[14px] font-medium text-on-background active:scale-[0.98]"
+            >
+              <span className="text-[18px] leading-none" aria-hidden>+</span> Adicionar mais fotos da galeria
+            </button>
+          )}
+
           {/* Ordem das fotos: miniaturas numeradas; toque numa pra escolher e
               use os botões pra mudar a posição. A 1ª é a que abre a página. */}
           {midias.length > 1 && (
