@@ -2840,9 +2840,12 @@ function OrbiChat({
   // são suaves. Reforça depois que o layout assenta (cartão de contato, fontes e imagens
   // mudam a altura), senão a tela fica parada no começo da conversa.
   const jaRolouRef = useRef(false);
+  const rolagemRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!started && !sending && messages.length === 0) return;
-    const ir = (b: ScrollBehavior) => endRef.current?.scrollIntoView({ behavior: b, block: "end" });
+    // Rola o próprio contêiner até o fim (com o respiro de baixo), não só até o marcador:
+    // senão o último trecho (cartão de contato, botão de WhatsApp) fica atrás da barra de digitar.
+    const ir = (b: ScrollBehavior) => { const el = rolagemRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: b }); };
     ir(jaRolouRef.current ? "smooth" : "auto");
     jaRolouRef.current = true;
     const t1 = setTimeout(() => ir("auto"), 350);
@@ -2870,7 +2873,7 @@ function OrbiChat({
         ×
       </button>
 
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-40 pt-20" style={{ WebkitOverflowScrolling: "touch" }}>
+      <div ref={rolagemRef} className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-40 pt-20" style={{ WebkitOverflowScrolling: "touch" }}>
         {/* Avatar, a esfera configurada da Orbi, não mais a esfera de vidro genérica. */}
         <div className="mx-auto relative">
           <OrbiParticleSphere size={112} colors={orbiColors ?? undefined} className="rounded-full" />
