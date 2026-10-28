@@ -15,7 +15,7 @@ export function clubeDb(): SupabaseClient {
   return _c;
 }
 
-export type FaLite = { id: string; nome: string | null; foto_url: string | null; nivel?: number; cor?: string | null };
+export type FaLite = { id: string; nome: string | null; foto_url: string | null; nivel?: number; cor?: string | null; fa?: boolean };
 export type Resumo = {
   fas: number;
   curtidas: number;
@@ -76,6 +76,11 @@ export async function getResumo(businessId: string): Promise<Resumo> {
   return { ...r, recentes: r.recentes.map((f) => ({ ...f, cor: cores[f.id] ?? null })) };
 }
 export async function getFas(businessId: string): Promise<FaLite[]> {
+  // Radar com todos: fãs (com o coraçãozinho) e quem avaliou bem sem virar fã.
+  const radar = await clubeDb().rpc("clube_radar", { p_business: businessId, p_limite: 60 });
+  if (!radar.error && radar.data) {
+    return (radar.data as { id: string; nome: string | null; foto_url: string | null; cor: string | null; fa: boolean }[]).map((r) => ({ id: r.id, nome: r.nome, foto_url: r.foto_url, cor: r.cor, fa: r.fa }));
+  }
   const cores = await getCores(businessId);
   const comCor = (l: FaLite[]) => l.map((f) => ({ ...f, cor: cores[f.id] ?? null }));
   // Com o nível de proximidade (avaliou, comprou, curtiu, só virou fã). Se a função ainda não existe, cai na lista simples.

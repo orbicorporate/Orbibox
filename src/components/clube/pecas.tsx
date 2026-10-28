@@ -23,7 +23,7 @@ export function corDe(txt: string): string {
   for (let i = 0; i < txt.length; i++) h = (h * 31 + txt.charCodeAt(i)) >>> 0;
   return CORES[h % CORES.length];
 }
-export function Rosto({ url, nome, size, blob = false, className = "", aro, cor }: { url?: string | null; nome?: string | null; size: number; blob?: boolean; className?: string; aro?: string; cor?: string | null }) {
+export function Rosto({ url, nome, size, blob = false, className = "", aro, cor, fa = false }: { url?: string | null; nome?: string | null; size: number; blob?: boolean; className?: string; aro?: string; cor?: string | null; fa?: boolean }) {
   const ini = (nome ?? "?").trim().charAt(0).toUpperCase() || "?";
   return (
     <span
@@ -32,6 +32,11 @@ export function Rosto({ url, nome, size, blob = false, className = "", aro, cor 
       aria-hidden
     >
       {url ? null : ini}
+      {fa && size >= 30 && (
+        <span aria-hidden className="absolute grid place-items-center rounded-full bg-[#CC1739] text-white ring-2 ring-white" style={{ width: Math.max(13, Math.round(size * 0.3)), height: Math.max(13, Math.round(size * 0.3)), right: "9%", bottom: "9%" }}>
+          <svg width={Math.max(7, Math.round(size * 0.17))} height={Math.max(7, Math.round(size * 0.17))} viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.4C1 8.2 3 4.6 6.6 4.6c2.1 0 3.9 1.2 5.4 3.1 1.5-1.9 3.3-3.1 5.4-3.1 3.600 0 5.600 3.600 4.200 7C19.500 16.400 12 21 12 21Z" /></svg>
+        </span>
+      )}
     </span>
   );
 }

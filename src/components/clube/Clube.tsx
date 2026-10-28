@@ -182,9 +182,9 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           aria-pressed={eu.ehFa}
           aria-label={eu.ehFa ? "Você é fã. Toque para deixar de ser fã" : "Virar fã"}
           onClick={(e) => void alternarFa(rect(e.currentTarget))}
-          className="flex min-h-[40px] items-center gap-2 transition active:scale-[0.96]"
+          className="relative flex min-h-[48px] items-center gap-2 text-[14.5px] transition before:absolute before:-inset-x-3 before:-inset-y-2 before:content-[''] active:scale-[0.96]"
         >
-          <span className={`coracao-pulsa ${eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}`}><IcCoracao cheio={eu.ehFa} tamanho={22} /></span>
+          <span className={`coracao-pulsa ${eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}`}><IcCoracao cheio={eu.ehFa} tamanho={28} /></span>
           <span>{eu.ehFa ? "Sou fã" : "Virar fã"}</span>
         </button>
       )}
@@ -238,9 +238,9 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
         <button
           type="button"
           onClick={(e) => void alternarFa(rect(e.currentTarget))}
-          className="nr-home flex min-h-[44px] items-center gap-2 rounded-full bg-surface-white/80 px-5 text-[14px] text-on-background ring-1 ring-black/[0.06] active:scale-[0.97]"
+          className="nr-home relative flex min-h-[52px] items-center gap-2.5 rounded-full bg-surface-white/80 px-6 text-[15px] text-on-background ring-1 ring-black/[0.06] before:absolute before:-inset-2 before:content-[''] active:scale-[0.97]"
         >
-          <span className="coracao-pulsa text-on-background/75"><IcCoracao cheio={false} tamanho={20} /></span>
+          <span className="coracao-pulsa text-on-background/75"><IcCoracao cheio={false} tamanho={26} /></span>
           Virar fã
         </button>
       )}
@@ -866,10 +866,10 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
       if (noAnel >= CAP_ANEL[anel]) { anel++; noAnel = 0; }
       if (anel > 2) break;
       const s = TAM[anel] - (noAnel % 3) * 3;
-      out.push({ key: f.id, size: s, anel, legenda: f.nome, rotulo: `Fã ${f.nome ?? ""}`, aoTocar: () => void abrirFa(f), node: <Rosto url={f.foto_url} nome={f.nome} cor={f.cor} size={s} blob aro={f.nivel != null ? NIVEIS[Math.min(3, Math.max(0, f.nivel))].cor : undefined} /> });
+      out.push({ key: f.id, size: s, anel, legenda: f.nome, rotulo: `Fã ${f.nome ?? ""}`, aoTocar: () => void abrirFa(f), node: <Rosto url={f.foto_url} nome={f.nome} cor={f.cor} fa={f.fa === true} size={s} blob aro={f.nivel != null ? NIVEIS[Math.min(3, Math.max(0, f.nivel))].cor : undefined} /> });
       noAnel++;
     }
-    const resto = resumo.fas - out.length;
+    const resto = resumo.fas - lista.filter((f) => f.fa !== false).length;
     if (resto > 0 && out.length > 0) {
       out.push({
         key: "mais", size: 40, anel: Math.min(anel, 2), rotulo: `Mais ${resto} fãs`, aoTocar: () => {},
@@ -1055,7 +1055,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                 <Cabecalho titulo="Perfil do fã" sub={`Radar de fãs de ${nome}`} fechar={() => setFa(null)} rotuloFechar="Voltar aos fãs" />
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-2">
                   <div className="flex flex-col items-center px-1 pb-2 pt-4 text-center">
-                    <Rosto url={fa.foto_url} nome={fa.nome} cor={fa.cor} size={96} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
+                    <Rosto url={fa.foto_url} nome={fa.nome} cor={fa.cor} fa={fa.fa === true} size={96} blob aro={fa.nivel != null ? NIVEIS[Math.min(3, Math.max(0, fa.nivel))].cor : undefined} />
                     {!!eu.userId && eu.userId === fa.id && (
                       <label className="mt-3 inline-flex min-h-[40px] cursor-pointer items-center rounded-full bg-surface-soft px-5 text-[14px] text-on-background active:scale-95">
                         {enviandoFoto ? "Enviando…" : "Trocar foto de perfil"}
@@ -1637,8 +1637,8 @@ function ContatoFolha({ businessId, userId, nome, inicial, aoFechar, aoConcluir 
    Nota rápida: toca numa estrela e abre um box pequeno com as estrelas
    e um texto curto opcional. Serve na página inicial e na lista de marcas do fã.
    ===================================================================== */
-export function NotaRapida({ businessId, userId, marca, inicial, comentarioInicial, oferecerFa = false, aoFechar, aoSalvar }: {
-  businessId: string; userId: string; marca: string; inicial: number; comentarioInicial?: string | null; oferecerFa?: boolean; aoFechar: () => void; aoSalvar: (nota: number, comentario: string) => void;
+export function NotaRapida({ businessId, userId, marca, inicial, comentarioInicial, aoFechar, aoSalvar }: {
+  businessId: string; userId: string; marca: string; inicial: number; comentarioInicial?: string | null; aoFechar: () => void; aoSalvar: (nota: number, comentario: string) => void;
 }) {
   const [nota, setNota] = useState(inicial);
   const [texto, setTexto] = useState(comentarioInicial ?? "");
@@ -1646,8 +1646,6 @@ export function NotaRapida({ businessId, userId, marca, inicial, comentarioInici
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [saindo, setSaindo] = useState(false);
-  // Quem avalia e ainda não é fã vira fã junto (pode desmarcar o coração).
-  const [viraFa, setViraFa] = useState(oferecerFa);
   const reduzido = useReduzido();
 
   const fechar = useCallback(() => {
@@ -1668,7 +1666,8 @@ export function NotaRapida({ businessId, userId, marca, inicial, comentarioInici
     const ok = await enviarAvaliacao(businessId, userId, { nota, comentario: texto, completo: false, foto: true });
     setEnviando(false);
     if (!ok) return setErro("Não consegui salvar agora. Se a marca já respondeu sua avaliação, ela não pode mais ser mudada.");
-    if (oferecerFa && viraFa) {
+    // Nota 5 é fã de verdade: vira fã junto, sem a pessoa precisar fazer mais nada.
+    if (nota === 5) {
       await virarFa(businessId, userId);
       await curtirMarca(businessId, userId, true);
     }
@@ -1688,12 +1687,6 @@ export function NotaRapida({ businessId, userId, marca, inicial, comentarioInici
             </button>
           ))}
         </div>
-        {oferecerFa && (
-          <button type="button" role="switch" aria-checked={viraFa} onClick={() => setViraFa((v) => !v)} className="mx-auto mt-1 flex min-h-[44px] items-center gap-2 rounded-full px-3 text-[14px] text-text-secondary active:scale-[0.97]">
-            <span className={`coracao-pulsa ${viraFa ? "text-[#F2556B]" : "text-on-background/60"}`}><IcCoracao cheio={viraFa} tamanho={22} /></span>
-            {viraFa ? `Você também vira fã de ${marca}` : `Virar fã de ${marca}`}
-          </button>
-        )}
         {escrever ? (
           <>
             <label htmlFor="nr-texto" className="sr-only">Comentário curto</label>
