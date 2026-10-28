@@ -7,7 +7,7 @@ import { carregarCurtidas } from "@/lib/clube-curtidas";
 import type { PedidoFa } from "./CurtirItem";
 import {
   aceitarWhatsapp, atualizarPerfil, curtirAlvo, curtirMarca, deixarDeSerFa, enviarAvaliacao, excluirAvaliacao, entrarComEmail, entrarComNumero,
-  enviarFotoPerfil, entrarComGoogle, getAfinidade, getOrbiboxAtivos, getNotas, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
+  enviarFotoPerfil, entrarComGoogle, getAfinidade, getOrbiboxAtivos, getNotas, getFaLinks, getAvaliacoes, getContatos, getEu, getFas, getMarcasDoFa, getResumo, normalizarTelefone, pedirRevisao, responderAvaliacao,
   sairDoClube, salvarContatoWhatsapp, virarFa,
   type Avaliacao, type ContatoWhats, type Eu, type FaLite, type MarcaAfim, type MarcaDoFa, type OrbiboxAtivo, type Resumo,
 } from "@/lib/clube";
@@ -770,6 +770,15 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
   const [fotoParaCortar, setFotoParaCortar] = useState<File | null>(null);
   const [salvandoAjuste, setSalvandoAjuste] = useState<"whats" | "marcas" | null>(null);
   const [avisoAjuste, setAvisoAjuste] = useState<string | null>(null);
+  const [editandoPerfil, setEditandoPerfil] = useState(false);
+  const [linksFa, setLinksFa] = useState<{ instagram: string | null; site: string | null } | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    if (!fa) return;
+    getFaLinks(businessId, fa.id).then((l) => { if (vivo) setLinksFa(l); });
+    return () => { vivo = false; setLinksFa(null); };
+  }, [fa, businessId]);
 
   async function enviarMinhaFoto(arq: File) {
     if (!eu.userId) return;
@@ -979,21 +988,10 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                         />
                       </>
                     )}
-                    <label className="flex min-h-[64px] flex-1 cursor-pointer flex-col items-center justify-center gap-1.5 px-2 py-2 text-center active:bg-surface-soft">
+                    <button type="button" onClick={() => setEditandoPerfil(true)} className="flex min-h-[64px] flex-1 flex-col items-center justify-center gap-1.5 px-2 py-2 text-center active:bg-surface-soft">
                       <Rosto url={eu.foto} nome={eu.nome} size={22} />
-                      <span className="block text-[13px] font-normal leading-tight text-on-background">{enviandoFoto ? "Enviando…" : "Minha foto"}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="sr-only"
-                        onChange={(e) => {
-                          const arq = e.target.files?.[0];
-                          e.target.value = "";
-                          if (!arq || !eu.userId) return;
-                          setFotoParaCortar(arq);
-                        }}
-                      />
-                    </label>
+                      <span className="block text-[13px] font-normal leading-tight text-on-background">{enviandoFoto ? "Enviando…" : "Meu perfil"}</span>
+                    </button>
                   </div>
                 )}
                 {avisoAjuste && <p role="alert" className="max-w-[340px] text-center text-[13px] text-[#C2362E]">{avisoAjuste}</p>}
@@ -1010,6 +1008,17 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                       setFotoParaCortar(null);
                       void enviarMinhaFoto(arquivo);
                     }}
+                  />,
+                  document.body,
+                )}
+                {editandoPerfil && eu.userId && createPortal(
+                  <PerfilFa
+                    eu={eu}
+                    enviandoFoto={enviandoFoto}
+                    escolherFoto={(arq) => setFotoParaCortar(arq)}
+                    tirarFoto={async () => { await atualizarPerfil(eu.userId!, { foto_url: null }); await aoMudar(); getFas(businessId).then(setFas); }}
+                    salvar={async (c) => { await atualizarPerfil(eu.userId!, c); await aoMudar(); getFas(businessId).then(setFas); setEditandoPerfil(false); }}
+                    fechar={() => setEditandoPerfil(false)}
                   />,
                   document.body,
                 )}
@@ -1047,6 +1056,12 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                       </label>
                     )}
                     <p className="mt-3 max-w-full truncate font-[family-name:var(--font-manrope)] text-[24px] font-normal tracking-[-0.02em]">{fa.nome || "Fã"}</p>
+                    {linksFa && (linksFa.instagram || linksFa.site) && (
+                      <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                        {linksFa.instagram && <a href={`https://instagram.com/${linksFa.instagram}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[36px] items-center rounded-full bg-surface-soft px-4 text-[13px] text-on-background active:scale-95">@{linksFa.instagram}</a>}
+                        {linksFa.site && <a href={linksFa.site} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[36px] max-w-[220px] items-center truncate rounded-full bg-surface-soft px-4 text-[13px] text-on-background active:scale-95">{linksFa.site.replace(/^https?:\/\//, "").replace(/\/$/, "")}</a>}
+                      </div>
+                    )}
                     <p className="mt-0.5 text-[13.5px] text-text-secondary">
                       Fã de {nome}{marcas && marcas.length > 1 ? ` e de mais ${marcas.length - 1} ${marcas.length - 1 === 1 ? "marca" : "marcas"}` : ""}
                     </p>
@@ -1262,6 +1277,70 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
 
 
 /** Uma linha da lista de Orbibox: logo, nome e toque para visitar. */
+/** Editar o próprio perfil de fã: foto, nome, Instagram e site. */
+function PerfilFa({ eu, enviandoFoto, escolherFoto, tirarFoto, salvar, fechar }: {
+  eu: Eu; enviandoFoto: boolean; escolherFoto: (arq: File) => void; tirarFoto: () => Promise<void>;
+  salvar: (c: { nome: string | null; instagram: string | null; site: string | null }) => Promise<void>; fechar: () => void;
+}) {
+  const [nome, setNome] = useState(eu.nome ?? "");
+  const [insta, setInsta] = useState(eu.instagram ?? "");
+  const [site, setSite] = useState(eu.site ?? "");
+  const [salvando, setSalvando] = useState(false);
+  const campo = "mt-1.5 min-h-[48px] w-full rounded-full border border-divider bg-white px-5 text-[15px] outline-none focus:border-on-background";
+
+  async function aoSalvar() {
+    setSalvando(true);
+    const handle = insta.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/^@/, "").replace(/[/?#].*$/, "");
+    const url = site.trim();
+    await salvar({
+      nome: nome.trim() || null,
+      instagram: handle || null,
+      site: url ? (/^https?:\/\//i.test(url) ? url : `https://${url}`) : null,
+    });
+    setSalvando(false);
+  }
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-end justify-center" role="dialog" aria-modal="true" aria-label="Meu perfil">
+      <button type="button" aria-label="Fechar" onClick={fechar} className="absolute inset-0 bg-black/40" />
+      <div className="relative max-h-[92dvh] w-full max-w-[440px] overflow-y-auto rounded-t-[28px] bg-background-main p-5 pb-8 shadow-[0_-12px_40px_rgba(0,0,0,0.25)]">
+        <div className="flex items-center justify-between">
+          <p className="font-[family-name:var(--font-manrope)] text-[20px] font-medium">Meu perfil</p>
+          <button type="button" onClick={fechar} aria-label="Fechar" className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-soft text-text-secondary">✕</button>
+        </div>
+
+        <div className="mt-5 flex flex-col items-center gap-3">
+          <Rosto url={eu.foto} nome={nome || eu.nome} size={88} />
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <label className="inline-flex min-h-[40px] cursor-pointer items-center rounded-full bg-surface-soft px-5 text-[14px] active:scale-95">
+              {enviandoFoto ? "Enviando…" : eu.foto ? "Trocar foto" : "Adicionar foto"}
+              <input type="file" accept="image/*" className="sr-only" onChange={(e) => { const arq = e.target.files?.[0]; e.target.value = ""; if (arq) escolherFoto(arq); }} />
+            </label>
+            {eu.foto && (
+              <button type="button" onClick={() => void tirarFoto()} className="inline-flex min-h-[40px] items-center rounded-full px-4 text-[14px] text-text-secondary underline underline-offset-4">Tirar foto</button>
+            )}
+          </div>
+        </div>
+
+        <label className="mt-5 block text-[13px] text-text-secondary">Nome
+          <input value={nome} onChange={(e) => setNome(e.target.value)} maxLength={60} placeholder="Como você quer aparecer" className={campo} />
+        </label>
+        <label className="mt-4 block text-[13px] text-text-secondary">Instagram
+          <input value={insta} onChange={(e) => setInsta(e.target.value)} maxLength={80} placeholder="@seuperfil" autoCapitalize="none" autoCorrect="off" className={campo} />
+        </label>
+        <label className="mt-4 block text-[13px] text-text-secondary">Site
+          <input value={site} onChange={(e) => setSite(e.target.value)} maxLength={120} placeholder="seusite.com.br" inputMode="url" autoCapitalize="none" autoCorrect="off" className={campo} />
+        </label>
+        <p className="mt-3 text-[12.5px] leading-snug text-text-tertiary">Instagram e site aparecem no seu perfil de fã, para os outros fãs e a marca verem.</p>
+
+        <button type="button" onClick={() => void aoSalvar()} disabled={salvando} className="mt-5 min-h-[50px] w-full rounded-full bg-button-primary text-[15px] font-semibold text-white active:scale-[0.98] disabled:opacity-60">
+          {salvando ? "Salvando…" : "Salvar"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** Tag curta e flutuante de um Orbibox: logo, nome e nota em estrelas. */
 function TagOrbibox({ nome, logo, nota, extra, indice, aoTocar }: { nome: string; logo: string | null; nota?: number; extra?: string; indice: number; aoTocar: () => void }) {
   return (

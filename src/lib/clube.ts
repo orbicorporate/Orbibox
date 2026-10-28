@@ -39,6 +39,8 @@ export type Eu = {
   userId: string | null;
   nome: string | null;
   foto: string | null;
+  instagram: string | null;
+  site: string | null;
   telefone: string | null;
   telefoneVerificado: boolean;
   mostrarMarcas: boolean;
@@ -83,7 +85,7 @@ export async function getContatos(businessId: string): Promise<ContatoWhats[]> {
 }
 
 const EU_ANON: Eu = {
-  logado: false, userId: null, nome: null, foto: null, telefone: null, telefoneVerificado: false, mostrarMarcas: false,
+  logado: false, userId: null, nome: null, foto: null, instagram: null, site: null, telefone: null, telefoneVerificado: false, mostrarMarcas: false,
   ehFa: false, aceiteWhatsapp: false, contatoWhatsapp: null, curtiu: false, anonimo: false, podeAvaliar: false, minhaAvaliacao: null,
 };
 
@@ -94,7 +96,7 @@ export async function getEu(businessId: string): Promise<Eu> {
   if (!user) return EU_ANON;
   await garantirCliente(user);
   const [cli, fan, like, pode, rev] = await Promise.all([
-    db.from("customers").select("nome, foto_url, telefone, telefone_verificado, mostrar_marcas").eq("id", user.id).maybeSingle(),
+    db.from("customers").select("nome, foto_url, instagram, site, telefone, telefone_verificado, mostrar_marcas").eq("id", user.id).maybeSingle(),
     db.from("fans").select("aceite_whatsapp, contato_whatsapp").eq("business_id", businessId).eq("customer_id", user.id).maybeSingle(),
     db.from("likes").select("alvo_id").eq("customer_id", user.id).eq("alvo", "marca").eq("alvo_id", businessId).maybeSingle(),
     db.rpc("pode_avaliar", { p_business: businessId }),
@@ -105,6 +107,8 @@ export async function getEu(businessId: string): Promise<Eu> {
     userId: user.id,
     nome: cli.data?.nome ?? null,
     foto: cli.data?.foto_url ?? null,
+    instagram: (cli.data?.instagram as string | null | undefined) ?? null,
+    site: (cli.data?.site as string | null | undefined) ?? null,
     telefone: cli.data?.telefone ?? null,
     telefoneVerificado: !!cli.data?.telefone_verificado,
     mostrarMarcas: !!cli.data?.mostrar_marcas,
@@ -130,7 +134,7 @@ async function garantirCliente(user: User) {
   });
 }
 
-export async function atualizarPerfil(userId: string, campos: { nome?: string | null; mostrar_marcas?: boolean; telefone?: string | null }) {
+export async function atualizarPerfil(userId: string, campos: { nome?: string | null; mostrar_marcas?: boolean; telefone?: string | null; instagram?: string | null; site?: string | null; foto_url?: string | null }) {
   await clubeDb().from("customers").update(campos).eq("id", userId);
 }
 
@@ -303,4 +307,11 @@ export async function enviarFotoPerfil(userId: string, arquivo: File): Promise<s
   const url = db.storage.from("box-images").getPublicUrl(caminho).data.publicUrl;
   await db.from("customers").update({ foto_url: url }).eq("id", userId);
   return url;
+}
+
+/** Instagram e site que o fã escolheu mostrar no perfil (só de quem é fã desta marca). */
+export async function getFaLinks(businessId: string, customerId: string): Promise<{ instagram: string | null; site: string | null }> {
+  const { data } = await clubeDb().rpc("clube_fa_links", { p_business: businessId, p_customer: customerId });
+  const l = (data as { instagram: string | null; site: string | null }[] | null)?.[0];
+  return { instagram: l?.instagram ?? null, site: l?.site ?? null };
 }
