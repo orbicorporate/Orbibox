@@ -775,6 +775,20 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
     return () => { vivo = false; };
   }, [businessId, isOwner]);
 
+  // Para visitante e fã, com Orbibox suficientes no ar, o painel abre direto em Descobrir
+  // (os fãs ficam numa faixa no topo). O dono continua vendo o radar de fãs primeiro.
+  const MIN_ORBIBOX_DESCOBRIR = 10;
+  useEffect(() => {
+    if (isOwner) return;
+    let vivo = true;
+    getOrbiboxAtivos().then((l) => {
+      if (!vivo) return;
+      setAtivos(l);
+      if (l.filter((b) => b.slug !== slug).length >= MIN_ORBIBOX_DESCOBRIR) setDescobrindo(true);
+    });
+    return () => { vivo = false; };
+  }, [isOwner, slug]);
+
   async function abrirFa(f: FaLite) {
     setFa(f); setMarcas(null); setNotasFa({}); setAvMarca(null);
     const ms = await getMarcasDoFa(f.id);
@@ -1150,6 +1164,19 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
               <>
                 <Cabecalho titulo="Descobrir Orbibox" sub="Os Orbibox que os fãs deste radar também curtem" fechar={() => setDescobrindo(false)} rotuloFechar="Voltar" />
                 <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-8 pt-2">
+                  {!isOwner && resumo.fas > 0 && (
+                    <button type="button" onClick={() => setDescobrindo(false)} aria-label={`Ver os ${resumo.fas} fãs de ${nome}`} className="flex min-h-[56px] w-full items-center gap-3 rounded-full bg-surface-soft py-2 pl-3 pr-4 text-left active:scale-[0.98]">
+                      <span className="flex">
+                        {resumo.recentes.slice(0, 4).map((r, i) => (
+                          <span key={r.id} className="-ml-2 rounded-full ring-2 ring-[var(--background-main,#fff)] first:ml-0" style={{ zIndex: 4 - i }}>
+                            <Rosto url={r.foto} nome={r.nome} size={30} />
+                          </span>
+                        ))}
+                      </span>
+                      <span className="min-w-0 flex-1 text-[14.5px] font-medium"><span className="tabular-nums">{resumo.fas}</span> {resumo.fas === 1 ? "fã" : "fãs"} de {nome}</span>
+                      <span aria-hidden className="text-text-tertiary">→</span>
+                    </button>
+                  )}
                   {afins.length > 0 && (
                     <>
                       <p className="px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Também curtidos pelos fãs</p>
@@ -1165,7 +1192,7 @@ function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isO
                     const outros = ativos.filter((b) => b.slug !== slug && !jaMostrados.has(b.id));
                     return outros.length > 0 ? (
                       <>
-                        <p className="mt-3 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar</p>
+                        <p className="mt-3 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar ({outros.length})</p>
                         {outros.map((b) => (
                           <LinhaOrbibox key={b.id} nome={b.name} logo={b.logo_url} aoTocar={() => router.push(`/${b.slug}`)} />
                         ))}
