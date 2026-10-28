@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import { marcarInteresse } from "@/lib/interesse";
 import { carregarCurtidas } from "@/lib/clube-curtidas";
 import type { PedidoFa } from "./CurtirItem";
 import {
@@ -127,6 +128,8 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     setAberta({ tipo: "entrar", origem });
   }
   const rect = (el: HTMLElement) => el.getBoundingClientRect();
+  const interessado = !isOwner && !!(eu?.ehFa || eu?.minhaAvaliacao);
+  useEffect(() => { if (interessado) marcarInteresse(); }, [interessado]);
 
   if (!resumo || !eu) return null;
   const temNota = resumo.avaliacoes > 0 && resumo.nota != null;

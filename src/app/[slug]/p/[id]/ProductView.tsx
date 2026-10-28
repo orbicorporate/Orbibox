@@ -13,6 +13,7 @@ import { COVER_RATIO_BY_SIZE, galleryRatioOf, formatPrice, sizeOf, youtubeId, in
 import { RATIOS } from "@/components/ui/ImageCropModal";
 import { lerLista } from "@/lib/lista";
 import { lerAnexos } from "@/lib/anexo";
+import { marcarInteresse } from "@/lib/interesse";
 import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
 import { AnexoProduto } from "@/components/ui/AnexoProduto";
 import { ListaItensView } from "./ListaItensView";
@@ -85,6 +86,7 @@ function Check() {
 }
 
 export function ProductView({ business, item, isOwner = false }: { business: Business; item: Item; isOwner?: boolean }) {
+  useEffect(() => { if (!isOwner) marcarInteresse(); }, [isOwner]);
   const router = useRouter();
   const [active, setActive] = useState(0);
   // A capa (image_url) só aparece sozinha quando não há carrossel próprio , 

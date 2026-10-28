@@ -2,6 +2,7 @@
 
 import { consultaMapa } from "@/lib/enderecoMapa";
 import { lerLogoAjuste, type LogoAjuste } from "@/components/ui/LogoBolinha";
+import { marcarInteresse } from "@/lib/interesse";
 import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
 import { MapaEndereco } from "@/components/ui/MapaEndereco";
 import { DeliveryFlow } from "./DeliveryFlow";
@@ -182,6 +183,8 @@ export function VisitorExperience({
   const searchParams = useSearchParams();
   const router = useRouter();
   const [intent, setIntent] = useState<Intent | null>(null);
+  // Abrir o catálogo conta como interesse: libera o convite "Crie o seu Orbibox".
+  useEffect(() => { if (intent === "comprar" && !isOwner) marcarInteresse(); }, [intent, isOwner]);
   const [slotTopo, setSlotTopo] = useState<HTMLElement | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   // Cópia local editável dos boxes, o dono pode reordenar e renomear direto
