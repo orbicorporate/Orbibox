@@ -76,6 +76,7 @@ export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: sa
   }
 
   const ligados = apps.filter((a) => a.ativo && linkDoApp(a)).length;
+  const [abrirInicial] = useState(() => apps.filter((a) => a.ativo && linkDoApp(a)).length === 0);
 
   const corpo = (
     <>
@@ -142,7 +143,7 @@ export function DeliveryEditor({ businessId, boxId: boxInicial, config, apps: sa
 
   if (embutido) {
     return (
-      <details className="group rounded-[22px] bg-surface-white ring-1 ring-black/[0.06]">
+      <details open={abrirInicial} className="group rounded-[22px] bg-surface-white ring-1 ring-black/[0.06]">
         <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-3 px-4 py-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[18px]" aria-hidden>🛵</span>
           <span className="min-w-0 flex-1">

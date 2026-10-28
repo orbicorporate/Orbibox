@@ -142,6 +142,7 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
       <p className="mt-1 text-[14px] leading-snug text-text-secondary">Cardápio e apps de pedido, tudo aqui.</p>
 
       {!boxId ? (
+        <>
         <div className="mt-5 rounded-[24px] bg-surface-white p-5 ring-1 ring-black/[0.06]">
           <p className="text-[15px] font-medium">Ainda não há botão de cardápio</p>
           <p className="mt-1 text-[13.5px] leading-snug text-text-secondary">Ative o botão para o cliente abrir o cardápio na sua página. Depois você envia o PDF ou cadastra os pratos.</p>
@@ -149,9 +150,22 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
             {criando ? "Criando…" : "Ativar botão de cardápio"}
           </button>
         </div>
+          <section className="mt-6" aria-label="Delivery">
+            <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Pedir por delivery</h2>
+            <p className="mb-3 mt-0.5 text-[13px] leading-snug text-text-secondary">Cole o link do seu iFood, 99Food ou Keeta. O botão aparece na página e dentro do cardápio.</p>
+            <DeliveryEditor embutido businessId={businessId} boxId={delivery.boxId} config={delivery.config} apps={delivery.apps} ativo={delivery.ativo} totalBoxes={totalBoxes} />
+          </section>
+
+        </>
       ) : (
         <>
-          <section className="mt-6" aria-label="Seu cardápio">
+          <section className="mt-6" aria-label="Delivery">
+            <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Pedir por delivery</h2>
+            <p className="mb-3 mt-0.5 text-[13px] leading-snug text-text-secondary">Cole o link do seu iFood, 99Food ou Keeta. O botão aparece na página e dentro do cardápio.</p>
+            <DeliveryEditor embutido businessId={businessId} boxId={delivery.boxId} config={delivery.config} apps={delivery.apps} ativo={delivery.ativo} totalBoxes={totalBoxes} />
+          </section>
+
+          <section className="mt-8" aria-label="Seu cardápio">
             <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Seu cardápio</h2>
             <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">PDF, pratos ou os dois.</p>
 
@@ -195,12 +209,6 @@ export function CardapioEditor({ businessId, boxId: boxInicial, config, ativo: a
               ]}
               refazer={pdfs.length > 0 && nPratos > 0 ? <RefazerFotos businessId={businessId} secoes={secoes} pdfs={pdfs} onChange={mudarSecoes} /> : null}
             />
-          </section>
-
-          <section className="mt-8" aria-label="Delivery">
-            <h2 className="font-[family-name:var(--font-manrope)] text-[19px] font-medium">Pedir por delivery</h2>
-            <p className="mb-3 mt-0.5 text-[13px] leading-snug text-text-secondary">Opcional. Vira um botão de pedir.</p>
-            <DeliveryEditor embutido businessId={businessId} boxId={delivery.boxId} config={delivery.config} apps={delivery.apps} ativo={delivery.ativo} totalBoxes={totalBoxes} />
           </section>
 
           <section className="mt-8" aria-label="Botão na página">

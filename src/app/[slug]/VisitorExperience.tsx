@@ -328,13 +328,14 @@ export function VisitorExperience({
   const todasOpcoes: Option[] = boxList
     .filter((b) => b.is_active && (BOX_TO_OPTION[b.box_type] || b.box_type === "custom"))
     .filter((b) => {
+      // Delivery sem nenhum app com link não serve ao cliente: só o dono vê (para terminar de montar).
+      if (b.box_type === "custom" && ((b.config ?? {}) as CustomConfig).action === "delivery" && appsAtivos(((b.config ?? {}) as CustomConfig).apps).length === 0 && !isOwner) return false;
       if (hasAiChat) return true;
       if (b.box_type === "agent") return false;
       const cfg = (b.config ?? {}) as CustomConfig;
       if (b.box_type === "custom" && cfg.action === "zara") return false;
       if (b.box_type === "custom" && cfg.action === "cupom" && !hasVouchers) return false;
       if (b.box_type === "custom" && cfg.action === "gift" && !giftEnabled) return false;
-      if (b.box_type === "custom" && cfg.action === "delivery" && appsAtivos(cfg.apps).length === 0) return false;
       return true;
     })
     // "Presentear" é um só: se o box fixo de campanha está ativo, um box
@@ -386,6 +387,7 @@ export function VisitorExperience({
               const link = linkDoApp(ativos[0]);
               if (link) { trackClick({ businessId: business.id, kind: `delivery_${ativos[0].id}`, sessionId, targetUrl: link }); window.open(link, "_blank", "noopener"); }
             } else if (ativos.length > 1) chooseIntent("delivery");
+            else if (isOwner) router.push("/admin/delivery"); // sem apps ainda: o dono vai terminar de cadastrar
           } else if (cfg.url) {
             trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: cfg.url });
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
@@ -614,6 +616,7 @@ export function VisitorExperience({
       else if (o.acao === "presentear" || o.acao === "gift") push({ ...base, rotulo: o.t || "Presentear", tipo: "presente", onClick: o.onClick });
       else if (o.acao === "conhecer") push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
       else if (o.acao === "cardapio") push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
+      else if (o.acao === "delivery") push({ ...base, rotulo: nomeDono(["Peça por delivery", "Delivery"], "Delivery"), tipo: "delivery", onClick: o.onClick });
       else if (o.acao === "materiais") push({ ...base, rotulo: o.t || "Materiais", tipo: "materiais", onClick: o.onClick });
       else if (o.acao === "vitrine" || o.acao === "comprar") push({ ...base, rotulo: nomeDono(["O que fazemos", "Catalogo"], "Catálogo"), tipo: "catalogo", onClick: o.acao === "vitrine" ? o.onClick : () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
     }
