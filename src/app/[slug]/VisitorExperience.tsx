@@ -2881,7 +2881,7 @@ function OrbiChat({
               {QUICK.map((q) => (
                 <button
                   key={q}
-                  onClick={() => sendText(`Me conta mais sobre "${q}"`)}
+                  onClick={() => sendText(suggestedQuestions && suggestedQuestions.length > 0 ? q : `Me conta mais sobre "${q}"`)}
                   disabled={!conversationId}
                   className="flex items-center justify-between gap-3 rounded-[22px] bg-surface-white px-5 py-4 text-left text-[16px] shadow-[0_2px_12px_rgba(17,19,24,0.06)] disabled:opacity-50"
                 >
