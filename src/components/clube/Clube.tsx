@@ -16,7 +16,7 @@ import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import { Cabecalho, Estrela, Folha, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
-type Aberta = { tipo: "avaliacoes" | "fas" | "entrar" | "contato"; origem: DOMRect | null } | null;
+type Aberta = { tipo: "avaliacoes" | "fas" | "entrar" | "contato"; origem: DOMRect | null; descobrir?: boolean } | null;
 
 const fmtNota = (n: number) => n.toFixed(1).replace(".", ",");
 const chave = (slug: string) => `clube-pendente-${slug}`;
@@ -142,7 +142,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
 
   // Faixa discreta lá em cima, sem fundo: rostos e contagem de fãs, coração, e a nota (estrela colorida) com o balão de avaliações.
   const abrirAvaliacoes = (e: React.MouseEvent<HTMLElement>) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) });
-  const cluster = !isOwner || resumo.fas > 0 || resumo.avaliacoes > 0 ? (
+  const cluster = (
     <div className="flex min-h-[40px] items-center gap-3.5 text-[13.5px] font-normal text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]">
       {resumo.fas > 0 && (
         <button
@@ -181,8 +181,16 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           <span>{fmtNota(resumo.nota!)}</span>
         </button>
       )}
+      <button
+        type="button"
+        onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget), descobrir: true })}
+        aria-label="Explorar outros Orbibox"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-on-background/80 transition active:scale-[0.92]"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+      </button>
     </div>
-  ) : null;
+  );
 
   /** Convite da língua e do painel: pede só o número, sem código. Quem não entrou passa antes pelo login. */
   function querContato() {
@@ -276,6 +284,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       {aberta?.tipo === "fas" && (
         <FasFolha
           origem={aberta.origem}
+          descobrirInicial={!!aberta.descobrir}
           businessId={businessId}
           slug={slug}
           nome={nome}
@@ -715,16 +724,17 @@ function LinhaAjuste({ titulo, ligado, ocupado, aoAlternar }: { titulo: string; 
   );
 }
 
-function FasFolha({ origem, businessId, slug, nome, logoUrl, heroAvatar, eu, isOwner, resumo, aoFechar, aoMudar, pedirLogin, confirmarWhats }: {
-  origem: DOMRect | null; businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar: string | null; eu: Eu; isOwner: boolean; resumo: Resumo;
+function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, logoUrl, heroAvatar, eu, isOwner, resumo, aoFechar, aoMudar, pedirLogin, confirmarWhats }: {
+  origem: DOMRect | null; descobrirInicial?: boolean; businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar: string | null; eu: Eu; isOwner: boolean; resumo: Resumo;
   aoFechar: () => void; aoMudar: () => Promise<Eu>; pedirLogin: (el: DOMRect) => void; confirmarWhats: () => void;
 }) {
   const [fas, setFas] = useState<FaLite[] | null>(null);
   const [fa, setFa] = useState<FaLite | null>(null);
   // Radar de descobrir: logos de todos os Orbibox ativos.
   const router = useRouter();
-  const [descobrindo, setDescobrindo] = useState(false);
+  const [descobrindo, setDescobrindo] = useState(descobrirInicial);
   const [ativos, setAtivos] = useState<OrbiboxAtivo[] | null>(null);
+  useEffect(() => { if (descobrirInicial) getOrbiboxAtivos().then(setAtivos); }, [descobrirInicial]);
   function abrirDescobrir() {
     setDescobrindo(true);
     if (ativos === null) getOrbiboxAtivos().then(setAtivos);
