@@ -212,6 +212,11 @@ export function BoxDestaque({
             ✎
           </AbrirEditor>
         )}
+        {"b" in c && c.b && (
+          <button type="button" onClick={() => alternar(c.d.t, c.d.id)} className="mx-auto mt-2 flex min-h-[34px] items-center rounded-full bg-surface-soft px-4 text-[12.5px] font-medium text-text-secondary ring-1 ring-black/[0.06] active:scale-[0.97]">
+            Mostrar como bolinha
+          </button>
+        )}
         {"i" in c && c.i && (
           <button type="button" onClick={() => setEditandoItem(c.d.id)} aria-label="Editar a tag" className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full border border-divider bg-surface-white text-[13px] text-text-secondary shadow-md active:scale-95">
             ✎
