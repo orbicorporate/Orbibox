@@ -1061,8 +1061,8 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                     <p className="mt-3 max-w-full truncate font-[family-name:var(--font-manrope)] text-[24px] font-normal tracking-[-0.02em]">{fa.nome || "Fã"}</p>
                     {linksFa && (linksFa.instagram || linksFa.site) && (
                       <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                        {linksFa.instagram && <a href={`https://instagram.com/${linksFa.instagram}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[36px] items-center rounded-full bg-surface-soft px-4 text-[13px] text-on-background active:scale-95">@{linksFa.instagram}</a>}
-                        {linksFa.site && <a href={linksFa.site} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[36px] max-w-[220px] items-center truncate rounded-full bg-surface-soft px-4 text-[13px] text-on-background active:scale-95">{linksFa.site.replace(/^https?:\/\//, "").replace(/\/$/, "")}</a>}
+                        {linksFa.instagram && <a href={`https://instagram.com/${linksFa.instagram}`} target="_blank" rel="noopener noreferrer" style={{ backgroundImage: "linear-gradient(135deg, #BC1432 0%, #CC1739 55%, #D91F44 100%)" }} className="inline-flex min-h-[36px] items-center rounded-full px-4 text-[13px] font-medium text-white shadow-[0_6px_14px_-8px_rgba(204,23,57,0.7)] active:scale-95">@{linksFa.instagram}</a>}
+                        {linksFa.site && <a href={linksFa.site} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[36px] max-w-[220px] items-center truncate rounded-full bg-[#111318] px-4 text-[13px] font-medium text-white active:scale-95">{linksFa.site.replace(/^https?:\/\//, "").replace(/\/$/, "")}</a>}
                       </div>
                     )}
                     <p className="mt-0.5 text-[13.5px] text-text-secondary">
