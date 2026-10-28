@@ -890,7 +890,7 @@ export function VisitorExperience({
         icone: o.icon === "__orb__" ? "✦" : o.icon,
         // A logo só vale quando o ícone escolhido é a logo; senão a troca de ícone nunca aparecia aqui.
         logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual || null) : null,
-        cor: o.atalho === "whatsapp" ? "#25D366" : (o.bolinhaCor || (o.color && o.color !== "transparent" ? o.color : "#111318")),
+        cor: o.bolinhaCor || (o.color && o.color !== "transparent" && o.color.toLowerCase() !== "#111318" ? o.color : o.atalho === "whatsapp" ? "#25D366" : "#111318"),
         acao: o.atalho === "whatsapp" ? "Falar" : o.atalho === "endereco" ? "Ver" : "Abrir",
         onClick: o.onClick,
       }));
