@@ -2930,10 +2930,13 @@ function OrbiChat({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackClick({ businessId, kind: "whatsapp", sessionId })}
-                className="wa-reflect relative flex items-center justify-center gap-2 self-start overflow-hidden rounded-full px-5 py-3 text-[14px] font-semibold text-[#0B4A25] shadow-[0_8px_22px_rgba(37,211,102,0.35)]"
+                className="wa-reflect relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-full px-6 py-4 text-[#0B4A25] shadow-[0_10px_26px_rgba(37,211,102,0.4)] active:scale-[0.98]"
               >
-                <OrbiContactDisc size={22} />
-                <span className="relative">Prefiro falar direto por WhatsApp</span>
+                <OrbiContactDisc size={30} />
+                <span className="relative flex flex-col items-start text-left leading-tight">
+                  <span className="text-[17px] font-semibold">Falar com a equipe no WhatsApp</span>
+                  <span className="text-[12.5px] font-normal opacity-80">Atendimento direto com uma pessoa</span>
+                </span>
               </a>
             )}
           </div>
