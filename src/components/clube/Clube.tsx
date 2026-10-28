@@ -142,7 +142,17 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
 
   // Faixa discreta lá em cima, sem fundo: rostos e contagem de fãs, coração, e a nota (estrela colorida) com o balão de avaliações.
   const abrirAvaliacoes = (e: React.MouseEvent<HTMLElement>) => setAberta({ tipo: "avaliacoes", origem: rect(e.currentTarget) });
-  const cluster = (
+  const lupaBtn = (
+      <button
+        type="button"
+        onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget), descobrir: true })}
+        aria-label="Explorar outros Orbibox"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-on-background/80 transition active:scale-[0.92]"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+      </button>
+  );
+  const cluster = !isOwner || resumo.fas > 0 || resumo.avaliacoes > 0 ? (
     <div className="flex min-h-[40px] items-center gap-3.5 text-[13.5px] font-normal text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]">
       {resumo.fas > 0 && (
         <button
@@ -181,16 +191,9 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           <span>{fmtNota(resumo.nota!)}</span>
         </button>
       )}
-      <button
-        type="button"
-        onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget), descobrir: true })}
-        aria-label="Explorar outros Orbibox"
-        className="flex h-10 w-10 items-center justify-center rounded-full text-on-background/80 transition active:scale-[0.92]"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
-      </button>
+      {!isOwner && lupaBtn}
     </div>
-  );
+  ) : null;
 
   /** Convite da língua e do painel: pede só o número, sem código. Quem não entrou passa antes pelo login. */
   function querContato() {
@@ -216,6 +219,17 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   return (
     <div className="mt-5 flex w-full min-w-0 flex-col items-center gap-3">
       {cluster && (slotTopo ? createPortal(cluster, slotTopo) : <div className="flex flex-wrap items-center justify-center gap-2">{cluster}</div>)}
+
+      {isOwner && (
+        <button
+          type="button"
+          onClick={(e) => setAberta({ tipo: "fas", origem: rect(e.currentTarget), descobrir: true })}
+          className="flex min-h-[40px] items-center gap-2 rounded-full bg-surface-white/80 px-4 text-[13px] text-text-secondary ring-1 ring-black/[0.06] transition active:scale-[0.97]"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+          Explorar Orbibox
+        </button>
+      )}
 
       {!isOwner && !eu.minhaAvaliacao && (
         <div className="nr-home flex items-center gap-1.5" aria-label="Avalie">
