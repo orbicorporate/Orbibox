@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 const PRESETS = [
@@ -42,14 +42,19 @@ export function PulseDateFilter() {
   const [rangeEnd, setRangeEnd] = useState<Date | null>(null);
   const popRef = useRef<HTMLDivElement>(null);
 
-  const activeLabel = searchParams.get("label");
+  const [pendente, comecar] = useTransition();
+  // O chip acende no toque, sem esperar o servidor responder.
+  const [otimista, setOtimista] = useState<string | null | undefined>(undefined);
+  const activeLabel = pendente && otimista !== undefined ? otimista : searchParams.get("label");
 
   function applyRange(since: Date, until: Date, label: string) {
     const params = new URLSearchParams();
     params.set("since", toISO(since));
     params.set("until", toISO(until, true));
     params.set("label", label);
-    router.push(`${pathname}?${params.toString()}`);
+    setOtimista(label);
+    // scroll:false mantém a posição da tela em vez de voltar pro topo.
+    comecar(() => { router.push(`${pathname}?${params.toString()}`, { scroll: false }); });
     setOpen(false);
   }
 
@@ -61,7 +66,8 @@ export function PulseDateFilter() {
   }
 
   function clearFilter() {
-    router.push(pathname);
+    setOtimista(null);
+    comecar(() => { router.push(pathname, { scroll: false }); });
     setRangeStart(null);
     setRangeEnd(null);
     setOpen(false);
@@ -109,7 +115,7 @@ export function PulseDateFilter() {
   }
 
   return (
-    <div className="relative mt-4">
+    <div className={`relative mt-4 transition-opacity ${pendente ? "opacity-70" : ""}`} aria-busy={pendente}>
       <div className="flex flex-wrap items-center gap-2">
         {PRESETS.map((p) => (
           <button
