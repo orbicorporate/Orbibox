@@ -30,6 +30,7 @@ export function GalleryUpload({
   onFormatChosen,
   emptySlots,
   emptyLabel,
+  camada,
 }: {
   value: string[];
   onChange: (urls: string[]) => void;
@@ -41,6 +42,8 @@ export function GalleryUpload({
   emptySlots?: number;
   /** Texto curto no slot vazio. Sem ele, o slot mostra o formato e a medida. */
   emptyLabel?: string;
+  /** Camada (z-index) do recorte, para quando a galeria está dentro de uma folha por cima da página. */
+  camada?: string;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -217,7 +220,7 @@ export function GalleryUpload({
       {error && <p className="text-[12px] text-red-600">{error}</p>}
 
       {pendingFile && (
-        <ImageCropModal file={pendingFile} lockedRatio={lockedRatio} lockedReason={lockedReason} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
+        <ImageCropModal camada={camada} file={pendingFile} lockedRatio={lockedRatio} lockedReason={lockedReason} onCancel={() => setPendingFile(null)} onConfirm={uploadBlob} />
       )}
     </div>
   );

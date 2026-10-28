@@ -104,7 +104,7 @@ export function SobreEditorSheet({
           )}
 
           {parte === "fotos" && (
-            <GalleryUpload value={fotos} businessId={businessId} lockedRatio="paisagem" lockedReason="As fotos são sempre no formato paisagem, para o carrossel ficar uniforme." onChange={salvarFotos} />
+            <GalleryUpload camada="z-[120]" value={fotos} businessId={businessId} lockedRatio="paisagem" lockedReason="As fotos são sempre no formato paisagem, para o carrossel ficar uniforme." onChange={salvarFotos} />
           )}
         </div>
 
