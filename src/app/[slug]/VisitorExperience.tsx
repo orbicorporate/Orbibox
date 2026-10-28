@@ -2836,10 +2836,19 @@ function OrbiChat({
 
   // Auto-scroll só DEPOIS que a conversa começou, enquanto está nas sugestões,
   // o visitante rola livremente. Rolar pro fim só quando chega mensagem/pensa.
+  // A primeira rolagem (abrir ou retomar a conversa) é instantânea, sempre no fim. As seguintes
+  // são suaves. Reforça depois que o layout assenta (cartão de contato, fontes e imagens
+  // mudam a altura), senão a tela fica parada no começo da conversa.
+  const jaRolouRef = useRef(false);
   useEffect(() => {
-    if (!started && !sending) return;
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages.length, sending, justDone, started]);
+    if (!started && !sending && messages.length === 0) return;
+    const ir = (b: ScrollBehavior) => endRef.current?.scrollIntoView({ behavior: b, block: "end" });
+    ir(jaRolouRef.current ? "smooth" : "auto");
+    jaRolouRef.current = true;
+    const t1 = setTimeout(() => ir("auto"), 350);
+    const t2 = setTimeout(() => ir("auto"), 1000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [messages.length, sending, justDone, started, temContato, dispensou]);
 
   return (
     <div className="orbi-sobe fixed inset-0 z-40 mx-auto flex max-w-[440px] flex-col overflow-hidden bg-background-main lg:max-w-[760px]">
