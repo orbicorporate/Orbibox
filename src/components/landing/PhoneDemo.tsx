@@ -106,7 +106,7 @@ export function PhoneDemo() {
             <p className="mb-2 mt-5 text-[10.5px] font-medium uppercase tracking-[0.14em] text-text-tertiary">{m.secao}</p>
             <div className="grid grid-cols-2 gap-3">
               {m.cards.map((c) => (
-                <div key={c.titulo} style={{ boxShadow: `0 12px 26px -12px ${m.cor}, 0 0 0 1.5px color-mix(in srgb, ${m.cor} 30%, transparent)` }} className="relative aspect-[4/5] overflow-hidden rounded-[18px] bg-surface-soft">
+                <div key={c.titulo} className="relative aspect-[4/5] overflow-hidden rounded-[18px] bg-surface-soft">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={c.url} alt={c.titulo} loading="eager" className="h-full w-full object-cover" />
                   <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent px-2 pb-2 pt-6 text-[10.5px] leading-tight text-white">{c.titulo}</span>
