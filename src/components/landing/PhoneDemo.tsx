@@ -3,6 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import { MARCAS_LANDING, type IconeBolinha } from "./marcas";
 
+/** Rola suave com aceleração e freio (easeInOutSine), sem o tranco do scroll nativo. */
+function deslizar(el: HTMLElement, eixo: "left" | "top", destino: number, ms: number, ids: number[]) {
+  const ini = eixo === "left" ? el.scrollLeft : el.scrollTop;
+  const t0 = performance.now();
+  const passo = (agora: number) => {
+    const k = Math.min(1, (agora - t0) / ms);
+    const v = ini + (destino - ini) * (0.5 - Math.cos(Math.PI * k) / 2);
+    if (eixo === "left") el.scrollLeft = v; else el.scrollTop = v;
+    if (k < 1) ids.push(window.requestAnimationFrame(passo));
+  };
+  ids.push(window.requestAnimationFrame(passo));
+}
+
 const ICONES: Record<IconeBolinha, { cor: string; d: string[] }> = {
   whatsapp: { cor: "#25D366", d: ["M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3Z", "M9 8.5c-.3 1.6.8 3.6 2.4 5s3.3 2 4.6 1.6"] },
   endereco: { cor: "#EA4335", d: ["M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11Z", "M12 12.6a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2Z"] },
@@ -54,10 +67,13 @@ export function PhoneDemo() {
     p.scrollTo({ top: 0 });
     const reduz = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduz) return;
-    const t1 = window.setTimeout(() => l.scrollTo({ left: l.scrollWidth, behavior: "smooth" }), 900);
-    const t2 = window.setTimeout(() => l.scrollTo({ left: 0, behavior: "smooth" }), 2600);
-    const t3 = window.setTimeout(() => p.scrollTo({ top: p.scrollHeight, behavior: "smooth" }), 3600);
-    return () => { window.clearTimeout(t1); window.clearTimeout(t2); window.clearTimeout(t3); };
+    const anim: number[] = [];
+    const t = [
+      window.setTimeout(() => deslizar(l, "left", l.scrollWidth, 1700, anim), 900),
+      window.setTimeout(() => deslizar(l, "left", 0, 1500, anim), 3000),
+      window.setTimeout(() => deslizar(p, "top", p.scrollHeight, 4200, anim), 4300),
+    ];
+    return () => { t.forEach(window.clearTimeout); anim.forEach(window.cancelAnimationFrame); };
   }, [i, pausado]);
 
   return (
@@ -66,7 +82,7 @@ export function PhoneDemo() {
         <div aria-hidden className="absolute -inset-10 rounded-full opacity-40 blur-3xl transition-colors duration-700" style={{ background: m.cor }} />
         <div className="relative w-[286px] rounded-[44px] border-[7px] border-[#16171a] shadow-[0_40px_80px_-30px_rgba(17,19,24,0.55)] transition-colors duration-700 sm:w-[310px]" style={{ background: m.fundo }}>
           <div className="absolute left-1/2 top-2 z-10 h-[18px] w-[84px] -translate-x-1/2 rounded-full bg-[#16171a]" aria-hidden />
-          <div key={m.id} ref={pagina} onPointerDown={() => setPausado(true)} className="lp-fade h-[560px] overflow-y-auto overscroll-contain rounded-[36px] px-4 pb-4 pt-9 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:h-[600px]">
+          <div key={m.id} ref={pagina} onPointerDown={() => setPausado(true)} className="lp-fade h-[560px] overflow-y-auto overscroll-contain rounded-[36px] px-4 pb-6 pt-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:h-[600px]">
             <div className="flex flex-col items-center text-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={m.logo} alt={m.nome} className="h-12 w-12 rounded-full bg-white object-contain ring-1 ring-black/10" />
@@ -74,20 +90,20 @@ export function PhoneDemo() {
               <p className="mt-1 max-w-[220px] text-[11px] leading-snug text-text-secondary">{m.frase}</p>
             </div>
 
-            <div ref={linha} className="-mx-4 mt-3 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div ref={linha} className="-mx-4 mt-5 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {m.bolinhas.map((b) => <Bolinha key={b.rotulo} {...b} />)}
             </div>
 
-            <p className="mt-3 text-center font-[family-name:var(--font-manrope)] text-[16px] font-medium leading-tight tracking-[-0.01em]">{m.pergunta}</p>
-            <div className="mt-2.5 flex items-center justify-between rounded-full px-5 py-3 text-white" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${m.cor} 85%, white), ${m.cor})` }}>
+            <p className="mt-5 text-center font-[family-name:var(--font-manrope)] text-[16px] font-medium leading-tight tracking-[-0.01em]">{m.pergunta}</p>
+            <div className="mt-3 flex items-center justify-between rounded-full px-5 py-3 text-white" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${m.cor} 85%, white), ${m.cor})` }}>
               <span className="text-[13.5px]">{m.principal}</span>
               <span aria-hidden>→</span>
             </div>
 
-            <p className="mb-1.5 mt-3.5 text-[10.5px] font-medium uppercase tracking-[0.14em] text-text-tertiary">{m.secao}</p>
-            <div className="grid grid-cols-2 gap-2">
+            <p className="mb-2 mt-5 text-[10.5px] font-medium uppercase tracking-[0.14em] text-text-tertiary">{m.secao}</p>
+            <div className="grid grid-cols-2 gap-3">
               {m.cards.map((c) => (
-                <div key={c.titulo} className="relative aspect-[4/5] overflow-hidden rounded-[16px] bg-surface-soft">
+                <div key={c.titulo} style={{ boxShadow: `0 12px 26px -12px ${m.cor}, 0 0 0 1.5px color-mix(in srgb, ${m.cor} 30%, transparent)` }} className="relative aspect-[4/5] overflow-hidden rounded-[18px] bg-surface-soft">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={c.url} alt={c.titulo} loading={i === 0 ? "eager" : "lazy"} className="h-full w-full object-cover" />
                   <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent px-2 pb-2 pt-6 text-[10.5px] leading-tight text-white">{c.titulo}</span>
