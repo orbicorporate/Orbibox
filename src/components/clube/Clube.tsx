@@ -704,9 +704,9 @@ function AvaliacoesFolha({ origem, businessId, eu, isOwner, resumo, aoFechar, ao
    Fãs: órbita de rostos, e as marcas de cada fã
    ===================================================================== */
 const ANEIS = [
-  { r: 0.34, velocidade: 0.12, cor: "#F2556B" },
-  { r: 0.6, velocidade: -0.08, cor: "#9B59D9" },
-  { r: 0.84, velocidade: 0.055, cor: "#3E8BEA" },
+  { r: 0.45, velocidade: 0.12, cor: "#F2556B" },
+  { r: 0.67, velocidade: -0.08, cor: "#9B59D9" },
+  { r: 0.88, velocidade: 0.055, cor: "#3E8BEA" },
 ];
 /** Do mais perto da marca (vermelho) ao que só virou fã (azul). */
 const NIVEIS = [
