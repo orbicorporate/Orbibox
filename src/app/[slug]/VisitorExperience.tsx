@@ -295,9 +295,20 @@ export function VisitorExperience({
       return "computador";
     };
 
+    const origemVisita = detectarOrigem();
+    // Limpa o endereço: tira utm_*, fbclid etc. para que quem copiar ou compartilhar o link mande a versão curta.
+    try {
+      const u = new URL(window.location.href);
+      let mudou = false;
+      for (const k of Array.from(u.searchParams.keys())) {
+        if (/^(utm_|fbclid|igshid|gclid|gbraid|wbraid|ttclid|msclkid|mc_)/i.test(k)) { u.searchParams.delete(k); mudou = true; }
+      }
+      if (mudou) window.history.replaceState(window.history.state, "", u.pathname + u.search + u.hash);
+    } catch { /* ignora */ }
+
     supabase
       .from("visitor_sessions")
-      .insert({ business_id: business.id, source: detectarOrigem(), device: detectarDispositivo(), referrer: document.referrer || null })
+      .insert({ business_id: business.id, source: origemVisita, device: detectarDispositivo(), referrer: document.referrer || null })
       .select("id")
       .single()
       .then(({ data }) => data && setSessionId(data.id));

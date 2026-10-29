@@ -30,6 +30,14 @@ export type AlvoCompartilhar = {
   cor?: string | null;
 };
 
+/** Tira utm_*, fbclid e afins do link compartilhado. */
+function semRastreio(u: string) {
+  try {
+    const x = new URL(u);
+    for (const k of Array.from(x.searchParams.keys())) if (/^(utm_|fbclid|igshid|gclid|gbraid|wbraid|ttclid|msclkid|mc_)/i.test(k)) x.searchParams.delete(k);
+    return x.toString();
+  } catch { return u; }
+}
 function urlCompleta(u: string) {
   if (/^https?:\/\//.test(u)) {
     // Link antigo no endereço da Vercel vira o endereço oficial.
@@ -221,7 +229,7 @@ export function FolhaCompartilhar({ alvo, aoFechar }: { alvo: AlvoCompartilhar; 
   const [saindo, setSaindo] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [gerando, setGerando] = useState(false);
-  const link = typeof window !== "undefined" ? urlCompleta(alvo.url) : alvo.url;
+  const link = typeof window !== "undefined" ? semRastreio(urlCompleta(alvo.url)) : alvo.url;
   const texto = alvo.texto ?? `Olha ${alvo.titulo === alvo.marca ? alvo.marca : `${alvo.titulo}, de ${alvo.marca}`}:`;
   const temShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
 
