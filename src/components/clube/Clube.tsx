@@ -886,7 +886,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
     <Folha origem={origem} aoFechar={aoFechar} rotulo="Fãs da marca">
       {(fechar) => (
         <>
-          <div className="cl-entra flex items-start justify-between gap-3 px-5 pb-3 pt-[max(18px,env(safe-area-inset-top))]" style={{ ["--i" as string]: 0 }}>
+          <div className="cl-entra relative z-20 flex items-start justify-between gap-3 px-5 pb-3 pt-[max(18px,env(safe-area-inset-top))]" style={{ ["--i" as string]: 0 }}>
             <div className="min-w-0 flex-1">
               <p className="truncate text-[11.5px] uppercase tracking-[0.16em] text-text-tertiary">{resumo.fas === 0 ? "Seja o primeiro fã" : `Radar de fãs de ${nome}`}</p>
               <div className="mt-2 flex items-center gap-4">
