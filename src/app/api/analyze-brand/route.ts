@@ -44,11 +44,12 @@ export async function POST(req: NextRequest) {
     // e a paleta ficam muito melhores com os dois, e sem site o Instagram basta.
     // As cores são MEDIDAS no site (logo, header, rodapé, botões, cores do
     // tema), nunca tiradas das fotos do conteúdo. Roda junto com a leitura.
-    const [siteLido, igLido, coresMedidas] = await Promise.all([
+    const limite = <T,>(p: Promise<T>): Promise<T | null> => Promise.race([p, new Promise<null>((r) => setTimeout(() => r(null), 22000))]);
+    const [siteLido, igLido, coresMedidas] = await limite(Promise.all([
       website ? fetchSiteResiliente(website).catch(() => null) : Promise.resolve(null),
       instagram ? fetchInstagram(instagram).catch(() => null) : Promise.resolve(null),
       website ? extrairCoresDaMarca(website).catch(() => null) : Promise.resolve(null),
-    ]);
+    ])).then((r) => r ?? ([null, null, null] as const));
     const medidas = coresMedidas?.colors ?? [];
     if (website) console.log("analyze-brand cores", JSON.stringify({ website, cores: coresMedidas?.evidencia, diagnostico: coresMedidas?.diagnostico }));
     const temPaletaMedida = medidas.length >= 2;
@@ -98,7 +99,11 @@ ${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e 
     let oferta: { titulo: string; tipo: "percent" | "fixed"; valor: number } | null = null;
 
     try {
-      const raw = await askClaude({ system, messages: [{ role: "user", content: userMsg }], maxTokens: 1500 });
+      // Teto de 24 s: se a IA demorar, segue com o básico em vez de estourar o limite da função (504).
+      const raw = await Promise.race([
+        askClaude({ system, messages: [{ role: "user", content: userMsg }], maxTokens: 1500 }),
+        new Promise<never>((_, rej) => setTimeout(() => rej(new Error("tempo esgotado")), 24000)),
+      ]);
       // Extrai o primeiro bloco {...} da resposta, mesmo que venha com texto ao redor.
       const match = raw.match(/\{[\s\S]*\}/);
       const jsonText = match ? match[0] : raw.trim().replace(/^```json\n?|```$/g, "");

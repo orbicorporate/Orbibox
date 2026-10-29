@@ -36,14 +36,29 @@ type BrandAnalysis = {
   oferta?: { titulo: string; tipo: "percent" | "fixed"; valor: number } | null;
 };
 
+class ErroAnalise extends Error {
+  constructor(public status: number, msg: string) { super(msg); }
+}
+
 async function analyzeBrand(name: string, instagram: string, website: string, descricao: string): Promise<BrandAnalysis> {
-  const res = await fetch("/api/analyze-brand", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, instagram, website, descricao }),
-  });
-  if (!res.ok) throw new Error("Falha ao analisar marca.");
-  return res.json();
+  let ultimo: ErroAnalise | null = null;
+  // Tenta duas vezes: falha de rede ou lentidão do site costuma passar na segunda.
+  for (let tentativa = 0; tentativa < 2; tentativa++) {
+    try {
+      const res = await fetch("/api/analyze-brand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, instagram, website, descricao }),
+      });
+      if (res.ok) return res.json();
+      if (res.status === 401) throw new ErroAnalise(401, "Sua sessão expirou. Entre de novo na sua conta para continuar.");
+      ultimo = new ErroAnalise(res.status, "A Orbi demorou mais que o normal. Toque em Criar meu Orbibox para tentar de novo.");
+    } catch (e) {
+      if (e instanceof ErroAnalise && e.status === 401) throw e;
+      ultimo = new ErroAnalise(0, "Sem conexão com a Orbi agora. Confira sua internet e tente de novo.");
+    }
+  }
+  throw ultimo ?? new ErroAnalise(0, "Não consegui analisar agora.");
 }
 
 type Step = "dados" | "objetivo" | "acao" | "analisando" | "revisar" | "montando" | "pronto";
@@ -68,8 +83,7 @@ export default function OnboardingPage() {
   const [name, setName] = useState("");
   const [instagram, setInstagram] = useState("");
   const [website, setWebsite] = useState("");
-  const [description, setDescription] = useState("");
-  const [semLinks, setSemLinks] = useState(false);
+  const description = "";
   const [error, setError] = useState<string | null>(null);
 
   // As duas únicas decisões: o objetivo e o que o cliente deve fazer.
@@ -131,9 +145,16 @@ export default function OnboardingPage() {
 
   function comecar(e: React.FormEvent) {
     e.preventDefault();
-    if (!temLinks && !description.trim()) {
-      setSemLinks(true);
-      setError("Sem site nem Instagram, conte em uma frase o que vocês fazem. É com isso que a Orbi monta tudo.");
+    if (!temLinks) {
+      setError("Informe o site ou o Instagram do negócio. Um dos dois é necessário, o Instagram já basta se você não tiver site.");
+      return;
+    }
+    if (instagram.trim() && !/^@?[A-Za-z0-9._]{1,30}$/.test(instagram.trim().replace(/^.*instagram\.com\//i, "").replace(/[/?].*$/, ""))) {
+      setError("Esse @ do Instagram não parece certo. Use só o nome de usuário, por exemplo @minhamarca.");
+      return;
+    }
+    if (website.trim() && !/^(https?:\/\/)?([\w-]+\.)+[A-Za-z]{2,}(\/.*)?$/.test(website.trim())) {
+      setError("Esse site não parece certo. Use algo como minhamarca.com.br.");
       return;
     }
     setError(null);
@@ -172,11 +193,10 @@ export default function OnboardingPage() {
         // Respondeu antes da leitura acabar e ficou vendo a análise: ela
         // mesma chama a criação quando termina a animação (onDone).
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (minha !== leituraRef.current) return;
         registrarFunil("onb_analise_erro", { meta: { tem_site: !!website.trim(), tem_instagram: !!instagram.trim() } });
-        setError("A Orbi não conseguiu ler sua marca agora. Confira se o site ou o @ estão certos e tente de novo. Se preferir, apague os links e conte em uma frase o que vocês fazem.");
-        if (!temLinks) setSemLinks(true);
+        setError(err instanceof ErroAnalise ? err.message : "Não consegui analisar agora. Tente de novo em instantes.");
         setStep("dados");
       });
   }
@@ -676,21 +696,7 @@ export default function OnboardingPage() {
               <input required autoFocus placeholder="Nome da empresa" value={name} onChange={(e) => setName(e.target.value)} className={campo} />
               <input placeholder="seusite.com.br" inputMode="url" autoCapitalize="none" value={website} onChange={(e) => setWebsite(e.target.value)} className={campo} />
               <input placeholder="@seuinstagram" autoCapitalize="none" value={instagram} onChange={(e) => setInstagram(e.target.value)} className={campo} />
-              {semLinks || (!temLinks && description) ? (
-                <textarea
-                  placeholder="Em uma frase, o que vocês fazem?"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={2}
-                  className={`${campo} resize-none !rounded-[24px]`}
-                />
-              ) : (
-                !temLinks && (
-                  <button type="button" onClick={() => setSemLinks(true)} className="self-center px-1 text-[13px] text-text-secondary underline underline-offset-2">
-                    Não tenho site nem Instagram
-                  </button>
-                )
-              )}
+              <p className="px-2 text-center text-[12.5px] leading-snug text-text-tertiary">Preencha pelo menos um: site ou Instagram. Sem site, o Instagram já basta.</p>
               {error && (
                 <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-[13px] leading-snug text-red-700 ring-1 ring-red-100">{error}</p>
               )}
