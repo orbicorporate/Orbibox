@@ -146,7 +146,15 @@ export function Orbita({ itens, aneis, centro }: { itens: ItemOrbita[]; aneis: {
     const visto: number[] = aneis.map(() => 0);
     return itens.map((i) => {
       const k = visto[i.anel]++;
-      return { anel: i.anel, a0: (k / Math.max(1, contagem[i.anel])) * Math.PI * 2 + i.anel * 0.9 };
+      // Pseudo-aleatório estável por item: espalha de forma orgânica, sem ficar em fila perfeita.
+      const h = (n: number) => { const x = Math.sin((idx + 1) * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+      const idx = visto.reduce((a, b) => a + b, 0);
+      return {
+        anel: i.anel,
+        a0: (k / Math.max(1, contagem[i.anel])) * Math.PI * 2 + i.anel * 0.9 + (h(1) - 0.5) * 0.9,
+        dr: (h(2) - 0.5) * (i.anel === aneis.length - 1 ? 0.1 : 0.2),
+        fa: 0.35 + h(3) * 0.45, fb: 0.3 + h(4) * 0.4, pa: h(5) * 6.28, pb: h(6) * 6.28,
+      };
     });
   }, [itens, aneis]);
 
@@ -162,7 +170,11 @@ export function Orbita({ itens, aneis, centro }: { itens: ItemOrbita[]; aneis: {
         const el = els.current[i];
         if (!el) return;
         const a = m.a0 + t * aneis[m.anel].velocidade;
-        el.style.transform = `translate(${Math.cos(a) * aneis[m.anel].r * S}px,${Math.sin(a) * aneis[m.anel].r * S}px)`;
+        const r = (aneis[m.anel].r + m.dr) * S;
+        // Flutuação suave por cima da órbita.
+        const fx = Math.sin(t * m.fa + m.pa) * S * 0.035;
+        const fy = Math.cos(t * m.fb + m.pb) * S * 0.035;
+        el.style.transform = `translate(${Math.cos(a) * r + fx}px,${Math.sin(a) * r + fy}px)`;
       });
       if (!reduzido) raf = requestAnimationFrame(quadro);
     };
