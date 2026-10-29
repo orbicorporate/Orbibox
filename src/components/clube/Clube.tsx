@@ -168,7 +168,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
             <>
               <span className="flex">
                 {resumo.recentes.slice(0, 3).map((f, i) => (
-                  <Rosto key={f.id} url={f.foto} nome={f.nome} cor={f.cor} size={26} className={i ? "-ml-2" : "ring-2 ring-white"} />
+                  <Rosto key={f.id} url={f.foto} nome={f.nome} cor={f.cor} size={26} className={i ? "-ml-2" : ""} />
                 ))}
               </span>
               <span className="tabular-nums">{resumo.fas}</span>
@@ -222,6 +222,8 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   return (
     <div className="mt-5 flex w-full min-w-0 flex-col items-center gap-3">
       {cluster && (slotTopo ? createPortal(cluster, slotTopo) : <div className="flex flex-wrap items-center justify-center gap-2">{cluster}</div>)}
+
+      {isOwner && lupaBtn}
 
       {!isOwner && !eu.ehFa && (
         <button
