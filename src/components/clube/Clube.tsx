@@ -155,8 +155,8 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
       </button>
   );
-  const cluster = !isOwner || resumo.fas > 0 || resumo.avaliacoes > 0 ? (
-    <div className="flex min-h-[40px] items-center gap-3.5 text-[13.5px] font-normal text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]">
+  const cluster = (
+    <div className={`flex min-h-[40px] ${isOwner ? "flex-col items-start gap-0" : "items-center gap-3.5"} text-[13.5px] font-normal text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]`}>
       {resumo.fas > 0 && (
         <button
           type="button"
@@ -188,15 +188,17 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           <span>{eu.ehFa ? "Sou fã" : "Virar fã"}</span>
         </button>
       )}
+      <div className="flex items-center gap-3.5">
       {temNota && (
         <button type="button" onClick={abrirAvaliacoes} aria-label={`Nota geral ${fmtNota(resumo.nota!)}. Ver avaliações`} className="flex min-h-[40px] items-center gap-1 tabular-nums transition active:scale-[0.96]">
           <Estrela cheia tam={20} />
           <span>{fmtNota(resumo.nota!)}</span>
         </button>
       )}
-      {!isOwner && lupaBtn}
+      {lupaBtn}
+      </div>
     </div>
-  ) : null;
+  );
 
   /** Convite da língua e do painel: pede só o número, sem código. Quem não entrou passa antes pelo login. */
   function querContato() {
@@ -222,8 +224,6 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   return (
     <div className="mt-5 flex w-full min-w-0 flex-col items-center gap-3">
       {cluster && (slotTopo ? createPortal(cluster, slotTopo) : <div className="flex flex-wrap items-center justify-center gap-2">{cluster}</div>)}
-
-      {isOwner && lupaBtn}
 
       {!isOwner && !eu.ehFa && (
         <button
