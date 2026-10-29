@@ -168,7 +168,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
             <>
               <span className="flex">
                 {resumo.recentes.slice(0, 3).map((f, i) => (
-                  <Rosto key={f.id} url={f.foto} nome={f.nome} cor={f.cor} size={26} className={i ? "-ml-2 ring-2 ring-white" : "ring-2 ring-white"} />
+                  <Rosto key={f.id} url={f.foto} nome={f.nome} cor={f.cor} size={26} className={i ? "-ml-2" : "ring-2 ring-white"} />
                 ))}
               </span>
               <span className="tabular-nums">{resumo.fas}</span>
@@ -906,7 +906,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                 {resumo.recentes.length > 0 && (
                   <div className="flex" aria-hidden>
                     {resumo.recentes.slice(0, 4).map((r, i) => (
-                      <span key={r.id} className="-ml-2.5 rounded-full ring-2 ring-[var(--background-main,#fff)] first:ml-0" style={{ zIndex: 4 - i }}>
+                      <span key={r.id} className="-ml-2.5 rounded-full first:ml-0" style={{ zIndex: 4 - i }}>
                         <Rosto url={r.foto} nome={r.nome} cor={r.cor} size={34} />
                       </span>
                     ))}
@@ -1228,7 +1228,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                     <button type="button" onClick={() => setDescobrindo(false)} aria-label={`Ver os ${resumo.fas} fãs de ${nome}`} className="flex min-h-[56px] w-full items-center gap-3 rounded-full bg-surface-soft py-2 pl-3 pr-4 text-left active:scale-[0.98]">
                       <span className="flex">
                         {resumo.recentes.slice(0, 4).map((r, i) => (
-                          <span key={r.id} className="-ml-2 rounded-full ring-2 ring-[var(--background-main,#fff)] first:ml-0" style={{ zIndex: 4 - i }}>
+                          <span key={r.id} className="-ml-2 rounded-full first:ml-0" style={{ zIndex: 4 - i }}>
                             <Rosto url={r.foto} nome={r.nome} cor={r.cor} size={30} />
                           </span>
                         ))}
