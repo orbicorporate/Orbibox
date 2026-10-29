@@ -247,7 +247,7 @@ export async function confirmarCodigo(telefone: string, codigo: string): Promise
  * que aceitou receber novidades. Como todos os Orbiboxes usam o mesmo endereço, este aparelho fica
  * reconhecido em todos eles. Para outro aparelho, ou para avaliar com foto, vale entrar com Google.
  */
-export async function entrarComNumero(businessId: string, nome: string, telefone: string): Promise<string | null> {
+export async function entrarComNumero(businessId: string, nome: string, telefone: string | null): Promise<string | null> {
   const db = clubeDb();
   let { data: { user } } = await db.auth.getUser();
   if (!user) {
@@ -256,9 +256,9 @@ export async function entrarComNumero(businessId: string, nome: string, telefone
     user = r.data.user;
   }
   await garantirCliente(user);
-  await db.from("customers").update({ nome: nome.trim() || null, telefone }).eq("id", user.id);
+  await db.from("customers").update(telefone ? { nome: nome.trim() || null, telefone } : { nome: nome.trim() || null }).eq("id", user.id);
   await virarFa(businessId, user.id);
-  return salvarContatoWhatsapp(businessId, user.id, telefone);
+  return telefone ? salvarContatoWhatsapp(businessId, user.id, telefone) : null;
 }
 export async function sairDoClube() {
   await clubeDb().auth.signOut();
@@ -268,12 +268,13 @@ export async function sairDoClube() {
  * O fã deixa o número e aceita receber novidades, sem código de confirmação.
  * Já o torna fã da marca. A marca só vê o número de quem aceitou.
  */
-export async function salvarContatoWhatsapp(businessId: string, userId: string, telefone: string): Promise<string | null> {
+export async function salvarContatoWhatsapp(businessId: string, userId: string, telefone: string | null): Promise<string | null> {
   const { error } = await clubeDb().from("fans").upsert(
-    { business_id: businessId, customer_id: userId, contato_whatsapp: telefone, aceite_whatsapp: true },
+    { business_id: businessId, customer_id: userId, contato_whatsapp: telefone, aceite_whatsapp: !!telefone },
     { onConflict: "business_id,customer_id" },
   );
   if (error) return "Não consegui salvar seu número agora. Tente de novo.";
+  if (!telefone) return null;
   // Confere se o aceite realmente ficou ligado (o banco pode recusar sem avisar).
   const { data } = await clubeDb().from("fans").select("aceite_whatsapp").eq("business_id", businessId).eq("customer_id", userId).maybeSingle();
   return data?.aceite_whatsapp ? null : "Guardei seu número, mas não consegui ativar o recebimento de novidades. Tente de novo em instantes.";

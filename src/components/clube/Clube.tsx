@@ -331,6 +331,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           businessId={businessId}
           userId={eu.userId}
           nome={nome}
+          nomeFa={eu.nome ?? null}
           inicial={eu.contatoWhatsapp ?? eu.telefone}
           aoFechar={() => { setContatoAberto(false); if (aberta?.tipo === "contato") setAberta(null); }}
           aoConcluir={async () => { setContatoAberto(false); if (aberta?.tipo === "contato") setAberta(null); await recarregar(); }}
@@ -477,9 +478,10 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
   // Só nome e WhatsApp, sem código: já vira fã e fica reconhecido neste aparelho em todos os Orbiboxes.
   async function entrar() {
     if (!nomeTxt.trim()) return setErro("Diga como quer ser chamado.");
-    if (tel.replace(/\D/g, "").length < 10) return setErro("Digite o número com DDD.");
+    const temTel = tel.replace(/\D/g, "").length > 0;
+    if (temTel && tel.replace(/\D/g, "").length < 10) return setErro("Digite o número com DDD ou deixe em branco.");
     setOcupado(true); setErro(null);
-    const e = await entrarComNumero(businessId, nomeTxt, telefone);
+    const e = await entrarComNumero(businessId, nomeTxt, temTel ? telefone : null);
     setOcupado(false);
     if (e) return setErro(e);
     aoConcluir();
@@ -530,18 +532,18 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
             </>
           ) : (
             <>
-              <p className="text-center text-[12.5px] text-text-tertiary">ou deixe seu WhatsApp</p>
+              <p className="text-center text-[12.5px] text-text-tertiary">ou só diga como podemos te chamar</p>
               <label className="sr-only" htmlFor="clube-nome">Seu nome</label>
               <input id="clube-nome" className={campo} autoComplete="name" placeholder="Seu nome" value={nomeTxt} onChange={(e) => setNomeTxt(e.target.value)} />
               <label className="sr-only" htmlFor="clube-tel">Seu WhatsApp com DDD</label>
-              <input id="clube-tel" className={campo} inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={tel} onChange={(e) => setTel(e.target.value)} />
+              <input id="clube-tel" className={campo} inputMode="tel" autoComplete="tel" placeholder="WhatsApp (opcional)" value={tel} onChange={(e) => setTel(e.target.value)} />
               <button type="button" onClick={entrar} disabled={ocupado} className={botao}>{ocupado ? "Entrando..." : "Entrar"}</button>
               <button type="button" onClick={() => { setComEmail(true); setErro(null); }} className="min-h-[40px] text-[14px] font-medium text-text-secondary">Entrar com e-mail</button>
             </>
           )}
           {erro && <p role="alert" className="text-center text-[13.5px] text-[#C2362E]">{erro}</p>}
           <p className="text-center text-[12px] leading-snug text-text-tertiary">
-            Ao entrar, você aceita receber novidades da marca no WhatsApp. Seu número nunca aparece para outros clientes e você pode desligar quando quiser.
+            Se deixar seu WhatsApp, você aceita receber novidades da marca. Seu número nunca aparece para outros clientes e você pode desligar quando quiser.
           </p>
         </div>
       </div>
@@ -1390,12 +1392,19 @@ export function SugestaoFa({ businessId, slug, nome, ativo, atrasoMs = 1200 }: {
   useEffect(() => {
     if (!ativo || !pendente) return;
     try { if (sessionStorage.getItem(chaveSug)) return; } catch { /* segue */ }
-    const t = window.setTimeout(() => {
+    let vivo = true;
+    const t = window.setTimeout(async () => {
+      // Confere de novo: a pessoa pode ter virado fã depois da primeira leitura.
+      const atual = await getEu(businessId);
+      if (!vivo) return;
+      setEu(atual);
+      if (!atual || (atual.ehFa && atual.minhaAvaliacao)) return;
+      if (atual.ehFa && document.querySelector('[aria-modal="true"]')) return;
       try { sessionStorage.setItem(chaveSug, "1"); } catch { /* ignora */ }
       setVisivel(true);
     }, atrasoMs);
-    return () => window.clearTimeout(t);
-  }, [ativo, pendente, atrasoMs, chaveSug]);
+    return () => { vivo = false; window.clearTimeout(t); };
+  }, [ativo, pendente, atrasoMs, chaveSug, businessId]);
 
   const fechar = () => setVisivel(false);
   const recarregarEu = async () => setEu(await getEu(businessId));
@@ -1577,8 +1586,9 @@ function LinguaContato({ slug, ocupado, eu, onQuero }: { slug: string; ocupado: 
 
 
 /** Folha simples: o fã deixa o número e aceita receber novidades. Sem código de confirmação. */
-function ContatoFolha({ businessId, userId, nome, inicial, aoFechar, aoConcluir }: { businessId: string; userId: string; nome: string; inicial: string | null; aoFechar: () => void; aoConcluir: () => void }) {
+function ContatoFolha({ businessId, userId, nome, nomeFa, inicial, aoFechar, aoConcluir }: { businessId: string; userId: string; nome: string; nomeFa: string | null; inicial: string | null; aoFechar: () => void; aoConcluir: () => void }) {
   const [tel, setTel] = useState(() => (inicial ?? "").replace(/^\+?55/, ""));
+  const [nomeTxt, setNomeTxt] = useState(nomeFa ?? "");
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const reduzido = useReduzido();
@@ -1590,9 +1600,12 @@ function ContatoFolha({ businessId, userId, nome, inicial, aoFechar, aoConcluir 
   }, [aoFechar]);
 
   async function salvar() {
-    if (tel.replace(/\D/g, "").length < 10) return setErro("Digite o número com DDD.");
+    if (!nomeTxt.trim()) return setErro("Diga como podemos te chamar.");
+    const temTel = tel.replace(/\D/g, "").length > 0;
+    if (temTel && tel.replace(/\D/g, "").length < 10) return setErro("Digite o número com DDD ou deixe em branco.");
     setOcupado(true); setErro(null);
-    const e = await salvarContatoWhatsapp(businessId, userId, normalizarTelefone(tel));
+    await atualizarPerfil(userId, { nome: nomeTxt.trim() });
+    const e = await salvarContatoWhatsapp(businessId, userId, temTel ? normalizarTelefone(tel) : null);
     setOcupado(false);
     if (e) return setErro(e);
     aoConcluir();
@@ -1611,17 +1624,19 @@ function ContatoFolha({ businessId, userId, nome, inicial, aoFechar, aoConcluir 
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">Receber novidades</h2>
-            <p className="mt-1 text-[14px] text-text-secondary">Deixe seu WhatsApp e {nome} avisa das novidades e promoções.</p>
+            <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">Como podemos te chamar?</h2>
+            <p className="mt-1 text-[14px] text-text-secondary">Se quiser, deixe também seu WhatsApp e {nome} avisa das novidades e promoções.</p>
           </div>
           <button type="button" onClick={aoFechar} aria-label="Fechar" className="cl-x active:scale-95">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>
           </button>
         </div>
         <div className="mt-4 flex flex-col gap-3">
+          <label className="sr-only" htmlFor="clube-contato-nome">Seu nome</label>
+          <input id="clube-contato-nome" className="min-h-[48px] w-full rounded-full border border-divider bg-surface-white px-4 text-[16px] outline-none focus:border-on-background" autoComplete="name" placeholder="Seu nome" value={nomeTxt} onChange={(e) => setNomeTxt(e.target.value)} />
           <label className="sr-only" htmlFor="clube-contato">Seu WhatsApp com DDD</label>
-          <input id="clube-contato" className="min-h-[48px] w-full rounded-full border border-divider bg-surface-white px-4 text-[16px] outline-none focus:border-on-background" inputMode="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={tel} onChange={(e) => setTel(e.target.value)} autoFocus />
-          <button type="button" onClick={salvar} disabled={ocupado} className="min-h-[48px] w-full rounded-full bg-button-primary text-[15px] font-semibold text-white disabled:opacity-50 active:scale-[0.98]">{ocupado ? "Salvando..." : "Quero receber"}</button>
+          <input id="clube-contato" className="min-h-[48px] w-full rounded-full border border-divider bg-surface-white px-4 text-[16px] outline-none focus:border-on-background" inputMode="tel" autoComplete="tel" placeholder="WhatsApp (opcional)" value={tel} onChange={(e) => setTel(e.target.value)} autoFocus />
+          <button type="button" onClick={salvar} disabled={ocupado} className="min-h-[48px] w-full rounded-full bg-button-primary text-[15px] font-semibold text-white disabled:opacity-50 active:scale-[0.98]">{ocupado ? "Salvando..." : "Continuar"}</button>
           {erro && <p role="alert" className="text-center text-[13.5px] text-[#C2362E]">{erro}</p>}
           <p className="text-center text-[12px] leading-snug text-text-tertiary">
             Seu WhatsApp nunca aparece para outros clientes. Só a marca vê, e você pode parar de receber quando quiser.
