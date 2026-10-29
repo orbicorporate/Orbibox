@@ -1407,6 +1407,7 @@ html[data-embed] .embed-oculta { display: none !important; }
 .cl-pill-lab { display: block; font-size: 12px; font-weight: 600; opacity: .92; margin-top: 2px; }
 .cl-pill-ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.22); border: 2px solid rgba(255,255,255,.5); flex: none; overflow: hidden; }
 .cl-av { position: relative; border-radius: 50%; overflow: hidden; display: grid; place-items: center; flex: none; color: #fff; font-weight: 800; background-size: cover; background-position: center; }
+.cl-av.cl-av-fa { overflow: visible; }
 .cl-blob { border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; }
 .cl-folha { position: fixed; inset: 0; z-index: 120; display: flex; flex-direction: column; align-items: center; background: var(--background-main, #fff); overflow: hidden; }
 .cl-folha > .cl-col { width: 100%; max-width: 440px; height: 100%; display: flex; flex-direction: column; min-height: 0; position: relative; }

@@ -27,15 +27,13 @@ export function Rosto({ url, nome, size, blob = false, className = "", aro, cor,
   const ini = (nome ?? "?").trim().charAt(0).toUpperCase() || "?";
   return (
     <span
-      className={`cl-av ${blob ? "cl-blob" : ""} ${className}`}
+      className={`cl-av ${fa && size >= 30 ? "cl-av-fa" : ""} ${blob ? "cl-blob" : ""} ${className}`}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.42), backgroundImage: url ? `url("${url}")` : cor && /^#[0-9a-f]{6}$/i.test(cor) ? `linear-gradient(135deg, ${cor}, color-mix(in srgb, ${cor} 68%, black))` : corDe(nome ?? "?"), ...(aro ? { borderColor: aro, boxShadow: `0 6px 16px rgba(0,0,0,.18), 0 0 0 4px ${aro}2E` } : null) }}
       aria-hidden
     >
       {url ? null : ini}
       {fa && size >= 30 && (
-        <span aria-hidden className="absolute grid place-items-center rounded-full bg-[#CC1739] text-white ring-2 ring-white" style={{ width: Math.max(13, Math.round(size * 0.3)), height: Math.max(13, Math.round(size * 0.3)), right: "9%", bottom: "9%" }}>
-          <svg width={Math.max(7, Math.round(size * 0.17))} height={Math.max(7, Math.round(size * 0.17))} viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.4C1 8.2 3 4.6 6.6 4.6c2.1 0 3.9 1.2 5.4 3.1 1.5-1.9 3.3-3.1 5.4-3.1 3.600 0 5.600 3.600 4.200 7C19.500 16.400 12 21 12 21Z" /></svg>
-        </span>
+        <svg aria-hidden width={Math.max(14, Math.round(size * 0.34))} height={Math.max(14, Math.round(size * 0.34))} viewBox="0 0 24 24" fill="#CC1739" className="pointer-events-none absolute" style={{ right: "-4%", bottom: "-4%", zIndex: 5, filter: "drop-shadow(0 1px 2px rgba(0,0,0,.35))" }}><path d="M12 21s-7.5-4.6-9.6-9.4C1 8.2 3 4.6 6.6 4.6c2.1 0 3.9 1.2 5.4 3.1 1.5-1.9 3.3-3.1 5.4-3.1 3.6 0 5.6 3.6 4.2 7C19.5 16.4 12 21 12 21Z" /></svg>
       )}
     </span>
   );
