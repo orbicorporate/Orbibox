@@ -1,7 +1,7 @@
 {
   "name": "Orbibox",
   "short_name": "Orbibox",
-  "description": "A web que se adapta a quem entra.",
+  "description": "Catálogo inteligente.",
   "start_url": "/abrir",
   "scope": "/",
   "display": "standalone",
