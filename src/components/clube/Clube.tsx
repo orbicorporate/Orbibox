@@ -1231,7 +1231,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                   {afins.length > 0 && (
                     <>
                       <p className="px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Também curtidos pelos fãs</p>
-                      <div className="flex flex-wrap justify-center gap-x-2 gap-y-3 px-3 pb-2">
+                      <div className="flex flex-wrap justify-center gap-x-3 gap-y-5 px-3 pb-3 pt-1">
                         {afins.map((m, n) => (
                           <TagOrbibox key={m.id} indice={n} nome={m.name} logo={m.logo_url} nota={notas[m.id]?.nota} extra={`♥ ${m.fas}`} aoTocar={() => router.push(`/${m.slug}`)} />
                         ))}
@@ -1245,8 +1245,8 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                     const outros = ativos.filter((b) => b.slug !== slug && !jaMostrados.has(b.id));
                     return outros.length > 0 ? (
                       <>
-                        <p className="mt-3 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar ({outros.length})</p>
-                        <div className="flex flex-wrap justify-center gap-x-2 gap-y-3 px-3">
+                        <p className="mt-5 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar ({outros.length})</p>
+                        <div className="flex flex-wrap justify-center gap-x-3 gap-y-5 px-3 pt-1">
                           {outros.map((b, n) => (
                             <TagOrbibox key={b.id} indice={n} nome={b.name} logo={b.logo_url} nota={notas[b.id]?.nota} aoTocar={() => router.push(`/${b.slug}`)} />
                           ))}
@@ -1440,12 +1440,12 @@ function TagOrbibox({ nome, logo, nota, extra, indice, aoTocar }: { nome: string
   // Deslocamento estável por tag: a nuvem fica orgânica, sem alinhar em fileiras.
   let h = indice * 7 + 3;
   for (let i = 0; i < nome.length; i++) h = (h * 31 + nome.charCodeAt(i)) >>> 0;
-  const dx = (h % 29) - 14, dy = ((h >> 5) % 17) - 8;
+  const dx = h % 23, dy = (h >> 5) % 13, esc = 0.95 + ((h >> 9) % 11) / 100;
   return (
     <button
       type="button"
       onClick={aoTocar}
-      style={{ animationDelay: `${(indice % 6) * -1.1}s`, animationDuration: `${5 + (h % 5)}s`, translate: `${dx}px ${dy}px` }}
+      style={{ animationDelay: `${(indice % 6) * -1.1}s`, animationDuration: `${5 + (h % 5)}s`, marginLeft: dx, marginTop: dy, scale: String(esc) }}
       className="tag-flutua flex min-h-[36px] max-w-[46vw] items-center gap-1.5 rounded-full bg-surface-white py-1 pl-1 pr-3 text-left shadow-[0_6px_16px_-8px_rgba(17,19,24,0.28)] ring-1 ring-divider active:scale-[0.96]"
     >
       <span className="grid h-7 w-7 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
