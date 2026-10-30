@@ -182,13 +182,13 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           aria-pressed={eu.ehFa}
           aria-label={eu.ehFa ? "Você é fã. Toque para deixar de ser fã" : "Virar fã"}
           onClick={(e) => void alternarFa(rect(e.currentTarget))}
-          className="relative flex min-h-[48px] items-center gap-2 text-[14.5px] transition before:absolute before:-inset-x-3 before:-inset-y-2 before:content-[''] active:scale-[0.96]"
+          className={`relative flex min-h-[48px] items-center gap-2 text-[14.5px] transition before:absolute before:-inset-x-3 before:-inset-y-2 before:content-[''] active:scale-[0.96] ${isOwner || ladoDono ? "order-first" : ""}`}
         >
           <span className={`coracao-pulsa ${eu.ehFa ? "text-[#F2556B]" : "text-on-background/75"}`}><IcCoracao cheio={eu.ehFa} tamanho={28} /></span>
           <span>{eu.ehFa ? "Sou fã" : "Virar fã"}</span>
         </button>
       )}
-      <div className="flex items-center gap-3.5">
+      <div className={`flex items-center ${isOwner || ladoDono ? "gap-0" : "gap-3.5"}`}>
       {temNota && (
         <button type="button" onClick={abrirAvaliacoes} aria-label={`Nota geral ${fmtNota(resumo.nota!)}. Ver avaliações`} className="flex min-h-[40px] items-center gap-1 tabular-nums transition active:scale-[0.96]">
           <Estrela cheia tam={20} />
