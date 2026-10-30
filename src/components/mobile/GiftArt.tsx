@@ -139,7 +139,7 @@ export function GiftArt({
           {deQuem && <p className="mt-2 text-[11.5px] opacity-85">de {deQuem}</p>}
         </div>
       </div>
-      <p className="absolute bottom-4 right-4 rounded-full border border-white/35 bg-white/15 px-3 py-1 font-mono text-[10.5px] tracking-wider shadow-[inset_0_1px_0_rgba(255,255,255,.35)] backdrop-blur-md [text-shadow:0_1px_4px_rgba(0,0,0,.25)]">{codigo}</p>
+      <p className="absolute bottom-4 right-4 rounded-full border border-white/45 bg-white/20 px-4 py-1.5 font-mono text-[16px] font-semibold tracking-[0.2em] shadow-[inset_0_1px_0_rgba(255,255,255,.35)] backdrop-blur-md [text-shadow:0_1px_4px_rgba(0,0,0,.25)]">{codigo.replace(/^GIFT-/i, "")}</p>
 
       {/* Marca d'água de bloqueado: faixas + carimbo. Some quando liberado. */}
       {bloqueado && (

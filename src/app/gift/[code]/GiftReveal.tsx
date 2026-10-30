@@ -1,11 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { GiftArt } from "@/components/mobile/GiftArt";
 import { BotaoCompartilhar, IconeCompartilhar } from "@/components/compartilhar/Compartilhar";
 
 /** Página que mostra o gift ao cliente: bloqueado (a liberar) ou pronto. */
-export function GiftReveal({ gift, voltar }: { voltar?: string | null; gift: { code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; used_at?: string | null; business_name: string; art_url: string | null; art_theme: string | null } }) {
+export function GiftReveal({ gift, voltar }: { voltar?: string | null; gift: { code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; used_at?: string | null; business_name: string; art_url: string | null; art_theme: string | null; whatsapp?: string | null } }) {
+  const curto = gift.code.replace(/^GIFT-/i, "");
+  const [copiado, setCopiado] = useState(false);
+  const zap = (gift.whatsapp ?? "").replace(/\D/g, "");
+  const valorTxt = (gift.value_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  async function copiar() {
+    try { await navigator.clipboard.writeText(curto); setCopiado(true); window.setTimeout(() => setCopiado(false), 1600); } catch { /* sem clipboard */ }
+  }
   const liberado = gift.status === "paid" || gift.status === "used";
   const usado = gift.status === "used";
 
@@ -39,11 +47,16 @@ export function GiftReveal({ gift, voltar }: { voltar?: string | null; gift: { c
         </p>
       ) : liberado ? (
         <>
+          <button type="button" onClick={copiar} aria-label={`Código ${curto}. Toque para copiar`} className="mt-5 flex w-full flex-col items-center rounded-[22px] bg-surface-white py-4 ring-1 ring-divider active:scale-[0.99]">
+            <span className="text-[11.5px] uppercase tracking-[0.16em] text-text-tertiary">Código do presente</span>
+            <span className="mt-1 font-mono text-[40px] font-semibold leading-none tracking-[0.22em] text-on-background">{curto}</span>
+            <span className="mt-2 text-[12px] text-text-secondary">{copiado ? "Copiado" : "Toque para copiar"}</span>
+          </button>
           <Passos
             titulo="Como usar este presente"
             passos={[
               `Toque em Compartilhar e envie este link para ${gift.to_name || "quem vai ganhar"}.`,
-              `${gift.to_name || "Quem ganhou"} abre o link e mostra a tela, com o código ${gift.code}, ao garçom ou ao atendimento de ${gift.business_name}.`,
+              `${gift.to_name || "Quem ganhou"} abre o link e mostra a tela, com o código ${curto}, ao garçom ou ao atendimento de ${gift.business_name}.`,
               `${gift.business_name} confere o código e dá baixa no valor.`,
             ]}
           />
@@ -53,6 +66,16 @@ export function GiftReveal({ gift, voltar }: { voltar?: string | null; gift: { c
           >
             <span>Compartilhar</span>
           </BotaoCompartilhar>
+          {zap && (
+            <a
+              href={`https://wa.me/${zap}?text=${encodeURIComponent(`Olá! Quero validar meu gift card ${curto} de ${valorTxt}. Pode conferir e dar baixa?`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mx-auto mt-3 flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-[#25D366] px-7 text-[15px] font-medium text-white transition-transform active:scale-95"
+            >
+              Validar por WhatsApp
+            </a>
+          )}
         </>
       ) : (
         <>
