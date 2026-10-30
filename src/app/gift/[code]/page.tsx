@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { GiftReveal } from "./GiftReveal";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ code: string }> }): Promise<Metadata> {
+  const { code } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("get_gift_card", { p_code: code });
+  const g = data as { business_name?: string; to_name?: string | null } | null;
+  const negocio = g?.business_name ?? "Orbibox";
+  const title = `Gift card ${negocio}`;
+  const description = g?.to_name ? `Um presente para ${g.to_name}. Toque para abrir.` : "Um presente para você. Toque para abrir.";
+  return { title, description, openGraph: { title, description }, twitter: { card: "summary_large_image", title, description } };
+}
 
 export default async function GiftPublicPage({ params, searchParams }: { params: Promise<{ code: string }>; searchParams: Promise<{ de?: string }> }) {
   const { code } = await params;
