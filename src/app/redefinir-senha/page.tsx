@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CampoSenha } from "@/components/ui/CampoSenha";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -86,8 +87,8 @@ export default function RedefinirSenhaPage() {
               Escolha uma senha nova pra sua conta.
             </p>
             <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
-              <input
-                type="password"
+              <CampoSenha
+                
                 required
                 minLength={6}
                 placeholder="Senha nova"

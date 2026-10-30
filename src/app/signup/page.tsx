@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
+import { CampoSenha } from "@/components/ui/CampoSenha";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -140,8 +141,8 @@ export default function SignupPage() {
             onChange={(e) => setEmail(e.target.value)}
             className="rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
           />
-          <input
-            type="password"
+          <CampoSenha
+            
             required
             minLength={6}
             placeholder="Senha (mín. 6 caracteres)"
