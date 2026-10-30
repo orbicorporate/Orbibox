@@ -618,7 +618,7 @@ export function VisitorExperience({
       // Quem foi para o destaque sai da fileira de bolinhas: cada coisa fica em um lugar só.
       if (destaquesHome.some((d) => d.t === "botao" && d.id === o.key)) continue;
       const estilo = o.bolinha === "linha" ? "linha" : "cor";
-      const base = { key: o.key, estilo, editavel: true, cor: o.bolinhaCor, logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual) : null, logoInteira: o.icon === "__logo__", logoAjuste: o.icon === "__logo__" ? (o.boxLogoAjuste ?? null) : null } as const;
+      const base = { key: o.key, estilo, editavel: true, cor: o.bolinhaCor || (o.color && o.color !== "transparent" && o.color.toLowerCase() !== "#111318" ? o.color : undefined), logo: o.icon === "__logo__" ? (o.boxLogo || logoAtual) : null, logoInteira: o.icon === "__logo__", logoAjuste: o.icon === "__logo__" ? (o.boxLogoAjuste ?? null) : null } as const;
       // O nome que o dono escolheu manda. Só os nomes padrão da criação viram o rótulo curto da bolinha.
       const nomeDono = (padroes: string[], curto: string) => (o.t && !padroes.includes(o.t.trim()) ? o.t : curto);
       const semNome = !!((boxList.find((x) => x.id === o.key)?.config ?? {}) as CustomConfig).semNome;
