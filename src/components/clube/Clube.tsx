@@ -1231,9 +1231,9 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                   {afins.length > 0 && (
                     <>
                       <p className="px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Também curtidos pelos fãs</p>
-                      <div className="flex flex-wrap justify-center gap-2.5 px-1 pb-1">
+                      <div className="flex flex-wrap justify-center gap-x-2 gap-y-3 px-3 pb-2">
                         {afins.map((m, n) => (
-                          <TagOrbibox key={m.id} indice={n} nome={m.name} logo={m.logo_url} nota={notas[m.id]?.nota} extra={`${m.fas} em comum`} aoTocar={() => router.push(`/${m.slug}`)} />
+                          <TagOrbibox key={m.id} indice={n} nome={m.name} logo={m.logo_url} nota={notas[m.id]?.nota} extra={`♥ ${m.fas}`} aoTocar={() => router.push(`/${m.slug}`)} />
                         ))}
                       </div>
                     </>
@@ -1246,7 +1246,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                     return outros.length > 0 ? (
                       <>
                         <p className="mt-3 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar ({outros.length})</p>
-                        <div className="flex flex-wrap justify-center gap-2.5 px-1">
+                        <div className="flex flex-wrap justify-center gap-x-2 gap-y-3 px-3">
                           {outros.map((b, n) => (
                             <TagOrbibox key={b.id} indice={n} nome={b.name} logo={b.logo_url} nota={notas[b.id]?.nota} aoTocar={() => router.push(`/${b.slug}`)} />
                           ))}
@@ -1437,22 +1437,26 @@ export function SugestaoFa({ businessId, slug, nome, ativo, atrasoMs = 1200 }: {
 
 /** Tag curta e flutuante de um Orbibox: logo, nome e nota em estrelas. */
 function TagOrbibox({ nome, logo, nota, extra, indice, aoTocar }: { nome: string; logo: string | null; nota?: number; extra?: string; indice: number; aoTocar: () => void }) {
+  // Deslocamento estável por tag: a nuvem fica orgânica, sem alinhar em fileiras.
+  let h = indice * 7 + 3;
+  for (let i = 0; i < nome.length; i++) h = (h * 31 + nome.charCodeAt(i)) >>> 0;
+  const dx = (h % 29) - 14, dy = ((h >> 5) % 17) - 8;
   return (
     <button
       type="button"
       onClick={aoTocar}
-      style={{ animationDelay: `${(indice % 6) * -1.1}s` }}
-      className="tag-flutua flex min-h-[44px] max-w-full items-center gap-2 rounded-full bg-surface-white py-1.5 pl-1.5 pr-3.5 text-left shadow-[0_6px_16px_-8px_rgba(17,19,24,0.28)] ring-1 ring-divider active:scale-[0.96]"
+      style={{ animationDelay: `${(indice % 6) * -1.1}s`, animationDuration: `${5 + (h % 5)}s`, translate: `${dx}px ${dy}px` }}
+      className="tag-flutua flex min-h-[36px] max-w-[46vw] items-center gap-1.5 rounded-full bg-surface-white py-1 pl-1 pr-3 text-left shadow-[0_6px_16px_-8px_rgba(17,19,24,0.28)] ring-1 ring-divider active:scale-[0.96]"
     >
-      <span className="grid h-8 w-8 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
+      <span className="grid h-7 w-7 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logo} alt="" className="h-full w-full object-contain p-0.5" />
         ) : <span className="text-[12px] font-semibold">{nome.charAt(0).toUpperCase()}</span>}
       </span>
-      <span className="min-w-0 truncate text-[14px] font-medium">{nome}</span>
+      <span className="min-w-0 truncate text-[13px] font-medium">{nome}</span>
       {nota != null && (
-        <span className="flex flex-none items-center gap-0.5 text-[12.5px] tabular-nums text-text-secondary">
+        <span className="flex flex-none items-center gap-0.5 text-[11.5px] tabular-nums text-text-secondary">
           <Estrela cheia tam={13} />
           {fmtNota(nota)}
         </span>
