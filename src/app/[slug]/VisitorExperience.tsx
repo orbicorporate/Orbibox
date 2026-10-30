@@ -1246,7 +1246,7 @@ export function VisitorExperience({
                 </div>
               )}
             </div>
-            <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} slotTopo={slotTopo} />
+            <ClubeBloco businessId={business.id} slug={business.slug} nome={business.name} logoUrl={logoAtual} heroAvatar={heroAvatar} isOwner={showOwnerControls} ladoDono={isOwner} slotTopo={slotTopo} />
             {estiloVitrine && (
               <HomeVitrine
                 bolinhas={bolinhasVitrine}

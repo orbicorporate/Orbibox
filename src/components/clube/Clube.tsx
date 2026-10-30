@@ -25,7 +25,7 @@ const chave = (slug: string) => `clube-pendente-${slug}`;
 /* =====================================================================
    Bloco da página inicial: Virar fã, curtir e as pílulas coloridas
    ===================================================================== */
-export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null, isOwner, slotTopo = null }: { businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar?: string | null; isOwner: boolean; slotTopo?: HTMLElement | null }) {
+export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null, isOwner, ladoDono = false, slotTopo = null }: { businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar?: string | null; isOwner: boolean; ladoDono?: boolean; slotTopo?: HTMLElement | null }) {
   const [resumo, setResumo] = useState<Resumo | null>(null);
   const [eu, setEu] = useState<Eu | null>(null);
   const [aberta, setAberta] = useState<Aberta>(null);
@@ -156,7 +156,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       </button>
   );
   const cluster = (
-    <div className={`flex min-h-[40px] ${isOwner ? "flex-col items-start gap-0" : "items-center gap-3.5"} text-[13.5px] font-normal text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]`}>
+    <div className={`flex min-h-[40px] ${isOwner || ladoDono ? "flex-col items-start gap-0" : "items-center gap-3.5"} text-[13.5px] font-normal text-on-background [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.14))]`}>
       {resumo.fas > 0 && (
         <button
           type="button"
