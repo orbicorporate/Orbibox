@@ -1214,7 +1214,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
             {descobrindo && (
               <>
                 <Cabecalho titulo="Descobrir Orbibox" sub="Os Orbibox que os fãs deste radar também curtem" fechar={() => setDescobrindo(false)} rotuloFechar="Voltar" />
-                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-8 pt-2">
+                <div className="flex min-h-0 flex-1 flex-col justify-evenly gap-8 overflow-y-auto px-4 pb-12 pt-5">
                   {!isOwner && resumo.fas > 0 && (
                     <button type="button" onClick={() => setDescobrindo(false)} aria-label={`Ver os ${resumo.fas} fãs de ${nome}`} className="flex min-h-[56px] w-full items-center gap-3 rounded-full bg-surface-soft py-2 pl-3 pr-4 text-left active:scale-[0.98]">
                       <span className="flex">
@@ -1229,14 +1229,14 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                     </button>
                   )}
                   {afins.length > 0 && (
-                    <>
+                    <div className="flex flex-col gap-5">
                       <p className="px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Também curtidos pelos fãs</p>
-                      <div className="flex flex-wrap justify-center gap-x-3 gap-y-5 px-3 pb-3 pt-1">
+                      <div className="flex flex-wrap justify-center gap-x-3 gap-y-9 px-3">
                         {afins.map((m, n) => (
                           <TagOrbibox key={m.id} indice={n} nome={m.name} logo={m.logo_url} nota={notas[m.id]?.nota} extra={`♥ ${m.fas}`} aoTocar={() => router.push(`/${m.slug}`)} />
                         ))}
                       </div>
-                    </>
+                    </div>
                   )}
                   {ativos === null ? (
                     <p className="py-4 text-center text-[14px] text-text-tertiary">Procurando...</p>
@@ -1244,14 +1244,14 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                     const jaMostrados = new Set(afins.map((m) => m.id));
                     const outros = ativos.filter((b) => b.slug !== slug && !jaMostrados.has(b.id));
                     return outros.length > 0 ? (
-                      <>
-                        <p className="mt-5 px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar ({outros.length})</p>
-                        <div className="flex flex-wrap justify-center gap-x-3 gap-y-5 px-3 pt-1">
+                      <div className="flex flex-col gap-5">
+                        <p className="px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar ({outros.length})</p>
+                        <div className="flex flex-wrap justify-center gap-x-3 gap-y-9 px-3">
                           {outros.map((b, n) => (
                             <TagOrbibox key={b.id} indice={n} nome={b.name} logo={b.logo_url} nota={notas[b.id]?.nota} aoTocar={() => router.push(`/${b.slug}`)} />
                           ))}
                         </div>
-                      </>
+                      </div>
                     ) : afins.length === 0 ? <p className="px-8 py-6 text-center text-[15px] text-text-secondary">Ainda não há outros Orbibox no ar.</p> : null;
                   })()}
                 </div>
@@ -1440,7 +1440,7 @@ function TagOrbibox({ nome, logo, nota, extra, indice, aoTocar }: { nome: string
   // Deslocamento estável por tag: a nuvem fica orgânica, sem alinhar em fileiras.
   let h = indice * 7 + 3;
   for (let i = 0; i < nome.length; i++) h = (h * 31 + nome.charCodeAt(i)) >>> 0;
-  const dx = h % 23, dy = (h >> 5) % 13, esc = 0.95 + ((h >> 9) % 11) / 100;
+  const dx = h % 37, dy = (h >> 5) % 19, esc = 0.95 + ((h >> 9) % 11) / 100;
   return (
     <button
       type="button"
