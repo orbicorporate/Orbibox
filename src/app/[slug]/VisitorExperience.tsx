@@ -6,6 +6,7 @@ import { marcarInteresse, assinarInteresse, temInteresse } from "@/lib/interesse
 import { CrieSeuOrbibox } from "@/components/ui/CrieSeuOrbibox";
 import { MapaEndereco } from "@/components/ui/MapaEndereco";
 import { DeliveryFlow } from "./DeliveryFlow";
+import { ReservaFlow } from "./ReservaFlow";
 import { CardapioFlow } from "./CardapioFlow";
 import { MateriaisFlow } from "./MateriaisFlow";
 import { lerMateriais } from "@/lib/materiais";
@@ -134,10 +135,10 @@ type ContentItem = {
   link_kind: string | null;
 };
 
-type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais";
+type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais" | "reserva";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
 
-type CustomConfig = { categoria?: string; horario?: { dias: number[]; abre: string; fecha: string }; label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; catAjustes?: Record<string, { layout_size?: string; title_placement?: string }>; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
+type CustomConfig = { categoria?: string; horario?: { dias: number[]; abre: string; fecha: string }; label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais" | "reserva"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; catAjustes?: Record<string, { layout_size?: string; title_placement?: string }>; botaoPrincipal?: BotaoPrincipal; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -331,6 +332,7 @@ export function VisitorExperience({
     // ?cardapio=1 e ?materiais=1: o "Ver como ficou" do painel abre direto naquela tela.
     else if (searchParams.get("cardapio") === "1") chooseIntent("cardapio");
     else if (searchParams.get("materiais") === "1") chooseIntent("materiais");
+    else if (searchParams.get("reserva") === "1") chooseIntent("reserva");
     else if (chat === "1" && hasAiChat) chooseIntent("duvida", msg || undefined);
     else if (tab === "conhecer") chooseIntent("conhecer");
     else if (tab === "vitrine") { const cat = searchParams.get("cat"); if (cat) setCategoriaInicial(cat); chooseIntent("comprar"); }
@@ -395,6 +397,8 @@ export function VisitorExperience({
             chooseIntent("cardapio");
           } else if (cfg.action === "materiais") {
             chooseIntent("materiais");
+          } else if (cfg.action === "reserva") {
+            chooseIntent("reserva");
           } else if (cfg.action === "delivery") {
             // Um app só: abre direto, sem tela no meio.
             const ativos = appsAtivos(cfg.apps);
@@ -408,7 +412,7 @@ export function VisitorExperience({
             window.open(/^https?:\/\//i.test(cfg.url) ? cfg.url : `https://${cfg.url}`, "_blank");
           }
         };
-        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || cfg.action === "cardapio" || cfg.action === "materiais" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, boxLogoAjuste: lerLogoAjuste(cfg.logo_ajuste), t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.action === "cupom" && corVoucher ? corVoucher : cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, itensHome: Array.isArray(cfg.itensHome) ? cfg.itensHome : undefined, botaoPrincipal: cfg.botaoPrincipal, selo: cfg.selo, onClick };
+        return { key: b.id, interno: cfg.action === "vitrine" || cfg.action === "zara" || cfg.action === "cupom" || cfg.action === "gift" || cfg.action === "cardapio" || cfg.action === "materiais" || cfg.action === "reserva" || (cfg.action === "delivery" && appsAtivos(cfg.apps).length > 1), icon: cfg.icon || "◆", boxLogo: cfg.logo_url ?? null, boxLogoAjuste: lerLogoAjuste(cfg.logo_ajuste), t: cfg.action === "cupom" ? "Vouchers" : label, d: cfg.action === "cupom" ? "Resgate agora e aproveite" : (cfg.subtitle || ""), color: cfg.action === "cupom" && corVoucher ? corVoucher : cfg.color, stars: cfg.action === "avaliar", cupom: cfg.action === "cupom", address: cfg.action === "endereco" ? (cfg.url?.trim() || business.address || undefined) : undefined, layoutOverride: cfg.layout === "auto" ? undefined : cfg.layout, rede: cfg.action === "link" || !cfg.action ? redeDoLink(cfg.url) : null, atalho: cfg.action === "whatsapp" ? "whatsapp" : cfg.action === "endereco" ? "endereco" : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && cfg.url ? "site" : null), comoIcone: cfg.icone !== undefined ? !!cfg.icone : ((cfg.action === "link" || !cfg.action) && !redeDoLink(cfg.url) && !!cfg.url), acao: cfg.action ?? "link", bolinha: cfg.bolinha, bolinhaCor: cfg.bolinhaCor, voucherFormato: cfg.voucherFormato, formatoItens: cfg.formatoItens, itensHome: Array.isArray(cfg.itensHome) ? cfg.itensHome : undefined, botaoPrincipal: cfg.botaoPrincipal, selo: cfg.selo, onClick };
       }
       const base = BOX_TO_OPTION[b.box_type];
       // "Sobre" sugere o nome da marca quando o dono não personalizou, igual ao editor.
@@ -632,6 +636,7 @@ export function VisitorExperience({
       else if (o.acao === "conhecer") push({ ...base, rotulo: o.t || "Sobre", tipo: "sobre", onClick: o.onClick });
       else if (o.acao === "cardapio") push({ ...base, rotulo: o.t || "Cardápio", tipo: "cardapio", onClick: o.onClick });
       else if (o.acao === "delivery") push({ ...base, rotulo: nomeDono(["Peça por delivery", "Delivery"], "Delivery"), tipo: "delivery", onClick: o.onClick });
+      else if (o.acao === "reserva") push({ ...base, rotulo: nomeDono(["Reserve sua mesa", "Reservar mesa", "Reservas"], "Reservas"), tipo: "reserva", onClick: o.onClick });
       else if (o.acao === "materiais") push({ ...base, rotulo: o.t || "Materiais", tipo: "materiais", onClick: o.onClick });
       else if (o.acao === "vitrine" || o.acao === "comprar") push({ ...base, rotulo: nomeDono(["O que fazemos", "Catalogo"], "Catálogo"), tipo: "catalogo", onClick: o.acao === "vitrine" ? o.onClick : () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
     }
@@ -728,6 +733,7 @@ export function VisitorExperience({
     };
     grupo("cardapio", "cardapio-novo", "Cardápio", "Pratos e preços", "/admin/cardapio");
     grupo("delivery", "delivery-novo", "Delivery", "iFood, Rappi e mais", "/admin/delivery");
+    grupo("reserva", "reserva-novo", "Reservas", "Mesas por dia e horário", "/admin/reservas");
     grupo("materiais", "materiais-novo", "Materiais", "PDFs e guias", "/admin/materiais");
     return out;
   })();
@@ -890,7 +896,7 @@ export function VisitorExperience({
         : { tipo: "vitrine", rotulo: vitOpcao?.t || "Ver catálogo", onClick: () => chooseIntent("comprar") };
   const extrasVitrine = todasOpcoes
     .filter((o) => !destaquesHome.some((d) => d.t === "botao" && d.id === o.key))
-    .filter((o) => !o.rede && !o.atalho && !o.cupom && o.acao !== "vitrine" && o.acao !== "comprar" && o.acao !== "presentear" && o.acao !== "gift" && o.acao !== "conhecer" && o.acao !== "cardapio" && o.acao !== "materiais")
+    .filter((o) => !o.rede && !o.atalho && !o.cupom && o.acao !== "vitrine" && o.acao !== "comprar" && o.acao !== "presentear" && o.acao !== "gift" && o.acao !== "conhecer" && o.acao !== "cardapio" && o.acao !== "reserva" && o.acao !== "materiais")
     .filter((o) => !(ctaVitrine.tipo === "orbi" && (o.ai || o.acao === "zara" || o.acao === "duvida")))
     .map((o) => ({ key: o.key, rotulo: o.t, onClick: o.onClick }));
 
@@ -1112,6 +1118,7 @@ export function VisitorExperience({
           presentear: { href: "/admin/gift", rotulo: "Editar gift card" },
           cupom: { href: "/admin/vouchers", rotulo: "Editar vouchers" },
           delivery: { href: "/admin/delivery", rotulo: "Editar delivery" },
+          reserva: { href: "/admin/reservas", rotulo: "Editar reservas" },
           duvida: { href: "/admin/agent", rotulo: "Editar a Orbi" },
         };
         const d = destino[intent];
@@ -1874,6 +1881,10 @@ export function VisitorExperience({
             />
           );
         })()}
+
+        {intent === "reserva" && (
+          <ReservaFlow businessId={business.id} businessName={business.name} whatsapp={business.contact_whatsapp} sessionId={sessionId} onBack={voltarAoInicio} />
+        )}
 
         {intent === "delivery" && (
           <DeliveryFlow

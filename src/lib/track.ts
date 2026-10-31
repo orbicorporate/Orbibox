@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 
 /** Tipos de clique que o Pulse conta separadamente. */
-export type ClickKind = "categoria" | "produto" | "whatsapp" | "ligar" | "email" | "zara" | "link" | "site" | "carrossel" | "cta" | "cupom" | "cardapio" | "lista_item" | `delivery_${string}`;
+export type ClickKind = "categoria" | "produto" | "whatsapp" | "ligar" | "email" | "zara" | "link" | "site" | "carrossel" | "cta" | "cupom" | "cardapio" | "lista_item" | "reserva" | `delivery_${string}`;
 
 // O dono olhando a própria página (ou a prévia do painel) não conta como
 // visitante: senão os números de Resultados e o resumo de valor mentem.

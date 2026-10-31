@@ -191,6 +191,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["gift_cards"]["Insert"]>
         Relationships: []
       }
+      reservas_config: {
+        Row: { business_id: string; dias: number[]; abre: string; fecha: string; intervalo_min: number; capacidade: number | null; max_pessoas: number; dias_a_frente: number; antecedencia_min: number; updated_at: string }
+        Insert: { business_id: string; dias?: number[]; abre?: string; fecha?: string; intervalo_min?: number; capacidade?: number | null; max_pessoas?: number; dias_a_frente?: number; antecedencia_min?: number; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["reservas_config"]["Insert"]>
+        Relationships: []
+      }
+      reservas: {
+        Row: { id: string; business_id: string; nome: string; whatsapp: string | null; data: string; hora: string; pessoas: number; obs: string | null; status: string; created_at: string; updated_at: string }
+        Insert: { id?: string; business_id: string; nome: string; whatsapp?: string | null; data: string; hora: string; pessoas: number; obs?: string | null; status?: string; created_at?: string; updated_at?: string }
+        Update: Partial<Database["public"]["Tables"]["reservas"]["Insert"]>
+        Relationships: []
+      }
       leads: {
         Row: { id: string; business_id: string; whatsapp: string; name: string | null; source: string; status: string; temperature: number; summary: string | null; next_action: Json; notes: string | null; interests: string[]; visitor_session_id: string | null; last_activity_at: string; analyzed_at: string | null; origin: string | null; created_at: string; updated_at: string }
         Insert: { id?: string; business_id: string; whatsapp: string; name?: string | null; source?: string; status?: string; temperature?: number; summary?: string | null; next_action?: Json; notes?: string | null; interests?: string[]; visitor_session_id?: string | null; last_activity_at?: string; analyzed_at?: string | null; created_at?: string; updated_at?: string }
@@ -385,6 +397,14 @@ export type Database = {
       }
       create_gift_card_v2: {
         Args: { p_business_id: string; p_value_cents: number; p_from: string; p_to: string; p_message: string; p_whatsapp: string; p_theme: string | null }
+        Returns: Json
+      }
+      reserva_ocupacao: {
+        Args: { p_business: string; p_data: string }
+        Returns: Json
+      }
+      criar_reserva: {
+        Args: { p_business: string; p_nome: string; p_whatsapp: string; p_data: string; p_hora: string; p_pessoas: number; p_obs: string }
         Returns: Json
       }
       get_gift_card: {

@@ -18,12 +18,14 @@ const ICONES = {
   imagens: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><circle cx="9" cy="10" r="1.7" /><path d="M20.5 16l-4.5-4.5L8 19.5" /></svg>,
   delivery: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8h12l-1 11H7L6 8Z" /><path d="M9 8V7a3 3 0 0 1 6 0v1" /></svg>,
   pdf: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5a1.5 1.5 0 0 1 1-1.5Z" /><path d="M14 3.5V8h4" /><path d="M9 12.5h6M9 15.5h6" /></svg>,
+  reservas: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="5.5" width="16" height="14" rx="2.5" /><path d="M8 3.5v4M16 3.5v4M4 10h16M9.5 14.5l1.8 1.8 3.2-3.4" /></svg>,
   cardapio: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 3v8a2 2 0 0 0 2 2v8M7 3v5M11 3v5M9 3v5" /><path d="M16 21V3c-2 1.5-3 4-3 7 0 2 1 3 3 3" /></svg>,
 };
 const MENU_ITEMS = [
   { href: "/admin/config", label: "Sua marca", desc: "Logo, cores e contatos", icon: ICONES.marca, marca: true },
   { href: "/admin/imagens", label: "Banco de imagens", desc: "Fotos da marca, por categoria", icon: ICONES.imagens, marca: false },
   { href: "/admin/cardapio", label: "Cardápio e delivery", desc: "Pratos com foto e apps de pedido", icon: ICONES.cardapio, marca: false },
+  { href: "/admin/reservas", label: "Reservas", desc: "Mesas por dia e horário", icon: ICONES.reservas, marca: false },
   { href: "/admin/agent", label: "Sua IA", desc: "Tom de voz e o que sabe", icon: ICONES.ia, marca: false },
 ] as const;
 
@@ -225,7 +227,7 @@ export function AppHeader({
                   do mesmo tamanho. Vouchers leva a arte 3D de fundo pra se
                   destacar sem precisar de um card enorme. */}
               <div className="grid grid-cols-2 gap-2">
-                {MENU_ITEMS.filter((base) => base.href !== "/admin/cardapio" || temCardapio).map((item) => (
+                {MENU_ITEMS.filter((base) => (base.href !== "/admin/cardapio" && base.href !== "/admin/reservas") || temCardapio).map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
