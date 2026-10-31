@@ -11,6 +11,13 @@ import { GIFT_THEMES, type GiftTheme } from "@/lib/giftThemes";
 import type { Database } from "@/lib/supabase/types";
 
 type Settings = Database["public"]["Tables"]["gift_settings"]["Row"];
+/** "30/10 às 13:26", no horário de Brasília. */
+function quandoGift(iso: string) {
+  const d = new Date(iso);
+  const fmt = { timeZone: "America/Sao_Paulo" } as const;
+  return `${d.toLocaleDateString("pt-BR", { ...fmt, day: "2-digit", month: "2-digit" })} às ${d.toLocaleTimeString("pt-BR", { ...fmt, hour: "2-digit", minute: "2-digit" })}`;
+}
+
 type Gift = { id: string; code: string; buyer_whatsapp?: string | null; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; created_at: string; used_at?: string | null };
 
 function brl(cents: number) {
@@ -175,7 +182,10 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
                           <span className="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style={{ color: st.cor, backgroundColor: st.fundo }}>{st.label}</span>
                         </div>
                         <p className="mt-0.5 truncate text-[12px] text-text-tertiary">
-                          {g.to_name ? `Para ${g.to_name}` : "Sem destinatário"}{g.from_name ? ` · de ${g.from_name}` : ""} · {g.code}{g.status === "used" && g.used_at ? ` · usado ${new Date(g.used_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}` : ""}
+                          {g.to_name ? `Para ${g.to_name}` : "Sem destinatário"}{g.from_name ? ` · de ${g.from_name}` : ""} · {g.code}
+                        </p>
+                        <p className="mt-0.5 truncate text-[12px] text-text-tertiary">
+                          Gerado {quandoGift(g.created_at)}{g.status === "used" && g.used_at ? ` · Usado ${quandoGift(g.used_at)}` : ""}
                         </p>
                       </div>
                       {g.status === "paid" && (
