@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { GiftArt } from "@/components/mobile/GiftArt";
+import { GIFT_THEMES, giftTheme, type GiftTheme } from "@/lib/giftThemes";
 
 type Config = {
   enabled: boolean;
@@ -35,6 +36,8 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
   const [mensagem, setMensagem] = useState("");
   const [criando, setCriando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  // Cor escolhida por quem presenteia. null = a arte padrão do negócio.
+  const [tema, setTema] = useState<GiftTheme | null>(null);
   const [criado, setCriado] = useState<{ code: string } | null>(null);
 
   useEffect(() => {
@@ -61,13 +64,14 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
     setErro(null);
     try {
       const supabase = createClient();
-      const { data } = await supabase.rpc("create_gift_card", {
+      const { data } = await supabase.rpc("create_gift_card_v2", {
         p_business_id: businessId,
         p_value_cents: valorCents,
         p_from: deQuem,
         p_to: paraQuem,
         p_message: mensagem,
         p_whatsapp: "",
+        p_theme: tema,
       });
       const r = (data ?? {}) as { ok?: boolean; code?: string };
       if (!r.ok || !r.code) { setErro("Não consegui gerar agora. Tenta de novo."); return; }
@@ -119,14 +123,44 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
           mensagem={mensagem}
           negocio={businessName}
           codigo={criado?.code ?? "GIFT-••••••"}
-          artUrl={cfg.art_url}
-          artTheme={cfg.art_theme}
+          artUrl={tema ? null : cfg.art_url}
+          artTheme={tema ?? cfg.art_theme}
           bloqueado
         />
       </div>
 
       {!criado ? (
         <>
+          <p className="mt-6 text-[13px] font-semibold">Cor do gift</p>
+          <div className="mt-2 flex flex-wrap gap-3" role="radiogroup" aria-label="Cor do gift">
+            {cfg.art_url && (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={tema === null}
+                aria-label="Arte original"
+                onClick={() => setTema(null)}
+                style={{ backgroundImage: `url("${cfg.art_url}")`, backgroundSize: "cover", backgroundPosition: "center" }}
+                className={`h-11 w-11 rounded-full ring-offset-2 ring-offset-background-main transition active:scale-95 ${tema === null ? "ring-2 ring-on-background" : "ring-1 ring-divider"}`}
+              />
+            )}
+            {(Object.keys(GIFT_THEMES) as GiftTheme[]).map((k) => {
+              const ativo = tema === k || (tema === null && !cfg.art_url && giftTheme(cfg.art_theme) === GIFT_THEMES[k]);
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  role="radio"
+                  aria-checked={ativo}
+                  aria-label={GIFT_THEMES[k].label}
+                  onClick={() => setTema(k)}
+                  style={{ background: GIFT_THEMES[k].swatch }}
+                  className={`h-11 w-11 rounded-full ring-offset-2 ring-offset-background-main transition active:scale-95 ${ativo ? "ring-2 ring-on-background" : "ring-1 ring-divider"}`}
+                />
+              );
+            })}
+          </div>
+
           <p className="mt-6 text-[13px] font-semibold">Valor</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {sugeridos.map((v) => (

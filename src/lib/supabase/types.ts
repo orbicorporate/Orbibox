@@ -383,6 +383,10 @@ export type Database = {
         Args: { p_business_id: string; p_value_cents: number; p_from: string; p_to: string; p_message: string; p_whatsapp: string }
         Returns: Json
       }
+      create_gift_card_v2: {
+        Args: { p_business_id: string; p_value_cents: number; p_from: string; p_to: string; p_message: string; p_whatsapp: string; p_theme: string | null }
+        Returns: Json
+      }
       get_gift_card: {
         Args: { p_code: string }
         Returns: Json
