@@ -134,7 +134,11 @@ export function BoxDestaque({
     const claro = fg === "#FFFFFF";
     return (
     <div
-      className={`flex items-center gap-3 rounded-full p-2 pr-4 text-left ${fundo ? "" : "border border-divider bg-surface-white shadow-[0_4px_14px_rgba(17,19,24,0.06)]"} ${largura(largo)}`}
+      role="button"
+      tabIndex={0}
+      onClick={b.onClick}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); b.onClick(); } }}
+      className={`flex cursor-pointer items-center gap-3 rounded-full p-2 pr-5 text-left transition-transform active:scale-[.98] ${fundo ? "" : "border border-divider bg-surface-white shadow-[0_4px_14px_rgba(17,19,24,0.06)]"} ${largura(largo)}`}
       style={fundo ? { backgroundColor: fundo, color: fg ?? undefined, boxShadow: `0 8px 20px -8px ${fundo}99` } : undefined}
     >
       {b.logo ? (
@@ -149,14 +153,6 @@ export function BoxDestaque({
         <span className="block truncate text-[14.5px] font-semibold leading-tight">{b.titulo}</span>
         {b.sub && <span className={`mt-0.5 block truncate text-[12px] ${fundo ? "opacity-80" : "text-text-secondary"}`}>{b.sub}</span>}
       </span>
-      <button
-        type="button"
-        onClick={b.onClick}
-        style={fundo && fg ? { backgroundColor: fg, color: fundo } : undefined}
-        className={`shrink-0 rounded-full px-4 py-2 text-[12.5px] font-semibold ${fundo ? "" : "bg-on-background text-white"}`}
-      >
-        {b.acao}
-      </button>
     </div>
     );
   };
