@@ -25,6 +25,8 @@ export type AlvoCompartilhar = {
   /** Descrição salva pra o preview do link da marca (a mesma que o WhatsApp mostra). */
   descricao?: string | null;
   imagem?: string | null;
+  /** Capa que o WhatsApp vai mostrar pro link, quando o link tem uma própria (ex.: o cartão do gift). A prévia usa esta. */
+  capa?: string | null;
   logo?: string | null;
   /** Cor de destaque da arte do story. */
   cor?: string | null;
@@ -304,9 +306,9 @@ export function FolhaCompartilhar({ alvo, aoFechar }: { alvo: AlvoCompartilhar; 
           <div className="ml-auto w-[92%] rounded-[14px] rounded-tr-[4px] bg-[#D9FDD3] p-1.5 shadow-[0_1px_1px_rgba(17,19,24,0.12)]">
             <div className="overflow-hidden rounded-[10px] bg-black/[0.06]">
               <div className="flex h-[118px] w-full items-center justify-center bg-white/60">
-                {alvo.imagem ? (
+                {alvo.capa || alvo.imagem ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={alvo.imagem} alt="" className="h-full w-full object-cover" />
+                  <img src={(alvo.capa || alvo.imagem)!} alt="" className="h-full w-full object-cover" />
                 ) : alvo.logo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={alvo.logo} alt="" className="h-full w-full object-contain p-4" />

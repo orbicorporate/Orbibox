@@ -61,7 +61,7 @@ export function GiftReveal({ gift, voltar }: { voltar?: string | null; gift: { c
             ]}
           />
           <BotaoCompartilhar
-            alvo={{ url: `/gift/${gift.code}`, titulo: "Gift card", rotulo: "Gift card", marca: gift.business_name, imagem: gift.art_url, texto: `${gift.from_name ? gift.from_name + " te enviou" : "Você ganhou"} um presente de ${gift.business_name}:` }}
+            alvo={{ url: `/gift/${gift.code}`, titulo: "Gift card", rotulo: "Gift card", marca: gift.business_name, imagem: gift.art_url, capa: `/gift/${gift.code}/capa`, texto: `${gift.from_name ? gift.from_name + " te enviou" : "Você ganhou"} um presente de ${gift.business_name}:` }}
             className="mx-auto mt-5 flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-button-primary px-7 text-[15px] font-medium text-white transition-transform active:scale-95"
           >
             <span>Compartilhar</span>
