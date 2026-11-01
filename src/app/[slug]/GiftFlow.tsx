@@ -85,7 +85,10 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
 
   function liberarPorWhatsapp() {
     if (!criado || !whatsapp) return;
-    const texto = `Oi! Quero presentear alguém com um gift card de ${businessName}.\n\nValor: ${(valorCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}\n${paraQuem ? `Para: ${paraQuem}\n` : ""}${deQuem ? `De: ${deQuem}\n` : ""}Código: ${criado.code}\n\nComo faço pra pagar?\n\n${window.location.origin}/gift/${criado.code}\n\nPara quem atende liberar com um toque: ${window.location.origin}/admin/gift?liberar=${criado.code}`;
+    const origem = window.location.origin;
+    const valor = (valorCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    // O link do cartão vem primeiro: é ele que vira a prévia (capa) no WhatsApp de quem recebe.
+    const texto = `Olá! Criei um gift card de ${businessName} e quero pagar.\n\n${origem}/gift/${criado.code}\n\nValor: ${valor}\n${paraQuem ? `Para: ${paraQuem}\n` : ""}${deQuem ? `De: ${deQuem}\n` : ""}\nComo posso pagar? Assim que o pagamento for confirmado, é só liberar o gift por aqui: ${origem}/admin/gift?liberar=${criado.code}`;
     window.open(`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`, "_blank");
   }
 

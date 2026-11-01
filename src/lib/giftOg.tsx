@@ -2,10 +2,7 @@ import { ImageResponse } from "next/og";
 import { createClient } from "@/lib/supabase/server";
 import { giftTheme } from "@/lib/giftThemes";
 
-export const alt = "Gift card";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
-export const dynamic = "force-dynamic";
+const size = { width: 1200, height: 630 };
 
 /** Baixa a foto e embute no SVG: dentro de um SVG a imagem precisa estar em data URI. */
 async function fotoEmDataUri(url: string): Promise<string | null> {
@@ -23,8 +20,7 @@ async function fotoEmDataUri(url: string): Promise<string | null> {
 }
 
 /** O cartão do gift montado como na tela: foto nítida à direita, vidro fosco na cor escolhida à esquerda. É a prévia do link no WhatsApp. */
-export default async function GiftOg({ params }: { params: Promise<{ code: string }> }) {
-  const { code } = await params;
+export async function renderGiftOg(code: string) {
   const supabase = await createClient();
   const { data } = await supabase.rpc("get_gift_card", { p_code: code });
   const g = data as { value_cents: number; from_name: string | null; to_name: string | null; message: string | null; business_name: string; art_url: string | null; art_theme: string | null } | null;

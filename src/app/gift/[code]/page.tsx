@@ -12,7 +12,8 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
   const negocio = g?.business_name ?? "Orbibox";
   const title = `Gift card ${negocio}`;
   const description = g?.to_name ? `Um presente para ${g.to_name}. Toque para abrir.` : "Um presente para você. Toque para abrir.";
-  return { title, description, openGraph: { title, description }, twitter: { card: "summary_large_image", title, description } };
+  const imagem = { url: `/gift/${code}/capa`, width: 1200, height: 630, alt: title };
+  return { title, description, openGraph: { title, description, images: [imagem] }, twitter: { card: "summary_large_image", title, description, images: [imagem.url] } };
 }
 
 export default async function GiftPublicPage({ params, searchParams }: { params: Promise<{ code: string }>; searchParams: Promise<{ de?: string }> }) {
