@@ -55,6 +55,7 @@ export async function generateMetadata({
         title: titulo,
         description: desc,
         manifest: `/${slug}/manifest.webmanifest`,
+        icons: { icon: `/${slug}/icone`, apple: `/${slug}/icone` },
         openGraph: { title: titulo, description: desc, type: "website", images: [{ url: imagem, width: 1200, height: 630 }] },
         twitter: { card: "summary_large_image", title: titulo, description: desc, images: [imagem] },
       };
@@ -80,6 +81,7 @@ export async function generateMetadata({
       title: titulo,
       description: desc,
       manifest: `/${slug}/manifest.webmanifest`,
+        icons: { icon: `/${slug}/icone`, apple: `/${slug}/icone` },
       openGraph: { title: titulo, description: desc, type: "website", images: [{ url: capa }] },
       twitter: { card: "summary_large_image", title: titulo, description: desc, images: [capa] },
     };
@@ -93,6 +95,7 @@ export async function generateMetadata({
       title: titulo,
       description: desc,
       manifest: `/${slug}/manifest.webmanifest`,
+        icons: { icon: `/${slug}/icone`, apple: `/${slug}/icone` },
       openGraph: { title: titulo, description: desc, type: "website", images: [{ url: capa }] },
       twitter: { card: "summary_large_image", title: titulo, description: desc, images: [capa] },
     };
@@ -103,6 +106,7 @@ export async function generateMetadata({
     description: descricao,
     alternates: { canonical: `/${slug}` },
     manifest: `/${slug}/manifest.webmanifest`,
+        icons: { icon: `/${slug}/icone`, apple: `/${slug}/icone` },
     openGraph: {
       title: tituloPreview,
       description: descricao,
