@@ -23,8 +23,12 @@ export default function RedefinirSenhaPage() {
   // outro navegador, já usado), NÃO dá pra aproveitar uma sessão que já estava
   // aberta aqui, senão a senha nova seria gravada na conta errada.
   useEffect(() => {
-    const veioDeLink = /[?&]code=|type=recovery|access_token=/.test(window.location.search + window.location.hash);
+    const veioDeLink = /[?&]code=|[?&]recuperacao=1|type=recovery|access_token=/.test(window.location.search + window.location.hash);
     let ok = false;
+    // Veio do /auth/callback do Orbibox: o servidor já trocou o token e a sessão é a do link.
+    if (new URLSearchParams(window.location.search).get("recuperacao") === "1") {
+      supabase.auth.getSession().then(({ data }) => { if (data.session) { ok = true; setPronto(true); } });
+    }
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") { ok = true; setPronto(true); }
     });

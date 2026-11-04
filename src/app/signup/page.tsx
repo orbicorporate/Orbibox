@@ -28,12 +28,8 @@ export default function SignupPage() {
 
   async function reenviar() {
     setReenvio("enviando");
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-    });
-    setReenvio(error ? "erro" : "ok");
+    const r = await fetch("/api/auth/enviar-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tipo: "confirmar", email }) }).catch(() => null);
+    setReenvio(r?.ok ? "ok" : "erro");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -48,6 +44,14 @@ export default function SignupPage() {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
+    if (error && /rate limit|over_email_send/i.test(`${error.message} ${(error as { code?: string }).code ?? ""}`)) {
+      // O envio padrão do Supabase estourou o limite: cria a conta e manda a confirmação pelo Resend.
+      const r = await fetch("/api/auth/enviar-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tipo: "confirmar", email, password, nome: fullName, convite }) }).catch(() => null);
+      setLoading(false);
+      if (r?.ok) { setCheckEmail(true); return; }
+      setError("Não deu pra criar a conta agora. Tenta de novo em instantes.");
+      return;
+    }
     setLoading(false);
     if (error) {
       setError(erroDeAuth(error.message));

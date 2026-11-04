@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 
 export default function EsqueciSenhaPage() {
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -16,9 +14,13 @@ export default function EsqueciSenhaPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/redefinir-senha`,
-    });
+    // Enviado pelo Resend (rota do servidor): o envio padrão do Supabase tem limite baixo por hora.
+    let ok = false;
+    try {
+      const r = await fetch("/api/auth/enviar-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tipo: "recuperar", email }) });
+      ok = r.ok;
+    } catch { /* sem conexão */ }
+    const error = ok ? null : true;
     setLoading(false);
     // Não revela se o e-mail existe ou não, mesma mensagem nos dois casos,
     // evita que alguém use esse formulário pra descobrir contas cadastradas.

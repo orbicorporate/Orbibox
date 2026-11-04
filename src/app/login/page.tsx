@@ -30,12 +30,8 @@ export default function LoginPage() {
   async function reenviar() {
     if (!email.trim()) return;
     setReenvio("enviando");
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email: email.trim(),
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-    });
-    setReenvio(error ? "erro" : "ok");
+    const r = await fetch("/api/auth/enviar-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tipo: "confirmar", email: email.trim() }) }).catch(() => null);
+    setReenvio(r?.ok ? "ok" : "erro");
   }
 
   async function handleSubmit(e: React.FormEvent) {

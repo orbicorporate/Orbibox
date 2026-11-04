@@ -20,6 +20,18 @@ export async function GET(request: NextRequest) {
   // Só aceita caminho interno, nunca redireciona pra fora.
   const destino = caminhoInterno(next, url.origin) ?? "/auth/confirmado";
 
+  // Link enviado pelo Orbibox (Resend): troca o token por sessão aqui no servidor.
+  // A sessão do link substitui qualquer outra que estivesse aberta no navegador.
+  const tokenHash = url.searchParams.get("token_hash");
+  const tipo = url.searchParams.get("type");
+  if (tokenHash && (tipo === "recovery" || tipo === "signup" || tipo === "magiclink")) {
+    const supabase = await createClient();
+    await supabase.auth.signOut({ scope: "local" });
+    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: tipo });
+    if (!error) return NextResponse.redirect(new URL(tipo === "recovery" ? "/redefinir-senha?recuperacao=1" : "/auth/confirmado", url.origin));
+    return NextResponse.redirect(new URL(tipo === "recovery" ? "/redefinir-senha" : "/login?confirmado=1", url.origin));
+  }
+
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
