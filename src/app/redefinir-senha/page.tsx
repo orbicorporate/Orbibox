@@ -18,19 +18,17 @@ export default function RedefinirSenhaPage() {
   const [sucesso, setSucesso] = useState(false);
 
   // O link do e-mail traz um código de recuperação na URL. O cliente do
-  // Supabase troca isso por uma sessão temporária sozinho, e avisa via
-  // esse evento quando está pronto pra aceitar a senha nova. Se depois de
-  // alguns segundos nada chegar, o link provavelmente já foi usado ou
-  // expirou.
+  // Supabase troca isso por uma sessão temporária e avisa pelo evento
+  // PASSWORD_RECOVERY. Só esse evento vale: se a troca falhar (link aberto em
+  // outro navegador, já usado), NÃO dá pra aproveitar uma sessão que já estava
+  // aberta aqui, senão a senha nova seria gravada na conta errada.
   useEffect(() => {
+    const veioDeLink = /[?&]code=|type=recovery|access_token=/.test(window.location.search + window.location.hash);
+    let ok = false;
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setPronto(true);
+      if (event === "PASSWORD_RECOVERY") { ok = true; setPronto(true); }
     });
-    const timeout = setTimeout(async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) setPronto(true);
-      else setLinkInvalido(true);
-    }, 2500);
+    const timeout = setTimeout(() => { if (!ok) setLinkInvalido(true); }, veioDeLink ? 4000 : 0);
     return () => {
       listener.subscription.unsubscribe();
       clearTimeout(timeout);
