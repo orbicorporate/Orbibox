@@ -31,6 +31,7 @@ export function GalleryUpload({
   emptySlots,
   emptyLabel,
   camada,
+  colunas = 3,
 }: {
   value: string[];
   onChange: (urls: string[]) => void;
@@ -44,6 +45,8 @@ export function GalleryUpload({
   emptyLabel?: string;
   /** Camada (z-index) do recorte, para quando a galeria está dentro de uma folha por cima da página. */
   camada?: string;
+  /** Colunas da grade (padrão 3). */
+  colunas?: 2 | 3;
 }) {
   const supabase = createClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -115,7 +118,7 @@ export function GalleryUpload({
         className={
           wide
             ? "no-scrollbar -mx-1 flex snap-x snap-mandatory items-stretch gap-2 overflow-x-auto px-1 pb-1"
-            : "grid grid-cols-3 items-start gap-2"
+            : `grid ${colunas === 2 ? "grid-cols-2" : "grid-cols-3"} items-start gap-2`
         }
       >
         {slots.map((url, i) => {

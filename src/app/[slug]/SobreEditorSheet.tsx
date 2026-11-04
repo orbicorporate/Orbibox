@@ -47,7 +47,7 @@ export function SobreEditorSheet({
   const ajuda =
     parte === "texto" ? "Conte quem vocês são em poucas linhas. Pule uma linha para começar um novo parágrafo."
     : parte === "diferenciais" ? "O que faz as pessoas escolherem vocês. Cada um vira um cartão."
-    : "As fotos aparecem no topo desta página, em carrossel. Cada foto que você envia já salva na hora.";
+    : "Aparecem no topo da página, em carrossel. Salva na hora.";
 
   async function salvar() {
     if (salvando) return;
@@ -104,7 +104,7 @@ export function SobreEditorSheet({
           )}
 
           {parte === "fotos" && (
-            <GalleryUpload camada="z-[120]" value={fotos} businessId={businessId} lockedRatio="paisagem" lockedReason="As fotos são sempre no formato paisagem, para o carrossel ficar uniforme." onChange={salvarFotos} />
+            <GalleryUpload camada="z-[120]" value={fotos} businessId={businessId} lockedRatio="paisagem" colunas={2} emptySlots={1} emptyLabel="Adicionar foto" lockedReason="As fotos são sempre no formato paisagem, para o carrossel ficar uniforme." onChange={salvarFotos} />
           )}
         </div>
 
