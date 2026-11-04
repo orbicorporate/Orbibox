@@ -118,6 +118,11 @@ export async function generateMetadata({
   };
 }
 
+/** Criado há menos de 3 dias (fora do render: a data atual é "impura"). */
+function negocioRecente(criadoEm: string | null | undefined) {
+  return !!criadoEm && Date.now() - new Date(criadoEm).getTime() < 3 * 86400000;
+}
+
 export default async function VisitorPage({
   params,
 }: {
@@ -204,6 +209,7 @@ export default async function VisitorPage({
       suggestedQuestions={Array.isArray(agentConfig?.suggested_questions) ? (agentConfig.suggested_questions as string[]) : []}
       orbiColors={orbiColors}
       isOwner={isOwner}
+      negocioNovo={isOwner && negocioRecente(business.created_at)}
       hasAiChat={hasAiChat}
       hasVouchers={hasVouchers}
       corVoucher={corVoucher}

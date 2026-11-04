@@ -72,7 +72,7 @@ function Tela({ n, nome, cor, sub, desenho }: { n: number; nome: string; cor: st
   );
 }
 
-export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug: string; iniciar?: boolean }) {
+export function TourOrbibox({ fase, slug, iniciar = false, novo = false }: { fase: Fase; slug: string; iniciar?: boolean; novo?: boolean }) {
   const router = useRouter();
   const passo = useSyncExternalStore(assinar, () => ler(slug), () => null);
   const [rect, setRect] = useState<Rect | null>(null);
@@ -89,6 +89,13 @@ export function TourOrbibox({ fase, slug, iniciar = false }: { fase: Fase; slug:
   useEffect(() => {
     if (iniciar) gravar(slug, 0);
   }, [iniciar, slug]);
+
+  // Orbibox recém-criado: o passo a passo começa sozinho na primeira vez que o dono abre a página
+  // (mesmo que ele não tenha passado pela tela "Ver minha página"). Só uma vez por aparelho.
+  useEffect(() => {
+    if (iniciar || !novo || fase !== "home") return;
+    if (ler(slug) === null && !tourVisto(slug)) gravar(slug, 0);
+  }, [novo, iniciar, fase, slug]);
 
   const parada = passo !== null && passo >= 0 && passo < PARADAS.length ? PARADAS[passo] : null;
   const ativa = !!parada && parada.fase === fase;

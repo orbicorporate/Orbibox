@@ -155,6 +155,7 @@ export function VisitorExperience({
   agentName,
   orbiColors,
   isOwner,
+  negocioNovo = false,
   hasAiChat,
   hasVouchers,
   corVoucher = null,
@@ -168,6 +169,8 @@ export function VisitorExperience({
   agentName: string;
   orbiColors: string[] | null;
   isOwner: boolean;
+  /** Criado há poucos dias: o passo a passo começa sozinho para o dono. */
+  negocioNovo?: boolean;
   hasAiChat: boolean;
   hasVouchers: boolean;
   /** Cor do voucher mais novo no ar: o botão de Vouchers da página inicial segue essa cor. */
@@ -965,7 +968,7 @@ export function VisitorExperience({
   return (
     <HorarioContext.Provider value={horarioNegocio}>
     <main className="relative min-h-screen overflow-hidden bg-background-main">
-      {isOwner && <TourOrbibox fase="home" slug={business.slug} iniciar={searchParams.get("tour") === "1"} />}
+      {isOwner && <TourOrbibox fase="home" slug={business.slug} iniciar={searchParams.get("tour") === "1"} novo={negocioNovo} />}
       {isOwner && <ChecklistDivulgarHost />}
       {/* Fundo conforme o estilo escolhido pelo dono. "brilho" é o halo suave
           (padrão); os demais preenchem a tela com cor forte + um véu claro por
