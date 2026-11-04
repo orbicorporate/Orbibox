@@ -17,6 +17,9 @@ import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import { Cabecalho, Estrela, Folha, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
+/** Explorar outros Orbibox (radar Descobrir). Desligado até haver Orbibox suficientes no ar; mude para true para religar tudo. */
+const DESCOBRIR_ATIVO = false;
+
 type Aberta = { tipo: "avaliacoes" | "fas" | "entrar" | "contato"; origem: DOMRect | null; descobrir?: boolean } | null;
 
 const fmtNota = (n: number) => n.toFixed(1).replace(".", ",");
@@ -195,7 +198,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
           <span>{fmtNota(resumo.nota!)}</span>
         </button>
       )}
-      {lupaBtn}
+      {DESCOBRIR_ATIVO && lupaBtn}
       </div>
     </div>
   );
@@ -820,7 +823,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
   // (os fãs ficam numa faixa no topo). O dono continua vendo o radar de fãs primeiro.
   const MIN_ORBIBOX_DESCOBRIR = 10;
   useEffect(() => {
-    if (isOwner) return;
+    if (isOwner || !DESCOBRIR_ATIVO) return;
     let vivo = true;
     getOrbiboxAtivos().then((l) => {
       if (!vivo) return;
@@ -906,10 +909,10 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
               </div>
             </div>
             <div className="-mr-1 flex flex-none items-center">
-              <button type="button" onClick={abrirDescobrir} aria-label="Descobrir Orbibox" title="Descobrir Orbibox" className="mr-1 flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111318] pl-3.5 pr-4 text-[13.5px] font-medium text-white active:scale-95">
+              {DESCOBRIR_ATIVO && <button type="button" onClick={abrirDescobrir} aria-label="Descobrir Orbibox" title="Descobrir Orbibox" className="mr-1 flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111318] pl-3.5 pr-4 text-[13.5px] font-medium text-white active:scale-95">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
                 Explorar
-              </button>
+              </button>}
               <button type="button" onClick={fechar} aria-label="Fechar" className="grid h-11 w-11 place-items-center rounded-full text-on-background active:scale-95">
                 <IcX />
               </button>
