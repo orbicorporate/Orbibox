@@ -261,6 +261,8 @@ export async function POST(req: NextRequest) {
       siteType,
       fonte: lida.fonte,
       motivo: proposta.motivo ?? null,
+      // Veio do Instagram e a Orbi não identificou os produtos com clareza: os itens são genéricos do ramo.
+      genericos: lida.fonte === "instagram" && proposta.itens_claros === false,
       semFoto: rows.filter((r) => !r.image_url).length,
     });
   } catch (err) {

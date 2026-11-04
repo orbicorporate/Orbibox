@@ -63,7 +63,7 @@ async function analyzeBrand(name: string, instagram: string, website: string, de
 
 type Step = "dados" | "objetivo" | "acao" | "analisando" | "revisar" | "montando" | "pronto";
 type Escolha<T> = T | "orbi" | null;
-type Importacao = { imported: number; siteType: "ecommerce" | "institucional" | "links" | null; motivo: string | null; fetchError: string | null };
+type Importacao = { imported: number; siteType: "ecommerce" | "institucional" | "links" | null; motivo: string | null; fetchError: string | null; genericos?: boolean };
 
 // Frases enquanto a Orbi lê a marca. Nada técnico: a sensação é de alguém trabalhando.
 const LENDO = [
@@ -227,7 +227,7 @@ export default function OnboardingPage() {
         body: JSON.stringify({ businessId: id, url: website.trim(), instagram: instagram.trim() }),
       });
       const d = await res.json();
-      if (res.ok) return { imported: d.imported ?? 0, siteType: d.siteType ?? null, motivo: d.motivo ?? null, fetchError: null };
+      if (res.ok) return { imported: d.imported ?? 0, siteType: d.siteType ?? null, motivo: d.motivo ?? null, fetchError: null, genericos: !!d.genericos };
       return { imported: 0, siteType: null, motivo: null, fetchError: d.error ?? "Não consegui ler esse site automaticamente." };
     } catch {
       return { imported: 0, siteType: null, motivo: null, fetchError: "Não consegui ler esse site automaticamente." };
@@ -404,7 +404,7 @@ export default function OnboardingPage() {
     const waPre = (pre?.contact_whatsapp || pre?.contact_phone || whatsappDigits || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
     const conf = await new Promise<RevisaoResultado>((resolve) => {
       revisaoRef.current = resolve;
-      setRevisao({ bizId: id, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, categorias: categoriasRev, sugestoes: sugestoesCats, itens: itensRev, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
+      setRevisao({ bizId: id, avisoProdutos: imp.genericos ? "A Orbi usa o site para montar os produtos. Pelo Instagram ela não identificou com clareza o que você vende, então fez itens genéricos parecidos com o seu ramo. Depois você edita." : null, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, categorias: categoriasRev, sugestoes: sugestoesCats, itens: itensRev, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
       setStep("revisar");
     });
     setMontagem({ status: "pending", itens: [], segundos: null });

@@ -185,6 +185,7 @@ const PROPOSTA_SCHEMA = {
     contact_phone: { type: ["string", "null"] },
     contact_email: { type: ["string", "null"] },
     address: { type: ["string", "null"] },
+    itens_claros: { type: "boolean" },
     items: {
       type: "array",
       items: {
@@ -217,6 +218,8 @@ export type Proposta = {
   contact_phone: string | null;
   contact_email: string | null;
   address?: string | null;
+  /** Só no Instagram: false quando os posts não deixaram claro o que a marca vende, e os itens são genéricos do ramo. */
+  itens_claros?: boolean;
   items: Extracted[];
 };
 
@@ -239,7 +242,9 @@ export async function extrairProposta(
 - Os itens são os PRODUTOS ou SERVIÇOS que aparecem nos posts (cada sabor, prato, serviço, coleção). Agrupe repetidos. De 3 a 10 itens.
 - link_kind null e target_url null (os itens ficam dentro do Orbibox).
 - image_hint: a foto do post que mostra aquele produto, quando a legenda deixa claro. Pode usar fotos de posts, é o conteúdo da própria marca.
-- about_business e differentials a partir da bio e do que as legendas repetem.`
+- about_business e differentials a partir da bio e do que as legendas repetem.
+- address: o endereço físico costuma estar na bio ou nas legendas (rua, número, bairro, cidade). Se aparecer, devolva completo.
+- itens_claros: true SOMENTE se as legendas e fotos deixam claro quais são os produtos ou serviços. Se não deixarem (posts só de ambiente, frases soltas, sem nomes de produtos), devolva itens_claros false e monte de 4 a 6 itens GENÉRICOS e parecidos com o ramo da marca (ex.: restaurante: Pratos, Bebidas, Sobremesas), sem inventar preços nem promessas, com descrição curta e neutra e image_hint null.`
       : `A fonte é o SITE da marca.`;
 
   const system = `Você é a Orbi, o motor de leitura do Orbibox. Você recebe o conteúdo de uma marca e precisa (a) entender que TIPO de negócio é e (b) propor a melhor estrutura de vitrine.

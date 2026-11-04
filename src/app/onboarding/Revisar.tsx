@@ -14,6 +14,8 @@ export type ItemRevisao = { id: string; nome: string; foto: string | null; sub?:
 
 export type RevisaoDados = {
   bizId: string;
+  /** Quando os produtos vieram genéricos (Instagram sem produtos claros). */
+  avisoProdutos?: string | null;
   logo: string | null;
   /** Cores da marca que a Orbi achou (hex). */
   cores: string[];
@@ -273,6 +275,9 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
         {etapa === "categorias" && (
           <>
+            {dados.avisoProdutos && (
+              <p className="mx-auto mb-3 max-w-[340px] rounded-2xl bg-surface-soft px-4 py-3 text-center text-[13px] leading-snug text-text-secondary">{dados.avisoProdutos}</p>
+            )}
             <p className="text-center text-[12.5px] font-medium text-text-tertiary">As marcadas viram bolinhas no topo da página inicial · {catsMarcadas.length}/{MAX_CATEGORIAS}</p>
             <div className="mt-3 flex flex-col gap-2">
               {cats.map((c) => {
@@ -303,6 +308,9 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
         {etapa === "itens" && (
           <>
+            {dados.avisoProdutos && (
+              <p className="mx-auto mb-3 max-w-[340px] rounded-2xl bg-surface-soft px-4 py-3 text-center text-[13px] leading-snug text-text-secondary">{dados.avisoProdutos}</p>
+            )}
             {catsComItens.length > 1 && (
               <div className="mb-3 flex flex-wrap justify-center gap-1.5">
                 <button type="button" onClick={() => setFiltro(null)} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${filtro === null ? "sel-orbi" : "bg-surface-soft text-text-secondary"}`}>Todos</button>

@@ -487,6 +487,19 @@ function pesoFaixa(c: { rgb: RGB; fatia: number }): number {
 // Principal
 // ---------------------------------------------------------------------------
 
+/** Paleta medida direto num logotipo (ex.: foto de perfil do Instagram), pra marcas sem site. */
+export async function extrairCoresDeImagem(url: string): Promise<BrandColorResult | null> {
+  const buf = await baixar(url, 8000, 4_000_000);
+  if (!buf) return null;
+  try {
+    const amostras: Amostra[] = (await coresDaImagem(buf)).map((c) => ({ rgb: c.rgb, peso: 10 * Math.min(1, 0.35 + c.fatia), fonte: "logo" as Fonte }));
+    if (amostras.length === 0) return null;
+    return { ...montarPaleta(amostras), diagnostico: ["paleta medida no logotipo do Instagram"] };
+  } catch {
+    return null;
+  }
+}
+
 export async function extrairCoresDaMarca(siteUrl: string): Promise<BrandColorResult | null> {
   const amostras: Amostra[] = [];
   const diag: string[] = [];

@@ -4,9 +4,9 @@ import { exigirLogin } from "@/lib/apiGuard";
 
 export const maxDuration = 60;
 import { askClaude } from "@/lib/anthropic";
-import { fetchInstagram, fetchSiteResiliente } from "@/lib/siteImport";
+import { ehAgregadorDeLinks, fetchInstagram, fetchSiteResiliente } from "@/lib/siteImport";
 import { jsonrepair } from "jsonrepair";
-import { extrairCoresDaMarca } from "@/lib/brandColors";
+import { extrairCoresDaMarca, extrairCoresDeImagem } from "@/lib/brandColors";
 import { SEGMENTOS } from "@/lib/segmentos";
 import { CONVERSOES } from "@/lib/conversao";
 
@@ -45,11 +45,25 @@ export async function POST(req: NextRequest) {
     // As cores são MEDIDAS no site (logo, header, rodapé, botões, cores do
     // tema), nunca tiradas das fotos do conteúdo. Roda junto com a leitura.
     const limite = <T,>(p: Promise<T>): Promise<T | null> => Promise.race([p, new Promise<null>((r) => setTimeout(() => r(null), 22000))]);
-    const [siteLido, igLido, coresMedidas] = await limite(Promise.all([
-      website ? fetchSiteResiliente(website).catch(() => null) : Promise.resolve(null),
-      instagram ? fetchInstagram(instagram).catch(() => null) : Promise.resolve(null),
-      website ? extrairCoresDaMarca(website).catch(() => null) : Promise.resolve(null),
-    ])).then((r) => r ?? ([null, null, null] as const));
+    const [siteLido, igLido, coresMedidas] = await limite((async () => {
+      const igP = instagram ? fetchInstagram(instagram).catch(() => null) : Promise.resolve(null);
+      let siteUrl: string = website || "";
+      // Sem site informado: o link da bio do Instagram é o site da marca (se não for Linktree e afins).
+      let ig = null as Awaited<typeof igP>;
+      if (!siteUrl) {
+        ig = await igP;
+        if (ig?.externalUrl && !ehAgregadorDeLinks(ig.externalUrl)) siteUrl = ig.externalUrl;
+      }
+      const [site, cores, igFinal] = await Promise.all([
+        siteUrl ? fetchSiteResiliente(siteUrl).catch(() => null) : Promise.resolve(null),
+        siteUrl ? extrairCoresDaMarca(siteUrl).catch(() => null) : Promise.resolve(null),
+        ig ? Promise.resolve(ig) : igP,
+      ]);
+      // Sem cores do site: mede no logotipo (foto de perfil do Instagram).
+      let coresFinais = cores;
+      if ((!coresFinais || coresFinais.colors.length < 2) && igFinal?.foto) coresFinais = (await extrairCoresDeImagem(igFinal.foto).catch(() => null)) ?? coresFinais;
+      return [site, igFinal, coresFinais] as const;
+    })()).then((r) => r ?? ([null, null, null] as const));
     const medidas = coresMedidas?.colors ?? [];
     if (website) console.log("analyze-brand cores", JSON.stringify({ website, cores: coresMedidas?.evidencia, diagnostico: coresMedidas?.diagnostico }));
     const temPaletaMedida = medidas.length >= 2;
@@ -68,7 +82,7 @@ Responda SOMENTE em JSON válido, sem markdown, sem texto antes ou depois, no fo
 - font: o nome de UMA fonte do Google Fonts que combine com a marca (ex: "Manrope", "Playfair Display", "Poppins", "DM Sans"). Apenas o nome.
 - palette: 3 a 5 cores hex que representem a marca (a primeira é a cor principal, uma de destaque, e um fundo claro).
 - A paleta vem da IDENTIDADE da marca: logotipo, header, rodapé e botões do site. Nunca use cores de fotos ou imagens do conteúdo (produtos, pessoas, paisagens, comida).
-- Se receber "CORES MEDIDAS NO SITE", a paleta deve usar exatamente essas cores, na mesma ordem. Não invente outras.
+- Se receber "CORES MEDIDAS NA MARCA", a paleta deve usar exatamente essas cores, na mesma ordem. Não invente outras.
 - resumo: o negócio em até 3 frases curtas (no máximo 3 linhas no celular, ~240 caracteres): o que é, pra quem, e o que torna especial. Português do Brasil, direto, sem clichês ("excelência", "qualidade incomparável").
 - pontosFortes: EXATAMENTE 3 pontos fortes reais da marca, tirados do conteúdo (produtos, provas, números, diferenciais citados). title com no máximo 5 palavras; description com no máximo 14 palavras explicando. icon: um só símbolo desta lista, o que combinar: ✦ ★ ◆ ⚡ ✓ ☺ ♥ ✿ ⌖ $. Nunca invente número, prêmio ou fato que não esteja no conteúdo; sem conteúdo, use pontos fortes típicos do segmento, de forma honesta e genérica.
 - segmento: o ramo do negócio, UM destes ids: ${SEGMENTOS.map((s) => `${s.id} (${s.rotulo})`).join(", ")}, ou "outro".
@@ -82,7 +96,7 @@ ${descricao ? `O dono descreveu assim: ${String(descricao).slice(0, 600)}` : ""}
 Instagram: ${instagram || "(não informado)"}
 ${siteText ? `Conteúdo da marca (site e/ou Instagram):\n${siteText}` : "Site e Instagram não disponíveis, infira a partir do nome e segmento provável."}${
       medidas.length > 0
-        ? `\n\nCORES MEDIDAS NO SITE (logo, header, rodapé, botões):\n${(coresMedidas?.evidencia.length ? coresMedidas.evidencia : medidas.map((c) => c.hex)).join("\n")}`
+        ? `\n\nCORES MEDIDAS NA MARCA (logo, header, rodapé, botões):\n${(coresMedidas?.evidencia.length ? coresMedidas.evidencia : medidas.map((c) => c.hex)).join("\n")}`
         : ""
     }`;
 
