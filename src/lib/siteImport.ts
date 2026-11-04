@@ -343,6 +343,8 @@ type IgUser = {
   biography?: string;
   external_url?: string | null;
   is_private?: boolean;
+  profile_pic_url_hd?: string;
+  profile_pic_url?: string;
   edge_owner_to_timeline_media?: {
     edges?: {
       node?: {
@@ -374,6 +376,7 @@ function parseEmbed(html: string): IgUser | null {
       biography: ctx.biography ?? ctx.bio ?? "",
       external_url: ctx.external_url ?? null,
       is_private: ctx.is_private ?? false,
+      profile_pic_url: typeof ctx.profile_pic_url === "string" ? ctx.profile_pic_url : (html.match(/"profile_pic_url(?:_hd)?"\s*:\s*"([^"]+)"/)?.[1] ?? "").replace(/\\u0026/g, "&").replace(/\\\//g, "/") || undefined,
       edge_owner_to_timeline_media: { edges },
     };
   } catch {
@@ -382,7 +385,7 @@ function parseEmbed(html: string): IgUser | null {
 }
 
 type IgPost = { caption: string; image: string; likes: number; comments: number; takenAt: number };
-export type InstagramData = SiteData & { externalUrl: string | null; fullName: string; bio: string; posts: IgPost[] };
+export type InstagramData = SiteData & { externalUrl: string | null; fullName: string; bio: string; posts: IgPost[]; foto: string | null };
 
 /**
  * Lê o perfil público do Instagram (bio, link da bio e os posts recentes).
@@ -470,6 +473,8 @@ export async function fetchInstagram(handleOrUrl: string): Promise<InstagramData
     fullName,
     bio,
     posts,
+    // Foto de perfil: na maioria das marcas é o logotipo.
+    foto: user.profile_pic_url_hd || user.profile_pic_url || null,
   };
 }
 

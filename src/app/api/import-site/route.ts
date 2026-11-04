@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeFetch } from "@/lib/safeFetch";
-import { extrairProposta, instagramHandle, lerMelhorFonte, type Extracted, type SiteType } from "@/lib/siteImport";
+import { extrairProposta, fetchInstagram, instagramHandle, lerMelhorFonte, type Extracted, type SiteType } from "@/lib/siteImport";
 import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
@@ -195,29 +195,36 @@ export async function POST(req: NextRequest) {
       .eq("id", businessId)
       .maybeSingle();
 
-    // Logotipo: o que o site chama de logo, copiado pro nosso armazenamento.
+    // Logotipo: o que o site chama de logo, ou, sem site, a foto de perfil do Instagram. Copiado pro nosso armazenamento.
     let logoNovo: string | null = null;
-    if (lida.fonte === "site") {
-      const { data: temLogo } = await supabase.from("businesses").select("logo_url").eq("id", businessId).maybeSingle();
-      if (!temLogo?.logo_url) {
+    async function subirLogo(fonteLogo: string): Promise<string | null> {
+      try {
+        const r = await safeFetch(fonteLogo, { signal: AbortSignal.timeout(8000) });
+        if (!r.ok) return null;
+        const blob = await r.blob();
+        if (!blob.type.startsWith("image/") || blob.size >= 3_000_000) return null;
+        const ext = blob.type.includes("png") ? "png" : blob.type.includes("webp") ? "webp" : blob.type.includes("svg") ? "svg" : "jpg";
+        const path = `${businessId}/logo-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("box-images").upload(path, blob, { contentType: blob.type, cacheControl: "31536000", upsert: false });
+        return upErr ? null : supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
+      } catch {
+        return null; // sem logo, o dono envia depois
+      }
+    }
+    const { data: temLogo } = await supabase.from("businesses").select("logo_url").eq("id", businessId).maybeSingle();
+    if (!temLogo?.logo_url) {
+      if (lida.fonte === "site") {
         const nomeBase = business.name.trim().toLowerCase().split(/\s+/)[0] ?? "";
-        const cand = site.images.find((img) => /logo|logotipo|marca/i.test(`${img.alt} ${img.url}`) && !/parceir|cart[aã]o|selo|visa|master|pix/i.test(`${img.alt} ${img.url}`) && (nomeBase.length < 3 || `${img.alt} ${img.url}`.toLowerCase().includes(nomeBase) || /logo/i.test(img.url)));
+        const cand = site.images.find((img) => /logo|logotipo|marca/i.test(`${img.alt} ${img.url}`) && !/parceir|cart[aã]o|selo|visa|master|pix/i.test(`${img.alt} ${img.url}`) && (nomeBase.length < 3 || `${img.alt} ${img.url}`.toLowerCase().includes(nomeBase)));
         const icone = site.html.match(/<link[^>]+rel=["'][^"']*apple-touch-icon[^"']*["'][^>]+href=["']([^"']+)["']/i)?.[1];
         const fonteLogo = cand?.url ?? (icone ? new URL(icone, site.base || url).toString() : null);
-        if (fonteLogo) {
-          try {
-            const r = await safeFetch(fonteLogo, { signal: AbortSignal.timeout(8000) });
-            if (r.ok) {
-              const blob = await r.blob();
-              if (blob.type.startsWith("image/") && blob.size < 3_000_000) {
-                const ext = blob.type.includes("png") ? "png" : blob.type.includes("webp") ? "webp" : blob.type.includes("svg") ? "svg" : "jpg";
-                const path = `${businessId}/logo-${Date.now()}.${ext}`;
-                const { error: upErr } = await supabase.storage.from("box-images").upload(path, blob, { contentType: blob.type, cacheControl: "31536000", upsert: false });
-                if (!upErr) logoNovo = supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl;
-              }
-            }
-          } catch { /* sem logo, o dono envia depois */ }
-        }
+        if (fonteLogo) logoNovo = await subirLogo(fonteLogo);
+      }
+      // Sem logo no site (ou só Instagram): usa a foto de perfil do Instagram.
+      if (!logoNovo) {
+        let fotoIg: string | null = lida.fonte === "instagram" ? ((site as { foto?: string | null }).foto ?? null) : null;
+        if (!fotoIg && instagram) fotoIg = (await fetchInstagram(instagram).catch(() => null))?.foto ?? null;
+        if (fotoIg) logoNovo = await subirLogo(fotoIg);
       }
     }
 
