@@ -49,7 +49,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
   }, [businessId]);
 
   useEffect(() => {
-    if (isOwner || !eu?.logado || !eu.userId || !eu.ehFa || eu.foto || aberta !== null || pedido !== null || pedirFoto) return;
+    if (isOwner || ladoDono || !eu?.logado || !eu.userId || !eu.ehFa || eu.foto || aberta !== null || pedido !== null || pedirFoto) return;
     const chaveFoto = `orbi_foto_perfil_pedida_${eu.userId}`;
     try {
       if (window.localStorage.getItem(chaveFoto)) return;
@@ -288,7 +288,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
         document.body,
       )}
 
-      {!isOwner && <LinguaContato slug={slug} ocupado={aberta !== null || pedido !== null} eu={eu} onQuero={querContato} />}
+      {!isOwner && !ladoDono && <LinguaContato slug={slug} ocupado={aberta !== null || pedido !== null} eu={eu} onQuero={querContato} />}
 
       {aberta?.tipo === "avaliacoes" && (
         <AvaliacoesFolha

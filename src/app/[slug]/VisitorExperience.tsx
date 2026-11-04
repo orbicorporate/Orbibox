@@ -1823,7 +1823,7 @@ export function VisitorExperience({
           />
         )}
 
-        {(intent === null || intent === "comprar" || intent === "conhecer" || intent === "cardapio") && (
+        {!isOwner && (intent === null || intent === "comprar" || intent === "conhecer" || intent === "cardapio") && (
           <NudgeLead businessId={business.id} businessName={business.name} sessionId={sessionId} modo="navegacao" />
         )}
 

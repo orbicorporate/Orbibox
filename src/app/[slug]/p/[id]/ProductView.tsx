@@ -123,7 +123,7 @@ export function ProductView({ business, item, isOwner = false }: { business: Bus
     <main className="pagina-entra mx-auto min-h-screen w-full max-w-[440px] bg-background-main pb-16">
       {!isOwner && <PedirFaFolha businessId={business.id} slug={business.slug} nome={business.name} />}
       {!isOwner && <SugestaoFa businessId={business.id} slug={business.slug} nome={business.name} ativo atrasoMs={7000} />}
-      <NudgeLead businessId={business.id} businessName={business.name} modo="pagina" interesse={item.title} />
+      {!isOwner && <NudgeLead businessId={business.id} businessName={business.name} modo="pagina" interesse={item.title} />}
       {/* Voltar, fora da imagem, igual qualquer app, não sobrepõe a foto.
           Voltar leva pra vitrine, exceto quando o item foi aberto pelo Destaque
           da tela inicial (?de=home): aí volta pra ela. Pelo histórico direto, a vitrine
