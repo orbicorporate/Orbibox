@@ -23,7 +23,7 @@ export type BolinhaVitrine = {
   rotulo: string;
   /** Nome padrão, usado só no editor quando o dono apagou o nome da bolinha. */
   rotuloPadrao?: string;
-  tipo: "whatsapp" | "endereco" | "site" | "rede" | "voucher" | "sobre" | "presente" | "cardapio" | "delivery" | "materiais" | "catalogo" | "reserva";
+  tipo: "whatsapp" | "endereco" | "telefone" | "email" | "site" | "rede" | "voucher" | "sobre" | "presente" | "cardapio" | "delivery" | "materiais" | "catalogo" | "reserva";
   rede?: Rede;
   endereco?: string;
   /** "cor" = bolinha cheia de cor; "linha" = minimalista, só contorno e ícone. */
@@ -139,6 +139,8 @@ function Icone({ tipo, rede, linha }: { tipo: BolinhaVitrine["tipo"]; rede?: Red
   if (tipo === "whatsapp" && linha) return <svg {...p}><path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3Z" /><path d="M9 8.5c-.3 1.6.8 3.6 2.4 5s3.3 2 4.6 1.6" /></svg>;
   if (tipo === "whatsapp") return <svg {...p} fill="currentColor" stroke="none"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.2Z" /></svg>;
   if (tipo === "endereco") return <svg {...p}><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11Z" /><circle cx="12" cy="10" r="2.6" /></svg>;
+  if (tipo === "telefone") return <svg {...p}><path d="M5 4h3.5l1.8 4.5-2.2 1.4a11 11 0 0 0 5 5l1.4-2.2L19 14.5V18a2 2 0 0 1-2 2A13 13 0 0 1 3 6a2 2 0 0 1 2-2Z" /></svg>;
+  if (tipo === "email") return <svg {...p}><rect x="3.5" y="5.5" width="17" height="13" rx="2.5" /><path d="m4 8 8 6 8-6" /></svg>;
   if (tipo === "voucher") return <svg {...p}><path d="M3 9a2 2 0 0 0 0 6v3h18v-3a2 2 0 0 0 0-6V6H3Z" /><path d="M14 6v12" strokeDasharray="2 2.5" /></svg>;
   if (tipo === "presente") return <svg {...p}><rect x="3.5" y="8.5" width="17" height="4" rx="1" /><path d="M5 12.5V20h14v-7.5" /><path d="M12 8.5V20" /><path d="M12 8.5C10 8.5 8 7.8 8 6.2 8 4.9 9 4 10.1 4 11.4 4 12 5.2 12 8.5Zm0 0C14 8.5 16 7.8 16 6.2 16 4.9 15 4 13.9 4 12.6 4 12 5.2 12 8.5Z" /></svg>;
   if (tipo === "cardapio") return <svg {...p}><path d="M7 3v8a2 2 0 0 0 2 2v8" /><path d="M5 3v6a2 2 0 0 0 2 2" /><path d="M9 3v6" /><path d="M17 21V3c-2.2 1.2-3.5 3.6-3.5 6.5 0 2 1 3.2 3.5 3.5" /></svg>;
@@ -161,6 +163,8 @@ function corDe(b: BolinhaVitrine): { fundo: string; sombra: string } {
   if (b.cor && b.tipo !== "whatsapp" && b.tipo !== "rede") return { fundo: b.cor, sombra: b.cor };
   if (b.tipo === "whatsapp") return { fundo: "#25D366", sombra: "#25D366" };
   if (b.tipo === "endereco") return { fundo: "#EA4335", sombra: "#EA4335" };
+  if (b.tipo === "telefone") return { fundo: "#2FA36B", sombra: "#2FA36B" };
+  if (b.tipo === "email") return { fundo: "#3B5BDB", sombra: "#3B5BDB" };
   if (b.tipo === "voucher") return { fundo: "#111318", sombra: "#111318" };
   if (b.tipo === "presente") return { fundo: "#E8508A", sombra: "#E8508A" };
   if (b.tipo === "sobre") return { fundo: "#3B5BDB", sombra: "#3B5BDB" };
