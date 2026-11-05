@@ -35,16 +35,42 @@ export default async function PulsePage({
     .single();
 
   let visitasQuery = supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id);
-  let cliquesQuery = supabase.from("click_events").select("kind, created_at, content_item_id").eq("business_id", business!.id).limit(5000);
-  let sessoesQuery = supabase.from("visitor_sessions").select("source, device").eq("business_id", business!.id).limit(5000);
-  if (since) { visitasQuery = visitasQuery.gte("started_at", since); cliquesQuery = cliquesQuery.gte("created_at", since); sessoesQuery = sessoesQuery.gte("started_at", since); }
-  if (until) { visitasQuery = visitasQuery.lte("started_at", until); cliquesQuery = cliquesQuery.lte("created_at", until); sessoesQuery = sessoesQuery.lte("started_at", until); }
+  if (since) visitasQuery = visitasQuery.gte("started_at", since);
+  if (until) visitasQuery = visitasQuery.lte("started_at", until);
 
-  const [visitasRes, cliquesRes, itemsRes, sessoesRes] = await Promise.all([
+  // O Supabase devolve no máximo 1000 linhas por consulta, mesmo com limit maior:
+  // sem paginar, os cliques mais novos (como o WhatsApp) ficavam de fora da contagem.
+  const PAGINA = 1000;
+  async function todosCliques() {
+    const out: { kind: string; created_at: string; content_item_id: string | null }[] = [];
+    for (let de = 0; de < 100000; de += PAGINA) {
+      let q = supabase.from("click_events").select("kind, created_at, content_item_id").eq("business_id", business!.id).order("created_at", { ascending: false }).range(de, de + PAGINA - 1);
+      if (since) q = q.gte("created_at", since);
+      if (until) q = q.lte("created_at", until);
+      const { data } = await q;
+      out.push(...(data ?? []));
+      if (!data || data.length < PAGINA) break;
+    }
+    return out;
+  }
+  async function todasSessoes() {
+    const out: { source: string | null; device: string | null }[] = [];
+    for (let de = 0; de < 100000; de += PAGINA) {
+      let q = supabase.from("visitor_sessions").select("source, device").eq("business_id", business!.id).order("started_at", { ascending: false }).range(de, de + PAGINA - 1);
+      if (since) q = q.gte("started_at", since);
+      if (until) q = q.lte("started_at", until);
+      const { data } = await q;
+      out.push(...(data ?? []));
+      if (!data || data.length < PAGINA) break;
+    }
+    return out;
+  }
+
+  const [visitasRes, cliquesData, itemsRes, sessoesData] = await Promise.all([
     visitasQuery,
-    cliquesQuery,
+    todosCliques(),
     supabase.from("content_items").select("id, title, image_url, brand_label").eq("business_id", business!.id),
-    sessoesQuery,
+    todasSessoes(),
   ]);
 
   // Origem do tráfego e dispositivo, de onde vêm os visitantes e em que
@@ -73,18 +99,18 @@ export default async function PulsePage({
 
   const porOrigem: Record<string, number> = {};
   const porDispositivo: Record<string, number> = {};
-  for (const s of sessoesRes.data ?? []) {
+  for (const s of sessoesData) {
     const org = normalizaOrigem(s.source);
     const dev = normalizaDispositivo(s.device);
     porOrigem[org] = (porOrigem[org] ?? 0) + 1;
     porDispositivo[dev] = (porDispositivo[dev] ?? 0) + 1;
   }
-  const totalSessoes = (sessoesRes.data ?? []).length;
+  const totalSessoes = (sessoesData).length;
   const origens = Object.entries(porOrigem).sort((a, b) => b[1] - a[1]).map(([nome, count]) => ({ nome, count }));
   const dispositivos = Object.entries(porDispositivo).sort((a, b) => b[1] - a[1]).map(([nome, count]) => ({ nome, count }));
 
   const visitas = visitasRes.count ?? 0;
-  const cliques = cliquesRes.data ?? [];
+  const cliques = cliquesData;
   const itemMap: Record<string, { title: string; image_url: string | null; brand_label: string | null }> = {};
   for (const it of itemsRes.data ?? []) itemMap[it.id] = { title: it.title, image_url: it.image_url, brand_label: it.brand_label };
 
