@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { GiftArt } from "@/components/mobile/GiftArt";
 import { GIFT_THEMES, giftTheme, type GiftTheme } from "@/lib/giftThemes";
+import { numeroWa } from "@/lib/whatsapp";
 
 type Config = {
   enabled: boolean;
@@ -89,7 +90,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
     const valor = (valorCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     // O link do cartão vem primeiro: é ele que vira a prévia (capa) no WhatsApp de quem recebe.
     const texto = `Olá! Criei um gift card de ${businessName} e quero pagar.\n\n${origem}/gift/${criado.code}\n\nValor: ${valor}\n${paraQuem ? `Para: ${paraQuem}\n` : ""}${deQuem ? `De: ${deQuem}\n` : ""}\nComo posso pagar? Assim que o pagamento for confirmado, é só liberar o gift por aqui: ${origem}/admin/gift?liberar=${criado.code}`;
-    window.open(`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`, "_blank");
+    window.open(`https://wa.me/${numeroWa(whatsapp)}?text=${encodeURIComponent(texto)}`, "_blank");
   }
 
   if (!cfg) {

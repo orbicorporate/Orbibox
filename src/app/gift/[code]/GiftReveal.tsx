@@ -4,12 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { GiftArt } from "@/components/mobile/GiftArt";
 import { BotaoCompartilhar, IconeCompartilhar } from "@/components/compartilhar/Compartilhar";
+import { numeroWa } from "@/lib/whatsapp";
 
 /** Página que mostra o gift ao cliente: bloqueado (a liberar) ou pronto. */
 export function GiftReveal({ gift, voltar }: { voltar?: string | null; gift: { code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; used_at?: string | null; business_name: string; art_url: string | null; art_theme: string | null; whatsapp?: string | null } }) {
   const curto = gift.code.replace(/^GIFT-/i, "");
   const [copiado, setCopiado] = useState(false);
-  const zap = (gift.whatsapp ?? "").replace(/\D/g, "");
+  const zap = numeroWa(gift.whatsapp);
   const valorTxt = (gift.value_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   async function copiar() {
     try { await navigator.clipboard.writeText(curto); setCopiado(true); window.setTimeout(() => setCopiado(false), 1600); } catch { /* sem clipboard */ }

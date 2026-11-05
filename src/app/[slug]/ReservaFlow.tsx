@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { trackClick } from "@/lib/track";
+import { numeroWa } from "@/lib/whatsapp";
 
 type Config = { dias: number[]; abre: string; fecha: string; intervalo_min: number; capacidade: number | null; max_pessoas: number; dias_a_frente: number; antecedencia_min: number; aviso: string | null; datas_fechadas: string[] | null };
 
@@ -97,7 +98,7 @@ export function ReservaFlow({ businessId, businessName, whatsapp, sessionId, onB
     }
     trackClick({ businessId, kind: "reserva", sessionId });
     setFeito(true);
-    const zap = (whatsapp ?? "").replace(/\D/g, "");
+    const zap = numeroWa(whatsapp);
     if (zap) window.open(`https://wa.me/${zap}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
   }
 
@@ -121,7 +122,7 @@ export function ReservaFlow({ businessId, businessName, whatsapp, sessionId, onB
           <p className="mt-2 text-[14.5px] leading-snug text-text-secondary">{nome.trim()}, {resumoData} às {hora ? rotuloHora(hora) : ""}, {pessoas} {pessoas === 1 ? "pessoa" : "pessoas"}.</p>
           <p className="mt-3 text-[13.5px] leading-snug text-text-tertiary">{businessName} vai confirmar sua reserva. {whatsapp ? "Se o WhatsApp não abriu, toque abaixo para enviar o pedido." : ""}</p>
           {whatsapp && (
-            <a href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! Fiz um pedido de reserva em ${businessName}: ${nome.trim()}, ${resumoData} às ${hora ? rotuloHora(hora) : ""}, ${pessoas} ${pessoas === 1 ? "pessoa" : "pessoas"}.`)}`} target="_blank" rel="noopener noreferrer" className="mt-4 flex min-h-[48px] items-center justify-center rounded-full bg-[#25D366] text-[15px] font-semibold text-white active:scale-[0.98]">Abrir WhatsApp</a>
+            <a href={`https://wa.me/${numeroWa(whatsapp)}?text=${encodeURIComponent(`Olá! Fiz um pedido de reserva em ${businessName}: ${nome.trim()}, ${resumoData} às ${hora ? rotuloHora(hora) : ""}, ${pessoas} ${pessoas === 1 ? "pessoa" : "pessoas"}.`)}`} target="_blank" rel="noopener noreferrer" className="mt-4 flex min-h-[48px] items-center justify-center rounded-full bg-[#25D366] text-[15px] font-semibold text-white active:scale-[0.98]">Abrir WhatsApp</a>
           )}
           <button onClick={onBack} className="mt-3 block w-full py-2 text-[13.5px] text-text-secondary underline">Voltar ao início</button>
         </div>

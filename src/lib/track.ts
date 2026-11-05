@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { numeroWa } from "@/lib/whatsapp";
 
 /** Tipos de clique que o Pulse conta separadamente. */
 export type ClickKind = "categoria" | "produto" | "whatsapp" | "ligar" | "email" | "zara" | "link" | "site" | "carrossel" | "cta" | "cupom" | "cardapio" | "lista_item" | "reserva" | `delivery_${string}`;
@@ -61,8 +62,7 @@ export async function trackClick(params: {
 
 /** Monta o link do WhatsApp a partir do número cadastrado. */
 export function whatsappLink(numero: string, mensagem?: string) {
-  const digits = numero.replace(/\D/g, "");
-  const comPais = digits.startsWith("55") ? digits : `55${digits}`;
+  const comPais = numeroWa(numero);
   const texto = mensagem ? `?text=${encodeURIComponent(mensagem)}` : "";
   return `https://wa.me/${comPais}${texto}`;
 }
