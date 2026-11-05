@@ -198,16 +198,17 @@ export async function pedirRevisao(reviewId: string) {
 }
 
 /* ---------- Entrar ---------- */
-export async function entrarComGoogle(slug: string): Promise<string | null> {
+export async function entrarComGoogle(slug: string, ligar = true): Promise<string | null> {
   const next = `/${slug}?clube=1`;
   const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
   const db = clubeDb();
   const { data: { user } } = await db.auth.getUser();
   // Quem entrou só com o número: liga o Google ao mesmo perfil, sem perder fãs, fotos e avaliações.
-  if (user?.is_anonymous) {
+  if (ligar && user?.is_anonymous) {
     const lig = await db.auth.linkIdentity({ provider: "google", options: { redirectTo } });
     if (!lig.error) return null;
-    // Se não deu para ligar (ex.: esse Google já tem conta), entra com ele normalmente.
+    // Se esse Google já pertence a outra conta, o erro só aparece na volta do Google: lá o retorno
+    // manda a pessoa de volta com ?google=entrar e a página entra com ele normalmente (ligar = false).
   }
   const { error } = await db.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
   return error ? "O login com Google ainda não está ativo. Tente com o e-mail." : null;

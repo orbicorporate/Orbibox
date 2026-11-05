@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { marcarInteresse } from "@/lib/interesse";
@@ -31,6 +31,18 @@ const chave = (slug: string) => `clube-pendente-${slug}`;
 export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null, isOwner, ladoDono = false, slotTopo = null }: { businessId: string; slug: string; nome: string; logoUrl: string | null; heroAvatar?: string | null; isOwner: boolean; ladoDono?: boolean; slotTopo?: HTMLElement | null }) {
   const [resumo, setResumo] = useState<Resumo | null>(null);
   const [eu, setEu] = useState<Eu | null>(null);
+  // Voltou do Google dizendo que aquele Google já tem conta: entra com ele direto (uma vez).
+  const tentouGoogle = useRef(false);
+  useEffect(() => {
+    if (tentouGoogle.current) return;
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("google") !== "entrar") return;
+    tentouGoogle.current = true;
+    q.delete("google");
+    const resto = q.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${resto ? `?${resto}` : ""}`);
+    void entrarComGoogle(slug, false);
+  }, [slug]);
   const [aberta, setAberta] = useState<Aberta>(null);
   const [contatoAberto, setContatoAberto] = useState(false);
   const [pedido, setPedido] = useState<PedidoFa | null>(null);

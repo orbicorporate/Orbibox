@@ -32,6 +32,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(tipo === "recovery" ? "/redefinir-senha" : "/login?confirmado=1", url.origin));
   }
 
+  // Volta do Google com erro (ex.: esse Google já pertence a outra conta, ao tentar ligá-lo ao perfil do fã):
+  // segue para a página de origem, nunca para o login. Se o Google já tem conta, a página entra com ele direto.
+  const erroCodigo = url.searchParams.get("error_code");
+  if (erroCodigo && destino !== "/auth/confirmado") {
+    const volta = new URL(destino, url.origin);
+    if (erroCodigo === "identity_already_exists") volta.searchParams.set("google", "entrar");
+    else volta.searchParams.set("erro", "login");
+    return NextResponse.redirect(volta);
+  }
+
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
