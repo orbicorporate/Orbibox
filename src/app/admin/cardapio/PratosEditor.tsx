@@ -20,6 +20,22 @@ const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py
  */
 export type PratosEditorAcoes = { trazer: () => void };
 
+const ICONES: Record<string, string> = {
+  ajustar: "M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6",
+  enviar: "M12 16V5m0 0-4 4m4-4 4 4M5 19h14",
+  galeria: "M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 16l4-4 4 4 3-3 5 5M9 9h.01",
+  tirar: "M6 6l12 12M18 6 6 18",
+};
+
+function BotaoAcao({ children, onClick, icone, ativo, expandido, desativado }: { children: React.ReactNode; onClick: () => void; icone: string; ativo?: boolean; expandido?: boolean; desativado?: boolean }) {
+  return (
+    <button type="button" onClick={onClick} disabled={desativado} aria-expanded={expandido} className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-4 text-[13.5px] font-medium transition-[transform,background-color] active:scale-[0.97] disabled:opacity-60 ${ativo ? "bg-on-background text-white" : "bg-surface-soft text-on-background"}`}>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={ICONES[icone]} /></svg>
+      {children}
+    </button>
+  );
+}
+
 export function PratosEditor({ businessId, secoes, onChange, barra, ref, children }: { businessId: string; secoes: CardapioSecao[]; onChange: (s: CardapioSecao[]) => void; /** Botões do topo (+ Prato e Ferramentas). Sem ela, a barra não aparece. */ barra?: { onNovo: () => void; onFerramentas: () => void }; ref?: React.Ref<PratosEditorAcoes>; children?: React.ReactNode }) {
   const supabase = useRef(createClient()).current;
   const inputFoto = useRef<HTMLInputElement>(null);
@@ -124,11 +140,11 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
   }
 
   /** Sobe a foto já sem fundo e a coloca no prato (apaga o enquadramento, que valia para a antiga). */
-  async function trocarFotoPor(sid: string, iid: string, b: Blob): Promise<boolean> {
+  async function trocarFotoPor(sid: string, iid: string, b: Blob, manterAjuste = false): Promise<boolean> {
     const path = `${businessId}/${nomeArquivoUnico("cardapio-prato", "jpg")}`;
     const { error } = await supabase.storage.from("box-images").upload(path, b, { cacheControl: "3600", upsert: false, contentType: "image/jpeg" });
     if (error) return false;
-    mudarItem(sid, iid, { foto: supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl, fotoAjuste: null });
+    mudarItem(sid, iid, { foto: supabase.storage.from("box-images").getPublicUrl(path).data.publicUrl, ...(manterAjuste ? {} : { fotoAjuste: null }) });
     return true;
   }
 
@@ -248,20 +264,27 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
                         {(comDesc.includes(i.id) || !!i.descricao) && (
                           <textarea value={i.descricao ?? ""} onChange={(e) => mudarItem(s.id, i.id, { descricao: e.target.value })} rows={3} maxLength={600} placeholder="Ingredientes, tamanho, o que acompanha" aria-label="Descrição do prato" className={`${campo} resize-y text-[14px] leading-snug`} />
                         )}
-                        {i.foto && ajustando === i.id && <AjustarFoto key={i.foto} foto={i.foto} ajuste={i.fotoAjuste} onChange={(a) => mudarItem(s.id, i.id, { fotoAjuste: a })} onNovaFoto={(b) => trocarFotoPor(s.id, i.id, b)} />}
+                        {i.foto && ajustando === i.id && <AjustarFoto key={i.foto} foto={i.foto} ajuste={i.fotoAjuste} onChange={(a) => mudarItem(s.id, i.id, { fotoAjuste: a })} onNovaFoto={(b, manter) => trocarFotoPor(s.id, i.id, b, manter)} />}
+                        <div className="grid grid-cols-2 gap-2">
+                          {i.foto && <BotaoAcao ativo={ajustando === i.id} expandido={ajustando === i.id} onClick={() => setAjustando(ajustando === i.id ? null : i.id)} icone="ajustar">Ajustar foto</BotaoAcao>}
+                          <BotaoAcao onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} desativado={subindo === i.id} icone="enviar">{subindo === i.id ? "Enviando…" : i.foto ? "Trocar foto" : "Enviar foto"}</BotaoAcao>
+                          <BotaoAcao onClick={() => setGaleriaPara({ s: s.id, i: i.id })} icone="galeria">Da galeria</BotaoAcao>
+                          {i.foto && <BotaoAcao onClick={() => mudarItem(s.id, i.id, { foto: null, fotoAjuste: null })} icone="tirar">Tirar foto</BotaoAcao>}
+                        </div>
                         <div className="flex flex-wrap items-center gap-2">
                           {!(comDesc.includes(i.id) || !!i.descricao) && (
-                            <button type="button" onClick={() => setComDesc((p) => [...p, i.id])} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">+ Descrição</button>
+                            <button type="button" onClick={() => setComDesc((p) => [...p, i.id])} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary active:scale-[0.98]">+ Descrição</button>
                           )}
                           {i.preco != null && (
-                            <button type="button" role="checkbox" aria-checked={!!i.aPartir} onClick={() => mudarItem(s.id, i.id, { aPartir: !i.aPartir })} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${i.aPartir ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>A partir de</button>
+                            <button type="button" role="checkbox" aria-checked={!!i.aPartir} onClick={() => mudarItem(s.id, i.id, { aPartir: !i.aPartir })} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium active:scale-[0.98] ${i.aPartir ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>A partir de</button>
                           )}
-                          {i.foto && <button type="button" aria-expanded={ajustando === i.id} onClick={() => setAjustando(ajustando === i.id ? null : i.id)} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium ${ajustando === i.id ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>Ajustar foto</button>}
-                          <button type="button" onClick={() => { alvo.current = { s: s.id, i: i.id }; inputFoto.current?.click(); }} disabled={subindo === i.id} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary disabled:opacity-60">{subindo === i.id ? "Enviando…" : i.foto ? "Trocar foto" : "Enviar foto"}</button>
-                          <button type="button" onClick={() => setGaleriaPara({ s: s.id, i: i.id })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Da galeria</button>
-                          {i.foto && <button type="button" onClick={() => mudarItem(s.id, i.id, { foto: null, fotoAjuste: null })} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Tirar foto</button>}
-                          {i.nome.trim() && <button type="button" onClick={() => mostrarNoCatalogo(s, i)} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary">Mostrar no catálogo</button>}
-                          <button type="button" onClick={() => removerPrato(s.id, i.id)} className="ml-auto min-h-[40px] rounded-full px-3 text-[13px] font-medium text-text-tertiary">Apagar</button>
+                          {i.nome.trim() && <button type="button" onClick={() => mostrarNoCatalogo(s, i)} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary active:scale-[0.98]">Mostrar no catálogo</button>}
+                        </div>
+                        <div className="flex justify-end border-t border-black/5 pt-1">
+                          <button type="button" onClick={() => removerPrato(s.id, i.id)} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-text-tertiary active:scale-[0.98]">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" /></svg>
+                            Apagar prato
+                          </button>
                         </div>
                       </div>
                     )}
