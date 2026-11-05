@@ -1567,8 +1567,8 @@ function LinguaContato({ slug, ocupado, eu, onQuero }: { slug: string; ocupado: 
       aria-label="Receber novidades e promoções"
       className={`cl-lingua fixed inset-x-0 bottom-0 z-[45] mx-auto w-[min(94vw,400px)] rounded-t-[24px] border border-b-0 border-divider bg-surface-white px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-4 shadow-[0_-8px_30px_rgba(17,19,24,0.14)] ${visivel ? "on" : ""}`}
     >
-      <p className="text-[15px] font-semibold text-on-background">Quer saber das novidades e promoções?</p>
-      <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">A gente avisa apenas quando tiver novidade. Sem spam.</p>
+      <p className="text-[15px] font-semibold text-on-background">Quer ficar por dentro das novidades?</p>
+      <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">Sem spam.</p>
       <div className="mt-3 flex items-center gap-2">
         <button type="button" onClick={() => { dispensar(); onQuero(); }} className="min-h-[44px] flex-1 rounded-full bg-button-primary text-[14px] font-semibold text-white active:scale-[0.98]">Deixar meu contato</button>
         <button type="button" onClick={dispensar} className="min-h-[44px] rounded-full px-4 text-[14px] font-medium text-text-secondary active:scale-[0.98]">Agora não</button>
