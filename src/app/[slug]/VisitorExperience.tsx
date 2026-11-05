@@ -160,6 +160,7 @@ export function VisitorExperience({
   hasAiChat,
   hasVouchers,
   corVoucher = null,
+  donoTemBoxCatalogo = false,
   giftEnabled: giftLigado = false,
   gratis = false,
   suggestedQuestions = [],
@@ -176,6 +177,8 @@ export function VisitorExperience({
   hasVouchers: boolean;
   /** Cor do voucher mais novo no ar: o botão de Vouchers da página inicial segue essa cor. */
   corVoucher?: string | null;
+  /** O dono tem (ligado ou desligado) um botão de Catálogo: nesse caso a bolinha automática não entra. */
+  donoTemBoxCatalogo?: boolean;
   giftEnabled?: boolean;
   /** Dono no plano grátis: limites de bolinhas e boxes e sem recursos pagos. */
   gratis?: boolean;
@@ -664,7 +667,7 @@ export function VisitorExperience({
     }
     // O catálogo também é uma bolinha: quem tem itens chega nele direto, sem link de texto.
     const temBoxCatalogo = boxList.some((b) => b.box_type === "product" || (b.box_type === "custom" && (b.config as CustomConfig | null)?.action === "vitrine"));
-    if (content.length > 0 && !temBoxCatalogo) {
+    if (content.length > 0 && !temBoxCatalogo && !donoTemBoxCatalogo) {
       const ref = out.find((b) => b.editavel);
       const pos = out.findIndex((b) => b.tipo === "whatsapp") + 1;
       out.splice(pos, 0, { key: "catalogo", estilo: ref?.estilo ?? "cor", editavel: false, rotulo: "Catálogo", tipo: "catalogo", onClick: () => { setCategoriaInicial(null); chooseIntent("comprar"); } });
