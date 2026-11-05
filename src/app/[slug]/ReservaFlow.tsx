@@ -180,7 +180,7 @@ export function ReservaFlow({ businessId, businessName, whatsapp, sessionId, onB
       </div>
 
       <p className={`mt-5 ${rotulo}`}>Observação (opcional)</p>
-      <input value={obs} onChange={(e) => setObs(e.target.value)} placeholder="Aniversário, cadeirinha, mesa na área externa..." className="mt-2 min-h-[52px] w-full rounded-full border border-divider bg-surface-white px-5 text-[16px] outline-none placeholder:text-text-tertiary focus:border-on-background" />
+      <input value={obs} onChange={(e) => setObs(e.target.value)} className="mt-2 min-h-[52px] w-full rounded-full border border-divider bg-surface-white px-5 text-[16px] outline-none placeholder:text-text-tertiary focus:border-on-background" />
 
       <div className="mt-6 rounded-[22px] bg-surface-white p-4 ring-1 ring-divider">
         <p className="text-[16px] font-semibold">{nome.trim() || "Seu nome"}</p>
