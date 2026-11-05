@@ -192,8 +192,8 @@ export type Database = {
         Relationships: []
       }
       reservas_config: {
-        Row: { business_id: string; dias: number[]; abre: string; fecha: string; intervalo_min: number; capacidade: number | null; max_pessoas: number; dias_a_frente: number; antecedencia_min: number; updated_at: string }
-        Insert: { business_id: string; dias?: number[]; abre?: string; fecha?: string; intervalo_min?: number; capacidade?: number | null; max_pessoas?: number; dias_a_frente?: number; antecedencia_min?: number; updated_at?: string }
+        Row: { business_id: string; dias: number[]; abre: string; fecha: string; intervalo_min: number; capacidade: number | null; max_pessoas: number; dias_a_frente: number; antecedencia_min: number; aviso: string | null; datas_fechadas: string[]; updated_at: string }
+        Insert: { business_id: string; dias?: number[]; abre?: string; fecha?: string; intervalo_min?: number; capacidade?: number | null; max_pessoas?: number; dias_a_frente?: number; antecedencia_min?: number; aviso?: string | null; datas_fechadas?: string[]; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["reservas_config"]["Insert"]>
         Relationships: []
       }

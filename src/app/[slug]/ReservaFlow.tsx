@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { trackClick } from "@/lib/track";
 
-type Config = { dias: number[]; abre: string; fecha: string; intervalo_min: number; capacidade: number | null; max_pessoas: number; dias_a_frente: number; antecedencia_min: number };
+type Config = { dias: number[]; abre: string; fecha: string; intervalo_min: number; capacidade: number | null; max_pessoas: number; dias_a_frente: number; antecedencia_min: number; aviso: string | null; datas_fechadas: string[] | null };
 
 const DIAS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
 const DIAS_LONGOS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
@@ -37,16 +37,17 @@ export function ReservaFlow({ businessId, businessName, whatsapp, sessionId, onB
   const [feito, setFeito] = useState(false);
 
   useEffect(() => {
-    createClient().from("reservas_config").select("dias, abre, fecha, intervalo_min, capacidade, max_pessoas, dias_a_frente, antecedencia_min").eq("business_id", businessId).maybeSingle().then(({ data }) => setCfg((data as Config | null) ?? null));
+    createClient().from("reservas_config").select("dias, abre, fecha, intervalo_min, capacidade, max_pessoas, dias_a_frente, antecedencia_min, aviso, datas_fechadas").eq("business_id", businessId).maybeSingle().then(({ data }) => setCfg((data as Config | null) ?? null));
   }, [businessId]);
 
   const dias = useMemo(() => {
     if (!cfg) return [];
     const base = agoraBR();
     const out: Date[] = [];
+    const fechadas = new Set(cfg.datas_fechadas ?? []);
     for (let i = 0; i <= cfg.dias_a_frente && out.length < 21; i++) {
       const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i);
-      if (cfg.dias.includes(d.getDay())) out.push(d);
+      if (cfg.dias.includes(d.getDay()) && !fechadas.has(chave(d))) out.push(d);
     }
     return out;
   }, [cfg]);
@@ -135,6 +136,8 @@ export function ReservaFlow({ businessId, businessName, whatsapp, sessionId, onB
       <p className="mt-1.5 text-[14px] leading-snug text-text-secondary">Escolha o dia, o horário e o número de pessoas. Enviamos o pedido pelo WhatsApp.</p>
 
       <p className={`mt-6 ${rotulo}`}>Dia</p>
+      {cfg.aviso?.trim() && <p className="mt-2 whitespace-pre-line rounded-[18px] bg-surface-soft px-4 py-3 text-[13.5px] leading-snug text-text-secondary ring-1 ring-divider">{cfg.aviso.trim()}</p>}
+      {dias.length === 0 && <p className="mt-2 text-[13.5px] text-text-tertiary">Sem datas disponíveis no momento.</p>}
       <div className="no-scrollbar -mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
         {dias.map((d) => {
           const k = chave(d);

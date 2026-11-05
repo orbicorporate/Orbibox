@@ -5,10 +5,10 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 
-type Cfg = { dias: number[]; abre: string; fecha: string; intervalo_min: number; capacidade: number | null; max_pessoas: number; dias_a_frente: number; antecedencia_min: number };
+type Cfg = { dias: number[]; abre: string; fecha: string; intervalo_min: number; capacidade: number | null; max_pessoas: number; dias_a_frente: number; antecedencia_min: number; aviso: string | null; datas_fechadas: string[] };
 type Reserva = { id: string; nome: string; whatsapp: string | null; data: string; hora: string; pessoas: number; obs: string | null; status: string };
 
-const PADRAO: Cfg = { dias: [0, 1, 2, 3, 4, 5, 6], abre: "12:00", fecha: "22:30", intervalo_min: 30, capacidade: null, max_pessoas: 12, dias_a_frente: 30, antecedencia_min: 60 };
+const PADRAO: Cfg = { dias: [0, 1, 2, 3, 4, 5, 6], abre: "12:00", fecha: "22:30", intervalo_min: 30, capacidade: null, max_pessoas: 12, dias_a_frente: 30, antecedencia_min: 60, aviso: null, datas_fechadas: [] };
 const DIAS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const DIAS_NOME = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 const STATUS: Record<string, { rotulo: string; cor: string }> = {
@@ -48,7 +48,7 @@ export function ReservasEditor({ businessId, nomeNegocio, boxId: boxInicial, ati
   const supabase = useRef(createClient()).current;
   const [boxId, setBoxId] = useState(boxInicial);
   const [ativo, setAtivo] = useState(ativoInicial);
-  const [cfg, setCfg] = useState<Cfg>({ ...PADRAO, ...(config ?? {}) });
+  const [cfg, setCfg] = useState<Cfg>({ ...PADRAO, ...(config ?? {}), datas_fechadas: config?.datas_fechadas ?? [] });
   const [lista, setLista] = useState<Reserva[]>(iniciais);
   const [aba, setAba] = useState<"proximas" | "config">("proximas");
   const [criando, setCriando] = useState(false);
@@ -177,6 +177,23 @@ export function ReservasEditor({ businessId, nomeNegocio, boxId: boxInicial, ati
 
           {aba === "config" && (
             <div className="mt-4 flex flex-col gap-5">
+              <div>
+                <p className="mb-2 text-[13.5px] font-semibold">Recado no topo</p>
+                <textarea value={cfg.aviso ?? ""} maxLength={200} rows={2} onChange={(e) => mudarCfg({ aviso: e.target.value.trim() ? e.target.value : null })} placeholder="Ex.: Aos domingos só atendemos até 17h" className={`${campo} resize-none`} />
+                <p className="mt-1 text-[12px] text-text-tertiary">Aparece acima das datas na tela de reserva.</p>
+              </div>
+              <div>
+                <p className="mb-2 text-[13.5px] font-semibold">Datas fechadas</p>
+                <input type="date" min={hoje} value="" onChange={(e) => { const v = e.target.value; if (v && v >= hoje && !cfg.datas_fechadas.includes(v)) mudarCfg({ datas_fechadas: [...cfg.datas_fechadas, v].sort() }); }} className={campo} />
+                {cfg.datas_fechadas.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {cfg.datas_fechadas.map((d) => (
+                      <button key={d} type="button" aria-label={`Reabrir ${rotuloDia(d, hoje)}`} onClick={() => mudarCfg({ datas_fechadas: cfg.datas_fechadas.filter((x) => x !== d) })} className="min-h-[36px] rounded-full bg-surface-soft px-3.5 text-[13px] text-text-secondary">{rotuloDia(d, hoje)} ×</button>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-1 text-[12px] text-text-tertiary">Feriados e dias sem atendimento. Não aparecem para o cliente.</p>
+              </div>
               <div>
                 <p className="mb-2 text-[13.5px] font-semibold">Dias que atende</p>
                 <div className="flex gap-2">
