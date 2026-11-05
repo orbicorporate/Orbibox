@@ -1,6 +1,7 @@
 "use client";
 
-import { useImperativeHandle, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useArrastarOrdem } from "@/lib/useArrastarOrdem";
 import { createClient } from "@/lib/supabase/client";
 import { AjustarFoto } from "./AjustarFoto";
@@ -29,14 +30,28 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
   // Passagem de itens entre Cardápio e Catálogo.
   const [aviso, setAviso] = useState<string | null>(null);
   const [trazendo, setTrazendo] = useState<{ carregando: boolean; itens: ItemDoCatalogo[] } | null>(null);
-  const [aberto, setAberto] = useState<string | null>(null);
+  // Vindo do lápis da página (?prato=<id> ou ?categoria=<id>): abre só aquela categoria,
+  // deixa o prato aberto para editar e rola até ele.
+  const params = useSearchParams();
+  const pratoPedido = params.get("prato");
+  const categoriaPedida = params.get("categoria");
+  const secaoPedida = pratoPedido ? secoes.find((x) => x.itens.some((i) => i.id === pratoPedido)) : categoriaPedida ? secoes.find((x) => x.id === categoriaPedida) : undefined;
+  const [aberto, setAberto] = useState<string | null>(() => (secaoPedida && pratoPedido ? pratoPedido : null));
   // Categorias recolhidas. Com mais de uma, só a primeira começa aberta; categoria nova ou importada nasce aberta.
-  const [fechadas, setFechadas] = useState<string[]>(() => (secoes.length > 1 ? secoes.slice(1).map((x) => x.id) : []));
+  const [fechadas, setFechadas] = useState<string[]>(() => (secaoPedida ? secoes.filter((x) => x.id !== secaoPedida.id).map((x) => x.id) : secoes.length > 1 ? secoes.slice(1).map((x) => x.id) : []));
+  useEffect(() => {
+    if (!secaoPedida) return;
+    const t = window.setTimeout(() => document.getElementById(pratoPedido ? `prato-${pratoPedido}` : `cat-${secaoPedida.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 350);
+    return () => window.clearTimeout(t);
+    // Só na abertura: depois o dono mexe nas categorias como quiser.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pratoPedido, categoriaPedida]);
   const [comDesc, setComDesc] = useState<string[]>([]);
   const [ajustando, setAjustando] = useState<string | null>(null);
   const [galeriaPara, setGaleriaPara] = useState<{ s: string; i: string } | null>(null);
   const [apagado, setApagado] = useState<{ s: string; idx: number; item: CardapioItem } | null>(null);
   const timerDesfazer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
 
   // Segurar e arrastar um prato muda a ordem dele dentro da própria categoria.
   const arrastar = useArrastarOrdem(
@@ -189,7 +204,7 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
               {arrastar.ordenar(s.itens, (x) => x.id).map((i) => {
                 const aberta = aberto === i.id;
                 return (
-                  <li key={i.id} {...arrastar.alvo(i.id, s.id)} className={`rounded-2xl border border-divider transition-transform duration-150 ${arrastar.arrastando === i.id ? "relative z-10 scale-[1.02] bg-surface-white opacity-95 shadow-[0_10px_22px_rgba(17,19,24,0.22)]" : ""}`}>
+                  <li key={i.id} id={`prato-${i.id}`} {...arrastar.alvo(i.id, s.id)} className={`rounded-2xl border border-divider transition-transform duration-150 ${arrastar.arrastando === i.id ? "relative z-10 scale-[1.02] bg-surface-white opacity-95 shadow-[0_10px_22px_rgba(17,19,24,0.22)]" : ""}`}>
                     <div {...arrastar.alca(i.id, s.id)} className="flex items-center gap-3 p-2.5">
                       <button type="button" onClick={() => { if (i.foto) { setAberto(i.id); setAjustando(i.id); } else { setEscolhaFoto({ s: s.id, i: i.id }); } }} disabled={subindo === i.id} aria-label={i.foto ? "Ajustar foto do prato" : "Adicionar foto do prato"} className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-soft text-text-tertiary active:scale-[0.96]">
                         {i.foto ? (

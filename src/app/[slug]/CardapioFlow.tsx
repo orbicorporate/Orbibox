@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { estiloFoto, pesoLegivel, precoCardapio, textoSobre, type CardapioPdf, type CardapioSecao, type LayoutItens } from "@/lib/cardapio";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
+import { LapisDono } from "@/components/mobile/LapisDono";
 import { trackClick } from "@/lib/track";
 import { estiloCategoria, IconeCategoria } from "./categoriaCardapio";
 import { BotaoCompartilhar, type AlvoCompartilhar } from "@/components/compartilhar/Compartilhar";
@@ -227,6 +228,7 @@ export function CardapioFlow({
                 </span>
                 <h3 className="min-w-0 flex-1 truncate font-[family-name:var(--font-manrope)] text-[20px] font-medium tracking-[-0.01em]">{s.nome}</h3>
                 <span className="shrink-0 rounded-full bg-white/60 px-2.5 py-1 text-[12px] font-medium text-text-secondary ring-1 ring-white/80 backdrop-blur-md">{s.itens.length}</span>
+                {donoVendo && <LapisDono href={`/admin/cardapio?categoria=${s.id}`} rotulo="Editar categoria" />}
               </div>
             )}
             {layout === "cards" ? (
@@ -239,8 +241,9 @@ export function CardapioFlow({
                     <li
                       key={i.id}
                       style={{ animationDelay: `${Math.min(n, 8) * 45}ms` }}
-                      className="cardapio-item-in cardapio-vidro flex flex-col rounded-[24px] p-2.5"
+                      className="cardapio-item-in cardapio-vidro relative flex flex-col rounded-[24px] p-2.5"
                     >
+                      {donoVendo && <LapisDono href={`/admin/cardapio?prato=${i.id}`} rotulo="Editar prato" className="absolute right-3.5 top-3.5 z-10" />}
                       <span className="relative block aspect-square w-full overflow-hidden rounded-[18px] bg-surface-soft ring-1 ring-white/80">
                         {i.foto ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -277,8 +280,9 @@ export function CardapioFlow({
                   <li
                     key={i.id}
                     style={{ animationDelay: `${Math.min(n, 8) * 45}ms` }}
-                    className="cardapio-item-in cardapio-vidro flex w-full items-center gap-3.5 rounded-[24px] p-3.5"
+                    className="cardapio-item-in cardapio-vidro relative flex w-full items-center gap-3.5 rounded-[24px] p-3.5"
                   >
+                    {donoVendo && <LapisDono href={`/admin/cardapio?prato=${i.id}`} rotulo="Editar prato" className="absolute -right-1 -top-1 z-10" />}
                     {i.foto && (
                       <span className="relative h-[84px] w-[84px] shrink-0 overflow-hidden rounded-[18px] bg-surface-soft ring-1 ring-white/80">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
