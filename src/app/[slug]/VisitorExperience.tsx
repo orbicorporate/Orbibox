@@ -15,6 +15,7 @@ import { appsAtivos, linkDoApp } from "@/lib/delivery";
 import Link from "next/link";
 import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
 import { LapisDono } from "@/components/mobile/LapisDono";
+import { ConviteCriarOrbibox } from "@/components/mobile/ConviteCriarOrbibox";
 import { ExcluirItemX } from "@/components/mobile/ExcluirItemX";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
@@ -970,6 +971,7 @@ export function VisitorExperience({
     <main className="relative min-h-screen overflow-hidden bg-background-main">
       {isOwner && <TourOrbibox fase="home" slug={business.slug} iniciar={searchParams.get("tour") === "1"} novo={negocioNovo} />}
       {isOwner && <ChecklistDivulgarHost />}
+      <ConviteCriarOrbibox ativo={!showOwnerControls} />
       {/* Fundo conforme o estilo escolhido pelo dono. "brilho" é o halo suave
           (padrão); os demais preenchem a tela com cor forte + um véu claro por
           cima pra a Orbi e os textos continuarem legíveis. */}

@@ -1764,3 +1764,14 @@ html[data-embed] .embed-oculta { display: none !important; }
   animation: chipOrbiEntra 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both, chipOrbiFlutua 3.2s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) { .chip-orbi { animation: none; } }
+
+/* Convite "Gostou do Orbibox?": desce do topo com um quique leve, brilho colorido que se move devagar e coração que pulsa. */
+@keyframes conviteDesce { 0% { transform: translateY(-140%); opacity: 0; } 60% { transform: translateY(6%); opacity: 1; } 80% { transform: translateY(-2%); } 100% { transform: translateY(0); opacity: 1; } }
+@keyframes conviteSobe { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-140%); opacity: 0; } }
+@keyframes conviteBrilho { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+@keyframes conviteCoracao { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+.convite-desce { animation: conviteDesce 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.convite-sobe { animation: conviteSobe 0.3s ease-in both; }
+.convite-brilho { background: linear-gradient(110deg, #BFD9FF, #D9C8FF, #BFF0DC, #FFE9B8, #FFD0E0, #BFD9FF); background-size: 200% 100%; animation: conviteBrilho 6s linear infinite; }
+.convite-coracao { animation: conviteCoracao 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .convite-desce, .convite-sobe, .convite-brilho, .convite-coracao { animation: none; } }
