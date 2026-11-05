@@ -9,6 +9,7 @@ import { filterLive } from "@/lib/scheduling";
 import { capaDoItem } from "@/lib/showcase";
 import { VisitorExperience } from "./VisitorExperience";
 import { APP_URL } from "@/lib/appUrl";
+import { createServiceClient } from "@/lib/supabase/service";
 
 /**
  * Preview do link (Open Graph), o que aparece quando alguém cola o link do
@@ -184,6 +185,10 @@ export default async function VisitorPage({
   // Plano grátis: vouchers, gift, IA e PDFs não aparecem para o visitante.
   const boxes = filterLive(boxesRes.data ?? []).filter((b) => !donoGratis || !caixaBloqueadaNoGratis(b));
   const agentConfig = agentRes.data;
+  // O visitante não enxerga botões desligados, então não sabe que o dono tinha (e escondeu) o do Catálogo.
+  // Sem essa informação a página cria uma bolinha "Catálogo" automática que o dono já tirou.
+  const { data: botoesDoDono } = await createServiceClient().from("smart_boxes").select("box_type, config").eq("business_id", business.id);
+  const donoTemBoxCatalogo = (botoesDoDono ?? []).some((b) => b.box_type === "product" || (b.box_type === "custom" && (b.config as { action?: string } | null)?.action === "vitrine"));
   const orbiColors = Array.isArray(agentConfig?.orbi_colors) && agentConfig.orbi_colors.length >= 2
     ? (agentConfig.orbi_colors as string[])
     : null;
@@ -217,6 +222,7 @@ export default async function VisitorPage({
       hasAiChat={hasAiChat}
       hasVouchers={hasVouchers}
       corVoucher={corVoucher}
+      donoTemBoxCatalogo={donoTemBoxCatalogo}
       giftEnabled={giftEnabled}
       gratis={donoGratis}
     />
