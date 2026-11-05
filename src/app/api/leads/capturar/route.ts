@@ -36,7 +36,9 @@ export async function POST(req: NextRequest) {
     });
     if (error || !leadId) return NextResponse.json({ error: "Não consegui salvar agora." }, { status: 500 });
 
-    const mensagem = mensagemContatoAnotado(nome);
+    const mensagem = interesse === "novidades"
+      ? `${nome ? `Anotado, ${nome.split(" ")[0]}!` : "Anotado!"} Você vai receber as novidades. Se preferir falar agora, é só tocar no botão verde do WhatsApp.`
+      : mensagemContatoAnotado(nome);
     if (conversationId && UUID.test(conversationId)) {
       // Só mexe na conversa se ela é mesmo deste negócio.
       const { data: conv } = await svc.from("conversations").select("id").eq("id", conversationId).eq("business_id", businessId).maybeSingle();

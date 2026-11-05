@@ -2949,12 +2949,27 @@ function OrbiChat({
                 <div className="flex flex-col gap-3">{formatMessage(m.content, content, slug, businessId, sessionId, address)}</div>
                 {m.role === "agent" && i === ultimoAgente && !sending && !temContato && !dispensou && (/\[\[contato\]\]/i.test(m.content) || falasDoVisitante >= 2) && (
                   <div className="mt-4 rounded-2xl bg-surface-white p-3.5 shadow-[0_2px_12px_rgba(17,19,24,0.06)]">
-                    <p className="mb-2.5 text-[13.5px] font-medium text-text-secondary">Deixe seu WhatsApp e um especialista continua com você.</p>
+                    {whatsapp && (
+                      <>
+                        <p className="mb-2.5 text-[13.5px] font-medium text-text-secondary">Quer falar agora? A equipe atende direto no WhatsApp.</p>
+                        <a
+                          href={whatsappLink(whatsapp, "Oi! Eu vim pelo Orbibox.")}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => trackClick({ businessId, kind: "whatsapp", sessionId })}
+                          className="mb-4 flex w-full items-center justify-center rounded-full bg-[#25D366] py-3 text-[15px] font-semibold text-[#0B4A25] active:scale-[0.98]"
+                        >
+                          Chamar agora no WhatsApp
+                        </a>
+                      </>
+                    )}
+                    <p className="mb-2.5 text-[13px] text-text-secondary">{whatsapp ? "Prefere não falar agora? Deixe seu telefone e receba novidades." : "Deixe seu telefone e receba novidades."}</p>
                     <ContatoForm
                       businessId={businessId}
                       conversationId={conversationId}
                       sessionId={sessionId}
                       origem="chat"
+                      novidades
                       confirmar
                       aoCapturar={(r) => contatoAnotado(r.mensagem)}
                     />
@@ -2993,13 +3008,25 @@ function OrbiChat({
         <div className="absolute inset-0 z-[60] flex flex-col justify-end bg-on-background/50 backdrop-blur-sm" onClick={() => setSaidaAberta(false)}>
           <div className="mx-auto w-full max-w-[440px] rounded-t-[28px] bg-background-main px-5 pb-8 pt-4" onClick={(e) => e.stopPropagation()}>
             <span className="mx-auto mb-4 block h-1.5 w-12 rounded-full bg-divider" />
-            <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold leading-tight tracking-[-0.01em]">Quer que um especialista continue com você?</p>
-            <p className="mb-4 mt-1 text-[13.5px] text-text-secondary">Deixe seu WhatsApp e a gente retoma essa conversa de onde parou.</p>
+            <p className="font-[family-name:var(--font-manrope)] text-[20px] font-semibold leading-tight tracking-[-0.01em]">{whatsapp ? "Quer continuar no WhatsApp?" : "Quer receber novidades?"}</p>
+            {whatsapp && (
+              <a
+                href={whatsappLink(whatsapp, "Oi! Eu vim pelo Orbibox.")}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackClick({ businessId, kind: "whatsapp", sessionId })}
+                className="mt-3 flex w-full items-center justify-center rounded-full bg-[#25D366] py-3.5 text-[15px] font-semibold text-[#0B4A25] active:scale-[0.98]"
+              >
+                Chamar agora no WhatsApp
+              </a>
+            )}
+            <p className="mb-3 mt-4 text-[13.5px] text-text-secondary">{whatsapp ? "Prefere não falar agora? Deixe seu telefone e receba novidades." : "Deixe seu telefone e receba as novidades."}</p>
             <ContatoForm
               businessId={businessId}
               conversationId={conversationId}
               sessionId={sessionId}
               origem="chat"
+              novidades
               confirmar
               aoCapturar={(r) => contatoAnotado(r.mensagem)}
             />

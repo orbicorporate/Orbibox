@@ -35,7 +35,8 @@ export function ContatoForm({
   origem,
   interesse,
   confirmar = false,
-  botao = "Pode me chamar",
+  botao,
+  novidades = false,
   aoCapturar,
 }: {
   businessId: string;
@@ -46,6 +47,8 @@ export function ContatoForm({
   /** No chat, a Orbi registra a confirmação na conversa. */
   confirmar?: boolean;
   botao?: string;
+  /** Só guarda o telefone para receber novidades; ninguém vai chamar a pessoa na hora. */
+  novidades?: boolean;
   aoCapturar: (r: { nome: string; whatsapp: string; mensagem: string }) => void;
 }) {
   const [nome, setNome] = useState(() => lerVisitante(businessId).nome);
@@ -62,7 +65,7 @@ export function ContatoForm({
       const res = await fetch("/api/leads/capturar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, conversationId: conversationId ?? null, sessionId, origem, interesse, nome: nome.trim(), whatsapp, confirmar }),
+        body: JSON.stringify({ businessId, conversationId: conversationId ?? null, sessionId, origem, interesse: novidades ? "novidades" : interesse, nome: nome.trim(), whatsapp, confirmar }),
       });
       const data = await res.json();
       if (!res.ok) { setErro(data.error ?? "Não consegui salvar agora. Tenta de novo."); return; }
@@ -89,10 +92,10 @@ export function ContatoForm({
         value={whatsapp}
         onChange={(e) => setWhatsapp(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter") enviar(); }}
-        placeholder="WhatsApp com DDD"
+        placeholder={novidades ? "Telefone com DDD" : "WhatsApp com DDD"}
         inputMode="tel"
         autoComplete="tel"
-        aria-label="Seu WhatsApp"
+        aria-label={novidades ? "Seu telefone" : "Seu WhatsApp"}
         className="w-full rounded-full border border-divider bg-surface-white px-4 py-2.5 text-[15px] outline-none focus:border-on-background"
       />
       {erro && <p className="text-[12.5px] text-red-600">{erro}</p>}
@@ -102,7 +105,7 @@ export function ContatoForm({
         disabled={enviando || !valido}
         className="w-full cursor-pointer rounded-full bg-on-background py-3 text-[15px] font-semibold text-white disabled:opacity-40"
       >
-        {enviando ? "Salvando…" : botao}
+        {enviando ? "Salvando…" : (botao ?? (novidades ? "Receber novidades" : "Pode me chamar"))}
       </button>
     </div>
   );
