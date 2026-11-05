@@ -29,7 +29,7 @@ const ICONES: Record<string, string> = {
 
 function BotaoAcao({ children, onClick, icone, ativo, expandido, desativado }: { children: React.ReactNode; onClick: () => void; icone: string; ativo?: boolean; expandido?: boolean; desativado?: boolean }) {
   return (
-    <button type="button" onClick={onClick} disabled={desativado} aria-expanded={expandido} className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-4 text-[13.5px] font-medium transition-[transform,background-color] active:scale-[0.97] disabled:opacity-60 ${ativo ? "bg-on-background text-white" : "bg-surface-soft text-on-background"}`}>
+    <button type="button" onClick={onClick} disabled={desativado} aria-expanded={expandido} className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-4 text-[13.5px] font-medium transition-[transform,background-color] active:scale-[0.97] disabled:opacity-60 ${ativo ? "bg-on-background text-white" : "bg-white text-on-background ring-1 ring-black/20 shadow-[0_1px_2px_rgba(0,0,0,0.06)]"}`}>
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={ICONES[icone]} /></svg>
       {children}
     </button>
@@ -273,15 +273,15 @@ export function PratosEditor({ businessId, secoes, onChange, barra, ref, childre
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           {!(comDesc.includes(i.id) || !!i.descricao) && (
-                            <button type="button" onClick={() => setComDesc((p) => [...p, i.id])} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary active:scale-[0.98]">+ Descrição</button>
+                            <button type="button" onClick={() => setComDesc((p) => [...p, i.id])} className="min-h-[40px] rounded-full bg-white px-4 text-[13px] font-medium text-on-background ring-1 ring-black/20 active:scale-[0.98]">+ Descrição</button>
                           )}
                           {i.preco != null && (
-                            <button type="button" role="checkbox" aria-checked={!!i.aPartir} onClick={() => mudarItem(s.id, i.id, { aPartir: !i.aPartir })} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium active:scale-[0.98] ${i.aPartir ? "bg-on-background text-white" : "bg-surface-soft text-text-secondary"}`}>A partir de</button>
+                            <button type="button" role="checkbox" aria-checked={!!i.aPartir} onClick={() => mudarItem(s.id, i.id, { aPartir: !i.aPartir })} className={`min-h-[40px] rounded-full px-4 text-[13px] font-medium active:scale-[0.98] ${i.aPartir ? "bg-on-background text-white" : "bg-white text-on-background ring-1 ring-black/20"}`}>A partir de</button>
                           )}
-                          {i.nome.trim() && <button type="button" onClick={() => mostrarNoCatalogo(s, i)} className="min-h-[40px] rounded-full bg-surface-soft px-4 text-[13px] font-medium text-text-secondary active:scale-[0.98]">Mostrar no catálogo</button>}
+                          {i.nome.trim() && <button type="button" onClick={() => mostrarNoCatalogo(s, i)} className="min-h-[40px] rounded-full bg-white px-4 text-[13px] font-medium text-on-background ring-1 ring-black/20 active:scale-[0.98]">Mostrar no catálogo</button>}
                         </div>
                         <div className="flex justify-end border-t border-black/5 pt-1">
-                          <button type="button" onClick={() => removerPrato(s.id, i.id)} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-text-tertiary active:scale-[0.98]">
+                          <button type="button" onClick={() => removerPrato(s.id, i.id)} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-red-600 active:scale-[0.98]">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" /></svg>
                             Apagar prato
                           </button>
