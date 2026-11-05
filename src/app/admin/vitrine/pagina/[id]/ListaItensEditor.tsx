@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { useArrastarOrdem } from "@/lib/useArrastarOrdem";
@@ -9,6 +9,7 @@ import { FotoProntaPicker } from "@/components/ui/FotoProntaPicker";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { MAX_PAGINAS_LEITURA, pdfParaImagens } from "@/lib/pdfParaImagens";
 import { MAX_FOTOS, MAX_LISTA, fotosDoItem, listaVazia, novoIdLista, precoDoItem, reduzirFoto, type Lista, type ListaDestino, type ListaItem } from "@/lib/lista";
+import { pratosDoCardapio } from "@/lib/cardapioSync";
 import CampoPreco from "@/components/ui/CampoPreco";
 
 const campo = "w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background";
@@ -46,6 +47,19 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
   const [prontas, setProntas] = useState(false);
   const [escolhendo, setEscolhendo] = useState(false);
   const [recorte, setRecorte] = useState<File | null>(null);
+  const [pratosFoto, setPratosFoto] = useState<{ nome: string; foto: string; categoria: string }[]>([]);
+  const [doCardapio, setDoCardapio] = useState(false);
+
+  // Pratos do cardápio que têm foto: deixam preencher a foto do item com a que já está lá.
+  useEffect(() => {
+    let vivo = true;
+    pratosDoCardapio(supabase, businessId)
+      .then((t) => { if (vivo) setPratosFoto(t.filter((x) => !!x.foto).map((x) => ({ nome: x.nome, foto: x.foto as string, categoria: x.categoria }))); })
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, [supabase, businessId]);
+  const nomeNorm = nome.trim().toLowerCase();
+  const pratosOrdenados = [...pratosFoto].sort((a, b) => Number(b.nome.trim().toLowerCase() === nomeNorm) - Number(a.nome.trim().toLowerCase() === nomeNorm));
 
   // Toda foto passa pelo recorte: o dono arrasta e aproxima dentro da forma do item (retrato).
   function enviar(f: File | undefined) {
@@ -130,6 +144,7 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
               <button type="button" onClick={() => setGaleria(true)} disabled={subindo} className="min-h-[44px] rounded-full bg-on-background px-3.5 text-[13px] font-medium text-white">Álbum Orbibox</button>
               <button type="button" onClick={() => input.current?.click()} disabled={subindo} className="min-h-[44px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Upload</button>
               <button type="button" onClick={() => setProntas(true)} disabled={subindo} className="min-h-[44px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Busca web</button>
+              {pratosFoto.length > 0 && <button type="button" onClick={() => setDoCardapio(true)} disabled={subindo} className="min-h-[44px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Do cardápio</button>}
               {foto && <button type="button" onClick={() => ajustarAtual(foto)} disabled={subindo} className="min-h-[44px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Ajustar</button>}
               {foto && sel > 0 && <button type="button" onClick={tornarCapa} className="min-h-[44px] rounded-full bg-surface-soft px-3.5 text-[13px] font-medium text-text-secondary">Tornar capa</button>}
               {foto && <button type="button" onClick={tirarAtual} className="min-h-[44px] rounded-full px-3 text-[13px] font-medium text-text-secondary">Tirar</button>}
@@ -204,6 +219,29 @@ function FolhaItem({ businessId, inicial, novo, destino, onSalvar, onApagar, onF
       )}
       {recorte && <ImageCropModal file={recorte} lockedRatio="retrato" lockedReason="A foto do item aparece no formato retrato. Arraste e aproxime para enquadrar." onCancel={() => setRecorte(null)} onConfirm={(blob) => subirRecortada(blob)} />}
       {galeria && <MinhaGaleriaPicker businessId={businessId} atual={foto} onFechar={() => setGaleria(false)} onEscolher={(url) => { setGaleria(false); ajustarAtual(url, false); }} />}
+      {doCardapio && createPortal(
+        <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true" aria-label="Foto do cardápio">
+          <button type="button" aria-label="Fechar" onClick={() => setDoCardapio(false)} className="absolute inset-0 bg-black/45" />
+          <div className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[85vh] w-full max-w-[440px] flex-col rounded-t-[28px] bg-background-main p-5 pb-8">
+            <div className="flex items-center justify-between">
+              <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Fotos do cardápio</p>
+              <button type="button" onClick={() => setDoCardapio(false)} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-soft text-[14px]">✕</button>
+            </div>
+            <div className="mt-3 grid min-h-0 grid-cols-3 gap-2 overflow-y-auto">
+              {pratosOrdenados.map((x, n) => (
+                <button key={x.nome + n} type="button" onClick={() => { setDoCardapio(false); void ajustarAtual(x.foto, false); }} className="flex flex-col gap-1 text-left active:scale-[0.97]">
+                  <span className="relative block aspect-square overflow-hidden rounded-2xl bg-surface-soft">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={x.foto} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  </span>
+                  <span className="line-clamp-2 text-[12px] leading-tight text-text-secondary">{x.nome}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
       {prontas && <FotoProntaPicker businessId={businessId} assunto={nome} formato="retrato" onFechar={() => setProntas(false)} onEscolher={(f) => { setProntas(false); enviar(f); }} />}
     </div>,
     document.body,
