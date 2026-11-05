@@ -871,6 +871,11 @@ export function ShowcaseBuilder({
         <button data-guia="novo-item" onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-5 py-2.5 text-[14px] font-medium text-white disabled:opacity-50">
           + Novo item
         </button>
+        {temCardapio && (
+          <button onClick={() => void abrirTrazerDoCardapio()} className="rounded-full border border-divider bg-white px-4 py-2.5 text-[14px] font-medium text-on-background active:scale-[0.98]">
+            Puxar do cardápio
+          </button>
+        )}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuAberto((v) => !v)}
@@ -885,9 +890,6 @@ export function ShowcaseBuilder({
           {menuAberto && (
             <div className="absolute left-0 top-full z-30 mt-2 w-60 overflow-hidden rounded-2xl border border-divider bg-white py-1.5 shadow-[0_16px_40px_rgba(17,19,24,0.22)]">
               <button onClick={() => { setMenuAberto(false); setShowImport(true); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">✦ Importar do site</button>
-              {temCardapio && (
-                <button onClick={() => { setMenuAberto(false); void abrirTrazerDoCardapio(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Copiar itens do cardápio</button>
-              )}
               <button onClick={() => { setMenuAberto(false); createCategory(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Nova categoria</button>
               <button disabled={arranging || items.length === 0} onClick={() => { setMenuAberto(false); autoArrange(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">
                 {arranging ? "Organizando…" : "✦ Organizar com a Orbi"}
