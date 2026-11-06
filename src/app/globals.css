@@ -1775,3 +1775,8 @@ html[data-embed] .embed-oculta { display: none !important; }
 .convite-brilho { background: linear-gradient(110deg, #BFD9FF, #D9C8FF, #BFF0DC, #FFE9B8, #FFD0E0, #BFD9FF); background-size: 200% 100%; animation: conviteBrilho 6s linear infinite; }
 .convite-coracao { animation: conviteCoracao 1.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .convite-desce, .convite-sobe, .convite-brilho, .convite-coracao { animation: none; } }
+
+/* Estrelinhas de avaliar: piscam sem parar, uma depois da outra */
+@keyframes cl-pisca-estrela { 0%, 100% { opacity: .35; transform: scale(.88); } 45% { opacity: 1; transform: scale(1.12); } }
+.cl-estrela-pisca { display: inline-flex; animation: cl-pisca-estrela 1.8s ease-in-out var(--d, 0ms) infinite; }
+@media (prefers-reduced-motion: reduce) { .cl-estrela-pisca { animation: none; } }

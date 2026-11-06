@@ -91,6 +91,11 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     if (p === "contato") return setAberta({ tipo: "contato", origem: null });
     if (p === "fa") { await virarFa(businessId, e.userId); await curtirMarca(businessId, e.userId, true); }
     if (p === "curtir") await curtirMarca(businessId, e.userId, true);
+    if (p.startsWith("avaliar|")) {
+      await recarregar();
+      setNotaHome(Math.min(5, Math.max(1, Number(p.split("|")[1]) || 5)));
+      return;
+    }
     if (p.startsWith("item|")) {
       const [, alvo, id] = p.split("|");
       await virarFa(businessId, e.userId);
@@ -126,7 +131,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       if (e.userId && !e.mostrarMarcas) void atualizarPerfil(e.userId, { mostrar_marcas: true });
       let p: string | null = null;
       try { p = sessionStorage.getItem(chave(slug)); sessionStorage.removeItem(chave(slug)); } catch { /* ignora */ }
-      if (p === "fa" || p === "curtir" || p === "avaliar" || p === "contato" || p?.startsWith("item|")) await executar(p, e);
+      if (p === "fa" || p === "curtir" || p === "avaliar" || p === "contato" || p?.startsWith("item|") || p?.startsWith("avaliar|")) await executar(p, e);
     })();
     return () => { vivo = false; };
   }, [recarregar, executar, slug]);
@@ -240,25 +245,14 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
     <div className="mt-5 flex w-full min-w-0 flex-col items-center gap-3">
       {cluster && (slotTopo ? createPortal(cluster, slotTopo) : <div className="flex flex-wrap items-center justify-center gap-2">{cluster}</div>)}
 
-      {!isOwner && !eu.ehFa && (
-        <button
-          type="button"
-          onClick={(e) => void alternarFa(rect(e.currentTarget))}
-          className="nr-home relative flex min-h-[52px] items-center gap-2.5 rounded-full bg-surface-white/80 px-6 text-[15px] text-on-background ring-1 ring-black/[0.06] before:absolute before:-inset-2 before:content-[''] active:scale-[0.97]"
-        >
-          <span className="coracao-pulsa text-on-background/75"><IcCoracao cheio={false} tamanho={26} /></span>
-          Virar fã
-        </button>
-      )}
-      {!isOwner && eu.ehFa && !eu.minhaAvaliacao && (
+      {!isOwner && !eu.minhaAvaliacao && (
         <div className="nr-home lp-pop flex flex-col items-center" aria-label="Avaliar">
-          <p className="text-[13.5px] text-text-secondary">Que bom ter você. Quer avaliar também?</p>
           <span className="flex" role="radiogroup" aria-label="Nota">
             {[1, 2, 3, 4, 5].map((n) => (
               <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
-                onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin("avaliar", null); }}
-                className="grid h-11 w-9 place-items-center active:scale-90">
-                <Estrela cheia={false} tam={24} />
+                onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin(`avaliar|${n}`, null); }}
+                className="grid h-12 w-10 place-items-center active:scale-90">
+                <span className="cl-estrela-pisca" style={{ ["--d" as string]: `${n * 180}ms` }}><Estrela cheia tam={26} cor="#FFB23C" /></span>
               </button>
             ))}
           </span>
@@ -353,7 +347,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
             const e = await recarregar();
             let p: string | null = null;
             try { p = sessionStorage.getItem(chave(slug)); sessionStorage.removeItem(chave(slug)); } catch { /* ignora */ }
-            if ((p === "fa" || p === "curtir" || p === "avaliar" || p?.startsWith("item|")) && e.logado && p) await executar(p, e);
+            if ((p === "fa" || p === "curtir" || p === "avaliar" || p?.startsWith("item|") || p?.startsWith("avaliar|")) && e.logado && p) await executar(p, e);
           }}
         />
       )}
@@ -483,7 +477,7 @@ function EntrarFolha({ businessId, aoFechar, aoConcluir }: { slug?: string; busi
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Virar fã"
+        aria-label="Seu nome"
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-[440px] rounded-t-[32px] bg-background-main px-5 pb-[max(24px,env(safe-area-inset-bottom))] pt-5 shadow-[0_-12px_40px_rgba(0,0,0,0.2)]"
         style={reduzido ? undefined : { animation: "cl-sobe .42s cubic-bezier(.22,1,.36,1) both" }}
@@ -491,10 +485,10 @@ function EntrarFolha({ businessId, aoFechar, aoConcluir }: { slug?: string; busi
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">
-              Virar fã
+              Como podemos te chamar?
             </h2>
             <p className="mt-1 text-[14px] text-text-secondary">
-              Como podemos te chamar? Seu nome fica salvo neste celular para você virar fã de outros Orbibox sem digitar de novo.
+              Seu nome fica salvo neste celular para os outros Orbibox não pedirem de novo.
             </p>
           </div>
           <button type="button" onClick={aoFechar} aria-label="Fechar" className="cl-x active:scale-95">
@@ -505,7 +499,7 @@ function EntrarFolha({ businessId, aoFechar, aoConcluir }: { slug?: string; busi
         <form className="mt-4 flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); void entrar(); }}>
           <label className="sr-only" htmlFor="clube-nome">Seu nome</label>
           <input id="clube-nome" className={campo} autoComplete="name" placeholder="Seu nome" value={nomeTxt} onChange={(e) => setNomeTxt(e.target.value)} autoFocus />
-          <button type="submit" disabled={ocupado} className={botao}>{ocupado ? "Entrando..." : "Virar fã"}</button>
+          <button type="submit" disabled={ocupado} className={botao}>{ocupado ? "Entrando..." : "Continuar"}</button>
           {erro && <p role="alert" className="text-center text-[13.5px] text-[#C2362E]">{erro}</p>}
         </form>
       </div>
