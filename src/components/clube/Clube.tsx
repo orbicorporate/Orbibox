@@ -246,13 +246,14 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
       {cluster && (slotTopo ? createPortal(cluster, slotTopo) : <div className="flex flex-wrap items-center justify-center gap-2">{cluster}</div>)}
 
       {!isOwner && !eu.minhaAvaliacao && (
-        <div className="nr-home lp-pop flex flex-col items-center" aria-label="Avaliar">
+        <div className="nr-home lp-pop flex items-center justify-center gap-2" aria-label="Avaliar">
+          <span className="text-[13px] text-[#6B6F7A]">Avalie aqui:</span>
           <span className="flex" role="radiogroup" aria-label="Nota">
             {[1, 2, 3, 4, 5].map((n) => (
               <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
                 onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin(`avaliar|${n}`, null); }}
-                className="grid h-12 w-10 place-items-center active:scale-90">
-                <span className="cl-estrela-pisca" style={{ ["--d" as string]: `${n * 180}ms` }}><Estrela cheia tam={26} cor="#FFB23C" /></span>
+                className="grid h-9 w-7 place-items-center active:scale-90">
+                <span className="cl-estrela-pisca" style={{ ["--d" as string]: `${(n - 1) * 600}ms` }}><Estrela cheia tam={18} cor="#FFB23C" /></span>
               </button>
             ))}
           </span>
