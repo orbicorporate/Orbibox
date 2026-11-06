@@ -253,7 +253,7 @@ export function ClubeBloco({ businessId, slug, nome, logoUrl, heroAvatar = null,
               <button key={n} type="button" role="radio" aria-checked={false} aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
                 onClick={() => { if (eu.logado && eu.userId) setNotaHome(n); else pedirLogin(`avaliar|${n}`, null); }}
                 className="grid h-9 w-7 place-items-center active:scale-90">
-                <span className="cl-estrela-pisca" style={{ ["--d" as string]: `${(n - 1) * 600}ms` }}><Estrela cheia tam={18} cor="#FFB23C" /></span>
+                <span className="cl-estrela-pisca" style={{ ["--d" as string]: `${(n - 1) * 600}ms` }}><Estrela cheia tam={18} cor="currentColor" /></span>
               </button>
             ))}
           </span>
