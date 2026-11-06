@@ -452,16 +452,11 @@ export function BotaoVirarFa({ businessId, slug, aoVirarFa, className, children 
 /* =====================================================================
    Entrar: Google ou código por WhatsApp
    ===================================================================== */
-function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string; businessId: string; aoFechar: () => void; aoConcluir: () => void }) {
-  const [tel, setTel] = useState("");
+function EntrarFolha({ businessId, aoFechar, aoConcluir }: { slug?: string; businessId: string; aoFechar: () => void; aoConcluir: () => void }) {
   const [nomeTxt, setNomeTxt] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  const [comEmail, setComEmail] = useState(false);
-  const [emailTxt, setEmailTxt] = useState("");
-  const [emailEnviado, setEmailEnviado] = useState(false);
   const reduzido = useReduzido();
-  const telefone = normalizarTelefone(tel);
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === "Escape") aoFechar(); };
@@ -469,25 +464,11 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
     return () => document.removeEventListener("keydown", k);
   }, [aoFechar]);
 
-  async function google() {
-    setOcupado(true);
-    setErro(await entrarComGoogle(slug));
-    setOcupado(false);
-  }
-  async function porEmail() {
-    setOcupado(true); setErro(null);
-    const e = await entrarComEmail(slug, emailTxt);
-    setOcupado(false);
-    if (e) return setErro(e);
-    setEmailEnviado(true);
-  }
-  // Só nome e WhatsApp, sem código: já vira fã e fica reconhecido neste aparelho em todos os Orbiboxes.
+  // Só o nome: vira fã e este celular fica reconhecido em todos os Orbiboxes.
   async function entrar() {
     if (!nomeTxt.trim()) return setErro("Diga como quer ser chamado.");
-    const temTel = tel.replace(/\D/g, "").length > 0;
-    if (temTel && tel.replace(/\D/g, "").length < 10) return setErro("Digite o número com DDD ou deixe em branco.");
     setOcupado(true); setErro(null);
-    const e = await entrarComNumero(businessId, nomeTxt, temTel ? telefone : null);
+    const e = await entrarComNumero(businessId, nomeTxt, null);
     setOcupado(false);
     if (e) return setErro(e);
     aoConcluir();
@@ -502,7 +483,7 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Entrar no radar de fãs"
+        aria-label="Virar fã"
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-[440px] rounded-t-[32px] bg-background-main px-5 pb-[max(24px,env(safe-area-inset-bottom))] pt-5 shadow-[0_-12px_40px_rgba(0,0,0,0.2)]"
         style={reduzido ? undefined : { animation: "cl-sobe .42s cubic-bezier(.22,1,.36,1) both" }}
@@ -510,10 +491,10 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="font-[family-name:var(--font-manrope)] text-[20px] font-extrabold tracking-[-0.02em]">
-              Entrar no radar de fãs
+              Virar fã
             </h2>
             <p className="mt-1 text-[14px] text-text-secondary">
-              Vire fã, ganhe vantagens exclusivas e avalie com rosto e nome.
+              Como podemos te chamar? Seu nome fica salvo neste celular para você virar fã de outros Orbibox sem digitar de novo.
             </p>
           </div>
           <button type="button" onClick={aoFechar} aria-label="Fechar" className="cl-x active:scale-95">
@@ -521,37 +502,12 @@ function EntrarFolha({ slug, businessId, aoFechar, aoConcluir }: { slug: string;
           </button>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3">
-          <button type="button" onClick={google} disabled={ocupado} className="flex min-h-[48px] w-full items-center justify-center gap-3 rounded-full bg-surface-white text-[15px] font-semibold ring-1 ring-divider active:scale-[0.98] disabled:opacity-50">
-            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" /><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z" /><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 010-9.4l-7.9-6.1a24 24 0 000 21.6l7.9-6.1z" /><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z" /></svg>
-            Continuar com Google
-          </button>
-          {emailEnviado ? (
-            <p className="rounded-2xl bg-surface-soft px-4 py-3 text-center text-[14px] leading-snug text-text-secondary">Enviamos um link para {emailTxt.trim()}. Abra o e-mail neste aparelho para concluir.</p>
-          ) : comEmail ? (
-            <>
-              <p className="text-center text-[12.5px] text-text-tertiary">ou entre com seu e-mail</p>
-              <label className="sr-only" htmlFor="clube-email">Seu e-mail</label>
-              <input id="clube-email" type="email" className={campo} inputMode="email" autoComplete="email" placeholder="voce@email.com" value={emailTxt} onChange={(e) => setEmailTxt(e.target.value)} />
-              <button type="button" onClick={porEmail} disabled={ocupado} className={botao}>{ocupado ? "Enviando..." : "Enviar link"}</button>
-              <button type="button" onClick={() => { setComEmail(false); setErro(null); }} className="min-h-[40px] text-[14px] font-medium text-text-secondary">Usar WhatsApp</button>
-            </>
-          ) : (
-            <>
-              <p className="text-center text-[12.5px] text-text-tertiary">ou só diga como podemos te chamar</p>
-              <label className="sr-only" htmlFor="clube-nome">Seu nome</label>
-              <input id="clube-nome" className={campo} autoComplete="name" placeholder="Seu nome" value={nomeTxt} onChange={(e) => setNomeTxt(e.target.value)} />
-              <label className="sr-only" htmlFor="clube-tel">Seu WhatsApp com DDD</label>
-              <input id="clube-tel" className={campo} inputMode="tel" autoComplete="tel" placeholder="WhatsApp (opcional)" value={tel} onChange={(e) => setTel(e.target.value)} />
-              <button type="button" onClick={entrar} disabled={ocupado} className={botao}>{ocupado ? "Entrando..." : "Entrar"}</button>
-              <button type="button" onClick={() => { setComEmail(true); setErro(null); }} className="min-h-[40px] text-[14px] font-medium text-text-secondary">Entrar com e-mail</button>
-            </>
-          )}
+        <form className="mt-4 flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); void entrar(); }}>
+          <label className="sr-only" htmlFor="clube-nome">Seu nome</label>
+          <input id="clube-nome" className={campo} autoComplete="name" placeholder="Seu nome" value={nomeTxt} onChange={(e) => setNomeTxt(e.target.value)} autoFocus />
+          <button type="submit" disabled={ocupado} className={botao}>{ocupado ? "Entrando..." : "Virar fã"}</button>
           {erro && <p role="alert" className="text-center text-[13.5px] text-[#C2362E]">{erro}</p>}
-          <p className="text-center text-[12px] leading-snug text-text-tertiary">
-            Se deixar seu WhatsApp, você aceita receber novidades da marca. Seu número nunca aparece para outros clientes e você pode desligar quando quiser.
-          </p>
-        </div>
+        </form>
       </div>
     </div>,
     document.body,

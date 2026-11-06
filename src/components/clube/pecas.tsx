@@ -33,7 +33,7 @@ export function Rosto({ url, nome, size, blob = false, className = "", aro, cor,
     >
       {url ? null : ini}
       {fa && size >= 30 && (
-        <svg aria-hidden width={Math.max(14, Math.round(size * 0.34))} height={Math.max(14, Math.round(size * 0.34))} viewBox="0 0 24 24" fill="#CC1739" className="pointer-events-none absolute" style={{ right: "-4%", bottom: "-4%", zIndex: 5, filter: "drop-shadow(0 1px 2px rgba(0,0,0,.35))" }}><path d="M12 21s-7.5-4.6-9.6-9.4C1 8.2 3 4.6 6.6 4.6c2.1 0 3.9 1.2 5.4 3.1 1.5-1.9 3.3-3.1 5.4-3.1 3.6 0 5.6 3.6 4.2 7C19.5 16.4 12 21 12 21Z" /></svg>
+        <svg aria-hidden width={Math.max(10, Math.round(size * 0.24))} height={Math.max(10, Math.round(size * 0.24))} viewBox="0 0 24 24" fill="#CC1739" className="pointer-events-none absolute" style={{ right: "-4%", bottom: "-4%", zIndex: 5, filter: "drop-shadow(0 1px 2px rgba(0,0,0,.35))" }}><path d="M12 21s-7.5-4.6-9.6-9.4C1 8.2 3 4.6 6.6 4.6c2.1 0 3.9 1.2 5.4 3.1 1.5-1.9 3.3-3.1 5.4-3.1 3.6 0 5.6 3.6 4.2 7C19.5 16.4 12 21 12 21Z" /></svg>
       )}
     </span>
   );
