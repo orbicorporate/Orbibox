@@ -41,10 +41,21 @@ export async function calcularResumoSemanal(supabase: SupabaseClient<any>, busin
   const ini = new Date(agora - 7 * DIA).toISOString();
   const iniAntes = new Date(agora - 14 * DIA).toISOString();
 
+  // O Supabase devolve no máximo 1000 linhas por consulta (mesmo com limit maior), então busca por páginas.
+  async function paginar<T>(montar: (de: number, ate: number) => PromiseLike<{ data: T[] | null }>): Promise<{ data: T[] }> {
+    const out: T[] = [];
+    for (let de = 0; de < 100000; de += 1000) {
+      const { data } = await montar(de, de + 999);
+      out.push(...(data ?? []));
+      if (!data || data.length < 1000) break;
+    }
+    return { data: out };
+  }
+
   const [sessoes, sessoesAntes, cliques, itens, conversasRes, vouchersRes] = await Promise.all([
-    supabase.from("visitor_sessions").select("source, started_at").eq("business_id", businessId).gte("started_at", ini).limit(5000),
+    paginar<{ source: string | null; started_at: string }>((de, ate) => supabase.from("visitor_sessions").select("source, started_at").eq("business_id", businessId).gte("started_at", ini).order("started_at", { ascending: false }).range(de, ate)),
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("started_at", iniAntes).lt("started_at", ini),
-    supabase.from("click_events").select("kind, content_item_id").eq("business_id", businessId).gte("created_at", ini).limit(5000),
+    paginar<{ kind: string; content_item_id: string | null }>((de, ate) => supabase.from("click_events").select("kind, content_item_id").eq("business_id", businessId).gte("created_at", ini).order("created_at", { ascending: false }).range(de, ate)),
     supabase.from("content_items").select("id, title").eq("business_id", businessId),
     supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("started_at", ini),
     supabase.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("claimed_at", ini),

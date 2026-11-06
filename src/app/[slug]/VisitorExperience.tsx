@@ -459,6 +459,7 @@ export function VisitorExperience({
 
   async function chooseIntent(value: Intent, prefill?: string, enviarAuto = false) {
     if (value === "duvida" && !hasAiChat) return;
+    if (value === "reserva") trackClick({ businessId: business.id, kind: "reserva_botao", sessionId });
     setOrbiPrefill(prefill);
     setOrbiEnviarAuto(enviarAuto);
     setIntent(value);

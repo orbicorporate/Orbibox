@@ -34,6 +34,9 @@ export default async function PulsePage({
     .eq("id", businessId!)
     .single();
 
+  const { data: caixasReserva } = await supabase.from("smart_boxes").select("config, is_active").eq("business_id", business!.id).eq("box_type", "custom");
+  const temReservas = (caixasReserva ?? []).some((b) => b.is_active !== false && (b.config as { action?: string } | null)?.action === "reserva");
+
   let visitasQuery = supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", business!.id);
   if (since) visitasQuery = visitasQuery.gte("started_at", since);
   if (until) visitasQuery = visitasQuery.lte("started_at", until);
@@ -204,7 +207,7 @@ export default async function PulsePage({
               <span className="font-[family-name:var(--font-manrope)] text-[22px] font-medium">{visitas.toLocaleString("pt-BR")}</span>
             </div>
 
-            <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} paginas={paginas} slug={business!.slug} delivery={delivery} />
+            <PulseDetails porTipo={porTipo} porTipoItem={porTipoItem} itemMap={itemMap} topItems={topItems} paginas={paginas} slug={business!.slug} delivery={delivery} temReservas={temReservas} />
 
             <PulseAudience origens={origens} dispositivos={dispositivos} totalSessoes={totalSessoes} />
 
