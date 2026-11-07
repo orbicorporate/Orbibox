@@ -13,6 +13,7 @@ export type ItemCartao = {
   price: number | null;
   price_type: string | null;
   price_max: number | null;
+  duracao?: string | null;
   image_url: string | null;
   brand_label: string | null;
   type: string;
@@ -85,7 +86,7 @@ function CartaoBase({
     const isExterno = !editarHref && (item.link_kind === "categoria" || item.link_kind === "externo");
     const kindClique: "categoria" | "produto" | "link" =
       item.link_kind === "categoria" ? "categoria" : item.link_kind === "produto" ? "produto" : "link";
-    const priceLabel = formatPrice(item);
+    const priceLabel = [formatPrice(item), item.duracao?.trim()].filter(Boolean).join(" · ") || null;
 
     const miolo = (
       <>

@@ -39,6 +39,7 @@ type Item = {
   price: number | null;
   price_type: string;
   price_max: number | null;
+  duracao?: string | null;
   image_url: string | null;
   image_is_placeholder: boolean;
   gallery_urls: string[];
@@ -378,6 +379,7 @@ export function ShowcaseBuilder({
             price: i.price,
             price_type: i.price_type,
             price_max: i.price_max,
+            duracao: i.duracao ?? null,
             image_url: i.image_url,
             image_is_placeholder: i.image_is_placeholder,
             gallery_urls: i.gallery_urls,
@@ -406,6 +408,7 @@ export function ShowcaseBuilder({
               price: i.price,
               price_type: i.price_type,
               price_max: i.price_max,
+              duracao: i.duracao ?? null,
               image_url: i.image_url,
               image_is_placeholder: i.image_is_placeholder,
               gallery_urls: i.gallery_urls,
@@ -2160,6 +2163,31 @@ function ItemCard({
                 </div>
               )}
             </div>
+
+            {((item as unknown as { type?: string }).type === "service" || !item.image_url) && (
+              <div className="rounded-2xl border border-divider bg-surface-white p-4">
+                <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Duração</p>
+                <HelperText>Aparece junto do preço no card. Bom para serviços, aulas e atendimentos.</HelperText>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {["30 min", "45 min", "1 h", "1h30", "2 h"].map((d) => {
+                    const ativo = item.duracao === d;
+                    return (
+                      <button key={d} type="button" onClick={() => save(item.id, { duracao: ativo ? null : d })} className={`min-h-[40px] rounded-full border-2 px-4 text-[13.5px] font-medium transition-colors ${ativo ? "border-on-background bg-surface-white text-on-background" : "border-transparent bg-surface-soft text-text-secondary"}`}>
+                        {ativo && <span aria-hidden>✓ </span>}{d}
+                      </button>
+                    );
+                  })}
+                </div>
+                <input
+                  defaultValue={item.duracao ?? ""}
+                  key={item.duracao ?? "vazio"}
+                  maxLength={20}
+                  placeholder="Outra duração, ex.: 3 aulas"
+                  onBlur={(e) => { const v = e.target.value.trim(); if (v !== (item.duracao ?? "")) save(item.id, { duracao: v || null }); }}
+                  className="mt-3 w-full rounded-full bg-surface-soft px-4 py-3 text-[14px] outline-none"
+                />
+              </div>
+            )}
 
             <div className={item.starts_at || item.ends_at ? "order-[91]" : cAv}>
               {/* Agendamento recolhido num botão claro; já abre sozinho se o
