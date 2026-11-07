@@ -61,7 +61,7 @@ async function analyzeBrand(name: string, instagram: string, website: string, de
   throw ultimo ?? new ErroAnalise(0, "Não consegui analisar agora.");
 }
 
-type Step = "dados" | "objetivo" | "acao" | "analisando" | "revisar" | "montando" | "pronto";
+type Step = "tipo" | "dados" | "objetivo" | "acao" | "analisando" | "revisar" | "montando" | "pronto";
 type Escolha<T> = T | "orbi" | null;
 type Importacao = { imported: number; siteType: "ecommerce" | "institucional" | "links" | null; motivo: string | null; fetchError: string | null; genericos?: boolean };
 
@@ -74,12 +74,27 @@ const LENDO = [
   "Criando sua primeira experiência",
 ];
 
+const TIPOS: { rotulo: string; seg: string | null; icone: NomeIcone; cor: string }[] = [
+  { rotulo: "Restaurante, bar e café", seg: "restaurante", icone: "xicara", cor: "#FF8A5B" },
+  { rotulo: "Doceria e padaria", seg: "doceria", icone: "bolo", cor: "#FF8FB8" },
+  { rotulo: "Sorveteria e açaí", seg: "sorveteria", icone: "estrela", cor: "#2CCFC0" },
+  { rotulo: "Loja", seg: "loja", icone: "carrinho", cor: "#6F93FF" },
+  { rotulo: "Moda e acessórios", seg: "moda", icone: "sacola", cor: "#A98BFF" },
+  { rotulo: "Beleza e estética", seg: "beleza", icone: "brilho", cor: "#D97CF5" },
+  { rotulo: "Cursos e educação", seg: "cursos", icone: "livro", cor: "#2FC98B" },
+  { rotulo: "Saúde e bem-estar", seg: "saude", icone: "coracao", cor: "#FF7A8A" },
+  { rotulo: "Serviços em geral", seg: "servicos", icone: "agenda", cor: "#38B6F5" },
+  { rotulo: "Outro tipo", seg: null, icone: "orbita", cor: "#8E96A8" },
+];
+
 const campo = "w-full rounded-full bg-white/80 px-5 py-3.5 text-[15px] outline-none ring-1 ring-black/[0.08] backdrop-blur transition-shadow placeholder:text-text-tertiary focus:ring-2 focus:ring-on-background/40";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [step, setStep] = useState<Step>("dados");
+  const [step, setStep] = useState<Step>("tipo");
+  const [tipoSeg, setTipoSeg] = useState<string | null>(null);
+  const [tipoRotulo, setTipoRotulo] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [instagram, setInstagram] = useState("");
   const [website, setWebsite] = useState("");
@@ -262,7 +277,7 @@ export default function OnboardingPage() {
     if (!user) return voltar("Sua sessão expirou. Toque em Sair, no canto de cima, e entre de novo.");
 
     // O que a pessoa escolheu, ou o que a Orbi sugeriu quando ela deixou decidir.
-    const seg = segmentoPorId(result.segmento);
+    const seg = segmentoPorId(tipoSeg ?? result.segmento);
     const obj: ObjetivoId = objetivo && objetivo !== "orbi" ? objetivo : result.objetivo ?? "tudo";
     const conv: ConversaoId = conversao && conversao !== "orbi" ? conversao : result.conversao ?? (seg?.servico ? "whatsapp" : "comprar");
     const convInfo = conversaoPorId(conv)!;
@@ -336,7 +351,7 @@ export default function OnboardingPage() {
     }
     const id = business.id;
     setBizId(id);
-    registrarFunil("onb_criou", { businessId: id, meta: { segmento: result.segmento ?? null, objetivo: obj, conversao: conv, tem_site: !!website.trim(), tem_instagram: !!instagram.trim() } });
+    registrarFunil("onb_criou", { businessId: id, meta: { segmento: tipoSeg ?? result.segmento ?? null, tipo_escolhido: tipoSeg ?? null, objetivo: obj, conversao: conv, tem_site: !!website.trim(), tem_instagram: !!instagram.trim() } });
     document.cookie = `orbi_negocio=${id}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
 
     // Teste grátis sem cartão começa agora, com o Orbibox no ar.
@@ -661,8 +676,8 @@ export default function OnboardingPage() {
   const leituraOk = analise.status === "ok";
 
   return (
-    <main className={`relative flex min-h-[100dvh] justify-center overflow-x-clip overscroll-none px-5 ${step === "pronto" ? "items-center py-6" : step === "analisando" ? "items-start pb-16 pt-[9vh]" : step === "dados" ? "items-center py-8" : "items-start pb-10 pt-6"}`}>
-      {step === "dados" && (novoNegocio ? (
+    <main className={`relative flex min-h-[100dvh] justify-center overflow-x-clip overscroll-none px-5 ${step === "pronto" ? "items-center py-6" : step === "analisando" ? "items-start pb-16 pt-[9vh]" : step === "dados" ? "items-center py-8" : step === "tipo" ? "items-start pb-10 pt-12" : "items-start pb-10 pt-6"}`}>
+      {(step === "dados" || step === "tipo") && (novoNegocio ? (
         <Link href="/admin" className="fixed right-4 top-4 z-10 rounded-full bg-surface-white px-3.5 py-2 text-[12px] font-medium text-text-secondary shadow-[0_2px_10px_rgba(17,19,24,0.08)]">
           ← Voltar ao painel
         </Link>
@@ -672,7 +687,7 @@ export default function OnboardingPage() {
         </button>
       ))}
 
-      {(step === "dados" || step === "objetivo" || step === "acao" || step === "revisar") && (
+      {(step === "tipo" || step === "dados" || step === "objetivo" || step === "acao" || step === "revisar") && (
         <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
           <div className="absolute -left-24 -top-24 h-[320px] w-[320px] rounded-full bg-[#FFD9B8] opacity-60 blur-[90px]" />
           <div className="absolute -right-28 top-1/3 h-[300px] w-[300px] rounded-full bg-[#CFC3FF] opacity-60 blur-[90px]" />
@@ -684,9 +699,27 @@ export default function OnboardingPage() {
         {(step === "dados" || step === "objetivo" || step === "acao") && (
           <Passos atual={step === "dados" ? 1 : step === "objetivo" ? 2 : 3} />
         )}
+        {step === "tipo" && (
+          <div key="tipo" className="pb-6">
+            <div className="mb-4 flex justify-center"><BrandOrb colors={null} size={56} /></div>
+            {novoNegocio && <p className="mb-2 text-center text-[13px] font-medium text-text-tertiary">Novo Orbibox</p>}
+            <h1 className="orbi-linha-entra text-center font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-[1.12] tracking-[-0.02em]">O que descreve o seu negócio?</h1>
+            <p className="mx-auto mt-2 max-w-[320px] text-center text-[14.5px] leading-relaxed text-text-secondary">Toque no que mais combina. A Orbi já monta tudo no jeito do seu ramo.</p>
+            <div className="mt-7 grid grid-cols-2 gap-3" role="radiogroup" aria-label="Tipo de negócio">
+              {TIPOS.map((t, i) => (
+                <TipoBox key={t.rotulo} i={i} ativa={tipoRotulo === t.rotulo} onClick={() => { setTipoSeg(t.seg); setTipoRotulo(t.rotulo); setTimeout(() => setStep("dados"), 260); }} rotulo={t.rotulo} icone={t.icone} cor={t.cor} />
+              ))}
+            </div>
+          </div>
+        )}
         {step === "dados" && (
           <>
             <div className="mb-5 flex justify-center"><BrandOrb colors={null} size={64} /></div>
+            {tipoRotulo && (
+              <button type="button" onClick={() => setStep("tipo")} className="mx-auto mb-3 flex items-center gap-1.5 rounded-full bg-white/60 px-3.5 py-1.5 text-[12.5px] text-text-secondary ring-1 ring-white/80 backdrop-blur-xl active:scale-95">
+                {tipoRotulo} <span className="text-text-tertiary">· trocar</span>
+              </button>
+            )}
             {novoNegocio && <p className="mb-2 text-center text-[13px] font-medium text-text-tertiary">Novo Orbibox</p>}
             <h1 className="text-center font-[family-name:var(--font-manrope)] text-[30px] font-medium leading-[1.12] tracking-[-0.02em]">Qual é o seu negócio?</h1>
             <p className="mx-auto mt-2 max-w-[340px] text-center text-[15px] leading-relaxed text-text-secondary">
@@ -836,6 +869,31 @@ function Passos({ atual }: { atual: 1 | 2 | 3 }) {
       </div>
       <p className="text-[12.5px] text-text-tertiary"><span className="font-semibold text-on-background">{atual} de 3</span> · {nomes[atual - 1]}</p>
     </div>
+  );
+}
+
+/** Caixa de vidro com uma bolinha colorida brilhante (esfera com reflexo) e o ícone em traço. */
+function TipoBox({ i, ativa, onClick, rotulo, icone, cor }: { i: number; ativa: boolean; onClick: () => void; rotulo: string; icone: NomeIcone; cor: string }) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={ativa}
+      onClick={onClick}
+      style={{ animationDelay: `${i * 0.05}s` }}
+      className={`orbi-linha-entra relative flex min-h-[148px] flex-col items-start justify-between overflow-hidden rounded-[28px] p-4 text-left backdrop-blur-xl transition-all duration-200 active:scale-[0.96] ${ativa ? "sel-orbi scale-[1.02] shadow-[0_14px_30px_-14px_rgba(110,197,214,0.8)]" : "bg-white/55 ring-1 ring-white/80 shadow-[0_8px_24px_-16px_rgba(17,19,24,0.25)]"}`}
+    >
+      <span aria-hidden className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-35 blur-2xl" style={{ background: cor }} />
+      <span
+        aria-hidden
+        className="relative flex h-[58px] w-[58px] items-center justify-center rounded-full"
+        style={{ background: `radial-gradient(circle at 32% 28%, #ffffffd9 0 9%, ${cor}ee 38%, ${cor} 70%, ${cor}cc 100%)`, boxShadow: `inset 0 -6px 12px ${cor}88, 0 10px 18px -8px ${cor}` }}
+      >
+        <IconeOrbi nome={icone} cor="transparent" tamanho={58} traco={1.7} />
+      </span>
+      <span className="relative z-10 text-[15px] font-medium leading-tight">{rotulo}</span>
+      {ativa && <span className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-on-background text-[12px] text-white" aria-hidden>✓</span>}
+    </button>
   );
 }
 

@@ -4,9 +4,13 @@
  */
 export type NomeIcone =
   | "sacola" | "brilho" | "balao" | "orbita" | "carrinho" | "documento" | "whatsapp" | "agenda"
-  | "pino" | "olho" | "ticket" | "telefone" | "grade" | "estrela" | "check" | "paleta";
+  | "pino" | "olho" | "ticket" | "telefone" | "grade" | "estrela" | "check" | "paleta" | "xicara" | "bolo" | "livro" | "coracao";
 
 const TRACOS: Record<NomeIcone, React.ReactNode> = {
+  xicara: <><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z" /><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16" /><path d="M8 4.5c0 1 .8 1.2.8 2M11.5 4.5c0 1 .8 1.2.8 2" /></>,
+  bolo: <><path d="M5 20h14v-6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z" /><path d="M5 16c2 1.5 3.5 1.5 5 0s3-1.5 5 0 2.5 1 4 0" /><path d="M12 12V9.5" /><path d="M12 8c-1.2-1 .4-2 0-3.3 1.2 1.2-.4 2.2 0 3.3z" /></>,
+  livro: <><path d="M12 6.5C10.5 5 8 4.5 4.5 4.5v13c3.5 0 6 .5 7.5 2 1.5-1.5 4-2 7.5-2v-13c-3.5 0-6 .5-7.5 2z" /><path d="M12 6.5v13" /></>,
+  coracao: <path d="M12 20s-7.5-4.6-7.5-10a4.2 4.2 0 0 1 7.5-2.5A4.2 4.2 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" />,
   sacola: <><path d="M5.5 8h13l-1 12h-11z" /><path d="M9 8V6.5a3 3 0 0 1 6 0V8" /></>,
   brilho: <><path d="M12 3.5l1.9 5 5.1 1.9-5.1 1.9-1.9 5-1.9-5L5 10.4l5.1-1.9z" /><path d="M18.5 16v4M16.5 18h4" /></>,
   balao: <><path d="M5 19l1.2-3.6A7.5 7.5 0 1 1 9 18.4z" /><path d="M9 11h.01M12 11h.01M15 11h.01" /></>,

@@ -20,6 +20,8 @@ export const SEGMENTOS: Segmento[] = [
   { id: "moda", rotulo: "Moda e acessórios", categorias: ["Novidades", "Roupas", "Acessórios"], pergunta: "Procurando o look de hoje?", tema: "moda", voucher: { title: "10% na primeira compra", discountType: "percent", discountValue: 10, quantity: 30, horas: 168 } },
   { id: "beleza", rotulo: "Beleza e estética", categorias: ["Cabelo", "Estética", "Pacotes"], pergunta: "Que cuidado você merece hoje?", servico: true, tema: "salao", voucher: { title: "15% no primeiro atendimento", discountType: "percent", discountValue: 15, quantity: 20, horas: 168 } },
   { id: "loja", rotulo: "Loja e presentes", categorias: ["Mais vendidos", "Presentes", "Novidades"], pergunta: "Procurando um presente?", tema: "loja", voucher: { title: "10% na primeira compra", discountType: "percent", discountValue: 10, quantity: 30, horas: 168 } },
+  { id: "cursos", rotulo: "Cursos e educação", categorias: ["Cursos", "Mentorias", "Como funciona"], pergunta: "O que você quer aprender?", servico: true, tema: "servicos", voucher: { title: "10% na primeira matrícula", discountType: "percent", discountValue: 10, quantity: 20, horas: 720 } },
+  { id: "saude", rotulo: "Saúde e bem-estar", categorias: ["Atendimentos", "Pacotes", "Como funciona"], pergunta: "Como podemos cuidar de você?", servico: true, tema: "servicos", voucher: { title: "10% no primeiro atendimento", discountType: "percent", discountValue: 10, quantity: 20, horas: 720 } },
   { id: "servicos", rotulo: "Serviços", categorias: ["Serviços", "Como funciona"], pergunta: "Como podemos te ajudar?", servico: true, tema: "servicos", voucher: { title: "10% no primeiro serviço", discountType: "percent", discountValue: 10, quantity: 20, horas: 720 } },
 ];
 
