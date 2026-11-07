@@ -419,7 +419,7 @@ export default function OnboardingPage() {
     const waPre = (pre?.contact_whatsapp || pre?.contact_phone || whatsappDigits || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
     const conf = await new Promise<RevisaoResultado>((resolve) => {
       revisaoRef.current = resolve;
-      setRevisao({ bizId: id, avisoProdutos: imp.genericos ? "A Orbi usa o site para montar os produtos. Pelo Instagram ela não identificou com clareza o que você vende, então fez itens genéricos parecidos com o seu ramo. Depois você edita." : null, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, categorias: categoriasRev, sugestoes: sugestoesCats, itens: itensRev, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar", reservas: !!seg?.reservas });
+      setRevisao({ bizId: id, avisoProdutos: imp.genericos ? "A Orbi usa o site para montar os produtos. Pelo Instagram ela não identificou com clareza o que você vende, então fez itens genéricos parecidos com o seu ramo. Depois você edita." : null, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, categorias: categoriasRev, sugestoes: sugestoesCats, itens: itensRev, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar", reservas: !!seg?.reservas, palavra: seg?.itens, gift: !!seg?.gift, acaoServico: seg?.acao ?? null });
       setStep("revisar");
     });
     setMontagem({ status: "pending", itens: [], segundos: null });
@@ -559,9 +559,9 @@ export default function OnboardingPage() {
     // Catálogo e Conhecer sempre existem, mesmo desligados: o dono liga depois.
     if (!ordem.includes("catalogo")) linhas.push(linha("catalogo", pos++, false));
     if (!ordem.includes("conhecer")) linhas.push(linha("conhecer", pos++, false));
-    linhas.push({ business_id: id, box_type: "campaign", title: "Presentear", position: pos++, is_active: false });
+    linhas.push({ business_id: id, box_type: "campaign", title: "Presentear", position: pos++, is_active: !!seg?.gift && conf.extras.includes("gift") });
     // Sugestão do ramo: serviço ganha o botão Agendar (abre o WhatsApp).
-    if (conf.extras.includes("agendar") && waFinal) linhas.push({ business_id: id, box_type: "custom", title: "Agendar horário", position: pos++, is_active: true, config: { label: "Agendar horário", subtitle: "Escolha o melhor dia", icon: "__wadisc__", color: "transparent", action: "whatsapp", url: "" } });
+    if (conf.extras.includes("agendar") && waFinal) linhas.push({ business_id: id, box_type: "custom", title: seg?.acao?.label ?? "Agendar horário", position: pos++, is_active: true, config: { label: seg?.acao?.label ?? "Agendar horário", subtitle: seg?.acao?.subtitle ?? "Escolha o melhor dia", icon: "__wadisc__", color: "transparent", action: "whatsapp", url: "" } });
     // Instagram digitado, ou o que a Orbi achou no site.
     let igFinal = instagramUrl;
     if (!igFinal && imp.siteType) {

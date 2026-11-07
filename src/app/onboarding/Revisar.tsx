@@ -35,6 +35,12 @@ export type RevisaoDados = {
   servico: boolean;
   /** Restaurante: oferece o botão de reservas. */
   reservas?: boolean;
+  /** Palavra do ramo para o que se vende (plural). */
+  palavra?: string;
+  /** Presente (gift card) sugerido, ligado por padrão. */
+  gift?: boolean;
+  /** Botão de ação do ramo de serviço, no lugar de Agendar. */
+  acaoServico?: { chip: string } | null;
 };
 
 /** Destaque escolhido: um item do site (itemId) ou um novo, escrito pela pessoa. */
@@ -96,7 +102,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
   const [dias, setDias] = useState<number[]>([1, 2, 3, 4, 5]);
   const [abre, setAbre] = useState("09:00");
   const [fecha, setFecha] = useState("18:00");
-  const [extras, setExtras] = useState<string[]>([...(dados.gastronomico ? ["cardapio"] : []), ...(dados.servico ? ["agendar"] : [])]);
+  const [extras, setExtras] = useState<string[]>([...(dados.gastronomico ? ["cardapio"] : []), ...(dados.servico ? ["agendar"] : []), ...(dados.gift ? ["gift"] : [])]);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const arquivo = useRef<HTMLInputElement>(null);
@@ -118,7 +124,7 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
 
   const waOk = whatsapp.replace(/\D/g, "").length >= 10;
   const usaveis = coresDosCards(cores);
-  const palavraItens = dados.servico ? "serviços" : "produtos";
+  const palavraItens = dados.palavra ?? (dados.servico ? "serviços" : "produtos");
 
   async function enviarLogo(f: File) {
     if (f.size > 4_000_000) { setErro("Imagem muito grande. Use uma de até 4 MB."); return; }
@@ -384,14 +390,15 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
               <IconeOrbi nome="brilho" cor="#1F9E4C" tamanho={40} />
               <p className="text-[13.5px] leading-snug">Depois de abrir, a Orbi te mostra o que falta: fotos, bolinhas e os últimos ajustes.</p>
             </div>
-            {(dados.gastronomico || dados.servico || dados.reservas) && (
+            {(dados.gastronomico || dados.servico || dados.reservas || dados.gift) && (
               <>
                 <p className="mt-4 text-[12.5px] font-medium text-text-tertiary">Sugerido para o seu ramo</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {[
                     dados.gastronomico && { id: "cardapio", t: "Cardápio com pratos e fotos" },
                     dados.reservas && { id: "reservas", t: "Botão Reservar mesa" },
-                    dados.servico && { id: "agendar", t: "Botão Agendar horário" },
+                    dados.servico && { id: "agendar", t: dados.acaoServico?.chip ?? "Botão Agendar horário" },
+                    dados.gift && { id: "gift", t: "Gift card do seu negócio" },
                   ].filter((x): x is { id: string; t: string } => !!x).map((x) => {
                     const on = extras.includes(x.id);
                     return <button key={x.id} type="button" aria-pressed={on} onClick={() => setExtras((a) => (on ? a.filter((y) => y !== x.id) : [...a, x.id]))} className={chip(on)}>{on ? "✓ " : ""}{x.t}</button>;
