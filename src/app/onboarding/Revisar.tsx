@@ -33,6 +33,8 @@ export type RevisaoDados = {
   gastronomico: boolean;
   /** Ramo de serviço: sugere o botão Agendar e fala em serviços. */
   servico: boolean;
+  /** Restaurante: oferece o botão de reservas. */
+  reservas?: boolean;
 };
 
 /** Destaque escolhido: um item do site (itemId) ou um novo, escrito pela pessoa. */
@@ -382,12 +384,13 @@ export function Revisar({ dados, onConfirmar }: { dados: RevisaoDados; onConfirm
               <IconeOrbi nome="brilho" cor="#1F9E4C" tamanho={40} />
               <p className="text-[13.5px] leading-snug">Depois de abrir, a Orbi te mostra o que falta: fotos, bolinhas e os últimos ajustes.</p>
             </div>
-            {(dados.gastronomico || dados.servico) && (
+            {(dados.gastronomico || dados.servico || dados.reservas) && (
               <>
                 <p className="mt-4 text-[12.5px] font-medium text-text-tertiary">Sugerido para o seu ramo</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {[
                     dados.gastronomico && { id: "cardapio", t: "Cardápio com pratos e fotos" },
+                    dados.reservas && { id: "reservas", t: "Botão Reservar mesa" },
                     dados.servico && { id: "agendar", t: "Botão Agendar horário" },
                   ].filter((x): x is { id: string; t: string } => !!x).map((x) => {
                     const on = extras.includes(x.id);

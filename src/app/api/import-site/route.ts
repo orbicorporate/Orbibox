@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
     const usedImages = new Set<string>();
     const picked = items.slice(0, 12);
     const rows = picked.map((it, i) => {
-      const img = resolveImage(it);
+      const img = body.semFoto === true ? { url: null, placeholder: false } : resolveImage(it);
       // Trava de segurança: se por algum motivo a Orbi repetiu a mesma
       // imagem em dois itens, só o primeiro fica com ela, o resto vira cor.
       if (img.url) {

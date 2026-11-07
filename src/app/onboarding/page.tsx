@@ -239,7 +239,7 @@ export default function OnboardingPage() {
       const res = await fetch("/api/import-site", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId: id, url: website.trim(), instagram: instagram.trim() }),
+        body: JSON.stringify({ businessId: id, url: website.trim(), instagram: instagram.trim(), semFoto: !!segmentoPorId(tipoSeg)?.semFoto }),
       });
       const d = await res.json();
       if (res.ok) return { imported: d.imported ?? 0, siteType: d.siteType ?? null, motivo: d.motivo ?? null, fetchError: null, genericos: !!d.genericos };
@@ -419,7 +419,7 @@ export default function OnboardingPage() {
     const waPre = (pre?.contact_whatsapp || pre?.contact_phone || whatsappDigits || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
     const conf = await new Promise<RevisaoResultado>((resolve) => {
       revisaoRef.current = resolve;
-      setRevisao({ bizId: id, avisoProdutos: imp.genericos ? "A Orbi usa o site para montar os produtos. Pelo Instagram ela não identificou com clareza o que você vende, então fez itens genéricos parecidos com o seu ramo. Depois você edita." : null, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, categorias: categoriasRev, sugestoes: sugestoesCats, itens: itensRev, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar" });
+      setRevisao({ bizId: id, avisoProdutos: imp.genericos ? "A Orbi usa o site para montar os produtos. Pelo Instagram ela não identificou com clareza o que você vende, então fez itens genéricos parecidos com o seu ramo. Depois você edita." : null, logo: pre?.logo_url ?? null, cores: result.colors.map((c) => c.hex).slice(0, 5), whatsapp: waPre ? formatarWhatsapp(waPre) : "", endereco: pre?.address ?? endereco, categorias: categoriasRev, sugestoes: sugestoesCats, itens: itensRev, temInstagram: !!(instagramUrl || temLinks), temVoucher: obj === "vender" || obj === "tudo" || conv === "oferta", gastronomico: !!seg && ["restaurante", "doceria", "sorveteria"].includes(seg.id), servico: !!seg?.servico || conv === "agendar", reservas: !!seg?.reservas });
       setStep("revisar");
     });
     setMontagem({ status: "pending", itens: [], segundos: null });
@@ -467,6 +467,14 @@ export default function OnboardingPage() {
       await supabase.from("smart_boxes").insert({
         business_id: id, box_type: "custom", title: "Cardápio", position: 99, is_active: conf.extras.includes("cardapio"),
         config: { label: "Cardápio", subtitle: "Veja os pratos e preços", icon: "🍴", action: "cardapio", color: "transparent" },
+      });
+    }
+
+    // Restaurante que quer receber reservas: o botão já nasce pronto (precisa do WhatsApp).
+    if (seg?.reservas && conf.extras.includes("reservas") && waConf) {
+      await supabase.from("smart_boxes").insert({
+        business_id: id, box_type: "custom", title: "Reserve sua mesa", position: 98, is_active: true,
+        config: { label: "Reserve sua mesa", subtitle: "Escolha dia e horário", icon: "🍽️", action: "reserva", color: "transparent" },
       });
     }
 
