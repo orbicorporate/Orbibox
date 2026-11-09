@@ -363,10 +363,23 @@ export function AppHeader({
       </div>
       {trocaOpen && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[70] flex flex-col justify-end bg-black/45" onClick={() => setTrocaOpen(false)}>
-          <div className="mx-auto w-full max-w-[440px] rounded-t-[28px] bg-surface-white px-5 pb-8 pt-4" onClick={(e) => e.stopPropagation()}>
-            <span className="mx-auto mb-4 block h-1.5 w-12 rounded-full bg-divider" />
-            <p className="text-center font-[family-name:var(--font-manrope)] text-[18px] font-medium">Seus Orbibox</p>
-            <div className="mt-4 flex flex-col gap-2">
+          <div role="dialog" aria-label="Seus Orbibox" className="mx-auto flex max-h-[88dvh] w-full max-w-[440px] flex-col rounded-t-[28px] bg-surface-white pt-4" onClick={(e) => e.stopPropagation()}>
+            {/* Cabeçalho fixo: a lista rola por baixo e o botão de voltar fica sempre à vista. */}
+            <div className="shrink-0 px-5">
+              <span className="mx-auto mb-3 block h-1.5 w-12 rounded-full bg-divider" />
+              <div className="relative flex min-h-[44px] items-center justify-center">
+                <p className="font-[family-name:var(--font-manrope)] text-[18px] font-medium">Seus Orbibox</p>
+                <button
+                  type="button"
+                  onClick={() => setTrocaOpen(false)}
+                  aria-label="Fechar"
+                  className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-surface-soft text-[18px] text-text-secondary active:scale-95"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <div className="mt-2 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
               {negocios.map((n, i) => {
                 const ativo = n.id === negocioAtual;
                 const temRede = negocios.some((x) => !x.dono);
@@ -410,7 +423,6 @@ export function AppHeader({
                 );
               })}
             </div>
-
           </div>
         </div>,
         document.body,
