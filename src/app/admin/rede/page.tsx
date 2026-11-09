@@ -1,4 +1,4 @@
-import { RedeView } from "./RedeView";
+import { ConviteRapido, RedeView } from "./RedeView";
 import { RedeVinculos } from "./RedeVinculos";
 import { RedeMarketing } from "./RedeMarketing";
 import { RedeCampanhas } from "./RedeCampanhas";
@@ -8,6 +8,7 @@ export const metadata = { title: "Rede de Orbibox" };
 export default function RedePage() {
   return (
     <>
+      <ConviteRapido />
       <RedeVinculos />
       <RedeCampanhas />
       <RedeMarketing />

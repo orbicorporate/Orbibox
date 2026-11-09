@@ -84,8 +84,6 @@ export function RedeView() {
         Prévia com dados de exemplo
       </p>
 
-      <ConviteRapido />
-
       <div role="tablist" aria-label="Seções da rede" className="mt-5 flex gap-1.5 rounded-full bg-surface-soft p-1">
         {([["geral", "Visão geral"], ["lojas", "Orbibox"], ["convite", "Cobrança"]] as const).map(([id, rot]) => (
           <button
@@ -107,8 +105,8 @@ export function RedeView() {
   );
 }
 
-/** Convite sempre à mão, antes das abas: é a primeira coisa que o dono da rede faz. */
-function ConviteRapido() {
+/** Convite sempre à mão, no topo da página da rede: é a primeira coisa que o dono da rede faz. */
+export function ConviteRapido() {
   const [copiado, setCopiado] = useState(false);
   const link = `orbibox.app/rede/${REDE_DEMO.slug}`;
   const texto = `Entre na rede ${REDE_DEMO.nome} pelo link https://${link} (código ${REDE_DEMO.codigo})`;
@@ -128,7 +126,7 @@ function ConviteRapido() {
   }
 
   return (
-    <section className="mt-5 rounded-[24px] bg-on-background p-4 text-white">
+    <section className="mt-3 rounded-[24px] bg-on-background p-4 text-white">
       <p className="text-[15px] font-medium">Convidar um Orbibox para a rede</p>
       <p className="mt-1 text-[13px] leading-snug text-white/70">Envie o link. Quem aceitar entra na rede e escolhe compartilhar os números.</p>
       <p className="mt-3 truncate rounded-2xl bg-white/10 px-3.5 py-2.5 text-[13px] text-white/90">{link} <span className="text-white/50">· código {REDE_DEMO.codigo}</span></p>
