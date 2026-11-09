@@ -29,12 +29,12 @@ export const COVER_RATIO_BY_SIZE: Record<BoxSize, "quadrado" | "retrato" | "pais
   alto: "retrato",
 };
 
-/** Formato das fotos do carrossel na página do produto: quadrado ou
- * paisagem. Sem escolha salva, segue a capa quando ela já é um desses dois;
- * capa retrato ou banner cai no quadrado. */
-export type GalleryRatio = "quadrado" | "paisagem";
+/** Formato das fotos do carrossel na página do produto: quadrado, vertical
+ * (4:5) ou paisagem. Sem escolha salva, segue a capa quando ela é paisagem;
+ * nos demais casos cai no quadrado. */
+export type GalleryRatio = "quadrado" | "retrato" | "paisagem";
 export function galleryRatioOf(gallery_ratio: string | null | undefined, layout_size: string | null | undefined): GalleryRatio {
-  if (gallery_ratio === "quadrado" || gallery_ratio === "paisagem") return gallery_ratio;
+  if (gallery_ratio === "quadrado" || gallery_ratio === "retrato" || gallery_ratio === "paisagem") return gallery_ratio;
   const capa = COVER_RATIO_BY_SIZE[sizeOf(layout_size ?? "")];
   return capa === "paisagem" ? "paisagem" : "quadrado";
 }

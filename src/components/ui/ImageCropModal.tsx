@@ -8,7 +8,7 @@ import { AVISO_FORA_DA_MEDIDA } from "@/lib/medidaImagem";
 export type Ratio = "quadrado" | "retrato" | "paisagem" | "banner";
 export const RATIOS: Record<Ratio, { value: number; label: string }> = {
   quadrado: { value: 1, label: "Quadrado" },
-  retrato: { value: 4 / 5, label: "Retrato" },
+  retrato: { value: 4 / 5, label: "Vertical" },
   paisagem: { value: 16 / 9, label: "Paisagem" },
   banner: { value: 1920 / 830, label: "Banner (bem largo)" },
 };

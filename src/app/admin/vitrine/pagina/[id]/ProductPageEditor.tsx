@@ -465,7 +465,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
                 se ajustam ao novo formato (centralizadas) e as próximas já
                 saem recortadas nele. */}
             <div className="inline-flex rounded-full bg-surface-soft p-1">
-              {(["quadrado", "paisagem"] as const).map((r) => (
+              {(["quadrado", "retrato", "paisagem"] as const).map((r) => (
                 <button
                   key={r}
                   onClick={() => {
@@ -475,7 +475,7 @@ export function ProductPageEditor({ business, item, bolinha, categorias = [] }: 
                   }}
                   className={`rounded-full px-3 py-1 text-[12px] font-medium ${formato === r ? "bg-surface-white text-on-background shadow-[0_1px_4px_rgba(17,19,24,0.1)]" : "text-text-tertiary"}`}
                 >
-                  {r === "quadrado" ? "Quadrado" : "Paisagem"}
+                  {RATIOS[r].label}
                 </button>
               ))}
             </div>
