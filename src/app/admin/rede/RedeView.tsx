@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 import { LOJAS_DEMO, METRICAS, REDE_DEMO, nf, soma, vouchersDaLoja, type LojaDemo, type Metrica } from "@/lib/rede/demo";
 import { FAIXAS, NOME_PLANO, PRECO_MENSAL, brl, calcularRede, descontoPara, type PlanoRede } from "@/lib/rede/preco";
 
@@ -105,11 +106,25 @@ export function RedeView() {
   );
 }
 
-/** Convite sempre à mão, no topo da página da rede: é a primeira coisa que o dono da rede faz. */
-export function ConviteRapido() {
+/** Busca a rede de quem está logado e mostra o convite dela; sem rede ainda, não aparece. */
+export function ConviteDaRede() {
+  const [rede, setRede] = useState<{ name: string; slug: string } | null>(null);
+  useEffect(() => {
+    let vivo = true;
+    // Tabela da rede ainda não está nos tipos gerados do banco, por isso o cliente sem tipos.
+    createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+      .from("networks").select("name, slug").maybeSingle()
+      .then(({ data }) => { if (vivo && data?.slug) setRede(data as { name: string; slug: string }); });
+    return () => { vivo = false; };
+  }, []);
+  return rede ? <ConviteRapido redeNome={rede.name} redeSlug={rede.slug} /> : null;
+}
+
+/** Convite sempre à mão, no topo da página da rede: um link só para a rede inteira, reutilizável. */
+function ConviteRapido({ redeNome, redeSlug }: { redeNome: string; redeSlug: string }) {
   const [copiado, setCopiado] = useState(false);
-  const link = `orbibox.app/rede/${REDE_DEMO.slug}`;
-  const texto = `Entre na rede ${REDE_DEMO.nome} pelo link https://${link} (código ${REDE_DEMO.codigo})`;
+  const link = `orbibox.app/rede/${redeSlug}`;
+  const texto = `Entre na rede ${redeNome} pelo link https://${link}`;
 
   async function copiar() {
     try {
@@ -128,8 +143,8 @@ export function ConviteRapido() {
   return (
     <section className="mt-3 rounded-[24px] bg-on-background p-4 text-white">
       <p className="text-[15px] font-medium">Convidar um Orbibox para a rede</p>
-      <p className="mt-1 text-[13px] leading-snug text-white/70">Envie o link. Quem aceitar entra na rede e escolhe compartilhar os números.</p>
-      <p className="mt-3 truncate rounded-2xl bg-white/10 px-3.5 py-2.5 text-[13px] text-white/90">{link} <span className="text-white/50">· código {REDE_DEMO.codigo}</span></p>
+      <p className="mt-1 text-[13px] leading-snug text-white/70">Um link só para a rede toda: pode mandar no grupo. Quem entrar passa a ser editável e acompanhável por você no painel.</p>
+      <p className="mt-3 truncate rounded-2xl bg-white/10 px-3.5 py-2.5 text-[13px] text-white/90">{link}</p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button type="button" onClick={copiar} className="min-h-[46px] rounded-full bg-white/12 text-[14px] font-medium active:scale-[0.98]" aria-live="polite">{copiado ? "Copiado" : "Copiar convite"}</button>
         <button type="button" onClick={compartilhar} className="min-h-[46px] rounded-full bg-white text-[14px] font-medium text-on-background active:scale-[0.98]">Compartilhar</button>

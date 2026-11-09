@@ -354,6 +354,13 @@ export default function OnboardingPage() {
     registrarFunil("onb_criou", { businessId: id, meta: { segmento: tipoSeg ?? result.segmento ?? null, tipo_escolhido: tipoSeg ?? null, objetivo: obj, conversao: conv, tem_site: !!website.trim(), tem_instagram: !!instagram.trim() } });
     document.cookie = `orbi_negocio=${id}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
 
+    // Veio por um link de convite de rede: liga o Orbibox novo à rede (o dono da rede passa a administrá-lo).
+    const conviteRede = document.cookie.split("; ").find((c) => c.startsWith("orbi_rede="))?.split("=")[1];
+    if (conviteRede) {
+      await (supabase as unknown as { rpc: (fn: string, args: object) => PromiseLike<unknown> }).rpc("entrar_na_rede_por_convite", { p_slug: decodeURIComponent(conviteRede), p_business_id: id });
+      document.cookie = "orbi_rede=; path=/; max-age=0";
+    }
+
     // Teste grátis sem cartão começa agora, com o Orbibox no ar.
     const { data: fimTeste } = await supabase.rpc("iniciar_teste_gratis");
     const diasTeste = fimTeste ? Math.max(0, Math.round((new Date(fimTeste).getTime() - Date.now()) / 86400000)) : null;
