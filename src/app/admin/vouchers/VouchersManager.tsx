@@ -19,6 +19,7 @@ type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
 // Opções de validade em linguagem de gente. O banco continua guardando horas.
 import { FaixaStatusVoucher } from "./FaixaStatusVoucher";
 import { PrazoVoucher } from "./PrazoVoucher";
+import { DiasHorarioVoucher, JANELA_VAZIA, janelaParaBanco, type JanelaForm } from "./DiasHorarioVoucher";
 import { SeletorDesconto } from "./SeletorDesconto";
 
 export const VALIDADES: { horas: string; rotulo: string }[] = [
@@ -70,6 +71,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const [discountValue, setDiscountValue] = useState("");
   const [quantityTotal, setQuantityTotal] = useState("");
   const [expiresHours, setExpiresHours] = useState("48");
+  const [janela, setJanela] = useState<JanelaForm>(JANELA_VAZIA);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [badge, setBadge] = useState("");
   const [mostrarDesconto, setMostrarDesconto] = useState(true);
@@ -145,6 +147,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           discount_value: discountType === "gift" ? 0 : Number(discountValue),
           quantity_total: Number(quantityTotal),
           expires_hours: expiresHours.trim() ? Number(expiresHours) : null,
+          ...janelaParaBanco(janela),
           image_url: imageUrl,
           badge: badge.trim() || null,
           color,
@@ -164,6 +167,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         setDiscountValue("");
         setQuantityTotal("");
         setExpiresHours("48");
+        setJanela(JANELA_VAZIA);
         setImageUrl(null);
         setBadge("");
         setColor("cherry");
@@ -485,6 +489,10 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
             <p className="mt-1 text-[12px] text-text-tertiary">
               Se a pessoa resgatar e não aparecer dentro desse prazo, a vaga volta pro estoque.
             </p>
+          </div>
+          <div>
+            <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Dias e horário de uso</p>
+            <DiasHorarioVoucher valor={janela} onChange={setJanela} />
           </div>
           {faltando.length > 0 && (
             <p role="alert" className="text-[13px] text-red-600">

@@ -10,6 +10,7 @@ import { VOUCHER_THEMES, voucherGradient, type VoucherColor } from "@/lib/vouche
 import type { Database } from "@/lib/supabase/types";
 import { PrazoVoucher } from "../PrazoVoucher";
 import { SeletorDesconto } from "../SeletorDesconto";
+import { DiasHorarioVoucher, janelaDoBanco, janelaParaBanco, type JanelaForm } from "../DiasHorarioVoucher";
 import { VoucherQuadrado } from "@/components/mobile/VoucherQuadrado";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
@@ -31,6 +32,7 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
   const [discountValue, setDiscountValue] = useState(String(voucher.discount_value ?? ""));
   const [quantityTotal, setQuantityTotal] = useState(String(voucher.quantity_total));
   const [expiresHours, setExpiresHours] = useState(voucher.expires_hours ? String(voucher.expires_hours) : "");
+  const [janela, setJanela] = useState<JanelaForm>(janelaDoBanco(voucher));
   const [mostrarDesconto, setMostrarDesconto] = useState(voucher.show_discount !== false);
   const [apenasFas, setApenasFas] = useState(voucher.apenas_fas === true);
   const [salvando, setSalvando] = useState(false);
@@ -53,6 +55,7 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
       image_url: imageUrl,
       quantity_total: qtd,
       expires_hours: expiresHours.trim() ? Number(expiresHours) : null,
+      ...janelaParaBanco(janela),
       show_discount: mostrarDesconto,
       apenas_fas: apenasFas,
       sugerido: false,
@@ -181,6 +184,11 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
             <p className={rotulo}>Prazo pra usar depois de resgatar</p>
             <PrazoVoucher horas={expiresHours} onChange={setExpiresHours} />
             <p className="mt-1 text-[12px] text-text-tertiary">Vale para quem resgatar daqui para frente.</p>
+          </div>
+
+          <div>
+            <p className={rotulo}>Dias e horário de uso</p>
+            <DiasHorarioVoucher valor={janela} onChange={setJanela} />
           </div>
         </div>
 
