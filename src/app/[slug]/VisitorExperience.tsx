@@ -2198,7 +2198,6 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                   </div>
                   <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
                     <p className="line-clamp-2 text-[15px] font-semibold leading-snug">{v.title}</p>
-                    {v.description?.trim() && <p className="mt-0.5 line-clamp-1 text-[12px] opacity-80">{v.description}</p>}
                     <span className="mt-2 w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[11px]">{restam > 0 ? `${restam} restantes` : "Acabou"}</span>
                     <button
                       onClick={() => { setClaiming(v.id); setError(null); }}
@@ -2241,7 +2240,6 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                 </div>
                 <div className="px-2 pb-1 pt-3.5">
                   <p className="text-[18px] font-semibold leading-snug">{v.title}</p>
-                  {v.description?.trim() && <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed opacity-80">{v.description}</p>}
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{restam > 0 ? `${restam} restantes` : "Acabou"}</span>
                     {mostraDesconto && <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{voucherDiscountLabel(v)}</span>}
