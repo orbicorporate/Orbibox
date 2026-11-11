@@ -1122,7 +1122,16 @@ export function VisitorExperience({
           onGiftFechado={(pos) => {
             // O gift card é criado em tela própria e não liga o botão sozinho: liga o Presentear aqui.
             const presentear = boxList.find((b) => b.box_type === "campaign" && !b.is_active);
-            if (presentear) void mudarLinha({ id: presentear.id, tipo: "botao", titulo: "Presentear", sub: "", foto: null, pos: "escondido" }, pos);
+            if (presentear) { void mudarLinha({ id: presentear.id, tipo: "botao", titulo: "Presentear", sub: "", foto: null, pos: "escondido" }, pos); return; }
+            // Páginas importadas podem não ter o botão Presentear salvo: cria já ligado.
+            if (boxList.some((b) => b.box_type === "campaign")) return;
+            void (async () => {
+              const posicao = boxList.reduce((m, b) => Math.max(m, b.position), -1) + 1;
+              const { data } = await supabase.from("smart_boxes").insert({ business_id: business.id, box_type: "campaign", title: "Presentear", position: posicao, is_active: true, config: {} }).select().single();
+              if (!data) return;
+              setBoxList((prev) => [...prev, data as BoxRow]);
+              if (pos === "destaque") await salvarDestaques([...destaquesHome, { t: "botao", id: (data as BoxRow).id }]);
+            })();
           }}
           onPdfPronto={(id, pos) => { if (pos === "destaque") void salvarDestaques([...destaquesHome, { t: "botao", id }]); }}
         />
