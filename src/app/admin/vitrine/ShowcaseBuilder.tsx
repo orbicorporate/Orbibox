@@ -729,6 +729,11 @@ export function ShowcaseBuilder({
     }
     snapshot();
     await saveCategories([...categories, trimmed]);
+    // A categoria nasce vazia, no fim da lista: rola até ela e já pergunta como colocar itens nela.
+    window.setTimeout(() => {
+      Array.from(document.querySelectorAll<HTMLElement>("[data-secao]")).find((el) => el.dataset.secao === trimmed)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      aoTocarMais(trimmed);
+    }, 250);
   }
 
   // Nome de todas as categorias já conhecidas, usado pra evitar duplicata
@@ -1132,7 +1137,7 @@ export function ShowcaseBuilder({
           const realCount = sections.filter((s) => s.name !== "Destaques").length;
           const catIdx = si - (sections[0]?.name === "Destaques" ? 1 : 0);
           return (
-          <div key={sec.name}>
+          <div key={sec.name} data-secao={sec.name} className="scroll-mt-24">
             {/* Itens sem categoria: sem título quando não existe nenhuma
                 categoria; com categorias, aparecem como "Sem categoria", sem
                 renomear nem excluir (não é uma categoria de verdade). */}
