@@ -12,6 +12,8 @@ type V = {
   quantity_total: number;
   quantity_claimed: number;
   show_discount?: boolean | null;
+  /** Texto de dias e horário (ex.: "Válido às quartas"), mostrado como etiqueta na foto. */
+  janela?: string | null;
 };
 
 /**
@@ -37,8 +39,11 @@ export function VoucherQuadrado({ v }: { v: V }) {
         {v.image_url && v.discount_type !== "gift" && v.show_discount !== false && (
           <span className="absolute right-0 top-0 rounded-bl-[18px] bg-white px-3 py-1.5 text-[15px] font-extrabold leading-none" style={{ color: tema.ctaText }}>{grande}</span>
         )}
-        {v.badge?.trim() && (
-          <span className="absolute left-2 top-2 rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
+        {(v.badge?.trim() || v.janela) && (
+          <div className="absolute left-2 top-2 flex max-w-[78%] flex-col items-start gap-1">
+            {v.janela && <span className="rounded-full bg-white px-2.5 py-1 text-[10.5px] font-bold leading-tight" style={{ color: tema.ctaText }}>{v.janela}</span>}
+            {v.badge?.trim() && <span className="rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>}
+          </div>
         )}
       </div>
       <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
