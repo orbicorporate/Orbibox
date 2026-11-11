@@ -2187,8 +2187,11 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                     {v.image_url && v.discount_type !== "gift" && v.show_discount !== false && (
                       <span className="absolute right-0 top-0 rounded-bl-[18px] bg-white px-3 py-1.5 text-[15px] font-extrabold leading-none" style={{ color: tema.ctaText }}>{voucherDiscountBig(v)}</span>
                     )}
-                    {v.badge?.trim() && (
-                      <span className="absolute left-2 top-2 rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
+                    {(v.badge?.trim() || rotuloJanela(v)) && (
+                      <div className="absolute left-2 top-2 flex max-w-[78%] flex-col items-start gap-1">
+                        {rotuloJanela(v) && <span className="rounded-full bg-white px-2.5 py-1 text-[10.5px] font-bold leading-tight" style={{ color: tema.ctaText }}>{rotuloJanela(v)}</span>}
+                        {v.badge?.trim() && <span className="rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>}
+                      </div>
                     )}
                     <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} cor="#FFFFFF" className="absolute bottom-2 right-2 z-10" />
                     <BotaoCompartilhar alvo={{ url: `/${business.slug}?v=${v.id}`, titulo: v.title, rotulo: "Voucher", marca: business.name, imagem: v.image_url ?? capaDaMarca(business), logo: business.logo_url, cor: voucherTheme(v.color).via, texto: `Peguei este voucher de ${business.name}, pega o seu:` }} tam={17} className="absolute bottom-2 left-2 z-10 grid h-9 w-9 place-items-center rounded-full bg-black/35 text-white backdrop-blur-md transition-transform active:scale-90" />
@@ -2197,7 +2200,6 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                     <p className="line-clamp-2 text-[15px] font-semibold leading-snug">{v.title}</p>
                     {v.description?.trim() && <p className="mt-0.5 line-clamp-1 text-[12px] opacity-80">{v.description}</p>}
                     <span className="mt-2 w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[11px]">{restam > 0 ? `${restam} restantes` : "Acabou"}</span>
-                    {rotuloJanela(v) && <span className="mt-1.5 w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] leading-snug">{rotuloJanela(v)}</span>}
                     <button
                       onClick={() => { setClaiming(v.id); setError(null); }}
                       disabled={restam <= 0}
@@ -2228,8 +2230,11 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                   {v.image_url && mostraDesconto && (
                     <span className="absolute right-0 top-0 rounded-bl-[20px] bg-white px-4 py-2 text-[18px] font-extrabold leading-none" style={{ color: tema.ctaText }}>{voucherDiscountBig(v)}</span>
                   )}
-                  {v.badge?.trim() && (
-                    <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>
+                  {(v.badge?.trim() || rotuloJanela(v)) && (
+                    <div className="absolute left-3 top-3 flex max-w-[80%] flex-col items-start gap-1.5">
+                      {rotuloJanela(v) && <span className="rounded-full bg-white px-3 py-1.5 text-[12px] font-bold leading-tight" style={{ color: tema.ctaText }}>{rotuloJanela(v)}</span>}
+                      {v.badge?.trim() && <span className="rounded-full bg-black/45 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>}
+                    </div>
                   )}
                   <CurtirItem businessId={business.id} alvo="voucher" id={v.id} titulo={v.title} cor="#FFFFFF" className="absolute bottom-3 right-3 z-10" />
                   <BotaoCompartilhar alvo={{ url: `/${business.slug}?v=${v.id}`, titulo: v.title, rotulo: "Voucher", marca: business.name, imagem: v.image_url ?? capaDaMarca(business), logo: business.logo_url, cor: voucherTheme(v.color).via, texto: `Peguei este voucher de ${business.name}, pega o seu:` }} tam={18} className="absolute bottom-3 left-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/35 text-white backdrop-blur-md transition-transform active:scale-90" />
@@ -2240,7 +2245,6 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{restam > 0 ? `${restam} restantes` : "Acabou"}</span>
                     {mostraDesconto && <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{voucherDiscountLabel(v)}</span>}
-                    {rotuloJanela(v) && <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{rotuloJanela(v)}</span>}
                   </div>
                   <button
                     onClick={() => { setClaiming(v.id); setError(null); }}

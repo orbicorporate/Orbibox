@@ -8,6 +8,7 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { VOUCHER_THEMES, voucherGradient, type VoucherColor } from "@/lib/voucherThemes";
 import type { Database } from "@/lib/supabase/types";
+import { rotuloJanela } from "@/lib/validadeVoucher";
 import { PrazoVoucher } from "../PrazoVoucher";
 import { SeletorDesconto } from "../SeletorDesconto";
 import { DiasHorarioVoucher, janelaDoBanco, janelaParaBanco, type JanelaForm } from "../DiasHorarioVoucher";
@@ -112,6 +113,7 @@ export function EditarVoucherSheet({ voucher, travado, onSalvo, onFechar }: { vo
                   quantity_total: Number(quantityTotal) || voucher.quantity_total,
                   quantity_claimed: voucher.quantity_claimed,
                   show_discount: mostrarDesconto,
+                  janela: rotuloJanela({ dias_semana: janela.dias, hora_inicio: janela.inicio || null, hora_fim: janela.fim || null }),
                 }}
               />
               <p className="mt-3 text-[12px] text-text-tertiary">Assim ele aparece na sua página. Toque numa cor para trocar.</p>
