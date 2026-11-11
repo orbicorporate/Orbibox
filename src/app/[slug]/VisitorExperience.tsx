@@ -65,7 +65,7 @@ import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
 import { NOBRES, coresDaMarca } from "@/lib/paletasNobres";
 import { descontoLongo, descontoGrande } from "@/lib/voucherDesconto";
-import { rotuloJanela } from "@/lib/validadeVoucher";
+import { rotuloTag } from "@/lib/validadeVoucher";
 
 type Business = {
   id: string;
@@ -2187,9 +2187,9 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                     {v.image_url && v.discount_type !== "gift" && v.show_discount !== false && (
                       <span className="absolute right-0 top-0 rounded-bl-[18px] bg-white px-3 py-1.5 text-[15px] font-extrabold leading-none" style={{ color: tema.ctaText }}>{voucherDiscountBig(v)}</span>
                     )}
-                    {(v.badge?.trim() || rotuloJanela(v)) && (
+                    {(v.badge?.trim() || rotuloTag(v)) && (
                       <div className="absolute left-2 top-2 flex max-w-[78%] flex-col items-start gap-1">
-                        {rotuloJanela(v) && <span className="rounded-full bg-white px-2.5 py-1 text-[10.5px] font-bold leading-tight" style={{ color: tema.ctaText }}>{rotuloJanela(v)}</span>}
+                        {rotuloTag(v) && <span className="rounded-full border border-white/40 bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_4px_14px_rgba(0,0,0,0.12)] backdrop-blur-xl px-2.5 py-1 text-[10.5px] font-semibold leading-tight">{rotuloTag(v)}</span>}
                         {v.badge?.trim() && <span className="rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>}
                       </div>
                     )}
@@ -2229,9 +2229,9 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                   {v.image_url && mostraDesconto && (
                     <span className="absolute right-0 top-0 rounded-bl-[20px] bg-white px-4 py-2 text-[18px] font-extrabold leading-none" style={{ color: tema.ctaText }}>{voucherDiscountBig(v)}</span>
                   )}
-                  {(v.badge?.trim() || rotuloJanela(v)) && (
+                  {(v.badge?.trim() || rotuloTag(v)) && (
                     <div className="absolute left-3 top-3 flex max-w-[80%] flex-col items-start gap-1.5">
-                      {rotuloJanela(v) && <span className="rounded-full bg-white px-3 py-1.5 text-[12px] font-bold leading-tight" style={{ color: tema.ctaText }}>{rotuloJanela(v)}</span>}
+                      {rotuloTag(v) && <span className="rounded-full border border-white/40 bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_4px_14px_rgba(0,0,0,0.12)] backdrop-blur-xl px-3 py-1.5 text-[12px] font-semibold leading-tight">{rotuloTag(v)}</span>}
                       {v.badge?.trim() && <span className="rounded-full bg-black/45 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>}
                     </div>
                   )}

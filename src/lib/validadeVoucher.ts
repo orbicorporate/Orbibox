@@ -63,6 +63,14 @@ export function rotuloJanela(j: JanelaVoucher): string | null {
   return `Válido ${[diasTxt, horaTxt].filter(Boolean).join(", ")}`;
 }
 
+/** Texto direto para a etiqueta na foto: "De terça a quinta", "Das 11h às 15h". Null se vale sempre. */
+export function rotuloTag(j: JanelaVoucher): string | null {
+  const l = rotuloJanela(j);
+  if (!l) return null;
+  const sem = l.replace(/^Válido /, "");
+  return sem.charAt(0).toUpperCase() + sem.slice(1).replace(/, das /, " · Das ").replace(/, a partir/, " · A partir").replace(/, até/, " · Até");
+}
+
 /** Dia da semana (0-6) e minutos do dia agora, no fuso de São Paulo. */
 function agoraSP(agora: Date): { dia: number; min: number } {
   const partes = new Intl.DateTimeFormat("en-US", { timeZone: FUSO, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(agora);

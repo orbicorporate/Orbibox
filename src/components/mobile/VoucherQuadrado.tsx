@@ -41,7 +41,7 @@ export function VoucherQuadrado({ v }: { v: V }) {
         )}
         {(v.badge?.trim() || v.janela) && (
           <div className="absolute left-2 top-2 flex max-w-[78%] flex-col items-start gap-1">
-            {v.janela && <span className="rounded-full bg-white px-2.5 py-1 text-[10.5px] font-bold leading-tight" style={{ color: tema.ctaText }}>{v.janela}</span>}
+            {v.janela && <span className="rounded-full border border-white/40 bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_4px_14px_rgba(0,0,0,0.12)] backdrop-blur-xl px-2.5 py-1 text-[10.5px] font-semibold leading-tight">{v.janela}</span>}
             {v.badge?.trim() && <span className="rounded-full bg-black/45 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-white">{v.badge}</span>}
           </div>
         )}
