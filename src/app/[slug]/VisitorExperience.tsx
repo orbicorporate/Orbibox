@@ -868,10 +868,30 @@ export function VisitorExperience({
   // Reordena as bolinhas e renumera todos os boxes em sequência. Antes, a troca
   // só trocava o número de dois boxes, e dois boxes com o mesmo número (comum)
   // ficavam sem sair do lugar.
-  async function reordenarBolinhas(chaves: string[]) {
+  async function reordenarBolinhas(chavesPedidas: string[]) {
+    let chaves = chavesPedidas;
+    let todosBoxes = boxList;
+    // O Catálogo automático não é um botão de verdade: ao ser movido, vira um
+    // botão "Catálogo" (abre o catálogo todo) já na posição escolhida.
+    if (chaves.includes("catalogo")) {
+      const posicao = boxList.reduce((m, b) => Math.max(m, b.position), -1) + 1;
+      const { data, error } = await supabase
+        .from("smart_boxes")
+        .insert({ business_id: business.id, box_type: "custom", title: "Catálogo", position: posicao, is_active: true, config: { label: "Catálogo", subtitle: "Ver no catálogo", action: "vitrine", color: "transparent", icon: "◆" } })
+        .select()
+        .single();
+      if (error || !data) {
+        conferirSalvo({ error: error ?? true }, "Não conseguimos mover o Catálogo. Tente de novo.");
+        return;
+      }
+      const novo = data as BoxRow;
+      todosBoxes = [...boxList, novo];
+      setBoxList((prev) => [...prev, novo]);
+      chaves = chaves.map((k) => (k === "catalogo" ? novo.id : k));
+    }
     // Boxes e itens em bolinha formam uma fila só, ordenada pelo número de posição.
     type E = { k: string; v: number; box?: BoxRow };
-    const boxes: E[] = boxList.map((b) => ({ k: b.id, v: b.position, box: b }));
+    const boxes: E[] = todosBoxes.map((b) => ({ k: b.id, v: b.position, box: b }));
     const itens: E[] = destaquesHome.flatMap((d, n) => (d.t === "item_bolinha" ? [{ k: `item-${d.id}`, v: typeof d.p === "number" ? d.p : 10000 + n }] : []));
     const cheia = [...boxes, ...itens].sort((a, c) => a.v - c.v);
     const ocupadas = cheia.map((e, i) => (chaves.includes(e.k) ? i : -1)).filter((i) => i >= 0);
