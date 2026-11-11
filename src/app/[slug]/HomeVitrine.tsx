@@ -157,6 +157,8 @@ function Icone({ tipo, rede, linha }: { tipo: BolinhaVitrine["tipo"]; rede?: Red
 const CORES_BOLINHA = ["#111318", "#E8508A", "#3B5BDB", "#EA4335", "#F29D38", "#2FA36B", "#7B4FE0", "#0E9AA7"];
 
 /** WhatsApp e redes sociais mantêm a cor da própria marca. */
+/** Pode mudar de lugar: as editáveis e o Catálogo automático (que vira um botão de verdade ao ser movido). */
+const podeMover = (b: BolinhaVitrine) => b.editavel || b.key === "catalogo";
 const podeMudarCor = (b: BolinhaVitrine) => b.editavel && !b.editarHref && b.tipo !== "whatsapp" && b.tipo !== "rede";
 
 function corDe(b: BolinhaVitrine): { fundo: string; sombra: string } {
@@ -366,7 +368,7 @@ export function HomeVitrine({
 
   const aberto = bolinhas.find((b) => b.key === enderecoAberto);
 
-  const arrastoB = useArrastarOrdem(bolinhas.map((b) => b.key), podeEditar && !!onReordenar, (ord) => onReordenar?.(ord.filter((k) => bolinhas.find((b) => b.key === k)?.editavel)));
+  const arrastoB = useArrastarOrdem(bolinhas.map((b) => b.key), podeEditar && !!onReordenar, (ord) => onReordenar?.(ord.filter((k) => { const b = bolinhas.find((x) => x.key === k); return !!b && podeMover(b); })));
   const bolinhasNaOrdem = arrastoB.ordem.map((k) => bolinhas.find((b) => b.key === k)).filter((b): b is BolinhaVitrine => !!b);
   const arrastoI = useArrastarOrdem(mostrar.map((i) => i.id), podeEditar && !!onReordenarItens, (ids) => onReordenarItens?.(ids));
   const mostrarNaOrdem = arrastoI.ordem.map((id) => mostrar.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i && !excluidos.includes(i.id)).map((i) => (ajustes[i.id] ? { ...i, ...ajustes[i.id] } : i));
@@ -460,7 +462,7 @@ export function HomeVitrine({
                 key={b.key}
                 ref={arrastoB.ref(b.key)}
                 role="listitem"
-                {...arrastoB.props(b.key, b.editavel)}
+                {...arrastoB.props(b.key, podeMover(b))}
                 className={`flex w-[72px] shrink-0 snap-center flex-col items-center transition-transform duration-150 ${arrastoB.pegado === b.key ? "z-20 scale-110 opacity-90" : ""}`}
               >
                 <Bolinha b={b} aberto={enderecoAberto === b.key} onClick={() => aoClicar(b)} />
@@ -798,7 +800,7 @@ function ListaBolinhas({
   const [trocandoImagem, setTrocandoImagem] = useState<string | null>(null);
   const [enviarNova, setEnviarNova] = useState(false);
   const itens = useRef<(HTMLLIElement | null)[]>([]);
-  const [arrasto, setArrasto] = useState<{ de: number; para: number; dy: number; altura: number } | null>(null);
+  const [arrasto, setArrasto] = useState<{ de: number; para: number; altura: number } | null>(null);
   const inicio = useRef<{ y: number; centros: number[] } | null>(null);
   // Qual bolinha está com a paleta completa aberta.
   const [maisCores, setMaisCores] = useState<string | null>(null);
@@ -808,28 +810,47 @@ function ListaBolinhas({
     const ordem = bolinhas.map((x) => x.key);
     const [k] = ordem.splice(de, 1);
     ordem.splice(para, 0, k);
-    onReordenar(ordem.filter((chave) => bolinhas.find((x) => x.key === chave)?.editavel));
+    onReordenar(ordem.filter((chave) => { const x = bolinhas.find((y) => y.key === chave); return !!x && podeMover(x); }));
   }
 
+  const dyRef = useRef(0);
+  const quadro = useRef<number | null>(null);
   function comecar(e: React.PointerEvent<HTMLButtonElement>, i: number) {
     e.currentTarget.setPointerCapture(e.pointerId);
     const centros = itens.current.map((el) => (el ? el.getBoundingClientRect().top + el.offsetHeight / 2 : 0));
     inicio.current = { y: e.clientY, centros };
-    setArrasto({ de: i, para: i, dy: 0, altura: (itens.current[i]?.offsetHeight ?? 60) + 8 });
+    dyRef.current = 0;
+    const el = itens.current[i];
+    if (el) el.style.willChange = "transform";
+    setArrasto({ de: i, para: i, altura: (el?.offsetHeight ?? 60) + 8 });
   }
+  // A bolinha puxada acompanha o dedo direto no DOM (sem re-render a cada pixel);
+  // o React só entra quando ela passa para outro lugar da fila.
   function mover(e: React.PointerEvent<HTMLButtonElement>) {
     const ini = inicio.current;
     if (!ini || !arrasto) return;
     const dy = e.clientY - ini.y;
+    dyRef.current = dy;
+    const el = itens.current[arrasto.de];
+    if (el && quadro.current === null) {
+      quadro.current = requestAnimationFrame(() => {
+        quadro.current = null;
+        el.style.transform = `translateY(${dyRef.current}px)`;
+      });
+    }
     const centro = ini.centros[arrasto.de] + dy;
     let para = arrasto.de;
     ini.centros.forEach((c, j) => {
       if (j < arrasto.de && centro < c) para = Math.min(para, j);
       if (j > arrasto.de && centro > c) para = Math.max(para, j);
     });
-    setArrasto({ ...arrasto, dy, para });
+    if (para !== arrasto.para) setArrasto({ ...arrasto, para });
   }
   function soltar() {
+    if (!inicio.current) return;
+    if (quadro.current) { cancelAnimationFrame(quadro.current); quadro.current = null; }
+    const el = arrasto ? itens.current[arrasto.de] : null;
+    if (el) { el.style.transform = ""; el.style.willChange = ""; }
     if (arrasto) aplicar(arrasto.de, arrasto.para);
     inicio.current = null;
     setArrasto(null);
@@ -840,7 +861,7 @@ function ListaBolinhas({
       {bolinhas.map((b, i) => {
         let ty = 0;
         if (arrasto) {
-          if (i === arrasto.de) ty = arrasto.dy;
+          if (i === arrasto.de) ty = 0; // a puxada é movida direto no DOM
           else if (arrasto.de < arrasto.para && i > arrasto.de && i <= arrasto.para) ty = -arrasto.altura;
           else if (arrasto.de > arrasto.para && i < arrasto.de && i >= arrasto.para) ty = arrasto.altura;
         }
@@ -852,7 +873,7 @@ function ListaBolinhas({
             style={{ transform: ty ? `translateY(${ty}px)` : undefined, transition: arrastando ? "none" : "transform .18s ease" }}
             className={`relative flex flex-wrap items-center gap-2.5 rounded-[22px] bg-white p-3 ${arrastando ? "z-10 shadow-[0_10px_28px_rgba(17,19,24,0.22)] ring-2 ring-on-background/30" : "shadow-[0_2px_10px_rgba(17,19,24,0.07)] ring-1 ring-black/[0.06]"}`}
           >
-            {b.editavel ? (
+            {podeMover(b) ? (
               <button
                 type="button"
                 aria-label={`Arrastar ${b.rotulo || b.rotuloPadrao || "bolinha"}`}
@@ -860,6 +881,7 @@ function ListaBolinhas({
                 onPointerMove={mover}
                 onPointerUp={soltar}
                 onPointerCancel={soltar}
+                onLostPointerCapture={soltar}
                 className="flex h-10 w-7 shrink-0 cursor-grab touch-none items-center justify-center text-text-tertiary active:cursor-grabbing"
               >
                 <svg width="14" height="18" viewBox="0 0 14 18" fill="currentColor" aria-hidden><circle cx="4" cy="4" r="1.5" /><circle cx="10" cy="4" r="1.5" /><circle cx="4" cy="9" r="1.5" /><circle cx="10" cy="9" r="1.5" /><circle cx="4" cy="14" r="1.5" /><circle cx="10" cy="14" r="1.5" /></svg>
@@ -898,6 +920,11 @@ function ListaBolinhas({
                   <button type="button" aria-label={`Descer ${b.rotulo}`} disabled={i === bolinhas.length - 1} onClick={() => aplicar(i, i + 1)} className="flex h-[22px] w-7 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▼</button>
                 </div>
               </>
+            ) : b.key === "catalogo" ? (
+              <div className="flex flex-col">
+                <button type="button" aria-label={`Subir ${b.rotulo}`} disabled={i === 0} onClick={() => aplicar(i, i - 1)} className="flex h-[22px] w-7 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▲</button>
+                <button type="button" aria-label={`Descer ${b.rotulo}`} disabled={i === bolinhas.length - 1} onClick={() => aplicar(i, i + 1)} className="flex h-[22px] w-7 items-center justify-center text-[13px] text-text-secondary disabled:opacity-25">▼</button>
+              </div>
             ) : (
               <span className="text-[12px] text-text-tertiary">automática</span>
             )}
