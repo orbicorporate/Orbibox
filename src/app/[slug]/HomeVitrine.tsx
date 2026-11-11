@@ -216,6 +216,7 @@ export function HomeVitrine({
   onFormato,
   itensEscolhidos,
   onEscolherItens,
+  onVerTudo,
   ajustesCategorias,
   onAjustarCategoria,
 }: {
@@ -280,6 +281,34 @@ export function HomeVitrine({
   const [avisoCheio, setAvisoCheio] = useState(false);
   // Itens que o dono acabou de excluir: somem na hora, o servidor confirma em seguida.
   const [excluidos, setExcluidos] = useState<string[]>([]);
+  // Categoria aberta dentro da folha de destaques (nome) e mudanças de ordem/categoria feitas ali, aplicadas na hora.
+  const [catAberta, setCatAberta] = useState<string | null>(null);
+  const [mudancas, setMudancas] = useState<Record<string, { position?: number; brand_label?: string | null }>>({});
+  const itensAtuais: ItemVitrine[] = itens.map((i) => (mudancas[i.id] ? { ...i, ...mudancas[i.id] } : i));
+  /** Troca a categoria de um item (vazio tira da categoria). */
+  async function moverParaCategoria(id: string, nova: string | null) {
+    const antes = itens.find((i) => i.id === id)?.brand_label ?? null;
+    setMudancas((m) => ({ ...m, [id]: { ...m[id], brand_label: nova } }));
+    const { error } = await createClient().from("content_items").update({ brand_label: nova }).eq("id", id);
+    if (error) { setMudancas((m) => ({ ...m, [id]: { ...m[id], brand_label: antes } })); avisarErroSalvar(); return; }
+    router.refresh();
+  }
+  /** Sobe ou desce um item dentro da categoria, trocando a posição com o vizinho. */
+  async function trocarOrdem(a: ItemVitrine, b: ItemVitrine) {
+    const pa = a.position, pb = b.position;
+    setMudancas((m) => ({ ...m, [a.id]: { ...m[a.id], position: pb }, [b.id]: { ...m[b.id], position: pa } }));
+    const supabase = createClient();
+    const [r1, r2] = await Promise.all([
+      supabase.from("content_items").update({ position: pb }).eq("id", a.id),
+      supabase.from("content_items").update({ position: pa }).eq("id", b.id),
+    ]);
+    if (r1.error || r2.error) {
+      setMudancas((m) => ({ ...m, [a.id]: { ...m[a.id], position: pa }, [b.id]: { ...m[b.id], position: pb } }));
+      avisarErroSalvar();
+      return;
+    }
+    router.refresh();
+  }
   // Formato e faixa branca mexidos aqui mesmo: a tela muda na hora e o banco grava em seguida.
   const [ajustes, setAjustes] = useState<Record<string, { layout_size?: string; title_placement?: string }>>({});
   async function ajustarCartao(id: string, patch: { layout_size?: string; title_placement?: string }) {
@@ -328,11 +357,11 @@ export function HomeVitrine({
   const montado = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [enderecoAberto, setEnderecoAberto] = useState<string | null>(null);
   // Item sem foto também entra: o cartão vira um letreiro com o nome.
-  const comFoto = itens;
+  const comFoto = itensAtuais;
   // Categorias do Catálogo viram cartões escolhíveis (id "cat:Nome"); tocar abre a categoria.
   const categoriasCartao: ItemVitrine[] = (() => {
     const vistas = new Map<string, ItemVitrine>();
-    for (const i of [...itens].sort((a, b) => a.position - b.position)) {
+    for (const i of [...itensAtuais].sort((a, b) => a.position - b.position)) {
       const nome = i.brand_label?.trim();
       if (!nome) continue;
       const atual = vistas.get(nome);
@@ -542,8 +571,9 @@ export function HomeVitrine({
                 const largo = tam === "destaque" || tam === "largo";
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative flex flex-col transition-transform duration-150 ${largo ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
-                    <CartaoItem origem="home" editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
+                    <CartaoItem origem="home" aoAbrir={podeEditar && i.id.startsWith("cat:") && onEscolherItens ? () => { setCatAberta(i.title); setEscolhendo(true); } : undefined} editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={tam} />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
+                    {podeEditar && i.id.startsWith("cat:") && onEscolherItens && <button type="button" onClick={() => { setCatAberta(i.title); setEscolhendo(true); }} aria-label={`Editar a categoria ${i.title}`} className="absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-divider bg-surface-white/90 text-text-secondary shadow-md backdrop-blur active:scale-95"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg></button>}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                     {podeEditar && <AjustesCartao item={i} comFormato={formato === "vitrine"} onAjustar={ajustarCartao} />}
                   </li>
@@ -554,8 +584,9 @@ export function HomeVitrine({
             <ul data-tour="t-destaques" data-rolavel className="no-scrollbar relative -mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pb-2">
               {mostrarNaOrdem.map((i) => (
                 <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative w-[72%] shrink-0 snap-center lg:w-[30%] transition-transform duration-150 ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
-                  <CartaoItem origem="home" editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
+                  <CartaoItem origem="home" aoAbrir={podeEditar && i.id.startsWith("cat:") && onEscolherItens ? () => { setCatAberta(i.title); setEscolhendo(true); } : undefined} editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho="medio" proporcao="retrato" />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
+                    {podeEditar && i.id.startsWith("cat:") && onEscolherItens && <button type="button" onClick={() => { setCatAberta(i.title); setEscolhendo(true); }} aria-label={`Editar a categoria ${i.title}`} className="absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-divider bg-surface-white/90 text-text-secondary shadow-md backdrop-blur active:scale-95"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg></button>}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                     {podeEditar && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
                 </li>
@@ -567,8 +598,9 @@ export function HomeVitrine({
                 const grande = formato === "destaque" && n === 0;
                 return (
                   <li key={i.id} ref={arrastoI.ref(i.id)} {...arrastoI.props(i.id)} className={`relative flex flex-col transition-transform duration-150 ${grande ? "col-span-2" : ""} ${arrastoI.pegado === i.id ? "z-20 scale-[1.03] opacity-90" : ""}`}>
-                    <CartaoItem origem="home" editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
+                    <CartaoItem origem="home" aoAbrir={podeEditar && i.id.startsWith("cat:") && onEscolherItens ? () => { setCatAberta(i.title); setEscolhendo(true); } : undefined} editarHref={podeEditar && !i.id.startsWith("cat:") ? `/admin/vitrine?editar=${i.id}` : undefined} curtir={!podeEditar} item={i} slug={slug} businessId={businessId} sessionId={sessionId} largura="w-full" tamanho={grande ? "destaque" : "medio"} proporcao={grande ? "paisagem" : "quadrado"} />
                     {podeEditar && !i.id.startsWith("cat:") && <LapisDono href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="absolute left-2 top-2 z-10" />}
+                    {podeEditar && i.id.startsWith("cat:") && onEscolherItens && <button type="button" onClick={() => { setCatAberta(i.title); setEscolhendo(true); }} aria-label={`Editar a categoria ${i.title}`} className="absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-divider bg-surface-white/90 text-text-secondary shadow-md backdrop-blur active:scale-95"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg></button>}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                     {podeEditar && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
                   </li>
@@ -606,11 +638,11 @@ export function HomeVitrine({
       {escolhendo && montado && onEscolherItens && createPortal(
         <>
           <button type="button" aria-label="Fechar" onClick={() => setEscolhendo(false)} className="fixed inset-0 z-[55] cursor-default bg-black/30" />
-          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-h-[88vh] w-full max-w-[440px] flex-col rounded-t-[28px] bg-[#EFEFEA] p-4 pb-6 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
+          <div className="fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-h-[88vh] min-h-[60vh] w-full max-w-[440px] flex-col rounded-t-[28px] bg-[#EFEFEA] p-4 pb-6 text-on-background shadow-[0_-10px_36px_rgba(17,19,24,0.22)]">
             <div className="flex shrink-0 items-center justify-between px-1">
               <div>
                 <p className="text-[18px] font-semibold leading-tight">Destaques da página inicial</p>
-                <p className="mt-0.5 text-[12.5px] text-text-secondary">Toque para colocar ou tirar. Até {MAXIMO}.</p>
+                <p className="mt-0.5 text-[12.5px] text-text-secondary">Toque em Pôr para colocar ou tirar, no nome para editar. Até {MAXIMO}.</p>
               </div>
               <button type="button" onClick={() => { setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] font-medium text-white">Concluir</button>
             </div>
@@ -666,19 +698,29 @@ export function HomeVitrine({
                   const ordem = naSelecao.findIndex((e) => e.id === i.id);
                   const marcado = ordem >= 0;
                   const cat = i.id.startsWith("cat:");
+                  const miolo = (
+                    <>
+                      {i.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={i.image_url} alt="" loading="lazy" className={`h-11 w-11 shrink-0 object-cover ${cat ? "rounded-full" : "rounded-xl"}`} />
+                      ) : (
+                        <span className={`flex h-11 w-11 shrink-0 items-center justify-center bg-[#F2F2EE] text-[15px] font-semibold text-black/30 ${cat ? "rounded-full" : "rounded-xl"}`}>{i.title.charAt(0).toUpperCase()}</span>
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[14.5px] font-medium">{i.title}</span>
+                        {cat ? <span className="block truncate text-[12px] text-[#8758BE]">Categoria inteira · ver itens ›</span> : i.brand_label?.trim() && <span className="block truncate text-[12px] text-text-tertiary">{i.brand_label.trim()}</span>}
+                      </span>
+                    </>
+                  );
+                  const classeMiolo = "flex min-h-[60px] min-w-0 flex-1 items-center gap-3 py-2 pl-3 text-left active:bg-black/[0.03]";
                   return (
-                    <li key={i.id}>
-                      <button type="button" aria-pressed={marcado} onClick={() => alternar(i, marcado)} className="flex min-h-[60px] w-full items-center gap-3 px-3 py-2 text-left active:bg-black/[0.03]">
-                        {i.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={i.image_url} alt="" loading="lazy" className={`h-11 w-11 shrink-0 object-cover ${cat ? "rounded-full" : "rounded-xl"}`} />
-                        ) : (
-                          <span className={`flex h-11 w-11 shrink-0 items-center justify-center bg-[#F2F2EE] text-[15px] font-semibold text-black/30 ${cat ? "rounded-full" : "rounded-xl"}`}>{i.title.charAt(0).toUpperCase()}</span>
-                        )}
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[14.5px] font-medium">{i.title}</span>
-                          {cat ? <span className="block truncate text-[12px] text-[#8758BE]">Categoria inteira</span> : i.brand_label?.trim() && <span className="block truncate text-[12px] text-text-tertiary">{i.brand_label.trim()}</span>}
-                        </span>
+                    <li key={i.id} className="flex items-center gap-1 pr-3">
+                      {cat ? (
+                        <button type="button" onClick={() => setCatAberta(i.title)} aria-label={`Ver os itens de ${i.title}`} className={classeMiolo}>{miolo}</button>
+                      ) : (
+                        <AbrirEditor href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className={classeMiolo}>{miolo}</AbrirEditor>
+                      )}
+                      <button type="button" aria-pressed={marcado} aria-label={marcado ? `Tirar ${i.title} da página inicial` : `Pôr ${i.title} na página inicial`} onClick={() => alternar(i, marcado)} className="flex min-h-[44px] shrink-0 items-center">
                         {marcado ? (
                           <span className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-[#3B5BDB] pl-2.5 pr-3 text-[12.5px] font-semibold text-white">{ordem + 1}<span aria-hidden className="text-white/70">✕</span></span>
                         ) : (
@@ -721,6 +763,60 @@ export function HomeVitrine({
                 </button>
               )}
             </div>
+
+            {catAberta && (() => {
+              const nomesCat = categoriasCartao.map((c) => c.title);
+              const daCategoria = [...itensAtuais].filter((i) => i.brand_label?.trim() === catAberta && !excluidos.includes(i.id)).sort((a, b) => a.position - b.position);
+              return (
+                <div className="absolute inset-0 z-10 flex flex-col rounded-t-[28px] bg-[#EFEFEA] p-4 pb-6">
+                  <div className="flex shrink-0 items-center justify-between gap-2 px-1">
+                    <button type="button" onClick={() => setCatAberta(null)} className="flex min-h-[40px] items-center gap-1.5 rounded-full bg-white px-3.5 text-[14px] font-medium ring-1 ring-black/[0.08] active:scale-[0.97]"><span aria-hidden>‹</span> Voltar</button>
+                    <button type="button" onClick={() => { setCatAberta(null); setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] font-medium text-white">Concluir</button>
+                  </div>
+                  <p className="mt-3 shrink-0 px-1 text-[18px] font-semibold leading-tight">{catAberta}</p>
+                  <p className="mt-0.5 shrink-0 px-1 text-[12.5px] text-text-secondary">{daCategoria.length} {daCategoria.length === 1 ? "item" : "itens"}. Toque no item para editar, use as setas para mudar a ordem.</p>
+                  <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
+                    {daCategoria.length === 0 ? (
+                      <p className="px-2 py-4 text-center text-[13.5px] text-text-tertiary">Nenhum item nesta categoria.</p>
+                    ) : (
+                      <ul className="divide-y divide-black/[0.06] overflow-hidden rounded-[20px] bg-white ring-1 ring-black/[0.06]">
+                        {daCategoria.map((i, n) => (
+                          <li key={i.id} className="px-3 py-2">
+                            <div className="flex items-center gap-1">
+                              <AbrirEditor href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className="flex min-h-[52px] min-w-0 flex-1 items-center gap-3 text-left active:opacity-70">
+                                {i.image_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={i.image_url} alt="" loading="lazy" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+                                ) : (
+                                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F2F2EE] text-[15px] font-semibold text-black/30">{i.title.charAt(0).toUpperCase()}</span>
+                                )}
+                                <span className="min-w-0 flex-1 truncate text-[14.5px] font-medium">{i.title}</span>
+                              </AbrirEditor>
+                              <button type="button" disabled={n === 0} onClick={() => void trocarOrdem(i, daCategoria[n - 1])} aria-label={`Subir ${i.title}`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F2F2EE] text-[13px] active:scale-95 disabled:opacity-30">▲</button>
+                              <button type="button" disabled={n === daCategoria.length - 1} onClick={() => void trocarOrdem(i, daCategoria[n + 1])} aria-label={`Descer ${i.title}`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F2F2EE] text-[13px] active:scale-95 disabled:opacity-30">▼</button>
+                            </div>
+                            <label className="mt-1 flex items-center gap-2 pl-14 text-[12.5px] text-text-tertiary">
+                              Categoria
+                              <select
+                                value={catAberta}
+                                onChange={(e) => void moverParaCategoria(i.id, e.target.value === "__nenhuma" ? null : e.target.value)}
+                                className="min-w-0 flex-1 rounded-full bg-[#F2F2EE] px-3 py-1.5 text-[13px] text-on-background outline-none"
+                              >
+                                {nomesCat.map((c) => <option key={c} value={c}>{c}</option>)}
+                                <option value="__nenhuma">Sem categoria</option>
+                              </select>
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="mt-2 flex shrink-0 flex-col items-center gap-1.5">
+                    <button type="button" onClick={() => { const c = catAberta; setCatAberta(null); setEscolhendo(false); setBusca(""); onVerTudo(c); }} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-white text-[14px] font-semibold ring-1 ring-black/[0.08] active:scale-[0.98]">Abrir {catAberta} no catálogo</button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </>,
         document.body,

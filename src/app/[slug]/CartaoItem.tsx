@@ -44,6 +44,7 @@ function CartaoBase({
   origem,
   curtir,
   editarHref,
+  aoAbrir,
 }: {
   item: ItemCartao;
   slug: string;
@@ -61,6 +62,8 @@ function CartaoBase({
   curtir?: boolean;
   /** Modo edição: tocar em qualquer parte do card abre o painel de edição, não o destino do link. */
   editarHref?: string;
+  /** Modo edição de uma categoria: em vez de navegar, abre a tela de itens dela. */
+  aoAbrir?: () => void;
 }) {
     const c = colorOf(item.box_color);
     const colorido = !!item.box_color && item.box_color !== "neutro";
@@ -208,7 +211,7 @@ function CartaoBase({
       <Link
         key={item.id}
         href={destino}
-        onClick={() => { if (!editarHref && item.link_kind !== "categoria-interna") trackClick({ businessId, kind: "produto", contentItemId: item.id, sessionId, targetUrl: destino }); }}
+        onClick={(e) => { if (aoAbrir) { e.preventDefault(); aoAbrir(); return; } if (!editarHref && item.link_kind !== "categoria-interna") trackClick({ businessId, kind: "produto", contentItemId: item.id, sessionId, targetUrl: destino }); }}
         className={classe}
         style={cardStyle}
       >
