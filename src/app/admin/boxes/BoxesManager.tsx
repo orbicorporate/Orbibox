@@ -1661,31 +1661,69 @@ function LinhaPronta({
 function AjusteLogo({ src, inicial, onCommit }: { src: string; inicial: LogoAjuste | null; onCommit: (a: LogoAjuste | null) => void }) {
   const [a, setA] = useState<LogoAjuste>(inicial ? limitarLogo(inicial) : { z: 1, x: 0, y: 0 });
   const caixa = useRef<HTMLDivElement>(null);
-  const arrasto = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
+  const vivo = useRef<LogoAjuste>(a); // valor "ao vivo": durante o arrasto não passa pelo React, pra não travar
+  const arrasto = useRef<{ px: number; py: number; x: number; y: number; base: number } | null>(null);
+  const quadro = useRef<number | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendente = useRef<LogoAjuste | null>(null);
+  const commitRef = useRef(onCommit);
+  useEffect(() => { commitRef.current = onCommit; });
   const mexido = a.z !== 1 || a.x !== 0 || a.y !== 0;
 
-  function aplicar(prox: LogoAjuste, salvar: boolean) {
-    const l = limitarLogo(prox);
-    setA(l);
+  function imagem() {
+    return caixa.current?.querySelector("img") ?? null;
+  }
+  function pintar() {
+    quadro.current = null;
+    const l = vivo.current;
+    const img = imagem();
+    if (img) img.style.transform = `translate(${l.x}%, ${l.y}%) scale(${l.z})`;
+  }
+  function gravar() {
+    const l = pendente.current;
+    pendente.current = null;
     if (timer.current) clearTimeout(timer.current);
-    if (salvar) timer.current = setTimeout(() => onCommit(l.z === 1 && l.x === 0 && l.y === 0 ? null : l), salvar ? 350 : 0);
+    timer.current = null;
+    if (l) commitRef.current(l.z === 1 && l.x === 0 && l.y === 0 ? null : l);
+  }
+  function agendarGravacao(l: LogoAjuste) {
+    pendente.current = l;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(gravar, 350);
+  }
+  // Fechar o editor logo depois de mexer não pode perder o ajuste.
+  useEffect(() => () => {
+    if (quadro.current) cancelAnimationFrame(quadro.current);
+    gravar();
+  }, []);
+
+  function aplicar(prox: LogoAjuste) {
+    const l = limitarLogo(prox);
+    vivo.current = l;
+    setA(l);
+    agendarGravacao(l);
   }
   function baixo(e: React.PointerEvent) {
     e.currentTarget.setPointerCapture(e.pointerId);
-    arrasto.current = { px: e.clientX, py: e.clientY, x: a.x, y: a.y };
+    const img = imagem();
+    // O deslocamento é em % do tamanho da própria imagem (que muda se a logo tem fundo próprio).
+    const base = img?.offsetWidth || (caixa.current?.clientWidth ?? 116) * 0.7;
+    if (img) img.style.willChange = "transform";
+    arrasto.current = { px: e.clientX, py: e.clientY, x: vivo.current.x, y: vivo.current.y, base };
   }
   function move(e: React.PointerEvent) {
     const d = arrasto.current;
-    const w = caixa.current?.clientWidth;
-    if (!d || !w) return;
-    // A logo ocupa 70% da bolinha: o deslocamento é em % do tamanho dela.
-    aplicar({ z: a.z, x: d.x + ((e.clientX - d.px) / (w * 0.7)) * 100, y: d.y + ((e.clientY - d.py) / (w * 0.7)) * 100 }, false);
+    if (!d || !d.base) return;
+    vivo.current = limitarLogo({ z: vivo.current.z, x: d.x + ((e.clientX - d.px) / d.base) * 100, y: d.y + ((e.clientY - d.py) / d.base) * 100 });
+    if (quadro.current === null) quadro.current = requestAnimationFrame(pintar);
   }
   function solta() {
     if (!arrasto.current) return;
     arrasto.current = null;
-    aplicar(a, true);
+    if (quadro.current) { cancelAnimationFrame(quadro.current); quadro.current = null; }
+    const img = imagem();
+    if (img) img.style.willChange = "";
+    aplicar(vivo.current);
   }
   const faixa = "h-8 w-full accent-[#111318]";
   return (
@@ -1698,6 +1736,7 @@ function AjusteLogo({ src, inicial, onCommit }: { src: string; inicial: LogoAjus
           onPointerMove={move}
           onPointerUp={solta}
           onPointerCancel={solta}
+          onLostPointerCapture={solta}
           aria-label="Arraste para mover a logo"
           className="relative h-[116px] w-[116px] shrink-0 cursor-grab touch-none select-none overflow-hidden rounded-full ring-1 ring-black/[0.06] active:cursor-grabbing"
         >
@@ -1705,19 +1744,19 @@ function AjusteLogo({ src, inicial, onCommit }: { src: string; inicial: LogoAjus
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <label className="text-[12px] text-text-secondary">Tamanho
-            <input type="range" min={LOGO_ZOOM_MIN * 100} max={LOGO_ZOOM_MAX * 100} step={1} value={Math.round(a.z * 100)} onChange={(e) => aplicar({ ...a, z: Number(e.target.value) / 100 }, true)} aria-label="Tamanho da logo" className={faixa} />
+            <input type="range" min={LOGO_ZOOM_MIN * 100} max={LOGO_ZOOM_MAX * 100} step={1} value={Math.round(a.z * 100)} onChange={(e) => aplicar({ ...a, z: Number(e.target.value) / 100 })} aria-label="Tamanho da logo" className={faixa} />
           </label>
           <label className="text-[12px] text-text-secondary">Esquerda ou direita
-            <input type="range" min={-LOGO_DESLOC_MAX} max={LOGO_DESLOC_MAX} step={1} value={Math.round(a.x)} onChange={(e) => aplicar({ ...a, x: Number(e.target.value) }, true)} aria-label="Posição horizontal da logo" className={faixa} />
+            <input type="range" min={-LOGO_DESLOC_MAX} max={LOGO_DESLOC_MAX} step={1} value={Math.round(a.x)} onChange={(e) => aplicar({ ...a, x: Number(e.target.value) })} aria-label="Posição horizontal da logo" className={faixa} />
           </label>
           <label className="text-[12px] text-text-secondary">Cima ou baixo
-            <input type="range" min={-LOGO_DESLOC_MAX} max={LOGO_DESLOC_MAX} step={1} value={Math.round(a.y)} onChange={(e) => aplicar({ ...a, y: Number(e.target.value) }, true)} aria-label="Posição vertical da logo" className={faixa} />
+            <input type="range" min={-LOGO_DESLOC_MAX} max={LOGO_DESLOC_MAX} step={1} value={Math.round(a.y)} onChange={(e) => aplicar({ ...a, y: Number(e.target.value) })} aria-label="Posição vertical da logo" className={faixa} />
           </label>
         </div>
       </div>
       <div className="flex items-center justify-between gap-2">
         <p className="text-[12px] text-text-tertiary">Arraste a bolinha ou use os controles.</p>
-        {mexido && <button type="button" onClick={() => aplicar({ z: 1, x: 0, y: 0 }, true)} className="min-h-[36px] shrink-0 rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium text-text-secondary">Restaurar</button>}
+        {mexido && <button type="button" onClick={() => aplicar({ z: 1, x: 0, y: 0 })} className="min-h-[36px] shrink-0 rounded-full bg-surface-soft px-3.5 text-[12.5px] font-medium text-text-secondary">Restaurar</button>}
       </div>
     </div>
   );
