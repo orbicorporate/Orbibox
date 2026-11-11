@@ -870,16 +870,19 @@ export function ShowcaseBuilder({
       )}
 
       {/* Ação principal visível; o resto fica no menu "Mais". */}
-      <div className="flex items-center gap-2">
-        <button data-guia="novo-item" onClick={() => createItem()} disabled={creating} className="rounded-full bg-button-primary px-5 py-2.5 text-[14px] font-medium text-white disabled:opacity-50">
+      <div className="relative flex flex-wrap items-center gap-2">
+        <button data-guia="novo-item" onClick={() => createItem()} disabled={creating} className="whitespace-nowrap rounded-full bg-button-primary px-5 py-2.5 text-[14px] font-medium text-white disabled:opacity-50">
           + Novo item
         </button>
+        <button onClick={() => createCategory()} className="whitespace-nowrap rounded-full border border-divider bg-white px-4 py-2.5 text-[14px] font-medium text-on-background active:scale-[0.98]">
+          + Nova categoria
+        </button>
         {temCardapio && (
-          <button onClick={() => void abrirTrazerDoCardapio()} className="rounded-full border border-divider bg-white px-4 py-2.5 text-[14px] font-medium text-on-background active:scale-[0.98]">
+          <button onClick={() => void abrirTrazerDoCardapio()} className="whitespace-nowrap rounded-full border border-divider bg-white px-4 py-2.5 text-[14px] font-medium text-on-background active:scale-[0.98]">
             Puxar do cardápio
           </button>
         )}
-        <div className="relative" ref={menuRef}>
+        <div ref={menuRef}>
           <button
             onClick={() => setMenuAberto((v) => !v)}
             className="flex items-center gap-1.5 rounded-full border border-divider bg-white px-4 py-2.5 text-[14px] font-medium text-text-secondary"
@@ -891,9 +894,8 @@ export function ShowcaseBuilder({
             </svg>
           </button>
           {menuAberto && (
-            <div className="absolute left-0 top-full z-30 mt-2 w-60 overflow-hidden rounded-2xl border border-divider bg-white py-1.5 shadow-[0_16px_40px_rgba(17,19,24,0.22)]">
+            <div className="absolute right-0 top-full z-30 mt-2 w-60 max-w-full overflow-hidden rounded-2xl border border-divider bg-white py-1.5 shadow-[0_16px_40px_rgba(17,19,24,0.22)]">
               <button onClick={() => { setMenuAberto(false); setShowImport(true); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">✦ Importar do site</button>
-              <button onClick={() => { setMenuAberto(false); createCategory(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">Nova categoria</button>
               <button disabled={arranging || items.length === 0} onClick={() => { setMenuAberto(false); autoArrange(); }} className="block w-full px-4 py-3 text-left text-[14px] text-on-background hover:bg-surface-soft disabled:opacity-40">
                 {arranging ? "Organizando…" : "✦ Organizar com a Orbi"}
               </button>
