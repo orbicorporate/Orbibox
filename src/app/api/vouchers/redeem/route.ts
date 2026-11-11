@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { stripe } from "@/lib/stripe";
 import { VOUCHERS_GRATIS } from "@/lib/vouchersFranquia";
+import { dentroDaJanela, rotuloJanela } from "@/lib/validadeVoucher";
 
 /**
  * Cobra 1 real do dono do Orbibox por voucher resgatado (não do cliente
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
 
     const { data: redemption } = await supabase
       .from("voucher_redemptions")
-      .select("id, status, expires_at, voucher_id, vouchers(title, discount_type, discount_value)")
+      .select("id, status, expires_at, voucher_id, vouchers(title, discount_type, discount_value, dias_semana, hora_inicio, hora_fim)")
       .eq("business_id", businessId)
       .eq("code", normalizedCode)
       .maybeSingle();
@@ -123,6 +124,12 @@ export async function POST(req: NextRequest) {
     const expired = redemption.expires_at && new Date(redemption.expires_at) < new Date();
     if (redemption.status !== "claimed" || expired) {
       return NextResponse.json({ error: "Esse código não é mais válido." }, { status: 409 });
+    }
+
+    // Dias e horário de uso definidos no voucher (ex.: só às quartas).
+    const vInfo = Array.isArray(redemption.vouchers) ? redemption.vouchers[0] : redemption.vouchers;
+    if (vInfo && !dentroDaJanela(vInfo)) {
+      return NextResponse.json({ error: `Esse voucher não vale agora. ${rotuloJanela(vInfo) ?? ""}`.trim() }, { status: 409 });
     }
 
     const { error: updateError } = await supabase

@@ -65,6 +65,7 @@ import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
 import { NOBRES, coresDaMarca } from "@/lib/paletasNobres";
 import { descontoLongo, descontoGrande } from "@/lib/voucherDesconto";
+import { rotuloJanela } from "@/lib/validadeVoucher";
 
 type Business = {
   id: string;
@@ -1927,7 +1928,7 @@ function capaDaMarca(b: Business): string | null {
   return b.share_image_url || b.vitrine_cover_url || b.vitrine_cover_urls?.[0] || null;
 }
 
-type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null; color: string | null; show_discount?: boolean | null; apenas_fas?: boolean | null };
+type VoucherPublic = { id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; image_url: string | null; badge: string | null; color: string | null; show_discount?: boolean | null; apenas_fas?: boolean | null; dias_semana?: number[] | null; hora_inicio?: string | null; hora_fim?: string | null };
 
 function voucherDiscountLabel(v: Pick<VoucherPublic, "discount_type" | "discount_value">) {
   return descontoLongo(v);
@@ -1997,7 +1998,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
   useEffect(() => {
     supabase
       .from("vouchers")
-      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge, color, show_discount, apenas_fas")
+      .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge, color, show_discount, apenas_fas, dias_semana, hora_inicio, hora_fim")
       .eq("business_id", business.id)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
@@ -2196,6 +2197,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                     <p className="line-clamp-2 text-[15px] font-semibold leading-snug">{v.title}</p>
                     {v.description?.trim() && <p className="mt-0.5 line-clamp-1 text-[12px] opacity-80">{v.description}</p>}
                     <span className="mt-2 w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[11px]">{restam > 0 ? `${restam} restantes` : "Acabou"}</span>
+                    {rotuloJanela(v) && <span className="mt-1.5 w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] leading-snug">{rotuloJanela(v)}</span>}
                     <button
                       onClick={() => { setClaiming(v.id); setError(null); }}
                       disabled={restam <= 0}
@@ -2238,6 +2240,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{restam > 0 ? `${restam} restantes` : "Acabou"}</span>
                     {mostraDesconto && <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{voucherDiscountLabel(v)}</span>}
+                    {rotuloJanela(v) && <span className="rounded-full bg-white/20 px-3 py-1 text-[12px] font-medium">{rotuloJanela(v)}</span>}
                   </div>
                   <button
                     onClick={() => { setClaiming(v.id); setError(null); }}
