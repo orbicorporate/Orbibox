@@ -17,6 +17,7 @@ import { useArrastarOrdem } from "@/hooks/useArrastarOrdem";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { ORBI_SPHERE_COLORS, sizeOf } from "@/lib/showcase";
 import { avisarErroSalvar } from "@/components/ui/AvisoSalvar";
+import { useDialogs } from "@/hooks/useDialogs";
 
 export type BolinhaVitrine = {
   key: string;
@@ -217,6 +218,7 @@ export function HomeVitrine({
   itensEscolhidos,
   onEscolherItens,
   onVerTudo,
+  ordemCategorias,
   ajustesCategorias,
   onAjustarCategoria,
 }: {
@@ -283,8 +285,38 @@ export function HomeVitrine({
   const [excluidos, setExcluidos] = useState<string[]>([]);
   // Categoria aberta dentro da folha de destaques (nome) e mudanças de ordem/categoria feitas ali, aplicadas na hora.
   const [catAberta, setCatAberta] = useState<string | null>(null);
+  const { confirm, DialogRenderer } = useDialogs();
+  // Categorias excluídas aqui: somem na hora, o banco confirma em seguida.
+  const [catsExcluidas, setCatsExcluidas] = useState<string[]>([]);
   const [mudancas, setMudancas] = useState<Record<string, { position?: number; brand_label?: string | null }>>({});
   const itensAtuais: ItemVitrine[] = itens.map((i) => (mudancas[i.id] ? { ...i, ...mudancas[i.id] } : i));
+  /** Exclui a categoria. Os itens dela continuam no catálogo, só ficam sem categoria. */
+  async function excluirCategoria(nome: string) {
+    const doCat = itensAtuais.filter((i) => i.brand_label?.trim() === nome);
+    if (doCat.length > 0) {
+      const ok = await confirm({
+        title: "Excluir categoria",
+        message: `Excluir a categoria "${nome}"? ${doCat.length === 1 ? "O 1 item continua" : `Os ${doCat.length} itens continuam`} no catálogo, só ficam sem categoria.`,
+        confirmLabel: "Excluir",
+        danger: true,
+      });
+      if (!ok) return;
+    }
+    setCatsExcluidas((p) => [...p, nome]);
+    setCatAberta(null);
+    setMudancas((m) => ({ ...m, ...Object.fromEntries(doCat.map((i) => [i.id, { ...m[i.id], brand_label: null }])) }));
+    if (itensEscolhidos?.includes(`cat:${nome}`)) {
+      const resto = itensEscolhidos.filter((id) => id !== `cat:${nome}`);
+      onEscolherItens?.(resto.length > 0 ? resto : null);
+    }
+    const supabase = createClient();
+    const rs = await Promise.all([
+      ...doCat.map((i) => supabase.from("content_items").update({ brand_label: null }).eq("id", i.id)),
+      supabase.from("businesses").update({ vitrine_categories: (ordemCategorias ?? []).filter((c) => c !== nome) }).eq("id", businessId),
+    ]);
+    if (rs.some((r) => r.error)) { setCatsExcluidas((p) => p.filter((c) => c !== nome)); avisarErroSalvar(); return; }
+    router.refresh();
+  }
   /** Troca a categoria de um item (vazio tira da categoria). */
   async function moverParaCategoria(id: string, nova: string | null) {
     const antes = itens.find((i) => i.id === id)?.brand_label ?? null;
@@ -375,7 +407,19 @@ export function HomeVitrine({
     }
     return [...vistas.values()];
   })();
-  const todosEscolhiveis = [...comFoto, ...categoriasCartao];
+  // Categorias criadas e ainda sem itens: também aparecem para escolher, para ninguém achar que sumiram.
+  const categoriasVazias: ItemVitrine[] = (() => {
+    const comItens = new Set(categoriasCartao.map((c) => c.title));
+    return (ordemCategorias ?? [])
+      .filter((nome) => !!nome?.trim() && nome !== "Destaques" && !comItens.has(nome) && !catsExcluidas.includes(nome))
+      .map((nome) => ({
+        id: `cat:${nome}`, title: nome, description: null, price: null, price_type: null, price_max: null,
+        image_url: null, brand_label: null, type: "product", position: 9999, layout_size: ajustesCategorias?.[nome]?.layout_size ?? "medio",
+        box_color: "neutro", footer_color: null, box_style: "cor", title_placement: ajustesCategorias?.[nome]?.title_placement ?? "sobre",
+        target_url: `/${slug}?tab=vitrine&cat=${encodeURIComponent(nome)}`, link_kind: "categoria-interna",
+      } as ItemVitrine));
+  })();
+  const todosEscolhiveis = [...comFoto, ...categoriasCartao, ...categoriasVazias];
   const escolhidos = (itensEscolhidos ?? []).map((id) => todosEscolhiveis.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i).slice(0, MAXIMO);
   const personalizado = escolhidos.length > 0;
   // Sem escolha do dono, a página inicial mostra as capas da vitrine: os itens sem categoria (Rodízio, Buffet, Drinks...).
@@ -404,6 +448,7 @@ export function HomeVitrine({
 
   return (
     <div className="mt-8 flex w-full flex-col items-center">
+      <DialogRenderer />
       <div className="relative w-full max-w-[340px] lg:max-w-[480px]">
         {ctaTipo === "orbi" ? (
           <form
@@ -708,7 +753,7 @@ export function HomeVitrine({
                       )}
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[14.5px] font-medium">{i.title}</span>
-                        {cat ? <span className="block truncate text-[12px] text-[#8758BE]">Categoria inteira · ver itens ›</span> : i.brand_label?.trim() && <span className="block truncate text-[12px] text-text-tertiary">{i.brand_label.trim()}</span>}
+                        {cat ? <span className="block truncate text-[12px] text-[#8758BE]">{categoriasVazias.some((c) => c.id === i.id) ? "Categoria vazia · abrir ›" : "Categoria inteira · ver itens ›"}</span> : i.brand_label?.trim() && <span className="block truncate text-[12px] text-text-tertiary">{i.brand_label.trim()}</span>}
                       </span>
                     </>
                   );
@@ -812,7 +857,15 @@ export function HomeVitrine({
                     )}
                   </div>
                   <div className="mt-2 flex shrink-0 flex-col items-center gap-1.5">
+                    <AbrirEditor
+                      href={`/admin/vitrine?novo=1&cat=${encodeURIComponent(catAberta)}`}
+                      rotulo={`Criar item em ${catAberta}`}
+                      className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-on-background text-[14px] font-semibold text-white active:scale-[0.98]"
+                    >
+                      <span className="text-[18px] leading-none" aria-hidden>+</span> Criar item em {catAberta}
+                    </AbrirEditor>
                     <button type="button" onClick={() => { const c = catAberta; setCatAberta(null); setEscolhendo(false); setBusca(""); onVerTudo(c); }} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-white text-[14px] font-semibold ring-1 ring-black/[0.08] active:scale-[0.98]">Abrir {catAberta} no catálogo</button>
+                    <button type="button" onClick={() => void excluirCategoria(catAberta)} className="min-h-[40px] text-[13px] font-medium text-[#C0392B] underline underline-offset-4">Excluir categoria {catAberta}</button>
                   </div>
                 </div>
               );
