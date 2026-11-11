@@ -835,14 +835,23 @@ export function HomeVitrine({
             </div>
 
             <div className="mt-2 flex shrink-0 flex-col items-center gap-1.5">
-              <AbrirEditor
-                href="/admin/vitrine?novo=1"
-                rotulo="Criar item"
-                aoFechar={() => void aposCriarItem()}
-                className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-white text-[14px] font-semibold ring-1 ring-black/[0.08] active:scale-[0.98]"
-              >
-                <span className="text-[18px] leading-none" aria-hidden>+</span> Criar item novo
-              </AbrirEditor>
+              <div className="flex w-full gap-2">
+                <AbrirEditor
+                  href="/admin/vitrine?novo=1"
+                  rotulo="Criar item"
+                  aoFechar={() => void aposCriarItem()}
+                  className="flex min-h-[46px] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-on-background text-[14px] font-semibold text-white active:scale-[0.98]"
+                >
+                  <span className="text-[18px] leading-none" aria-hidden>+</span> Item
+                </AbrirEditor>
+                <AbrirEditor
+                  href="/admin/vitrine?novacat=1"
+                  rotulo="Criar categoria"
+                  className="flex min-h-[46px] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white text-[14px] font-semibold ring-1 ring-black/[0.08] active:scale-[0.98]"
+                >
+                  <span className="text-[18px] leading-none" aria-hidden>+</span> Categoria
+                </AbrirEditor>
+              </div>
               <p className="text-center text-[11.5px] text-text-tertiary">Itens em rascunho não aparecem aqui.</p>
               {personalizado && (
                 <button type="button" onClick={() => onEscolherItens(null)} className="min-h-[36px] text-[12.5px] font-medium text-text-secondary underline underline-offset-4">
