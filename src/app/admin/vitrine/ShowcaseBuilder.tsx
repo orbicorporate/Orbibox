@@ -93,6 +93,7 @@ export function ShowcaseBuilder({
   initialLeadTop = false,
   siteSalvo = null,
   abrirNovo = false,
+  abrirNovaCategoria = false,
   abrirInspire = false,
   semFoto = 0,
   editarId = null,
@@ -122,6 +123,7 @@ export function ShowcaseBuilder({
   abrirCapa?: boolean;
   /** Veio de um atalho "Adicionar item agora": já abre um item novo. */
   abrirNovo?: boolean;
+  abrirNovaCategoria?: boolean;
   abrirInspire?: boolean;
   semFoto?: number;
   /** Abre já editando este item (vindo do lápis na página pública). */
@@ -711,6 +713,20 @@ export function ShowcaseBuilder({
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abrirNovo]);
+
+  // ?novacat=1: vindo do botão + Categoria da folha de destaques, já pergunta o nome da categoria.
+  const novaCatJaAberta = useRef(false);
+  useEffect(() => {
+    if (!abrirNovaCategoria || novaCatJaAberta.current) return;
+    novaCatJaAberta.current = true;
+    const t = setTimeout(() => {
+      void createCategory();
+      const emb = new URLSearchParams(window.location.search).get("embed");
+      window.history.replaceState(null, "", emb ? `/admin/vitrine?embed=${emb}` : "/admin/vitrine");
+    }, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abrirNovaCategoria]);
 
   // Atalho "Capa": os ajustes já nascem abertos, só falta rolar até o card da capa.
   useEffect(() => {
