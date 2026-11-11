@@ -875,9 +875,17 @@ export function VisitorExperience({
     // botão "Catálogo" (abre o catálogo todo) já na posição escolhida.
     if (chaves.includes("catalogo")) {
       const posicao = boxList.reduce((m, b) => Math.max(m, b.position), -1) + 1;
+      // Os destaques da home (itens escolhidos, formato, botão principal) ficam no box do catálogo quando ele existe,
+      // senão no "Tela inicial". O novo box precisa herdá-los, ou a home perde os destaques.
+      const heroCfg = (boxList.find((b) => b.box_type === "hero")?.config ?? {}) as CustomConfig;
+      const configDoHero: Partial<CustomConfig> = {};
+      if (heroCfg.itensHome) configDoHero.itensHome = heroCfg.itensHome;
+      if (heroCfg.formatoItens) configDoHero.formatoItens = heroCfg.formatoItens;
+      if (heroCfg.catAjustes) configDoHero.catAjustes = heroCfg.catAjustes;
+      if (heroCfg.botaoPrincipal) configDoHero.botaoPrincipal = heroCfg.botaoPrincipal;
       const { data, error } = await supabase
         .from("smart_boxes")
-        .insert({ business_id: business.id, box_type: "custom", title: "Catálogo", position: posicao, is_active: true, config: { label: "Catálogo", subtitle: "Ver no catálogo", action: "vitrine", color: "transparent", icon: "◆" } })
+        .insert({ business_id: business.id, box_type: "custom", title: "Catálogo", position: posicao, is_active: true, config: { label: "Catálogo", subtitle: "Ver no catálogo", action: "vitrine", color: "transparent", icon: "◆", ...configDoHero } })
         .select()
         .single();
       if (error || !data) {
