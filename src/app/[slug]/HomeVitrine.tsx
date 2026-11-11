@@ -78,6 +78,21 @@ function AjustesCartao({ item, comFormato, onAjustar }: { item: ItemVitrine; com
   );
 }
 
+/** Duas setas no canto do card, só para o dono: mexer na ordem sem arrastar. */
+function SetasCartao({ titulo, primeiro, ultimo, onMover }: { titulo: string; primeiro: boolean; ultimo: boolean; onMover: (dir: -1 | 1) => void }) {
+  const botao = "flex h-8 w-8 items-center justify-center rounded-full border border-divider bg-surface-white/90 shadow-md backdrop-blur active:scale-95 disabled:opacity-35";
+  return (
+    <div className="absolute right-2 top-12 z-10 flex gap-2">
+      <button type="button" disabled={primeiro} aria-label={`Mover ${titulo} para antes`} onClick={() => onMover(-1)} className={botao}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 5l-7 7 7 7" /></svg>
+      </button>
+      <button type="button" disabled={ultimo} aria-label={`Mover ${titulo} para depois`} onClick={() => onMover(1)} className={botao}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
+  );
+}
+
 export type BotaoPrincipal = "orbi" | "vitrine" | "whatsapp";
 
 const BOTOES: Record<BotaoPrincipal, { titulo: string; texto: string }> = {
@@ -446,6 +461,16 @@ export function HomeVitrine({
   const arrastoI = useArrastarOrdem(mostrar.map((i) => i.id), podeEditar && !!onReordenarItens, (ids) => onReordenarItens?.(ids));
   const mostrarNaOrdem = arrastoI.ordem.map((id) => mostrar.find((i) => i.id === id)).filter((i): i is ItemVitrine => !!i && !excluidos.includes(i.id)).map((i) => (ajustes[i.id] ? { ...i, ...ajustes[i.id] } : i));
 
+  /** Sobe ou desce um destaque pela seta do card (mesmo resultado de arrastar). */
+  function moverCartao(id: string, dir: -1 | 1) {
+    const ids = mostrarNaOrdem.map((i) => i.id);
+    const k = ids.indexOf(id);
+    const j = k + dir;
+    if (k < 0 || j < 0 || j >= ids.length) return;
+    [ids[k], ids[j]] = [ids[j], ids[k]];
+    onReordenarItens?.(ids);
+  }
+
   return (
     <div className="mt-8 flex w-full flex-col items-center">
       <DialogRenderer />
@@ -621,6 +646,7 @@ export function HomeVitrine({
                     {podeEditar && i.id.startsWith("cat:") && onEscolherItens && <button type="button" onClick={() => { setCatAberta(i.title); setEscolhendo(true); }} aria-label={`Editar a categoria ${i.title}`} className="absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-divider bg-surface-white/90 text-text-secondary shadow-md backdrop-blur active:scale-95"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg></button>}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                     {podeEditar && <AjustesCartao item={i} comFormato={formato === "vitrine"} onAjustar={ajustarCartao} />}
+                    {podeEditar && onReordenarItens && mostrarNaOrdem.length > 1 && <SetasCartao titulo={i.title} primeiro={mostrarNaOrdem[0]?.id === i.id} ultimo={mostrarNaOrdem[mostrarNaOrdem.length - 1]?.id === i.id} onMover={(d) => moverCartao(i.id, d)} />}
                   </li>
                 );
               })}
@@ -634,6 +660,7 @@ export function HomeVitrine({
                     {podeEditar && i.id.startsWith("cat:") && onEscolherItens && <button type="button" onClick={() => { setCatAberta(i.title); setEscolhendo(true); }} aria-label={`Editar a categoria ${i.title}`} className="absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-divider bg-surface-white/90 text-text-secondary shadow-md backdrop-blur active:scale-95"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg></button>}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                     {podeEditar && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
+                    {podeEditar && onReordenarItens && mostrarNaOrdem.length > 1 && <SetasCartao titulo={i.title} primeiro={mostrarNaOrdem[0]?.id === i.id} ultimo={mostrarNaOrdem[mostrarNaOrdem.length - 1]?.id === i.id} onMover={(d) => moverCartao(i.id, d)} />}
                 </li>
               ))}
             </ul>
@@ -648,6 +675,7 @@ export function HomeVitrine({
                     {podeEditar && i.id.startsWith("cat:") && onEscolherItens && <button type="button" onClick={() => { setCatAberta(i.title); setEscolhendo(true); }} aria-label={`Editar a categoria ${i.title}`} className="absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-divider bg-surface-white/90 text-text-secondary shadow-md backdrop-blur active:scale-95"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg></button>}
                     {podeEditar && !i.id.startsWith("cat:") && <ExcluirItemX id={i.id} titulo={i.title} onExcluido={(id) => { setExcluidos((p) => [...p, id]); router.refresh(); }} className="absolute left-12 top-2 z-10" />}
                     {podeEditar && <AjustesCartao item={i} comFormato={false} onAjustar={ajustarCartao} />}
+                    {podeEditar && onReordenarItens && mostrarNaOrdem.length > 1 && <SetasCartao titulo={i.title} primeiro={mostrarNaOrdem[0]?.id === i.id} ultimo={mostrarNaOrdem[mostrarNaOrdem.length - 1]?.id === i.id} onMover={(d) => moverCartao(i.id, d)} />}
                   </li>
                 );
               })}
@@ -687,7 +715,7 @@ export function HomeVitrine({
             <div className="flex shrink-0 items-center justify-between px-1">
               <div>
                 <p className="text-[18px] font-semibold leading-tight">Destaques da página inicial</p>
-                <p className="mt-0.5 text-[12.5px] text-text-secondary">Toque em Pôr para colocar ou tirar, no nome para editar. Até {MAXIMO}.</p>
+                <p className="mt-0.5 text-[12.5px] text-text-secondary">Toque em Pôr para colocar ou tirar, no nome para editar. O número azul é a ordem na página (toque nele para tirar). Até {MAXIMO}.</p>
               </div>
               <button type="button" onClick={() => { setEscolhendo(false); setBusca(""); }} className="min-h-[40px] rounded-full bg-on-background px-5 text-[14px] font-medium text-white">Concluir</button>
             </div>
@@ -739,6 +767,14 @@ export function HomeVitrine({
                   const novos = marcado ? atuais.filter((id) => id !== i.id) : [...atuais, i.id];
                   onEscolherItens(novos.length > 0 ? novos : null);
                 };
+                const moverNaLista = (id: string, dir: -1 | 1) => {
+                  const ids = naSelecao.map((e) => e.id);
+                  const k = ids.indexOf(id);
+                  const j = k + dir;
+                  if (k < 0 || j < 0 || j >= ids.length) return;
+                  [ids[k], ids[j]] = [ids[j], ids[k]];
+                  onEscolherItens(ids);
+                };
                 const linha = (i: ItemVitrine) => {
                   const ordem = naSelecao.findIndex((e) => e.id === i.id);
                   const marcado = ordem >= 0;
@@ -764,6 +800,12 @@ export function HomeVitrine({
                         <button type="button" onClick={() => setCatAberta(i.title)} aria-label={`Ver os itens de ${i.title}`} className={classeMiolo}>{miolo}</button>
                       ) : (
                         <AbrirEditor href={`/admin/vitrine?editar=${i.id}`} rotulo={`Editar ${i.title}`} className={classeMiolo}>{miolo}</AbrirEditor>
+                      )}
+                      {marcado && (
+                        <>
+                          <button type="button" disabled={ordem === 0} onClick={() => moverNaLista(i.id, -1)} aria-label={`Subir ${i.title}`} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F2F2EE] text-[12px] active:scale-95 disabled:opacity-30">▲</button>
+                          <button type="button" disabled={ordem === naSelecao.length - 1} onClick={() => moverNaLista(i.id, 1)} aria-label={`Descer ${i.title}`} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F2F2EE] text-[12px] active:scale-95 disabled:opacity-30">▼</button>
+                        </>
                       )}
                       <button type="button" aria-pressed={marcado} aria-label={marcado ? `Tirar ${i.title} da página inicial` : `Pôr ${i.title} na página inicial`} onClick={() => alternar(i, marcado)} className="flex min-h-[44px] shrink-0 items-center">
                         {marcado ? (
