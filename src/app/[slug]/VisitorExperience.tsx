@@ -1995,8 +1995,6 @@ function resultMessage(businessName: string, expiresAt: string | null) {
 }
 
 function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack }: { business: Business; sessionId: string | null; orbiColors: string[] | null; formato: "horizontal" | "quadrado"; focoId: string | null; onBack: () => void }) {
-  // Veio de um link de voucher: mostra só ele, com a saída pra ver os outros.
-  const [soFoco, setSoFoco] = useState(!!focoId);
   const quadrado = formato === "quadrado";
   const larga = quadrado ? "col-span-2" : "";
   const supabase = createClient();
@@ -2089,14 +2087,14 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
     }
   }
 
+  // Veio de um voucher específico: ele vai para o topo e pulsa, e os outros já aparecem logo abaixo.
   const focoExiste = !!focoId && !!vouchers?.some((x) => x.id === focoId);
-  const emFoco = soFoco && focoExiste;
-  const visiveis = emFoco ? vouchers?.filter((x) => x.id === focoId) : vouchers;
+  const visiveis = focoExiste ? [...(vouchers ?? [])].sort((a, b) => (a.id === focoId ? -1 : b.id === focoId ? 1 : 0)) : vouchers;
 
   return (
     <div className="w-full">
       <button onClick={onBack} className="mb-3 text-[14px] text-text-tertiary hover:underline">← voltar</button>
-      <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">{emFoco ? "Seu voucher" : "Vouchers"}</h2>
+      <h2 className="font-[family-name:var(--font-manrope)] text-[24px] font-medium tracking-[-0.01em]">Vouchers</h2>
       <p className="mt-1 text-[14px] text-text-secondary">Vantagens exclusivas pra você.</p>
 
       {result ? (
@@ -2128,7 +2126,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                 className="flex-1 rounded-full bg-white/20 py-3 text-[14px] font-semibold text-white backdrop-blur-sm disabled:opacity-60"
               />
             </div>
-            <button onClick={() => { setResult(null); setSoFoco(false); }} className="mt-4 text-[12.5px] underline opacity-80">Ver outros vouchers</button>
+            <button onClick={() => setResult(null)} className="mt-4 text-[12.5px] underline opacity-80">Voltar aos vouchers</button>
           </div>
           {!deixouWhats && (
             <LeadCapture
@@ -2188,7 +2186,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
 
             if (v.apenas_fas && !ehFa) {
               return (
-                <div key={v.id} className={`relative overflow-hidden rounded-[26px] p-5 text-white ${larga}`} style={{ background: voucherGradient(v.color) }}>
+                <div key={v.id} className={`relative overflow-hidden rounded-[26px] p-5 text-white ${larga} ${v.id === focoId ? "voucher-foco" : ""}`} style={{ background: voucherGradient(v.color) }}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide opacity-90">Exclusivo para fãs</p>
                   <p className="mt-1 text-[18px] font-bold leading-tight">{v.title}</p>
                   <p className="mt-1 text-[13.5px] opacity-90">Vire fã de {business.name} para liberar este voucher.</p>
@@ -2202,7 +2200,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
             const tema = voucherTheme(v.color);
             if (quadrado) {
               return (
-                <div key={v.id} className="relative flex flex-col overflow-hidden rounded-[26px] p-2.5 text-white" style={{ background: voucherGradient(v.color), boxShadow: `0 10px 26px ${tema.glow}` }}>
+                <div key={v.id} className={`relative flex flex-col overflow-hidden rounded-[26px] p-2.5 text-white ${v.id === focoId ? "voucher-foco" : ""}`} style={{ background: voucherGradient(v.color), boxShadow: `0 10px 26px ${tema.glow}` }}>
                   <div className="relative aspect-square w-full overflow-hidden rounded-[20px] bg-white/15">
                     {v.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -2244,7 +2242,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
             // depois título, descrição, chips (estoque e desconto) e o botão.
             const mostraDesconto = v.discount_type !== "gift" && v.show_discount !== false;
             return (
-              <div key={v.id} className="relative overflow-hidden rounded-[28px] p-3 text-white" style={{ background: voucherGradient(v.color), boxShadow: `0 12px 30px ${tema.glow}` }}>
+              <div key={v.id} className={`relative overflow-hidden rounded-[28px] p-3 text-white ${v.id === focoId ? "voucher-foco" : ""}`} style={{ background: voucherGradient(v.color), boxShadow: `0 12px 30px ${tema.glow}` }}>
                 <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[22px] bg-white/15">
                   {v.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -2284,12 +2282,6 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
               </div>
             );
           })}
-
-          {emFoco && (
-            <button onClick={() => setSoFoco(false)} className={`min-h-[44px] rounded-full border border-divider px-5 text-[14px] font-medium text-text-secondary active:scale-[0.98] ${larga}`}>
-              Ver outros vouchers
-            </button>
-          )}
 
           {/* Vouchers já resgatados neste aparelho, pra pessoa reencontrar o código */}
           {meusVouchers.length > 0 && (

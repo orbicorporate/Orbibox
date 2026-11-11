@@ -1780,3 +1780,13 @@ html[data-embed] .embed-oculta { display: none !important; }
 @keyframes cl-pisca-estrela { 0%, 22%, 100% { color: #D9DBE0; transform: scale(1); } 8% { color: #FFB23C; transform: scale(1.18); } }
 .cl-estrela-pisca { display: inline-flex; color: #D9DBE0; animation: cl-pisca-estrela 3s ease-in-out var(--d, 0ms) infinite; }
 @media (prefers-reduced-motion: reduce) { .cl-estrela-pisca { animation: none; } }
+
+/* Voucher que a pessoa tocou: pulsa algumas vezes ao abrir, no topo da lista. */
+@keyframes vouchersFoco {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.03); filter: brightness(1.1) saturate(1.1); }
+}
+.voucher-foco { animation: vouchersFoco 1.5s ease-in-out 4; }
+@media (prefers-reduced-motion: reduce) {
+  .voucher-foco { animation: none; }
+}
