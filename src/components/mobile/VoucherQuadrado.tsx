@@ -48,7 +48,6 @@ export function VoucherQuadrado({ v }: { v: V }) {
       </div>
       <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
         <p className="line-clamp-2 text-[15px] font-semibold leading-snug">{v.title}</p>
-        {v.description?.trim() && <p className="mt-0.5 line-clamp-1 text-[12px] opacity-80">{v.description}</p>}
         <span className="mt-2 w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[11px]">{restam > 0 ? `${restam} restantes` : "Acabou"}</span>
         <span className="mt-3 inline-flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white py-2.5 text-[13.5px] font-bold" style={{ color: tema.ctaText }}>
           {restam > 0 ? <>Pegar voucher <span aria-hidden>↗</span></> : "Esgotado"}
