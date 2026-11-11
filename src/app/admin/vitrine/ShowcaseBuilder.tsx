@@ -139,6 +139,8 @@ export function ShowcaseBuilder({
   const { confirm, prompt, alert: alertDialog, DialogRenderer } = useDialogs();
   const [items, setItems] = useState<Item[]>(initial);
   // Trazer pratos do Cardápio para o Catálogo.
+  // + ao lado da categoria: pergunta se cria item novo ou escolhe entre os que já existem.
+  const [opcaoCat, setOpcaoCat] = useState<{ nome: string; escolhendo: boolean } | null>(null);
   const [trazendo, setTrazendo] = useState<{ carregando: boolean; pratos: { nome: string; descricao: string; preco: number | null; foto: string | null; categoria: string }[] } | null>(null);
   const [avisoTroca, setAvisoTroca] = useState<string | null>(null);
   const [leadTop, setLeadTop] = useState(initialLeadTop);
@@ -649,6 +651,31 @@ export function ShowcaseBuilder({
     setAvisoTroca(avisoDoEnvio(r, "catálogo"));
   }
 
+  const nomeDaCategoria = (i: Item) => i.brand_label?.trim() || "Destaques";
+  /** Itens já prontos que podem ir para a categoria (os que ainda não estão nela, sem rascunho vazio). */
+  const existentesParaCategoria = (cat: string) =>
+    items.filter((i) => nomeDaCategoria(i) !== cat && !(i.status === "draft" && i.title === "Novo item" && !i.image_url));
+
+  function aoTocarMais(cat: string) {
+    if (existentesParaCategoria(cat).length === 0) { void createItem(cat); return; }
+    setOpcaoCat({ nome: cat, escolhendo: false });
+  }
+
+  async function moverParaCategoria(ids: string[], cat: string) {
+    if (ids.length === 0) return;
+    snapshot();
+    const antes = items;
+    setOpcaoCat(null);
+    setItems((p) => p.map((i) => (ids.includes(i.id) ? { ...i, brand_label: cat } : i)));
+    const rs = await Promise.all(ids.map((id) => supabase.from("content_items").update({ brand_label: cat }).eq("id", id)));
+    if (rs.some((r) => r.error)) {
+      setItems(antes);
+      mostrarAviso("Não conseguimos mover. Tente de novo.");
+      return;
+    }
+    mostrarAviso(ids.length === 1 ? `1 item agora está em ${cat}` : `${ids.length} itens agora estão em ${cat}`);
+  }
+
   async function createItem(brandLabel: string | null = null, guiado = true) {
     setCreating(true);
     snapshot();
@@ -857,6 +884,35 @@ export function ShowcaseBuilder({
         );
       })()}
       {avisoTroca && <p role="status" className="mb-2 text-[13px] text-text-secondary">{avisoTroca}</p>}
+      {opcaoCat && !opcaoCat.escolhendo && (
+        <div className="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label={`Adicionar em ${opcaoCat.nome}`}>
+          <button type="button" aria-label="Fechar" onClick={() => setOpcaoCat(null)} className="veu-entra absolute inset-0 bg-black/40" />
+          <div className="folha-sobe absolute inset-x-0 bottom-0 mx-auto w-full max-w-[440px] rounded-t-[28px] bg-background-main p-5 pb-8">
+            <h3 className="font-[family-name:var(--font-manrope)] text-[20px] font-medium leading-tight">Adicionar em {opcaoCat.nome}</h3>
+            <div className="mt-4 flex flex-col gap-2.5">
+              <button type="button" onClick={() => { const c = opcaoCat.nome; setOpcaoCat(null); void createItem(c); }} className="rounded-[20px] bg-white p-4 text-left ring-1 ring-black/[0.08] active:scale-[0.99]">
+                <span className="block text-[15px] font-medium">Criar item novo</span>
+                <span className="mt-0.5 block text-[13px] text-text-secondary">Começa do zero: nome, foto, descrição e preço.</span>
+              </button>
+              <button type="button" onClick={() => setOpcaoCat({ nome: opcaoCat.nome, escolhendo: true })} className="rounded-[20px] bg-white p-4 text-left ring-1 ring-black/[0.08] active:scale-[0.99]">
+                <span className="block text-[15px] font-medium">Escolher itens que já existem</span>
+                <span className="mt-0.5 block text-[13px] text-text-secondary">{existentesParaCategoria(opcaoCat.nome).length} {existentesParaCategoria(opcaoCat.nome).length === 1 ? "item pronto" : "itens prontos"} no catálogo. Eles passam para esta categoria.</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {opcaoCat?.escolhendo && (
+        <TrazerItens
+          titulo={`Escolher para ${opcaoCat.nome}`}
+          ajuda={`Marque os itens do catálogo que vão para ${opcaoCat.nome}. Eles saem da categoria onde estão hoje.`}
+          itens={existentesParaCategoria(opcaoCat.nome).map((i) => ({ key: i.id, nome: i.title, foto: i.image_url, preco: i.price, categoria: i.brand_label?.trim() ?? "" }))}
+          carregando={false}
+          rotuloBotao={(n) => (n === 0 ? "Escolha os itens" : n === 1 ? `Mover 1 item para ${opcaoCat.nome}` : `Mover ${n} itens para ${opcaoCat.nome}`)}
+          onConfirmar={(ids) => moverParaCategoria(ids, opcaoCat.nome)}
+          onFechar={() => setOpcaoCat(null)}
+        />
+      )}
       {trazendo && (
         <TrazerItens
           titulo="Copiar do cardápio"
@@ -1091,12 +1147,12 @@ export function ShowcaseBuilder({
               ) : (
                 <div className="flex min-w-0 items-center gap-2">
                   <h2 className="truncate font-[family-name:var(--font-manrope)] text-[20px] font-medium">{sec.name}</h2>
-                  {/* + ao lado do nome: abre o cadastro de um item novo já nesta categoria. */}
+                  {/* + ao lado do nome: criar item novo já nesta categoria ou escolher entre os itens que já existem. */}
                   <button
                     type="button"
-                    onClick={() => createItem(sec.name)}
+                    onClick={() => aoTocarMais(sec.name)}
                     disabled={creating}
-                    aria-label={`Novo item em ${sec.name}`}
+                    aria-label={`Adicionar item em ${sec.name}`}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-on-background text-[18px] leading-none text-white shadow-sm active:scale-95 disabled:opacity-40"
                   >
                     +
