@@ -115,11 +115,11 @@ export function CardapioFlow({
             </ul>
           ) : (
             // Vários PDFs: bolinhas de destaque, como as da home, com o nome embaixo.
-            <ul className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-4 pb-1">
+            <ul className="mt-3 flex flex-nowrap justify-center gap-x-1.5 pb-1">
               {pdfs.map((p) => {
                 
                 return (
-                  <li key={p.id} className="flex w-[84px] flex-col items-center">
+                  <li key={p.id} className="flex min-w-0 max-w-[84px] flex-1 flex-col items-center">
                     <a
                       href={p.url}
                       target="_blank"
@@ -128,12 +128,12 @@ export function CardapioFlow({
                       aria-label={`Baixar ${p.nome.trim() || "PDF"}${p.bytes ? `, ${pesoLegivel(p.bytes)}` : ""}`}
                       onClick={() => trackClick({ businessId: business.id, kind: "link", sessionId, targetUrl: p.url })}
                       style={{ background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 48%), ${CEREJA}`, boxShadow: `inset 0 -7px 12px -5px rgba(0,0,0,0.22), inset 0 1.5px 2px rgba(255,255,255,0.28), ${SOMBRA_CEREJA}`, color: "#fff" }}
-                      className="flex h-[64px] w-[64px] flex-col items-center justify-center rounded-full transition-transform active:scale-95"
+                      className="flex h-[32px] w-[32px] flex-col items-center justify-center rounded-full transition-transform active:scale-95"
                     >
-                      <span className="text-[14px] font-medium leading-none tracking-[0.08em]">PDF</span>
+                      <span className="text-[8px] font-medium leading-none tracking-[0.06em]">PDF</span>
                     </a>
-                    <span className="mt-1.5 line-clamp-2 w-full break-words text-center text-[12px] font-medium leading-tight">{p.nome.trim() || "PDF"}</span>
-                    {p.bytes ? <span className="mt-0.5 text-[10.5px] leading-none text-text-tertiary">{pesoLegivel(p.bytes)}</span> : null}
+                    <span className="mt-1 line-clamp-2 w-full break-words text-center text-[11px] font-medium leading-tight">{p.nome.trim() || "PDF"}</span>
+                    {p.bytes ? <span className="mt-0.5 text-[10px] leading-none text-text-tertiary">{pesoLegivel(p.bytes)}</span> : null}
                   </li>
                 );
               })}
