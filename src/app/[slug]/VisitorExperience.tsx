@@ -1809,6 +1809,13 @@ export function VisitorExperience({
               <button onClick={voltarAoInicio} aria-label="Voltar ao início" className="flex h-9 items-center gap-1.5 rounded-full bg-surface-soft px-3.5 text-[13.5px] font-medium active:scale-[0.97]">
                 <span aria-hidden>←</span> Início
               </button>
+              {intent === "comprar" && content.length > 0 && (
+                <BotaoCompartilhar
+                  alvo={{ url: `/${business.slug}?tab=vitrine`, titulo: business.catalog_title || "Catálogo", rotulo: "Catálogo", marca: business.name, imagem: capaDaMarca(business), logo: business.logo_url, texto: `Olha o catálogo de ${business.name}:` }}
+                  tam={18}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-surface-soft text-on-background transition-transform active:scale-90"
+                />
+              )}
             </div>
             <div className="mt-6 flex items-start justify-between gap-3">
               <div className="min-w-0">
