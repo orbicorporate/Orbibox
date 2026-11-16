@@ -887,7 +887,7 @@ function Passos({ atual }: { atual: 1 | 2 | 3 }) {
   );
 }
 
-/** Caixa de vidro com uma bolinha colorida brilhante (esfera com reflexo) e o ícone em traço. */
+/** Card quase sólido com a bolinha de cor sólida e traço branco, igual às demais telas do onboarding. */
 function TipoBox({ i, ativa, onClick, rotulo, icone, cor }: { i: number; ativa: boolean; onClick: () => void; rotulo: string; icone: NomeIcone; cor: string }) {
   return (
     <button
@@ -896,16 +896,9 @@ function TipoBox({ i, ativa, onClick, rotulo, icone, cor }: { i: number; ativa: 
       aria-checked={ativa}
       onClick={onClick}
       style={{ animationDelay: `${i * 0.05}s` }}
-      className={`orbi-linha-entra relative flex min-h-[148px] flex-col items-start justify-between overflow-hidden rounded-[28px] p-4 text-left backdrop-blur-xl transition-all duration-200 active:scale-[0.96] ${ativa ? "sel-orbi scale-[1.02] shadow-[0_14px_30px_-14px_rgba(110,197,214,0.8)]" : "bg-white/55 ring-1 ring-white/80 shadow-[0_8px_24px_-16px_rgba(17,19,24,0.25)]"}`}
+      className={`orbi-linha-entra relative flex min-h-[136px] flex-col items-start justify-between rounded-[26px] p-4 text-left transition-all duration-200 active:scale-[0.96] ${ativa ? "sel-orbi scale-[1.02] shadow-[0_14px_30px_-14px_rgba(110,197,214,0.8)]" : "bg-white/90 ring-1 ring-black/[0.06] shadow-[0_8px_24px_-16px_rgba(17,19,24,0.3)]"}`}
     >
-      <span aria-hidden className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-35 blur-2xl" style={{ background: cor }} />
-      <span
-        aria-hidden
-        className="relative flex h-[58px] w-[58px] items-center justify-center rounded-full"
-        style={{ background: `radial-gradient(circle at 32% 28%, #ffffffd9 0 9%, ${cor}ee 38%, ${cor} 70%, ${cor}cc 100%)`, boxShadow: `inset 0 -6px 12px ${cor}88, 0 10px 18px -8px ${cor}` }}
-      >
-        <IconeOrbi nome={icone} cor="transparent" tamanho={58} traco={1.7} />
-      </span>
+      <IconeOrbi nome={icone} cor={cor} tamanho={48} />
       <span className="relative z-10 text-[15px] font-medium leading-tight">{rotulo}</span>
       {ativa && <span className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-on-background text-[12px] text-white" aria-hidden>✓</span>}
     </button>
