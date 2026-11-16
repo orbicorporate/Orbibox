@@ -239,7 +239,7 @@ export function HomeVitrine({
   onAjustarCategoria,
 }: {
   bolinhas: BolinhaVitrine[];
-  /** O dono escolheu não ter botão principal na página inicial. */
+  /** O dono escolheu não ter botão principal na página inicial (a barra de conversa da Orbi continua, se houver). */
   semCta?: boolean;
   ctaRotulo: string;
   ctaTipo: BotaoPrincipal;
@@ -478,7 +478,7 @@ export function HomeVitrine({
     <div className="mt-8 flex w-full flex-col items-center">
       <DialogRenderer />
       <div className="relative w-full max-w-[340px] lg:max-w-[480px]">
-        {semCta ? null : ctaTipo === "orbi" ? (
+        {semCta && ctaTipo !== "orbi" ? null : ctaTipo === "orbi" ? (
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -515,7 +515,7 @@ export function HomeVitrine({
             {ctaRotulo}
           </button>
         )}
-        {!semCta && podeEditar && onCtaTipo && opcoesCta.length > 1 && (
+        {!(semCta && ctaTipo !== "orbi") && podeEditar && onCtaTipo && opcoesCta.length > 1 && (
           <button type="button" onClick={() => setEditandoCta(true)} aria-label="Escolher o botão principal" className="absolute -right-2 -top-3 flex h-8 w-8 items-center justify-center lapis-edita text-[15px] text-on-background/60">✎</button>
         )}
       </div>
