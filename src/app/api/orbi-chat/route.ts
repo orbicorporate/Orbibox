@@ -17,6 +17,8 @@ const ATENDIMENTO_LABEL: Record<string, string> = {
 const rotuloPagamento = (id: string) => PAGAMENTO_LABEL[id] ?? id;
 const rotuloAtendimento = (id: string) => ATENDIMENTO_LABEL[id] ?? id;
 
+const LIMITE_CATALOGO = 300;
+
 export async function POST(req: NextRequest) {
   const lento = limitar(req, "orbi-chat", 30);
   if (lento) return lento;
@@ -86,10 +88,11 @@ export async function POST(req: NextRequest) {
 
     const { data: content } = await supabase
       .from("content_items")
-      .select("id, title, description, price, image_url, link_kind")
+      .select("id, title, description, price, image_url, link_kind, brand_label")
       .eq("business_id", businessId)
       .eq("status", "published")
-      .limit(15);
+      .order("position", { ascending: true })
+      .limit(LIMITE_CATALOGO);
 
     // Respostas que o time já ensinou (perguntas que a Orbi não sabia).
     let ensinadas = "";
@@ -115,14 +118,16 @@ export async function POST(req: NextRequest) {
       : "próxima e direta";
 
     const catalog = (content ?? [])
-      .map((c) => `- [id:${c.id}] ${c.title}${c.price != null ? ` (R$ ${Number(c.price).toFixed(2)})` : ""}${c.description ? `: ${c.description}` : ""}`)
+      .map((c) => `- [id:${c.id}] ${c.brand_label ? `[${c.brand_label}] ` : ""}${c.title}${c.price != null ? ` (R$ ${Number(c.price).toFixed(2)})` : ""}${c.description ? `: ${c.description.slice(0, 140)}` : ""}`)
       .join("\n");
+    // Se o catálogo passar do limite, a lista vai incompleta: a Orbi precisa saber disso para não dizer que um produto não existe.
+    const catalogoIncompleto = (content ?? []).length >= LIMITE_CATALOGO;
 
     const system = `Você é ${agentName}, a assistente de IA (AgentBox) do negócio "${business?.name ?? "este negócio"}" dentro do Orbibox, uma plataforma de "web adaptativa".
 Seu tom de voz é: ${toneDesc}.
 Objetivos da conversa: ${agentConfig?.objectives?.join(", ") || "ajudar o visitante"}.
 ${business?.brand_voice_summary ? `Tom da marca: ${business.brand_voice_summary}` : ""}\n${business?.about_business ? `Sobre o negócio: ${business.about_business}` : ""}\n${business?.differentials ? `Diferenciais: ${business.differentials}` : ""}\n${business?.policies ? `Políticas (entrega, trocas, horários): ${business.policies}` : ""}\n${business?.payment_methods?.length ? `Formas de pagamento aceitas: ${business.payment_methods.map(rotuloPagamento).join(", ")}` : ""}\n${business?.service_modes?.length ? `Como atende: ${business.service_modes.map(rotuloAtendimento).join(", ")}` : ""}\n${business?.address ? `Endereço: ${business.address}` : ""}
-${catalog ? `Catálogo disponível:\n${catalog}` : "O catálogo ainda não tem produtos publicados."}
+${catalog ? `Catálogo disponível${catalogoIncompleto ? " (lista parcial, há mais produtos)" : " (lista completa)"}:\n${catalog}` : "O catálogo ainda não tem produtos publicados."}
 ${ensinadas ? `Respostas que o time já deu pra perguntas comuns (use como verdade, com suas palavras):\n${ensinadas}` : ""}
 
 Regras:
@@ -130,6 +135,7 @@ Regras:
 - Recomende produtos/serviços da vitrine quando fizer sentido pra ajudar a pessoa. Pra mostrar um card clicável com a foto do produto, escreva a marcação [[produto:ID]] usando o id que aparece no catálogo (ex: [[produto:abc-123]]). Coloque a marcação numa linha própria, logo depois de mencionar o produto no texto. Use no máximo 2 por resposta, e só de produtos que existem no catálogo acima. Não descreva a marcação, só a escreva.
 - Respostas CURTAS e diretas (2 a 3 frases no máximo), como uma conversa real de chat no celular. Vá direto ao ponto, sem enrolação nem introduções longas.
 - Nunca invente produtos, preços ou promessas que não estejam no catálogo acima.
+- Antes de dizer que não temos um produto, procure no catálogo por nome parecido, singular ou plural e pela categoria entre colchetes. Se não achar${catalogoIncompleto ? ", lembre que a lista é parcial: diga que vai confirmar com o time em vez de afirmar que não existe" : ", diga que não encontrou esse item no catálogo e ofereça falar com o time"}. Nunca diga que não temos algo que aparece no catálogo.
 - Nunca use a expressão "dono do negócio" ou "dono", soa amador. Diga "nosso time" ou "um especialista da área".
 - NUNCA use travessão (, ) em nenhuma resposta, em hipótese alguma. Use vírgula, ponto ou duas frases separadas no lugar.
 - Seja envolvente, próxima e consultiva, como uma especialista técnica do negócio que entende do assunto de verdade, não uma atendente genérica.
