@@ -60,6 +60,7 @@ import { SobreEditorSheet, type SobreParte } from "./SobreEditorSheet";
 import { aoSalvar, avisarErroSalvar, avisarSalvo, conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
 import { IconeLinha, ICONES_LINHA } from "@/components/ui/IconesLinha";
+import { IconeBotao } from "./IconeBotao";
 import { LIMITES_GRATIS } from "@/lib/planoGratis";
 import { HomeIcon } from "@/components/orbi/HomeOptionCard";
 import { PaletaPanel } from "./PaletaPanel";
@@ -2515,7 +2516,7 @@ function StoryView({
           <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto no-scrollbar pb-1">
             {cards.map((c, i) => (
               <div key={i} className="w-[220px] shrink-0 snap-start rounded-[22px] bg-surface-white p-4 shadow-[0_2px_14px_rgba(17,19,24,0.06)]">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[18px]">{c.icon || "◎"}</span>
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-soft text-[18px]"><IconeBotao icone={c.icon || "◎"} size={20} /></span>
                 <p className="mt-3 font-[family-name:var(--font-manrope)] text-[16px] font-semibold leading-snug">{c.title}</p>
                 {c.description && <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">{c.description}</p>}
               </div>

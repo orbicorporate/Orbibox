@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 import { GalleryUpload } from "@/components/ui/GalleryUpload";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
+import { ICON_LIBRARY, isAnimatedIcon } from "@/lib/showcase";
+import { ICONES_LINHA, IconeLinha } from "@/components/ui/IconesLinha";
+import { IconeBotao } from "./IconeBotao";
 
 export type DiffCard = { icon?: string; title: string; description?: string };
 
@@ -42,6 +45,7 @@ export function SobreEditorSheet({
   const [t, setT] = useState(texto);
   const [lista, setLista] = useState<DiffCard[]>(cards.length > 0 ? cards : [{ title: "", description: "" }]);
   const [salvando, setSalvando] = useState(false);
+  const [iconeAberto, setIconeAberto] = useState<number | null>(null);
 
   const titulo = parte === "texto" ? "Sobre nós" : parte === "diferenciais" ? "Diferenciais" : "Fotos da página";
   const ajuda =
@@ -92,9 +96,34 @@ export function SobreEditorSheet({
             <div className="flex flex-col gap-3">
               {lista.map((c, i) => (
                 <div key={i} className="rounded-[20px] bg-surface-white p-3.5 ring-1 ring-black/[0.06]">
+                  <button type="button" onClick={() => setIconeAberto((a) => (a === i ? null : i))} aria-expanded={iconeAberto === i} className="mb-2.5 flex min-h-[48px] w-full items-center gap-3 rounded-full bg-surface-soft pl-1.5 pr-4 text-left text-[14px] active:scale-[0.99]">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-white text-[18px] ring-1 ring-black/[0.06]"><IconeBotao icone={c.icon || "◎"} size={20} /></span>
+                    <span className="flex-1">Ícone</span>
+                    <span className="text-[12.5px] text-text-tertiary">{iconeAberto === i ? "Fechar" : "Trocar"}</span>
+                  </button>
+                  {iconeAberto === i && (
+                    <div className="mb-3 rounded-[18px] bg-surface-soft p-3">
+                      <p className="text-[12px] uppercase tracking-wide text-text-tertiary">Linhas minimalistas</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {ICONES_LINHA.map((ic) => (
+                          <button key={ic.chave} type="button" aria-label={ic.rotulo} title={ic.rotulo} onClick={() => { setLista((l) => l.map((x, j) => (j === i ? { ...x, icon: ic.chave } : x))); setIconeAberto(null); }} className={`flex h-11 w-11 items-center justify-center rounded-full border text-on-background ${c.icon === ic.chave ? "border-on-background bg-surface-white" : "border-divider"}`}>
+                            <IconeLinha chave={ic.chave} size={20} />
+                          </button>
+                        ))}
+                      </div>
+                      <p className="mt-4 text-[12px] uppercase tracking-wide text-text-tertiary">Símbolos</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {ICON_LIBRARY.filter((ic) => !isAnimatedIcon(ic)).map((ic) => (
+                          <button key={ic} type="button" onClick={() => { setLista((l) => l.map((x, j) => (j === i ? { ...x, icon: ic } : x))); setIconeAberto(null); }} className={`flex h-11 w-11 items-center justify-center rounded-full border text-[19px] ${c.icon === ic ? "border-on-background bg-surface-white" : "border-divider"}`}>
+                            {ic}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <input value={c.title} onChange={(e) => setLista((l) => l.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} placeholder="Título (ex: Entrega grátis)" maxLength={50} className={campo} />
                   <textarea value={c.description ?? ""} onChange={(e) => setLista((l) => l.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} placeholder="Explique em uma frase" rows={2} maxLength={160} className={`${campo} mt-2 resize-none text-[14px]`} />
-                  <button type="button" onClick={() => setLista((l) => l.filter((_, j) => j !== i))} className="mt-1 min-h-[40px] px-1 text-[13px] text-red-600">Remover este</button>
+                  <button type="button" onClick={() => { setLista((l) => l.filter((_, j) => j !== i)); setIconeAberto(null); }} className="mt-1 min-h-[40px] px-1 text-[13px] text-red-600">Remover este</button>
                 </div>
               ))}
               {lista.length < 8 && (
