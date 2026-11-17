@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -258,6 +259,21 @@ export function PromocaoGuiada({
           {etapa === 2 && (
             <div className="mt-6 flex flex-col gap-7">
               <div>
+                <p className={`${rotulo} flex items-center gap-2`}><IconePessoas size={16} /> Quem pode pegar</p>
+                <div className="mt-3 grid grid-cols-2 gap-2.5" role="radiogroup" aria-label="Quem pode pegar">
+                  {([[false, "Todos", "Aparece na sua página"], [true, "Só convidados", "Link e código para cada pessoa da sua lista"]] as const).map(([val, t, d]) => (
+                    <button key={t} type="button" role="radio" aria-checked={privado === val} onClick={() => setPrivado(val)} className={`relative min-h-[84px] rounded-[20px] px-4 py-3 text-left transition-colors active:scale-[0.98] ${privado === val ? "bg-on-background text-white" : "bg-surface-white ring-1 ring-black/[0.07]"}`}>
+                      {val && <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-[#E4264C] ring-2 ring-white" aria-label="Novo" />}
+                      <span className="block text-[15px] font-semibold">{t}</span>
+                      <span className={`mt-0.5 block text-[12.5px] leading-snug ${privado === val ? "text-white/75" : "text-text-tertiary"}`}>{d}</span>
+                    </button>
+                  ))}
+                </div>
+                <Link href="/admin/vouchers/convidados" target="_blank" className="mt-2.5 inline-flex min-h-[44px] items-center text-[13.5px] font-medium underline underline-offset-4" style={{ color: "#C4143A" }}>Como funciona o voucher só para convidados</Link>
+                {privado && <p className="acao-entra text-[13px] leading-snug text-text-secondary">A lista de pessoas você sobe logo depois de publicar, na tela do voucher, em Adicionar pessoas. A quantidade de vagas acompanha a lista.</p>}
+              </div>
+
+              <div>
                 <p className={`${rotulo} flex items-center gap-2`}><IconePessoas size={16} /> Quantas pessoas podem pegar</p>
                 <div className="mt-3 grid grid-cols-4 gap-2.5">
                   {QUANTIDADES.map((q) => (
@@ -290,19 +306,6 @@ export function PromocaoGuiada({
                     <span className="text-[14px] text-text-tertiary">dias</span>
                   </div>
                 )}
-              </div>
-
-              <div>
-                <p className={`${rotulo} flex items-center gap-2`}><IconePessoas size={16} /> Quem pode pegar</p>
-                <div className="mt-3 grid grid-cols-2 gap-2.5" role="radiogroup" aria-label="Quem pode pegar">
-                  {([[false, "Todos", "Aparece na sua página"], [true, "Só convidados", "Link e código para cada pessoa da sua lista"]] as const).map(([val, t, d]) => (
-                    <button key={t} type="button" role="radio" aria-checked={privado === val} onClick={() => setPrivado(val)} className={`min-h-[84px] rounded-[20px] px-4 py-3 text-left transition-colors active:scale-[0.98] ${privado === val ? "bg-on-background text-white" : "bg-surface-white ring-1 ring-black/[0.07]"}`}>
-                      <span className="block text-[15px] font-semibold">{t}</span>
-                      <span className={`mt-0.5 block text-[12.5px] leading-snug ${privado === val ? "text-white/75" : "text-text-tertiary"}`}>{d}</span>
-                    </button>
-                  ))}
-                </div>
-                {privado && <p className="acao-entra mt-2.5 text-[13px] leading-snug text-text-secondary">Depois de publicar, você adiciona as pessoas e envia o link de cada uma pelo WhatsApp.</p>}
               </div>
             </div>
           )}
