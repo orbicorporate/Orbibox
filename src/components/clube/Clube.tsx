@@ -17,8 +17,8 @@ import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import { Cabecalho, Estrela, Folha, IcChev, IcCoracao, IcX, Orbita, Rosto, useReduzido, type ItemOrbita } from "./pecas";
 
-/** Explorar outros Orbibox (radar Descobrir). Desligado até haver Orbibox suficientes no ar; mude para true para religar tudo. */
-const DESCOBRIR_ATIVO = false;
+/** Explorar outros Orbibox (radar Descobrir, a lupinha). Ligado; mude para false para desligar tudo. */
+const DESCOBRIR_ATIVO = true;
 
 type Aberta = { tipo: "avaliacoes" | "fas" | "entrar" | "contato"; origem: DOMRect | null; descobrir?: boolean } | null;
 
@@ -1180,7 +1180,7 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
             {descobrindo && (
               <>
                 <Cabecalho titulo="Descobrir Orbibox" sub="Os Orbibox que os fãs deste radar também curtem" fechar={() => setDescobrindo(false)} rotuloFechar="Voltar" />
-                <div className="flex min-h-0 flex-1 flex-col justify-evenly gap-8 overflow-y-auto px-4 pb-12 pt-5">
+                <div className="mx-auto flex min-h-0 w-full max-w-[520px] flex-1 flex-col justify-start gap-7 overflow-y-auto px-4 pb-12 pt-6">
                   {!isOwner && resumo.fas > 0 && (
                     <button type="button" onClick={() => setDescobrindo(false)} aria-label={`Ver os ${resumo.fas} fãs de ${nome}`} className="flex min-h-[56px] w-full items-center gap-3 rounded-full bg-surface-soft py-2 pl-3 pr-4 text-left active:scale-[0.98]">
                       <span className="flex">
@@ -1196,8 +1196,8 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                   )}
                   {afins.length > 0 && (
                     <div className="flex flex-col gap-5">
-                      <p className="px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Também curtidos pelos fãs</p>
-                      <div className="grid grid-cols-2 gap-3 px-3">
+                      <p className="text-center text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Também curtidos pelos fãs</p>
+                      <div className="grid grid-cols-2 gap-3">
                         {afins.map((m, n) => (
                           <TagOrbibox key={m.id} indice={n} nome={m.name} logo={m.logo_url} nota={notas[m.id]?.nota} extra={`♥ ${m.fas}`} aoTocar={() => router.push(`/${m.slug}`)} />
                         ))}
@@ -1211,8 +1211,8 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                     const outros = ativos.filter((b) => b.slug !== slug && !jaMostrados.has(b.id));
                     return outros.length > 0 ? (
                       <div className="flex flex-col gap-5">
-                        <p className="px-2 text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar ({outros.length})</p>
-                        <div className="grid grid-cols-2 gap-3 px-3">
+                        <p className="text-center text-[12px] font-semibold uppercase tracking-wide text-text-tertiary">Outros Orbibox no ar ({outros.length})</p>
+                        <div className="grid grid-cols-2 gap-3">
                           {outros.map((b, n) => (
                             <TagOrbibox key={b.id} indice={n} nome={b.name} logo={b.logo_url} nota={notas[b.id]?.nota} aoTocar={() => router.push(`/${b.slug}`)} />
                           ))}
