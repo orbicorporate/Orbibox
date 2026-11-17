@@ -164,7 +164,8 @@ export default async function VisitorPage({
       .select("id, box_type, title, is_active, position, config, starts_at, ends_at")
       .eq("business_id", business.id)
       .order("position", { ascending: true }),
-    supabase.from("agent_configs").select("agent_name, orbi_colors, suggested_questions").eq("business_id", business.id).maybeSingle(),
+    // agent_configs só é legível por membros (RLS). A página pública precisa só destes três campos, então lê com o cliente de serviço.
+    createServiceClient().from("agent_configs").select("agent_name, orbi_colors, suggested_questions").eq("business_id", business.id).maybeSingle(),
     getOwnerHasAiChat(business.owner_id),
     getOwnerHasVouchers(business.owner_id),
     supabase.from("gift_settings").select("enabled").eq("business_id", business.id).maybeSingle(),
