@@ -141,7 +141,7 @@ type ContentItem = {
 type Intent = "comprar" | "conhecer" | "presentear" | "duvida" | "cupom" | "delivery" | "cardapio" | "materiais" | "reserva";
 type BoxRow = { id: string; box_type: string; title: string | null; is_active: boolean; position: number; config: unknown };
 
-type CustomConfig = { categoria?: string; horario?: { dias: number[]; abre: string; fecha: string }; label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais" | "reserva"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; catAjustes?: Record<string, { layout_size?: string; title_placement?: string }>; botaoPrincipal?: BotaoPrincipal; semBotaoPrincipal?: boolean; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
+type CustomConfig = { categoria?: string; horario?: { dias: number[]; abre: string; fecha: string }; label?: string; semNome?: boolean; subtitle?: string; icon?: string; color?: string; action?: "vitrine" | "zara" | "whatsapp" | "link" | "avaliar" | "endereco" | "cupom" | "gift" | "delivery" | "cardapio" | "materiais" | "reserva"; materiais?: { id: string; titulo: string; descricao: string; url: string; capa: string | null; acesso?: "livre" | "contato"; bytes?: number }[]; corBotoes?: string; apps?: { id: string; url: string; ativo: boolean }[]; url?: string; logo_url?: string; layout?: "auto" | "largo" | "medio"; pdf_url?: string | null; pdfs?: { id: string; nome: string; url: string }[]; icone?: boolean; bolinha?: "cor" | "linha"; bolinhaCor?: string; voucherFormato?: "horizontal" | "quadrado"; formatoItens?: FormatoItens; itensHome?: string[]; catAjustes?: Record<string, { layout_size?: string; title_placement?: string }>; botaoPrincipal?: BotaoPrincipal; semBotaoPrincipal?: boolean; fundoEscuro?: string; corBotaoEscuro?: string; esferaCor?: string; selo?: string; logo_ajuste?: { z: number; x: number; y: number } };
 
 // Cada Smart Box vira um caminho na tela inicial.
 const BOX_TO_OPTION: Record<string, { k: Intent; icon: string; t: string; d: string; ai?: boolean }> = {
@@ -1002,7 +1002,7 @@ export function VisitorExperience({
 
   return (
     <HorarioContext.Provider value={horarioNegocio}>
-    <main className="relative min-h-screen overflow-hidden bg-background-main">
+    <main className="relative min-h-screen overflow-hidden bg-background-main" style={temaFundoEscuro(boxList.find((b) => b.box_type === "hero")?.config)}>
       {isOwner && <TourOrbibox fase="home" slug={business.slug} iniciar={searchParams.get("tour") === "1"} novo={negocioNovo} />}
       {isOwner && <ChecklistDivulgarHost />}
       <ConviteCriarOrbibox ativo={!showOwnerControls} />
@@ -1968,6 +1968,31 @@ export function VisitorExperience({
     </main>
     </HorarioContext.Provider>
   );
+}
+
+/**
+ * Tema de fundo escuro (opcional, guardado no box "Tela inicial": fundoEscuro = "#RRGGBB").
+ * Troca as cores base só dentro da página: fundo, superfícies, textos e botão principal.
+ * Sem a chave, nada muda.
+ */
+function temaFundoEscuro(config: unknown): React.CSSProperties | undefined {
+  const c = (config ?? {}) as CustomConfig;
+  const fundo = typeof c.fundoEscuro === "string" && /^#[0-9a-f]{6}$/i.test(c.fundoEscuro) ? c.fundoEscuro : null;
+  if (!fundo) return undefined;
+  const botao = typeof c.corBotaoEscuro === "string" && /^#[0-9a-f]{6}$/i.test(c.corBotaoEscuro) ? c.corBotaoEscuro : "#D9731A";
+  const vars: Record<string, string> = {
+    "--color-background-main": fundo,
+    "--color-surface-white": `color-mix(in srgb, ${fundo} 86%, white)`,
+    "--color-surface-soft": `color-mix(in srgb, ${fundo} 78%, white)`,
+    "--color-divider": `color-mix(in srgb, ${fundo} 68%, white)`,
+    "--color-on-background": "#FFF4E0",
+    "--color-text-secondary": `color-mix(in srgb, #FFF4E0 80%, ${fundo})`,
+    "--color-text-tertiary": `color-mix(in srgb, #FFF4E0 66%, ${fundo})`,
+    "--color-button-primary": botao,
+    "--color-button-secondary": `color-mix(in srgb, ${fundo} 78%, white)`,
+    color: "#FFF4E0",
+  };
+  return vars as React.CSSProperties;
 }
 
 function capaDaMarca(b: Business): string | null {
