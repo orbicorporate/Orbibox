@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import { LogoRedonda } from "@/components/ui/LogoRedonda";
 
 // Tabelas da rede ainda não estão nos tipos gerados do banco, por isso o cliente sem tipos.
 function cliente() {
@@ -22,8 +23,7 @@ function textoDoErro(msg: string | undefined): string {
 
 function Avatar({ nome, logo }: { nome: string; logo: string | null }) {
   return logo ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={logo} alt="" className="h-11 w-11 shrink-0 rounded-full bg-[#F4F3EF] object-contain p-[7px]" />
+    <LogoRedonda src={logo} className="h-11 w-11" margem="p-[7px]" />
   ) : (
     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[16px] font-medium text-text-secondary" aria-hidden>
       {nome.trim().charAt(0).toUpperCase()}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { LogoRedonda } from "@/components/ui/LogoRedonda";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { marcarInteresse } from "@/lib/interesse";
@@ -1078,12 +1079,13 @@ function FasFolha({ origem, descobrirInicial = false, businessId, slug, nome, lo
                         return (
                           <li key={m.id} className="rounded-[28px] bg-surface-white p-2.5 ring-1 ring-divider">
                             <button type="button" onClick={() => void abrirAvaliacoesMarca(m)} aria-label={`Ver avaliações de ${m.name}`} className="flex w-full items-center gap-3 rounded-full text-left transition-transform active:scale-[0.99]">
-                              <span className="grid h-14 w-14 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
-                                {m.logo_url ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={m.logo_url} alt="" className="h-full w-full object-contain p-1.5" />
-                                ) : <span className="text-[16px] font-normal">{m.name.charAt(0).toUpperCase()}</span>}
-                              </span>
+                              {m.logo_url ? (
+                                <LogoRedonda src={m.logo_url} className="h-14 w-14" margem="p-1.5" />
+                              ) : (
+                                <span className="grid h-14 w-14 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
+                                  <span className="text-[16px] font-normal">{m.name.charAt(0).toUpperCase()}</span>
+                                </span>
+                              )}
                               <span className="min-w-0 flex-1">
                                 <span className="block truncate text-[16.5px] font-normal">{m.name}</span>
                                 <span className="mt-0.5 block text-[13.5px] text-text-secondary">{m.slug === slug ? "Você está aqui" : "Ver avaliações"}</span>
@@ -1410,12 +1412,13 @@ function TagOrbibox({ nome, logo, nota, extra, indice, aoTocar }: { nome: string
       style={{ animationDelay: `${(indice % 6) * -1.1}s`, animationDuration: `${6 + (indice % 3)}s` }}
       className="tag-flutua flex h-[52px] w-full min-w-0 items-center gap-2 rounded-full bg-surface-white py-1 pl-1.5 pr-4 text-left [&:last-child:nth-child(odd)]:col-span-2 [&:last-child:nth-child(odd)]:mx-auto [&:last-child:nth-child(odd)]:w-[calc(50%-6px)] shadow-[0_6px_16px_-8px_rgba(17,19,24,0.28)] ring-1 ring-divider active:scale-[0.96]"
     >
-      <span className="grid h-9 w-9 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
-        {logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logo} alt="" className="h-full w-full object-contain p-0.5" />
-        ) : <span className="text-[14px] font-semibold">{nome.charAt(0).toUpperCase()}</span>}
-      </span>
+      {logo ? (
+        <LogoRedonda src={logo} className="h-9 w-9" margem="p-0.5" />
+      ) : (
+        <span className="grid h-9 w-9 flex-none place-items-center overflow-hidden rounded-full bg-white ring-1 ring-divider">
+          <span className="text-[14px] font-semibold">{nome.charAt(0).toUpperCase()}</span>
+        </span>
+      )}
       <span className="min-w-0 flex-1 truncate text-[14.5px] font-medium">{nome}</span>
       {nota != null && (
         <span className="flex flex-none items-center gap-0.5 text-[12.5px] tabular-nums text-text-secondary">

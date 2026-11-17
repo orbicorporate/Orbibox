@@ -24,7 +24,7 @@ export default async function HojePage() {
   const { data: business } = await supabase.from("businesses").select("*").eq("id", businessId!).limit(1).single();
   const b = business!;
 
-  const [visitsRes, convRowsRes, actionsRes, activeBoxesRes, giftsRes, perguntasRes, vouchersRes, acesso, perfilRes, agenteRes, resgatesRes] = await Promise.all([
+  const [visitsRes, convRowsRes, actionsRes, activeBoxesRes, giftsRes, perguntasRes, vouchersRes, acesso, agenteRes, resgatesRes] = await Promise.all([
     supabase.from("visitor_sessions").select("id", { count: "exact", head: true }).eq("business_id", b.id),
     supabase.from("conversations").select("id").eq("business_id", b.id),
     supabase.from("click_events").select("id", { count: "exact", head: true }).eq("business_id", b.id),
@@ -33,7 +33,6 @@ export default async function HojePage() {
     supabase.from("orbi_learnings").select("id, pergunta, vezes").eq("business_id", b.id).eq("status", "pendente").order("vezes", { ascending: false }).limit(3),
     supabase.from("vouchers").select("id, title, quantity_total, quantity_claimed").eq("business_id", b.id).eq("is_active", true),
     getAccessInfo(b.owner_id),
-    supabase.from("profiles").select("full_name").eq("id", user!.id).maybeSingle(),
     supabase.from("agent_configs").select("orbi_colors").eq("business_id", b.id).maybeSingle(),
     supabase.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("business_id", b.id),
   ]);
@@ -85,8 +84,6 @@ export default async function HojePage() {
   const shareReady = !!b.share_description?.trim() && temCapa;
   const shareTitle = `${b.name}, Orbibox`;
 
-  const nomeCompleto = perfilRes.data?.full_name || (user!.user_metadata?.full_name as string | undefined) || "";
-  const primeiroNome = nomeCompleto.trim().split(/\s+/)[0] || null;
   const orbiColors = Array.isArray(agenteRes.data?.orbi_colors) && agenteRes.data.orbi_colors.length >= 2 ? (agenteRes.data.orbi_colors as string[]) : null;
 
   const { data: clubeResumo } = await (supabase as unknown as SupabaseClient).rpc("clube_resumo", { p_business: b.id });
@@ -107,7 +104,6 @@ export default async function HojePage() {
     {(itensStories ?? []).length > 0 && <PopupDivulgacao descricao={b.share_description || b.about_business} businessId={b.id} nome={b.name} slug={b.slug} shareUrl={shareUrl} imagem={b.share_image_url || b.vitrine_cover_url || null} logo={b.logo_url ?? null} temVoucher={(vouchersRes.data ?? []).length > 0} itens={itensStories ?? []} />}
     <HomeView
       saudacao={saudacaoDoMomento()}
-      primeiroNome={primeiroNome}
       b={{ id: b.id, name: b.name, slug: b.slug }}
       shareUrl={shareUrl}
       shareTitle={shareTitle}

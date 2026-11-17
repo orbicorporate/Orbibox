@@ -53,7 +53,6 @@ function Icone({ d }: { d: React.ReactNode }) {
 
 export type HomeViewProps = {
   saudacao: string;
-  primeiroNome: string | null;
   b: { id: string; name: string; slug: string };
   shareUrl: string;
   shareTitle: string;
@@ -79,7 +78,7 @@ export type HomeViewProps = {
 };
 
 /** A home do painel, só apresentação: os dados vêm prontos de page.tsx. */
-export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, pelaMetade, mostrarConvite, gratis, perguntaRede, pendencias, avaliacao, passoFaltando }: HomeViewProps) {
+export function HomeView({ saudacao, b, shareUrl, shareTitle, shareReady, teste, oportunidade, proxima, marcos, numeros, orbiColors, progressoPct, pelaMetade, mostrarConvite, gratis, perguntaRede, pendencias, avaliacao, passoFaltando }: HomeViewProps) {
   const cartao = "flex min-h-[92px] flex-col justify-between gap-3 rounded-[22px] bg-surface-white p-4 text-left ring-1 ring-black/[0.05] transition-transform active:scale-[0.98]";
 
   return (
@@ -87,7 +86,7 @@ export function HomeView({ saudacao, primeiroNome, b, shareUrl, shareTitle, shar
       {/* Saudação */}
       <div className="mt-3">
         <h1 className="font-[family-name:var(--font-manrope)] text-[28px] font-medium leading-tight tracking-[-0.02em]">
-          {saudacao}, {primeiroNome ?? b.name}.
+          {saudacao}, {b.name}.
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-2.5">
           <Link href={`/${b.slug}`} target="_blank" className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#A80F28,#C4122F_50%,#E4264C)] px-5 text-[14px] font-semibold text-white shadow-[0_8px_18px_-10px_rgba(196,18,47,0.9)] transition-transform active:scale-[0.98]">
