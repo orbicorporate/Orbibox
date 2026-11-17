@@ -1,5 +1,6 @@
 "use client";
 
+import { AtendenteModal } from "@/components/ui/AtendenteModal";
 import { useState, type FormEvent } from "react";
 import { QRScanner } from "@/components/mobile/QRScanner";
 import { CHERRY_GRADIENT, CHERRY_SHADOW, CHERRY_TEXT, CHERRY_SOFT_BG } from "@/lib/voucherThemes";
@@ -33,6 +34,7 @@ export function RedeemCodeCard({
   resgates?: { code: string; voucher_id: string; visitor_name: string | null; status: string }[];
 }) {
   const [code, setCode] = useState("");
+  const [pedirNome, setPedirNome] = useState<string | null>(null);
   const [redeeming, setRedeeming] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -46,7 +48,7 @@ export function RedeemCodeCard({
   const achado = code.trim().length >= 4 ? resgates?.find((r) => r.code.toUpperCase() === code.trim().toUpperCase()) : undefined;
   const tituloAchado = achado ? vouchers?.find((v) => v.id === achado.voucher_id)?.title ?? fixedVoucherTitle : undefined;
 
-  async function redeemCode(raw: string) {
+  async function redeemCode(raw: string, atendente: string) {
     const value = raw.trim();
     if (!value || redeeming) return;
     setRedeeming(true);
@@ -55,7 +57,7 @@ export function RedeemCodeCard({
       const res = await fetch("/api/vouchers/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, code: value, expectedVoucherId: activeVoucherId }),
+        body: JSON.stringify({ businessId, code: value, expectedVoucherId: activeVoucherId, atendente }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -72,7 +74,7 @@ export function RedeemCodeCard({
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    redeemCode(code);
+    if (code.trim()) setPedirNome(code);
   }
 
   return (
@@ -201,10 +203,21 @@ export function RedeemCodeCard({
         </>
       )}
 
+      {pedirNome && (
+        <AtendenteModal
+          titulo="Quem está liberando?"
+          descricao="Seu nome fica gravado junto com este voucher. O dono vê quem liberou cada um."
+          confirmar="Confirmar voucher"
+          ocupado={redeeming}
+          onCancelar={() => setPedirNome(null)}
+          onConfirmar={async (nome) => { const c = pedirNome; await redeemCode(c, nome); setPedirNome(null); }}
+        />
+      )}
+
       {scanning && (
         <QRScanner
           onClose={() => setScanning(false)}
-          onDetect={(text) => { setScanning(false); setCode(text.toUpperCase()); redeemCode(text); }}
+          onDetect={(text) => { setScanning(false); setCode(text.toUpperCase()); setPedirNome(text); }}
         />
       )}
     </div>

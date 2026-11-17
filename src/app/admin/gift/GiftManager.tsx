@@ -1,5 +1,6 @@
 "use client";
 
+import { AtendenteModal } from "@/components/ui/AtendenteModal";
 import { AvisoGiftLiberado } from "./AvisoGiftLiberado";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { useEffect, useState } from "react";
@@ -18,7 +19,7 @@ function quandoGift(iso: string) {
   return `${d.toLocaleDateString("pt-BR", { ...fmt, day: "2-digit", month: "2-digit" })} às ${d.toLocaleTimeString("pt-BR", { ...fmt, hour: "2-digit", minute: "2-digit" })}`;
 }
 
-type Gift = { id: string; code: string; buyer_whatsapp?: string | null; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; created_at: string; used_at?: string | null };
+type Gift = { id: string; code: string; buyer_whatsapp?: string | null; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; status: string; created_at: string; used_at?: string | null; liberado_por?: string | null; usado_por?: string | null };
 
 function brl(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -67,10 +68,16 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
     if (!(await salvar({ enabled: v }))) setEnabled(!v);
   }
 
-  async function mudarStatus(id: string, status: "paid" | "canceled") {
-    const res = await supabase.from("gift_cards").update({ status, ...(status === "paid" ? { paid_at: new Date().toISOString() } : {}) }).eq("id", id);
+  const [pedirNome, setPedirNome] = useState<string | null>(null);
+  const [liberando, setLiberando] = useState(false);
+
+  async function mudarStatus(id: string, status: "paid" | "canceled", atendente?: string) {
+    setLiberando(true);
+    const res = await supabase.from("gift_cards").update({ status, ...(status === "paid" ? { paid_at: new Date().toISOString(), liberado_por: atendente ?? null } : {}) }).eq("id", id);
+    setLiberando(false);
+    setPedirNome(null);
     if (!conferirSalvo(res)) return;
-    setGifts((prev) => prev.map((g) => g.id === id ? { ...g, status } : g));
+    setGifts((prev) => prev.map((g) => g.id === id ? { ...g, status, ...(status === "paid" ? { liberado_por: atendente ?? null } : {}) } : g));
     if (status === "paid") void abrirAviso(id);
   }
 
@@ -98,7 +105,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
           </p>
           <p className="mt-1 text-[13px] leading-snug text-text-secondary">Código {paraLiberar.code}. Recebeu o pagamento? Libere e já avise quem comprou.</p>
           <div className="mt-3 flex gap-2">
-            <button onClick={() => { void mudarStatus(paraLiberar.id, "paid"); setLiberarCodigo(null); }} className="min-h-[42px] flex-1 rounded-full bg-[#1F9E4C] text-[14px] font-medium text-white active:scale-[.98]">Liberar gift</button>
+            <button onClick={() => { setPedirNome(paraLiberar.id); setLiberarCodigo(null); }} className="min-h-[42px] flex-1 rounded-full bg-[#1F9E4C] text-[14px] font-medium text-white active:scale-[.98]">Liberar gift</button>
             <button onClick={() => setLiberarCodigo(null)} className="min-h-[42px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>
           </div>
         </div>
@@ -210,7 +217,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
                           {g.to_name ? `Para ${g.to_name}` : "Sem destinatário"}{g.from_name ? ` · de ${g.from_name}` : ""} · {g.code}
                         </p>
                         <p className="mt-0.5 truncate text-[12px] text-text-tertiary">
-                          Gerado {quandoGift(g.created_at)}{g.status === "used" && g.used_at ? ` · Usado ${quandoGift(g.used_at)}` : ""}
+                          Gerado {quandoGift(g.created_at)}{g.status === "used" && g.used_at ? ` · Usado ${quandoGift(g.used_at)}${g.usado_por ? ` por ${g.usado_por}` : ""}` : ""}{g.liberado_por ? ` · Liberado por ${g.liberado_por}` : ""}
                         </p>
                       </div>
                       {g.status === "paid" && (
@@ -218,7 +225,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
                       )}
                       {g.status === "pending" && (
                         <div className="flex shrink-0 gap-1.5">
-                          <button onClick={() => mudarStatus(g.id, "paid")} className="rounded-full bg-[#1F9E4C] px-3.5 py-2 text-[12.5px] font-semibold text-white">Liberar</button>
+                          <button onClick={() => setPedirNome(g.id)} className="rounded-full bg-[#1F9E4C] px-3.5 py-2 text-[12.5px] font-semibold text-white">Liberar</button>
                           <button onClick={() => mudarStatus(g.id, "canceled")} className="rounded-full bg-surface-soft px-3 py-2 text-[12.5px] font-medium text-text-secondary">✕</button>
                         </div>
                       )}
@@ -235,6 +242,16 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
             </div>
           )}
         </>
+      )}
+      {pedirNome && (
+        <AtendenteModal
+          titulo="Quem está liberando?"
+          descricao="Seu nome fica gravado junto com a liberação deste gift. O dono vê quem liberou cada um."
+          confirmar="Liberar gift"
+          ocupado={liberando}
+          onCancelar={() => setPedirNome(null)}
+          onConfirmar={(nome) => void mudarStatus(pedirNome, "paid", nome)}
+        />
       )}
     </div>
   );

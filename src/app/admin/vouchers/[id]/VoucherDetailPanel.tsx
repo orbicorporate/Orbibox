@@ -238,6 +238,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
               <div className="min-w-0">
                 <p className="truncate text-[14.5px] font-semibold">{r.visitor_name || "Sem nome"}</p>
                 <p className="mt-0.5 text-[13px] text-text-tertiary">Código {r.code} · {formatDate(r.created_at)}</p>
+                {r.status === "redeemed" && r.atendente && <p className="mt-0.5 text-[12.5px] text-text-secondary">Liberado por {r.atendente}{r.redeemed_at ? ` em ${formatDate(r.redeemed_at)}` : ""}</p>}
               </div>
               <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${r.status === "redeemed" ? "bg-[#DEF3E3] text-[#1F9E4C]" : r.status === "expired" ? "bg-surface-soft text-text-tertiary" : "bg-[#FDEEDF] text-[#C2650A]"}`}>
                 {statusLabel(r.status)}

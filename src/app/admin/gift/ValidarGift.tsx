@@ -2,8 +2,9 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { AtendenteModal } from "@/components/ui/AtendenteModal";
 
-type GiftAchado = { id: string; code: string; value_cents: number; from_name: string | null; to_name: string | null; status: string; used_at: string | null };
+type GiftAchado = { id: string; code: string; value_cents: number; from_name: string | null; to_name: string | null; status: string; used_at: string | null; usado_por?: string | null };
 
 const brl = (c: number) => (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const quando = (iso: string) => {
@@ -26,6 +27,7 @@ export function ValidarGift({ businessId, onUsado }: { businessId: string; onUsa
   const [codigo, setCodigo] = useState("");
   const [buscando, setBuscando] = useState(false);
   const [marcando, setMarcando] = useState(false);
+  const [pedirNome, setPedirNome] = useState(false);
   const [achado, setAchado] = useState<GiftAchado | null>(null);
   const [naoAchou, setNaoAchou] = useState(false);
   const [acabouDeUsar, setAcabouDeUsar] = useState(false);
@@ -40,7 +42,7 @@ export function ValidarGift({ businessId, onUsado }: { businessId: string; onUsa
     setAcabouDeUsar(false);
     const { data } = await supabase
       .from("gift_cards")
-      .select("id, code, value_cents, from_name, to_name, status, used_at")
+      .select("id, code, value_cents, from_name, to_name, status, used_at, usado_por")
       .eq("business_id", businessId)
       .eq("code", `GIFT-${codigo}`)
       .maybeSingle();
@@ -49,7 +51,7 @@ export function ValidarGift({ businessId, onUsado }: { businessId: string; onUsa
     else setNaoAchou(true);
   }
 
-  async function marcarUsado() {
+  async function marcarUsado(atendente: string) {
     if (!achado || marcando) return;
     setMarcando(true);
     const agora = new Date().toISOString();
@@ -57,19 +59,20 @@ export function ValidarGift({ businessId, onUsado }: { businessId: string; onUsa
     // tempo não conseguem usar o mesmo gift duas vezes.
     const { data } = await supabase
       .from("gift_cards")
-      .update({ status: "used", used_at: agora })
+      .update({ status: "used", used_at: agora, usado_por: atendente })
       .eq("id", achado.id)
       .eq("status", "paid")
       .select("status, used_at")
       .maybeSingle();
     setMarcando(false);
+    setPedirNome(false);
     if (data) {
-      setAchado({ ...achado, status: "used", used_at: data.used_at ?? agora });
+      setAchado({ ...achado, status: "used", used_at: data.used_at ?? agora, usado_por: atendente });
       setAcabouDeUsar(true);
       onUsado(achado.id, data.used_at ?? agora);
     } else {
       // Alguém usou antes: recarrega pra mostrar o estado real.
-      const { data: atual } = await supabase.from("gift_cards").select("id, code, value_cents, from_name, to_name, status, used_at").eq("id", achado.id).maybeSingle();
+      const { data: atual } = await supabase.from("gift_cards").select("id, code, value_cents, from_name, to_name, status, used_at, usado_por").eq("id", achado.id).maybeSingle();
       if (atual) setAchado(atual as GiftAchado);
     }
   }
@@ -137,7 +140,7 @@ export function ValidarGift({ businessId, onUsado }: { businessId: string; onUsa
               {quem && <p className="mt-3 text-[14px] text-text-secondary">{quem}</p>}
               <p className="mt-1 font-mono text-[12.5px] tracking-wider text-text-tertiary">{achado.code}</p>
               <button
-                onClick={marcarUsado}
+                onClick={() => setPedirNome(true)}
                 disabled={marcando}
                 className="mt-6 h-[52px] w-full rounded-full bg-[#1F9E4C] text-[15px] font-medium text-white disabled:opacity-50"
               >
@@ -154,14 +157,14 @@ export function ValidarGift({ businessId, onUsado }: { businessId: string; onUsa
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
                 </span>
                 <p className="mt-4 font-[family-name:var(--font-manrope)] text-[19px] font-semibold">Pronto, gift usado</p>
-                <p className="mt-1.5 text-[13.5px] text-text-secondary">{brl(achado.value_cents)}{quem ? `, ${quem.charAt(0).toLowerCase()}${quem.slice(1)}` : ""}. Registrado {achado.used_at ? quando(achado.used_at) : "agora"}.</p>
+                <p className="mt-1.5 text-[13.5px] text-text-secondary">{brl(achado.value_cents)}{quem ? `, ${quem.charAt(0).toLowerCase()}${quem.slice(1)}` : ""}. Registrado {achado.used_at ? quando(achado.used_at) : "agora"}{achado.usado_por ? `, liberado por ${achado.usado_por}` : ""}.</p>
                 <button onClick={limpar} className="mt-6 h-[48px] w-full rounded-full bg-surface-white text-[14px] font-medium">Validar outro</button>
               </div>
             ) : (
               <Resultado
                 tom="alerta"
                 titulo="Esse gift já foi usado"
-                texto={`${brl(achado.value_cents)}${achado.used_at ? `, usado em ${quando(achado.used_at)}` : ""}. Não aceite de novo.`}
+                texto={`${brl(achado.value_cents)}${achado.used_at ? `, usado em ${quando(achado.used_at)}` : ""}${achado.usado_por ? ` (liberado por ${achado.usado_por})` : ""}. Não aceite de novo.`}
                 onLimpar={limpar}
               />
             )
@@ -175,6 +178,16 @@ export function ValidarGift({ businessId, onUsado }: { businessId: string; onUsa
             <Resultado tom="alerta" titulo="Gift cancelado" texto="Esse gift não vale. Não aceite." onLimpar={limpar} />
           )}
         </div>
+      )}
+    {pedirNome && (
+        <AtendenteModal
+          titulo="Quem está liberando?"
+          descricao="Seu nome fica gravado junto com este gift. O dono vê quem liberou cada um."
+          confirmar="Dar baixa no gift"
+          ocupado={marcando}
+          onCancelar={() => setPedirNome(false)}
+          onConfirmar={(nome) => void marcarUsado(nome)}
+        />
       )}
     </section>
   );

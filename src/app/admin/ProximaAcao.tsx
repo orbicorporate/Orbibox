@@ -7,6 +7,7 @@ import { OrbiSimbolo } from "@/components/orbi/OrbiSimbolo";
 import { ResponderPergunta } from "./agent/ResponderPergunta";
 import { CampanhaDataSheet } from "./CampanhaDataSheet";
 import { AvisoGiftLiberado } from "./gift/AvisoGiftLiberado";
+import { AtendenteModal } from "@/components/ui/AtendenteModal";
 
 type Gift = { id: string; code?: string; buyer_whatsapp?: string | null; value_cents: number; from_name: string | null; to_name: string | null };
 type Pergunta = { id: string; pergunta: string; vezes: number };
@@ -104,10 +105,13 @@ export function ProximaAcao({
     setPuladas((p) => [...p.filter((k) => k !== chave), chave]);
   }
 
-  async function liberarGift(g: Gift, chave: string) {
+  const [pedirNome, setPedirNome] = useState<{ g: Gift; chave: string } | null>(null);
+
+  async function liberarGift(g: Gift, chave: string, atendente: string) {
     setOcupado(true);
-    const { error } = await supabase.from("gift_cards").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", g.id).eq("status", "pending");
+    const { error } = await supabase.from("gift_cards").update({ status: "paid", paid_at: new Date().toISOString(), liberado_por: atendente }).eq("id", g.id).eq("status", "pending");
     setOcupado(false);
+    setPedirNome(null);
     if (error) return;
     const { data: neg } = await supabase.from("businesses").select("name").eq("id", businessId).maybeSingle();
     if (g.code) {
@@ -160,7 +164,7 @@ export function ProximaAcao({
                   {atual.gift.to_name ? ` pra ${atual.gift.to_name}` : ""}.
                 </p>
                                 <div className="mt-3 flex gap-2">
-                  <button type="button" disabled={ocupado} onClick={() => liberarGift(atual.gift, atual.chave)} className="min-h-[42px] flex-1 rounded-full bg-[#1F9E4C] text-[14px] font-medium text-white transition-transform active:scale-[.98] disabled:opacity-50">
+                  <button type="button" disabled={ocupado} onClick={() => setPedirNome({ g: atual.gift, chave: atual.chave })} className="min-h-[42px] flex-1 rounded-full bg-[#1F9E4C] text-[14px] font-medium text-white transition-transform active:scale-[.98] disabled:opacity-50">
                     {ocupado ? "Liberando…" : "Liberar gift"}
                   </button>
                   <button type="button" onClick={() => pular(atual.chave)} className="min-h-[42px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>
@@ -220,6 +224,16 @@ export function ProximaAcao({
         ) : null}
       </div>
 
+      {pedirNome && (
+        <AtendenteModal
+          titulo="Quem está liberando?"
+          descricao="Seu nome fica gravado junto com a liberação deste gift. O dono vê quem liberou cada um."
+          confirmar="Liberar gift"
+          ocupado={ocupado}
+          onCancelar={() => setPedirNome(null)}
+          onConfirmar={(nome) => void liberarGift(pedirNome.g, pedirNome.chave, nome)}
+        />
+      )}
       {folha && (
         <CampanhaDataSheet
           businessId={businessId}

@@ -79,10 +79,16 @@ async function cobrarVoucherResgatado(redemptionId: string, businessId: string) 
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessId, code, expectedVoucherId } = await req.json();
+    const { businessId, code, expectedVoucherId, atendente } = await req.json();
 
     if (!businessId || !code) {
       return NextResponse.json({ error: "businessId e code são obrigatórios." }, { status: 400 });
+    }
+
+    // Quem libera no balcão precisa deixar o nome: fica gravado junto com a baixa.
+    const nomeAtendente = typeof atendente === "string" ? atendente.replace(/\s+/g, " ").trim().slice(0, 60) : "";
+    if (nomeAtendente.length < 2) {
+      return NextResponse.json({ error: "Informe o nome de quem está liberando." }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -134,7 +140,7 @@ export async function POST(req: NextRequest) {
 
     const { error: updateError } = await supabase
       .from("voucher_redemptions")
-      .update({ status: "redeemed", redeemed_at: new Date().toISOString() })
+      .update({ status: "redeemed", redeemed_at: new Date().toISOString(), atendente: nomeAtendente })
       .eq("id", redemption.id);
 
     if (updateError) {

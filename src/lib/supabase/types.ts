@@ -110,8 +110,8 @@ export type Database = {
         Relationships: []
       }
       voucher_redemptions: {
-        Row: { id: string; voucher_id: string; business_id: string; code: string; visitor_name: string | null; visitor_whatsapp: string | null; status: string; claimed_at: string; expires_at: string | null; redeemed_at: string | null; created_at: string; customer_id: string | null }
-        Insert: { id?: string; voucher_id: string; business_id: string; code: string; visitor_name?: string | null; visitor_whatsapp?: string | null; status?: string; claimed_at?: string; expires_at?: string | null; redeemed_at?: string | null; created_at?: string; customer_id?: string | null }
+        Row: { id: string; voucher_id: string; business_id: string; code: string; visitor_name: string | null; visitor_whatsapp: string | null; status: string; claimed_at: string; expires_at: string | null; redeemed_at: string | null; created_at: string; customer_id: string | null; atendente: string | null }
+        Insert: { id?: string; voucher_id: string; business_id: string; code: string; visitor_name?: string | null; visitor_whatsapp?: string | null; status?: string; claimed_at?: string; expires_at?: string | null; redeemed_at?: string | null; created_at?: string; customer_id?: string | null; atendente?: string | null }
         Update: Partial<Database["public"]["Tables"]["voucher_redemptions"]["Insert"]>
         Relationships: []
       }
@@ -188,8 +188,8 @@ export type Database = {
         Relationships: []
       }
       gift_cards: {
-        Row: { id: string; business_id: string; code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; buyer_whatsapp: string | null; status: string; created_at: string; paid_at: string | null; used_at: string | null }
-        Insert: { id?: string; business_id: string; code: string; value_cents: number; from_name?: string | null; to_name?: string | null; message?: string | null; buyer_whatsapp?: string | null; status?: string; created_at?: string; paid_at?: string | null; used_at?: string | null }
+        Row: { id: string; business_id: string; code: string; value_cents: number; from_name: string | null; to_name: string | null; message: string | null; buyer_whatsapp: string | null; status: string; created_at: string; paid_at: string | null; used_at: string | null; liberado_por: string | null; usado_por: string | null }
+        Insert: { id?: string; business_id: string; code: string; value_cents: number; from_name?: string | null; to_name?: string | null; message?: string | null; buyer_whatsapp?: string | null; status?: string; created_at?: string; paid_at?: string | null; used_at?: string | null; liberado_por?: string | null; usado_por?: string | null }
         Update: Partial<Database["public"]["Tables"]["gift_cards"]["Insert"]>
         Relationships: []
       }
