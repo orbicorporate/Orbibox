@@ -16,9 +16,9 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
   return { title, description, openGraph: { title, description, images: [imagem] }, twitter: { card: "summary_large_image", title, description, images: [imagem.url] } };
 }
 
-export default async function GiftPublicPage({ params, searchParams }: { params: Promise<{ code: string }>; searchParams: Promise<{ de?: string }> }) {
+export default async function GiftPublicPage({ params, searchParams }: { params: Promise<{ code: string }>; searchParams: Promise<{ de?: string; c?: string }> }) {
   const { code } = await params;
-  const { de } = await searchParams;
+  const { de, c } = await searchParams;
   const voltar = de && de.startsWith("/") && !de.startsWith("//") && !de.includes("\\") ? de : null;
   const supabase = await createClient();
   const { data } = await supabase.rpc("get_gift_card", { p_code: code });
@@ -37,5 +37,6 @@ export default async function GiftPublicPage({ params, searchParams }: { params:
     );
   }
 
-  return <GiftReveal gift={gift} voltar={voltar} />;
+  // Quem comprou chega pelo botão Ver do fluxo (?de=) ou pelo link com ?c=1. Quem abre o link compartilhado é o presenteado.
+  return <GiftReveal gift={gift} voltar={voltar} compradorPeloLink={!!voltar || c === "1"} />;
 }

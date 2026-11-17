@@ -80,6 +80,8 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
       });
       const r = (data ?? {}) as { ok?: boolean; code?: string };
       if (!r.ok || !r.code) { setErro("Não consegui gerar agora. Tenta de novo."); return; }
+      // Este aparelho é de quem comprou: a página do gift mostra o compartilhar, e não a tela de quem recebe.
+      try { window.localStorage.setItem(`orbi_gift_comprador_${r.code}`, "1"); } catch { /* sem storage */ }
       setCriado({ code: r.code });
     } catch {
       setErro("Erro de conexão. Tenta de novo.");
