@@ -31,7 +31,7 @@ export default async function HojePage() {
     supabase.from("smart_boxes").select("id", { count: "exact", head: true }).eq("business_id", b.id).eq("is_active", true),
     supabase.from("gift_cards").select("id, code, buyer_whatsapp, value_cents, from_name, to_name").eq("business_id", b.id).eq("status", "pending").order("created_at", { ascending: true }).limit(5),
     supabase.from("orbi_learnings").select("id, pergunta, vezes").eq("business_id", b.id).eq("status", "pendente").order("vezes", { ascending: false }).limit(3),
-    supabase.from("vouchers").select("id, title, quantity_total, quantity_claimed").eq("business_id", b.id).eq("is_active", true),
+    supabase.from("vouchers").select("id, title, quantity_total, quantity_claimed").eq("business_id", b.id).eq("is_active", true).eq("privado", false),
     getAccessInfo(b.owner_id),
     supabase.from("agent_configs").select("orbi_colors").eq("business_id", b.id).maybeSingle(),
     supabase.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("business_id", b.id),

@@ -2071,6 +2071,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
       .select("id, title, description, discount_type, discount_value, quantity_total, quantity_claimed, image_url, badge, color, show_discount, apenas_fas, dias_semana, hora_inicio, hora_fim")
       .eq("business_id", business.id)
       .eq("is_active", true)
+      .eq("privado", false)
       .order("created_at", { ascending: false })
       .then(({ data }) => setVouchers((data as VoucherPublic[]) ?? []));
     // eslint-disable-next-line react-hooks/set-state-in-effect

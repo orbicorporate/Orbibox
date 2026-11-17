@@ -15,12 +15,17 @@ export async function POST(req: NextRequest) {
 
     const { data: voucher } = await supabase
       .from("vouchers")
-      .select("business_id, apenas_fas")
+      .select("business_id, apenas_fas, privado")
       .eq("id", voucherId)
       .maybeSingle();
 
     if (!voucher) {
       return NextResponse.json({ error: "Voucher não encontrado." }, { status: 404 });
+    }
+
+    // Voucher privado só se pega por convite (rota própria): o resgate público nunca o libera.
+    if ((voucher as { privado?: boolean }).privado) {
+      return NextResponse.json({ error: "Esse voucher é só para convidados." }, { status: 403 });
     }
 
     const { data: business } = await supabase

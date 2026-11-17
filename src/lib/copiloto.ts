@@ -125,7 +125,7 @@ export async function calcularOportunidade(
     supabase.from("visitor_sessions").select("source, intent").eq("business_id", businessId).gte("started_at", ini).limit(5000),
     supabase.from("click_events").select("kind, content_item_id").eq("business_id", businessId).gte("created_at", ini).limit(5000),
     supabase.from("content_items").select("id, title").eq("business_id", businessId),
-    supabase.from("vouchers").select("id, title").eq("business_id", businessId).eq("is_active", true),
+    supabase.from("vouchers").select("id, title").eq("business_id", businessId).eq("is_active", true).eq("privado", false),
     supabase.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("created_at", ini),
     supabase.from("leads").select("id", { count: "exact", head: true }).eq("business_id", businessId).gte("created_at", ini),
     supabase.from("conversations").select("id", { count: "exact", head: true }).eq("business_id", businessId),

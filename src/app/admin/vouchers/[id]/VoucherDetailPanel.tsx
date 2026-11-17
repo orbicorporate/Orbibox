@@ -3,6 +3,7 @@
 import { FaixaStatusVoucher } from "../FaixaStatusVoucher";
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
 import { whatsappLink } from "@/lib/track";
@@ -13,6 +14,7 @@ import type { Database } from "@/lib/supabase/types";
 import { EditarVoucherSheet } from "./EditarVoucherSheet";
 import { VoucherQuadrado } from "@/components/mobile/VoucherQuadrado";
 import { descontoGrande } from "@/lib/voucherDesconto";
+import { ConvitesPanel } from "./ConvitesPanel";
 
 type Voucher = Database["public"]["Tables"]["vouchers"]["Row"];
 type Redemption = Database["public"]["Tables"]["voucher_redemptions"]["Row"];
@@ -27,11 +29,11 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
-type Resumo = { id: string; title: string; color: string | null; image_url: string | null; discount_type: string; discount_value: number | null; is_active: boolean; show_discount?: boolean | null };
+type Resumo = { id: string; title: string; color: string | null; image_url: string | null; discount_type: string; discount_value: number | null; is_active: boolean; show_discount?: boolean | null; privado?: boolean | null };
 
-export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, todos, abrirEdicao = false }: { voucher: Voucher; initialRedemptions: Redemption[]; orbiColors?: string[] | null; todos: Resumo[]; abrirEdicao?: boolean }) {
+export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, todos, abrirEdicao = false, negocioNome, negocioSlug }: { negocioNome: string; negocioSlug: string; voucher: Voucher; initialRedemptions: Redemption[]; orbiColors?: string[] | null; todos: Resumo[]; abrirEdicao?: boolean }) {
   const supabase = createClient();
-  const router = { push: (href: string) => { window.location.href = href; } };
+  const router = useRouter();
   const { confirm, DialogRenderer } = useDialogs();
   const [v, setV] = useState(voucher);
   const [redemptions, setRedemptions] = useState(initialRedemptions);
@@ -71,6 +73,16 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
   const [editando, setEditando] = useState(abrirEdicao);
   // Com resgates, o desconto trava (mudaria o que a pessoa já tem na mão).
   const travado = v.quantity_claimed > 0 || redemptions.length > 0;
+
+  const [trocandoAcesso, setTrocandoAcesso] = useState(false);
+  async function mudarAcesso(privado: boolean) {
+    if (privado === !!v.privado || trocandoAcesso) return;
+    if (!privado && !(await confirm({ title: "Abrir para todos?", message: "O voucher volta a aparecer na sua página e qualquer pessoa pode pegar. Os convites já criados deixam de valer.", confirmLabel: "Abrir para todos" }))) return;
+    setTrocandoAcesso(true);
+    const { data } = await supabase.from("vouchers").update({ privado }).eq("id", v.id).select().single();
+    if (data) setV(data as Voucher);
+    setTrocandoAcesso(false);
+  }
 
   async function deleteVoucher() {
     if (!(await confirm({ title: "Excluir voucher", message: `Excluir "${v.title}"? Códigos já pegos continuam válidos até você excluir também os resgates, mas ninguém mais vai conseguir gerar um novo.`, confirmLabel: "Excluir", danger: true }))) return;
@@ -112,10 +124,32 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
 
       <FaixaStatusVoucher ativo={v.is_active} onAlternar={toggleActive} className="mt-4" />
 
+      {/* Quem pode pegar: todos (aparece na página) ou só convidados (link e código pessoais). */}
+      <div className="mt-4 rounded-[22px] border border-divider bg-surface-white p-4">
+        <p className="text-[14px] font-semibold">Quem pode pegar este voucher</p>
+        <div className="mt-2.5 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Quem pode pegar">
+          {([[false, "Todos", "Aparece na sua página"], [true, "Só convidados", "Link e código pessoais"]] as const).map(([val, t, d]) => {
+            const on = !!v.privado === val;
+            return (
+              <button key={t} type="button" role="radio" aria-checked={on} disabled={trocandoAcesso} onClick={() => mudarAcesso(val)}
+                className="min-h-[64px] rounded-2xl border-2 p-3 text-left transition-colors disabled:opacity-60"
+                style={{ borderColor: on ? voucherTheme(v.color).ctaText : "#E4E6EA", backgroundColor: on ? `${voucherTheme(v.color).ctaText}0F` : "#fff" }}>
+                <span className="block text-[14px] font-semibold">{t}</span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-text-secondary">{d}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {v.privado && (
+        <ConvitesPanel voucherId={v.id} voucherTitulo={v.title} negocioNome={negocioNome} slug={negocioSlug} cor={v.color} verificacaoInicial={(v as { verificacao?: string }).verificacao ?? "numero"} onVerificacao={(verificacao) => setV((p) => ({ ...p, verificacao } as Voucher))} />
+      )}
+
       {/* O voucher aberto, igual ao da galeria da sua página, com o painel ao lado. */}
       <div className={`mt-3 flex flex-col items-center gap-4 ${v.is_active ? "" : "opacity-70"}`}>
         <VoucherQuadrado v={v} />
-        <p className="text-[12.5px] text-text-tertiary">{v.is_active ? "Assim ele aparece na sua página." : "Assim ele vai aparecer quando você ativar."}</p>
+        <p className="text-[12.5px] text-text-tertiary">{v.privado ? "Assim a pessoa convidada vê o voucher. Ele não aparece na sua página." : v.is_active ? "Assim ele aparece na sua página." : "Assim ele vai aparecer quando você ativar."}</p>
       </div>
       <button type="button" onClick={() => setEditando(true)} className="mt-3 min-h-[48px] w-full rounded-full bg-on-background px-5 text-[14px] font-semibold text-white">Alterar dados do voucher</button>
       <button type="button" onClick={deleteVoucher} className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#FDECEE] px-5 text-[14px] font-semibold text-[#E5484D] active:scale-[0.98]">
@@ -157,7 +191,7 @@ export function VoucherDetailPanel({ voucher, initialRedemptions, orbiColors, to
 
       {/* Plano de divulgação da Orbi: o voucher só rende se for divulgado,
           mas o balcão (resgatar código) vem primeiro, é o uso diário. */}
-      <VoucherPlanoOrbi voucherId={v.id} voucherTitulo={v.title} orbiColors={orbiColors} />
+      {!v.privado && <VoucherPlanoOrbi voucherId={v.id} voucherTitulo={v.title} orbiColors={orbiColors} />}
 
       {/* Lista de quem resgatou, o painel de verdade */}
       <div className="mt-6 flex items-center justify-between">

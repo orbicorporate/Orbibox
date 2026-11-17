@@ -77,9 +77,11 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["subscriptions"]["Insert"]>
         Relationships: []
       }
+      voucher_convites: { Row: { id: string; voucher_id: string; business_id: string; codigo: string; nome: string | null; whatsapp: string | null; status: "pendente" | "ativado" | "usado" | "cancelado" | "bloqueado"; tentativas: number; redemption_code: string | null; dispositivo: string | null; ativado_em: string | null; usado_em: string | null; created_at: string }; Insert: { id?: string; voucher_id: string; business_id: string; codigo: string; nome?: string | null; whatsapp?: string | null; status?: string; tentativas?: number; redemption_code?: string | null; dispositivo?: string | null; ativado_em?: string | null; usado_em?: string | null; created_at?: string }; Update: Partial<Database["public"]["Tables"]["voucher_convites"]["Insert"]>; Relationships: [] }
+      voucher_convite_log: { Row: { id: number; convite_id: string | null; voucher_id: string; business_id: string; evento: string; detalhe: string | null; ip_hash: string | null; criado_em: string }; Insert: { id?: number; convite_id?: string | null; voucher_id: string; business_id: string; evento: string; detalhe?: string | null; ip_hash?: string | null; criado_em?: string }; Update: Partial<Database["public"]["Tables"]["voucher_convite_log"]["Insert"]>; Relationships: [] }
       vouchers: {
-        Row: { id: string; business_id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; expires_hours: number | null; is_active: boolean; image_url: string | null; badge: string | null; color: string; show_discount: boolean; created_at: string; updated_at: string; apenas_fas: boolean; sugerido: boolean; dias_semana: number[] | null; hora_inicio: string | null; hora_fim: string | null }
-        Insert: { id?: string; business_id: string; title: string; description?: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed?: number; expires_hours?: number | null; is_active?: boolean; image_url?: string | null; badge?: string | null; color?: string; show_discount?: boolean; created_at?: string; updated_at?: string; apenas_fas?: boolean; sugerido?: boolean; dias_semana?: number[] | null; hora_inicio?: string | null; hora_fim?: string | null }
+        Row: { id: string; business_id: string; title: string; description: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed: number; expires_hours: number | null; is_active: boolean; image_url: string | null; badge: string | null; color: string; show_discount: boolean; created_at: string; updated_at: string; apenas_fas: boolean; sugerido: boolean; dias_semana: number[] | null; hora_inicio: string | null; hora_fim: string | null; privado: boolean; verificacao: string }
+        Insert: { id?: string; business_id: string; title: string; description?: string | null; discount_type: string; discount_value: number; quantity_total: number; quantity_claimed?: number; expires_hours?: number | null; is_active?: boolean; image_url?: string | null; badge?: string | null; color?: string; show_discount?: boolean; created_at?: string; updated_at?: string; apenas_fas?: boolean; sugerido?: boolean; dias_semana?: number[] | null; hora_inicio?: string | null; hora_fim?: string | null; privado?: boolean; verificacao?: string }
         Update: Partial<Database["public"]["Tables"]["vouchers"]["Insert"]>
         Relationships: []
       }
@@ -395,6 +397,12 @@ export type Database = {
         Args: { p_business_id: string; p_value_cents: number; p_from: string; p_to: string; p_message: string; p_whatsapp: string }
         Returns: Json
       }
+      convite_criar: { Args: { p_voucher_id: string; p_itens: Json; p_gerar: number }; Returns: Json }
+      convite_ativar: { Args: { p_voucher_id: string; p_codigo: string; p_modo: string; p_whatsapp: string | null; p_dispositivo: string; p_ip?: string | null }; Returns: Json }
+      convite_falha: { Args: { p_voucher_id: string; p_codigo: string; p_motivo: string; p_ip: string }; Returns: Json }
+      convite_falhas_ip: { Args: { p_ip: string; p_minutos: number }; Returns: number }
+      convite_liberar: { Args: { p_convite_id: string }; Returns: Json }
+      convite_cancelar: { Args: { p_convite_id: string }; Returns: Json }
       create_gift_card_v3: {
         Args: { p_business_id: string; p_value_cents: number; p_from: string; p_to: string; p_message: string; p_whatsapp: string; p_theme: string | null; p_foto: string | null }
         Returns: Json

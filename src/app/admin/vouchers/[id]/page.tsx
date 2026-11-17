@@ -33,9 +33,11 @@ export default async function VoucherDetailPage({ params, searchParams }: { para
 
   const { data: todos } = await supabase
     .from("vouchers")
-    .select("id, title, color, image_url, discount_type, discount_value, is_active, show_discount")
+    .select("id, title, color, image_url, discount_type, discount_value, is_active, show_discount, privado")
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
 
-  return <VoucherDetailPanel abrirEdicao={editar === "1"} todos={todos ?? []} voucher={voucher} initialRedemptions={redemptions ?? []} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />;
+  const { data: negocio } = await supabase.from("businesses").select("name, slug").eq("id", businessId).maybeSingle();
+
+  return <VoucherDetailPanel negocioNome={negocio?.name ?? ""} negocioSlug={negocio?.slug ?? ""} abrirEdicao={editar === "1"} todos={todos ?? []} voucher={voucher} initialRedemptions={redemptions ?? []} orbiColors={(agentConfig?.orbi_colors as string[] | null) ?? null} />;
 }

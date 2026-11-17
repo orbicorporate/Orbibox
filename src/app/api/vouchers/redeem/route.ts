@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 
     const { data: redemption } = await supabase
       .from("voucher_redemptions")
-      .select("id, status, expires_at, voucher_id, vouchers(title, discount_type, discount_value, dias_semana, hora_inicio, hora_fim)")
+      .select("id, status, expires_at, voucher_id, visitor_name, vouchers(title, discount_type, discount_value, dias_semana, hora_inicio, hora_fim)")
       .eq("business_id", businessId)
       .eq("code", normalizedCode)
       .maybeSingle();
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
 
     const voucher = Array.isArray(redemption.vouchers) ? redemption.vouchers[0] : redemption.vouchers;
 
-    return NextResponse.json({ ok: true, voucher });
+    return NextResponse.json({ ok: true, voucher, visitor_name: redemption.visitor_name ?? null });
   } catch (error) {
     console.error("Erro ao confirmar cupom:", error);
     return NextResponse.json({ error: "Erro ao confirmar voucher." }, { status: 500 });

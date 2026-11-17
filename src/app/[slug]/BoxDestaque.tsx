@@ -83,6 +83,7 @@ export function BoxDestaque({
         .select("id, title, description, color, image_url, badge, discount_type, discount_value, quantity_total, quantity_claimed, show_discount")
         .eq("business_id", businessId)
         .eq("is_active", true)
+        .eq("privado", false)
         .order("created_at", { ascending: false });
       if (vivo) setVouchers((data as V[]) ?? []);
     })();

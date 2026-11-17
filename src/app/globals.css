@@ -1766,6 +1766,7 @@ html[data-embed] .embed-oculta { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .chip-orbi { animation: none; } }
 
 /* Convite "Gostou do Orbibox?": desce do topo com um quique leve, brilho colorido que se move devagar e coração que pulsa. */
+@keyframes convite-entra { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: none; } }
 @keyframes conviteDesce { 0% { transform: translateY(-140%); opacity: 0; } 60% { transform: translateY(6%); opacity: 1; } 80% { transform: translateY(-2%); } 100% { transform: translateY(0); opacity: 1; } }
 @keyframes conviteSobe { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-140%); opacity: 0; } }
 @keyframes conviteBrilho { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }

@@ -2,6 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useDialogs } from "@/hooks/useDialogs";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -51,6 +52,7 @@ function discountLabel(v: Pick<Voucher, "discount_type" | "discount_value">) {
 
 export function VouchersManager({ businessId, initialVouchers, canSave = true, redemptionsByVoucher = {}, abrirNovo = false, linkBase, itemBase = null, campanha = null, destaques = [] }: { itemBase?: ItemBase | null; campanha?: string | null; destaques?: { t: string; id: string }[]; linkBase?: string; businessId: string; initialVouchers: Voucher[]; canSave?: boolean; redemptionsByVoucher?: Record<string, Redemption[]>; abrirNovo?: boolean }) {
   const supabase = createClient();
+  const router = useRouter();
   const { confirm, DialogRenderer } = useDialogs();
   const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
   const [creating, setCreating] = useState(false);
@@ -75,6 +77,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [badge, setBadge] = useState("");
   const [mostrarDesconto, setMostrarDesconto] = useState(true);
+  const [privado, setPrivado] = useState(false);
   const [color, setColor] = useState<VoucherColor>("cherry");
   // Campos obrigatórios que ficaram vazios ao tentar criar (o botão nunca fica
   // morto: avisa o que falta e leva até o campo).
@@ -152,6 +155,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
           badge: badge.trim() || null,
           color,
           ...(mostrarDesconto ? {} : { show_discount: false }),
+          ...(privado ? { privado: true } : {}),
         })
         .select()
         .single();
@@ -172,6 +176,8 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         setBadge("");
         setColor("cherry");
         setMostrarDesconto(true);
+        setPrivado(false);
+        if (data && privado) { router.push(`/admin/vouchers/${(data as Voucher).id}`); }
       }
     } finally {
       setSaving(false);
@@ -314,6 +320,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-semibold">{v.title}</p>
+                  {v.privado && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#E8E4FB] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#4B3FA3]">Só convidados</span>}
                   {v.sugerido && <span className="tag-sugestao mt-1 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide">Sugestão · toque e troque</span>}
                   <p className="mt-0.5 text-[14px] text-text-secondary">{discountLabel(v)}</p>
                   {v.badge?.trim() && (
@@ -345,7 +352,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
                 {v.expires_hours ? `Código vale por ${v.expires_hours % 24 === 0 ? `${v.expires_hours / 24} ${v.expires_hours === 24 ? "dia" : "dias"}` : `${v.expires_hours} horas`} depois do resgate` : "Código sem prazo"}
               </p>
 
-              {linkBase && v.is_active && <LinkDoVoucher url={`${linkBase}?v=${v.id}`} titulo={v.title} />}
+              {linkBase && v.is_active && !v.privado && <LinkDoVoucher url={`${linkBase}?v=${v.id}`} titulo={v.title} />}
 
               {/* Quem resgatou, botão bem visível pro painel completo, com nome, WhatsApp e filtros */}
               <Link
@@ -470,6 +477,16 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
               </button>
             </div>
           )}
+          <div className="flex items-center gap-3 rounded-2xl bg-surface-soft px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-medium">Só para convidados</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">Não aparece na sua página. Cada pessoa da sua lista recebe um link e um código próprios.</p>
+            </div>
+            <button type="button" role="switch" aria-checked={privado} onClick={() => setPrivado((p) => !p)} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${privado ? "bg-on-background" : "bg-divider"}`}>
+              <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${privado ? "left-7" : "left-1"}`} />
+              <span className="sr-only">{privado ? "Ligado" : "Desligado"}</span>
+            </button>
+          </div>
           <div>
             <p className="text-[13px] uppercase tracking-wide text-text-tertiary">Quantos vouchers disponíveis</p>
             <input

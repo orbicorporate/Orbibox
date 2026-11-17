@@ -132,6 +132,7 @@ export function FolhaHome({
         .select("id, title, description, image_url, discount_type")
         .eq("business_id", businessId)
         .eq("is_active", true)
+        .eq("privado", false)
         .order("created_at", { ascending: false });
       const { data: rasc } = await supabase
         .from("content_items")

@@ -61,7 +61,7 @@ export function RedeemCodeCard({
       if (!res.ok) {
         setResult({ ok: false, message: data.error ?? "Código inválido." });
       } else {
-        setResult({ ok: true, message: `Confirmado: ${data.voucher?.title ?? "voucher"} (${discountLabel(data.voucher ?? {})})` });
+        setResult({ ok: true, message: `Confirmado: ${data.voucher?.title ?? "voucher"} (${discountLabel(data.voucher ?? {})})${data.visitor_name ? `. Convidado: ${data.visitor_name}. Confira o nome com um documento.` : ""}` });
         setCode("");
         onRedeemed?.();
       }
@@ -167,7 +167,7 @@ export function RedeemCodeCard({
             <p className="mt-3 rounded-2xl bg-surface-soft px-4 py-3 text-[13.5px] leading-relaxed">
               Este código é do voucher <span className="font-semibold">{tituloAchado ?? "do seu negócio"}</span>
               {achado.visitor_name ? <>, de <span className="font-semibold">{achado.visitor_name}</span></> : null}.{" "}
-              {achado.status === "redeemed" ? <span className="font-semibold text-[#B4321F]">Já foi usado.</span> : achado.status === "expired" ? <span className="font-semibold text-[#B4321F]">Expirou.</span> : <span className="font-semibold text-[#1F9E4C]">Pode confirmar.</span>}
+              {achado.status === "redeemed" ? <span className="font-semibold text-[#B4321F]">Já foi usado.</span> : achado.status === "expired" ? <span className="font-semibold text-[#B4321F]">Expirou.</span> : <span className="font-semibold text-[#1F9E4C]">Pode confirmar{achado.visitor_name ? ", depois de conferir o nome com um documento" : ""}.</span>}
             </p>
           )}
 

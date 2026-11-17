@@ -178,7 +178,7 @@ export default async function VisitorPage({
   // O botão de Vouchers da tela inicial usa a cor do voucher mais novo no ar,
   // então trocar a cor do voucher já troca o botão.
   const { data: primeiroVoucher } = hasVouchers
-    ? await supabase.from("vouchers").select("color").eq("business_id", business.id).eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle()
+    ? await supabase.from("vouchers").select("color").eq("business_id", business.id).eq("is_active", true).eq("privado", false).order("created_at", { ascending: false }).limit(1).maybeSingle()
     : { data: null };
   const corVoucher = primeiroVoucher?.color ? voucherTheme(primeiroVoucher.color).via : null;
   // Sem foto de capa, vale a primeira foto da página do item (o dono costuma colocar só lá).
