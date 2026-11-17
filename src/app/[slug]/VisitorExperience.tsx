@@ -1972,6 +1972,7 @@ export function VisitorExperience({
 
 /**
  * Tema de fundo escuro (opcional, guardado no box "Tela inicial": fundoEscuro = "#RRGGBB").
+ * (O tema do Tailwind é "inline": os utilitários leem --background-main etc., não --color-*.)
  * Troca as cores base só dentro da página: fundo, superfícies, textos e botão principal.
  * Sem a chave, nada muda.
  */
@@ -1981,15 +1982,15 @@ function temaFundoEscuro(config: unknown): React.CSSProperties | undefined {
   if (!fundo) return undefined;
   const botao = typeof c.corBotaoEscuro === "string" && /^#[0-9a-f]{6}$/i.test(c.corBotaoEscuro) ? c.corBotaoEscuro : "#D9731A";
   const vars: Record<string, string> = {
-    "--color-background-main": fundo,
-    "--color-surface-white": `color-mix(in srgb, ${fundo} 86%, white)`,
-    "--color-surface-soft": `color-mix(in srgb, ${fundo} 78%, white)`,
-    "--color-divider": `color-mix(in srgb, ${fundo} 68%, white)`,
-    "--color-on-background": "#FFF4E0",
-    "--color-text-secondary": `color-mix(in srgb, #FFF4E0 80%, ${fundo})`,
-    "--color-text-tertiary": `color-mix(in srgb, #FFF4E0 66%, ${fundo})`,
-    "--color-button-primary": botao,
-    "--color-button-secondary": `color-mix(in srgb, ${fundo} 78%, white)`,
+    "--background-main": fundo,
+    "--surface-white": `color-mix(in srgb, ${fundo} 86%, white)`,
+    "--surface-soft": `color-mix(in srgb, ${fundo} 78%, white)`,
+    "--divider": `color-mix(in srgb, ${fundo} 68%, white)`,
+    "--on-background": "#FFF4E0",
+    "--text-secondary": `color-mix(in srgb, #FFF4E0 80%, ${fundo})`,
+    "--text-tertiary": `color-mix(in srgb, #FFF4E0 66%, ${fundo})`,
+    "--button-primary": botao,
+    "--button-secondary": `color-mix(in srgb, ${fundo} 78%, white)`,
     color: "#FFF4E0",
   };
   return vars as React.CSSProperties;
