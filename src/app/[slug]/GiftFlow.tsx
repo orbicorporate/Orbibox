@@ -10,6 +10,7 @@ import { numeroWa } from "@/lib/whatsapp";
 type Config = {
   enabled: boolean;
   art_url: string | null;
+  art_urls?: string[] | null;
   art_theme: string | null;
   suggested_values: number[] | null;
   allow_custom_value: boolean;
@@ -39,11 +40,13 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
   const [erro, setErro] = useState<string | null>(null);
   // Cor escolhida por quem presenteia. null = a arte padrão do negócio.
   const [tema, setTema] = useState<GiftTheme | null>(null);
+  // Foto escolhida: undefined = a padrão do negócio, "" = sem foto (só a cor), ou a url de uma das fotos dele.
+  const [foto, setFoto] = useState<string | undefined>(undefined);
   const [criado, setCriado] = useState<{ code: string } | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("gift_settings").select("enabled, art_url, art_theme, suggested_values, allow_custom_value, min_value_cents, message").eq("business_id", businessId).maybeSingle().then(({ data }) => {
+    supabase.from("gift_settings").select("enabled, art_url, art_urls, art_theme, suggested_values, allow_custom_value, min_value_cents, message").eq("business_id", businessId).maybeSingle().then(({ data }) => {
       setCfg((data as Config) ?? { enabled: false, art_url: null, art_theme: "roxo", suggested_values: [50, 100, 150, 200], allow_custom_value: true, min_value_cents: 2000, message: null });
       const minReais = Math.round(((data as Config | null)?.min_value_cents ?? 2000) / 100);
       const validos = (data?.suggested_values ?? []).filter((v: number) => v >= minReais);
@@ -65,7 +68,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
     setErro(null);
     try {
       const supabase = createClient();
-      const { data } = await supabase.rpc("create_gift_card_v2", {
+      const { data } = await supabase.rpc("create_gift_card_v3", {
         p_business_id: businessId,
         p_value_cents: valorCents,
         p_from: deQuem,
@@ -73,6 +76,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
         p_message: mensagem,
         p_whatsapp: "",
         p_theme: tema,
+        p_foto: fotoAtual ?? "",
       });
       const r = (data ?? {}) as { ok?: boolean; code?: string };
       if (!r.ok || !r.code) { setErro("Não consegui gerar agora. Tenta de novo."); return; }
@@ -108,6 +112,9 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
     );
   }
 
+  // Todas as fotos do negócio (a principal primeiro, sem repetir). A foto e a cor combinam: escolher uma cor não tira a foto.
+  const fotos = Array.from(new Set([cfg.art_url, ...(cfg.art_urls ?? [])].filter((u): u is string => !!u)));
+  const fotoAtual = foto === undefined ? cfg.art_url : foto || null;
   const minimoReais = Math.round(cfg.min_value_cents / 100);
   // Valores sugeridos abaixo do mínimo não fazem sentido: somem da lista.
   const sugeridos = (cfg.suggested_values ?? [50, 100, 150, 200]).filter((v) => v >= minimoReais);
@@ -127,7 +134,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
           mensagem={mensagem}
           negocio={businessName}
           codigo={criado?.code ?? "GIFT-••••••"}
-          artUrl={tema ? null : cfg.art_url}
+          artUrl={fotoAtual}
           artTheme={tema ?? cfg.art_theme}
           bloqueado
         />
@@ -135,21 +142,43 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
 
       {!criado ? (
         <>
+          {fotos.length > 0 && (
+            <>
+              <p className="mt-6 text-[13px] font-semibold">Foto do gift</p>
+              <div className="mt-2 flex flex-wrap gap-3" role="radiogroup" aria-label="Foto do gift">
+                {fotos.map((u, i) => {
+                  const ativo = fotoAtual === u;
+                  return (
+                    <button
+                      key={u}
+                      type="button"
+                      role="radio"
+                      aria-checked={ativo}
+                      aria-label={`Foto ${i + 1}`}
+                      onClick={() => setFoto(u)}
+                      style={{ backgroundImage: `url("${u}")`, backgroundSize: "cover", backgroundPosition: "center" }}
+                      className={`h-11 w-11 rounded-full ring-offset-2 ring-offset-background-main transition active:scale-95 ${ativo ? "ring-2 ring-on-background" : "ring-1 ring-divider"}`}
+                    />
+                  );
+                })}
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={fotoAtual === null}
+                  aria-label="Sem foto, só a cor"
+                  onClick={() => setFoto("")}
+                  className={`grid h-11 w-11 place-items-center rounded-full bg-surface-soft text-[11px] font-medium text-text-secondary ring-offset-2 ring-offset-background-main transition active:scale-95 ${fotoAtual === null ? "ring-2 ring-on-background" : "ring-1 ring-divider"}`}
+                >
+                  Sem
+                </button>
+              </div>
+            </>
+          )}
+
           <p className="mt-6 text-[13px] font-semibold">Cor do gift</p>
           <div className="mt-2 flex flex-wrap gap-3" role="radiogroup" aria-label="Cor do gift">
-            {cfg.art_url && (
-              <button
-                type="button"
-                role="radio"
-                aria-checked={tema === null}
-                aria-label="Arte original"
-                onClick={() => setTema(null)}
-                style={{ backgroundImage: `url("${cfg.art_url}")`, backgroundSize: "cover", backgroundPosition: "center" }}
-                className={`h-11 w-11 rounded-full ring-offset-2 ring-offset-background-main transition active:scale-95 ${tema === null ? "ring-2 ring-on-background" : "ring-1 ring-divider"}`}
-              />
-            )}
             {(Object.keys(GIFT_THEMES) as GiftTheme[]).map((k) => {
-              const ativo = tema === k || (tema === null && !cfg.art_url && giftTheme(cfg.art_theme) === GIFT_THEMES[k]);
+              const ativo = tema === k || (tema === null && giftTheme(cfg.art_theme) === GIFT_THEMES[k]);
               return (
                 <button
                   key={k}

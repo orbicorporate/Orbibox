@@ -35,6 +35,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
   const supabase = createClient();
   const [enabled, setEnabled] = useState(initialSettings?.enabled ?? false);
   const [artUrl, setArtUrl] = useState(initialSettings?.art_url ?? null);
+  const [artUrls, setArtUrls] = useState<string[]>(initialSettings?.art_urls ?? []);
   const [artTheme, setArtTheme] = useState<GiftTheme>((initialSettings?.art_theme as GiftTheme) ?? "roxo");
   const [minValue, setMinValue] = useState(String((initialSettings?.min_value_cents ?? 2000) / 100));
   const [gifts, setGifts] = useState(initialGifts);
@@ -46,7 +47,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
     setSaved(false);
     const res = await supabase.from("gift_settings").upsert({
       business_id: businessId,
-      enabled, art_url: artUrl, art_theme: artTheme, min_value_cents: parseInt(minValue, 10) * 100 || 2000,
+      enabled, art_url: artUrl, art_urls: artUrls, art_theme: artTheme, min_value_cents: parseInt(minValue, 10) * 100 || 2000,
       ...patch,
     }, { onConflict: "business_id" });
     if (!conferirSalvo(res)) return false;
@@ -132,6 +133,30 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
             <div className="mt-3">
               <ImageUpload value={artUrl} onChange={(url) => { setArtUrl(url); salvar({ art_url: url }); }} businessId={businessId} lockedRatio="quadrado" lockedReason="No gift a foto entra quadrada, no fim do card, se misturando com o degradê." />
             </div>
+
+            <p className="mt-5 text-[13px] font-semibold">Outras fotos para o cliente escolher</p>
+            <p className="mt-0.5 text-[12.5px] leading-snug text-text-secondary">Quem presenteia escolhe a foto e também a cor, as duas combinam.</p>
+            {artUrls.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2.5">
+                {artUrls.map((u) => (
+                  <div key={u} className="relative h-16 w-16">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={u} alt="" className="h-full w-full rounded-2xl object-cover ring-1 ring-divider" />
+                    <button
+                      type="button"
+                      aria-label="Tirar esta foto"
+                      onClick={() => { const n = artUrls.filter((x) => x !== u); setArtUrls(n); salvar({ art_urls: n }); }}
+                      className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-on-background text-[13px] leading-none text-white"
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {artUrls.length < 5 && (
+              <div className="mt-2">
+                <ImageUpload value={null} onChange={(url) => { if (!url || artUrls.includes(url)) return; const n = [...artUrls, url]; setArtUrls(n); salvar({ art_urls: n }); }} businessId={businessId} lockedRatio="quadrado" lockedReason="No gift a foto entra quadrada, no fim do card." />
+              </div>
+            )}
 
             <p className="mt-5 text-[13px] font-semibold">Degradê</p>
             <div className="mt-2 flex gap-2.5">

@@ -180,8 +180,8 @@ export type Database = {
         Relationships: []
       }
       gift_settings: {
-        Row: { business_id: string; enabled: boolean; art_url: string | null; art_theme: string; suggested_values: number[] | null; allow_custom_value: boolean; min_value_cents: number; message: string | null; updated_at: string }
-        Insert: { business_id: string; enabled?: boolean; art_url?: string | null; art_theme?: string; suggested_values?: number[] | null; allow_custom_value?: boolean; min_value_cents?: number; message?: string | null; updated_at?: string }
+        Row: { business_id: string; enabled: boolean; art_url: string | null; art_urls: string[]; art_theme: string; suggested_values: number[] | null; allow_custom_value: boolean; min_value_cents: number; message: string | null; updated_at: string }
+        Insert: { business_id: string; enabled?: boolean; art_url?: string | null; art_urls?: string[]; art_theme?: string; suggested_values?: number[] | null; allow_custom_value?: boolean; min_value_cents?: number; message?: string | null; updated_at?: string }
         Update: Partial<Database["public"]["Tables"]["gift_settings"]["Insert"]>
         Relationships: []
       }
@@ -393,6 +393,10 @@ export type Database = {
       }
       create_gift_card: {
         Args: { p_business_id: string; p_value_cents: number; p_from: string; p_to: string; p_message: string; p_whatsapp: string }
+        Returns: Json
+      }
+      create_gift_card_v3: {
+        Args: { p_business_id: string; p_value_cents: number; p_from: string; p_to: string; p_message: string; p_whatsapp: string; p_theme: string | null; p_foto: string | null }
         Returns: Json
       }
       create_gift_card_v2: {
