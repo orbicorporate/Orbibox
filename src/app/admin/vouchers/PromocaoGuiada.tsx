@@ -27,6 +27,7 @@ export type RascunhoPromocao = {
   badge: string;
   color: VoucherColor;
   mostrarDesconto: boolean;
+  privado?: boolean;
 };
 
 const QUANTIDADES = ["10", "20", "50", "100"];
@@ -78,6 +79,7 @@ export function PromocaoGuiada({
   const [valor, setValor] = useState("");
   const [qtd, setQtd] = useState("20");
   const [prazo, setPrazo] = useState("168");
+  const [privado, setPrivado] = useState(false);
   const [prazoOutro, setPrazoOutro] = useState(false);
   const [prazoDias, setPrazoDias] = useState("");
   const [tituloEditado, setTituloEditado] = useState<string | null>(null);
@@ -110,6 +112,7 @@ export function PromocaoGuiada({
       badge: campanha ? campanha.slice(0, 24) : "",
       color: "cherry",
       mostrarDesconto: true,
+      privado,
     };
   }
 
@@ -171,7 +174,7 @@ export function PromocaoGuiada({
       h: itemBase ? `Uma promoção para ${itemBase.title}` : campanha ? `Uma promoção de ${campanha}` : "Vamos criar sua promoção",
       sub: "Uma promoção é um voucher: a pessoa toca no seu link, pega um código e vem até você. Primeiro, o que ela ganha?",
     },
-    2: { h: "Quantas pessoas e por quanto tempo?", sub: "Poucas unidades dão urgência e a pessoa age mais rápido. Você pode mudar isso depois." },
+    2: { h: "Quantas pessoas, por quanto tempo e para quem?", sub: "Poucas unidades dão urgência e a pessoa age mais rápido. Você pode mudar isso depois." },
     3: { h: criado ? "Editar sua promoção" : "Confira e publique", sub: criado ? "Mude o que quiser. Ao salvar, a promoção no ar já é atualizada." : "É assim que vai aparecer na sua página. Se estiver bom, é só publicar." },
     4: { h: "Sua promoção está no ar", sub: "Agora é só chamar as pessoas. Escolha como." },
   };
@@ -288,6 +291,19 @@ export function PromocaoGuiada({
                   </div>
                 )}
               </div>
+
+              <div>
+                <p className={`${rotulo} flex items-center gap-2`}><IconePessoas size={16} /> Quem pode pegar</p>
+                <div className="mt-3 grid grid-cols-2 gap-2.5" role="radiogroup" aria-label="Quem pode pegar">
+                  {([[false, "Todos", "Aparece na sua página"], [true, "Só convidados", "Link e código para cada pessoa da sua lista"]] as const).map(([val, t, d]) => (
+                    <button key={t} type="button" role="radio" aria-checked={privado === val} onClick={() => setPrivado(val)} className={`min-h-[84px] rounded-[20px] px-4 py-3 text-left transition-colors active:scale-[0.98] ${privado === val ? "bg-on-background text-white" : "bg-surface-white ring-1 ring-black/[0.07]"}`}>
+                      <span className="block text-[15px] font-semibold">{t}</span>
+                      <span className={`mt-0.5 block text-[12.5px] leading-snug ${privado === val ? "text-white/75" : "text-text-tertiary"}`}>{d}</span>
+                    </button>
+                  ))}
+                </div>
+                {privado && <p className="acao-entra mt-2.5 text-[13px] leading-snug text-text-secondary">Depois de publicar, você adiciona as pessoas e envia o link de cada uma pelo WhatsApp.</p>}
+              </div>
             </div>
           )}
 
@@ -354,20 +370,23 @@ export function PromocaoGuiada({
                 <VoucherQuadrado v={{ title: criado.title, description: criado.description, color: criado.color, image_url: criado.image_url, badge: criado.badge, discount_type: criado.discount_type, discount_value: criado.discount_value, quantity_total: criado.quantity_total, quantity_claimed: 0, show_discount: criado.show_discount }} />
               </div>
 
-              <button type="button" onClick={destacar} disabled={emDestaque || destacando} className={`flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full text-[15px] font-medium transition-transform active:scale-[0.98] ${emDestaque ? "bg-[#EEF7F0] text-[#1F7A3D]" : "bg-on-background text-white disabled:opacity-60"}`}>
+              {criado.privado && (
+                <a href={`/admin/vouchers/${criado.id}`} className="flex min-h-[56px] w-full items-center justify-center rounded-full bg-on-background text-[15px] font-semibold text-white active:scale-[0.98]">Adicionar pessoas e enviar convites</a>
+              )}
+              {!criado.privado && <button type="button" onClick={destacar} disabled={emDestaque || destacando} className={`flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full text-[15px] font-medium transition-transform active:scale-[0.98] ${emDestaque ? "bg-[#EEF7F0] text-[#1F7A3D]" : "bg-on-background text-white disabled:opacity-60"}`}>
                 {emDestaque ? <><IconeCheck size={18} /> Em destaque na sua página</> : destacando ? "Colocando…" : "Colocar em destaque na minha página"}
-              </button>
-              <p className="-mt-1 text-center text-[12.5px] leading-snug text-text-tertiary">
+              </button>}
+              {!criado.privado && <p className="-mt-1 text-center text-[12.5px] leading-snug text-text-tertiary">
                 {emDestaque ? "Quem abrir seu link já vê esta promoção logo no começo." : "A promoção aparece no começo da sua página, onde todo mundo vê."}
-              </p>
+              </p>}
 
               <button type="button" onClick={() => { setErro(null); setEtapa(3); }} className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-surface-white text-[15px] font-medium ring-1 ring-black/[0.08] active:scale-[0.98]">
                 <IconeLapis size={18} /> Editar texto, valor ou foto
               </button>
 
-              {linkBase && <LinkDoVoucher url={`${linkBase}?v=${criado.id}`} titulo={criado.title} />}
+              {linkBase && !criado.privado && <LinkDoVoucher url={`${linkBase}?v=${criado.id}`} titulo={criado.title} />}
 
-              {linkBase && (
+              {linkBase && !criado.privado && (
                 <a href={linkBase} target="_blank" rel="noreferrer" className="mx-auto min-h-[44px] px-3 pt-2 text-[13.5px] text-text-secondary underline underline-offset-4">
                   Ver como ficou na minha página
                 </a>

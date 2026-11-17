@@ -207,6 +207,7 @@ export function VouchersManager({ businessId, initialVouchers, canSave = true, r
         image_url: d.imageUrl,
         badge: d.badge.trim() || null,
         color: d.color,
+        ...(d.privado ? { privado: true } : {}),
       })
       .select()
       .single();
