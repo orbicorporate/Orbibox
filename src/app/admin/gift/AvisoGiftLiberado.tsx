@@ -7,7 +7,7 @@ import { linkWhatsAviso, linkWhatsLink, type GiftParaAviso } from "@/lib/giftAvi
 /** Depois de liberar: o próximo passo é avisar quem comprou, com link e código. */
 export function AvisoGiftLiberado({ gift, negocio, aoFechar }: { gift: GiftParaAviso; negocio: string; aoFechar: () => void }) {
   const origin = typeof window !== "undefined" ? origemPublica() : "";
-  const href = linkWhatsAviso(gift, negocio, origin);
+  const href = linkWhatsAviso(gift, negocio);
   const hrefLink = linkWhatsLink(gift, origin);
   const [enviouExplicacao, setEnviouExplicacao] = useState(false);
   const quem = gift.from_name || "quem comprou";

@@ -25,7 +25,7 @@ export function textoLinkGift(g: GiftParaAviso, origin: string) {
   return `${origin}/gift/${g.code}`;
 }
 
-export function linkWhatsAviso(g: GiftParaAviso, negocio: string, origin: string) {
+export function linkWhatsAviso(g: GiftParaAviso, negocio: string) {
   const fone = digitos(g.buyer_whatsapp);
   return `https://wa.me/${fone}?text=${encodeURIComponent(textoAvisoGift(g, negocio))}`;
 }
