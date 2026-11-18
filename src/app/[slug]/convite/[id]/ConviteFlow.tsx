@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoUsoUnico } from "@/components/ui/AvisoUsoUnico";
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { LogoRedonda } from "@/components/ui/LogoRedonda";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
@@ -350,10 +351,11 @@ export function ConviteFlow({ voucherId, slug, nomeNegocio, logoUrl, codigoInici
                 {janela && <p className="mt-1 text-[13px] text-text-secondary">{janela}</p>}
               </>
             )}
+            {!pronto.vencido && <AvisoUsoUnico tipo="voucher" className="mt-5" />}
             <ul className="mt-5 space-y-2.5 text-left">
               {[
                 [I.pessoa, "Leve um documento. O nome do convite é conferido no atendimento."],
-                [I.cadeado, "O voucher é pessoal e vale uma vez só. Não adianta repassar."],
+                [I.cadeado, "O voucher é pessoal. Não adianta repassar."],
               ].map(([d, t]) => (
                 <li key={t} className="flex gap-3 rounded-2xl bg-surface-soft p-3.5 text-[13.5px] leading-snug">
                   <span className="mt-0.5 flex-none" style={{ color: cor }}><Icone d={d} tam={18} /></span>{t}

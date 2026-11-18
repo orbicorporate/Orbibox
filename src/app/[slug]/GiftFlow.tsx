@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoUsoUnico } from "@/components/ui/AvisoUsoUnico";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -230,6 +231,8 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
             <textarea value={mensagem} onChange={(e) => setMensagem(e.target.value)} rows={5} placeholder="Mensagem (opcional)" className="min-h-[132px] w-full resize-none rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background" />
           </div>
 
+          <AvisoUsoUnico tipo="gift" className="mt-4" />
+
           {erro && <p className="mt-2 text-[13px] text-red-600">{erro}</p>}
 
           <button onClick={criar} disabled={criando} className="mt-4 w-full rounded-full bg-on-background py-3.5 text-[15px] font-semibold text-white disabled:opacity-50">
@@ -254,6 +257,7 @@ export function GiftFlow({ businessId, businessName, whatsapp, onBack }: {
               </li>
             ))}
           </ol>
+          <AvisoUsoUnico tipo="gift" className="mt-4" />
           {whatsapp && (
             <button onClick={liberarPorWhatsapp} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] py-3.5 text-[15px] font-semibold text-white">
               Liberar gift pelo WhatsApp

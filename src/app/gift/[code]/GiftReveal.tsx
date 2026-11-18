@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoUsoUnico } from "@/components/ui/AvisoUsoUnico";
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { GiftArt } from "@/components/mobile/GiftArt";
@@ -59,6 +60,7 @@ export function GiftReveal({ gift, voltar, compradorPeloLink = false }: { voltar
             <span className="mt-1 font-mono text-[40px] font-semibold leading-none tracking-[0.22em] text-on-background">{curto}</span>
             <span className="mt-2 text-[12px] text-text-secondary">{copiado ? "Copiado" : "Toque para copiar"}</span>
           </button>
+          <AvisoUsoUnico tipo="gift" className="mt-4" />
           {comprador ? (
             <Passos
               titulo="Como usar este presente"

@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoUsoUnico } from "@/components/ui/AvisoUsoUnico";
 import { consultaMapa } from "@/lib/enderecoMapa";
 import { lerLogoAjuste, type LogoAjuste } from "@/components/ui/LogoBolinha";
 import { marcarInteresse, assinarInteresse, temInteresse } from "@/lib/interesse";
@@ -2156,6 +2157,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
             <p className="mt-4 text-[13.5px] leading-relaxed opacity-90">
               {resultMessage(business.name, result.expiresAt)}
             </p>
+            <AvisoUsoUnico tipo="voucher" escuro className="mt-4" />
             <p className="mt-3 text-[12.5px] leading-snug opacity-80">Guarde este código: use Compartilhar para mandar para o seu WhatsApp. Se você abrir o link em outro navegador, ele não aparece de novo.</p>
             <div className="mt-5 flex gap-2">
               <button
@@ -2219,6 +2221,7 @@ function VoucherFlow({ business, sessionId, orbiColors, formato, focoId, onBack 
                         className="mt-1 w-full rounded-2xl border border-divider bg-surface-white px-4 py-3 text-[15px] outline-none focus:border-on-background"
                       />
                     </div>
+                    <AvisoUsoUnico tipo="voucher" />
                     {error && <p className="text-[13px] font-medium text-red-600">{error}</p>}
                     <div className="mt-1.5 flex gap-2">
                       <button onClick={() => { setClaiming(null); setError(null); }} className="flex-1 rounded-full bg-surface-soft py-3 text-[14px] font-medium">Cancelar</button>
