@@ -14,14 +14,23 @@ function digitos(n: string | null | undefined) {
   return d.startsWith("55") ? d : `55${d}`;
 }
 
-/** Texto que o negócio manda a quem comprou: confirma o pagamento e explica os 3 passos. */
-export function textoAvisoGift(g: GiftParaAviso, negocio: string, origin: string) {
-  const link = `${origin}/gift/${g.code}`;
+/** Primeira mensagem: confirma o pagamento e explica. Não leva o link, que vai separado. */
+export function textoAvisoGift(g: GiftParaAviso, negocio: string) {
   const quem = g.to_name || "quem vai ganhar";
-  return `Oi${g.from_name ? `, ${g.from_name}` : ""}! Recebemos o pagamento e o gift card de ${brl(g.value_cents)} para ${quem} está liberado.\n\nComo funciona:\n1. Envie este link para ${quem}: ${link}\n2. Na hora de usar, ${quem} mostra a tela do link (com o código ${g.code}) ao garçom ou ao atendimento de ${negocio}.\n3. Nós conferimos o código e damos baixa no valor.\n\nQualquer dúvida, é só responder aqui.`;
+  return `Oi${g.from_name ? `, ${g.from_name}` : ""}! Recebemos o pagamento e o gift card de ${brl(g.value_cents)} para ${quem} está liberado.\n\nComo funciona:\n1. Já vou te mandar o link do presente em uma mensagem separada. Encaminhe apenas essa mensagem, só com o link, para ${quem}. Não encaminhe esta explicação.\n2. Na hora de usar, ${quem} mostra a tela do link (com o código ${g.code}) ao garçom ou ao atendimento de ${negocio}.\n3. Nós conferimos o código e damos baixa no valor. O gift só pode ser utilizado uma única vez.\n\nQualquer dúvida, é só responder aqui.`;
+}
+
+/** Segunda mensagem: só o link, pronta para quem comprou encaminhar ao presenteado. */
+export function textoLinkGift(g: GiftParaAviso, origin: string) {
+  return `${origin}/gift/${g.code}`;
 }
 
 export function linkWhatsAviso(g: GiftParaAviso, negocio: string, origin: string) {
   const fone = digitos(g.buyer_whatsapp);
-  return `https://wa.me/${fone}?text=${encodeURIComponent(textoAvisoGift(g, negocio, origin))}`;
+  return `https://wa.me/${fone}?text=${encodeURIComponent(textoAvisoGift(g, negocio))}`;
+}
+
+export function linkWhatsLink(g: GiftParaAviso, origin: string) {
+  const fone = digitos(g.buyer_whatsapp);
+  return `https://wa.me/${fone}?text=${encodeURIComponent(textoLinkGift(g, origin))}`;
 }
