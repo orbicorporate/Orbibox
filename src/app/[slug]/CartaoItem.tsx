@@ -94,7 +94,7 @@ function CartaoBase({
     const miolo = (
       <>
         {photo ? (
-        <div className="relative" style={{ aspectRatio: RATIOS[ratio].value }}>
+        <div className="relative" style={{ aspectRatio: RATIOS[ratio].value, ...(colorido ? { backgroundImage: c.degrade ?? `linear-gradient(180deg, color-mix(in srgb, ${c.bg} 45%, white) 0%, ${c.bg} 100%)` } : {}) }}>
           {photo && (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -116,7 +116,7 @@ function CartaoBase({
                   }
                 }}
               />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+              {!colorido && <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />}
               {item.title_placement === "sobre" && (
                 <div className={`pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-5 pt-12 ${curtir ? "pr-16" : ""}`}>
                   <p className="font-[family-name:var(--font-manrope)] font-semibold leading-[1.05] text-white" style={{ fontSize: titleFontSize(item.title, size) }}>
@@ -131,7 +131,7 @@ function CartaoBase({
             </>
           )}
           {destino && photo && (
-            <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border-[1.5px] border-white/90 bg-black/15 py-1 pl-3 pr-2.5 text-[12px] font-medium text-white backdrop-blur-[2px] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
+            <span className={`absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border-[1.5px] border-white/90 ${colorido ? "bg-black/35" : "bg-black/15"} py-1 pl-3 pr-2.5 text-[12px] font-medium text-white backdrop-blur-[2px] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]`}>
               Entrar
               <span aria-hidden>{isExterno ? "↗" : "›"}</span>
             </span>
