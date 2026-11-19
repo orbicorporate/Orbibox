@@ -419,7 +419,7 @@ export function HomeVitrine({
       vistas.set(nome, {
         id: `cat:${nome}`, title: nome, description: null, price: null, price_type: null, price_max: null,
         image_url: i.image_url, brand_label: null, type: "product", position: i.position, layout_size: ajustesCategorias?.[nome]?.layout_size ?? "medio",
-        box_color: "neutro", footer_color: null, box_style: i.image_url ? "foto" : "cor", title_placement: ajustesCategorias?.[nome]?.title_placement ?? "sobre",
+        box_color: i.box_color && i.image_url ? i.box_color : "neutro", footer_color: null, box_style: i.image_url ? "foto" : "cor", title_placement: ajustesCategorias?.[nome]?.title_placement ?? "sobre",
         target_url: `/${slug}?tab=vitrine&cat=${encodeURIComponent(nome)}`, link_kind: "categoria-interna",
       });
     }
