@@ -101,7 +101,7 @@ function CartaoBase({
               <img
                 src={item.image_url!}
                 alt={item.title}
-                className={`h-full w-full object-cover ${colorido ? "mix-blend-multiply" : ""}`}
+                className="h-full w-full object-cover"
                 onError={(e) => {
                   const img = e.currentTarget;
                   img.style.display = "none";
