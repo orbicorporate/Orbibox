@@ -11,6 +11,14 @@ import { VisitorExperience } from "./VisitorExperience";
 import { APP_URL } from "@/lib/appUrl";
 import { createServiceClient } from "@/lib/supabase/service";
 
+/** Ícone da aba e da tela de início: o logo da marca (rota /[slug]/icone), com tamanho e tipo declarados para o navegador não preferir outro. */
+function iconesDe(slug: string): Metadata["icons"] {
+  return {
+    icon: [{ url: `/${slug}/icone`, sizes: "192x192", type: "image/png" }],
+    apple: [{ url: `/${slug}/icone`, sizes: "192x192", type: "image/png" }],
+  };
+}
+
 /**
  * Preview do link (Open Graph), o que aparece quando alguém cola o link do
  * Orbibox no WhatsApp, Instagram, etc. WhatsApp só mostra imagem estática
@@ -56,7 +64,7 @@ export async function generateMetadata({
         title: titulo,
         description: desc,
         manifest: `/${slug}/manifest.webmanifest`,
-        icons: { icon: `/${slug}/icone`, apple: `/${slug}/icone` },
+        icons: iconesDe(slug),
         openGraph: { title: titulo, description: desc, type: "website", images: [{ url: imagem, width: 1200, height: 630 }] },
         twitter: { card: "summary_large_image", title: titulo, description: desc, images: [imagem] },
       };
@@ -82,7 +90,7 @@ export async function generateMetadata({
       title: titulo,
       description: desc,
       manifest: `/${slug}/manifest.webmanifest`,
-        icons: { icon: `/${slug}/icone`, apple: `/${slug}/icone` },
+        icons: iconesDe(slug),
       openGraph: { title: titulo, description: desc, type: "website", images: [{ url: capa }] },
       twitter: { card: "summary_large_image", title: titulo, description: desc, images: [capa] },
     };
@@ -96,7 +104,7 @@ export async function generateMetadata({
       title: titulo,
       description: desc,
       manifest: `/${slug}/manifest.webmanifest`,
-        icons: { icon: `/${slug}/icone`, apple: `/${slug}/icone` },
+        icons: iconesDe(slug),
       openGraph: { title: titulo, description: desc, type: "website", images: [{ url: capa }] },
       twitter: { card: "summary_large_image", title: titulo, description: desc, images: [capa] },
     };
@@ -107,7 +115,7 @@ export async function generateMetadata({
     description: descricao,
     alternates: { canonical: `/${slug}` },
     manifest: `/${slug}/manifest.webmanifest`,
-        icons: { icon: `/${slug}/icone`, apple: `/${slug}/icone` },
+        icons: iconesDe(slug),
     openGraph: {
       title: tituloPreview,
       description: descricao,
