@@ -48,8 +48,8 @@ const TAGLINE: Record<string, string> = {
 
 function Check({ highlight }: { highlight?: boolean }) {
   return (
-    <span className={`mt-0.5 flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full ${highlight ? "orbi-gradient shadow-[0_0_10px_rgba(110,231,216,0.6)]" : "bg-surface-soft"}`}>
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={highlight ? "#111318" : "#6b7280"} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+    <span className={`mt-[3px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${highlight ? "orbi-gradient shadow-[0_0_8px_rgba(110,231,216,0.6)]" : "bg-surface-soft"}`}>
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={highlight ? "#111318" : "#6b7280"} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 13l4 4L19 7" />
       </svg>
     </span>

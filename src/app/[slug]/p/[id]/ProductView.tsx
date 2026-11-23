@@ -79,8 +79,8 @@ function blocosDaDescricao(description: string | null): Bloco[] {
 
 function Check() {
   return (
-    <span className="orbi-gradient mt-[1px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full" aria-hidden>
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+    <span className="orbi-gradient mt-[3px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full" aria-hidden>
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
     </span>
   );
 }
