@@ -14,7 +14,7 @@ import { lerMateriais } from "@/lib/materiais";
 import { lerCorBotoes, lerLayoutItens, lerPdfs, lerSecoes } from "@/lib/cardapio";
 import { appsAtivos, linkDoApp } from "@/lib/delivery";
 import Link from "next/link";
-import { AbrirEditor } from "@/components/mobile/EditarNoLugar";
+import { AbrirEditor, definirNegocioDaPagina } from "@/components/mobile/EditarNoLugar";
 import { LapisDono } from "@/components/mobile/LapisDono";
 import { ConviteCriarOrbibox } from "@/components/mobile/ConviteCriarOrbibox";
 import { ExcluirItemX } from "@/components/mobile/ExcluirItemX";
@@ -231,6 +231,12 @@ export function VisitorExperience({
   const previewTravado = searchParams.get("preview") === "1";
   const [previewMode, setPreviewMode] = useState(previewTravado || isOwner);
   const showOwnerControls = isOwner && !previewMode;
+  // O painel tem que editar o negócio desta página, não o último que ficou aberto na conta.
+  useEffect(() => {
+    if (!isOwner) return;
+    definirNegocioDaPagina(business.id);
+    return () => definirNegocioDaPagina(null);
+  }, [isOwner, business.id]);
   // Pergunta digitada na tela cheia da CuradoriaOrbi, passa pro campo do
   // chat real já preenchida, pronta pra mandar, em vez de perder o que a
   // pessoa escreveu.
