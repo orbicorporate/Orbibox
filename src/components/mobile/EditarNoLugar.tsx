@@ -15,8 +15,40 @@ function urlEmbutida(href: string) {
   return `${caminho}${caminho.includes("?") ? "&" : "?"}embed=1${ancora ? `&foco=${ancora}#${ancora}` : ""}`;
 }
 
+/**
+ * O editor do painel trabalha no negócio "aberto" da conta (cookie). Quem cuida de vários
+ * Orbiboxes pode estar vendo a página de um e ter outro aberto no painel, e aí o lápis
+ * abria o editor do negócio errado. A página pública avisa aqui qual negócio ela mostra,
+ * e o painel só abre depois de passar o negócio aberto para esse.
+ */
+let negocioDaPagina: string | null = null;
+
+export function ativarNegocio(id: string): Promise<boolean> {
+  return fetch("/api/negocio/trocar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  })
+    .then((r) => r.ok)
+    .catch(() => false);
+}
+
+/** Chamado pela página do dono: lembra qual negócio ela mostra e já deixa o painel nele. */
+export function definirNegocioDaPagina(id: string | null) {
+  negocioDaPagina = id;
+  if (id) void ativarNegocio(id);
+}
+
 function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string; onFechar: () => void }) {
   const [carregou, setCarregou] = useState(false);
+  // O quadro só abre depois que o painel foi apontado para o negócio desta página.
+  const [negocioPronto, setNegocioPronto] = useState(!negocioDaPagina);
+  useEffect(() => {
+    if (!negocioDaPagina) return;
+    let vivo = true;
+    void ativarNegocio(negocioDaPagina).then(() => { if (vivo) setNegocioPronto(true); });
+    return () => { vivo = false; };
+  }, []);
   const quadro = useRef<HTMLIFrameElement>(null);
   const [salvando, setSalvando] = useState(false);
   // Se o painel abrir e não mostrar nada (a parte pedida não apareceu), mostra a tela inteira
@@ -115,14 +147,14 @@ function PainelEditor({ href, rotulo, onFechar }: { href: string; rotulo: string
           {!carregou && (
             <div className="absolute inset-0 flex items-center justify-center text-[13px] text-text-secondary">Abrindo o editor...</div>
           )}
-          <iframe
+          {negocioPronto && <iframe
             key={tentativa}
             ref={quadro}
             src={tentativa ? `${urlEmbutida(href)}${urlEmbutida(href).includes("?") ? "&" : "?"}r=${tentativa}` : urlEmbutida(href)}
             title={rotulo}
             onLoad={() => { setCarregou(true); conferirConteudo(); }}
             className={`h-full w-full border-0 transition-opacity duration-200 ${carregou ? "opacity-100" : "opacity-0"}`}
-          />
+          />}
         </div>
       </div>
     </div>,
