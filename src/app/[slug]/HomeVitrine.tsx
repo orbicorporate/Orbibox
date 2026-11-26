@@ -291,7 +291,7 @@ export function HomeVitrine({
   /** Só o dono: guarda a escolha (null volta ao automático). Undefined quando não há onde guardar. */
   onEscolherItens?: (ids: string[] | null) => void;
   /** Formato e faixa salvos de cada cartão de categoria, por nome. */
-  ajustesCategorias?: Record<string, { layout_size?: string; title_placement?: string }>;
+  ajustesCategorias?: Record<string, { layout_size?: string; title_placement?: string; capa?: string }>;
   onAjustarCategoria?: (nome: string, patch: { layout_size?: string; title_placement?: string }) => void;
 }) {
   const [editandoFormato, setEditandoFormato] = useState(false);
@@ -360,7 +360,7 @@ export function HomeVitrine({
     router.refresh();
   }
   // Formato e faixa branca mexidos aqui mesmo: a tela muda na hora e o banco grava em seguida.
-  const [ajustes, setAjustes] = useState<Record<string, { layout_size?: string; title_placement?: string }>>({});
+  const [ajustes, setAjustes] = useState<Record<string, { layout_size?: string; title_placement?: string; capa?: string }>>({});
   async function ajustarCartao(id: string, patch: { layout_size?: string; title_placement?: string }) {
     setAjustes((a) => ({ ...a, [id]: { ...a[id], ...patch } }));
     if (id.startsWith("cat:")) { onAjustarCategoria?.(id.slice(4), patch); return; }
@@ -415,11 +415,12 @@ export function HomeVitrine({
       const nome = i.brand_label?.trim();
       if (!nome) continue;
       const atual = vistas.get(nome);
-      if (atual) { if (!atual.image_url && i.image_url) { atual.image_url = i.image_url; atual.box_style = "foto"; } continue; }
+      if (atual) { if (!atual.image_url && i.image_url && !ajustesCategorias?.[nome]?.capa) { atual.image_url = i.image_url; atual.box_style = "foto"; } continue; }
+      const capa = ajustesCategorias?.[nome]?.capa || null;
       vistas.set(nome, {
         id: `cat:${nome}`, title: nome, description: null, price: null, price_type: null, price_max: null,
-        image_url: i.image_url, brand_label: null, type: "product", position: i.position, layout_size: ajustesCategorias?.[nome]?.layout_size ?? "medio",
-        box_color: i.box_color && i.image_url ? i.box_color : "neutro", footer_color: null, box_style: i.image_url ? "foto" : "cor", title_placement: ajustesCategorias?.[nome]?.title_placement ?? "sobre",
+        image_url: capa ?? i.image_url, brand_label: null, type: "product", position: i.position, layout_size: ajustesCategorias?.[nome]?.layout_size ?? "medio",
+        box_color: i.box_color && i.image_url ? i.box_color : "neutro", footer_color: null, box_style: (capa ?? i.image_url) ? "foto" : "cor", title_placement: ajustesCategorias?.[nome]?.title_placement ?? "sobre",
         target_url: `/${slug}?tab=vitrine&cat=${encodeURIComponent(nome)}`, link_kind: "categoria-interna",
       });
     }
