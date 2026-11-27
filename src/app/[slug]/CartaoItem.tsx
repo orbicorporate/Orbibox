@@ -41,6 +41,7 @@ function CartaoBase({
   largura,
   tamanho,
   proporcao,
+  fotoInteira,
   origem,
   curtir,
   editarHref,
@@ -54,6 +55,8 @@ function CartaoBase({
   largura: string;
   /** Força o tamanho de exibição (afeta a fonte do título). */
   tamanho?: BoxSize;
+  /** Mostra a foto inteira, na proporção dela, em vez de cortar no formato do card. */
+  fotoInteira?: boolean;
   /** Força a proporção da foto; sem isso vale a do tamanho do item. */
   proporcao?: "quadrado" | "retrato" | "paisagem" | "banner";
   /** "home": veio do Destaque da tela inicial, então o Voltar da página do item volta pra lá. */
@@ -94,14 +97,14 @@ function CartaoBase({
     const miolo = (
       <>
         {photo ? (
-        <div className="relative" style={{ aspectRatio: RATIOS[ratio].value, ...(colorido ? { backgroundImage: c.degrade ?? `linear-gradient(180deg, color-mix(in srgb, ${c.bg} 45%, white) 0%, ${c.bg} 100%)` } : {}) }}>
+        <div className="relative" style={{ ...(fotoInteira ? {} : { aspectRatio: RATIOS[ratio].value }), ...(colorido ? { backgroundImage: c.degrade ?? `linear-gradient(180deg, color-mix(in srgb, ${c.bg} 45%, white) 0%, ${c.bg} 100%)` } : {}) }}>
           {photo && (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={item.image_url!}
                 alt={item.title}
-                className="h-full w-full object-cover"
+                className={fotoInteira ? "block h-auto w-full" : "h-full w-full object-cover"}
                 onError={(e) => {
                   const img = e.currentTarget;
                   img.style.display = "none";
