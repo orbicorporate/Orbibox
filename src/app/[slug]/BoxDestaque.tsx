@@ -162,9 +162,9 @@ export function BoxDestaque({
   };
 
   const cartaoItem = (i: ItemCartao, largo: boolean, logo?: string | null) => {
-    const destino = i.link_kind === "nenhum" ? null : i.link_kind === "categoria" ? i.target_url : i.target_url && i.link_kind === "externo" ? i.target_url : `/${slug}/p/${i.id}`;
+    const destino = i.link_kind === "nenhum" ? null : i.link_kind === "categoria" || i.link_kind === "categoria-interna" ? i.target_url : i.target_url && i.link_kind === "externo" ? i.target_url : `/${slug}/p/${i.id}`;
     const externo = i.link_kind === "categoria" || i.link_kind === "externo";
-    const kind: "categoria" | "produto" | "link" = i.link_kind === "categoria" ? "categoria" : i.link_kind === "produto" ? "produto" : "link";
+    const kind: "categoria" | "produto" | "link" = i.link_kind === "categoria" || i.link_kind === "categoria-interna" ? "categoria" : i.link_kind === "produto" ? "produto" : "link";
     const apoio = formatPrice(i) || i.brand_label || "";
     const miolo = (
       <>
@@ -258,9 +258,9 @@ export function BoxDestaque({
         </div>
 
         <div className="mt-3 flex flex-col gap-2">
-          <AbrirEditor href={`/admin/vitrine?editar=${itemEditado.id}`} rotulo="Editar o item" className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-white text-[14px] font-semibold ring-1 ring-black/[0.08]">
+          {!itemEditado.id.startsWith("cat:") && <AbrirEditor href={`/admin/vitrine?editar=${itemEditado.id}`} rotulo="Editar o item" className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-white text-[14px] font-semibold ring-1 ring-black/[0.08]">
             Editar o item no catálogo
-          </AbrirEditor>
+          </AbrirEditor>}
           <button type="button" onClick={() => { alternar("item", itemEditado.id); setEditandoItem(null); }} className="min-h-[44px] w-full rounded-full text-[14px] font-medium text-[#E5484D]">Tirar da página inicial</button>
         </div>
       </div>
