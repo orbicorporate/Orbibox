@@ -21,6 +21,13 @@ const nextConfig: NextConfig = {
       { source: "/imgly/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
     ];
   },
+  // Endereços antigos que mudaram: quem tem o link antigo cai no novo.
+  async redirects() {
+    return [
+      { source: "/bernamoema", destination: "/berna", permanent: false },
+      { source: "/bernamoema/:path*", destination: "/berna/:path*", permanent: false },
+    ];
+  },
   // Fotos do Supabase Storage passam pelo otimizador de imagens: chegam
   // redimensionadas pro tamanho da tela e em WebP/AVIF, em vez do original
   // de 1 a 2 MB (ex.: galeria do Inspire-se).
