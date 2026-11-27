@@ -61,6 +61,7 @@ export function FolhaHome({
   businessId,
   botoes,
   itens,
+  categorias = [],
   vouchersDestaque,
   criarEm,
   avisos,
@@ -78,6 +79,8 @@ export function FolhaHome({
   businessId: string;
   botoes: LinhaHome[];
   itens: LinhaHome[];
+  /** Categorias do catálogo que podem virar tag em destaque. */
+  categorias?: LinhaHome[];
   vouchersDestaque: string[];
   criarEm: CriarEm[];
   /** Coisas ligadas que mesmo assim não aparecem para o visitante, com o motivo. */
@@ -291,6 +294,17 @@ export function FolhaHome({
               </>
             )}
 
+            {categorias.length > 0 && (
+              <>
+                <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Categorias</p>
+                <div className="mt-2 flex flex-col gap-2">
+                  {categorias.map((l) => (
+                    <Linha key={l.id} l={l} onMudar={mudar} soDestaque />
+                  ))}
+                </div>
+              </>
+            )}
+
             <p className="mt-6 border-t border-divider pt-5 text-[14px] font-medium uppercase tracking-wide text-text-secondary">Produtos</p>
             <div className="mt-2 flex flex-col gap-2">
               {itens.length === 0 && <p className="text-[14.5px] text-text-secondary">Nenhum produto no catálogo ainda.</p>}
@@ -425,7 +439,7 @@ export function FolhaHome({
 
 function Linha({ l, onMudar, soDestaque }: { l: LinhaHome; onMudar: (l: LinhaHome, pos: Posicao) => void; soDestaque?: boolean }) {
   // Cada item leva ao editor certo, no mesmo painel que o lápis do cartão usa.
-  const href = l.tipo === "voucher" ? `/admin/vouchers/${l.id}` : l.tipo === "item" ? `/admin/vitrine/pagina/${l.id}` : l.id === "zap" || l.id === "catalogo" ? null : `/admin/boxes?box=${l.id}#box-${l.id}`;
+  const href = l.tipo === "voucher" ? `/admin/vouchers/${l.id}` : l.tipo === "item" ? (l.id.startsWith("cat:") ? null : `/admin/vitrine/pagina/${l.id}`) : l.id === "zap" || l.id === "catalogo" ? null : `/admin/boxes?box=${l.id}#box-${l.id}`;
   return (
     <div className="rounded-2xl border border-divider p-2.5">
       <div className="flex items-center gap-3">

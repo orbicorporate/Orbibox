@@ -50,7 +50,7 @@ import { VoucherShareButton } from "@/components/mobile/VoucherShareButton";
 import { VoucherQRCode } from "@/components/mobile/VoucherQRCode";
 import { VoucherLines } from "@/components/mobile/VoucherDecor";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
-import { CartaoItem } from "./CartaoItem";
+import { CartaoItem, type ItemCartao } from "./CartaoItem";
 import { FolhaHome, type LinhaHome, type NovoBox, type Posicao, type CriarEm } from "./FolhaHome";
 import { HorarioContext } from "@/components/ui/HorarioContext";
 import { lerHorario } from "@/lib/horario";
@@ -717,7 +717,7 @@ export function VisitorExperience({
     if (pos !== "escondido" && l.pos !== pos && passouDoLimiteGratis(pos)) return;
     const atuais = destRef.current;
     const sem = atuais.filter((d) => !(d.id === l.id && (d.t === l.tipo || (l.tipo === "item" && d.t === "item_bolinha"))));
-    const proxima: DestaqueSalvo[] = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : l.tipo === "item" && pos === "bolinha" ? [...sem, { t: "item_bolinha", id: l.id, p: Math.max(0, ...boxList.map((b) => b.position), ...atuais.map((d) => (d.t === "item_bolinha" && typeof d.p === "number" ? d.p : 0))) + 1 }] : sem;
+    const proxima: DestaqueSalvo[] = pos === "destaque" ? [...sem, { t: l.tipo, id: l.id }] : l.tipo === "item" && !l.id.startsWith("cat:") && pos === "bolinha" ? [...sem, { t: "item_bolinha", id: l.id, p: Math.max(0, ...boxList.map((b) => b.position), ...atuais.map((d) => (d.t === "item_bolinha" && typeof d.p === "number" ? d.p : 0))) + 1 }] : sem;
     const mudouDestaques = JSON.stringify(proxima) !== JSON.stringify(atuais);
     const ativo = pos !== "escondido";
     const real = l.tipo === "botao" ? boxList.find((b) => b.id === l.id) : undefined;
@@ -997,6 +997,18 @@ export function VisitorExperience({
     if (((b.box_type === "custom" && cfg.action === "gift") || b.box_type === "campaign") && !giftEnabled) return [{ id: b.id, titulo: "Presentear", texto: "Está ligado, mas o Gift card está desativado ou falta o WhatsApp do negócio. Ative o Gift card para aparecer.", href: "/admin/gift" }];
     return [];
   });
+  // Categorias do catálogo que podem virar tag em destaque (id "cat:Nome"; tocar abre a categoria).
+  const categoriasDestaque: ItemCartao[] = (() => {
+    const nomes: string[] = [];
+    for (const i of [...contentHome].sort((a, b) => a.position - b.position)) { const n = i.brand_label?.trim(); if (n && !nomes.includes(n)) nomes.push(n); }
+    for (const n of business.vitrine_categories ?? []) { const t = n?.trim(); if (t && t !== "Destaques" && !nomes.includes(t)) nomes.push(t); }
+    return nomes.map((nome) => {
+      const primeiro = contentHome.filter((i) => i.brand_label?.trim() === nome).sort((a, b) => a.position - b.position).find((i) => !!i.image_url);
+      const capa = ajustesCategorias?.[nome]?.capa || primeiro?.image_url || null;
+      return { id: `cat:${nome}`, title: nome, description: null, price: null, price_type: null, price_max: null, image_url: capa, brand_label: null, type: "product", position: 9999, layout_size: "medio", box_color: "neutro", footer_color: null, box_style: "cor", title_placement: "faixa", target_url: `/${business.slug}?tab=vitrine&cat=${encodeURIComponent(nome)}`, link_kind: "categoria-interna" } as ItemCartao;
+    });
+  })();
+  const linhasCategorias: LinhaHome[] = categoriasDestaque.map((c) => ({ id: c.id, tipo: "item", titulo: c.title, sub: "Categoria", foto: c.image_url, semEscondido: true, pos: destaquesHome.some((d) => d.t === "item" && d.id === c.id) ? "destaque" : "bolinha" }));
   const linhasItens: LinhaHome[] = contentHome.map((i) => ({ id: i.id, tipo: "item", titulo: i.title, sub: i.brand_label ?? "", foto: i.image_url, semEscondido: false, pos: destaquesHome.some((d) => d.t === "item" && d.id === i.id) ? "destaque" : destaquesHome.some((d) => d.t === "item_bolinha" && d.id === i.id) ? "bolinha" : "escondido" }));
 
   const heroGradient = Array.isArray(business.hero_gradient) && business.hero_gradient.length >= 2
@@ -1118,6 +1130,7 @@ export function VisitorExperience({
           businessId={business.id}
           botoes={linhasBotoes}
           itens={linhasItens}
+          categorias={linhasCategorias}
           vouchersDestaque={destaquesHome.filter((d) => d.t === "voucher").map((d) => d.id)}
           criarEm={criarEm}
           avisos={avisosFolha}
@@ -1330,7 +1343,7 @@ export function VisitorExperience({
                     slug={business.slug}
                     sessionId={sessionId}
                     destaques={destaquesHome.filter((d): d is Destaque => d.t !== "item_bolinha")}
-                    itens={contentHome}
+                    itens={[...contentHome, ...categoriasDestaque]}
                     botoes={botoesDestaque}
                     podeEditar={showOwnerControls}
                     onSalvar={(l) => salvarDestaques([...l, ...destaquesHome.filter((d) => d.t === "item_bolinha")])}
