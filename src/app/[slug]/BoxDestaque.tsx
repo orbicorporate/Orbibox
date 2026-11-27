@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { IconeBotao } from "./IconeBotao";
+import { OrbiGoogleIcon } from "@/components/orbi/OrbiGoogleIcon";
 import { createClient } from "@/lib/supabase/client";
 import { voucherGradient, voucherTheme } from "@/lib/voucherThemes";
 import { descontoGrande } from "@/lib/voucherDesconto";
@@ -147,6 +148,8 @@ export function BoxDestaque({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={b.logo} alt="" className="h-full w-full object-contain p-[6px]" />
         </span>
+      ) : b.icone === "__google__" ? (
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full" aria-hidden><OrbiGoogleIcon size={56} className="rounded-full" /></span>
       ) : (
         <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-[22px] ${fundo ? "" : "text-white"}`} style={fundo ? { backgroundColor: claro ? "rgba(255,255,255,0.22)" : "rgba(0,0,0,0.08)" } : { background: b.cor }} aria-hidden><IconeBotao icone={b.icone} size={24} /></span>
       )}
