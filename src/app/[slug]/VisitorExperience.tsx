@@ -349,6 +349,8 @@ export function VisitorExperience({
     else if (searchParams.get("cardapio") === "1") chooseIntent("cardapio");
     else if (searchParams.get("materiais") === "1") chooseIntent("materiais");
     else if (searchParams.get("reserva") === "1") chooseIntent("reserva");
+    // ?presentear=1: o "Ver como ficou" do Gift Card abre direto a tela de presentear.
+    else if (searchParams.get("presentear") === "1" && giftEnabled) chooseIntent("presentear");
     else if (chat === "1" && hasAiChat) chooseIntent("duvida", msg || undefined);
     else if (tab === "conhecer") chooseIntent("conhecer");
     else if (tab === "vitrine") { const cat = searchParams.get("cat"); if (cat) setCategoriaInicial(cat); chooseIntent("comprar"); }

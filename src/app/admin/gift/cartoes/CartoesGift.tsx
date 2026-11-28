@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { conferirSalvo } from "@/components/ui/AvisoSalvar";
+import { AtendenteModal } from "@/components/ui/AtendenteModal";
 import { GiftArt } from "@/components/mobile/GiftArt";
 import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import { AvisoGiftLiberado } from "../AvisoGiftLiberado";
@@ -30,11 +33,34 @@ const STATUS: Record<string, { label: string; cor: string; fundo: string }> = {
 
 const quando = (iso: string) => new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 
-export function CartoesGift({ negocioNome, artUrl, artTheme, gifts }: { negocioNome: string; artUrl: string | null; artTheme: string | null; gifts: Gift[] }) {
+export function CartoesGift({ negocioNome, artUrl, artTheme, gifts: giftsIniciais }: { negocioNome: string; artUrl: string | null; artTheme: string | null; gifts: Gift[] }) {
+  const supabase = useMemo(() => createClient(), []);
+  const [gifts, setGifts] = useState<Gift[]>(giftsIniciais);
+  const [pedirNome, setPedirNome] = useState<Gift | null>(null);
+  const [salvando, setSalvando] = useState(false);
   const [aba, setAba] = useState<Aba>("todos");
   const [busca, setBusca] = useState("");
   const [enviar, setEnviar] = useState<Gift | null>(null);
   const [avisar, setAvisar] = useState<Gift | null>(null);
+
+  async function liberar(g: Gift, atendente: string) {
+    setSalvando(true);
+    const res = await supabase.from("gift_cards").update({ status: "paid", paid_at: new Date().toISOString(), liberado_por: atendente }).eq("id", g.id).eq("status", "pending");
+    setSalvando(false);
+    setPedirNome(null);
+    if (!conferirSalvo(res)) return;
+    const novo = { ...g, status: "paid", liberado_por: atendente };
+    setGifts((prev) => prev.map((x) => (x.id === g.id ? novo : x)));
+    setAvisar(novo);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function cancelar(g: Gift) {
+    if (!window.confirm("Cancelar este gift? Ele não poderá mais ser liberado.")) return;
+    const res = await supabase.from("gift_cards").update({ status: "canceled" }).eq("id", g.id).eq("status", "pending");
+    if (!conferirSalvo(res)) return;
+    setGifts((prev) => prev.map((x) => (x.id === g.id ? { ...x, status: "canceled" } : x)));
+  }
 
   const contagem = useMemo(() => {
     const c: Record<string, number> = { todos: gifts.length, pending: 0, paid: 0, used: 0 };
@@ -113,7 +139,10 @@ export function CartoesGift({ negocioNome, artUrl, artTheme, gifts }: { negocioN
 
                 <div className="mt-3 flex flex-wrap gap-2 px-1 pb-1">
                   {g.status === "pending" && (
-                    <Link href={`/admin/gift?liberar=${g.code}`} className="flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[#1F9E4C] px-5 text-[14px] font-semibold text-white">Liberar</Link>
+                    <>
+                      <button onClick={() => setPedirNome(g)} className="flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[#1F9E4C] px-5 text-[14px] font-semibold text-white">Liberar (pagamento recebido)</button>
+                      <button onClick={() => void cancelar(g)} className="min-h-[44px] rounded-full bg-surface-soft px-4 text-[13.5px] font-medium text-text-secondary">Cancelar</button>
+                    </>
                   )}
                   {liberado && (
                     <>
@@ -133,6 +162,16 @@ export function CartoesGift({ negocioNome, artUrl, artTheme, gifts }: { negocioN
         </ul>
       )}
 
+      {pedirNome && (
+        <AtendenteModal
+          titulo="Quem está liberando?"
+          descricao="Seu nome fica gravado junto com a liberação deste gift. O dono vê quem liberou cada um."
+          confirmar="Liberar gift"
+          ocupado={salvando}
+          onCancelar={() => setPedirNome(null)}
+          onConfirmar={(nome) => void liberar(pedirNome, nome)}
+        />
+      )}
       {enviar && <EnviarFolha gift={enviar} negocio={negocioNome} aoFechar={() => setEnviar(null)} />}
     </div>
   );

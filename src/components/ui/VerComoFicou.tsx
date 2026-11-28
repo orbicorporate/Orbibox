@@ -36,6 +36,7 @@ export function VerComoFicou({ slug }: { slug: string }) {
     : /^\/admin\/cardapio(\/|$)/.test(caminho) ? "?cardapio=1"
     : /^\/admin\/delivery(\/|$)/.test(caminho) ? "?delivery=1"
     : /^\/admin\/materiais(\/|$)/.test(caminho) ? "?materiais=1"
+    : /^\/admin\/gift(\/|$)/.test(caminho) ? "?presentear=1"
     : "";
 
   return (
