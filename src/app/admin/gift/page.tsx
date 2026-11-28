@@ -18,6 +18,8 @@ export default async function GiftPage() {
     supabase.from("gift_cards").select("id, code, buyer_whatsapp, value_cents, from_name, to_name, message, status, created_at, used_at, liberado_por, usado_por").eq("business_id", businessId!).order("created_at", { ascending: false }).limit(100),
   ]);
 
+  const { data: neg } = await supabase.from("businesses").select("name").eq("id", businessId!).maybeSingle();
+  const negocioNome = neg?.name ?? "o negócio";
   const semGifts = (gifts ?? []).length === 0;
 
   return (
@@ -29,7 +31,7 @@ export default async function GiftPage() {
 
       {semGifts && <ComoFuncionaGift />}
 
-      <GiftManager businessId={businessId!} initialSettings={settings ?? null} initialGifts={gifts ?? []} />
+      <GiftManager negocioNome={negocioNome} businessId={businessId!} initialSettings={settings ?? null} initialGifts={gifts ?? []} />
     </div>
   );
 }

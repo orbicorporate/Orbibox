@@ -34,6 +34,7 @@ export function AvisoGiftLiberado({ gift, negocio, aoFechar }: { gift: GiftParaA
         )}
         <button type="button" onClick={aoFechar} className="min-h-[42px] rounded-full bg-surface-soft px-5 text-[14px] text-text-secondary">Depois</button>
       </div>
+      <p className="mt-2 text-[12px] leading-snug text-text-tertiary">Se fechar agora, o gift continua na lista Gifts gerados, em Gift card, com os botões para ver, encaminhar o link e avisar.</p>
     </div>
   );
 }

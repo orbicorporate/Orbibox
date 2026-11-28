@@ -5,6 +5,8 @@ import { AvisoGiftLiberado } from "./AvisoGiftLiberado";
 import { conferirSalvo } from "@/components/ui/AvisoSalvar";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { BotaoCompartilhar } from "@/components/compartilhar/Compartilhar";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { GiftArt } from "@/components/mobile/GiftArt";
 import { ValidarGift } from "./ValidarGift";
@@ -32,7 +34,7 @@ const STATUS = {
   canceled: { label: "Cancelado", cor: "#B0463C", fundo: "#FBE6E3" },
 } as const;
 
-export function GiftManager({ businessId, initialSettings, initialGifts }: { businessId: string; initialSettings: Settings | null; initialGifts: Gift[] }) {
+export function GiftManager({ negocioNome, businessId, initialSettings, initialGifts }: { negocioNome: string; businessId: string; initialSettings: Settings | null; initialGifts: Gift[] }) {
   const supabase = createClient();
   const [enabled, setEnabled] = useState(initialSettings?.enabled ?? false);
   const [artUrl, setArtUrl] = useState(initialSettings?.art_url ?? null);
@@ -84,8 +86,7 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
   async function abrirAviso(id: string) {
     const g = gifts.find((x) => x.id === id);
     if (!g) return;
-    const { data: neg } = await supabase.from("businesses").select("name").eq("id", businessId).maybeSingle();
-    setAviso({ gift: g, negocio: neg?.name ?? "o negócio" });
+    setAviso({ gift: g, negocio: negocioNome });
   }
 
   const pendentes = gifts.filter((g) => g.status === "pending");
@@ -188,11 +189,11 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
           {/* Pedidos a liberar */}
           <div className="rounded-[24px] border border-divider bg-surface-white p-5">
             <div className="flex items-center justify-between">
-              <p className="text-[15px] font-semibold">Gifts a liberar</p>
+              <p className="text-[15px] font-semibold">Gifts gerados</p>
               {pendentes.length > 0 && <span className="rounded-full bg-[#FDEEDF] px-2.5 py-1 text-[11.5px] font-bold text-[#C2650A]">{pendentes.length}</span>}
             </div>
             <p className="mt-0.5 text-[13px] leading-relaxed text-text-secondary">
-              Quando o cliente pagar (por fora, como combinado), toque em Liberar. A arte dele fica pronta na hora.
+              Quando o cliente pagar (por fora, como combinado), toque em Liberar. Depois de liberado, aqui você revê o gift, copia o link para encaminhar e avisa quem comprou.
             </p>
 
             {gifts.length === 0 ? (
@@ -207,26 +208,42 @@ export function GiftManager({ businessId, initialSettings, initialGifts }: { bus
                 {gifts.map((g) => {
                   const st = STATUS[g.status as keyof typeof STATUS] ?? STATUS.pending;
                   return (
-                    <div key={g.id} className="flex items-center gap-3 rounded-[18px] border border-divider bg-surface-white px-4 py-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-[15px] font-bold">{brl(g.value_cents)}</p>
-                          <span className="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style={{ color: st.cor, backgroundColor: st.fundo }}>{st.label}</span>
+                    <div key={g.id} className="rounded-[18px] border border-divider bg-surface-white px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-[15px] font-bold">{brl(g.value_cents)}</p>
+                            <span className="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style={{ color: st.cor, backgroundColor: st.fundo }}>{st.label}</span>
+                          </div>
+                          <p className="mt-0.5 truncate text-[12px] text-text-tertiary">
+                            {g.to_name ? `Para ${g.to_name}` : "Sem destinatário"}{g.from_name ? ` · de ${g.from_name}` : ""} · {g.code}
+                          </p>
+                          <p className="mt-0.5 truncate text-[12px] text-text-tertiary">
+                            Gerado {quandoGift(g.created_at)}{g.status === "used" && g.used_at ? ` · Usado ${quandoGift(g.used_at)}${g.usado_por ? ` por ${g.usado_por}` : ""}` : ""}{g.liberado_por ? ` · Liberado por ${g.liberado_por}` : ""}
+                          </p>
                         </div>
-                        <p className="mt-0.5 truncate text-[12px] text-text-tertiary">
-                          {g.to_name ? `Para ${g.to_name}` : "Sem destinatário"}{g.from_name ? ` · de ${g.from_name}` : ""} · {g.code}
-                        </p>
-                        <p className="mt-0.5 truncate text-[12px] text-text-tertiary">
-                          Gerado {quandoGift(g.created_at)}{g.status === "used" && g.used_at ? ` · Usado ${quandoGift(g.used_at)}${g.usado_por ? ` por ${g.usado_por}` : ""}` : ""}{g.liberado_por ? ` · Liberado por ${g.liberado_por}` : ""}
-                        </p>
+                        {g.status === "pending" && (
+                          <div className="flex shrink-0 gap-1.5">
+                            <button onClick={() => setPedirNome(g.id)} className="rounded-full bg-[#1F9E4C] px-3.5 py-2 text-[12.5px] font-semibold text-white">Liberar</button>
+                            <button onClick={() => mudarStatus(g.id, "canceled")} className="rounded-full bg-surface-soft px-3 py-2 text-[12.5px] font-medium text-text-secondary">✕</button>
+                          </div>
+                        )}
                       </div>
-                      {g.status === "paid" && (
-                        <button onClick={() => void abrirAviso(g.id)} className="shrink-0 rounded-full bg-surface-soft px-3.5 py-2 text-[12.5px] font-medium text-text-secondary">Avisar</button>
-                      )}
-                      {g.status === "pending" && (
-                        <div className="flex shrink-0 gap-1.5">
-                          <button onClick={() => setPedirNome(g.id)} className="rounded-full bg-[#1F9E4C] px-3.5 py-2 text-[12.5px] font-semibold text-white">Liberar</button>
-                          <button onClick={() => mudarStatus(g.id, "canceled")} className="rounded-full bg-surface-soft px-3 py-2 text-[12.5px] font-medium text-text-secondary">✕</button>
+                      {(g.status === "paid" || g.status === "used") && (
+                        <div className="mt-2.5 flex flex-wrap gap-1.5">
+                          <Link href={`/gift/${g.code}?de=/admin/gift`} className="rounded-full bg-surface-soft px-3.5 py-2 text-[12.5px] font-medium text-text-secondary">Ver gift</Link>
+                          {g.status === "paid" && (
+                            <>
+                              <BotaoCompartilhar
+                                alvo={{ url: `/gift/${g.code}`, titulo: "Gift card", rotulo: "Gift card", marca: negocioNome, capa: `/gift/${g.code}/capa`, texto: `${g.from_name ? g.from_name + " te enviou" : "Você ganhou"} um presente de ${negocioNome}:` }}
+                                className="inline-flex items-center gap-1.5 rounded-full bg-[#1F9E4C] px-3.5 py-2 text-[12.5px] font-semibold text-white"
+                                tam={14}
+                              >
+                                <span>Encaminhar link</span>
+                              </BotaoCompartilhar>
+                              <button onClick={() => void abrirAviso(g.id)} className="rounded-full bg-surface-soft px-3.5 py-2 text-[12.5px] font-medium text-text-secondary">Avisar quem comprou</button>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
