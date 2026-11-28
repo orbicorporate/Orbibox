@@ -34,3 +34,16 @@ export function linkWhatsLink(g: GiftParaAviso, origin: string) {
   const fone = digitos(g.buyer_whatsapp);
   return `https://wa.me/${fone}?text=${encodeURIComponent(textoLinkGift(g, origin))}`;
 }
+
+/** Mensagem para quem ganhou o presente: curta, com o link no fim para abrir a tela do gift. */
+export function textoParaPresenteado(g: GiftParaAviso, negocio: string, origin: string) {
+  const link = `${origin}/gift/${g.code}`;
+  const de = g.from_name ? `${g.from_name} te enviou` : "Você ganhou";
+  return `Oi${g.to_name ? `, ${g.to_name}` : ""}! ${de} um presente de ${brl(g.value_cents)} para usar em ${negocio}.\n\nAbra seu gift card aqui: ${link}\n\nNa hora de usar, mostre a tela ao atendimento. O gift só pode ser utilizado uma única vez.`;
+}
+
+/** Abre o WhatsApp para o presenteado. Sem número, o WhatsApp deixa escolher o contato. */
+export function linkWhatsPresenteado(g: GiftParaAviso, negocio: string, origin: string, fone?: string) {
+  const d = digitos(fone);
+  return `https://wa.me/${d}?text=${encodeURIComponent(textoParaPresenteado(g, negocio, origin))}`;
+}

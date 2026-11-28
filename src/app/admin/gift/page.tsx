@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BloqueioGratis } from "@/components/ui/BloqueioGratis";
 import { getAccessInfoForBusiness } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
@@ -28,6 +29,16 @@ export default async function GiftPage() {
       <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
         Seus clientes montam um vale-presente, combinam o pagamento com você no WhatsApp, e você libera. A arte fica bloqueada até você confirmar.
       </p>
+
+      {!semGifts && (
+        <Link href="/admin/gift/cartoes" className="mt-4 flex min-h-[56px] items-center justify-between rounded-[22px] bg-on-background px-5 text-white active:scale-[.99]">
+          <span>
+            <span className="block text-[15px] font-semibold">Cartões presente</span>
+            <span className="block text-[12.5px] opacity-75">Ver todos e enviar ao presenteado</span>
+          </span>
+          <span aria-hidden className="text-[20px]">→</span>
+        </Link>
+      )}
 
       {semGifts && <ComoFuncionaGift />}
 
